@@ -108,6 +108,15 @@ export interface GroupNote {
   created_at: string;
 }
 
+export interface PushToken {
+  id: string;
+  user_id: string;
+  token: string;
+  platform: 'ios' | 'android';
+  created_at: string;
+  updated_at: string;
+}
+
 // supabase-js v2 exige esta forma exacta (Row/Insert/Update/Relationships) para
 // poder inferir tipos en .from(...).select()/.insert()/.update(). Relationships
 // queda vacío porque acá no describimos joins automáticos vía FK hints.
@@ -130,6 +139,7 @@ export type Database = {
       groups: Table<Group, Partial<Group>>;
       group_members: Table<GroupMember, Partial<GroupMember>, Partial<GroupMember>>;
       group_notes: Table<GroupNote, Partial<GroupNote>, Partial<GroupNote>>;
+      push_tokens: Table<PushToken, Partial<PushToken>, Partial<PushToken>>;
     };
     Views: {
       public_profiles: {
@@ -157,6 +167,7 @@ export type Database = {
         Returns: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }[];
       };
       community_weekly_average: { Args: Record<string, never>; Returns: number };
+      register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

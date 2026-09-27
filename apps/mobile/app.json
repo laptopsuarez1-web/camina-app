@@ -99,6 +99,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REEMPLAZAR_CON_EAS_PROJECT_ID"
+      }
     }
   }
 }

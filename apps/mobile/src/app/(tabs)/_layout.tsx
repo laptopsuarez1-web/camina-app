@@ -1,10 +1,17 @@
+import { useEffect } from 'react';
 import { Tabs, Redirect } from 'expo-router';
 import { Home, Activity, Users, Calendar, ShoppingBag } from 'lucide-react-native';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
+import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
+
+  useEffect(() => {
+    if (session) registerForPushNotificationsAsync();
+  }, [session]);
+
   if (!initializing && !session) return <Redirect href="/(auth)/welcome" />;
 
   return (

@@ -18,7 +18,7 @@ de Puntos a los 90 días) viven en `supabase/migrations/0001_init.sql` como func
 1. Creá un proyecto en https://supabase.com (elegí una región cercana, ej. São Paulo).
 2. Instalá la CLI de Supabase y logueate: `npm i -g supabase && supabase login`.
 3. Vinculá este repo al proyecto: `supabase link --project-ref <tu-project-ref>` (desde `supabase/`).
-4. Aplicá el schema: `supabase db push` (corre todas las migraciones en orden, `0001` a `0006`).
+4. Aplicá el schema: `supabase db push` (corre todas las migraciones en orden, `0001` a `0007`).
 5. En el dashboard de Supabase, copiá **Project URL** y **anon public key** (Settings → API).
 6. **Activá la confirmación de email obligatoria**: Authentication → Sign In / Providers → Email →
    activá "Confirm email". Sin esto cualquiera entra con un correo inventado.
@@ -80,6 +80,10 @@ npx eas build --profile development --platform ios      # o android
   `@kingstinct/react-native-healthkit` ya agrega el entitlement; solo hace falta que la
   capability "HealthKit" esté habilitada para el App ID en developer.apple.com (EAS lo hace
   solo si usás `eas build` con credenciales manejadas).
+- **Notificaciones push**: correr `eas init` y pegar el Project ID resultante en
+  `apps/mobile/app.json` → `extra.eas.projectId`, desplegar la Edge Function
+  `send-push-notifications` (`supabase functions deploy send-push-notifications`), y crear el
+  Database Webhook que la dispara. Todo el detalle en `apps/mobile/README-notifications.md`.
 
 ## 5. Estructura de reglas de negocio (por si hay que ajustarlas)
 
