@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
+import { router } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Plus, Users } from 'lucide-react-native';
+import { Plus, Users, Trophy } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
+import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { colors } from '@/theme/tokens';
 
 export default function GruposScreen() {
@@ -13,6 +15,9 @@ export default function GruposScreen() {
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
+  const [view, setView] = useState<'mios' | 'ranking'>('mios');
+  const { data: ranking, isLoading: rankingLoading } = useGlobalRanking();
+  const { data: average } = useCommunityAverage();
 
   const createGroup = useMutation({
     mutationFn: async (groupName: string) => {
@@ -65,6 +70,73 @@ export default function GruposScreen() {
         Caminá, compartí y ganá en equipo
       </Text>
 
+      <View className="flex-row bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full p-1 mb-4">
+        <Pressable
+          onPress={() => setView('mios')}
+          className="flex-1 py-2 rounded-full items-center"
+          style={{ backgroundColor: view === 'mios' ? colors.aqua : 'transparent' }}
+        >
+          <Text className="text-[12.5px] font-semibold" style={{ color: view === 'mios' ? '#fff' : colors.light.muted }}>
+            Mis grupos
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setView('ranking')}
+          className="flex-1 py-2 rounded-full items-center"
+          style={{ backgroundColor: view === 'ranking' ? colors.aqua : 'transparent' }}
+        >
+          <Text className="text-[12.5px] font-semibold" style={{ color: view === 'ranking' ? '#fff' : colors.light.muted }}>
+            Ranking global
+          </Text>
+        </Pressable>
+      </View>
+
+      {view === 'ranking' ? (
+        <>
+          {average != null && average > 0 && (
+            <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-4">
+              <Text className="text-[13px] text-text-light dark:text-text-dark">
+                La comunidad de Camina camina en promedio{' '}
+                <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text> por semana.
+              </Text>
+            </View>
+          )}
+          {rankingLoading && <ActivityIndicator color={colors.aqua} />}
+          <View className="gap-2">
+            {(ranking ?? []).map((r: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }, i: number) => (
+              <View
+                key={r.user_id}
+                className="flex-row items-center gap-3 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl p-3.5"
+              >
+                <View className="w-7 items-center">
+                  {i < 3 ? <Trophy size={16} color={['#F2985C', '#9C8FC2', '#B08D57'][i]} /> : (
+                    <Text className="text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}°</Text>
+                  )}
+                </View>
+                {r.photo_url ? (
+                  <Image source={{ uri: r.photo_url }} className="w-9 h-9 rounded-full" />
+                ) : (
+                  <View className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
+                    <Text className="text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
+                  </View>
+                )}
+                <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>
+                  {r.user_id === userId ? `${r.full_name} (vos)` : r.full_name}
+                </Text>
+                <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">
+                  {Number(r.total_steps).toLocaleString('es-BO')}
+                </Text>
+              </View>
+            ))}
+            {!rankingLoading && (ranking ?? []).length === 0 && (
+              <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-6">
+                Todavía nadie caminó esta semana — sé el primero.
+              </Text>
+            )}
+          </View>
+        </>
+      ) : (
+        <>
       {creating && (
         <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md p-4 mb-4">
           <TextInput
@@ -92,7 +164,11 @@ export default function GruposScreen() {
           </Text>
           <View className="gap-2.5 mb-5">
             {my.map((g) => (
-              <View key={g.id} className="flex-row items-center gap-3 bg-auth-bg rounded-2xl p-4">
+              <Pressable
+                key={g.id}
+                onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })}
+                className="flex-row items-center gap-3 bg-auth-bg rounded-2xl p-4"
+              >
                 <View className="w-11 h-11 rounded-full bg-white/10 items-center justify-center">
                   <Users size={19} color={colors.mint} />
                 </View>
@@ -100,7 +176,7 @@ export default function GruposScreen() {
                   <Text className="text-white font-semibold text-sm">{g.name}</Text>
                   <Text className="text-auth-muted text-xs">{g.group_members.length} miembros</Text>
                 </View>
-              </View>
+              </Pressable>
             ))}
           </View>
         </>
@@ -140,6 +216,8 @@ export default function GruposScreen() {
           </Text>
         )}
       </View>
+        </>
+      )}
     </ScrollView>
   );
 }

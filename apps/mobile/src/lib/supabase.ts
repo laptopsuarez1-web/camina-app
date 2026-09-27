@@ -23,5 +23,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // PKCE en vez de implicit: el link de confirmación de email manda un
+    // "code" en la URL en vez de tokens sueltos, y se intercambia a mano por
+    // sesión en app/_layout.tsx (Linking) — más seguro y es lo recomendado
+    // por Supabase para apps que no son navegador.
+    flowType: 'pkce',
   },
 });

@@ -3,6 +3,8 @@ import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } fro
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { consumePendingDeepLinks } from '@/lib/deep-links';
+import { emailRedirectUrl } from '@/lib/auth-links';
 import { colors } from '@/theme/tokens';
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
@@ -16,6 +18,8 @@ export default function WelcomeScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   function comingSoon() {
     Alert.alert('Muy pronto', 'El acceso con esta cuenta todavía no está disponible — usá tu email por ahora.');
@@ -24,7 +28,18 @@ export default function WelcomeScreen() {
   async function afterAuth() {
     await useAuthStore.getState().refreshProfile();
     const profile = useAuthStore.getState().profile;
-    router.replace(profile?.full_name?.trim() ? '/(tabs)' : '/(auth)/perfil');
+    if (!profile?.full_name?.trim()) {
+      // El signup nuevo termina en /perfil, que consume las invitaciones
+      // pendientes recién al final (ahí ya hay full_name).
+      router.replace('/(auth)/perfil');
+      return;
+    }
+    if (!profile.terms_accepted_at) {
+      router.replace('/(auth)/terminos');
+      return;
+    }
+    const { joinedGroupId } = await consumePendingDeepLinks();
+    router.replace(joinedGroupId ? { pathname: '/(tabs)/grupos/[groupId]', params: { groupId: joinedGroupId } } : '/(tabs)');
   }
 
   async function handleSubmit() {
@@ -36,18 +51,64 @@ export default function WelcomeScreen() {
     const { data, error } =
       authKind === 'login'
         ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-        : await supabase.auth.signUp({ email: email.trim(), password });
+        : await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: emailRedirectUrl() } });
     setLoading(false);
 
     if (error) {
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setAwaitingConfirmation(email.trim());
+        return;
+      }
       Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', error.message);
       return;
     }
     if (authKind === 'signup' && !data.session) {
-      Alert.alert('Revisá tu correo', 'Te mandamos un link para confirmar la cuenta. Volvé a entrar después de confirmar.');
+      setAwaitingConfirmation(email.trim());
       return;
     }
     await afterAuth();
+  }
+
+  async function resendConfirmation() {
+    if (!awaitingConfirmation) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: awaitingConfirmation,
+      options: { emailRedirectTo: emailRedirectUrl() },
+    });
+    setResending(false);
+    if (error) Alert.alert('No pudimos reenviar el correo', error.message);
+    else Alert.alert('Listo', 'Te mandamos el correo de nuevo.');
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
+        <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
+          Confirmá tu correo
+        </Text>
+        <Text style={{ color: '#C4B8E8', marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
+          Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
+          entrar acá.
+        </Text>
+        <Pressable
+          onPress={resendConfirmation}
+          disabled={resending}
+          style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
+        >
+          {resending ? (
+            <ActivityIndicator color={colors.mintDark} />
+          ) : (
+            <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
+          )}
+        </Pressable>
+        <Pressable onPress={() => setAwaitingConfirmation(null)}>
+          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>Volver</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (

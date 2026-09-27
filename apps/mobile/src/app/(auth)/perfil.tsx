@@ -63,7 +63,7 @@ export default function CompletarPerfilScreen() {
       if (error) throw error;
 
       await useAuthStore.getState().refreshProfile();
-      router.replace('/(tabs)');
+      router.replace('/(auth)/terminos');
     } catch (e) {
       Alert.alert('Algo salió mal', e instanceof Error ? e.message : 'Intentá de nuevo.');
     } finally {

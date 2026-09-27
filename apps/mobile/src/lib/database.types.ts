@@ -17,6 +17,7 @@ export interface Profile {
   ranking_visible: boolean;
   dark_mode: boolean;
   referred_by: string | null;
+  terms_accepted_at: string | null;
   created_at: string;
 }
 
@@ -148,6 +149,14 @@ export type Database = {
         Args: { p_business_id: string; p_code: string };
         Returns: Redemption;
       };
+      cancel_expired_redemption: { Args: { p_redemption_id: string }; Returns: Redemption };
+      capture_referral: { Args: { p_referrer_id: string }; Returns: void };
+      group_member_count: { Args: { p_group_id: string }; Returns: number };
+      global_weekly_ranking: {
+        Args: { p_limit?: number };
+        Returns: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }[];
+      };
+      community_weekly_average: { Args: Record<string, never>; Returns: number };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

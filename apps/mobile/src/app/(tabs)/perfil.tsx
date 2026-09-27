@@ -1,11 +1,12 @@
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut } from 'lucide-react-native';
+import { LogOut, Gift } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
 import { INTERESTS_OPTIONS } from '@/constants/catalog';
+import { referralLink } from '@/constants/sharing';
 
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
@@ -33,6 +34,14 @@ export default function PerfilScreen() {
       .update({ ranking_visible: value })
       .eq('id', profile.id);
     if (!error) await useAuthStore.getState().refreshProfile();
+  }
+
+  async function inviteFriends() {
+    if (!profile) return;
+    await Share.share({
+      message: `Te invito a Camina — caminá y ganá Puntos para canjear en comercios de Tarija. Sumate con mi link:\n${referralLink(profile.id)}`,
+      url: referralLink(profile.id),
+    });
   }
 
   async function handleLogout() {
@@ -75,6 +84,21 @@ export default function PerfilScreen() {
           <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
         </View>
       </View>
+
+      <Pressable
+        onPress={inviteFriends}
+        className="flex-row items-center gap-3.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl p-4 mb-4"
+      >
+        <View className="w-11 h-11 rounded-full bg-white/60 dark:bg-white/10 items-center justify-center">
+          <Gift size={19} color={colors.aqua} />
+        </View>
+        <View className="flex-1">
+          <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
+          <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">
+            Ganá 5 Puntos cuando tu amigo empiece a caminar
+          </Text>
+        </View>
+      </Pressable>
 
       <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
         <Text className="font-bold text-[15px] mb-1 text-text-light dark:text-text-dark">Tus intereses</Text>

@@ -20,6 +20,8 @@
       "infoPlist": {
         "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganás caminando.",
         "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
+        "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+        "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
         "UIBackgroundModes": ["fetch"]
       },
       "config": {
@@ -39,7 +41,8 @@
         "ACTIVITY_RECOGNITION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "android.permission.health.READ_STEPS"
       ],
       "config": {
         "googleMaps": {
@@ -72,6 +75,25 @@
         {
           "image": "./assets/splash-icon.png",
           "backgroundColor": "#241748"
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+          "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
+          "background": false
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
         }
       ]
     ],

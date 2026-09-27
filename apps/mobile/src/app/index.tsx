@@ -25,5 +25,6 @@ export default function Index() {
   if (!onboardingSeen) return <Redirect href="/onboarding" />;
   if (!session) return <Redirect href="/(auth)/welcome" />;
   if (!profile || !profile.full_name.trim()) return <Redirect href="/(auth)/perfil" />;
+  if (!profile.terms_accepted_at) return <Redirect href="/(auth)/terminos" />;
   return <Redirect href="/(tabs)" />;
 }

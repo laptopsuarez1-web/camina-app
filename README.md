@@ -18,8 +18,13 @@ de Puntos a los 90 días) viven en `supabase/migrations/0001_init.sql` como func
 1. Creá un proyecto en https://supabase.com (elegí una región cercana, ej. São Paulo).
 2. Instalá la CLI de Supabase y logueate: `npm i -g supabase && supabase login`.
 3. Vinculá este repo al proyecto: `supabase link --project-ref <tu-project-ref>` (desde `supabase/`).
-4. Aplicá el schema: `supabase db push` (corre `0001_init.sql` y `0002_storage.sql`).
+4. Aplicá el schema: `supabase db push` (corre todas las migraciones en orden, `0001` a `0006`).
 5. En el dashboard de Supabase, copiá **Project URL** y **anon public key** (Settings → API).
+6. **Activá la confirmación de email obligatoria**: Authentication → Sign In / Providers → Email →
+   activá "Confirm email". Sin esto cualquiera entra con un correo inventado.
+7. **Agregá la URL de retorno del deep link**: Authentication → URL Configuration → Redirect URLs
+   → agregá `camina://auth-callback`. Sin esto el link del correo de confirmación no vuelve a abrir
+   la app (ver `apps/mobile/src/lib/auth-links.ts`).
 
 ## 2. Variables de entorno
 
@@ -59,13 +64,22 @@ npx eas build --profile development --platform ios      # o android
   **cuenta de Google Play Console** (pago único ~US$25) para Android.
 - **API Key de Google Maps** (una para iOS, una para Android) — reemplazar
   `REEMPLAZAR_CON_API_KEY_IOS` / `REEMPLAZAR_CON_API_KEY_ANDROID` en `apps/mobile/app.json`.
-- **Coordenadas reales (lat/lng) de los comercios** de Tarija que vayan sumándose — hoy la
-  tabla `businesses` no tiene datos de ejemplo cargados, arranca vacía.
+- **Coordenadas reales (lat/lng) de más comercios** a medida que se sumen — hoy solo Bloom
+  tiene datos reales cargados (`0004_seed_bloom.sql`), con lat/lng aproximados del centro de
+  Tarija marcados para geocodificar bien.
 - **Login con Google/Apple real**: la pantalla ya tiene el flujo de email/password
-  funcionando contra Supabase Auth; para los botones de Google/Apple hay que activar esos
-  providers en el dashboard de Supabase (Authentication → Providers) y agregar sus
-  credenciales OAuth.
+  funcionando contra Supabase Auth (con confirmación de email obligatoria); para los botones
+  de Google/Apple hay que activar esos providers en el dashboard de Supabase
+  (Authentication → Providers) y agregar sus credenciales OAuth.
 - **Cuenta EAS** (gratis para empezar) para poder correr `eas build`/`eas submit`.
+- **Declaración de datos de salud en Play Console**: para publicar en Android con
+  Health Connect activado, hay que declarar el acceso a datos de salud en Play Console
+  (Google lo revisa, puede tardar hasta ~2 semanas en total). Ver detalle en
+  `apps/mobile/README-health.md`.
+- **Capability de HealthKit en el Apple Developer account**: al compilar con EAS, el plugin de
+  `@kingstinct/react-native-healthkit` ya agrega el entitlement; solo hace falta que la
+  capability "HealthKit" esté habilitada para el App ID en developer.apple.com (EAS lo hace
+  solo si usás `eas build` con credenciales manejadas).
 
 ## 5. Estructura de reglas de negocio (por si hay que ajustarlas)
 
