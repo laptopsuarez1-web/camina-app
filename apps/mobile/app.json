@@ -27,7 +27,7 @@
         ]
       },
       "config": {
-        "googleMapsApiKey": "REEMPLAZAR_CON_API_KEY_IOS"
+        "googleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
       }
     },
     "android": {
@@ -48,7 +48,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "REEMPLAZAR_CON_API_KEY_ANDROID"
+          "apiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
         }
       }
     },
