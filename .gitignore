@@ -16,3 +16,4 @@ android/
 *.key
 *.mobileprovision
 .eas/
+supabase/.temp/
