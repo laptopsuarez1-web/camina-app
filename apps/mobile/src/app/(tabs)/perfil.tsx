@@ -5,10 +5,20 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
+import { INTERESTS_OPTIONS } from '@/constants/catalog';
 
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
+
+  async function toggleInterest(name: string) {
+    if (!profile) return;
+    const current = new Set(profile.interests ?? []);
+    if (current.has(name)) current.delete(name);
+    else current.add(name);
+    const { error } = await supabase.from('profiles').update({ interests: [...current] }).eq('id', profile.id);
+    if (!error) await useAuthStore.getState().refreshProfile();
+  }
 
   async function toggleDarkMode(value: boolean) {
     if (!profile) return;
@@ -28,7 +38,7 @@ export default function PerfilScreen() {
   async function handleLogout() {
     const { error } = await supabase.auth.signOut();
     if (error) Alert.alert('No pudimos cerrar sesión', error.message);
-    else router.replace('/(auth)/login');
+    else router.replace('/(auth)/welcome');
   }
 
   return (
@@ -63,6 +73,34 @@ export default function PerfilScreen() {
             {balance ?? 0} Puntos
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
+        </View>
+      </View>
+
+      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+        <Text className="font-bold text-[15px] mb-1 text-text-light dark:text-text-dark">Tus intereses</Text>
+        <Text className="text-muted-light dark:text-muted-dark text-xs mb-3">Opcional — nos ayuda a mostrarte mejores beneficios.</Text>
+        <View className="flex-row flex-wrap gap-2">
+          {INTERESTS_OPTIONS.map(([name]) => {
+            const active = (profile?.interests ?? []).includes(name);
+            return (
+              <Pressable
+                key={name}
+                onPress={() => toggleInterest(name)}
+                className="rounded-full px-3.5 py-2 border"
+                style={{
+                  backgroundColor: active ? colors.light.aquaLight : 'transparent',
+                  borderColor: active ? colors.aqua : colors.light.line,
+                }}
+              >
+                <Text
+                  className="text-xs font-semibold"
+                  style={{ color: active ? '#2E9E7C' : colors.light.muted }}
+                >
+                  {name}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 

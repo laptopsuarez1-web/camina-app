@@ -1,24 +1,11 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Plus, Users } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useGroups } from '@/hooks/useGroups';
 import { colors } from '@/theme/tokens';
-
-function useGroups() {
-  return useQuery({
-    queryKey: ['groups'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('groups')
-        .select('*, group_members(user_id)')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-}
 
 export default function GruposScreen() {
   const { data: groups, isLoading } = useGroups();

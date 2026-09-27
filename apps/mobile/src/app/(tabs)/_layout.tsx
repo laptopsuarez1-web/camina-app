@@ -5,7 +5,7 @@ import { colors } from '@/theme/tokens';
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
-  if (!initializing && !session) return <Redirect href="/(auth)/login" />;
+  if (!initializing && !session) return <Redirect href="/(auth)/welcome" />;
 
   return (
     <Tabs

@@ -2,8 +2,17 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 
+// OJO: nunca uses Date.toISOString() acá — eso da la fecha en UTC, no la del
+// dispositivo. Para un usuario en Bolivia (UTC-4), toISOString() ya muestra
+// "mañana" desde las 20:00 hora local, lo que desalinea el día contra el
+// servidor (que ahora fija America/La_Paz — ver supabase/migrations/0003_fixes.sql).
+// Se arma la fecha con los getters locales del dispositivo en su lugar.
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 export function usePointsBalance() {

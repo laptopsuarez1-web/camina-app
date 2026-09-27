@@ -45,6 +45,26 @@ export function useRegenerateCode() {
   });
 }
 
+// Cuando el código de 15 minutos vence sin que el comercio lo confirme, esto
+// cancela el canje y devuelve los Puntos (ver cancel_expired_redemption en
+// supabase/migrations/0003_fixes.sql) — antes se perdían para siempre.
+export function useCancelExpiredRedemption() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (redemptionId: string) => {
+      const { data, error } = await supabase.rpc('cancel_expired_redemption', {
+        p_redemption_id: redemptionId,
+      });
+      if (error) throw error;
+      return data as unknown as Redemption;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['redemptions'] });
+    },
+  });
+}
+
 export function useMyRedemptions() {
   return useQuery({
     queryKey: ['redemptions'],

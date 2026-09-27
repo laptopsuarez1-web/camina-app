@@ -59,20 +59,34 @@ export default function PlanPage() {
   const { business, refreshBusiness, session } = useBusinessAuth();
   const [confirmId, setConfirmId] = useState<BusinessPlan | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const pending = PLANS.find((p) => p.id === confirmId);
 
   async function confirmChange() {
     if (!business || !confirmId) return;
     setSaving(true);
+    setError(null);
     const { error } = await supabase.from('businesses').update({ plan: confirmId }).eq('id', business.id);
     setSaving(false);
     setConfirmId(null);
-    if (!error && session) await refreshBusiness(session.user.id);
+    if (error) {
+      // El plan pago requiere pasarela de pago (no implementada todavía) — el
+      // trigger prevent_self_plan_change en Supabase rechaza el auto-upgrade.
+      setError('Por ahora el cambio de plan lo confirma el equipo de Camina una vez recibido el pago. Escribinos y lo activamos.');
+      return;
+    }
+    if (session) await refreshBusiness(session.user.id);
   }
 
   return (
     <DashboardShell>
       <TopBar title="Tu plan" subtitle="Cambiá cuando quieras — sin permanencia." />
+
+      {error && (
+        <div className="bg-warn-light text-[13px] rounded-xl px-4 py-3 mb-5 max-w-[620px]" style={{ color: '#8A5A2E' }}>
+          {error}
+        </div>
+      )}
 
       {pending && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
