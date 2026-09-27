@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "Camina",
+    "slug": "camina",
+    "scheme": "camina",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "primaryColor": "#8B4FD1",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#241748"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "bo.camina.app",
+      "infoPlist": {
+        "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganás caminando.",
+        "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
+        "UIBackgroundModes": ["fetch"]
+      },
+      "config": {
+        "googleMapsApiKey": "REEMPLAZAR_CON_API_KEY_IOS"
+      }
+    },
+    "android": {
+      "package": "bo.camina.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACTIVITY_RECOGNITION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "REEMPLAZAR_CON_API_KEY_ANDROID"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4FC3A8"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#241748"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

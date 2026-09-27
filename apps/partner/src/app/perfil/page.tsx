@@ -1,0 +1,123 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapPin, Clock, Phone } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { useBusinessAuth } from '@/hooks/useBusinessAuth';
+import { DashboardShell, TopBar } from '@/components/DashboardShell';
+
+const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza'];
+
+export default function PerfilPage() {
+  const { business, refreshBusiness, session } = useBusinessAuth();
+  const [nombre, setNombre] = useState('');
+  const [categoria, setCategoria] = useState(CATEGORIAS[0]);
+  const [direccion, setDireccion] = useState('');
+  const [horario, setHorario] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!business) return;
+    setNombre(business.name);
+    setCategoria(business.category);
+    setDireccion(business.address ?? '');
+    setHorario(business.hours_text ?? '');
+    setTelefono(business.phone ?? '');
+  }, [business]);
+
+  async function handleSave() {
+    if (!business) return;
+    setSaving(true);
+    setSaved(false);
+    const { error } = await supabase
+      .from('businesses')
+      .update({
+        name: nombre.trim(),
+        category: categoria,
+        address: direccion.trim(),
+        hours_text: horario.trim(),
+        phone: telefono.trim(),
+      })
+      .eq('id', business.id);
+    setSaving(false);
+    if (!error && session) {
+      await refreshBusiness(session.user.id);
+      setSaved(true);
+    }
+  }
+
+  return (
+    <DashboardShell>
+      <TopBar title="Perfil del local" subtitle="Esto es lo que ven los usuarios cuando entran a tu ficha." />
+
+      <div className="flex gap-5 max-w-[620px]">
+        <div className="flex-1 flex flex-col gap-3.5">
+          <Field label="Nombre comercial">
+            <input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Categoría">
+            <select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            >
+              {CATEGORIAS.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Dirección" icon={<MapPin size={13} color="#7C6A9C" />}>
+            <input
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>
+            <input
+              value={horario}
+              onChange={(e) => setHorario(e.target.value)}
+              placeholder="Lun a Sáb 8:00–20:00"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Contacto" icon={<Phone size={13} color="#7C6A9C" />}>
+            <input
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+
+          {saved && <p className="text-aqua text-[12.5px]">Guardado.</p>}
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-[10px] py-3.5 font-semibold text-sm mt-1 disabled:opacity-50"
+            style={{ background: '#241748', color: '#7FEDC4' }}
+          >
+            {saving ? 'Guardando…' : 'Guardar cambios'}
+          </button>
+        </div>
+      </div>
+    </DashboardShell>
+  );
+}
+
+function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="flex items-center gap-1.5 text-[12.5px] font-semibold mb-1.5">
+        {icon} {label}
+      </span>
+      {children}
+    </label>
+  );
+}

@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f3fc;
+  --foreground: #291c47;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Paleta portada 1:1 del prototipo camina-full.html / panel de comercios */
+  --color-bg: #f7f3fc;
+  --color-card: #ffffff;
+  --color-line: #e1d2f5;
+  --color-muted: #7c6a9c;
+  --color-text: #291c47;
+  --color-aqua: #4fc3a8;
+  --color-aqua-light: #e3f5f0;
+  --color-purple: #8b4fd1;
+  --color-purple-light: #f1ebfa;
+  --color-warn: #f2985c;
+  --color-warn-light: #fdeee2;
+  --color-auth-bg: #241748;
+  --color-auth-bg-soft: #2f1e5c;
+  --color-auth-muted: #c4b8e8;
+  --color-mint: #7fedc4;
+  --color-mint-dark: #12281f;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
