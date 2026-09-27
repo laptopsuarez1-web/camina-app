@@ -175,31 +175,36 @@ export default function HomeScreen() {
 
       <View className="pt-5 pb-2">
         <View className="flex-row items-center justify-between px-5 mb-3">
-          <Text className="font-bold text-base text-text-light dark:text-text-dark">Para vos</Text>
+          <Text className="font-bold text-base text-text-light dark:text-text-dark">Beneficios cerca tuyo</Text>
           <Pressable onPress={() => router.push('/(tabs)/canjes?view=lista')}>
             <Text className="text-aqua text-xs font-semibold">Ver todo</Text>
           </Pressable>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5 gap-3">
+        <View className="px-5 gap-2.5">
           {nearby.map((b) => (
             <Pressable
               key={b.id}
               onPress={() => router.push('/(tabs)/canjes?view=lista')}
-              className="bg-card-light dark:bg-card-dark rounded-3xl p-3.5"
-              style={{ width: 140, height: 140, shadowColor: '#291C47', shadowOpacity: 0.1, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
+              className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark rounded-3xl p-3.5"
+              style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
             >
-              <View className="w-10 h-10 rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center mb-2.5">
+              <View className="w-[58px] h-[58px] rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
                 <Text className="text-aqua font-bold">{b.business.name[0]}</Text>
               </View>
-              <Text className="text-[13px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
-                {b.business.name}
-              </Text>
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5" numberOfLines={1}>
-                {b.name}
-              </Text>
-              <View className="self-start bg-aqua rounded-full px-2.5 py-1">
-                <Text className="text-white text-[11px] font-bold">{b.cost_points} Pts</Text>
+              <View className="flex-1 min-w-0">
+                <Text className="text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
+                  {b.business.name}
+                </Text>
+                <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5 mb-1.5" numberOfLines={1}>
+                  {b.name}
+                </Text>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-[11px] font-semibold" style={{ color: '#2E9E7C' }}>Abierto</Text>
+                  <View className="bg-aqua rounded-full px-2.5 py-1">
+                    <Text className="text-white text-[11px] font-bold">{b.cost_points} Pts</Text>
+                  </View>
+                </View>
               </View>
             </Pressable>
           ))}
@@ -207,32 +212,33 @@ export default function HomeScreen() {
           {myGroup && (
             <Pressable
               onPress={() => router.push('/(tabs)/grupos')}
-              className="bg-auth-bg rounded-3xl p-3.5"
-              style={{ width: 140, height: 140, shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
+              className="flex-row items-center gap-3.5 bg-auth-bg rounded-3xl p-3.5"
+              style={{ shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
             >
-              <View className="w-10 h-10 rounded-2xl bg-white/10 items-center justify-center mb-2.5">
-                <Users size={18} color={colors.mint} />
+              <View className="w-[58px] h-[58px] rounded-2xl bg-white/10 items-center justify-center">
+                <Users size={22} color={colors.mint} />
               </View>
-              <Text className="text-[13px] font-bold text-white" numberOfLines={1}>
-                {myGroup.name}
-              </Text>
-              <Text className="text-[11.5px] text-auth-muted mt-0.5">
-                {myGroup.group_members.length} miembro{myGroup.group_members.length === 1 ? '' : 's'}
-              </Text>
+              <View className="flex-1 min-w-0">
+                <Text className="text-[14px] font-bold text-white" numberOfLines={1}>
+                  {myGroup.name}
+                </Text>
+                <Text className="text-xs text-auth-muted mt-0.5">
+                  {myGroup.group_members.length} miembro{myGroup.group_members.length === 1 ? '' : 's'}
+                </Text>
+              </View>
             </Pressable>
           )}
 
           {nearby.length === 0 && !myGroup && (
             <Pressable
               onPress={() => router.push('/(tabs)/canjes?view=lista')}
-              className="bg-card-light dark:bg-card-dark rounded-3xl p-4 items-start justify-center"
-              style={{ width: 220, height: 140 }}
+              className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
             >
               <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá beneficios</Text>
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca — mirá qué se puede canjear.</Text>
             </Pressable>
           )}
-        </ScrollView>
+        </View>
 
         {reto && (
           <Pressable
