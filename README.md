@@ -85,7 +85,14 @@ npx eas build --profile development --platform ios      # o android
   `send-push-notifications` (`supabase functions deploy send-push-notifications`), y crear el
   Database Webhook que la dispara. Todo el detalle en `apps/mobile/README-notifications.md`.
 
-## 5. Estructura de reglas de negocio (por si hay que ajustarlas)
+## 5. Términos y Privacidad (requisito de las stores)
+
+`apps/partner` sirve `/terminos` y `/privacidad` como páginas públicas (mismo texto que la
+pantalla de aceptación obligatoria de `apps/mobile`) — Apple y Google piden una URL pública
+de esto al enviar la app a review. Una vez desplegado el panel de comercios (Vercel u otro),
+esas van a ser las URLs a pegar en App Store Connect / Play Console.
+
+## 6. Estructura de reglas de negocio (por si hay que ajustarlas)
 
 Todo en `supabase/migrations/0001_init.sql`:
 
