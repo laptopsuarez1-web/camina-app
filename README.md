@@ -87,8 +87,10 @@ npx eas build --profile development --platform ios      # o android
 
 `apps/partner` sirve `/terminos` y `/privacidad` como páginas públicas (mismo texto que la
 pantalla de aceptación obligatoria de `apps/mobile`) — Apple y Google piden una URL pública
-de esto al enviar la app a review. Una vez desplegado el panel de comercios (Vercel u otro),
-esas van a ser las URLs a pegar en App Store Connect / Play Console.
+de esto al enviar la app a review. Ya está desplegado en Vercel
+(https://camina-partner.vercel.app, con `caminaapp.com` apuntando ahí en cuanto propague el
+DNS) — `https://caminaapp.com/terminos` y `/privacidad` son las URLs a pegar en
+App Store Connect / Play Console.
 
 ## 6. Estructura de reglas de negocio (por si hay que ajustarlas)
 
