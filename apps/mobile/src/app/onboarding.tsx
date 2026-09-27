@@ -29,9 +29,7 @@ export default function OnboardingScreen() {
       </Pressable>
 
       <View className="items-center max-w-[300px]">
-        <View className="w-28 h-28 rounded-full bg-auth-bg-soft items-center justify-center mb-6">
-          <Image source={require('@/../assets/icon.png')} style={{ width: 82, height: 82, borderRadius: 20 }} />
-        </View>
+        <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42, marginBottom: 24 }} />
         <Text className="text-white text-[22px] font-semibold text-center mb-2.5">{current.title}</Text>
         <Text className="text-auth-muted text-sm text-center leading-5">{current.desc}</Text>
       </View>
