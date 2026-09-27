@@ -107,7 +107,7 @@ export default function CanjesScreen() {
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
 
-  const [view, setView] = useState<'lista' | 'mapa'>('lista');
+  const [view, setView] = useState<'lista' | 'mapa'>('mapa');
   const [category, setCategory] = useState('Todos');
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
@@ -307,15 +307,15 @@ export default function CanjesScreen() {
             </View>
 
             <View className="flex-row bg-purple-light-light dark:bg-purple-light-dark rounded-xl p-1 mb-3.5">
+              <Pressable onPress={() => setView('mapa')} className="flex-1 py-2 rounded-lg items-center">
+                <Text className="text-[12.5px] font-semibold text-muted-light">Mapa</Text>
+              </Pressable>
               <Pressable
                 onPress={() => setView('lista')}
                 className="flex-1 py-2 rounded-lg items-center"
                 style={{ backgroundColor: colors.light.card }}
               >
                 <Text className="text-[12.5px] font-bold text-text-light">Lista</Text>
-              </Pressable>
-              <Pressable onPress={() => setView('mapa')} className="flex-1 py-2 rounded-lg items-center">
-                <Text className="text-[12.5px] font-semibold text-muted-light">Mapa</Text>
               </Pressable>
             </View>
 
