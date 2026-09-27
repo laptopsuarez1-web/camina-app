@@ -80,10 +80,8 @@ npx eas build --profile development --platform ios      # o android
   `@kingstinct/react-native-healthkit` ya agrega el entitlement; solo hace falta que la
   capability "HealthKit" esté habilitada para el App ID en developer.apple.com (EAS lo hace
   solo si usás `eas build` con credenciales manejadas).
-- **Notificaciones push**: correr `eas init` y pegar el Project ID resultante en
-  `apps/mobile/app.json` → `extra.eas.projectId`, desplegar la Edge Function
-  `send-push-notifications` (`supabase functions deploy send-push-notifications`), y crear el
-  Database Webhook que la dispara. Todo el detalle en `apps/mobile/README-notifications.md`.
+- **Notificaciones push**: ya está todo conectado (proyecto EAS vinculado, función
+  desplegada, cron jobs y disparador activos). Detalle en `apps/mobile/README-notifications.md`.
 
 ## 5. Términos y Privacidad (requisito de las stores)
 

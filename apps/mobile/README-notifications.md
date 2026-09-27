@@ -28,32 +28,23 @@ eas build --profile development --platform ios      # o android
 Tampoco funciona en simulador de iOS ni emulador de Android sin Google Play Services:
 Apple y Google no entregan tokens push ahí. Probalo en un dispositivo físico.
 
-## Lo que falta configurar de tu lado
+## Estado (ya conectado)
 
-1. **`eas init`** — esto genera un Project ID real de EAS y hay que pegarlo en
-   `app.json` → `extra.eas.projectId` (ahora mismo dice
-   `REEMPLAZAR_CON_EAS_PROJECT_ID`). Sin esto, `getExpoPushTokenAsync` no tiene qué
-   pedir y `registerForPushNotificationsAsync()` no hace nada (falla en silencio).
-2. **Credenciales de push de Expo** — al compilar con `eas build`, EAS te pregunta si
-   querés que genere y maneje las credenciales de push (APNs key para iOS, FCM para
-   Android). Dejá que las maneje EAS salvo que ya tengas las tuyas.
-3. **Database Webhook en Supabase** (Dashboard → Database → Webhooks → Create a new
-   hook): tabla `notifications_outbox`, evento `INSERT`, tipo "Supabase Edge Function",
-   apuntando a `send-push-notifications`. Esto es lo que realmente dispara el envío —
-   sin este paso, las filas quedan en la cola pero nadie las manda (`sent_at` se queda
-   en null para siempre). Si le ponés un secret al webhook, agregalo también como env
-   var `PUSH_WEBHOOK_SECRET` de la función (`supabase secrets set`).
-4. **`supabase functions deploy send-push-notifications`** — como cualquier Edge
-   Function, hay que desplegarla; no se aplica sola con `supabase db push`.
-5. **Extensión `pg_cron`** (Dashboard → Database → Extensions) — sin esto, los avisos
-   de "código por vencer" y "Puntos por vencer" no se disparan solos (el aviso de
-   "referido acreditado" sí funciona igual, porque va por trigger normal, no por cron).
-   Si la habilitás después de correr la migración `0007`, corré una vez a mano desde el
-   SQL Editor:
-   ```sql
-   select cron.schedule('queue-expiring-redemptions', '* * * * *', 'select queue_expiring_redemption_notifications()');
-   select cron.schedule('queue-expiring-points', '0 12 * * *', 'select queue_expiring_points_notifications()');
-   ```
+Todo esto ya está hecho contra el proyecto real de Supabase — no hace falta tocar nada
+para que funcione:
+
+- `eas init` corrido, `app.json` → `extra.eas.projectId` tiene el Project ID real.
+- `pg_net` y `pg_cron` habilitados.
+- Los dos cron jobs programados (`queue-expiring-redemptions` cada minuto,
+  `queue-expiring-points` una vez al día).
+- `send-push-notifications` desplegada.
+- Un trigger (`notifications_outbox_send_push`, vía `pg_net.http_post`) llama a la
+  función automáticamente en cada insert a `notifications_outbox` — cumple el mismo rol
+  que un Database Webhook del dashboard, armado directo por SQL.
+
+Lo único pendiente son las **credenciales de push de Expo** (APNs key de iOS, FCM de
+Android) — EAS te va a preguntar si las genera y maneja él la primera vez que compiles
+con push habilitado; dejá que las maneje EAS salvo que ya tengas las tuyas propias.
 
 ## Si el usuario no da permiso
 
