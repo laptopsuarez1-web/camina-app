@@ -11,7 +11,8 @@ import {
   Image,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, Heart } from 'lucide-react-native';
+import { BlurView } from 'expo-blur';
+import { Search, Heart, Locate, Layers, List, ChevronRight } from 'lucide-react-native';
 import {
   useBenefits,
   useRedeemBenefit,
@@ -24,6 +25,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { ZONES } from '@/constants/catalog';
 import { BUSINESS_LOGOS } from '@/constants/business-assets';
+import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
@@ -64,6 +66,35 @@ function businessIcon(name: string, size: number) {
       className="bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center"
     >
       <Text className="text-aqua font-bold">{name[0]}</Text>
+    </View>
+  );
+}
+
+function MapMarker({ name }: { name: string }) {
+  const logo = BUSINESS_LOGOS[name];
+  return (
+    <View
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        borderWidth: 2.5,
+        borderColor: colors.aqua,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      }}
+    >
+      {logo ? (
+        <Image source={logo} style={{ width: 34, height: 34, borderRadius: 17 }} />
+      ) : (
+        <Text style={{ color: colors.aqua, fontWeight: '800' }}>{name[0]}</Text>
+      )}
     </View>
   );
 }
@@ -147,146 +178,213 @@ export default function CanjesScreen() {
 
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
-      <View className="px-5 pt-14 pb-3">
-        <Text className="text-[26px] font-extrabold tracking-tight text-text-light dark:text-text-dark">Canjear</Text>
-        <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4">{balance ?? 0} Puntos disponibles</Text>
+      {view === 'mapa' ? (
+        <View style={{ flex: 1 }}>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={{ flex: 1 }}
+            initialRegion={TARIJA_REGION}
+            customMapStyle={DARK_MAP_STYLE}
+          >
+            {businessesWithCoords.map((b) => (
+              <Marker key={b.business.id} coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}>
+                <MapMarker name={b.business.name} />
+              </Marker>
+            ))}
+          </MapView>
 
-        {!profile?.zone && showZonePrompt && (
-          <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-3.5">
-            <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">
-              ¿Desde qué zona caminás?
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {ZONES.slice(0, 5).map((z) => (
-                <Pressable key={z} onPress={() => saveZone(z)} className="bg-white dark:bg-card-dark rounded-full px-3 py-1.5">
-                  <Text className="text-xs font-semibold text-purple">{z}</Text>
-                </Pressable>
-              ))}
-              <Pressable onPress={() => setShowZonePrompt(false)}>
-                <Text className="text-xs text-muted-light dark:text-muted-dark px-2 py-1.5">Ahora no</Text>
-              </Pressable>
+          {/* barra flotante superior: volver a lista + balance, como el chip del clima de Apple Maps */}
+          <View className="absolute left-4 right-4 flex-row justify-between items-center" style={{ top: 54 }}>
+            <Pressable
+              onPress={() => setView('lista')}
+              className="flex-row items-center gap-1.5 bg-auth-bg/90 rounded-full pl-3 pr-4 py-2.5"
+            >
+              <List size={14} color="#fff" />
+              <Text className="text-white text-xs font-bold">Lista</Text>
+            </Pressable>
+            <View className="bg-auth-bg/90 rounded-full px-3.5 py-2.5">
+              <Text className="text-mint text-xs font-bold">{balance ?? 0} Pts</Text>
             </View>
           </View>
-        )}
 
-        <View className="flex-row items-center gap-2 bg-card-light dark:bg-card-dark rounded-2xl px-3.5 py-3 mb-3">
-          <Search size={16} color={colors.light.muted} />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Buscar comercios o categorías…"
-            placeholderTextColor={colors.light.muted}
-            className="flex-1 text-[13.5px] text-text-light dark:text-text-dark"
-          />
-        </View>
-
-        <View className="flex-row bg-purple-light-light dark:bg-purple-light-dark rounded-xl p-1 mb-3.5">
-          <Pressable
-            onPress={() => setView('lista')}
-            className="flex-1 py-2 rounded-lg items-center"
-            style={{ backgroundColor: view === 'lista' ? colors.light.card : 'transparent' }}
-          >
-            <Text className={view === 'lista' ? 'text-[12.5px] font-bold text-text-light' : 'text-[12.5px] font-semibold text-muted-light'}>
-              Lista
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setView('mapa')}
-            className="flex-1 py-2 rounded-lg items-center"
-            style={{ backgroundColor: view === 'mapa' ? colors.light.card : 'transparent' }}
-          >
-            <Text className={view === 'mapa' ? 'text-[12.5px] font-bold text-text-light' : 'text-[12.5px] font-semibold text-muted-light'}>
-              Mapa
-            </Text>
-          </Pressable>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-          {categories.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => setCategory(c)}
-              className="rounded-full px-3.5 py-1.5"
-              style={{ backgroundColor: category === c ? colors.purple : colors.light.card }}
-            >
-              <Text
-                className="text-xs font-semibold"
-                style={{ color: category === c ? '#fff' : colors.light.muted }}
-              >
-                {c}
-              </Text>
+          {/* botones flotantes laterales, tipo capas / mi ubicación */}
+          <View className="absolute right-4 bg-card-light dark:bg-card-dark rounded-2xl overflow-hidden" style={{ bottom: 300 }}>
+            <Pressable className="p-3 border-b border-line-light dark:border-line-dark">
+              <Layers size={17} color={colors.light.text} />
             </Pressable>
-          ))}
-        </ScrollView>
-      </View>
+            <Pressable className="p-3">
+              <Locate size={17} color={colors.aqua} />
+            </Pressable>
+          </View>
 
-      {view === 'mapa' ? (
-        <MapView
-          provider={PROVIDER_GOOGLE}
-          style={{ flex: 1 }}
-          initialRegion={TARIJA_REGION}
-        >
-          {businessesWithCoords.map((b) => (
-            <Marker
-              key={b.business.id}
-              coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}
-              title={b.business.name}
-              description={b.name}
-              onPress={() => {
-                setView('lista');
-                setCategory('Todos');
-                setSearch(b.business.name);
-              }}
-            />
-          ))}
-        </MapView>
-      ) : (
-        <ScrollView className="flex-1 px-5" contentContainerClassName="gap-2.5 pb-8">
-          {isLoading && <ActivityIndicator color={colors.aqua} />}
-
-          {filtered.map((b) => {
-            const canAfford = (balance ?? 0) >= b.cost_points;
-            return (
-              <View
-                key={b.id}
-                className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
-                style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
-              >
-                <View className="flex-row items-start gap-3">
-                  {businessIcon(b.business.name, 50)}
+          {/* hoja inferior tipo Apple Maps: buscador + lista de sugerencias */}
+          <BlurView
+            intensity={70}
+            tint="light"
+            className="absolute left-0 right-0 bottom-0 overflow-hidden"
+            style={{ borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: 340 }}
+          >
+            <View className="items-center pt-2.5 pb-1">
+              <View className="w-9 h-1.5 rounded-full bg-black/15" />
+            </View>
+            <View className="flex-row items-center gap-2.5 px-4 pb-3">
+              <View className="flex-1 flex-row items-center gap-2 bg-white/70 rounded-xl px-3 py-2.5">
+                <Search size={15} color={colors.light.muted} />
+                <TextInput
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Buscar en Camina"
+                  placeholderTextColor={colors.light.muted}
+                  className="flex-1 text-[13px] text-text-light"
+                />
+              </View>
+              <View className="w-9 h-9 rounded-full bg-mint items-center justify-center">
+                <Text className="text-mint-dark font-bold text-xs">
+                  {(profile?.full_name || 'C')[0]?.toUpperCase()}
+                </Text>
+              </View>
+            </View>
+            <Text className="px-4 pb-2 text-[11px] font-bold text-muted-light uppercase tracking-wide">
+              Cerca tuyo
+            </Text>
+            <ScrollView contentContainerClassName="px-4 pb-6 gap-1.5">
+              {filtered.map((b) => (
+                <Pressable
+                  key={b.id}
+                  onPress={() => {
+                    setView('lista');
+                    setSearch(b.business.name);
+                  }}
+                  className="flex-row items-center gap-3 bg-white/60 rounded-2xl p-2.5"
+                >
+                  {businessIcon(b.business.name, 34)}
                   <View className="flex-1">
-                    <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{b.business.name}</Text>
-                    <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{b.business.category}</Text>
-                    <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-1.5">{b.name}</Text>
+                    <Text className="text-[13px] font-bold text-text-light">{b.business.name}</Text>
+                    <Text className="text-[11px] text-muted-light">{b.name}</Text>
                   </View>
-                  <Pressable hitSlop={8}>
-                    <Heart size={17} color={colors.light.muted} />
-                  </Pressable>
-                </View>
-                <View className="flex-row justify-between items-center mt-3">
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark">
-                    {b.type === 'gratis' ? 'Gratis' : b.discount_detail}
-                  </Text>
-                  <Pressable
-                    onPress={() => handleRedeem(b.id, b)}
-                    disabled={!canAfford || redeem.isPending}
-                    className="rounded-full px-4 py-2"
-                    style={{ backgroundColor: canAfford ? colors.aqua : colors.light.line }}
-                  >
-                    <Text className="font-bold text-[13px]" style={{ color: canAfford ? '#fff' : colors.light.muted }}>
-                      {b.cost_points} Pts
-                    </Text>
+                  <ChevronRight size={15} color={colors.light.muted} />
+                </Pressable>
+              ))}
+              {filtered.length === 0 && (
+                <Text className="text-muted-light text-xs py-3">Nada por acá todavía.</Text>
+              )}
+            </ScrollView>
+          </BlurView>
+        </View>
+      ) : (
+        <>
+          <View className="px-5 pt-14 pb-3">
+            <Text className="text-[26px] font-extrabold tracking-tight text-text-light dark:text-text-dark">Canjear</Text>
+            <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4">{balance ?? 0} Puntos disponibles</Text>
+
+            {!profile?.zone && showZonePrompt && (
+              <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-3.5">
+                <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">
+                  ¿Desde qué zona caminás?
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {ZONES.slice(0, 5).map((z) => (
+                    <Pressable key={z} onPress={() => saveZone(z)} className="bg-white dark:bg-card-dark rounded-full px-3 py-1.5">
+                      <Text className="text-xs font-semibold text-purple">{z}</Text>
+                    </Pressable>
+                  ))}
+                  <Pressable onPress={() => setShowZonePrompt(false)}>
+                    <Text className="text-xs text-muted-light dark:text-muted-dark px-2 py-1.5">Ahora no</Text>
                   </Pressable>
                 </View>
               </View>
-            );
-          })}
-          {!isLoading && filtered.length === 0 && (
-            <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-8">
-              Todavía no hay beneficios con estos filtros.
-            </Text>
-          )}
-        </ScrollView>
+            )}
+
+            <View className="flex-row items-center gap-2 bg-card-light dark:bg-card-dark rounded-2xl px-3.5 py-3 mb-3">
+              <Search size={16} color={colors.light.muted} />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Buscar comercios o categorías…"
+                placeholderTextColor={colors.light.muted}
+                className="flex-1 text-[13.5px] text-text-light dark:text-text-dark"
+              />
+            </View>
+
+            <View className="flex-row bg-purple-light-light dark:bg-purple-light-dark rounded-xl p-1 mb-3.5">
+              <Pressable
+                onPress={() => setView('lista')}
+                className="flex-1 py-2 rounded-lg items-center"
+                style={{ backgroundColor: colors.light.card }}
+              >
+                <Text className="text-[12.5px] font-bold text-text-light">Lista</Text>
+              </Pressable>
+              <Pressable onPress={() => setView('mapa')} className="flex-1 py-2 rounded-lg items-center">
+                <Text className="text-[12.5px] font-semibold text-muted-light">Mapa</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
+              {categories.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => setCategory(c)}
+                  className="rounded-full px-3.5 py-1.5"
+                  style={{ backgroundColor: category === c ? colors.purple : colors.light.card }}
+                >
+                  <Text
+                    className="text-xs font-semibold"
+                    style={{ color: category === c ? '#fff' : colors.light.muted }}
+                  >
+                    {c}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          <ScrollView className="flex-1 px-5" contentContainerClassName="gap-2.5 pb-8">
+            {isLoading && <ActivityIndicator color={colors.aqua} />}
+
+            {filtered.map((b) => {
+              const canAfford = (balance ?? 0) >= b.cost_points;
+              return (
+                <View
+                  key={b.id}
+                  className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
+                  style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
+                >
+                  <View className="flex-row items-start gap-3">
+                    {businessIcon(b.business.name, 50)}
+                    <View className="flex-1">
+                      <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{b.business.name}</Text>
+                      <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{b.business.category}</Text>
+                      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-1.5">{b.name}</Text>
+                    </View>
+                    <Pressable hitSlop={8}>
+                      <Heart size={17} color={colors.light.muted} />
+                    </Pressable>
+                  </View>
+                  <View className="flex-row justify-between items-center mt-3">
+                    <Text className="text-[11px] text-muted-light dark:text-muted-dark">
+                      {b.type === 'gratis' ? 'Gratis' : b.discount_detail}
+                    </Text>
+                    <Pressable
+                      onPress={() => handleRedeem(b.id, b)}
+                      disabled={!canAfford || redeem.isPending}
+                      className="rounded-full px-4 py-2"
+                      style={{ backgroundColor: canAfford ? colors.aqua : colors.light.line }}
+                    >
+                      <Text className="font-bold text-[13px]" style={{ color: canAfford ? '#fff' : colors.light.muted }}>
+                        {b.cost_points} Pts
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+            {!isLoading && filtered.length === 0 && (
+              <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-8">
+                Todavía no hay beneficios con estos filtros.
+              </Text>
+            )}
+          </ScrollView>
+        </>
       )}
 
       <Modal visible={!!activeRedemption} transparent animationType="slide">

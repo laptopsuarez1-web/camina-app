@@ -9,9 +9,12 @@ import { usePointsBalance, useSyncSteps } from '@/hooks/usePoints';
 import { useBenefits } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
+import { useWeeklyGoalReto } from '@/hooks/useRetos';
+import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
+import { Flame, Trophy, ChevronRight, Activity } from 'lucide-react-native';
 
 function greeting(name: string) {
   const h = new Date().getHours();
@@ -30,6 +33,8 @@ export default function HomeScreen() {
   const { data: benefits } = useBenefits();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
+  const { data: reto } = useWeeklyGoalReto();
+  const { data: groupRanking } = useMyGroupRanking();
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
 
@@ -177,6 +182,80 @@ export default function HomeScreen() {
             </Pressable>
           )}
         </ScrollView>
+
+        {reto && (
+          <Pressable
+            onPress={() => router.push('/(tabs)/eventos')}
+            className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4"
+            style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
+          >
+            <View className="flex-row items-center justify-between mb-2.5">
+              <View className="flex-row items-center gap-2.5">
+                <View className="w-8 h-8 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
+                  <Flame size={15} color={colors.aqua} />
+                </View>
+                <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">
+                  {reto.met}/{reto.target} metas esta semana
+                </Text>
+              </View>
+              <Text className="text-xs text-muted-light dark:text-muted-dark">{reto.pct}%</Text>
+            </View>
+            <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+              <View className="h-full bg-aqua rounded-full" style={{ width: `${reto.pct}%` }} />
+            </View>
+          </Pressable>
+        )}
+
+        <View className="bg-card-light dark:bg-card-dark rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+          <Pressable
+            onPress={() => router.push('/(tabs)/grupos')}
+            className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
+          >
+            <View className="flex-row items-center gap-2.5">
+              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+                <Trophy size={15} color={colors.purple} />
+              </View>
+              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">
+                {groupRanking ? `Ranking · ${groupRanking.group.name}` : 'Ranking semanal'}
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="text-xs text-muted-light dark:text-muted-dark">
+                {groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}°` : 'Unite a un grupo'}
+              </Text>
+              <ChevronRight size={14} color={colors.light.muted} />
+            </View>
+          </Pressable>
+          <Pressable onPress={() => router.push('/(tabs)/grupos')} className="flex-row items-center justify-between p-4">
+            <View className="flex-row items-center gap-2.5">
+              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+                <Users size={15} color={colors.purple} />
+              </View>
+              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Tus grupos</Text>
+            </View>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="text-xs text-muted-light dark:text-muted-dark">{myGroup ? '1 activo' : 'Ninguno'}</Text>
+              <ChevronRight size={14} color={colors.light.muted} />
+            </View>
+          </Pressable>
+        </View>
+
+        <Pressable
+          onPress={() => router.push('/(tabs)/actividad')}
+          className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4 flex-row items-center justify-between"
+          style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
+        >
+          <View className="flex-row items-center gap-2.5">
+            <View className="w-8 h-8 rounded-xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
+              <Activity size={15} color={colors.aqua} />
+            </View>
+            <View>
+              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
+              <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>
+            </View>
+          </View>
+          <ChevronRight size={16} color={colors.light.muted} />
+        </Pressable>
 
         <View className="flex-row gap-2.5 px-5 mt-5">
           <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl py-3.5 items-center" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
