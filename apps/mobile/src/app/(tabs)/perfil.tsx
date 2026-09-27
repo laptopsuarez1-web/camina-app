@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share } from 'react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut, Gift } from 'lucide-react-native';
+import { LogOut, Gift, Trash2 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -11,6 +12,7 @@ import { referralLink } from '@/constants/sharing';
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
+  const [deleting, setDeleting] = useState(false);
 
   async function toggleInterest(name: string) {
     if (!profile) return;
@@ -48,6 +50,29 @@ export default function PerfilScreen() {
     const { error } = await supabase.auth.signOut();
     if (error) Alert.alert('No pudimos cerrar sesión', error.message);
     else router.replace('/(auth)/welcome');
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Eliminar tu cuenta',
+      'Se borran tu perfil, tus Puntos, tu historial de canjes y todo lo demás. Esto no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: deleteAccount },
+      ]
+    );
+  }
+
+  async function deleteAccount() {
+    setDeleting(true);
+    const { error } = await supabase.functions.invoke('delete-account');
+    if (error) {
+      setDeleting(false);
+      Alert.alert('No pudimos eliminar tu cuenta', error.message);
+      return;
+    }
+    await supabase.auth.signOut();
+    router.replace('/(auth)/welcome');
   }
 
   return (
@@ -150,6 +175,17 @@ export default function PerfilScreen() {
       <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
         <LogOut size={15} color={colors.warn} />
         <Text className="text-warn font-semibold">Cerrar sesión</Text>
+      </Pressable>
+
+      <Pressable onPress={confirmDeleteAccount} disabled={deleting} className="flex-row items-center justify-center gap-2 py-3.5">
+        {deleting ? (
+          <ActivityIndicator color={colors.warn} size="small" />
+        ) : (
+          <>
+            <Trash2 size={15} color={colors.warn} />
+            <Text className="text-warn font-semibold">Eliminar cuenta</Text>
+          </>
+        )}
       </Pressable>
     </ScrollView>
   );
