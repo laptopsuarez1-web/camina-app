@@ -174,15 +174,20 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
-        <Text className="font-bold text-base text-text-light dark:text-text-dark px-5 mb-3">Para vos</Text>
+        <View className="flex-row items-center justify-between px-5 mb-3">
+          <Text className="font-bold text-base text-text-light dark:text-text-dark">Para vos</Text>
+          <Pressable onPress={() => router.push('/(tabs)/canjes?view=lista')}>
+            <Text className="text-aqua text-xs font-semibold">Ver todo</Text>
+          </Pressable>
+        </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5 gap-3">
           {nearby.map((b) => (
             <Pressable
               key={b.id}
-              onPress={() => router.push('/(tabs)/canjes')}
+              onPress={() => router.push('/(tabs)/canjes?view=lista')}
               className="bg-card-light dark:bg-card-dark rounded-3xl p-3.5"
-              style={{ width: 158, shadowColor: '#291C47', shadowOpacity: 0.1, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
+              style={{ width: 140, height: 140, shadowColor: '#291C47', shadowOpacity: 0.1, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
             >
               <View className="w-10 h-10 rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center mb-2.5">
                 <Text className="text-aqua font-bold">{b.business.name[0]}</Text>
@@ -203,7 +208,7 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => router.push('/(tabs)/grupos')}
               className="bg-auth-bg rounded-3xl p-3.5"
-              style={{ width: 158, shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
+              style={{ width: 140, height: 140, shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 3 }}
             >
               <View className="w-10 h-10 rounded-2xl bg-white/10 items-center justify-center mb-2.5">
                 <Users size={18} color={colors.mint} />
@@ -219,9 +224,9 @@ export default function HomeScreen() {
 
           {nearby.length === 0 && !myGroup && (
             <Pressable
-              onPress={() => router.push('/(tabs)/canjes')}
+              onPress={() => router.push('/(tabs)/canjes?view=lista')}
               className="bg-card-light dark:bg-card-dark rounded-3xl p-4 items-start justify-center"
-              style={{ width: 220 }}
+              style={{ width: 220, height: 140 }}
             >
               <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá beneficios</Text>
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca — mirá qué se puede canjear.</Text>

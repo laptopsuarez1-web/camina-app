@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { BlurView } from 'expo-blur';
 import { Search, Heart, Locate, Layers, List, ChevronRight } from 'lucide-react-native';
@@ -107,7 +108,10 @@ export default function CanjesScreen() {
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
 
-  const [view, setView] = useState<'lista' | 'mapa'>('mapa');
+  // "Ver todo" en Inicio manda acá con ?view=lista para abrir directo en la lista
+  // en vez del mapa (que es el default cuando se entra por el tab de abajo).
+  const params = useLocalSearchParams<{ view?: string }>();
+  const [view, setView] = useState<'lista' | 'mapa'>(params.view === 'lista' ? 'lista' : 'mapa');
   const [category, setCategory] = useState('Todos');
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
