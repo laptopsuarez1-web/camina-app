@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
 import { emailRedirectUrl } from '@/lib/auth-links';
 import { colors } from '@/theme/tokens';
+import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
 // (nada de gradiente ni glow), mismo logo, mismo orden de botones, mismo
@@ -20,9 +21,56 @@ export default function WelcomeScreen() {
   const [loading, setLoading] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
 
-  function comingSoon() {
-    Alert.alert('Muy pronto', 'El acceso con esta cuenta todavía no está disponible — usá tu email por ahora.');
+  const [, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest(googleClientIds);
+
+  useEffect(() => {
+    isAppleSignInAvailable().then(setAppleAvailable);
+  }, []);
+
+  useEffect(() => {
+    if (googleResponse?.type !== 'success') return;
+    const idToken = googleResponse.params.id_token;
+    if (!idToken) return;
+    (async () => {
+      setOauthLoading(true);
+      const { error } = await completeGoogleSignIn(idToken);
+      setOauthLoading(false);
+      if (error) {
+        Alert.alert('No pudimos iniciar sesión con Google', error.message);
+        return;
+      }
+      await afterAuth();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleResponse]);
+
+  async function handleGoogle() {
+    if (!googleOAuthConfigured) {
+      Alert.alert(
+        'Google todavía no está configurado',
+        'Faltan los Client ID de Google en las variables de entorno de la app — usá tu email por ahora.'
+      );
+      return;
+    }
+    await promptGoogleAsync();
+  }
+
+  async function handleApple() {
+    setOauthLoading(true);
+    try {
+      await signInWithApple();
+      await afterAuth();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Intentá de nuevo.';
+      if (!message.includes('ERR_REQUEST_CANCELED')) {
+        Alert.alert('No pudimos iniciar sesión con Apple', message);
+      }
+    } finally {
+      setOauthLoading(false);
+    }
   }
 
   async function afterAuth() {
@@ -121,18 +169,22 @@ export default function WelcomeScreen() {
 
       <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
         <Pressable
-          onPress={comingSoon}
+          onPress={handleGoogle}
+          disabled={oauthLoading}
           style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center' }}
         >
           <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
         </Pressable>
 
-        <Pressable
-          onPress={comingSoon}
-          style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center' }}
-        >
-          <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
-        </Pressable>
+        {appleAvailable && (
+          <Pressable
+            onPress={handleApple}
+            disabled={oauthLoading}
+            style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center' }}
+          >
+            <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
+          </Pressable>
+        )}
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
           <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />

@@ -67,10 +67,10 @@ npx eas build --profile development --platform ios      # o android
 - **Coordenadas reales (lat/lng) de más comercios** a medida que se sumen — hoy solo Bloom
   tiene datos reales cargados (`0004_seed_bloom.sql`), con lat/lng aproximados del centro de
   Tarija marcados para geocodificar bien.
-- **Login con Google/Apple real**: la pantalla ya tiene el flujo de email/password
-  funcionando contra Supabase Auth (con confirmación de email obligatoria); para los botones
-  de Google/Apple hay que activar esos providers en el dashboard de Supabase
-  (Authentication → Providers) y agregar sus credenciales OAuth.
+- **Login con Google/Apple**: el código ya hace auth real (no hay ningún placeholder); falta
+  crear los Client ID de Google en Google Cloud Console, activar los providers Google y Apple
+  en el dashboard de Supabase, y habilitar la capability "Sign In with Apple" en
+  developer.apple.com. Todo el detalle en `apps/mobile/README-oauth.md`.
 - **Cuenta EAS** (gratis para empezar) para poder correr `eas build`/`eas submit`.
 - **Declaración de datos de salud en Play Console**: para publicar en Android con
   Health Connect activado, hay que declarar el acceso a datos de salud en Play Console
