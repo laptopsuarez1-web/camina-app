@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, Image } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Image, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, Users } from 'lucide-react-native';
+import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
 import { usePointsBalance, useSyncSteps } from '@/hooks/usePoints';
@@ -37,6 +38,8 @@ export default function HomeScreen() {
   const { data: groupRanking } = useMyGroupRanking();
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
 
   useEffect(() => {
     if (steps > 0 && steps !== lastSynced.current) {
@@ -54,6 +57,15 @@ export default function HomeScreen() {
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
   const metaPct = Math.min(100, Math.round(pct * 100));
+
+  async function saveGoal() {
+    const n = parseInt(goalInput, 10);
+    if (profile && n > 0) {
+      await supabase.from('profiles').update({ daily_goal: n }).eq('id', profile.id);
+      await useAuthStore.getState().refreshProfile();
+    }
+    setEditingGoal(false);
+  }
 
   return (
     <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark">
@@ -117,6 +129,40 @@ export default function HomeScreen() {
             <View className="bg-mint/10 px-2.5 py-1.5 rounded-full">
               <Text className="text-mint text-[11px] font-bold">Meta cumplida</Text>
             </View>
+          )}
+          {editingGoal ? (
+            <View className="flex-row items-center gap-1.5">
+              <TextInput
+                value={goalInput}
+                onChangeText={(v) => setGoalInput(v.replace(/\D/g, ''))}
+                keyboardType="number-pad"
+                autoFocus
+                style={{
+                  width: 80,
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  borderWidth: 1,
+                  borderColor: colors.authBgSoft,
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  color: '#fff',
+                  fontSize: 11.5,
+                }}
+              />
+              <Pressable onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
+                <Text className="text-mint-dark font-bold text-[11px]">OK</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => {
+                setGoalInput(String(goal));
+                setEditingGoal(true);
+              }}
+              className="border border-white/15 px-2.5 py-1.5 rounded-full"
+            >
+              <Text className="text-auth-muted text-[10.5px]">meta {goal} ✎</Text>
+            </Pressable>
           )}
         </View>
 

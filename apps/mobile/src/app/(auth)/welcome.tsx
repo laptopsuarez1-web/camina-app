@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 
-// Onboarding + login + signup fusionados en una sola pantalla: antes eran
-// 3 slides de intro + login + 4 pasos de signup (8 pantallas) antes de que
-// alguien viera un solo Punto. "Zona" se pregunta después, la primera vez que
-// se abre Canjes; "Intereses" queda como algo opcional editable en Perfil.
-type Mode = 'intro' | 'auth';
+// Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
+// (nada de gradiente ni glow), mismo logo, mismo orden de botones, mismo
+// texto. La única diferencia real con el prototipo es que acá los botones
+// hacen algo de verdad (auth de Supabase) en vez de saltar directo a la app.
 type AuthKind = 'login' | 'signup';
 
 export default function WelcomeScreen() {
-  const [mode, setMode] = useState<Mode>('intro');
   const [authKind, setAuthKind] = useState<AuthKind>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,150 +51,72 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={['#3a2668', '#1c1030', '#120a1e']}
-      start={{ x: 0.15, y: 0 }}
-      end={{ x: 0.75, y: 1 }}
-      style={{ flex: 1 }}
-    >
-      <View style={{ position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(127,237,196,0.14)', top: -80, right: -70 }} />
-      <View style={{ position: 'absolute', width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(139,79,209,0.20)', bottom: 140, left: -90 }} />
+    <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
+      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700', marginTop: 18, marginBottom: 6 }}>¡Bienvenido!</Text>
+      <Text style={{ color: '#C4B8E8', marginBottom: 32, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 260 }}>
+        Comenzá tu camino. Registrate o iniciá sesión para seguir.
+      </Text>
 
-      {mode === 'intro' ? (
-        <View style={{ flex: 1, justifyContent: 'space-between', paddingHorizontal: 32, paddingVertical: 56 }}>
-          <View />
-          <View style={{ alignItems: 'center' }}>
-            <View
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: 28,
-                backgroundColor: 'rgba(255,255,255,0.06)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.10)',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 28,
-              }}
-            >
-              <Image source={require('@/../assets/icon.png')} style={{ width: 64, height: 64, borderRadius: 16 }} />
-            </View>
-            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '700', letterSpacing: -0.6, textAlign: 'center', lineHeight: 36 }}>
-              Caminá.{'\n'}Ganá Puntos.
-            </Text>
-            <Text style={{ color: '#B9AEDC', fontSize: 15, textAlign: 'center', lineHeight: 22, maxWidth: 280, marginTop: 10 }}>
-              Cada 1000 pasos suman un Punto. Canjealos en los comercios de Tarija que ya conocés.
-            </Text>
-          </View>
+      <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
+        <Pressable
+          onPress={comingSoon}
+          style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center' }}
+        >
+          <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
+        </Pressable>
 
-          <View>
-            <Pressable
-              onPress={comingSoon}
-              style={{ backgroundColor: '#fff', borderRadius: 16, paddingVertical: 15, marginBottom: 10, alignItems: 'center' }}
-            >
-              <Text style={{ color: '#141019', fontWeight: '600', fontSize: 15 }}>Continuar con Google</Text>
-            </Pressable>
-            <Pressable
-              onPress={comingSoon}
-              style={{
-                backgroundColor: '#000',
-                borderRadius: 16,
-                paddingVertical: 15,
-                marginBottom: 18,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.14)',
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Continuar con Apple</Text>
-            </Pressable>
+        <Pressable
+          onPress={comingSoon}
+          style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center' }}
+        >
+          <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
+        </Pressable>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
-              <Text style={{ color: '#7A6E9C', fontSize: 12 }}>o</Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' }} />
-            </View>
-
-            <Pressable
-              onPress={() => {
-                setAuthKind('signup');
-                setMode('auth');
-              }}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.06)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.12)',
-                borderRadius: 16,
-                paddingVertical: 14,
-                alignItems: 'center',
-                marginBottom: 14,
-              }}
-            >
-              <Text style={{ color: '#E4DBFA', fontWeight: '600', fontSize: 14 }}>Continuar con email</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => {
-                setAuthKind('login');
-                setMode('auth');
-              }}
-            >
-              <Text style={{ color: '#8C7DB8', fontSize: 12.5, textAlign: 'center' }}>¿Ya tenés cuenta? Iniciar sesión</Text>
-            </Pressable>
-          </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
+          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>o</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
         </View>
-      ) : (
-        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
-          <Pressable onPress={() => setMode('intro')} style={{ position: 'absolute', top: 56, left: 24 }}>
-            <Text style={{ color: '#B9AEDC', fontSize: 14 }}>‹ Volver</Text>
-          </Pressable>
 
-          <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginBottom: 6 }}>
-            {authKind === 'login' ? 'Iniciá sesión' : 'Creá tu cuenta'}
-          </Text>
-          <Text style={{ color: '#B9AEDC', fontSize: 13, marginBottom: 24 }}>
-            {authKind === 'login' ? 'Volvé a caminar por tus Puntos.' : 'Solo tu email y una contraseña — el resto lo completás después.'}
-          </Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Correo electrónico"
+          placeholderTextColor="#6E6291"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14 }}
+        />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Contraseña"
+          placeholderTextColor="#6E6291"
+          secureTextEntry
+          style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14 }}
+        />
 
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Correo electrónico"
-            placeholderTextColor="#6E6291"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 14, padding: 14, marginBottom: 10, fontSize: 14 }}
-          />
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Contraseña"
-            placeholderTextColor="#6E6291"
-            secureTextEntry
-            style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 14, padding: 14, marginBottom: 20, fontSize: 14 }}
-          />
-
-          <Pressable
-            onPress={handleSubmit}
-            disabled={loading}
-            style={{ backgroundColor: '#7FEDC4', borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginBottom: 14 }}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.mintDark} />
-            ) : (
-              <Text style={{ color: '#12281F', fontWeight: '700', fontSize: 15 }}>
-                {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
-              </Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')}>
-            <Text style={{ color: '#8C7DB8', fontSize: 12.5, textAlign: 'center' }}>
-              {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
+        <Pressable
+          onPress={handleSubmit}
+          disabled={loading}
+          style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 }}
+        >
+          {loading ? (
+            <ActivityIndicator color={colors.mintDark} />
+          ) : (
+            <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>
+              {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
             </Text>
-          </Pressable>
-        </View>
-      )}
-    </LinearGradient>
+          )}
+        </Pressable>
+
+        <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
+          <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+            {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
