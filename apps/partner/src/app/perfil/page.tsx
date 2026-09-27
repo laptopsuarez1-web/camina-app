@@ -43,7 +43,7 @@ export default function PerfilPage() {
       .eq('id', business.id);
     setSaving(false);
     if (!error && session) {
-      await refreshBusiness(session.user.id);
+      await refreshBusiness(session.user.id, session.user.email);
       setSaved(true);
     }
   }

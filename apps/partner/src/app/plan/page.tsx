@@ -75,7 +75,7 @@ export default function PlanPage() {
       setError('Por ahora el cambio de plan lo confirma el equipo de Camina una vez recibido el pago. Escribinos y lo activamos.');
       return;
     }
-    if (session) await refreshBusiness(session.user.id);
+    if (session) await refreshBusiness(session.user.id, session.user.email);
   }
 
   return (

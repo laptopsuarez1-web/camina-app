@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { savePendingBusiness } from '@/lib/pending-business';
 
 const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza'];
 
@@ -16,6 +17,8 @@ export default function RegistroPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [resending, setResending] = useState(false);
   const router = useRouter();
 
   const valido = nombre.trim() && direccion.trim() && telefono.trim() && email.trim() && password.length >= 6;
@@ -27,9 +30,19 @@ export default function RegistroPage() {
     setError(null);
 
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError || !data.session) {
+    if (signUpError) {
       setLoading(false);
-      setError(signUpError?.message ?? 'Revisá tu correo para confirmar la cuenta y volvé a entrar.');
+      setError(signUpError.message);
+      return;
+    }
+
+    if (!data.session) {
+      // Confirmación de email obligatoria: todavía no hay sesión para poder
+      // insertar el negocio (RLS lo exige). Guardamos los datos del alta acá
+      // y useBusinessAuth los consume solo cuando el usuario confirme y entre.
+      savePendingBusiness({ email: email.trim(), name: nombre.trim(), category: categoria, address: direccion.trim(), phone: telefono.trim() });
+      setLoading(false);
+      setAwaitingConfirmation(true);
       return;
     }
 
@@ -47,6 +60,36 @@ export default function RegistroPage() {
       return;
     }
     router.replace('/inicio');
+  }
+
+  async function resendConfirmation() {
+    setResending(true);
+    const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
+    setResending(false);
+    setError(resendError ? resendError.message : null);
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-white font-bold text-[22px] mb-2">Confirmá tu correo</p>
+        <p className="text-auth-muted text-[13px] mb-7 max-w-[300px]">
+          Te mandamos un link a {email}. Abrilo para activar la cuenta y después iniciá sesión acá — tu
+          comercio se crea solo apenas entrás.
+        </p>
+        {error && <p className="text-warn text-[12.5px] mb-4">{error}</p>}
+        <button
+          onClick={resendConfirmation}
+          disabled={resending}
+          className="bg-mint text-mint-dark rounded-xl py-3 px-6 font-semibold text-sm mb-3"
+        >
+          {resending ? 'Reenviando…' : 'Reenviar correo'}
+        </button>
+        <Link href="/login" className="text-auth-muted text-[12.5px]">
+          Ya confirmé, ir a iniciar sesión
+        </Link>
+      </div>
+    );
   }
 
   return (
