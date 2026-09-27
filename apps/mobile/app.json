@@ -22,7 +22,9 @@
         "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
         "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
         "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
-        "UIBackgroundModes": ["fetch"]
+        "UIBackgroundModes": [
+          "fetch"
+        ]
       },
       "config": {
         "googleMapsApiKey": "REEMPLAZAR_CON_API_KEY_IOS"
@@ -102,9 +104,11 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "REEMPLAZAR_CON_EAS_PROJECT_ID"
+        "projectId": "8b0cfd55-9922-4731-b971-f614435ac781"
       }
-    }
+    },
+    "owner": "marcos2114"
   }
 }
