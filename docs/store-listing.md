@@ -68,7 +68,7 @@ Respaldo para contar pasos con el sensor del teléfono cuando Health Connect no 
 Carpeta `docs/store-screenshots/` (1290×2796, formato iPhone 6.9"). Son de la app web con una cuenta casi vacía: para publicar, sacar las definitivas en un teléfono real con datos (pasos, racha, Puntos).
 
 ## Ícono
-Se mantiene el ícono original de Camina (no modificar). Está en `apps/mobile/assets/icon.png` a 220×220: las tiendas piden **1024×1024 sin transparencia**, así que falta el archivo original en ese tamaño.
+Es el logo aprobado por el dueño (círculo menta con huellas sobre morado `#200a52`), solo redimensionado a 1024×1024 sin transparencia. Archivos en `apps/mobile/assets/`: `icon.png`, `splash-icon.png`, `android-icon-foreground/background.png`, `favicon.png`. No modificar el diseño.
 
 ## Pendientes en Supabase (producción)
 
