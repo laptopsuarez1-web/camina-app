@@ -266,7 +266,7 @@ export default function ActividadScreen() {
               cell ? (
                 <View
                   key={cell.key}
-                  className="w-8 h-8 rounded-full items-center justify-center"
+                  className="w-8 h-8 rounded-md items-center justify-center"
                   style={{ backgroundColor: cell.met ? colors.mint : colors.light.line }}
                 >
                   <Text
