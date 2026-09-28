@@ -156,8 +156,9 @@ export default function PuntosScreen() {
                 <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{m.subtitle}</Text>
               )}
             </View>
-            <View className="bg-mint/15 rounded-full px-2.5 py-1">
-              <Text className="text-mint-dark dark:text-mint font-bold text-[12px]">+{m.amount}</Text>
+            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
+              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>+{m.amount}</Text>
             </View>
           </View>
         ))}

@@ -27,12 +27,50 @@ function greeting(name: string) {
   return `Buenas noches, ${label}`;
 }
 
+// "CAMINA" con el cuerpo grueso del original. En nativo no existe
+// -webkit-text-stroke, así que el trazo se simula con copias desplazadas
+// menos de 1px alrededor del texto (en web se usa el trazo real).
+const WORDMARK_STYLE = {
+  color: colors.mint,
+  fontSize: 21,
+  fontWeight: '900' as const,
+  letterSpacing: -0.6,
+};
+const STROKE_OFFSETS: [number, number][] = [
+  [0.8, 0], [-0.8, 0], [0, 0.8], [0, -0.8], [0.6, 0.6], [-0.6, 0.6], [0.6, -0.6], [-0.6, -0.6],
+];
+function Wordmark() {
+  return (
+    <View>
+      {Platform.OS !== 'web' &&
+        STROKE_OFFSETS.map(([x, y], i) => (
+          <Text key={i} style={[WORDMARK_STYLE, { position: 'absolute', left: x, top: y }]}>
+            CAMINA
+          </Text>
+        ))}
+      <Text
+        style={[
+          WORDMARK_STYLE,
+          {
+            textShadowColor: 'rgba(127,237,196,0.6)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 12,
+          },
+          Platform.OS === 'web' ? ({ WebkitTextStroke: '0.8px #7FEDC4' } as object) : null,
+        ]}
+      >
+        CAMINA
+      </Text>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
   const { steps, available } = useTodaySteps();
   const { data: balance } = usePointsBalance();
-  const { data: benefits } = useBenefits();
+  const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
   const { data: reto } = useWeeklyGoalReto();
@@ -57,7 +95,14 @@ export default function HomeScreen() {
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
-  const nearby = (benefits ?? []).slice(0, 2);
+  const nearby = (() => {
+    const map = new Map<string, { business: NonNullable<typeof benefits>[number]['business']; items: NonNullable<typeof benefits> }>();
+    for (const b of benefits ?? []) {
+      if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, items: [] });
+      map.get(b.business.id)!.items.push(b);
+    }
+    return [...map.values()].slice(0, 3);
+  })();
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
   async function saveGoal() {
@@ -115,25 +160,7 @@ export default function HomeScreen() {
             pointerEvents="none"
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Text
-              style={[
-                {
-                  color: colors.mint,
-                  fontSize: 21,
-                  fontWeight: '800',
-                  letterSpacing: -0.6,
-                  textShadowColor: 'rgba(127,237,196,0.6)',
-                  textShadowOffset: { width: 0, height: 0 },
-                  textShadowRadius: 10,
-                },
-                // -webkit-text-stroke no existe en React Native nativo, pero en
-                // web es justo lo que hace que "CAMINA" se vea sólido y grueso
-                // en vez de una tipografía fina — el original lo usa.
-                Platform.OS === 'web' ? ({ WebkitTextStroke: '0.6px #7FEDC4' } as object) : null,
-              ]}
-            >
-              CAMINA
-            </Text>
+            <Wordmark />
           </View>
         </View>
         </View>
@@ -149,7 +176,7 @@ export default function HomeScreen() {
                 style={{
                   color: '#fff',
                   fontSize: 48,
-                  fontWeight: '800',
+                  fontWeight: '900',
                   letterSpacing: -1.4,
                   lineHeight: 48,
                   fontVariant: ['tabular-nums'],
@@ -238,27 +265,34 @@ export default function HomeScreen() {
         </View>
 
         <View className="px-5 gap-2.5">
-          {nearby.map((b) => (
+          {nearby.map((g) => (
             <Pressable
-              key={b.id}
-              onPress={() => router.push('/(tabs)/canjes?view=lista')}
-              className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark rounded-3xl p-3.5"
-              style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
+              key={g.business.id}
+              onPress={() => router.push('/(tabs)/canjes')}
+              className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-3.5"
+              style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1 }}
             >
-              <View className="w-[58px] h-[58px] rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                <Text className="text-aqua font-bold">{b.business.name[0]}</Text>
-              </View>
+              {g.business.logo_url ? (
+                <Image source={{ uri: g.business.logo_url }} style={{ width: 58, height: 58, borderRadius: 16 }} />
+              ) : (
+                <View className="w-[58px] h-[58px] rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
+                  <Text className="text-aqua font-bold">{g.business.name[0]}</Text>
+                </View>
+              )}
               <View className="flex-1 min-w-0">
                 <Text className="text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
-                  {b.business.name}
+                  {g.business.name}
                 </Text>
                 <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5 mb-1.5" numberOfLines={1}>
-                  {b.name}
+                  {g.items.length === 1 ? g.items[0].name : `${g.items.length} premios disponibles`}
                 </Text>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-[11px] font-semibold" style={{ color: '#2E9E7C' }}>Abierto</Text>
-                  <View className="bg-aqua rounded-full px-2.5 py-1">
-                    <Text className="text-white text-[11px] font-bold">{b.cost_points} Pts</Text>
+                  <Text className="text-[11px] font-semibold" style={{ color: '#2E9E7C' }}>{g.business.category}</Text>
+                  <View className="flex-row items-center bg-aqua rounded-full" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 9 }}>
+                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
+                    <Text className="text-white text-[11px] font-bold">
+                      {g.items.length > 1 ? `desde ${Math.min(...g.items.map((i) => i.cost_points))}` : g.items[0].cost_points}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -285,7 +319,7 @@ export default function HomeScreen() {
             </Pressable>
           )}
 
-          {nearby.length === 0 && !myGroup && (
+          {nearby.length === 0 && !benefitsLoading && !myGroup && (
             <Pressable
               onPress={() => router.push('/(tabs)/canjes?view=lista')}
               className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
