@@ -1,10 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { supabase, type BusinessPlan } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+
+const WHATSAPP_NUMBER = '59162714286';
+
+const PAYMENT_QR: Partial<Record<BusinessPlan, { image: string; amount: string }>> = {
+  paso_firme: { image: '/payment/qr-paso-firme.jpg', amount: 'Bs 100' },
+  paso_adelante: { image: '/payment/qr-paso-adelante.webp', amount: 'Bs 300' },
+};
+
+function whatsappLink(planName: string, amount: string) {
+  const text = `Hola! Soy dueño de un comercio en Camina y quiero pasar al plan ${planName} (${amount}). Te mando el comprobante de la transferencia.`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
 
 const PLANS: {
   id: BusinessPlan;
@@ -58,9 +71,20 @@ const PLANS: {
 export default function PlanPage() {
   const { business, refreshBusiness, session } = useBusinessAuth();
   const [confirmId, setConfirmId] = useState<BusinessPlan | null>(null);
+  const [payingId, setPayingId] = useState<BusinessPlan | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pending = PLANS.find((p) => p.id === confirmId);
+  const paying = PLANS.find((p) => p.id === payingId);
+  const payingQr = payingId ? PAYMENT_QR[payingId] : undefined;
+
+  function selectPlan(planId: BusinessPlan) {
+    if (PAYMENT_QR[planId]) {
+      setPayingId(planId);
+    } else {
+      setConfirmId(planId);
+    }
+  }
 
   async function confirmChange() {
     if (!business || !confirmId) return;
@@ -70,9 +94,7 @@ export default function PlanPage() {
     setSaving(false);
     setConfirmId(null);
     if (error) {
-      // El plan pago requiere pasarela de pago (no implementada todavía) — el
-      // trigger prevent_self_plan_change en Supabase rechaza el auto-upgrade.
-      setError('Por ahora el cambio de plan lo confirma el equipo de Camina una vez recibido el pago. Escribinos y lo activamos.');
+      setError('No pudimos aplicar el cambio. Intentá de nuevo o escribinos.');
       return;
     }
     if (session) await refreshBusiness(session.user.id, session.user.email);
@@ -85,6 +107,36 @@ export default function PlanPage() {
       {error && (
         <div className="bg-warn-light text-[13px] rounded-xl px-4 py-3 mb-5 max-w-[620px]" style={{ color: '#8A5A2E' }}>
           {error}
+        </div>
+      )}
+
+      {paying && payingQr && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-[360px] w-full text-center">
+            <p className="font-bold text-[15px] mb-1">Pasar a {paying.name}</p>
+            <p className="text-muted text-[12.5px] mb-4">
+              Escaneá el código con tu app del banco y transferí el monto exacto ({payingQr.amount}).
+              Después mandanos el comprobante por WhatsApp y activamos tu plan.
+            </p>
+            <div className="rounded-xl overflow-hidden border border-line mb-4">
+              <Image src={payingQr.image} alt={`QR de pago ${paying.name}`} width={340} height={480} className="w-full h-auto" />
+            </div>
+            <a
+              href={whatsappLink(paying.name, payingQr.amount)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full rounded-[10px] py-2.5 font-semibold text-[13px] mb-2"
+              style={{ background: '#25D366', color: '#fff' }}
+            >
+              Enviar comprobante por WhatsApp
+            </a>
+            <button
+              onClick={() => setPayingId(null)}
+              className="w-full bg-bg text-muted border border-line rounded-[10px] py-2.5 font-semibold text-[13px]"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       )}
 
@@ -167,7 +219,7 @@ export default function PlanPage() {
                 ))}
               </div>
               <button
-                onClick={() => setConfirmId(p.id)}
+                onClick={() => selectPlan(p.id)}
                 disabled={active}
                 className="w-full py-2.5 rounded-[10px] font-semibold text-[13px] disabled:cursor-default"
                 style={{
