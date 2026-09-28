@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#241748"
+      "backgroundColor": "#200a52"
     },
     "ios": {
       "supportsTablet": false,
@@ -35,7 +35,7 @@
     "android": {
       "package": "bo.camina.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#200a52",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -79,7 +79,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "backgroundColor": "#241748"
+          "backgroundColor": "#200a52"
         }
       ],
       [
