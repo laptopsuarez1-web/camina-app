@@ -216,6 +216,18 @@ export default function CanjesScreen() {
       });
   }, [benefits, category, search]);
 
+  // Un comercio puede tener varios beneficios activos ahora (antes el panel
+  // solo dejaba cargar uno) — se agrupan por comercio para no repetir el
+  // logo/nombre en una tarjeta por cada beneficio suyo.
+  const groupedByBusiness = useMemo(() => {
+    const map = new Map<string, { business: BenefitWithBusiness['business']; benefits: BenefitWithBusiness[] }>();
+    for (const b of filtered) {
+      if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
+      map.get(b.business.id)!.benefits.push(b);
+    }
+    return [...map.values()];
+  }, [filtered]);
+
   const businessesWithCoords = useMemo(() => {
     const map = new Map<string, BenefitWithBusiness>();
     for (const b of benefits ?? []) {
@@ -352,24 +364,26 @@ export default function CanjesScreen() {
               Cerca tuyo
             </Text>
             <ScrollView contentContainerClassName="px-4 pb-6 gap-1.5">
-              {filtered.map((b) => (
+              {groupedByBusiness.map((g) => (
                 <Pressable
-                  key={b.id}
+                  key={g.business.id}
                   onPress={() => {
                     setView('lista');
-                    setSearch(b.business.name);
+                    setSearch(g.business.name);
                   }}
                   className="flex-row items-center gap-3 bg-white/60 rounded-2xl p-2.5"
                 >
-                  {businessIcon(b.business.name, 34, b.business.logo_url)}
+                  {businessIcon(g.business.name, 34, g.business.logo_url)}
                   <View className="flex-1">
-                    <Text className="text-[13px] font-bold text-text-light">{b.business.name}</Text>
-                    <Text className="text-[11px] text-muted-light">{b.name}</Text>
+                    <Text className="text-[13px] font-bold text-text-light">{g.business.name}</Text>
+                    <Text className="text-[11px] text-muted-light">
+                      {g.benefits.length === 1 ? g.benefits[0].name : `${g.benefits.length} beneficios`}
+                    </Text>
                   </View>
                   <ChevronRight size={15} color={colors.light.muted} />
                 </Pressable>
               ))}
-              {filtered.length === 0 && (
+              {groupedByBusiness.length === 0 && (
                 <Text className="text-muted-light text-xs py-3">Nada por acá todavía.</Text>
               )}
             </ScrollView>
@@ -456,75 +470,91 @@ export default function CanjesScreen() {
           <ScrollView className="flex-1 px-5" contentContainerClassName="gap-2.5 pb-8">
             {isLoading && <ActivityIndicator color={colors.aqua} />}
 
-            {filtered.map((b) => {
-              const canAfford = (balance ?? 0) >= b.cost_points;
-              const available = isBenefitAvailableNow(b);
-              const unlimited = b.daily_quota == null;
-              const remaining = b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
-              const outOfStock = !unlimited && remaining <= 0;
-              const canRedeem = canAfford && available && !outOfStock;
-              const redeeming = redeem.isPending && redeem.variables === b.id;
-              const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
-              return (
-                <View
-                  key={b.id}
-                  className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
-                  style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2, opacity: available ? 1 : 0.6 }}
-                >
-                  {b.image_url && (
-                    <Image
-                      source={{ uri: b.image_url }}
-                      style={{ width: '100%', height: 100, borderRadius: 16, marginBottom: 10 }}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View className="flex-row items-start gap-3">
-                    {businessIcon(b.business.name, 50, b.business.logo_url)}
-                    <View className="flex-1">
-                      <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{b.business.name}</Text>
-                      <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{b.business.category}</Text>
-                      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-1.5">{b.name}</Text>
-                      <View className="flex-row items-center gap-1.5 mt-1.5 flex-wrap">
-                        {b.dine_in_only && (
-                          <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-full px-2 py-0.5">
-                            <Text className="text-[9.5px] font-bold text-purple">Solo en el local</Text>
-                          </View>
-                        )}
-                        {!available && (
-                          <View className="bg-warn-light rounded-full px-2 py-0.5">
-                            <Text className="text-[9.5px] font-bold" style={{ color: colors.warn }}>Fuera de horario</Text>
-                          </View>
-                        )}
-                        {available && !unlimited && !outOfStock && remaining <= 3 && (
-                          <Text className="text-[9.5px] font-semibold text-muted-light dark:text-muted-dark">
-                            Quedan {remaining} hoy
-                          </Text>
-                        )}
-                      </View>
+            {groupedByBusiness.map((g) => (
+              <View
+                key={g.business.id}
+                className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
+                style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
+              >
+                <View className="flex-row items-center gap-3">
+                  {businessIcon(g.business.name, 50, g.business.logo_url)}
+                  <View className="flex-1">
+                    <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{g.business.name}</Text>
+                    <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
+                  </View>
+                  {g.benefits.length > 1 && (
+                    <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-full px-2.5 py-1">
+                      <Text className="text-[10.5px] font-bold text-purple">{g.benefits.length} beneficios</Text>
                     </View>
-                    <Pressable hitSlop={8}>
-                      <Heart size={17} color={colors.light.muted} />
-                    </Pressable>
-                  </View>
-                  <View className="flex-row justify-between items-center mt-3">
-                    <Text className="text-[11px] text-muted-light dark:text-muted-dark">
-                      {b.type === 'gratis' ? 'Gratis' : b.discount_detail}
-                    </Text>
-                    <Pressable
-                      onPress={() => handleRedeem(b.id, b)}
-                      disabled={!canRedeem || redeem.isPending}
-                      className="rounded-full px-4 py-2 flex-row items-center gap-1.5"
-                      style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line }}
-                    >
-                      {redeeming && <ActivityIndicator size="small" color="#fff" />}
-                      <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
-                        {redeeming ? 'Canjeando…' : buttonLabel}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  )}
+                  <Pressable hitSlop={8}>
+                    <Heart size={17} color={colors.light.muted} />
+                  </Pressable>
                 </View>
-              );
-            })}
+
+                <View className="mt-3" style={{ gap: 10 }}>
+                  {g.benefits.map((b) => {
+                    const canAfford = (balance ?? 0) >= b.cost_points;
+                    const available = isBenefitAvailableNow(b);
+                    const unlimited = b.daily_quota == null;
+                    const remaining = b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
+                    const outOfStock = !unlimited && remaining <= 0;
+                    const canRedeem = canAfford && available && !outOfStock;
+                    const redeeming = redeem.isPending && redeem.variables === b.id;
+                    const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
+                    return (
+                      <View
+                        key={b.id}
+                        className="bg-bg-light dark:bg-bg-dark rounded-2xl p-3"
+                        style={{ opacity: available ? 1 : 0.6 }}
+                      >
+                        {b.image_url && (
+                          <Image
+                            source={{ uri: b.image_url }}
+                            style={{ width: '100%', height: 90, borderRadius: 14, marginBottom: 8 }}
+                            resizeMode="cover"
+                          />
+                        )}
+                        <Text className="text-[13px] font-semibold text-text-light dark:text-text-dark">{b.name}</Text>
+                        <View className="flex-row items-center gap-1.5 mt-1.5 flex-wrap">
+                          {b.dine_in_only && (
+                            <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-full px-2 py-0.5">
+                              <Text className="text-[9.5px] font-bold text-purple">Solo en el local</Text>
+                            </View>
+                          )}
+                          {!available && (
+                            <View className="bg-warn-light rounded-full px-2 py-0.5">
+                              <Text className="text-[9.5px] font-bold" style={{ color: colors.warn }}>Fuera de horario</Text>
+                            </View>
+                          )}
+                          {available && !unlimited && !outOfStock && remaining <= 3 && (
+                            <Text className="text-[9.5px] font-semibold text-muted-light dark:text-muted-dark">
+                              Quedan {remaining} hoy
+                            </Text>
+                          )}
+                        </View>
+                        <View className="flex-row justify-between items-center mt-2.5">
+                          <Text className="text-[11px] text-muted-light dark:text-muted-dark">
+                            {b.type === 'gratis' ? 'Gratis' : b.discount_detail}
+                          </Text>
+                          <Pressable
+                            onPress={() => handleRedeem(b.id, b)}
+                            disabled={!canRedeem || redeem.isPending}
+                            className="rounded-full px-4 py-2 flex-row items-center gap-1.5"
+                            style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line }}
+                          >
+                            {redeeming && <ActivityIndicator size="small" color="#fff" />}
+                            <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
+                              {redeeming ? 'Canjeando…' : buttonLabel}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
             {!isLoading && filtered.length === 0 && (
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-8">
                 Todavía no hay beneficios con estos filtros.
