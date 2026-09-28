@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
 import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { colors } from '@/theme/tokens';
+import { HeaderLight } from '@/components/ui/HeaderLight';
 
 export default function GruposScreen() {
   const { data: groups, isLoading } = useGroups();
@@ -57,7 +58,9 @@ export default function GruposScreen() {
   const other = (groups ?? []).filter((g) => !g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14">
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <HeaderLight />
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3">
       <View className="flex-row justify-between items-center mb-1">
         <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark">Grupos</Text>
         <Pressable
@@ -235,6 +238,7 @@ export default function GruposScreen() {
       </View>
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

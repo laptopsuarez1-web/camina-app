@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
 import { useStreak } from '@/hooks/useStreak';
 import { useCommunityAverage } from '@/hooks/useGlobalRanking';
+import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP } from '@/constants/business-rules';
@@ -129,7 +130,9 @@ export default function ActividadScreen() {
   const fullHistory = useMemo(() => [...(history ?? [])].reverse(), [history]);
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14 pb-10">
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <HeaderLight />
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3 pb-10">
       <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
       <LinearGradient
@@ -313,7 +316,8 @@ export default function ActividadScreen() {
           </Text>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

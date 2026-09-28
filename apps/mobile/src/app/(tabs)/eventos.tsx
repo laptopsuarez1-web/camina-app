@@ -3,6 +3,7 @@ import { Calendar, Users, Flame, CheckCircle2 } from 'lucide-react-native';
 import { colors } from '@/theme/tokens';
 import { useWeeklyGoalReto, useTenKStreakReto, useReferralReto } from '@/hooks/useRetos';
 import { RETO_REWARD_WEEKLY_GOAL, RETO_REWARD_TENK_STREAK, RETO_REWARD_REFERRAL } from '@/constants/business-rules';
+import { HeaderLight } from '@/components/ui/HeaderLight';
 
 export default function EventosScreen() {
   const { data: metaReto } = useWeeklyGoalReto();
@@ -10,7 +11,9 @@ export default function EventosScreen() {
   const { data: referralReto } = useReferralReto();
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14 pb-10">
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <HeaderLight />
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3 pb-10">
       <Text className="text-[21px] font-extrabold mb-0.5 text-text-light dark:text-text-dark">
         Eventos
       </Text>
@@ -57,7 +60,8 @@ export default function EventosScreen() {
           pct={metaReto?.pct ?? 0}
         />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
