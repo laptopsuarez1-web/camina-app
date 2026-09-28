@@ -1,0 +1,122 @@
+{
+  "expo": {
+    "name": "Camina",
+    "slug": "camina",
+    "scheme": "camina",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "primaryColor": "#8B4FD1",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#241748"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "bo.camina.app",
+      "infoPlist": {
+        "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganás caminando.",
+        "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
+        "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+        "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
+        "UIBackgroundModes": [
+          "fetch"
+        ]
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
+      }
+    },
+    "android": {
+      "package": "bo.camina.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACTIVITY_RECOGNITION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "android.permission.health.READ_STEPS"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4FC3A8"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#241748"
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+          "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
+          "background": false
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Camina usa tus fotos para poner tu foto de perfil.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8b0cfd55-9922-4731-b971-f614435ac781"
+      }
+    },
+    "owner": "marcos2114"
+  }
+}
