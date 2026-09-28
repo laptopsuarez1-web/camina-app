@@ -77,7 +77,7 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View className="px-5 pt-4" style={{ position: 'relative' }}>
+        <View className="px-5" style={{ position: 'relative', paddingTop: 18 }}>
           <View className="flex-row justify-between items-center">
             <Pressable
               onPress={() => router.push('/(tabs)/puntos')}
@@ -110,8 +110,11 @@ export default function HomeScreen() {
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
           >
             <Text
-              className="text-mint font-extrabold text-xl tracking-tight"
               style={{
+                color: colors.mint,
+                fontSize: 21,
+                fontWeight: '800',
+                letterSpacing: -0.6,
                 textShadowColor: 'rgba(127,237,196,0.6)',
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 10,
@@ -122,14 +125,16 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <Text className="text-auth-muted px-5 pt-3.5 font-semibold text-[13.5px]">
+        <Text className="text-auth-muted px-5 font-semibold text-[14px]" style={{ paddingTop: 16 }}>
           {greeting(profile?.full_name ?? '')}
         </Text>
 
-        <View className="items-center justify-center mt-2.5">
+        <View className="items-center justify-center" style={{ marginTop: 16 }}>
           <ProgressRing size={250} strokeWidth={26} progress={pct}>
             <View className="items-center">
-              <Text className="text-white text-[48px] font-extrabold tracking-tighter">{steps}</Text>
+              <Text style={{ color: '#fff', fontSize: 48, fontWeight: '800', letterSpacing: -1.4, lineHeight: 48 }}>
+                {steps}
+              </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <View className="flex-row items-center gap-1 mt-2.5 bg-mint/15 pl-1.5 pr-3 py-1 rounded-full">
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
@@ -139,7 +144,7 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <View className="flex-row justify-center gap-2 mt-1.5 flex-wrap">
+        <View className="flex-row justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
           {(streak ?? 0) > 0 && (
             <View className="bg-mint/10 px-2.5 py-1.5 rounded-full">
               <Text className="text-mint text-[11px] font-bold">🔥 {streak} días de racha</Text>

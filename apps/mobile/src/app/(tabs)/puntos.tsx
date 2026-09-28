@@ -93,7 +93,7 @@ export default function PuntosScreen() {
   return (
     <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
       <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
-        <View className="flex-row items-center gap-3 mb-4.5">
+        <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
           <Pressable onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
           </Pressable>
@@ -103,7 +103,7 @@ export default function PuntosScreen() {
         <View className="flex-row items-center gap-3">
           <Image source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
           <View>
-            <Text className="text-white text-[30px] font-extrabold leading-none">{balance ?? 0}</Text>
+            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balance ?? 0}</Text>
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
                 <Text className="text-mint font-semibold text-[11.5px]">Ganaste {earnedToday} Puntos hoy</Text>
