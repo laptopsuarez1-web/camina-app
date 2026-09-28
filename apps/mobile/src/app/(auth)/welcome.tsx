@@ -23,6 +23,8 @@ export default function WelcomeScreen() {
   const [resending, setResending] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
+  const [recoverySent, setRecoverySent] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   const [, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest(googleClientIds);
 
@@ -115,6 +117,23 @@ export default function WelcomeScreen() {
       return;
     }
     await afterAuth();
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      Alert.alert('Falta tu correo', 'Escribí tu correo arriba primero.');
+      return;
+    }
+    setRecovering(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: emailRedirectUrl(),
+    });
+    setRecovering(false);
+    if (error) {
+      Alert.alert('No pudimos mandar el correo', error.message);
+      return;
+    }
+    setRecoverySent(true);
   }
 
   async function resendConfirmation() {
@@ -223,6 +242,14 @@ export default function WelcomeScreen() {
             </Text>
           )}
         </Pressable>
+
+        {authKind === 'login' && (
+          <Pressable onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
+            <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+              {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
+            </Text>
+          </Pressable>
+        )}
 
         <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
           <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>

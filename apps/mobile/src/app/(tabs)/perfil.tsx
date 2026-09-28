@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut, Gift, Trash2 } from 'lucide-react-native';
+import { LogOut, Gift, Trash2, KeyRound } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -13,6 +13,26 @@ export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
   const [deleting, setDeleting] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  async function savePassword() {
+    if (newPassword.length < 6) {
+      Alert.alert('Contraseña muy corta', 'Necesita al menos 6 caracteres.');
+      return;
+    }
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSavingPassword(false);
+    if (error) {
+      Alert.alert('No pudimos cambiarla', error.message);
+      return;
+    }
+    setNewPassword('');
+    setChangingPassword(false);
+    Alert.alert('Listo', 'Tu contraseña se actualizó.');
+  }
 
   async function toggleInterest(name: string) {
     if (!profile) return;
@@ -170,6 +190,51 @@ export default function PerfilScreen() {
             trackColor={{ true: colors.aqua, false: colors.light.line }}
           />
         </View>
+      </View>
+
+      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+        {!changingPassword ? (
+          <Pressable onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
+            <View className="w-9 h-9 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+              <KeyRound size={16} color={colors.purple} />
+            </View>
+            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Cambiar contraseña</Text>
+          </Pressable>
+        ) : (
+          <View>
+            <Text className="font-bold text-[14.5px] mb-2.5 text-text-light dark:text-text-dark">Nueva contraseña</Text>
+            <TextInput
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor={colors.light.muted}
+              className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3"
+            />
+            <View className="flex-row gap-2">
+              <Pressable
+                onPress={savePassword}
+                disabled={savingPassword}
+                className="flex-1 bg-aqua rounded-xl py-3 items-center"
+              >
+                {savingPassword ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-bold text-[13.5px]">Guardar</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setChangingPassword(false);
+                  setNewPassword('');
+                }}
+                className="flex-1 border border-line-light dark:border-line-dark rounded-xl py-3 items-center"
+              >
+                <Text className="text-muted-light dark:text-muted-dark font-semibold text-[13.5px]">Cancelar</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </View>
 
       <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
