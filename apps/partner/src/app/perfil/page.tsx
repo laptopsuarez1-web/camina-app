@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Clock, Phone, Instagram, Globe, Trash2 } from 'lucide-react';
+import { MapPin, Clock, Phone, Instagram, Globe, Trash2, Video, Megaphone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -20,6 +20,8 @@ export default function PerfilPage() {
   const [telefono, setTelefono] = useState('');
   const [instagram, setInstagram] = useState('');
   const [website, setWebsite] = useState('');
+  const [esVirtual, setEsVirtual] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -34,6 +36,8 @@ export default function PerfilPage() {
     setTelefono(business.phone ?? '');
     setInstagram(business.instagram ?? '');
     setWebsite(business.website ?? '');
+    setEsVirtual(business.is_virtual);
+    setVideoUrl(business.promo_video_url ?? '');
   }, [business]);
 
   async function handleSave() {
@@ -45,11 +49,13 @@ export default function PerfilPage() {
       .update({
         name: nombre.trim(),
         category: categoria,
-        address: direccion.trim(),
+        address: esVirtual ? null : direccion.trim(),
         hours_text: horario.trim(),
         phone: telefono.trim(),
         instagram: instagram.trim() || null,
         website: website.trim() || null,
+        is_virtual: esVirtual,
+        promo_video_url: business.plan === 'paso_adelante' ? videoUrl.trim() || null : null,
       })
       .eq('id', business.id);
     setSaving(false);
@@ -126,13 +132,20 @@ export default function PerfilPage() {
               ))}
             </select>
           </Field>
-          <Field label="Dirección" icon={<MapPin size={13} color="#7C6A9C" />}>
-            <input
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
+          <label className="flex items-center gap-2 text-[13px] text-muted">
+            <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
+            Es un emprendimiento virtual (no tengo local físico)
+          </label>
+
+          {!esVirtual && (
+            <Field label="Dirección" icon={<MapPin size={13} color="#7C6A9C" />}>
+              <input
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+            </Field>
+          )}
           <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>
             <input
               value={horario}
@@ -165,6 +178,32 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
+
+          {business?.plan === 'paso_adelante' && (
+            <>
+              <Field label="Video promocional (link de YouTube/Instagram/TikTok)" icon={<Video size={13} color="#7C6A9C" />}>
+                <input
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                />
+              </Field>
+              <div className="flex items-center gap-2 text-[12.5px]">
+                <Megaphone size={13} color="#7C6A9C" />
+                <span className="text-muted">Espacios publicitarios con convenio con Camina:</span>
+                <span
+                  className="font-bold px-2 py-0.5 rounded-full text-[11px]"
+                  style={{
+                    background: business.ad_eligible ? 'rgba(127,237,196,0.2)' : '#F7F3FC',
+                    color: business.ad_eligible ? '#0F7A5C' : '#7C6A9C',
+                  }}
+                >
+                  {business.ad_eligible ? 'Elegible' : 'Todavía no — lo define el equipo de Camina'}
+                </span>
+              </div>
+            </>
+          )}
 
           {saved && <p className="text-aqua text-[12.5px]">Guardado.</p>}
 

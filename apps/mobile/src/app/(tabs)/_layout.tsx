@@ -28,6 +28,12 @@ export default function TabsLayout() {
       <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: ({ color, size }) => <Users color={color} size={size} /> }} />
       <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
       <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size} /> }} />
+      {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
+          grupos/[groupId] es la pantalla de detalle de un grupo, no un tab propio.
+          Sin declararlos acá, Expo Router los agrega solo al tab bar (bug real
+          que se veía como "Grupos" duplicado y "perfil" suelto al final). */}
+      <Tabs.Screen name="perfil" options={{ href: null }} />
+      <Tabs.Screen name="grupos/[groupId]" options={{ href: null }} />
     </Tabs>
   );
 }

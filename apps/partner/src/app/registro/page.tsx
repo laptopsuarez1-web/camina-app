@@ -11,6 +11,7 @@ const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Bell
 export default function RegistroPage() {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
+  const [esVirtual, setEsVirtual] = useState(false);
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ export default function RegistroPage() {
   const [resending, setResending] = useState(false);
   const router = useRouter();
 
-  const valido = nombre.trim() && direccion.trim() && telefono.trim() && email.trim() && password.length >= 6;
+  const valido = nombre.trim() && (esVirtual || direccion.trim()) && telefono.trim() && email.trim() && password.length >= 6;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +41,14 @@ export default function RegistroPage() {
       // Confirmación de email obligatoria: todavía no hay sesión para poder
       // insertar el negocio (RLS lo exige). Guardamos los datos del alta acá
       // y useBusinessAuth los consume solo cuando el usuario confirme y entre.
-      savePendingBusiness({ email: email.trim(), name: nombre.trim(), category: categoria, address: direccion.trim(), phone: telefono.trim() });
+      savePendingBusiness({
+        email: email.trim(),
+        name: nombre.trim(),
+        category: categoria,
+        address: direccion.trim(),
+        phone: telefono.trim(),
+        isVirtual: esVirtual,
+      });
       setLoading(false);
       setAwaitingConfirmation(true);
       return;
@@ -50,8 +58,9 @@ export default function RegistroPage() {
       owner_user_id: data.session.user.id,
       name: nombre.trim(),
       category: categoria,
-      address: direccion.trim(),
+      address: esVirtual ? null : direccion.trim(),
       phone: telefono.trim(),
+      is_virtual: esVirtual,
       plan: 'primer_paso',
     });
     setLoading(false);
@@ -123,14 +132,21 @@ export default function RegistroPage() {
               ))}
             </select>
           </Field>
-          <Field label="Dirección">
-            <input
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              placeholder="Calle y número, Tarija"
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
+          <label className="flex items-center gap-2 text-[13px] text-muted">
+            <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
+            Es un emprendimiento virtual (no tengo local físico)
+          </label>
+
+          {!esVirtual && (
+            <Field label="Dirección">
+              <input
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                placeholder="Calle y número, Tarija"
+                className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+            </Field>
+          )}
           <Field label="Teléfono de contacto">
             <input
               value={telefono}
@@ -159,6 +175,10 @@ export default function RegistroPage() {
           </Field>
 
           {error && <p className="text-warn text-[12.5px]">{error}</p>}
+
+          <p className="text-muted text-[11.5px]">
+            Después de crear la cuenta, el equipo de Camina revisa tu comercio antes de que aparezca en la app.
+          </p>
 
           <button
             type="submit"

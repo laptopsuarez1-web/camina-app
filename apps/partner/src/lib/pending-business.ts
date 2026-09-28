@@ -10,6 +10,7 @@ export interface PendingBusiness {
   category: string;
   address: string;
   phone: string;
+  isVirtual: boolean;
 }
 
 const KEY = 'camina_pending_business';

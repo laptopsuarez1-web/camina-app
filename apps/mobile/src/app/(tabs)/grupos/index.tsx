@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Plus, Users, Trophy } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -15,7 +15,8 @@ export default function GruposScreen() {
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
-  const [view, setView] = useState<'mios' | 'ranking'>('mios');
+  const params = useLocalSearchParams<{ view?: string }>();
+  const [view, setView] = useState<'mios' | 'ranking'>(params.view === 'ranking' ? 'ranking' : 'mios');
   const { data: ranking, isLoading: rankingLoading } = useGlobalRanking();
   const { data: average } = useCommunityAverage();
 

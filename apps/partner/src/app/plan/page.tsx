@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Check } from 'lucide-react';
-import { supabase, type BusinessPlan } from '@/lib/supabase';
+import { type BusinessPlan } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 
@@ -63,17 +63,17 @@ const PLANS: {
       'Pin destacado en el mapa',
       'Primero en tu categoría',
       'Notificaciones push cerca tuyo',
+      'Video promocional dentro de la app',
+      'Elegible para espacios publicitarios con convenio con Camina',
       'Elegible para sorteos',
     ],
   },
 ];
 
 export default function PlanPage() {
-  const { business, refreshBusiness, session } = useBusinessAuth();
+  const { business } = useBusinessAuth();
   const [confirmId, setConfirmId] = useState<BusinessPlan | null>(null);
   const [payingId, setPayingId] = useState<BusinessPlan | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const pending = PLANS.find((p) => p.id === confirmId);
   const paying = PLANS.find((p) => p.id === payingId);
   const payingQr = payingId ? PAYMENT_QR[payingId] : undefined;
@@ -86,29 +86,14 @@ export default function PlanPage() {
     }
   }
 
-  async function confirmChange() {
-    if (!business || !confirmId) return;
-    setSaving(true);
-    setError(null);
-    const { error } = await supabase.from('businesses').update({ plan: confirmId }).eq('id', business.id);
-    setSaving(false);
-    setConfirmId(null);
-    if (error) {
-      setError('No pudimos aplicar el cambio. Intentá de nuevo o escribinos.');
-      return;
-    }
-    if (session) await refreshBusiness(session.user.id, session.user.email);
+  function requestDowngradeLink(planName: string) {
+    const text = `Hola! Soy dueño de un comercio en Camina y quiero pasar al plan ${planName}.`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
   }
 
   return (
     <DashboardShell>
       <TopBar title="Tu plan" subtitle="Cambiá cuando quieras — sin permanencia." />
-
-      {error && (
-        <div className="bg-warn-light text-[13px] rounded-xl px-4 py-3 mb-5 max-w-[620px]" style={{ color: '#8A5A2E' }}>
-          {error}
-        </div>
-      )}
 
       {paying && payingQr && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -148,30 +133,28 @@ export default function PlanPage() {
       )}
 
       {pending && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-[340px] text-center">
-            <p className="font-bold text-[15px] mb-2">¿Cambiar a {pending.name}?</p>
+            <p className="font-bold text-[15px] mb-2">Pasar a {pending.name}</p>
             <p className="text-muted text-[12.5px] mb-4.5">
-              {pending.price === 'Gratis'
-                ? 'No se te va a cobrar nada.'
-                : `Se te va a facturar ${pending.price} desde hoy.`}
+              Bajar de plan no es inmediato: si todavía te queda período pagado del plan actual, el cambio se
+              aplica recién cuando termine ese mes. Escribinos y coordinamos.
             </p>
-            <div className="flex gap-2">
-              <button
-                onClick={confirmChange}
-                disabled={saving}
-                className="flex-1 rounded-[10px] py-2.5 font-semibold"
-                style={{ background: '#241748', color: '#7FEDC4' }}
-              >
-                Confirmar
-              </button>
-              <button
-                onClick={() => setConfirmId(null)}
-                className="flex-1 bg-bg text-muted border border-line rounded-[10px] py-2.5 font-semibold"
-              >
-                Cancelar
-              </button>
-            </div>
+            <a
+              href={requestDowngradeLink(pending.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full rounded-[10px] py-2.5 font-semibold text-[13px] mb-2"
+              style={{ background: '#25D366', color: '#fff' }}
+            >
+              Pedirlo por WhatsApp
+            </a>
+            <button
+              onClick={() => setConfirmId(null)}
+              className="w-full bg-bg text-muted border border-line rounded-[10px] py-2.5 font-semibold text-[13px]"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}

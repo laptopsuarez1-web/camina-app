@@ -97,7 +97,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </div>
-      <div className="flex-1 p-10 max-w-[1100px]">{children}</div>
+      <div className="flex-1 p-10 max-w-[1100px]">
+        {!business.approved && (
+          <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
+            Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
+            Mientras tanto podés completar tu perfil y tu beneficio, van a quedar listos para cuando te aprueben.
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
 }

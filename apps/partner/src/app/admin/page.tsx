@@ -29,6 +29,24 @@ export default function AdminPage() {
     setListLoading(false);
   }, []);
 
+  async function approve(businessId: string) {
+    setSavingId(businessId);
+    const { error } = await supabase.from('businesses').update({ approved: true }).eq('id', businessId);
+    setSavingId(null);
+    if (!error) {
+      setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, approved: true } : b)));
+    }
+  }
+
+  async function toggleAdEligible(businessId: string, value: boolean) {
+    setSavingId(businessId);
+    const { error } = await supabase.from('businesses').update({ ad_eligible: value }).eq('id', businessId);
+    setSavingId(null);
+    if (!error) {
+      setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, ad_eligible: value } : b)));
+    }
+  }
+
   useEffect(() => {
     if (loading) return;
     if (!session) {
@@ -49,10 +67,16 @@ export default function AdminPage() {
 
   async function changePlan(businessId: string, plan: BusinessPlan) {
     setSavingId(businessId);
-    const { error } = await supabase.from('businesses').update({ plan }).eq('id', businessId);
+    const { data, error } = await supabase.rpc('request_plan_change', {
+      p_business_id: businessId,
+      p_new_plan: plan,
+    });
     setSavingId(null);
-    if (!error) {
-      setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, plan } : b)));
+    if (!error && data) {
+      const updated = data as Business;
+      setBusinesses((prev) => prev.map((b) => (b.id === businessId ? updated : b)));
+    } else if (error) {
+      alert(error.message);
     }
   }
 
@@ -90,8 +114,39 @@ export default function AdminPage() {
       <div className="flex-1 p-10 max-w-[1100px]">
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
         <p className="text-muted text-[13.5px] mb-7">
-          Activá un plan después de confirmar el pago por WhatsApp — el cambio queda al toque.
+          Aprobá un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
+          aplican al toque; bajar de plan queda agendado para cuando termine el período mensual pagado.
         </p>
+
+        {(() => {
+          const pending = businesses.filter((b) => !b.approved);
+          return pending.length > 0 ? (
+            <div className="bg-warn-light rounded-2xl p-4 mb-7" style={{ color: '#8A5A2E' }}>
+              <p className="font-bold text-[13.5px] mb-2.5">Pendientes de aprobación ({pending.length})</p>
+              <div className="flex flex-col gap-2">
+                {pending.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between bg-white rounded-xl px-3.5 py-2.5">
+                    <div>
+                      <p className="font-semibold text-text text-[13px]">
+                        {b.name} {b.is_virtual && <span className="text-muted font-normal">· sin local (virtual)</span>}
+                      </p>
+                      <p className="text-muted text-[11.5px]">
+                        {b.category} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => approve(b.id)}
+                      disabled={savingId === b.id}
+                      className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                    >
+                      Aprobar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null;
+        })()}
 
         {listLoading ? (
           <p className="text-muted text-[13.5px]">Cargando…</p>
@@ -104,8 +159,9 @@ export default function AdminPage() {
                 <tr className="border-b border-line text-left">
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Nombre</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Categoría</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Creado</th>
+                  <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Estado</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Plan</th>
+                  <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Espacios pub.</th>
                 </tr>
               </thead>
               <tbody>
@@ -113,7 +169,17 @@ export default function AdminPage() {
                   <tr key={b.id} className="border-b border-line last:border-0">
                     <td className="px-4 py-3 font-semibold text-text">{b.name}</td>
                     <td className="px-4 py-3 text-muted">{b.category}</td>
-                    <td className="px-4 py-3 text-muted">{new Date(b.created_at).toLocaleDateString('es-BO')}</td>
+                    <td className="px-4 py-3">
+                      {b.approved ? (
+                        <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
+                          Aprobado
+                        </span>
+                      ) : (
+                        <span className="text-warn bg-warn-light rounded-full px-2.5 py-1 text-[11px] font-bold">
+                          Pendiente
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <select
                         value={b.plan}
@@ -127,6 +193,31 @@ export default function AdminPage() {
                           </option>
                         ))}
                       </select>
+                      {b.pending_plan && (
+                        <p className="text-muted text-[10.5px] mt-1">
+                          → {PLAN_LABEL[b.pending_plan]} el{' '}
+                          {new Date(new Date(b.plan_started_at).getTime() + 30 * 24 * 3600 * 1000).toLocaleDateString(
+                            'es-BO'
+                          )}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {b.plan === 'paso_adelante' ? (
+                        <button
+                          onClick={() => toggleAdEligible(b.id, !b.ad_eligible)}
+                          disabled={savingId === b.id}
+                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                          style={{
+                            background: b.ad_eligible ? 'rgba(127,237,196,0.2)' : '#F7F3FC',
+                            color: b.ad_eligible ? '#0F7A5C' : '#7C6A9C',
+                          }}
+                        >
+                          {b.ad_eligible ? 'Elegible ✓' : 'No elegible'}
+                        </button>
+                      ) : (
+                        <span className="text-muted text-[11.5px]">— (solo Paso Adelante)</span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -9,12 +9,14 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { BlurView } from 'expo-blur';
-import { Search, Heart, Locate, Layers, List, ChevronRight } from 'lucide-react-native';
+import { Search, Heart, Locate, List, ChevronRight, Navigation } from 'lucide-react-native';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -75,6 +77,21 @@ function benefitConditions(b: { valid_from: string | null; valid_to: string | nu
     lines.push('Solo consumiendo en el local');
   }
   return lines;
+}
+
+// Abre el mapa completo del sistema (Google Maps / Apple Maps) con el pin del
+// comercio, en vez del mapa chico embebido en la app. Pedido explícito: que
+// el usuario pueda ver el mapa "completo" (con calles, tráfico, cómo llegar).
+function openFullMap(lat: number, lng: number, label: string) {
+  const query = encodeURIComponent(label);
+  const url = Platform.select({
+    ios: `maps:0,0?q=${query}@${lat},${lng}`,
+    android: `geo:0,0?q=${lat},${lng}(${query})`,
+    default: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+  })!;
+  Linking.openURL(url).catch(() => {
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+  });
 }
 
 function useCountdown(expiresAt: string | null) {
@@ -254,7 +271,11 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
             >
               {businessesWithCoords.map((b) => (
-                <Marker key={b.business.id} coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}>
+                <Marker
+                  key={b.business.id}
+                  coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}
+                  onPress={() => openFullMap(b.business.lat!, b.business.lng!, b.business.name)}
+                >
                   <MapMarker name={b.business.name} logoUrl={b.business.logo_url} />
                 </Marker>
               ))}
@@ -279,12 +300,23 @@ export default function CanjesScreen() {
             </View>
           </View>
 
-          {/* botones flotantes laterales, tipo capas / mi ubicación */}
+          {/* botones flotantes laterales: abrir el mapa completo (Google/Apple Maps) y centrar en mi ubicación */}
           <View className="absolute right-4 bg-card-light dark:bg-card-dark rounded-2xl overflow-hidden" style={{ bottom: 300 }}>
-            <Pressable className="p-3 border-b border-line-light dark:border-line-dark">
-              <Layers size={17} color={colors.light.text} />
+            <Pressable
+              className="p-3 border-b border-line-light dark:border-line-dark"
+              onPress={() => mapRegion && openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
+            >
+              <Navigation size={17} color={colors.light.text} />
             </Pressable>
-            <Pressable className="p-3">
+            <Pressable
+              className="p-3"
+              onPress={async () => {
+                const { status } = await Location.getForegroundPermissionsAsync();
+                if (status !== 'granted') return;
+                const pos = await Location.getCurrentPositionAsync({});
+                setMapRegion((r) => ({ ...(r ?? TARIJA_REGION), latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+              }}
+            >
               <Locate size={17} color={colors.aqua} />
             </Pressable>
           </View>
@@ -506,14 +538,28 @@ export default function CanjesScreen() {
           <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-10">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
-            <View className="flex-row items-center gap-2.5 mb-5">
-              {activeBenefit && businessIcon(activeBenefit.business.name, 38, activeBenefit.business.logo_url)}
-              <View>
-                <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">
-                  {activeBenefit?.business.name}
-                </Text>
-                <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>
+            <View className="flex-row items-center justify-between gap-2.5 mb-5">
+              <View className="flex-row items-center gap-2.5 flex-1">
+                {activeBenefit && businessIcon(activeBenefit.business.name, 38, activeBenefit.business.logo_url)}
+                <View className="flex-1">
+                  <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">
+                    {activeBenefit?.business.name}
+                  </Text>
+                  <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>
+                </View>
               </View>
+              {activeBenefit?.business.lat != null && activeBenefit?.business.lng != null && (
+                <Pressable
+                  hitSlop={8}
+                  onPress={() =>
+                    openFullMap(activeBenefit.business.lat!, activeBenefit.business.lng!, activeBenefit.business.name)
+                  }
+                  className="flex-row items-center gap-1 bg-purple-light-light dark:bg-purple-light-dark rounded-full px-3 py-1.5"
+                >
+                  <Navigation size={12} color={colors.purple} />
+                  <Text className="text-[10.5px] font-bold text-purple">Cómo llegar</Text>
+                </Pressable>
+              )}
             </View>
 
             {activeBenefit && benefitConditions(activeBenefit).length > 0 && (

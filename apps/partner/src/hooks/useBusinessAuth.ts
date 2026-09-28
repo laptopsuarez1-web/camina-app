@@ -40,8 +40,9 @@ export function useBusinessAuth() {
         owner_user_id: userId,
         name: pending.name,
         category: pending.category,
-        address: pending.address,
+        address: pending.isVirtual ? null : pending.address,
         phone: pending.phone,
+        is_virtual: pending.isVirtual,
         plan: 'primer_paso',
       })
       .select('*')

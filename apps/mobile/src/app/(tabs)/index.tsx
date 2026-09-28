@@ -11,7 +11,7 @@ import { useBenefits } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
-import { useMyGroupRanking } from '@/hooks/useGroupRanking';
+import { useGlobalRanking } from '@/hooks/useGlobalRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
@@ -35,7 +35,8 @@ export default function HomeScreen() {
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
   const { data: reto } = useWeeklyGoalReto();
-  const { data: groupRanking } = useMyGroupRanking();
+  const { data: globalRanking } = useGlobalRanking();
+  const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
   const [editingGoal, setEditingGoal] = useState(false);
@@ -265,20 +266,22 @@ export default function HomeScreen() {
 
         <View className="bg-card-light dark:bg-card-dark rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
           <Pressable
-            onPress={() => router.push('/(tabs)/grupos')}
+            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
             className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
           >
             <View className="flex-row items-center gap-2.5">
               <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
                 <Trophy size={15} color={colors.purple} />
               </View>
-              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">
-                {groupRanking ? `Ranking · ${groupRanking.group.name}` : 'Ranking semanal'}
-              </Text>
+              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
               <Text className="text-xs text-muted-light dark:text-muted-dark">
-                {groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}°` : 'Unite a un grupo'}
+                {profile?.ranking_visible === false
+                  ? 'Activalo en Perfil'
+                  : myGlobalPosition > 0
+                    ? `Vas ${myGlobalPosition}°`
+                    : 'Fuera del top 20'}
               </Text>
               <ChevronRight size={14} color={colors.light.muted} />
             </View>

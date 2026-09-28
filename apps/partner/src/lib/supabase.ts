@@ -32,6 +32,12 @@ export interface Business {
   cover_url: string | null;
   website: string | null;
   plan: BusinessPlan;
+  approved: boolean;
+  is_virtual: boolean;
+  promo_video_url: string | null;
+  ad_eligible: boolean;
+  plan_started_at: string;
+  pending_plan: BusinessPlan | null;
   created_at: string;
 }
 
