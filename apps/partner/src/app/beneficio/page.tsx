@@ -5,6 +5,7 @@ import { Star } from 'lucide-react';
 import { supabase, type Benefit } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function BeneficioPage() {
   const { business } = useBusinessAuth();
@@ -16,6 +17,7 @@ export default function BeneficioPage() {
   const [descuento, setDescuento] = useState('');
   const [costo, setCosto] = useState('10');
   const [cupones, setCupones] = useState('3');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya te lleva casi un día entero caminando).
@@ -41,6 +43,7 @@ export default function BeneficioPage() {
         setDescuento(b.discount_detail ?? '');
         setCosto(String(b.cost_points));
         setCupones(String(b.daily_quota));
+        setImageUrl(b.image_url);
       });
   }, [business]);
 
@@ -58,6 +61,7 @@ export default function BeneficioPage() {
       cost_points: Number(costo) || 0,
       daily_quota: Number(cupones) || 0,
       active: true,
+      image_url: imageUrl,
     };
 
     const { error } = benefitId
@@ -86,6 +90,19 @@ export default function BeneficioPage() {
       )}
 
       <div className="bg-card border border-line rounded-2xl p-5.5 max-w-[480px]">
+        {business && (
+          <div className="mb-4.5">
+            <ImageUpload
+              bucket="benefit-images"
+              path={`${business.id}/photo`}
+              value={imageUrl}
+              onUploaded={setImageUrl}
+              label="Foto del beneficio"
+              shape="wide"
+            />
+          </div>
+        )}
+
         <Field label="Nombre del beneficio">
           <input
             value={nombre}

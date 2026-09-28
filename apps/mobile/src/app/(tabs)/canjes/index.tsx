@@ -25,7 +25,6 @@ import {
 import { usePointsBalance } from '@/hooks/usePoints';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
-import { BUSINESS_LOGOS } from '@/constants/business-assets';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import type { Redemption } from '@/lib/database.types';
@@ -56,10 +55,9 @@ function useCountdown(expiresAt: string | null) {
   return remainingMs;
 }
 
-function businessIcon(name: string, size: number) {
-  const logo = BUSINESS_LOGOS[name];
-  if (logo) {
-    return <Image source={logo} style={{ width: size, height: size, borderRadius: size / 2 }} />;
+function businessIcon(name: string, size: number, logoUrl?: string | null) {
+  if (logoUrl) {
+    return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: size / 2 }} />;
   }
   return (
     <View
@@ -71,8 +69,7 @@ function businessIcon(name: string, size: number) {
   );
 }
 
-function MapMarker({ name }: { name: string }) {
-  const logo = BUSINESS_LOGOS[name];
+function MapMarker({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
   return (
     <View
       style={{
@@ -91,8 +88,8 @@ function MapMarker({ name }: { name: string }) {
         shadowOffset: { width: 0, height: 3 },
       }}
     >
-      {logo ? (
-        <Image source={logo} style={{ width: 34, height: 34, borderRadius: 17 }} />
+      {logoUrl ? (
+        <Image source={{ uri: logoUrl }} style={{ width: 34, height: 34, borderRadius: 17 }} />
       ) : (
         <Text style={{ color: colors.aqua, fontWeight: '800' }}>{name[0]}</Text>
       )}
@@ -221,7 +218,7 @@ export default function CanjesScreen() {
             >
               {businessesWithCoords.map((b) => (
                 <Marker key={b.business.id} coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}>
-                  <MapMarker name={b.business.name} />
+                  <MapMarker name={b.business.name} logoUrl={b.business.logo_url} />
                 </Marker>
               ))}
             </MapView>
@@ -295,7 +292,7 @@ export default function CanjesScreen() {
                   }}
                   className="flex-row items-center gap-3 bg-white/60 rounded-2xl p-2.5"
                 >
-                  {businessIcon(b.business.name, 34)}
+                  {businessIcon(b.business.name, 34, b.business.logo_url)}
                   <View className="flex-1">
                     <Text className="text-[13px] font-bold text-text-light">{b.business.name}</Text>
                     <Text className="text-[11px] text-muted-light">{b.name}</Text>
@@ -398,8 +395,15 @@ export default function CanjesScreen() {
                   className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
                   style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
                 >
+                  {b.image_url && (
+                    <Image
+                      source={{ uri: b.image_url }}
+                      style={{ width: '100%', height: 100, borderRadius: 16, marginBottom: 10 }}
+                      resizeMode="cover"
+                    />
+                  )}
                   <View className="flex-row items-start gap-3">
-                    {businessIcon(b.business.name, 50)}
+                    {businessIcon(b.business.name, 50, b.business.logo_url)}
                     <View className="flex-1">
                       <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{b.business.name}</Text>
                       <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{b.business.category}</Text>
@@ -442,7 +446,7 @@ export default function CanjesScreen() {
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center gap-2.5 mb-5">
-              {activeBenefit && businessIcon(activeBenefit.business.name, 38)}
+              {activeBenefit && businessIcon(activeBenefit.business.name, 38, activeBenefit.business.logo_url)}
               <View>
                 <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">
                   {activeBenefit?.business.name}

@@ -112,7 +112,14 @@ export default function PlanPage() {
 
       {paying && payingQr && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-[360px] w-full text-center">
+          <div className="bg-white rounded-2xl p-6 max-w-[360px] w-full text-center relative">
+            <button
+              onClick={() => setPayingId(null)}
+              aria-label="Cerrar"
+              className="absolute top-3 right-3 w-7 h-7 rounded-full bg-bg text-muted flex items-center justify-center text-[15px]"
+            >
+              ✕
+            </button>
             <p className="font-bold text-[15px] mb-1">Pasar a {paying.name}</p>
             <p className="text-muted text-[12.5px] mb-4">
               Escaneá el código con tu app del banco y transferí el monto exacto ({payingQr.amount}).
@@ -134,7 +141,7 @@ export default function PlanPage() {
               onClick={() => setPayingId(null)}
               className="w-full bg-bg text-muted border border-line rounded-[10px] py-2.5 font-semibold text-[13px]"
             >
-              Cerrar
+              Listo, ya mandé el pago
             </button>
           </div>
         </div>

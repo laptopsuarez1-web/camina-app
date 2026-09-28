@@ -6,6 +6,7 @@ import { MapPin, Clock, Phone, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { ImageUpload } from '@/components/ImageUpload';
 
 const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
@@ -52,6 +53,12 @@ export default function PerfilPage() {
     }
   }
 
+  async function handlePhotoUploaded(field: 'logo_url' | 'cover_url', url: string) {
+    if (!business || !session) return;
+    await supabase.from('businesses').update({ [field]: url }).eq('id', business.id);
+    await refreshBusiness(session.user.id, session.user.email);
+  }
+
   async function handleDeleteAccount() {
     setDeleting(true);
     const { error } = await supabase.functions.invoke('delete-business-account');
@@ -70,6 +77,31 @@ export default function PerfilPage() {
 
       <div className="flex gap-5 max-w-[620px]">
         <div className="flex-1 flex flex-col gap-3.5">
+          <div className="flex gap-3.5">
+            {business && (
+              <>
+                <ImageUpload
+                  bucket="business-logos"
+                  path={`${business.id}/logo`}
+                  value={business.logo_url}
+                  onUploaded={(url) => handlePhotoUploaded('logo_url', url)}
+                  label="Logo"
+                  shape="circle"
+                />
+                <div className="flex-1">
+                  <ImageUpload
+                    bucket="business-logos"
+                    path={`${business.id}/cover`}
+                    value={business.cover_url}
+                    onUploaded={(url) => handlePhotoUploaded('cover_url', url)}
+                    label="Foto de portada"
+                    shape="wide"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
           <Field label="Nombre comercial">
             <input
               value={nombre}

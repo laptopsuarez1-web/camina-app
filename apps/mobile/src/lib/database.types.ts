@@ -34,6 +34,7 @@ export interface Business {
   lat: number | null;
   lng: number | null;
   logo_url: string | null;
+  cover_url: string | null;
   plan: BusinessPlan;
   created_at: string;
 }
@@ -47,6 +48,7 @@ export interface Benefit {
   cost_points: number;
   daily_quota: number;
   active: boolean;
+  image_url: string | null;
   valid_from: string | null;
   valid_to: string | null;
   valid_days_mask: number;

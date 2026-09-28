@@ -29,6 +29,7 @@ export interface Business {
   instagram: string | null;
   hours_text: string | null;
   logo_url: string | null;
+  cover_url: string | null;
   plan: BusinessPlan;
   created_at: string;
 }
@@ -42,6 +43,7 @@ export interface Benefit {
   cost_points: number;
   daily_quota: number;
   active: boolean;
+  image_url: string | null;
 }
 
 export interface Redemption {
