@@ -16,4 +16,8 @@ export const CATEGORIES = [
   { id: 'Fitness', label: 'Fitness' },
   { id: 'Belleza', label: 'Belleza' },
   { id: 'Entretenimiento', label: 'Entretenimiento' },
+  { id: 'Compras', label: 'Compras' },
+  { id: 'Salud', label: 'Salud' },
+  { id: 'Servicios', label: 'Servicios' },
+  { id: 'Otro', label: 'Otro' },
 ] as const;
