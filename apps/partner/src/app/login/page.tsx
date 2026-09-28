@@ -58,7 +58,10 @@ export default function LoginPage() {
         >
           {loading ? 'Ingresando…' : 'Iniciar sesión'}
         </button>
-        <Link href="/registro" className="text-auth-muted text-[12.5px] text-center mt-1.5">
+        <Link href="/recuperar" className="text-auth-muted text-[12.5px] text-center mt-1.5">
+          ¿Olvidaste tu contraseña?
+        </Link>
+        <Link href="/registro" className="text-auth-muted text-[12.5px] text-center">
           ¿Todavía no tenés cuenta? Sumar mi comercio
         </Link>
       </form>
