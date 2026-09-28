@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, Users, Check } from 'lucide-react-native';
@@ -116,15 +116,21 @@ export default function HomeScreen() {
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
           >
             <Text
-              style={{
-                color: colors.mint,
-                fontSize: 21,
-                fontWeight: '800',
-                letterSpacing: -0.6,
-                textShadowColor: 'rgba(127,237,196,0.6)',
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 10,
-              }}
+              style={[
+                {
+                  color: colors.mint,
+                  fontSize: 21,
+                  fontWeight: '800',
+                  letterSpacing: -0.6,
+                  textShadowColor: 'rgba(127,237,196,0.6)',
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 10,
+                },
+                // -webkit-text-stroke no existe en React Native nativo, pero en
+                // web es justo lo que hace que "CAMINA" se vea sólido y grueso
+                // en vez de una tipografía fina — el original lo usa.
+                Platform.OS === 'web' ? ({ WebkitTextStroke: '0.6px #7FEDC4' } as object) : null,
+              ]}
             >
               CAMINA
             </Text>

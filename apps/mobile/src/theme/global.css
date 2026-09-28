@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Solo pega en web (nativo ya usa la fuente del sistema, que es lo que esta
+   pila intenta imitar) — el original usa este mismo stack de fuentes. */
+html, body, #root, * {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
