@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Share, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -92,60 +92,56 @@ export default function PuntosScreen() {
 
   return (
     <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-2">
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <ChevronLeft size={22} color={colors.light.text} />
-        </Pressable>
-        <Text className="text-[19px] font-extrabold text-text-light dark:text-text-dark">Tus Puntos</Text>
-      </View>
+      <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+        <View className="flex-row items-center gap-3 mb-4.5">
+          <Pressable onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+            <ChevronLeft size={16} color="#fff" />
+          </Pressable>
+          <Text className="text-white text-[17px] font-bold">Tus Puntos</Text>
+        </View>
 
-      <View className="px-5 mt-4">
-        <View className="flex-row items-center gap-3.5">
-          <View className="w-14 h-14 rounded-full bg-mint items-center justify-center">
-            <Text className="text-mint-dark font-extrabold text-lg">{balance ?? 0}</Text>
-          </View>
+        <View className="flex-row items-center gap-3">
+          <Image source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
           <View>
-            <Text className="text-[26px] font-extrabold text-text-light dark:text-text-dark">{balance ?? 0}</Text>
+            <Text className="text-white text-[30px] font-extrabold leading-none">{balance ?? 0}</Text>
+            {(earnedToday ?? 0) > 0 && (
+              <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
+                <Text className="text-mint font-semibold text-[11.5px]">Ganaste {earnedToday} Puntos hoy</Text>
+              </View>
+            )}
           </View>
         </View>
 
-        <View className="flex-row items-center gap-2 mt-3">
-          {(earnedToday ?? 0) > 0 && (
-            <View className="bg-mint/15 px-3 py-1.5 rounded-full">
-              <Text className="text-mint-dark dark:text-mint font-bold text-[12px]">Ganaste {earnedToday} Puntos hoy</Text>
-            </View>
-          )}
-        </View>
         {expiring && expiring.days <= 30 && (
-          <Text className="text-warn text-[12.5px] mt-2.5">
+          <Text className="text-auth-muted text-xs mt-3">
             {expiring.amount} puntos vencen en {expiring.days} día{expiring.days === 1 ? '' : 's'}
           </Text>
         )}
       </View>
 
-      <View className="bg-card-light dark:bg-card-dark mx-5 mt-6 rounded-3xl p-4.5">
-        <Text className="font-bold text-[15px] text-text-light dark:text-text-dark mb-1">
+      <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-5.5 rounded-2xl p-4">
+        <Text className="font-bold text-[14px] text-text-light dark:text-text-dark mb-1.5">
           Invitá a tus amigos y ganá 5 Puntos por cada uno
         </Text>
-        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-4 leading-relaxed">
+        <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
           Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
         <Pressable
           onPress={shareLink}
-          className="bg-purple rounded-2xl py-3.5 items-center flex-row justify-center gap-2"
+          className="bg-purple rounded-xl py-3 items-center flex-row justify-center gap-2"
         >
           <Share2 size={15} color="#fff" />
-          <Text className="text-white font-bold text-[14px]">Compartir link</Text>
+          <Text className="text-white font-bold text-[13px]">Compartir link</Text>
         </Pressable>
-        <Pressable onPress={copyLink} className="items-center py-3">
+        <Pressable onPress={copyLink} className="items-center py-2.5">
           <Text className="text-aqua font-semibold text-[12.5px]">
             {copied ? 'Copiado ✓' : 'Copiar link'}
           </Text>
         </Pressable>
       </View>
 
-      <Text className="font-bold text-base px-5 mt-6 mb-2.5 text-text-light dark:text-text-dark">Movimientos</Text>
-      <View className="px-5 gap-2.5">
+      <Text className="font-bold text-base px-5 mt-6 mb-3 text-text-light dark:text-text-dark">Movimientos</Text>
+      <View className="px-5 gap-2">
         {isLoading && <ActivityIndicator color={colors.aqua} />}
         {(movimientos ?? []).map((m) => (
           <View

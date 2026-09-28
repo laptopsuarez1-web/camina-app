@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { Activity, Flame } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
+import { useStreak } from '@/hooks/useStreak';
+import { useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP } from '@/constants/business-rules';
@@ -38,6 +41,8 @@ export default function ActividadScreen() {
   const { steps: stepsToday } = useTodaySteps();
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
+  const { data: streak } = useStreak();
+  const { data: communityAverage } = useCommunityAverage();
   const goal = profile?.daily_goal ?? 6000;
   const [range, setRange] = useState<7 | 30>(7);
 
@@ -50,6 +55,34 @@ export default function ActividadScreen() {
 
   const km = (stepsToday * STEP_LENGTH_METERS) / 1000;
   const kcal = Math.round(stepsToday * KCAL_PER_STEP);
+  const goalPct = goal > 0 ? Math.min(100, Math.round((stepsToday / goal) * 100)) : 0;
+
+  const weekDays = useMemo(() => {
+    const days: { key: string; steps: number; label: string }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = localKey(d);
+      days.push({ key, steps: byDay.get(key) ?? 0, label: DIAS_CORTO[(d.getDay() + 6) % 7] });
+    }
+    return days;
+  }, [byDay]);
+  const weekMax = Math.max(1, ...weekDays.map((d) => d.steps));
+  const weekTotal = weekDays.reduce((a, d) => a + d.steps, 0);
+
+  const prevWeekTotal = useMemo(() => {
+    let total = 0;
+    for (let i = 13; i >= 7; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      total += byDay.get(localKey(d)) ?? 0;
+    }
+    return total;
+  }, [byDay]);
+  const weekTrendPct = prevWeekTotal > 0 ? Math.round(((weekTotal - prevWeekTotal) / prevWeekTotal) * 100) : null;
+
+  const dailyDiffVsCommunity =
+    communityAverage != null ? Math.round(weekTotal / 7 - Number(communityAverage) / 7) : null;
 
   const chartDays = useMemo(() => {
     const days: { key: string; steps: number; label: string; isToday: boolean }[] = [];
@@ -96,12 +129,74 @@ export default function ActividadScreen() {
 
   return (
     <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14 pb-10">
-      <Text className="text-[21px] font-extrabold mb-4 text-text-light dark:text-text-dark">Actividad</Text>
+      <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
+      <View className="bg-auth-bg rounded-[18px] p-4.5 mb-3.5">
+        <View className="flex-row justify-between items-start">
+          <View>
+            <Text className="text-auth-muted text-xs mb-1.5">Esta semana</Text>
+            <Text className="text-white text-[30px] font-bold">{weekTotal.toLocaleString('es-BO')}</Text>
+            <Text className="text-auth-muted text-xs mt-1">pasos totales</Text>
+          </View>
+          {weekTrendPct !== null && (
+            <View className="bg-mint/15 px-2.5 py-1 rounded-full">
+              <Text className="text-mint text-[11px] font-bold">
+                {weekTrendPct >= 0 ? '↑' : '↓'} {Math.abs(weekTrendPct)}%
+              </Text>
+            </View>
+          )}
+        </View>
+        <View className="flex-row items-end gap-1.5 mt-3.5" style={{ height: 34 }}>
+          {weekDays.map((d, i) => (
+            <View
+              key={d.key}
+              className="flex-1 rounded-sm"
+              style={{
+                height: Math.max(3, (d.steps / weekMax) * 34),
+                backgroundColor: i === 6 ? 'rgba(255,255,255,0.25)' : colors.aqua,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+
+      {dailyDiffVsCommunity !== null && (
+        <View className="flex-row items-center gap-2.5 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-3.5 py-3 mb-3">
+          <Activity size={20} color={colors.purple} />
+          <Text className="flex-1 text-[13px] leading-5 text-text-light dark:text-text-dark">
+            {dailyDiffVsCommunity >= 0 ? (
+              <>
+                Tu promedio diario supera por{' '}
+                <Text className="font-bold">{Math.abs(dailyDiffVsCommunity).toLocaleString('es-BO')} pasos</Text> al
+                promedio de {profile?.zone || 'tu zona'}.
+              </>
+            ) : (
+              <>
+                Te faltan <Text className="font-bold">{Math.abs(dailyDiffVsCommunity).toLocaleString('es-BO')} pasos</Text>{' '}
+                por día para llegar al promedio de {profile?.zone || 'tu zona'}.
+              </>
+            )}
+          </Text>
+        </View>
+      )}
+
+      {(streak ?? 0) > 0 && (
+        <View className="flex-row items-center gap-2.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-2xl px-3.5 py-3 mb-4.5">
+          <View className="w-7.5 h-7.5 rounded-full bg-aqua items-center justify-center">
+            <Flame size={15} color="#fff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-[13px] font-bold" style={{ color: '#2E9E7C' }}>¡Vas en racha!</Text>
+            <Text className="text-[11.5px]" style={{ color: '#3E8C71' }}>{streak} días consecutivos</Text>
+          </View>
+        </View>
+      )}
+
+      <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Tu progreso</Text>
       <View className="flex-row gap-2.5 mb-4">
-        <StatCard label="Hoy" value={stepsToday.toLocaleString('es-BO')} unit="pasos" color={colors.aqua} />
-        <StatCard label="Km hoy" value={km.toFixed(1)} unit="km" color={colors.purple} />
-        <StatCard label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} />
+        <StatCard label="Hoy" value={stepsToday.toLocaleString('es-BO')} unit="pasos" color={colors.aqua} pct={goalPct} />
+        <StatCard label="Km hoy" value={km.toFixed(1)} unit="km" color={colors.purple} pct={goalPct} />
+        <StatCard label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} pct={goalPct} />
       </View>
 
       <View className="flex-row bg-card-light dark:bg-card-dark rounded-full p-1 mb-4">
@@ -216,14 +311,28 @@ export default function ActividadScreen() {
   );
 }
 
-function StatCard({ label, value, unit, color }: { label: string; value: string; unit: string; color: string }) {
+function StatCard({
+  label,
+  value,
+  unit,
+  color,
+  pct,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  color: string;
+  pct: number;
+}) {
   return (
     <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl p-3">
       <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1">{label}</Text>
       <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark mb-2">
         {value} <Text className="text-[10.5px] font-semibold text-muted-light dark:text-muted-dark">{unit}</Text>
       </Text>
-      <View className="h-1 rounded-full" style={{ backgroundColor: color }} />
+      <View className="h-1 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+        <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+      </View>
     </View>
   );
 }
