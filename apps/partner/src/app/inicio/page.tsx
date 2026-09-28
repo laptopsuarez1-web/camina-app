@@ -17,6 +17,7 @@ export default function InicioPage() {
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [monthCount, setMonthCount] = useState<number | null>(null);
   const [todayQuotaLeft, setTodayQuotaLeft] = useState<number | null>(null);
+  const [todayQuotaTotal, setTodayQuotaTotal] = useState<number | null>(null);
 
   useEffect(() => {
     if (!business) return;
@@ -56,6 +57,7 @@ export default function InicioPage() {
           .in('status', ['pending', 'confirmed'])
           .gte('created_at', dayStart.toISOString());
         setTodayQuotaLeft(Math.max(0, benefit.daily_quota - (count ?? 0)));
+        setTodayQuotaTotal(benefit.daily_quota);
       });
   }, [business]);
 
@@ -64,7 +66,11 @@ export default function InicioPage() {
       <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Así viene funcionando tu beneficio esta semana." />
 
       <div className="flex gap-3.5 mb-5">
-        <StatCard label="Cupones disponibles hoy" value={todayQuotaLeft ?? '—'} accent="#4FC3A8" />
+        <StatCard
+          label="Cupones que quedan hoy"
+          value={todayQuotaTotal != null ? `${todayQuotaLeft ?? 0} de ${todayQuotaTotal}` : '—'}
+          accent="#4FC3A8"
+        />
         <StatCard label="Canjes este mes" value={monthCount ?? '—'} accent="#8B4FD1" />
         <StatCard label="Plan actual" value={PLAN_LABEL[business?.plan ?? 'primer_paso']} accent="#291C47" />
       </div>

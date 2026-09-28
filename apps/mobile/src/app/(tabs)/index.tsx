@@ -85,7 +85,16 @@ export default function HomeScreen() {
             <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
             <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
           </Pressable>
-          <Text className="text-mint font-extrabold text-xl tracking-tight">CAMINA</Text>
+          <Text
+            className="text-mint font-extrabold text-xl tracking-tight"
+            style={{
+              textShadowColor: 'rgba(127,237,196,0.6)',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 10,
+            }}
+          >
+            CAMINA
+          </Text>
           <View className="flex-row items-center gap-2.5">
             <View className="bg-white/10 w-8 h-8 rounded-full items-center justify-center">
               <Bell size={15} color="#C4B8E8" />
@@ -108,12 +117,13 @@ export default function HomeScreen() {
         </Text>
 
         <View className="items-center justify-center mt-2.5">
-          <ProgressRing size={222} strokeWidth={22} progress={pct}>
+          <ProgressRing size={250} strokeWidth={26} progress={pct}>
             <View className="items-center">
-              <Text className="text-white text-[42px] font-extrabold tracking-tight">{steps}</Text>
-              <Text className="text-auth-muted text-xs mt-1">de {goal} pasos</Text>
-              <View className="flex-row items-center gap-1 mt-2.5 bg-mint/15 px-3 py-1 rounded-full">
-                <Text className="text-mint text-xs font-bold">+{pointsToday} Puntos hoy</Text>
+              <Text className="text-white text-[48px] font-extrabold tracking-tighter">{steps}</Text>
+              <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
+              <View className="flex-row items-center gap-1 mt-2.5 bg-mint/15 pl-1.5 pr-3 py-1 rounded-full">
+                <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
+                <Text className="text-mint text-xs font-bold">+{pointsToday} Puntos</Text>
               </View>
             </View>
           </ProgressRing>

@@ -216,6 +216,22 @@ export default function GruposScreen() {
             No hay más grupos por ahora.
           </Text>
         )}
+        <Pressable
+          onPress={() => setCreating(true)}
+          className="flex-row items-center gap-3 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4"
+        >
+          <View className="w-9.5 h-9.5 rounded-full bg-purple items-center justify-center">
+            <Plus size={16} color="#fff" />
+          </View>
+          <View className="flex-1">
+            <Text className="font-semibold text-[13px] text-text-light dark:text-text-dark">
+              Crear un grupo nuevo
+            </Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs">
+              Armá tu propio grupo y sumá amigos
+            </Text>
+          </View>
+        </Pressable>
       </View>
         </>
       )}

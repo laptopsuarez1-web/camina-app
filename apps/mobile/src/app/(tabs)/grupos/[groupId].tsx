@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
 import { colors } from '@/theme/tokens';
+import { TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER } from '@/constants/business-rules';
 
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -41,6 +42,8 @@ export default function GroupDetailScreen() {
   }
 
   const totalSteps = data.members.reduce((a, m) => a + m.steps, 0);
+  const challengeTarget = data.members.length * TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER;
+  const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -54,6 +57,21 @@ export default function GroupDetailScreen() {
         <Pressable onPress={share} hitSlop={10} className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
           <Share2 size={16} color={colors.aqua} />
         </Pressable>
+      </View>
+
+      <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className="text-[14px] font-medium text-text-light dark:text-text-dark">Reto en equipo</Text>
+          <Text className="text-xs text-muted-light dark:text-muted-dark">
+            {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos
+          </Text>
+        </View>
+        <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+          <View style={{ width: `${challengePct}%`, height: '100%', backgroundColor: colors.aqua }} />
+        </View>
+        <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
+          Meta compartida entre todo el grupo — sumen pasos juntos.
+        </Text>
       </View>
 
       <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
