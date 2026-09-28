@@ -15,7 +15,7 @@
       "backgroundColor": "#241748"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "bo.camina.app",
       "infoPlist": {
         "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganás caminando.",
@@ -24,11 +24,13 @@
         "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
         "UIBackgroundModes": [
           "fetch"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "bo.camina.app",
