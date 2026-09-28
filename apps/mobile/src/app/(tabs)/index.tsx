@@ -12,9 +12,10 @@ import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
 import { useGlobalRanking } from '@/hooks/useGlobalRanking';
+import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity } from 'lucide-react-native';
 
 function greeting(name: string) {
@@ -36,6 +37,8 @@ export default function HomeScreen() {
   const { data: streak } = useStreak();
   const { data: reto } = useWeeklyGoalReto();
   const { data: globalRanking } = useGlobalRanking();
+  const { data: groupRanking } = useMyGroupRanking();
+  const topGroupMate = groupRanking?.ranked.find((r) => r.total > 0);
   const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
@@ -57,8 +60,6 @@ export default function HomeScreen() {
   const nearby = (benefits ?? []).slice(0, 2);
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
-  const metaPct = Math.min(100, Math.round(pct * 100));
-
   async function saveGoal() {
     const n = parseInt(goalInput, 10);
     if (profile && n > 0) {
@@ -76,11 +77,9 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View style={{ position: 'absolute', width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(127,237,196,0.14)', top: -60, right: -50 }} />
-
         <View className="flex-row justify-between items-center px-5 pt-4">
           <Pressable
-            onPress={() => router.push('/(tabs)/perfil')}
+            onPress={() => router.push('/(tabs)/puntos')}
             className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3 py-1.5"
           >
             <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
@@ -241,6 +240,21 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {topGroupMate && (
+          <View
+            className="flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4"
+            style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
+          >
+            <View className="w-9 h-9 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+              <Text className="text-purple font-bold text-xs">{topGroupMate.name[0]?.toUpperCase()}</Text>
+            </View>
+            <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark leading-relaxed">
+              <Text className="font-bold">{topGroupMate.name}</Text> caminó {topGroupMate.total.toLocaleString('es-BO')} pasos
+              esta semana en {groupRanking?.group.name}
+            </Text>
+          </View>
+        )}
+
         {reto && (
           <Pressable
             onPress={() => router.push('/(tabs)/eventos')}
@@ -256,7 +270,10 @@ export default function HomeScreen() {
                   {reto.met}/{reto.target} metas esta semana
                 </Text>
               </View>
-              <Text className="text-xs text-muted-light dark:text-muted-dark">{reto.pct}%</Text>
+              <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
+                <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
+                <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{RETO_REWARD_WEEKLY_GOAL}</Text>
+              </View>
             </View>
             <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
               <View className="h-full bg-aqua rounded-full" style={{ width: `${reto.pct}%` }} />
@@ -317,20 +334,6 @@ export default function HomeScreen() {
           <ChevronRight size={16} color={colors.light.muted} />
         </Pressable>
 
-        <View className="flex-row gap-2.5 px-5 mt-5">
-          <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl py-3.5 items-center" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
-            <Text className="text-xl font-extrabold text-text-light dark:text-text-dark">{balance ?? 0}</Text>
-            <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Puntos</Text>
-          </View>
-          <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl py-3.5 items-center" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
-            <Text className="text-xl font-extrabold text-text-light dark:text-text-dark">{metaPct}%</Text>
-            <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Meta de hoy</Text>
-          </View>
-          <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl py-3.5 items-center" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
-            <Text className="text-xl font-extrabold text-text-light dark:text-text-dark">{streak ?? 0}</Text>
-            <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Racha</Text>
-          </View>
-        </View>
       </View>
     </ScrollView>
   );

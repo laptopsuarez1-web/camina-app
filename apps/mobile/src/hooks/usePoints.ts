@@ -52,6 +52,49 @@ export function useSyncSteps() {
   });
 }
 
+// Puntos ganados hoy, de cualquier origen (pasos, referidos, retos) — no solo
+// los de pasos que ya se ven en el aro de Inicio.
+export function usePointsToday() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['points-today', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('points_ledger')
+        .select('amount, earned_at')
+        .eq('user_id', userId!)
+        .gte('earned_at', `${todayISO()}T00:00:00`);
+      if (error) throw error;
+      return (data ?? []).reduce((sum, row) => sum + row.amount, 0);
+    },
+  });
+}
+
+// El lote de Puntos que vence más pronto — para el aviso "N puntos vencen en
+// M días" (mismo criterio de vigencia que POINTS_TTL_DAYS, ver 0001_init.sql).
+export function usePointsExpiringSoon() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['points-expiring-soon', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('points_ledger')
+        .select('amount, expires_at')
+        .eq('user_id', userId!)
+        .not('expires_at', 'is', null)
+        .order('expires_at', { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      const next = data?.[0];
+      if (!next?.expires_at) return null;
+      const days = Math.max(0, Math.ceil((new Date(next.expires_at).getTime() - Date.now()) / 86_400_000));
+      return { amount: next.amount, days };
+    },
+  });
+}
+
 export function usePointsLedger() {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({

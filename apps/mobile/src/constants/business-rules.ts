@@ -6,3 +6,15 @@ export const DAILY_POINTS_CAP = 20; // tope de Puntos ganados por día
 export const POINTS_TTL_DAYS = 90; // vigencia de un lote de Puntos
 export const BUSINESS_REDEMPTION_COOLDOWN_DAYS = 14; // cooldown por comercio
 export const REDEMPTION_CODE_TTL_MINUTES = 15; // vigencia del código de canje
+
+// Solo para mostrar Km/Calorías estimados en Actividad — no hay wearable que
+// mida esto de verdad, es una aproximación estándar de la industria fitness.
+export const STEP_LENGTH_METERS = 0.762; // paso promedio de un adulto
+export const KCAL_PER_STEP = 0.04;
+
+// Recompensa que se muestra en cada tarjeta de reto (solo texto informativo
+// por ahora — no hay todavía un mecanismo de "reclamar reto" del lado del
+// servidor, así que no se acredita solo por completarlo).
+export const RETO_REWARD_WEEKLY_GOAL = 6;
+export const RETO_REWARD_TENK_STREAK = 10;
+export const RETO_REWARD_REFERRAL = 10;
