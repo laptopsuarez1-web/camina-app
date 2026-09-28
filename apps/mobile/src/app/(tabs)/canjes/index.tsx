@@ -57,6 +57,26 @@ function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string 
   return from <= to ? hhmm >= from && hhmm <= to : hhmm >= from || hhmm <= to;
 }
 
+const DIAS_ABREV = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+// Junta las condiciones del beneficio (días/horario/solo en el local) en
+// líneas cortas para mostrar en el modal de canje, justo donde el usuario
+// pidió verlas antes de usar el código.
+function benefitConditions(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number; dine_in_only: boolean }) {
+  const lines: string[] = [];
+  const activeDays = DIAS_ABREV.filter((_, i) => b.valid_days_mask & (1 << i));
+  if (activeDays.length > 0 && activeDays.length < 7) {
+    lines.push(`Válido: ${activeDays.join(' ')}`);
+  }
+  if (b.valid_from && b.valid_to) {
+    lines.push(`Horario: ${b.valid_from.slice(0, 5)} a ${b.valid_to.slice(0, 5)}`);
+  }
+  if (b.dine_in_only) {
+    lines.push('Solo consumiendo en el local');
+  }
+  return lines;
+}
+
 function useCountdown(expiresAt: string | null) {
   const [remainingMs, setRemainingMs] = useState(0);
   useEffect(() => {
@@ -410,6 +430,7 @@ export default function CanjesScreen() {
               const remaining = Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
               const outOfStock = remaining <= 0;
               const canRedeem = canAfford && available && !outOfStock;
+              const redeeming = redeem.isPending && redeem.variables === b.id;
               const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
               return (
                 <View
@@ -459,11 +480,12 @@ export default function CanjesScreen() {
                     <Pressable
                       onPress={() => handleRedeem(b.id, b)}
                       disabled={!canRedeem || redeem.isPending}
-                      className="rounded-full px-4 py-2"
+                      className="rounded-full px-4 py-2 flex-row items-center gap-1.5"
                       style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line }}
                     >
+                      {redeeming && <ActivityIndicator size="small" color="#fff" />}
                       <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
-                        {buttonLabel}
+                        {redeeming ? 'Canjeando…' : buttonLabel}
                       </Text>
                     </Pressable>
                   </View>
@@ -493,6 +515,16 @@ export default function CanjesScreen() {
                 <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>
               </View>
             </View>
+
+            {activeBenefit && benefitConditions(activeBenefit).length > 0 && (
+              <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-4 gap-1">
+                {benefitConditions(activeBenefit).map((line) => (
+                  <Text key={line} className="text-[11.5px] font-semibold text-purple">
+                    {line}
+                  </Text>
+                ))}
+              </View>
+            )}
 
             {!expired ? (
               <>
