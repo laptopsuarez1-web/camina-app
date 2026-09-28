@@ -34,14 +34,22 @@ export default function ActualizarClavePage() {
     }
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
+    const { data: updated, error } = await supabase.auth.updateUser({ password });
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
+
+    const userId = updated.user?.id;
+    const { data: adminCheck } = await supabase.rpc('is_admin');
+    const { data: ownBusiness } = userId
+      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
+      : { data: null };
+    setLoading(false);
     setDone(true);
-    setTimeout(() => router.replace('/inicio'), 1500);
+    const target = !ownBusiness && adminCheck ? '/admin' : '/inicio';
+    setTimeout(() => router.replace(target), 1500);
   }
 
   return (

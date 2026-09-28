@@ -17,13 +17,29 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
-    router.replace('/inicio');
+
+    // No mandamos siempre a /inicio: si la cuenta es de admin y no tiene un
+    // comercio propio, /inicio la rebota a /admin igual, pero de paso muestra
+    // un instante la pantalla de "Panel de comercios" — confuso para un
+    // admin. Decidimos el destino acá mismo, antes de navegar.
+    const userId = data.session?.user.id;
+    const { data: adminCheck } = await supabase.rpc('is_admin');
+    const { data: ownBusiness } = userId
+      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
+      : { data: null };
+    setLoading(false);
+
+    if (!ownBusiness && adminCheck) {
+      router.replace('/admin');
+    } else {
+      router.replace('/inicio');
+    }
   }
 
   return (
