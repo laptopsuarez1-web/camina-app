@@ -8,6 +8,7 @@
   "scripts": {
     "mobile": "npm run start --workspace apps/mobile",
     "partner": "npm run dev --workspace apps/partner",
+    "vercel-build": "npm run build --workspace apps/partner",
     "supabase:start": "supabase start",
     "supabase:migrate": "supabase db push"
   }
