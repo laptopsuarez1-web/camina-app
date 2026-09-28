@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -15,73 +15,190 @@ export default function BeneficioPage() {
   const { business } = useBusinessAuth();
   const isFree = business?.plan === 'primer_paso';
 
-  const [benefitId, setBenefitId] = useState<string | null>(null);
-  const [nombre, setNombre] = useState('');
-  const [tipo, setTipo] = useState<'gratis' | 'descuento'>('gratis');
-  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>('porcentaje');
-  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState('20');
-  const [descuento, setDescuento] = useState('');
-  const [costo, setCosto] = useState('10');
-  const [cupones, setCupones] = useState('3');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | 'new' | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function loadBenefits() {
+    if (!business) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from('benefits')
+      .select('*')
+      .eq('business_id', business.id)
+      .order('created_at', { ascending: false });
+    setBenefits((data as Benefit[]) ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadBenefits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business]);
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    await supabase.from('benefits').delete().eq('id', id);
+    setDeletingId(null);
+    loadBenefits();
+  }
+
+  if (editingId !== null) {
+    return (
+      <BeneficioForm
+        businessId={business!.id}
+        isFree={isFree}
+        benefit={editingId === 'new' ? null : (benefits.find((b) => b.id === editingId) ?? null)}
+        onDone={() => {
+          setEditingId(null);
+          loadBenefits();
+        }}
+        onCancel={() => setEditingId(null)}
+      />
+    );
+  }
+
+  const atFreeLimit = isFree && benefits.length >= 1;
+
+  return (
+    <DashboardShell>
+      <TopBar title="Mis beneficios" subtitle="Esto es lo que ven los usuarios en el mapa y la lista de Canjes." />
+
+      {isFree && (
+        <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
+          <Star size={15} color="#8B4FD1" />
+          <p className="text-[12.5px] text-[#4A3D68]">
+            Con el plan Primer Paso podés tener un solo beneficio, 100% gratis. Pasá a Paso Firme o Paso
+            Adelante para combinar varios beneficios y cupones ilimitados.
+          </p>
+        </div>
+      )}
+
+      <button
+        onClick={() => !atFreeLimit && setEditingId('new')}
+        disabled={atFreeLimit}
+        title={atFreeLimit ? 'Con el plan Primer Paso solo podés tener un beneficio activo' : ''}
+        className="flex items-center gap-2 rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-4.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ background: '#241748', color: '#7FEDC4' }}
+      >
+        <Plus size={15} /> Agregar beneficio
+      </button>
+
+      {loading && <p className="text-muted text-[13px]">Cargando…</p>}
+
+      {!loading && benefits.length === 0 && (
+        <div className="bg-card border border-line rounded-2xl p-6 text-center max-w-[480px]">
+          <p className="text-[13.5px] text-muted">Todavía no tenés ningún beneficio cargado.</p>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 max-w-[480px]">
+        {benefits.map((b) => (
+          <div key={b.id} className="bg-card border border-line rounded-2xl p-4 flex gap-3.5">
+            {b.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.image_url} alt={b.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-xl bg-bg shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold text-[13.5px] truncate">{b.name || 'Sin nombre'}</p>
+                <span
+                  className="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                  style={{
+                    background: b.active ? '#E3F5F0' : '#F1EBFA',
+                    color: b.active ? '#2E9E7C' : '#8B4FD1',
+                  }}
+                >
+                  {b.active ? 'Activo' : 'Desactivado'}
+                </span>
+              </div>
+              <p className="text-xs text-muted mt-0.5">
+                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
+              </p>
+              <p className="text-xs text-muted mt-0.5">
+                {b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}
+              </p>
+              <div className="flex gap-3 mt-2.5">
+                <button
+                  onClick={() => setEditingId(b.id)}
+                  className="flex items-center gap-1 text-xs font-semibold"
+                  style={{ color: '#4FC3A8' }}
+                >
+                  <Pencil size={12} /> Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(b.id)}
+                  disabled={deletingId === b.id}
+                  className="flex items-center gap-1 text-xs font-semibold disabled:opacity-50"
+                  style={{ color: '#D4537E' }}
+                >
+                  <Trash2 size={12} /> {deletingId === b.id ? 'Borrando…' : 'Borrar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </DashboardShell>
+  );
+}
+
+function BeneficioForm({
+  businessId,
+  isFree,
+  benefit,
+  onDone,
+  onCancel,
+}: {
+  businessId: string;
+  isFree: boolean;
+  benefit: Benefit | null;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [nombre, setNombre] = useState(benefit?.name ?? '');
+  const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? 'gratis');
+  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>(
+    benefit?.discount_percent != null ? 'porcentaje' : 'texto'
+  );
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(
+    benefit?.discount_percent != null ? String(benefit.discount_percent) : '20'
+  );
+  const [descuento, setDescuento] = useState(benefit?.discount_percent == null ? (benefit?.discount_detail ?? '') : '');
+  const [costo, setCosto] = useState(benefit ? String(benefit.cost_points) : '10');
+  const [ilimitado, setIlimitado] = useState(!isFree && benefit != null && benefit.daily_quota == null);
+  const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
+  const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva casi un día entero caminando).
   const puntosSugeridos = valorBs.trim() ? Math.round(Number(valorBs) * 2) : null;
-  const [validFrom, setValidFrom] = useState('');
-  const [validTo, setValidTo] = useState('');
-  const [diasMask, setDiasMask] = useState(127);
-  const [dineInOnly, setDineInOnly] = useState(false);
-  const [active, setActive] = useState(true);
+  const [validFrom, setValidFrom] = useState(benefit?.valid_from?.slice(0, 5) ?? '');
+  const [validTo, setValidTo] = useState(benefit?.valid_to?.slice(0, 5) ?? '');
+  const [diasMask, setDiasMask] = useState(benefit?.valid_days_mask ?? 127);
+  const [dineInOnly, setDineInOnly] = useState(benefit?.dine_in_only ?? false);
+  const [active, setActive] = useState(benefit?.active ?? true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (!business) return;
-    supabase
-      .from('benefits')
-      .select('*')
-      .eq('business_id', business.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        const b = data as Benefit | null;
-        if (!b) return;
-        setBenefitId(b.id);
-        setNombre(b.name);
-        setTipo(b.type);
-        if (b.discount_percent != null) {
-          setDescuentoModo('porcentaje');
-          setDescuentoPorcentaje(String(b.discount_percent));
-        } else {
-          setDescuentoModo('texto');
-          setDescuento(b.discount_detail ?? '');
-        }
-        setCosto(String(b.cost_points));
-        setCupones(String(b.daily_quota));
-        setImageUrl(b.image_url);
-        setValidFrom(b.valid_from?.slice(0, 5) ?? '');
-        setValidTo(b.valid_to?.slice(0, 5) ?? '');
-        setDiasMask(b.valid_days_mask);
-        setDineInOnly(b.dine_in_only);
-        setActive(b.active);
-      });
-  }, [business]);
+  // El upload de foto necesita una carpeta — para un beneficio nuevo todavía
+  // no hay id, así que usamos la del comercio hasta el primer guardado.
+  const [benefitId, setBenefitId] = useState<string | null>(benefit?.id ?? null);
 
   function toggleDia(bit: number) {
     setDiasMask((prev) => (prev & (1 << bit) ? prev & ~(1 << bit) : prev | (1 << bit)));
   }
 
   async function handleSave() {
-    if (!business) return;
     setSaving(true);
     setError(null);
     setSaved(false);
 
     const payload = {
-      business_id: business.id,
+      business_id: businessId,
       name: nombre.trim(),
       type: tipo,
       discount_detail:
@@ -92,7 +209,7 @@ export default function BeneficioPage() {
           : null,
       discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
       cost_points: Number(costo) || 0,
-      daily_quota: Number(cupones) || 0,
+      daily_quota: !isFree && ilimitado ? null : Number(cupones) || 0,
       active,
       image_url: imageUrl,
       valid_from: validFrom || null,
@@ -103,19 +220,36 @@ export default function BeneficioPage() {
 
     const { error } = benefitId
       ? await supabase.from('benefits').update(payload).eq('id', benefitId)
-      : await supabase.from('benefits').insert(payload).select().single().then(async (res) => {
-          if (res.data) setBenefitId((res.data as Benefit).id);
-          return res;
-        });
+      : await supabase
+          .from('benefits')
+          .insert(payload)
+          .select()
+          .single()
+          .then(async (res) => {
+            if (res.data) setBenefitId((res.data as Benefit).id);
+            return res;
+          });
 
     setSaving(false);
     if (error) setError(error.message);
-    else setSaved(true);
+    else {
+      setSaved(true);
+      onDone();
+    }
   }
 
   return (
     <DashboardShell>
-      <TopBar title="Mi beneficio" subtitle="Esto es lo que ven los usuarios en el mapa y la lista de Canjes." />
+      <button
+        onClick={onCancel}
+        className="flex items-center gap-1.5 text-[13px] font-semibold text-muted mb-3"
+      >
+        <ChevronLeft size={16} /> Volver a mis beneficios
+      </button>
+      <TopBar
+        title={benefitId ? 'Editar beneficio' : 'Nuevo beneficio'}
+        subtitle="Esto es lo que ven los usuarios en el mapa y la lista de Canjes."
+      />
 
       {isFree && (
         <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
@@ -127,18 +261,16 @@ export default function BeneficioPage() {
       )}
 
       <div className="bg-card border border-line rounded-2xl p-5.5 max-w-[480px]">
-        {business && (
-          <div className="mb-4.5">
-            <ImageUpload
-              bucket="benefit-images"
-              path={`${business.id}/photo`}
-              value={imageUrl}
-              onUploaded={setImageUrl}
-              label="Foto del beneficio"
-              shape="wide"
-            />
-          </div>
-        )}
+        <div className="mb-4.5">
+          <ImageUpload
+            bucket="benefit-images"
+            path={`${businessId}/${benefitId ?? 'new'}-photo`}
+            value={imageUrl}
+            onUploaded={setImageUrl}
+            label="Foto del beneficio"
+            shape="wide"
+          />
+        </div>
 
         <Field label="Nombre del beneficio">
           <input
@@ -264,7 +396,7 @@ export default function BeneficioPage() {
           </div>
         </div>
 
-        <div className="flex gap-3.5 mb-5">
+        <div className="flex gap-3.5 mb-3.5">
           <div className="flex-1">
             <Field label="Costo en Puntos">
               <input
@@ -275,15 +407,23 @@ export default function BeneficioPage() {
             </Field>
           </div>
           <div className="flex-1">
-            <Field label={`Cupones por día${isFree ? ' (mín. 3)' : ''}`}>
+            <Field label={ilimitado ? 'Cupones por día' : `Cupones por día${isFree ? ' (mín. 3)' : ''}`}>
               <input
                 value={cupones}
                 onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))}
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                disabled={!isFree && ilimitado}
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] disabled:opacity-40"
               />
             </Field>
           </div>
         </div>
+
+        {!isFree && (
+          <label className="flex items-center gap-2 mb-4.5 cursor-pointer">
+            <input type="checkbox" checked={ilimitado} onChange={(e) => setIlimitado(e.target.checked)} />
+            <span className="text-[13px]">Cupones ilimitados — sin tope diario</span>
+          </label>
+        )}
 
         <label className="block text-[12.5px] font-semibold mb-1.5">Condiciones (opcional)</label>
         <div className="flex gap-3.5 mb-3.5">

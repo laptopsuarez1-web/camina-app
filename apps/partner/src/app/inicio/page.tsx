@@ -42,22 +42,33 @@ export default function InicioPage() {
 
     supabase
       .from('benefits')
-      .select('daily_quota')
+      .select('id, daily_quota')
       .eq('business_id', business.id)
       .eq('active', true)
-      .maybeSingle()
-      .then(async ({ data: benefit }) => {
-        if (!benefit) return;
+      .then(async ({ data: benefits }) => {
+        // Los beneficios con cupones ilimitados no entran en esta cuenta — no
+        // tiene sentido mostrar "quedan X de ilimitados". Si TODOS son
+        // ilimitados, la tarjeta se oculta (ver abajo).
+        const limited = (benefits ?? []).filter((b) => b.daily_quota != null) as { id: string; daily_quota: number }[];
+        if (limited.length === 0) return;
+
         const dayStart = new Date();
         dayStart.setHours(0, 0, 0, 0);
-        const { count } = await supabase
+        const { data: todayRedemptions } = await supabase
           .from('redemptions')
-          .select('id', { count: 'exact', head: true })
-          .eq('business_id', business.id)
+          .select('benefit_id')
+          .in('benefit_id', limited.map((b) => b.id))
           .in('status', ['pending', 'confirmed'])
           .gte('created_at', dayStart.toISOString());
-        setTodayQuotaLeft(Math.max(0, benefit.daily_quota - (count ?? 0)));
-        setTodayQuotaTotal(benefit.daily_quota);
+
+        const usedByBenefit = new Map<string, number>();
+        for (const r of todayRedemptions ?? []) {
+          usedByBenefit.set(r.benefit_id, (usedByBenefit.get(r.benefit_id) ?? 0) + 1);
+        }
+        const total = limited.reduce((a, b) => a + b.daily_quota, 0);
+        const used = limited.reduce((a, b) => a + Math.min(b.daily_quota, usedByBenefit.get(b.id) ?? 0), 0);
+        setTodayQuotaTotal(total);
+        setTodayQuotaLeft(Math.max(0, total - used));
       });
   }, [business]);
 
@@ -66,11 +77,9 @@ export default function InicioPage() {
       <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Así viene funcionando tu beneficio esta semana." />
 
       <div className="flex gap-3.5 mb-5">
-        <StatCard
-          label="Cupones que quedan hoy"
-          value={todayQuotaTotal != null ? `${todayQuotaLeft ?? 0} de ${todayQuotaTotal}` : '—'}
-          accent="#4FC3A8"
-        />
+        {todayQuotaTotal != null && (
+          <StatCard label="Cupones que quedan hoy" value={`${todayQuotaLeft ?? 0} de ${todayQuotaTotal}`} accent="#4FC3A8" />
+        )}
         <StatCard label="Canjes este mes" value={monthCount ?? '—'} accent="#8B4FD1" />
         <StatCard label="Plan actual" value={PLAN_LABEL[business?.plan ?? 'primer_paso']} accent="#291C47" />
       </div>

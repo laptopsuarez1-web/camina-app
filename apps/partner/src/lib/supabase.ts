@@ -49,7 +49,7 @@ export interface Benefit {
   discount_detail: string | null;
   discount_percent: number | null;
   cost_points: number;
-  daily_quota: number;
+  daily_quota: number | null;
   active: boolean;
   image_url: string | null;
   dine_in_only: boolean;

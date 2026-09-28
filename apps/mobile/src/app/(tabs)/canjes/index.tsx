@@ -459,8 +459,9 @@ export default function CanjesScreen() {
             {filtered.map((b) => {
               const canAfford = (balance ?? 0) >= b.cost_points;
               const available = isBenefitAvailableNow(b);
-              const remaining = Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
-              const outOfStock = remaining <= 0;
+              const unlimited = b.daily_quota == null;
+              const remaining = b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
+              const outOfStock = !unlimited && remaining <= 0;
               const canRedeem = canAfford && available && !outOfStock;
               const redeeming = redeem.isPending && redeem.variables === b.id;
               const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
@@ -494,7 +495,7 @@ export default function CanjesScreen() {
                             <Text className="text-[9.5px] font-bold" style={{ color: colors.warn }}>Fuera de horario</Text>
                           </View>
                         )}
-                        {available && !outOfStock && remaining <= 3 && (
+                        {available && !unlimited && !outOfStock && remaining <= 3 && (
                           <Text className="text-[9.5px] font-semibold text-muted-light dark:text-muted-dark">
                             Quedan {remaining} hoy
                           </Text>

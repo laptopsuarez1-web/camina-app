@@ -10,7 +10,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 
 const NAV = [
   { href: '/inicio', label: 'Inicio', icon: Home },
-  { href: '/beneficio', label: 'Mi beneficio', icon: Gift },
+  { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/canjes', label: 'Canjes', icon: Receipt },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/plan', label: 'Plan', icon: CreditCard },
