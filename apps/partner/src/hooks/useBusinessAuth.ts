@@ -8,9 +8,13 @@ import { consumePendingBusiness } from '@/lib/pending-business';
 export function useBusinessAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const refreshBusiness = useCallback(async (userId: string, email: string | undefined) => {
+    const { data: adminCheck } = await supabase.rpc('is_admin');
+    setIsAdmin(!!adminCheck);
+
     const { data } = await supabase
       .from('businesses')
       .select('*')
@@ -58,7 +62,10 @@ export function useBusinessAuth() {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession);
       if (newSession) await refreshBusiness(newSession.user.id, newSession.user.email);
-      else setBusiness(null);
+      else {
+        setBusiness(null);
+        setIsAdmin(false);
+      }
       setLoading(false);
     });
 
@@ -68,5 +75,5 @@ export function useBusinessAuth() {
     };
   }, [refreshBusiness]);
 
-  return { session, business, loading, refreshBusiness };
+  return { session, business, isAdmin, loading, refreshBusiness };
 }

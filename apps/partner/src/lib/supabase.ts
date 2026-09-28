@@ -30,6 +30,7 @@ export interface Business {
   hours_text: string | null;
   logo_url: string | null;
   plan: BusinessPlan;
+  created_at: string;
 }
 
 export interface Benefit {

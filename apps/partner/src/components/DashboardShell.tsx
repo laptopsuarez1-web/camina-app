@@ -23,13 +23,18 @@ const PLAN_LABEL: Record<string, string> = {
 };
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { session, business, loading } = useBusinessAuth();
+  const { session, business, isAdmin, loading } = useBusinessAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !session) router.replace('/login');
-  }, [loading, session, router]);
+    if (loading) return;
+    if (!session) {
+      router.replace('/login');
+    } else if (!business && isAdmin) {
+      router.replace('/admin');
+    }
+  }, [loading, session, business, isAdmin, router]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -43,7 +48,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted px-6 text-center text-sm">
-        No encontramos un comercio asociado a esta cuenta. Contactá a soporte de Camina.
+        {isAdmin ? 'Redirigiendo al panel de administrador…' : 'No encontramos un comercio asociado a esta cuenta. Contactá a soporte de Camina.'}
       </div>
     );
   }
