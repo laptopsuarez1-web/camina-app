@@ -77,38 +77,48 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View className="flex-row justify-between items-center px-5 pt-4">
-          <Pressable
-            onPress={() => router.push('/(tabs)/puntos')}
-            className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3 py-1.5"
-          >
-            <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
-            <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
-          </Pressable>
-          <Text
-            className="text-mint font-extrabold text-xl tracking-tight"
-            style={{
-              textShadowColor: 'rgba(127,237,196,0.6)',
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 10,
-            }}
-          >
-            CAMINA
-          </Text>
-          <View className="flex-row items-center gap-2.5">
-            <View className="bg-white/10 w-8 h-8 rounded-full items-center justify-center">
-              <Bell size={15} color="#C4B8E8" />
-            </View>
+        <View className="px-5 pt-4" style={{ position: 'relative' }}>
+          <View className="flex-row justify-between items-center">
             <Pressable
-              onPress={() => router.push('/(tabs)/perfil')}
-              className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
+              onPress={() => router.push('/(tabs)/puntos')}
+              className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3 py-1.5"
             >
-              {profile?.photo_url ? (
-                <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
-              ) : (
-                <Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
-              )}
+              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
+              <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
             </Pressable>
+            <View className="flex-row items-center gap-2.5">
+              <View className="bg-white/10 w-8 h-8 rounded-full items-center justify-center">
+                <Bell size={15} color="#C4B8E8" />
+              </View>
+              <Pressable
+                onPress={() => router.push('/(tabs)/perfil')}
+                className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
+              >
+                {profile?.photo_url ? (
+                  <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
+                ) : (
+                  <Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+          {/* Posición absoluta a todo el ancho para que quede centrado de verdad
+              respecto a la pantalla (y al aro de abajo), sin importar que el
+              chip de puntos y los botones de la derecha tengan anchos distintos. */}
+          <View
+            pointerEvents="none"
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text
+              className="text-mint font-extrabold text-xl tracking-tight"
+              style={{
+                textShadowColor: 'rgba(127,237,196,0.6)',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 10,
+              }}
+            >
+              CAMINA
+            </Text>
           </View>
         </View>
 

@@ -501,7 +501,7 @@ export default function CanjesScreen() {
                     const outOfStock = !unlimited && remaining <= 0;
                     const canRedeem = canAfford && available && !outOfStock;
                     const redeeming = redeem.isPending && redeem.variables === b.id;
-                    const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
+                    const statusLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : null;
                     return (
                       <View
                         key={b.id}
@@ -544,9 +544,22 @@ export default function CanjesScreen() {
                             style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line }}
                           >
                             {redeeming && <ActivityIndicator size="small" color="#fff" />}
-                            <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
-                              {redeeming ? 'Canjeando…' : buttonLabel}
-                            </Text>
+                            {redeeming ? (
+                              <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
+                                Canjeando…
+                              </Text>
+                            ) : statusLabel ? (
+                              <Text className="font-bold text-[13px]" style={{ color: colors.light.muted }}>
+                                {statusLabel}
+                              </Text>
+                            ) : (
+                              <>
+                                <Image source={require('@/../assets/camina-coin.png')} style={{ width: 15, height: 15, borderRadius: 7.5 }} />
+                                <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
+                                  {b.cost_points}
+                                </Text>
+                              </>
+                            )}
                           </Pressable>
                         </View>
                       </View>

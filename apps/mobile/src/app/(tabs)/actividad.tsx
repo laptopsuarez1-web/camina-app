@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Flame } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -131,7 +132,12 @@ export default function ActividadScreen() {
     <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14 pb-10">
       <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
-      <View className="bg-auth-bg rounded-[18px] p-4.5 mb-3.5">
+      <LinearGradient
+        colors={['#2f1e5c', '#241748']}
+        start={{ x: 0.15, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={{ borderRadius: 18, padding: 18, marginBottom: 14 }}
+      >
         <View className="flex-row justify-between items-start">
           <View>
             <Text className="text-auth-muted text-xs mb-1.5">Esta semana</Text>
@@ -158,7 +164,7 @@ export default function ActividadScreen() {
             />
           ))}
         </View>
-      </View>
+      </LinearGradient>
 
       {dailyDiffVsCommunity !== null && (
         <View className="flex-row items-center gap-2.5 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-3.5 py-3 mb-3">
@@ -257,7 +263,7 @@ export default function ActividadScreen() {
               cell ? (
                 <View
                   key={cell.key}
-                  className="w-8 h-8 rounded-lg items-center justify-center"
+                  className="w-8 h-8 rounded-full items-center justify-center"
                   style={{ backgroundColor: cell.met ? colors.mint : colors.light.line }}
                 >
                   <Text
