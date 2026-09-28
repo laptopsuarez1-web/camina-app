@@ -4,6 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 interface ProgressRingProps {
   size?: number;
   strokeWidth?: number;
+  radius?: number;
   progress: number; // 0..1
   trackColor?: string;
   progressColor?: string;
@@ -13,12 +14,13 @@ interface ProgressRingProps {
 export function ProgressRing({
   size = 250,
   strokeWidth = 26,
+  radius,
   progress,
   trackColor = 'rgba(255,255,255,0.1)',
   progressColor = '#7FEDC4',
   children,
 }: ProgressRingProps) {
-  const r = (size - strokeWidth) / 2;
+  const r = radius ?? (size - strokeWidth) / 2;
   const c = 2 * Math.PI * r;
   const clamped = Math.min(1, Math.max(0, progress));
   const offset = c - clamped * c;

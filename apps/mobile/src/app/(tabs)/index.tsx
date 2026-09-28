@@ -77,11 +77,13 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View className="px-5" style={{ position: 'relative', paddingTop: 18 }}>
-          <View className="flex-row justify-between items-center">
+        <View style={{ paddingTop: 18 }}>
+        <View className="px-5" style={{ position: 'relative' }}>
+          <View className="flex-row justify-between items-center" style={{ height: 32 }}>
             <Pressable
               onPress={() => router.push('/(tabs)/puntos')}
-              className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3 py-1.5"
+              className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3"
+              style={{ height: 32 }}
             >
               <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
               <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
@@ -95,7 +97,7 @@ export default function HomeScreen() {
                 className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
               >
                 {profile?.photo_url ? (
-                  <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
+                  <Image source={{ uri: profile.photo_url }} style={{ width: '100%', height: '100%' }} />
                 ) : (
                   <Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
                 )}
@@ -104,7 +106,11 @@ export default function HomeScreen() {
           </View>
           {/* Posición absoluta a todo el ancho para que quede centrado de verdad
               respecto a la pantalla (y al aro de abajo), sin importar que el
-              chip de puntos y los botones de la derecha tengan anchos distintos. */}
+              chip de puntos y los botones de la derecha tengan anchos distintos.
+              El contenedor "relative" no tiene padding propio — así este overlay
+              (top:0/bottom:0) mide exactamente la altura de la fila de arriba,
+              en vez de la altura completa con el padding incluido (que la
+              corría más arriba que el chip de puntos y el avatar). */}
           <View
             pointerEvents="none"
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
@@ -124,13 +130,14 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
+        </View>
 
         <Text className="text-auth-muted px-5 font-semibold text-[14px]" style={{ paddingTop: 16 }}>
           {greeting(profile?.full_name ?? '')}
         </Text>
 
         <View className="items-center justify-center" style={{ marginTop: 16 }}>
-          <ProgressRing size={250} strokeWidth={26} progress={pct}>
+          <ProgressRing size={250} strokeWidth={26} radius={108} progress={pct}>
             <View className="items-center">
               <Text style={{ color: '#fff', fontSize: 48, fontWeight: '800', letterSpacing: -1.4, lineHeight: 48 }}>
                 {steps}
