@@ -72,10 +72,10 @@ Nuevo, 1024×1024, en `apps/mobile/assets/`: `icon.png`, `splash-icon.png`, `and
 
 ## Pendientes en Supabase (producción)
 
-Estado revisado el 28/09:
+Estado al 28/09:
 - OK: Site URL `https://caminaapp.com`; redirecciones permitidas incluyen `camina://auth-callback`; correo por SMTP propio (Resend, `no-reply@caminaapp.com`); Google activado; funciones `send-push-notifications`, `delete-account` y `delete-business-account` activas; tareas pg_cron y trigger de push creados.
-- **Falta — plantillas de correo:** siguen en inglés por defecto ("Confirm your email address"). Hay que pegarlas en español (Authentication → Emails).
-- **Falta — Sign in with Apple:** el proveedor Apple está desactivado. Para el flujo nativo de iOS: activar Apple en Authentication → Providers y poner `bo.camina.app` en "Client IDs". Requiere tener la cuenta de Apple Developer y el App ID con la capacidad "Sign in with Apple".
-- **Falta — proteger la función de push:** hoy cualquiera con la clave pública podría llamarla. Crear el secreto `PUSH_WEBHOOK_SECRET` y hacer que el trigger `notify_send_push` mande el header `x-webhook-secret`.
+- **Hecho — plantillas de correo:** confirmación, recuperación, enlace mágico, cambio de correo e invitación, en español y con el estilo de Camina.
+- **Hecho — Sign in with Apple (lado Supabase):** proveedor Apple activado con Client ID `bo.camina.app`. Falta del lado de Apple: cuenta de Apple Developer y el App ID con la capacidad "Sign in with Apple".
+- **Hecho — función de push protegida:** la función exige el header `x-webhook-secret`. El secreto vive en los secretos de la función y en Supabase Vault (el trigger `notify_send_push` lo lee de ahí). Probado: sin secreto responde 401, y una notificación real por el trigger responde 200.
 - **Falta — probar push real:** hay 0 tokens registrados, así que nunca se probó en un teléfono.
 - Recomendado: restringir la clave de Google Maps (está en `app.json`) a `bo.camina.app` desde Google Cloud.
