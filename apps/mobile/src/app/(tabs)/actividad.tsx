@@ -177,12 +177,12 @@ export default function ActividadScreen() {
               <>
                 Tu promedio diario supera por{' '}
                 <Text className="font-bold">{Math.abs(dailyDiffVsCommunity).toLocaleString('es-BO')} pasos</Text> al
-                promedio de {profile?.zone || 'tu zona'}.
+                promedio de la comunidad Camina.
               </>
             ) : (
               <>
                 Te faltan <Text className="font-bold">{Math.abs(dailyDiffVsCommunity).toLocaleString('es-BO')} pasos</Text>{' '}
-                por día para llegar al promedio de {profile?.zone || 'tu zona'}.
+                por día para llegar al promedio de la comunidad Camina.
               </>
             )}
           </Text>

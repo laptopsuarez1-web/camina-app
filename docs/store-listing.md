@@ -8,12 +8,13 @@
 | Subtítulo iOS (30 car.) | Caminá y ganá Puntos |
 | Descripción corta Google Play (80 car.) | Convertí tus pasos en Puntos y canjealos en comercios de tu ciudad. |
 | Categoría | Salud y bienestar (secundaria: Estilo de vida) |
+| Países / regiones de la tienda | Bolivia (agregar otros países solo si se abre ahí) |
 | Clasificación de edad | 4+ / Todos |
 | Bundle ID / Package | `bo.camina.app` |
 | URL de Términos | https://caminaapp.com/terminos |
 | URL de Privacidad | https://caminaapp.com/privacidad |
 | URL de soporte / marketing | https://caminaapp.com |
-| Palabras clave iOS (100 car.) | caminar,pasos,puntos,premios,descuentos,comercios,bienestar,salud,canje,tarija |
+| Palabras clave iOS (100 car.) | caminar,pasos,puntos,premios,descuentos,comercios,bienestar,salud,canje,bolivia,tarija |
 
 ## Descripción larga (iOS y Google Play)
 
@@ -33,6 +34,8 @@ TODO EN UNA APP
 
 TU PRIVACIDAD
 Camina solo lee la cantidad de pasos. No escribe en Salud, no vende tus datos y tu ubicación se usa solo para mostrarte comercios cerca.
+
+Disponible en Tarija; pronto en Santa Cruz, La Paz y más ciudades de Bolivia.
 
 ¿Tenés un comercio? Sumalo en caminaapp.com y ofrecé premios a quienes caminan.
 
