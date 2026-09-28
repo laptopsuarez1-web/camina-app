@@ -17,6 +17,7 @@ import { BlurView } from 'expo-blur';
 import { Search, Heart, Locate, Layers, List, ChevronRight } from 'lucide-react-native';
 import {
   useBenefits,
+  useBenefitsRemainingToday,
   useRedeemBenefit,
   useRegenerateCode,
   useCancelExpiredRedemption,
@@ -40,6 +41,21 @@ const TARIJA_REGION = {
   latitudeDelta: 0.045,
   longitudeDelta: 0.045,
 };
+
+// Mismo criterio que redeem_benefit en supabase/migrations/0003_fixes.sql,
+// pero para mostrarlo en la UI antes de intentar canjear (el servidor igual
+// lo vuelve a validar, esto es solo para no dejar apretar un botón que va a
+// fallar). Asume hora local del teléfono = hora de Bolivia.
+function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number }) {
+  const now = new Date();
+  const dayBit = (now.getDay() + 6) % 7; // JS: 0=domingo..6=sábado → 0=lunes..6=domingo
+  if (!(b.valid_days_mask & (1 << dayBit))) return false;
+  if (!b.valid_from || !b.valid_to) return true;
+  const hhmm = now.toTimeString().slice(0, 5);
+  const from = b.valid_from.slice(0, 5);
+  const to = b.valid_to.slice(0, 5);
+  return from <= to ? hhmm >= from && hhmm <= to : hhmm >= from || hhmm <= to;
+}
 
 function useCountdown(expiresAt: string | null) {
   const [remainingMs, setRemainingMs] = useState(0);
@@ -100,6 +116,7 @@ function MapMarker({ name, logoUrl }: { name: string; logoUrl?: string | null })
 export default function CanjesScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading } = useBenefits();
+  const { data: remainingToday } = useBenefitsRemainingToday();
   const { data: balance } = usePointsBalance();
   const redeem = useRedeemBenefit();
   const regenerate = useRegenerateCode();
@@ -389,11 +406,16 @@ export default function CanjesScreen() {
 
             {filtered.map((b) => {
               const canAfford = (balance ?? 0) >= b.cost_points;
+              const available = isBenefitAvailableNow(b);
+              const remaining = Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
+              const outOfStock = remaining <= 0;
+              const canRedeem = canAfford && available && !outOfStock;
+              const buttonLabel = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : `${b.cost_points} Pts`;
               return (
                 <View
                   key={b.id}
                   className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
-                  style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 }}
+                  style={{ shadowColor: '#291C47', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2, opacity: available ? 1 : 0.6 }}
                 >
                   {b.image_url && (
                     <Image
@@ -408,6 +430,23 @@ export default function CanjesScreen() {
                       <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">{b.business.name}</Text>
                       <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5">{b.business.category}</Text>
                       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-1.5">{b.name}</Text>
+                      <View className="flex-row items-center gap-1.5 mt-1.5 flex-wrap">
+                        {b.dine_in_only && (
+                          <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-full px-2 py-0.5">
+                            <Text className="text-[9.5px] font-bold text-purple">Solo en el local</Text>
+                          </View>
+                        )}
+                        {!available && (
+                          <View className="bg-warn-light rounded-full px-2 py-0.5">
+                            <Text className="text-[9.5px] font-bold" style={{ color: colors.warn }}>Fuera de horario</Text>
+                          </View>
+                        )}
+                        {available && !outOfStock && remaining <= 3 && (
+                          <Text className="text-[9.5px] font-semibold text-muted-light dark:text-muted-dark">
+                            Quedan {remaining} hoy
+                          </Text>
+                        )}
+                      </View>
                     </View>
                     <Pressable hitSlop={8}>
                       <Heart size={17} color={colors.light.muted} />
@@ -419,12 +458,12 @@ export default function CanjesScreen() {
                     </Text>
                     <Pressable
                       onPress={() => handleRedeem(b.id, b)}
-                      disabled={!canAfford || redeem.isPending}
+                      disabled={!canRedeem || redeem.isPending}
                       className="rounded-full px-4 py-2"
-                      style={{ backgroundColor: canAfford ? colors.aqua : colors.light.line }}
+                      style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line }}
                     >
-                      <Text className="font-bold text-[13px]" style={{ color: canAfford ? '#fff' : colors.light.muted }}>
-                        {b.cost_points} Pts
+                      <Text className="font-bold text-[13px]" style={{ color: canRedeem ? '#fff' : colors.light.muted }}>
+                        {buttonLabel}
                       </Text>
                     </Pressable>
                   </View>

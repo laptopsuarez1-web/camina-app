@@ -18,6 +18,22 @@ export function useBenefits() {
   });
 }
 
+// Cupones ya usados hoy por beneficio — para mostrar "Quedan X hoy" sin
+// exponerle a cada usuario el historial de canjes de los demás.
+export function useBenefitsRemainingToday() {
+  return useQuery({
+    queryKey: ['benefits-remaining-today'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('benefits_remaining_today');
+      if (error) throw error;
+      const map = new Map<string, number>();
+      for (const row of data ?? []) map.set(row.benefit_id, row.redeemed_today);
+      return map;
+    },
+    staleTime: 60_000,
+  });
+}
+
 export function useRedeemBenefit() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -29,6 +45,7 @@ export function useRedeemBenefit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points-balance'] });
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
+      queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
     },
   });
 }

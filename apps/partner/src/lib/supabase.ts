@@ -30,6 +30,7 @@ export interface Business {
   hours_text: string | null;
   logo_url: string | null;
   cover_url: string | null;
+  website: string | null;
   plan: BusinessPlan;
   created_at: string;
 }
@@ -44,6 +45,10 @@ export interface Benefit {
   daily_quota: number;
   active: boolean;
   image_url: string | null;
+  dine_in_only: boolean;
+  valid_from: string | null;
+  valid_to: string | null;
+  valid_days_mask: number;
 }
 
 export interface Redemption {

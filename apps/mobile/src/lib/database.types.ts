@@ -35,6 +35,7 @@ export interface Business {
   lng: number | null;
   logo_url: string | null;
   cover_url: string | null;
+  website: string | null;
   plan: BusinessPlan;
   created_at: string;
 }
@@ -49,6 +50,7 @@ export interface Benefit {
   daily_quota: number;
   active: boolean;
   image_url: string | null;
+  dine_in_only: boolean;
   valid_from: string | null;
   valid_to: string | null;
   valid_days_mask: number;
@@ -169,6 +171,10 @@ export type Database = {
         Returns: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }[];
       };
       community_weekly_average: { Args: Record<string, never>; Returns: number };
+      benefits_remaining_today: {
+        Args: Record<string, never>;
+        Returns: { benefit_id: string; redeemed_today: number }[];
+      };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };
     Enums: Record<string, never>;

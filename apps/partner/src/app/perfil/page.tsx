@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Clock, Phone, Trash2 } from 'lucide-react';
+import { MapPin, Clock, Phone, Instagram, Globe, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -18,6 +18,8 @@ export default function PerfilPage() {
   const [direccion, setDireccion] = useState('');
   const [horario, setHorario] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [website, setWebsite] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -30,6 +32,8 @@ export default function PerfilPage() {
     setDireccion(business.address ?? '');
     setHorario(business.hours_text ?? '');
     setTelefono(business.phone ?? '');
+    setInstagram(business.instagram ?? '');
+    setWebsite(business.website ?? '');
   }, [business]);
 
   async function handleSave() {
@@ -44,6 +48,8 @@ export default function PerfilPage() {
         address: direccion.trim(),
         hours_text: horario.trim(),
         phone: telefono.trim(),
+        instagram: instagram.trim() || null,
+        website: website.trim() || null,
       })
       .eq('id', business.id);
     setSaving(false);
@@ -135,10 +141,27 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
-          <Field label="Contacto" icon={<Phone size={13} color="#7C6A9C" />}>
+          <Field label="Contacto (WhatsApp)" icon={<Phone size={13} color="#7C6A9C" />}>
             <input
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
+              placeholder="+591 7XXXXXXX"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Instagram" icon={<Instagram size={13} color="#7C6A9C" />}>
+            <input
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="@tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Sitio web" icon={<Globe size={13} color="#7C6A9C" />}>
+            <input
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://..."
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>

@@ -7,6 +7,10 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 
+// bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
+// supabase/migrations/0001_init.sql). 127 = todos los días.
+const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
 export default function BeneficioPage() {
   const { business } = useBusinessAuth();
   const isFree = business?.plan === 'primer_paso';
@@ -20,8 +24,13 @@ export default function BeneficioPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
-  // día, algo de Bs 10 ya te lleva casi un día entero caminando).
+  // día, algo de Bs 10 ya le lleva casi un día entero caminando).
   const puntosSugeridos = valorBs.trim() ? Math.round(Number(valorBs) * 2) : null;
+  const [validFrom, setValidFrom] = useState('');
+  const [validTo, setValidTo] = useState('');
+  const [diasMask, setDiasMask] = useState(127);
+  const [dineInOnly, setDineInOnly] = useState(false);
+  const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -32,7 +41,8 @@ export default function BeneficioPage() {
       .from('benefits')
       .select('*')
       .eq('business_id', business.id)
-      .eq('active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
       .then(({ data }) => {
         const b = data as Benefit | null;
@@ -44,8 +54,17 @@ export default function BeneficioPage() {
         setCosto(String(b.cost_points));
         setCupones(String(b.daily_quota));
         setImageUrl(b.image_url);
+        setValidFrom(b.valid_from?.slice(0, 5) ?? '');
+        setValidTo(b.valid_to?.slice(0, 5) ?? '');
+        setDiasMask(b.valid_days_mask);
+        setDineInOnly(b.dine_in_only);
+        setActive(b.active);
       });
   }, [business]);
+
+  function toggleDia(bit: number) {
+    setDiasMask((prev) => (prev & (1 << bit) ? prev & ~(1 << bit) : prev | (1 << bit)));
+  }
 
   async function handleSave() {
     if (!business) return;
@@ -60,8 +79,12 @@ export default function BeneficioPage() {
       discount_detail: tipo === 'descuento' ? descuento.trim() : null,
       cost_points: Number(costo) || 0,
       daily_quota: Number(cupones) || 0,
-      active: true,
+      active,
       image_url: imageUrl,
+      valid_from: validFrom || null,
+      valid_to: validTo || null,
+      valid_days_mask: diasMask,
+      dine_in_only: dineInOnly,
     };
 
     const { error } = benefitId
@@ -203,6 +226,80 @@ export default function BeneficioPage() {
               />
             </Field>
           </div>
+        </div>
+
+        <label className="block text-[12.5px] font-semibold mb-1.5">Condiciones (opcional)</label>
+        <div className="flex gap-3.5 mb-3.5">
+          <div className="flex-1">
+            <Field label="Válido desde">
+              <input
+                type="time"
+                value={validFrom}
+                onChange={(e) => setValidFrom(e.target.value)}
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+            </Field>
+          </div>
+          <div className="flex-1">
+            <Field label="Hasta">
+              <input
+                type="time"
+                value={validTo}
+                onChange={(e) => setValidTo(e.target.value)}
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+            </Field>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted mb-2">
+          Dejá los dos vacíos si vale a cualquier hora. Fuera de este rango, a los usuarios les aparece
+          &ldquo;Fuera de horario&rdquo; y no lo pueden canjear.
+        </p>
+
+        <div className="flex gap-1.5 mb-4.5">
+          {DIAS.map((d, i) => {
+            const on = !!(diasMask & (1 << i));
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => toggleDia(i)}
+                className="w-9 h-9 rounded-full text-[12px] font-bold"
+                style={{
+                  background: on ? '#4FC3A8' : '#fff',
+                  color: on ? '#fff' : '#7C6A9C',
+                  border: `1px solid ${on ? '#4FC3A8' : '#E1D2F5'}`,
+                }}
+              >
+                {d}
+              </button>
+            );
+          })}
+        </div>
+
+        <label className="flex items-center gap-2 mb-5 cursor-pointer">
+          <input type="checkbox" checked={dineInOnly} onChange={(e) => setDineInOnly(e.target.checked)} />
+          <span className="text-[13px]">Solo para consumir en el local</span>
+        </label>
+
+        <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-5">
+          <div>
+            <p className="text-[13px] font-semibold">{active ? 'Beneficio activo' : 'Beneficio desactivado'}</p>
+            <p className="text-[11px] text-muted">
+              {active ? 'Los usuarios lo ven y lo pueden canjear.' : 'No aparece en la app hasta que lo actives.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActive((v) => !v)}
+            className="w-11 h-6 rounded-full relative shrink-0"
+            style={{ background: active ? '#4FC3A8' : '#E1D2F5' }}
+          >
+            <span
+              className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
+              style={{ left: active ? '22px' : '2px' }}
+            />
+          </button>
         </div>
 
         {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
