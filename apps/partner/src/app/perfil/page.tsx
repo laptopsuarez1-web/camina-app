@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapPin, Clock, Phone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { MapPin, Clock, Phone, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -10,6 +11,7 @@ const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Bell
 
 export default function PerfilPage() {
   const { business, refreshBusiness, session } = useBusinessAuth();
+  const router = useRouter();
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
   const [direccion, setDireccion] = useState('');
@@ -17,6 +19,8 @@ export default function PerfilPage() {
   const [telefono, setTelefono] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   useEffect(() => {
     if (!business) return;
@@ -46,6 +50,18 @@ export default function PerfilPage() {
       await refreshBusiness(session.user.id, session.user.email);
       setSaved(true);
     }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    const { error } = await supabase.functions.invoke('delete-business-account');
+    if (error) {
+      setDeleting(false);
+      alert('No pudimos eliminar tu cuenta. Intentá de nuevo o escribinos.');
+      return;
+    }
+    await supabase.auth.signOut();
+    router.replace('/login');
   }
 
   return (
@@ -105,6 +121,41 @@ export default function PerfilPage() {
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
+
+          <div className="border-t border-line mt-4 pt-4">
+            {confirmingDelete ? (
+              <div className="bg-warn-light rounded-xl p-4" style={{ background: '#FDEEE2' }}>
+                <p className="text-[12.5px] mb-3" style={{ color: '#8A5A2E' }}>
+                  Se borra tu negocio, tus beneficios y tu historial de canjes de Camina — esto no se puede
+                  deshacer.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    className="flex-1 rounded-[10px] py-2.5 font-semibold text-[13px] text-white disabled:opacity-50"
+                    style={{ background: '#D4537E' }}
+                  >
+                    {deleting ? 'Eliminando…' : 'Sí, eliminar todo'}
+                  </button>
+                  <button
+                    onClick={() => setConfirmingDelete(false)}
+                    className="flex-1 bg-white text-muted border border-line rounded-[10px] py-2.5 font-semibold text-[13px]"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="flex items-center gap-2 text-warn text-[13px] font-semibold"
+              >
+                <Trash2 size={14} />
+                Eliminar cuenta y negocio de Camina
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </DashboardShell>

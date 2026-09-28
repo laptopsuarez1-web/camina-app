@@ -16,6 +16,10 @@ export default function BeneficioPage() {
   const [descuento, setDescuento] = useState('');
   const [costo, setCosto] = useState('10');
   const [cupones, setCupones] = useState('3');
+  const [valorBs, setValorBs] = useState('');
+  // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
+  // día, algo de Bs 10 ya te lleva casi un día entero caminando).
+  const puntosSugeridos = valorBs.trim() ? Math.round(Number(valorBs) * 2) : null;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -129,7 +133,41 @@ export default function BeneficioPage() {
           </Field>
         )}
 
-        <div className="flex gap-3.5 mt-4.5 mb-5">
+        <div className="bg-aqua-light rounded-xl p-3.5 mt-4.5 mb-4">
+          <p className="text-[12.5px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>
+            ¿No sabés cuántos Puntos poner?
+          </p>
+          <p className="text-[11.5px] mb-2.5" style={{ color: '#3A8C72' }}>
+            Como referencia, algo de <strong>Bs 10</strong> ronda los <strong>20 Puntos</strong> (con el
+            tope de 20 Puntos ganados por día, ya le lleva casi una jornada entera caminando). Metí el
+            valor de lo que estás regalando y te tiramos una sugerencia — es una guía, no una regla, vos
+            ponés el número final.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-[12.5px] text-muted">Vale aprox.</span>
+            <input
+              value={valorBs}
+              onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
+              placeholder="Bs"
+              className="w-20 bg-white border border-line rounded-[8px] px-2.5 py-1.5 text-[12.5px]"
+            />
+            {puntosSugeridos !== null && (
+              <>
+                <span className="text-[12.5px] text-muted">→ sugerido</span>
+                <button
+                  type="button"
+                  onClick={() => setCosto(String(puntosSugeridos))}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                  style={{ background: '#4FC3A8', color: '#fff' }}
+                >
+                  {puntosSugeridos} Puntos — usar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-3.5 mb-5">
           <div className="flex-1">
             <Field label="Costo en Puntos">
               <input
