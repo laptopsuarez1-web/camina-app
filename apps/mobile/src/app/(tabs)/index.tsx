@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bell, Users } from 'lucide-react-native';
+import { Bell, Users, Check } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -139,8 +139,17 @@ export default function HomeScreen() {
         <View className="items-center justify-center" style={{ marginTop: 16 }}>
           <ProgressRing size={250} strokeWidth={26} radius={108} progress={pct}>
             <View className="items-center">
-              <Text style={{ color: '#fff', fontSize: 48, fontWeight: '800', letterSpacing: -1.4, lineHeight: 48 }}>
-                {steps}
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 48,
+                  fontWeight: '800',
+                  letterSpacing: -1.4,
+                  lineHeight: 48,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {steps.toLocaleString('es-BO')}
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <View className="flex-row items-center gap-1 mt-2.5 bg-mint/15 pl-1.5 pr-3 py-1 rounded-full">
@@ -151,15 +160,23 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <View className="flex-row justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
+        <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
           {(streak ?? 0) > 0 && (
-            <View className="bg-mint/10 px-2.5 py-1.5 rounded-full">
-              <Text className="text-mint text-[11px] font-bold">🔥 {streak} días de racha</Text>
+            <View
+              className="flex-row items-center rounded-full"
+              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+            >
+              <Flame size={11} color={colors.mint} />
+              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '600' }}>{streak} días de racha</Text>
             </View>
           )}
           {goalMet && (
-            <View className="bg-mint/10 px-2.5 py-1.5 rounded-full">
-              <Text className="text-mint text-[11px] font-bold">Meta cumplida</Text>
+            <View
+              className="flex-row items-center rounded-full"
+              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+            >
+              <Check size={11} color={colors.mint} />
+              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '600' }}>Meta cumplida</Text>
             </View>
           )}
           {editingGoal ? (
@@ -191,9 +208,10 @@ export default function HomeScreen() {
                 setGoalInput(String(goal));
                 setEditingGoal(true);
               }}
-              className="border border-white/15 px-2.5 py-1.5 rounded-full"
+              className="rounded-full"
+              style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
-              <Text className="text-auth-muted text-[10.5px]">meta {goal} ✎</Text>
+              <Text style={{ color: '#8C7DB8', fontSize: 10.5 }}>meta {goal} ✎</Text>
             </Pressable>
           )}
         </View>
