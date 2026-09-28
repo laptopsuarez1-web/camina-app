@@ -142,7 +142,7 @@ export default function RegistroPage() {
               <input
                 value={direccion}
                 onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Calle y número, Tarija"
+                placeholder="Calle y número, ciudad"
                 className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
             </Field>

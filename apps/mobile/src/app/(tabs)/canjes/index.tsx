@@ -35,7 +35,7 @@ import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 
 type BusinessT = BenefitWithBusiness['business'];
 
-// Centro de Tarija — respaldo si el usuario no da permiso de ubicación.
+// Centro de Tarija (ciudad de lanzamiento) — último respaldo si no hay GPS ni comercios con ubicación.
 const TARIJA_REGION = {
   latitude: -21.5355,
   longitude: -64.7296,
@@ -209,6 +209,23 @@ export default function CanjesScreen() {
     })();
   }, []);
 
+  const businessesWithCoords = useMemo(() => {
+    const map = new Map<string, BusinessT>();
+    for (const b of benefits ?? []) {
+      if (b.business.lat != null && b.business.lng != null) map.set(b.business.id, b.business);
+    }
+    return [...map.values()];
+  }, [benefits]);
+
+  // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
+  // Tarija que para Santa Cruz o La Paz cuando se sumen).
+  useEffect(() => {
+    if (hasGps || !businessesWithCoords.length) return;
+    const lat = businessesWithCoords.reduce((a, b) => a + b.lat!, 0) / businessesWithCoords.length;
+    const lng = businessesWithCoords.reduce((a, b) => a + b.lng!, 0) / businessesWithCoords.length;
+    setMapRegion((r) => (r && Math.abs(r.latitude - lat) < 1e-6 && Math.abs(r.longitude - lng) < 1e-6 ? r : { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 }));
+  }, [hasGps, businessesWithCoords]);
+
   const categories = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.business.category));
     return ['Todos', ...set];
@@ -235,14 +252,6 @@ export default function CanjesScreen() {
     list.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity) || a.business.name.localeCompare(b.business.name));
     return list;
   }, [benefits, category, search, onlyOpen, hasGps, mapRegion]);
-
-  const businessesWithCoords = useMemo(() => {
-    const map = new Map<string, BusinessT>();
-    for (const b of benefits ?? []) {
-      if (b.business.lat != null && b.business.lng != null) map.set(b.business.id, b.business);
-    }
-    return [...map.values()];
-  }, [benefits]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -300,6 +309,7 @@ export default function CanjesScreen() {
         <View style={{ height: 250, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', backgroundColor: '#1d1b2e' }}>
           {mapRegion ? (
             <MapView
+              key={`${mapRegion.latitude.toFixed(4)},${mapRegion.longitude.toFixed(4)}`}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
               initialRegion={mapRegion}
