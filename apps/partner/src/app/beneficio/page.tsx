@@ -18,6 +18,8 @@ export default function BeneficioPage() {
   const [benefitId, setBenefitId] = useState<string | null>(null);
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>('gratis');
+  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>('porcentaje');
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState('20');
   const [descuento, setDescuento] = useState('');
   const [costo, setCosto] = useState('10');
   const [cupones, setCupones] = useState('3');
@@ -50,7 +52,13 @@ export default function BeneficioPage() {
         setBenefitId(b.id);
         setNombre(b.name);
         setTipo(b.type);
-        setDescuento(b.discount_detail ?? '');
+        if (b.discount_percent != null) {
+          setDescuentoModo('porcentaje');
+          setDescuentoPorcentaje(String(b.discount_percent));
+        } else {
+          setDescuentoModo('texto');
+          setDescuento(b.discount_detail ?? '');
+        }
         setCosto(String(b.cost_points));
         setCupones(String(b.daily_quota));
         setImageUrl(b.image_url);
@@ -76,7 +84,13 @@ export default function BeneficioPage() {
       business_id: business.id,
       name: nombre.trim(),
       type: tipo,
-      discount_detail: tipo === 'descuento' ? descuento.trim() : null,
+      discount_detail:
+        tipo === 'descuento'
+          ? descuentoModo === 'porcentaje'
+            ? `${Number(descuentoPorcentaje) || 0}% de descuento`
+            : descuento.trim()
+          : null,
+      discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
       cost_points: Number(costo) || 0,
       daily_quota: Number(cupones) || 0,
       active,
@@ -163,14 +177,57 @@ export default function BeneficioPage() {
         </div>
 
         {tipo === 'descuento' && !isFree && (
-          <Field label="Detalle del descuento">
-            <input
-              value={descuento}
-              onChange={(e) => setDescuento(e.target.value)}
-              placeholder="Ej: 20% en el total, 2x1, Bs 10 de descuento"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
+          <div className="mb-4.5">
+            <div className="flex gap-2 mb-2.5">
+              <button
+                type="button"
+                onClick={() => setDescuentoModo('porcentaje')}
+                className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
+                style={{
+                  borderColor: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#E1D2F5',
+                  background: descuentoModo === 'porcentaje' ? '#E3F5F0' : '#fff',
+                  color: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#7C6A9C',
+                }}
+              >
+                % de descuento
+              </button>
+              <button
+                type="button"
+                onClick={() => setDescuentoModo('texto')}
+                className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
+                style={{
+                  borderColor: descuentoModo === 'texto' ? '#4FC3A8' : '#E1D2F5',
+                  background: descuentoModo === 'texto' ? '#E3F5F0' : '#fff',
+                  color: descuentoModo === 'texto' ? '#4FC3A8' : '#7C6A9C',
+                }}
+              >
+                Otro (2x1, Bs fijos...)
+              </button>
+            </div>
+
+            {descuentoModo === 'porcentaje' ? (
+              <Field label="Porcentaje de descuento">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={descuentoPorcentaje}
+                    onChange={(e) => setDescuentoPorcentaje(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                    placeholder="20"
+                    className="w-24 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                  />
+                  <span className="text-[13.5px] text-muted">% — ej: poné 20 para &ldquo;20% de descuento&rdquo;</span>
+                </div>
+              </Field>
+            ) : (
+              <Field label="Detalle del descuento">
+                <input
+                  value={descuento}
+                  onChange={(e) => setDescuento(e.target.value)}
+                  placeholder="Ej: 2x1, Bs 10 de descuento"
+                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                />
+              </Field>
+            )}
+          </div>
         )}
 
         <div className="bg-aqua-light rounded-xl p-3.5 mt-4.5 mb-4">

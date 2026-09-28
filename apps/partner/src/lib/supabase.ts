@@ -41,6 +41,7 @@ export interface Benefit {
   name: string;
   type: 'gratis' | 'descuento';
   discount_detail: string | null;
+  discount_percent: number | null;
   cost_points: number;
   daily_quota: number;
   active: boolean;
