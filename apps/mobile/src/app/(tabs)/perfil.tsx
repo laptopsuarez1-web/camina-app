@@ -41,7 +41,7 @@ export default function PerfilScreen() {
   async function inviteFriends() {
     if (!profile) return;
     await Share.share({
-      message: `Te invito a Camina — caminá y ganá Puntos para canjear en comercios de Tarija. Sumate con mi link:\n${referralLink(profile.id)}`,
+      message: `Te invito a Camina — caminá y ganá Puntos para canjear en comercios adheridos. Sumate con mi link:\n${referralLink(profile.id)}`,
       url: referralLink(profile.id),
     });
   }

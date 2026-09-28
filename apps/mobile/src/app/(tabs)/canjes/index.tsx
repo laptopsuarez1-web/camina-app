@@ -11,6 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { BlurView } from 'expo-blur';
 import { Search, Heart, Locate, Layers, List, ChevronRight } from 'lucide-react-native';
@@ -24,7 +25,6 @@ import {
 import { usePointsBalance } from '@/hooks/usePoints';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
-import { ZONES } from '@/constants/catalog';
 import { BUSINESS_LOGOS } from '@/constants/business-assets';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
@@ -115,12 +115,40 @@ export default function CanjesScreen() {
   const [category, setCategory] = useState('Todos');
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
+  const [zoneInput, setZoneInput] = useState('');
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
 
   const remainingMs = useCountdown(activeRedemption?.code_expires_at ?? null);
   const expired = !!activeRedemption && remainingMs <= 0;
   const ttlMs = REDEMPTION_CODE_TTL_MINUTES * 60_000;
+
+  // Camina no es solo de Tarija — el mapa se centra en la ubicación real del
+  // usuario (así funciona igual de bien para alguien en Santa Cruz o
+  // cualquier otra ciudad), con Tarija de respaldo si no da permiso o falla
+  // el GPS. null mientras se resuelve, para no renderizar el mapa dos veces
+  // con initialRegion (que solo aplica en el primer montaje).
+  const [mapRegion, setMapRegion] = useState<typeof TARIJA_REGION | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setMapRegion(TARIJA_REGION);
+          return;
+        }
+        const position = await Location.getCurrentPositionAsync({});
+        setMapRegion({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          latitudeDelta: 0.045,
+          longitudeDelta: 0.045,
+        });
+      } catch {
+        setMapRegion(TARIJA_REGION);
+      }
+    })();
+  }, []);
 
   const categories = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.business.category));
@@ -184,18 +212,24 @@ export default function CanjesScreen() {
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
       {view === 'mapa' ? (
         <View style={{ flex: 1 }}>
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={{ flex: 1 }}
-            initialRegion={TARIJA_REGION}
-            customMapStyle={DARK_MAP_STYLE}
-          >
-            {businessesWithCoords.map((b) => (
-              <Marker key={b.business.id} coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}>
-                <MapMarker name={b.business.name} />
-              </Marker>
-            ))}
-          </MapView>
+          {mapRegion ? (
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={{ flex: 1 }}
+              initialRegion={mapRegion}
+              customMapStyle={DARK_MAP_STYLE}
+            >
+              {businessesWithCoords.map((b) => (
+                <Marker key={b.business.id} coordinate={{ latitude: b.business.lat!, longitude: b.business.lng! }}>
+                  <MapMarker name={b.business.name} />
+                </Marker>
+              ))}
+            </MapView>
+          ) : (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator color={colors.aqua} />
+            </View>
+          )}
 
           {/* barra flotante superior: volver a lista + balance, como el chip del clima de Apple Maps */}
           <View className="absolute left-4 right-4 flex-row justify-between items-center" style={{ top: 54 }}>
@@ -286,16 +320,27 @@ export default function CanjesScreen() {
                 <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">
                   ¿Desde qué zona caminás?
                 </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {ZONES.slice(0, 5).map((z) => (
-                    <Pressable key={z} onPress={() => saveZone(z)} className="bg-white dark:bg-card-dark rounded-full px-3 py-1.5">
-                      <Text className="text-xs font-semibold text-purple">{z}</Text>
-                    </Pressable>
-                  ))}
-                  <Pressable onPress={() => setShowZonePrompt(false)}>
-                    <Text className="text-xs text-muted-light dark:text-muted-dark px-2 py-1.5">Ahora no</Text>
+                <View className="flex-row items-center gap-2">
+                  <TextInput
+                    value={zoneInput}
+                    onChangeText={setZoneInput}
+                    placeholder="Ej: Equipetrol, Centro, Los Pinos…"
+                    placeholderTextColor={colors.light.muted}
+                    className="flex-1 bg-white dark:bg-card-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
+                    onSubmitEditing={() => zoneInput.trim() && saveZone(zoneInput.trim())}
+                    returnKeyType="done"
+                  />
+                  <Pressable
+                    onPress={() => zoneInput.trim() && saveZone(zoneInput.trim())}
+                    disabled={!zoneInput.trim()}
+                    className="bg-purple rounded-full px-3.5 py-2"
+                  >
+                    <Text className="text-xs font-semibold text-white">Guardar</Text>
                   </Pressable>
                 </View>
+                <Pressable onPress={() => setShowZonePrompt(false)}>
+                  <Text className="text-xs text-muted-light dark:text-muted-dark mt-2">Ahora no</Text>
+                </Pressable>
               </View>
             )}
 

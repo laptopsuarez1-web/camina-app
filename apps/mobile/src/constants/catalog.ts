@@ -1,15 +1,3 @@
-// Portado 1:1 del prototipo camina-full.html.
-export const ZONES = [
-  'Centro',
-  'Aranjuez',
-  'San Jorge',
-  'El Molino',
-  'Guadalquivir',
-  'La Tablada',
-  'San Roque',
-  'Otro',
-] as const;
-
 export const INTERESTS_OPTIONS = [
   ['Café', 'coffee'],
   ['Gastronomía', 'utensils'],
