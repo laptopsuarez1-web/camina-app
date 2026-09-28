@@ -16,21 +16,22 @@ export function HeaderLight() {
     <View className="flex-row justify-between items-center px-5 pt-14 pb-3 bg-bg-light dark:bg-bg-dark">
       <Pressable
         onPress={() => router.push('/(tabs)/puntos')}
-        className="flex-row items-center gap-1.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full pl-1.5 pr-3 py-1.5"
+        className="flex-row items-center gap-1.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full pl-1.5 pr-3"
+        style={{ height: 32 }}
       >
         <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
         <Text className="text-text-light dark:text-text-dark font-bold text-[15px]">{balance ?? 0}</Text>
       </Pressable>
       <View className="flex-row items-center gap-2.5">
-        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark w-8.5 h-8.5 rounded-full items-center justify-center">
+        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark w-8 h-8 rounded-full items-center justify-center">
           <Bell size={15} color={colors.light.muted} />
         </View>
         <Pressable
           onPress={() => router.push('/(tabs)/perfil')}
-          className="w-8.5 h-8.5 rounded-full bg-mint items-center justify-center overflow-hidden"
+          className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
         >
           {profile?.photo_url ? (
-            <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
+            <Image source={{ uri: profile.photo_url }} style={{ width: '100%', height: '100%' }} />
           ) : (
             <Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
           )}
