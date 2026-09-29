@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut, ShieldCheck } from 'lucide-react';
 import { supabase, type Business, type BusinessPlan } from '@/lib/supabase';
+import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 
 const PLAN_LABEL: Record<BusinessPlan, string> = {
@@ -100,34 +101,35 @@ export default function AdminPage() {
     return <div className="min-h-screen flex items-center justify-center text-muted">Cargando…</div>;
   }
 
-  return (
-    <div className="flex min-h-screen bg-bg">
-      <div className="w-[220px] bg-auth-bg min-h-screen shrink-0 flex flex-col p-3.5">
-        <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
-          <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-          <div>
-            <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-            <p className="text-auth-muted text-[10.5px] mt-0.5">Administrador</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mint/10 text-white text-[13.5px] font-semibold mb-1">
-          <ShieldCheck size={16} color="#7FEDC4" />
-          Comercios
-        </div>
-
-        <div className="mt-auto pt-5">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2.5 w-full text-left text-[#8C7DB8] text-[12.5px]"
-          >
-            <LogOut size={15} />
-            Cerrar sesión
-          </button>
+  const sidebar = (
+    <>
+      <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
+        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
+        <div>
+          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
+          <p className="text-auth-muted text-[10.5px] mt-0.5">Administrador</p>
         </div>
       </div>
 
-      <div className="flex-1 p-10 max-w-[1100px]">
+      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mint/10 text-white text-[13.5px] font-semibold mb-1">
+        <ShieldCheck size={16} color="#7FEDC4" />
+        Comercios
+      </div>
+
+      <div className="mt-auto pt-5">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"
+        >
+          <LogOut size={15} />
+          Cerrar sesión
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <ResponsiveFrame sidebar={sidebar}>
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
         <p className="text-muted text-[13.5px] mb-7">
           Aprobá un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
@@ -178,8 +180,8 @@ export default function AdminPage() {
         ) : businesses.length === 0 ? (
           <p className="text-muted text-[13.5px]">Todavía no hay comercios registrados.</p>
         ) : (
-          <div className="bg-card border border-line rounded-2xl overflow-hidden">
-            <table className="w-full text-[13px]">
+          <div className="bg-card border border-line rounded-2xl overflow-x-auto">
+            <table className="w-full min-w-[760px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left">
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Nombre</th>
@@ -266,7 +268,6 @@ export default function AdminPage() {
             </table>
           </div>
         )}
-      </div>
-    </div>
+    </ResponsiveFrame>
   );
 }

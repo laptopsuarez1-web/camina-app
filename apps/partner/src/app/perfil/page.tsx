@@ -135,8 +135,8 @@ export default function PerfilPage() {
     <DashboardShell>
       <TopBar title="Perfil del local" subtitle="Esto es lo que ven los usuarios cuando entran a tu ficha." />
 
-      <div className="flex gap-5 max-w-[620px]">
-        <div className="flex-1 flex flex-col gap-3.5">
+      <div className="flex flex-wrap gap-5 max-w-[620px]">
+        <div className="flex-1 min-w-0 flex flex-col gap-3.5">
           <div className="flex gap-3.5">
             {business && (
               <>
@@ -148,7 +148,7 @@ export default function PerfilPage() {
                   label="Logo"
                   shape="circle"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <ImageUpload
                     bucket="business-logos"
                     path={`${business.id}/cover`}
@@ -236,7 +236,7 @@ export default function PerfilPage() {
               {DAY_NAMES.map((name, i) => {
                 const d = semana[String(i)];
                 return (
-                  <div key={name} className="flex items-center gap-2.5 text-[13px]">
+                  <div key={name} className="flex flex-wrap items-center gap-2.5 text-[13px]">
                     <label className="flex items-center gap-2 w-[120px]">
                       <input
                         type="checkbox"

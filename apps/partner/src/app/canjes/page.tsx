@@ -89,7 +89,7 @@ export default function CanjesPage() {
       </div>
 
       <div className="bg-card border border-line rounded-2xl overflow-hidden">
-        <div className="grid grid-cols-[1fr_1fr_1fr_100px] px-5 py-3 border-b border-line bg-bg">
+        <div className="grid grid-cols-[1.2fr_1fr_.8fr_96px] px-3 sm:px-5 py-3 border-b border-line bg-bg">
           <span className="text-[11.5px] font-semibold text-muted">Código</span>
           <span className="text-[11.5px] font-semibold text-muted">Fecha</span>
           <span className="text-[11.5px] font-semibold text-muted">Hora</span>
@@ -98,7 +98,7 @@ export default function CanjesPage() {
         {redemptions.map((r, i) => (
           <div
             key={r.id}
-            className={`grid grid-cols-[1fr_1fr_1fr_100px] px-5 py-3.5 items-center ${i < redemptions.length - 1 ? 'border-b border-line' : ''}`}
+            className={`grid grid-cols-[1.2fr_1fr_.8fr_96px] px-3 sm:px-5 py-3.5 items-center ${i < redemptions.length - 1 ? 'border-b border-line' : ''}`}
           >
             <span className="text-[13.5px] font-semibold tracking-wide">{r.code}</span>
             <span className="text-[13px] text-muted">{new Date(r.created_at).toLocaleDateString('es-BO')}</span>

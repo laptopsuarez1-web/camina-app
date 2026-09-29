@@ -159,7 +159,7 @@ export default function PlanPage() {
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {PLANS.map((p) => {
           const active = p.id === business?.plan;
           return (

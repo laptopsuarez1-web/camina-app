@@ -76,7 +76,7 @@ export default function InicioPage() {
     <DashboardShell>
       <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Así viene funcionando tu beneficio esta semana." />
 
-      <div className="flex gap-3.5 mb-5">
+      <div className="flex flex-col sm:flex-row gap-3.5 mb-5">
         {todayQuotaTotal != null && (
           <StatCard label="Cupones que quedan hoy" value={`${todayQuotaLeft ?? 0} de ${todayQuotaTotal}`} accent="#4FC3A8" />
         )}
