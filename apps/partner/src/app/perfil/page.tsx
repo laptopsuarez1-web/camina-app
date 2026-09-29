@@ -20,6 +20,7 @@ export default function PerfilPage() {
   const [telefono, setTelefono] = useState('');
   const [instagram, setInstagram] = useState('');
   const [website, setWebsite] = useState('');
+  const [resenaUrl, setResenaUrl] = useState('');
   const [esVirtual, setEsVirtual] = useState(false);
   const [ubicacion, setUbicacion] = useState('');
   const [ubicacionMsg, setUbicacionMsg] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export default function PerfilPage() {
     setTelefono(business.phone ?? '');
     setInstagram(business.instagram ?? '');
     setWebsite(business.website ?? '');
+    setResenaUrl(business.google_review_url ?? '');
     setEsVirtual(business.is_virtual);
     setUbicacion(business.lat != null && business.lng != null ? `${business.lat}, ${business.lng}` : '');
   }, [business]);
@@ -93,6 +95,7 @@ export default function PerfilPage() {
         phone: telefono.trim(),
         instagram: instagram.trim() || null,
         website: website.trim() || null,
+        google_review_url: resenaUrl.trim() || null,
         is_virtual: esVirtual,
       })
       .eq('id', business.id);
@@ -252,6 +255,18 @@ export default function PerfilPage() {
               placeholder="https://..."
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
+          </Field>
+          <Field label="Link para reseñas en Google Maps" icon={<Globe size={13} color="#7C6A9C" />}>
+            <input
+              value={resenaUrl}
+              onChange={(e) => setResenaUrl(e.target.value)}
+              placeholder="https://g.page/r/…/review"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+            <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+              Después de cada canje confirmado, Camina le ofrece al cliente dejar su reseña en tu local. En Google Maps
+              buscá tu local, tocá &ldquo;Compartir&rdquo; y pegá el link de &ldquo;Pedir reseñas&rdquo; acá.
+            </p>
           </Field>
 
           {saved && <p className="text-aqua text-[12.5px]">Guardado.</p>}

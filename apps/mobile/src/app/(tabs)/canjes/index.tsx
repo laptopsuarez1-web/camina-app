@@ -224,6 +224,7 @@ export default function CanjesScreen() {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const favorites = useFavorites();
+  const favIds = favorites.ids;
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
@@ -232,13 +233,36 @@ export default function CanjesScreen() {
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
 
+  // Seguimiento del canje: cuando el comercio confirma el código, se pregunta si compró algo más.
+  const activeId = activeRedemption?.id ?? null;
+  const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [answeredId, setAnsweredId] = useState<string | null>(null);
+  const confirmed = !!activeId && confirmedId === activeId;
+  const answered = !!activeId && answeredId === activeId;
+  useEffect(() => {
+    if (!activeId) return;
+    const check = async () => {
+      const { data } = await supabase.from('redemptions').select('status').eq('id', activeId).maybeSingle();
+      if (data?.status === 'confirmed') setConfirmedId(activeId);
+    };
+    check();
+    const t = setInterval(check, 4000);
+    return () => clearInterval(t);
+  }, [activeId]);
+
+  async function answerFollowup(extra: boolean) {
+    if (!activeId) return;
+    setAnsweredId(activeId);
+    await supabase.rpc('answer_redemption_followup', { p_redemption_id: activeId, p_extra: extra });
+  }
+
   const remainingMs = useCountdown(activeRedemption?.code_expires_at ?? null);
   const expired = !!activeRedemption && remainingMs <= 0;
   const ttlMs = REDEMPTION_CODE_TTL_MINUTES * 60_000;
 
   // El mapa se centra en la ubicación real del usuario (Camina no es solo de
   // Tarija), con Tarija de respaldo si no da permiso o falla el GPS.
-  const [mapRegion, setMapRegion] = useState<typeof TARIJA_REGION | null>(null);
+  const [baseRegion, setMapRegion] = useState<typeof TARIJA_REGION | null>(null);
   const [hasGps, setHasGps] = useState(false);
   useEffect(() => {
     (async () => {
@@ -272,12 +296,12 @@ export default function CanjesScreen() {
 
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
-  useEffect(() => {
-    if (hasGps || !businessesWithCoords.length) return;
-    const lat = businessesWithCoords.reduce((a, b) => a + b.lat!, 0) / businessesWithCoords.length;
-    const lng = businessesWithCoords.reduce((a, b) => a + b.lng!, 0) / businessesWithCoords.length;
-    setMapRegion((r) => (r && Math.abs(r.latitude - lat) < 1e-6 && Math.abs(r.longitude - lng) < 1e-6 ? r : { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 }));
-  }, [hasGps, businessesWithCoords]);
+  const mapRegion = useMemo(() => {
+    if (hasGps || !businessesWithCoords.length) return baseRegion;
+    const lat = businessesWithCoords.reduce((acc, b) => acc + b.lat!, 0) / businessesWithCoords.length;
+    const lng = businessesWithCoords.reduce((acc, b) => acc + b.lng!, 0) / businessesWithCoords.length;
+    return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
+  }, [hasGps, businessesWithCoords, baseRegion]);
 
   const categories = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.business.category));
@@ -302,7 +326,7 @@ export default function CanjesScreen() {
           : null,
     }));
     if (onlyOpen) list = list.filter((g) => g.openNow);
-    if (onlyFavs) list = list.filter((g) => favorites.isFavorite(g.business.id));
+    if (onlyFavs) list = list.filter((g) => favIds.includes(g.business.id));
     // Destacados siempre primero (también dentro de cada categoría), después por cercanía.
     list.sort(
       (a, b) =>
@@ -311,7 +335,7 @@ export default function CanjesScreen() {
         a.business.name.localeCompare(b.business.name)
     );
     return list;
-  }, [benefits, category, search, onlyOpen, onlyFavs, favorites.ids, hasGps, mapRegion]);
+  }, [benefits, category, search, onlyOpen, onlyFavs, favIds, hasGps, mapRegion]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -807,7 +831,42 @@ export default function CanjesScreen() {
               </View>
             )}
 
-            {!expired ? (
+            {confirmed ? (
+              <View className="items-center">
+                <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
+                  <Text className="text-[26px] mb-1">🎉</Text>
+                  <Text className="text-aqua font-extrabold text-[17px]">¡Canje confirmado!</Text>
+                  <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
+                    {activeBenefit?.business.name} ya te entregó tu beneficio.
+                  </Text>
+                </View>
+                {!answered ? (
+                  <>
+                    <Text className="text-[14px] font-bold text-text-light dark:text-text-dark mb-3">¿Compraste algo más?</Text>
+                    <View className="flex-row gap-2.5 w-full mb-2.5">
+                      <Pressable onPress={() => answerFollowup(true)} className="flex-1 bg-aqua rounded-2xl py-3.5 items-center">
+                        <Text className="text-white font-bold text-[14px]">Sí, compré algo</Text>
+                      </Pressable>
+                      <Pressable onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
+                        <Text className="text-purple font-semibold text-[14px]">Solo el beneficio</Text>
+                      </Pressable>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-3 text-center">¡Gracias por contarnos!</Text>
+                    {activeBenefit?.business.google_review_url ? (
+                      <Pressable
+                        onPress={() => Linking.openURL(activeBenefit.business.google_review_url!)}
+                        className="w-full bg-aqua rounded-2xl py-3.5 items-center mb-2.5"
+                      >
+                        <Text className="text-white font-bold text-[14px]">⭐ Dejá tu reseña en Google Maps</Text>
+                      </Pressable>
+                    ) : null}
+                  </>
+                )}
+              </View>
+            ) : !expired ? (
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
                   <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>

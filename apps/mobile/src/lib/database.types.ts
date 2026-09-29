@@ -29,6 +29,7 @@ export interface Business {
   category: string;
   description: string | null;
   address: string | null;
+  google_review_url?: string | null;
   phone: string | null;
   instagram: string | null;
   hours_text: string | null;
