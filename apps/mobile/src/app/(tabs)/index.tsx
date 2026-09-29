@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
+import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -144,7 +145,7 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
     >
       <LinearGradient
-        colors={['#3a1a86', '#200a52', '#15063a']}
+        colors={['#3a2668', '#1c1030', '#120a1e']}
         start={{ x: 0.15, y: -0.1 }}
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
@@ -347,13 +348,7 @@ export default function HomeScreen() {
                 ...(g.business.plan === 'paso_adelante' ? { borderWidth: 2, borderColor: '#E2B33C' } : {}),
               }}
             >
-              {g.business.logo_url ? (
-                <Image source={{ uri: g.business.logo_url }} style={{ width: 58, height: 58, borderRadius: 16 }} />
-              ) : (
-                <View className="w-[58px] h-[58px] rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                  <Text className="text-aqua font-bold">{g.business.name[0]}</Text>
-                </View>
-              )}
+              <BusinessAvatar logoUrl={g.business.logo_url} category={g.business.category} size={58} />
               <View className="flex-1 min-w-0">
                 <View className="flex-row items-center" style={{ gap: 5 }}>
                   <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>

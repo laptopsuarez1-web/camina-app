@@ -41,7 +41,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
   if (!blocked) return <>{children}</>;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#200a52', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+    <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
       <Text style={{ fontSize: 44, marginBottom: 12 }}>🚶</Text>
       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
         ¡Hay una versión nueva de Camina!
@@ -54,7 +54,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
           onPress={() => Linking.openURL(storeUrl)}
           style={{ backgroundColor: '#7FEDC4', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
         >
-          <Text style={{ color: '#200a52', fontWeight: '800', fontSize: 15 }}>Actualizar ahora</Text>
+          <Text style={{ color: '#241748', fontWeight: '800', fontSize: 15 }}>Actualizar ahora</Text>
         </Pressable>
       ) : null}
     </View>

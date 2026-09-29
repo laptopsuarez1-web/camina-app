@@ -38,6 +38,15 @@ import { PaperPlaneTilt as PaperPlaneTilt } from 'phosphor-react-native/src/icon
 import { Trophy as Trophy_ } from 'phosphor-react-native/src/icons/Trophy';
 import { Plus as Plus_ } from 'phosphor-react-native/src/icons/Plus';
 import { Star as Star_ } from 'phosphor-react-native/src/icons/Star';
+import { Coffee as Coffee_ } from 'phosphor-react-native/src/icons/Coffee';
+import { ForkKnife as ForkKnife_ } from 'phosphor-react-native/src/icons/ForkKnife';
+import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
+import { Barbell as Barbell_ } from 'phosphor-react-native/src/icons/Barbell';
+import { Sparkle as Sparkle_ } from 'phosphor-react-native/src/icons/Sparkle';
+import { FirstAid as FirstAid_ } from 'phosphor-react-native/src/icons/FirstAid';
+import { Wrench as Wrench_ } from 'phosphor-react-native/src/icons/Wrench';
+import { Storefront as Storefront_ } from 'phosphor-react-native/src/icons/Storefront';
+import { SquaresFour as SquaresFour_ } from 'phosphor-react-native/src/icons/SquaresFour';
 
 export type IconProps = {
   size?: number;
@@ -88,6 +97,15 @@ export const Send = make(PaperPlaneTilt);
 export const Trophy = make(Trophy_);
 export const Plus = make(Plus_, 'bold');
 export const Star = make(Star_);
+export const Coffee = make(Coffee_);
+export const ForkKnife = make(ForkKnife_);
+export const Ticket = make(Ticket_);
+export const Barbell = make(Barbell_);
+export const Sparkle = make(Sparkle_);
+export const FirstAid = make(FirstAid_);
+export const Wrench = make(Wrench_);
+export const Storefront = make(Storefront_);
+export const SquaresFour = make(SquaresFour_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint';
 const TONES: Record<Tone, [string, string, string]> = {

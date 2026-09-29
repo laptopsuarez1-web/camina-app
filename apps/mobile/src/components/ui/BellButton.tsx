@@ -14,7 +14,7 @@ export function BellButton({ dark, color, bg }: { dark?: boolean; color: string;
     >
       <Bell size={15} color={color} />
       {unread > 0 && (
-        <View style={{ position: 'absolute', top: 5, right: 6, width: 9, height: 9, borderRadius: 5, backgroundColor: '#E5484D', borderWidth: 1.5, borderColor: dark ? '#200a52' : '#fff' }} />
+        <View style={{ position: 'absolute', top: 5, right: 6, width: 9, height: 9, borderRadius: 5, backgroundColor: '#E5484D', borderWidth: 1.5, borderColor: dark ? '#241748' : '#fff' }} />
       )}
     </Pressable>
   );
