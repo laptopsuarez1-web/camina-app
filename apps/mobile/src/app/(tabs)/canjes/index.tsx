@@ -132,38 +132,66 @@ function GoldBadge({ size = 20 }: { size?: number }) {
 
 function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
   const size = featured ? 48 : 40;
+  const box = size + 22; // espacio de sobra para que nada se corte al convertir el pin en imagen
   return (
-    <View style={{ width: size + 6, height: size + 6, alignItems: 'center', justifyContent: 'center' }}>
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: '#fff',
-        borderWidth: featured ? 3.5 : 2.5,
-        borderColor: featured ? GOLD : colors.aqua,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOpacity: 0.35,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      }}
-    >
-      {logoUrl ? (
-        <Image source={{ uri: logoUrl }} style={{ width: size - 6, height: size - 6, borderRadius: (size - 6) / 2 }} />
-      ) : (
-        <Text style={{ color: featured ? GOLD : colors.aqua, fontWeight: '800' }}>{name[0]}</Text>
+    <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: '#fff',
+          borderWidth: featured ? 3.5 : 2.5,
+          borderColor: featured ? GOLD : colors.aqua,
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {logoUrl ? (
+          <Image source={{ uri: logoUrl }} style={{ width: size - 8, height: size - 8, borderRadius: (size - 8) / 2 }} />
+        ) : (
+          <Text style={{ color: featured ? GOLD : colors.aqua, fontWeight: '800', fontSize: 16 }}>{name[0]}</Text>
+        )}
+      </View>
+      {featured && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 2,
+            right: 2,
+            width: 26,
+            height: 26,
+            borderRadius: 13,
+            backgroundColor: '#fff',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
+        </View>
       )}
     </View>
-    {featured && (
-      <Image
-        source={require('@/../assets/camina-coin-gold.png')}
-        style={{ position: 'absolute', top: -2, right: -4, width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: '#fff' }}
-      />
-    )}
-    </View>
+  );
+}
+
+// Los pines de Android se "fotografían" una vez: hay que dejar que carguen las
+// imágenes antes de congelarlos, si no salen cortados o vacíos.
+function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: () => void }) {
+  const [tracking, setTracking] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setTracking(false), 2500);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <Marker
+      coordinate={{ latitude: business.lat!, longitude: business.lng! }}
+      tracksViewChanges={tracking}
+      anchor={{ x: 0.5, y: 0.5 }}
+      onPress={onPress}
+    >
+      <MapMarker name={business.name} logoUrl={business.logo_url} featured={isFeatured(business)} />
+    </Marker>
   );
 }
 
@@ -349,9 +377,7 @@ export default function CanjesScreen() {
               toolbarEnabled={false}
             >
               {businessesWithCoords.map((b) => (
-                <Marker key={b.id} coordinate={{ latitude: b.lat!, longitude: b.lng! }}>
-                  <MapMarker name={b.name} logoUrl={b.logo_url} featured={isFeatured(b)} />
-                </Marker>
+                <BusinessMarker key={b.id} business={b} />
               ))}
             </MapView>
           ) : (
@@ -549,16 +575,14 @@ export default function CanjesScreen() {
               showsUserLocation={hasGps}
             >
               {businessesWithCoords.map((b) => (
-                <Marker
+                <BusinessMarker
                   key={b.id}
-                  coordinate={{ latitude: b.lat!, longitude: b.lng! }}
+                  business={b}
                   onPress={() => {
                     setMapOpen(false);
                     setTimeout(() => setProfileBusinessId(b.id), 350);
                   }}
-                >
-                  <MapMarker name={b.name} logoUrl={b.logo_url} featured={isFeatured(b)} />
-                </Marker>
+                />
               ))}
             </MapView>
           )}
@@ -630,7 +654,9 @@ export default function CanjesScreen() {
                       onPress={() =>
                         profileGroup.business.lat != null && profileGroup.business.lng != null
                           ? openFullMap(profileGroup.business.lat, profileGroup.business.lng, profileGroup.business.name)
-                          : undefined
+                          : Linking.openURL(
+                              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${profileGroup.business.name}, ${profileGroup.business.address}`)}`
+                            )
                       }
                       className="flex-row items-center bg-aqua-light-light dark:bg-aqua-light-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}

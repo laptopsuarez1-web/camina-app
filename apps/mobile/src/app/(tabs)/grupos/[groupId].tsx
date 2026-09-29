@@ -1,4 +1,7 @@
 import { useRef, useState } from 'react';
+import { Alert } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy } from 'lucide-react-native';
@@ -6,7 +9,6 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
 import { colors } from '@/theme/tokens';
-import { TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER } from '@/constants/business-rules';
 
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -16,6 +18,25 @@ export default function GroupDetailScreen() {
   const postNote = usePostGroupNote(groupId);
   const [text, setText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+  const queryClient = useQueryClient();
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+
+  async function saveGoal() {
+    const n = parseInt(goalInput.replace(/\D/g, ''), 10);
+    if (!n || n < 5000 || n > 5_000_000) {
+      Alert.alert('Meta no válida', 'Ingresá una meta semanal entre 5.000 y 5.000.000 de pasos.');
+      return;
+    }
+    const { error } = await supabase.from('groups').update({ challenge_target: n }).eq('id', groupId!);
+    if (error) {
+      Alert.alert('No se pudo cambiar la meta', 'Solo quien creó el grupo puede cambiarla.');
+      return;
+    }
+    setEditingGoal(false);
+    queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['groups'] });
+  }
 
   async function share() {
     if (!data) return;
@@ -42,7 +63,8 @@ export default function GroupDetailScreen() {
   }
 
   const totalSteps = data.members.reduce((a, m) => a + m.steps, 0);
-  const challengeTarget = data.members.length * TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER;
+  const challengeTarget = data.group.challenge_target;
+  const isCreator = data.group.created_by === userId;
   const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
   return (
@@ -62,15 +84,42 @@ export default function GroupDetailScreen() {
       <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-[14px] font-medium text-text-light dark:text-text-dark">Reto en equipo</Text>
-          <Text className="text-xs text-muted-light dark:text-muted-dark">
-            {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos
-          </Text>
+          <Pressable
+            disabled={!isCreator}
+            onPress={() => {
+              setGoalInput(String(challengeTarget));
+              setEditingGoal(true);
+            }}
+            hitSlop={8}
+          >
+            <Text className="text-xs text-muted-light dark:text-muted-dark">
+              {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos{isCreator ? ' ✎' : ''}
+            </Text>
+          </Pressable>
         </View>
+        {editingGoal && (
+          <View className="flex-row items-center gap-2 mb-3">
+            <TextInput
+              value={goalInput}
+              onChangeText={setGoalInput}
+              keyboardType="number-pad"
+              placeholder="Meta semanal de pasos"
+              placeholderTextColor={colors.light.muted}
+              className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
+            />
+            <Pressable onPress={saveGoal} className="bg-purple rounded-full px-3.5 py-2">
+              <Text className="text-xs font-semibold text-white">Guardar</Text>
+            </Pressable>
+            <Pressable onPress={() => setEditingGoal(false)}>
+              <Text className="text-xs text-muted-light dark:text-muted-dark">Cancelar</Text>
+            </Pressable>
+          </View>
+        )}
         <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
           <View style={{ width: `${challengePct}%`, height: '100%', backgroundColor: colors.aqua }} />
         </View>
         <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
-          Meta compartida entre todo el grupo — sumen pasos juntos.
+          Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
         </Text>
       </View>
 
