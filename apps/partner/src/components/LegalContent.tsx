@@ -34,7 +34,9 @@ export function LegalContent() {
           más; nadie más la ve), foto de perfil (opcional), zona o barrio (opcional), el token de
           notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google
           Health Connect — solo el total diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
-          la autorizás, únicamente para mostrarte comercios cercanos. Tus pasos y tu nombre solo son
+          la autorizás, para mostrarte comercios cercanos y, si dejás activados los avisos cercanos, para avisarte
+          de promociones de comercios que estén cerca (guardamos solo una zona aproximada de unos 550 m, sin
+          historial ni ruta; podés apagarlo en Perfil y se borra). Tus pasos y tu nombre solo son
           visibles para otros usuarios si activás &ldquo;Aparecer en el ranking&rdquo; o dentro de
           un grupo al que te unís vos mismo. No vendemos tus datos a terceros. Podés pedir la
           eliminación de tu cuenta y tus datos en cualquier momento desde Perfil, dentro de la app.
