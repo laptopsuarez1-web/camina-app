@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Users, Check } from 'lucide-react-native';
@@ -70,7 +71,14 @@ function Wordmark() {
 export default function HomeScreen() {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps, available, healthConnectStatus } = useTodaySteps();
+  const { steps, available, healthConnectStatus, live, refresh: refreshSteps } = useTodaySteps();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  async function onRefresh() {
+    setRefreshing(true);
+    await Promise.all([refreshSteps(), queryClient.invalidateQueries()]);
+    setRefreshing(false);
+  }
   const { data: balance } = usePointsBalance();
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: groups } = useGroups();
@@ -86,12 +94,12 @@ export default function HomeScreen() {
   const [goalInput, setGoalInput] = useState('');
 
   useEffect(() => {
-    if (steps > 0 && steps !== lastSynced.current) {
+    if (live && steps > 0 && steps !== lastSynced.current) {
       lastSynced.current = steps;
       syncSteps.mutate(steps);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [steps]);
+  }, [steps, live]);
 
   const goal = profile?.daily_goal ?? 6000;
   const pct = goal > 0 ? steps / goal : 0;
@@ -120,7 +128,10 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <ScrollView
+      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
+    >
       <LinearGradient
         colors={['#3a2668', '#1c1030', '#120a1e']}
         start={{ x: 0.15, y: -0.1 }}

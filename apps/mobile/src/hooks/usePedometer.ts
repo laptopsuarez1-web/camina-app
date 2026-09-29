@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { Pedometer } from 'expo-sensors';
 import {
@@ -22,7 +23,8 @@ import {
 // Health Connect instalado o rechaza el permiso, se cae al viejo esquema de
 // expo-sensors Pedometer (sensor propio del teléfono nomás) para que la app
 // siga funcionando igual.
-const POLL_MS = 30_000;
+const POLL_MS = 15_000;
+const STEPS_CACHE_KEY = 'camina_steps_cache_v1';
 const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
 // Health Connect: RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY
 const HC_MANUAL_ENTRY = 3;
@@ -37,6 +39,7 @@ function startOfToday() {
 function useHealthKitSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
+  const readRef = useRef<() => Promise<void>>(async () => {});
 
   useEffect(() => {
     if (!enabled || Platform.OS !== 'ios') return;
@@ -60,6 +63,7 @@ function useHealthKitSteps(enabled: boolean) {
       }
     }
 
+    readRef.current = readToday;
     let interval: ReturnType<typeof setInterval> | null = null;
     (async () => {
       try {
@@ -83,7 +87,7 @@ function useHealthKitSteps(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { steps, ready };
+  return { steps, ready, refresh: () => readRef.current() };
 }
 
 // ---------- Health Connect (Android) ----------
@@ -93,6 +97,7 @@ function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<HealthConnectStatus>('checking');
+  const readRef = useRef<() => Promise<void>>(async () => {});
 
   useEffect(() => {
     if (!enabled || Platform.OS !== 'android') return;
@@ -122,6 +127,7 @@ function useHealthConnectSteps(enabled: boolean) {
       }
     }
 
+    readRef.current = readToday;
     let interval: ReturnType<typeof setInterval> | null = null;
     (async () => {
       try {
@@ -156,7 +162,7 @@ function useHealthConnectSteps(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { steps, ready, status };
+  return { steps, ready, status, refresh: () => readRef.current() };
 }
 
 // ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
@@ -189,8 +195,14 @@ function useIosSensorSteps(enabled: boolean) {
 
 export type StepSource = 'healthkit' | 'health-connect' | 'sensor' | null;
 
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function useTodaySteps() {
   const [sensorAvailable, setSensorAvailable] = useState<boolean | null>(null);
+  const [cached, setCached] = useState<number | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
@@ -199,23 +211,62 @@ export function useTodaySteps() {
       .catch(() => setSensorAvailable(false));
   }, []);
 
+  // Último valor conocido de hoy: se muestra al instante mientras se lee Salud.
+  useEffect(() => {
+    AsyncStorage.getItem(STEPS_CACHE_KEY)
+      .then((raw) => {
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as { day: string; steps: number };
+        if (parsed.day === todayKey()) setCached(parsed.steps);
+      })
+      .catch(() => {});
+  }, []);
+
   const healthKit = useHealthKitSteps(Platform.OS === 'ios');
   const healthConnect = useHealthConnectSteps(Platform.OS === 'android');
 
   // El sensor de CoreMotion (solo iPhone) se usa únicamente si Salud no está disponible.
   const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true && !healthKit.ready);
 
+  let result: {
+    steps: number;
+    available: boolean | null;
+    source: StepSource;
+    healthConnectStatus: HealthConnectStatus | null;
+    live: boolean;
+  };
   if (Platform.OS === 'ios') {
     if (healthKit.ready && healthKit.steps != null) {
-      return { steps: healthKit.steps, available: true, source: 'healthkit' as StepSource, healthConnectStatus: null };
+      result = { steps: healthKit.steps, available: true, source: 'healthkit', healthConnectStatus: null, live: true };
+    } else {
+      result = { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? 'sensor' : null, healthConnectStatus: null, live: sensorAvailable === true };
     }
-    return { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? ('sensor' as StepSource) : null, healthConnectStatus: null };
+  } else if (healthConnect.ready && healthConnect.steps != null) {
+    // Android: los pasos SOLO salen de Health Connect (la fuente oficial de Android),
+    // así se pueden descartar los cargados a mano. No hay sensor de respaldo.
+    result = { steps: healthConnect.steps, available: true, source: 'health-connect', healthConnectStatus: 'ok', live: true };
+  } else {
+    result = {
+      steps: 0,
+      available: healthConnect.status === 'checking' ? null : false,
+      source: null,
+      healthConnectStatus: healthConnect.status,
+      live: false,
+    };
   }
 
-  // Android: los pasos SOLO salen de Health Connect (la fuente oficial de Android),
-  // así se pueden descartar los cargados a mano. No hay sensor de respaldo.
-  if (healthConnect.ready && healthConnect.steps != null) {
-    return { steps: healthConnect.steps, available: true, source: 'health-connect' as StepSource, healthConnectStatus: 'ok' as HealthConnectStatus };
-  }
-  return { steps: 0, available: healthConnect.status === 'checking' ? null : false, source: null, healthConnectStatus: healthConnect.status };
+  useEffect(() => {
+    if (result.live && result.steps > 0) {
+      AsyncStorage.setItem(STEPS_CACHE_KEY, JSON.stringify({ day: todayKey(), steps: result.steps })).catch(() => {});
+    }
+  }, [result.live, result.steps]);
+
+  const refresh = useCallback(async () => {
+    await Promise.all([healthKit.refresh(), healthConnect.refresh()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // `steps` es lo que se muestra (con el último valor conocido mientras carga);
+  // `live` indica si viene de la fuente real — solo eso se manda al servidor.
+  return { ...result, steps: result.live ? result.steps : Math.max(result.steps, cached ?? 0), refresh };
 }

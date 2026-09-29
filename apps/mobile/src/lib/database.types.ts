@@ -18,6 +18,7 @@ export interface Profile {
   dark_mode: boolean;
   referred_by: string | null;
   terms_accepted_at: string | null;
+  birth_date?: string | null;
   created_at: string;
 }
 

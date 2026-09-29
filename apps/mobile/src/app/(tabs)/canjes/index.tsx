@@ -11,7 +11,9 @@ import {
   Image,
   Linking,
   Platform,
+  RefreshControl,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -212,6 +214,8 @@ export default function CanjesScreen() {
   const { data: benefits, isLoading } = useBenefits();
   const { data: remainingToday } = useBenefitsRemainingToday();
   const { data: balance } = usePointsBalance();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
   const redeem = useRedeemBenefit();
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
@@ -360,7 +364,22 @@ export default function CanjesScreen() {
 
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
-      <ScrollView className="flex-1" contentContainerClassName="pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="pb-8"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await queryClient.invalidateQueries();
+              setRefreshing(false);
+            }}
+            tintColor={colors.aqua}
+          />
+        }
+      >
         {/* Tarjeta de mapa: vista previa que abre el mapa completo */}
         <View style={{ height: 250, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', backgroundColor: '#1d1b2e' }}>
           {mapRegion ? (

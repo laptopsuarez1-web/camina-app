@@ -4,9 +4,12 @@ import { Home, Activity, Users, Calendar, ShoppingBag } from 'lucide-react-nativ
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
+import { useColorScheme } from 'nativewind';
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
+  const { colorScheme } = useColorScheme();
+  const dark = colorScheme === 'dark';
 
   useEffect(() => {
     if (session) registerForPushNotificationsAsync();
@@ -21,6 +24,10 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.aqua,
         tabBarInactiveTintColor: '#9C8FC2',
         tabBarLabelStyle: { fontSize: 10 },
+        tabBarStyle: {
+          backgroundColor: dark ? colors.dark.card : colors.light.card,
+          borderTopColor: dark ? colors.dark.line : colors.light.line,
+        },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }} />
