@@ -5,6 +5,7 @@ import { Home, Activity, Users, Calendar, ShoppingBag, type IconProps } from '@/
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
+import { shareCoarseLocation } from '@/lib/coarse-location';
 import { useColorScheme } from 'nativewind';
 
 // Ícono de la barra: el activo va relleno y sobre una pastilla verde suave.
@@ -33,7 +34,10 @@ export default function TabsLayout() {
   const dark = colorScheme === 'dark';
 
   useEffect(() => {
-    if (session) registerForPushNotificationsAsync();
+    if (session) {
+      registerForPushNotificationsAsync();
+      shareCoarseLocation();
+    }
   }, [session]);
 
   if (!initializing && !session) return <Redirect href="/(auth)/welcome" />;

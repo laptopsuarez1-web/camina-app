@@ -19,6 +19,7 @@ export interface Profile {
   referred_by: string | null;
   terms_accepted_at: string | null;
   birth_date?: string | null;
+  nearby_alerts?: boolean;
   created_at: string;
 }
 

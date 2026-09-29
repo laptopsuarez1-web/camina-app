@@ -34,6 +34,7 @@ import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { BusinessHours } from '@/components/BusinessHours';
+import { shareCoarseLocation } from '@/lib/coarse-location';
 import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
@@ -265,6 +266,7 @@ export default function CanjesScreen() {
           return;
         }
         const position = await Location.getCurrentPositionAsync({});
+        shareCoarseLocation();
         setHasGps(true);
         setMapRegion({
           latitude: position.coords.latitude,

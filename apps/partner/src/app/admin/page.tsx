@@ -24,6 +24,10 @@ export default function AdminPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [founderSlots, setFounderSlots] = useState<number | null>(null);
   const [founderError, setFounderError] = useState<string | null>(null);
+  const [pendingAlerts, setPendingAlerts] = useState<
+    { id: string; business_name: string; title: string; body: string; radius_km: number; estimated: number }[]
+  >([]);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setListLoading(true);
@@ -31,8 +35,23 @@ export default function AdminPage() {
     setBusinesses((data as Business[]) ?? []);
     const { data: used } = await supabase.rpc('founder_slots_used');
     setFounderSlots(typeof used === 'number' ? used : null);
+    const { data: alerts } = await supabase.rpc('pending_nearby_campaigns');
+    setPendingAlerts((alerts as typeof pendingAlerts) ?? []);
     setListLoading(false);
   }, []);
+
+  async function decideAlert(id: string, approve: boolean) {
+    setAlertMsg(null);
+    const { data, error } = approve
+      ? await supabase.rpc('approve_nearby_campaign', { p_campaign_id: id })
+      : await supabase.rpc('reject_nearby_campaign', { p_campaign_id: id });
+    if (error) {
+      setAlertMsg(error.message);
+      return;
+    }
+    if (approve) setAlertMsg(`Aviso enviado a ${data} personas.`);
+    loadBusinesses();
+  }
 
   async function makeFounder(businessId: string) {
     setSavingId(businessId);
@@ -144,6 +163,38 @@ export default function AdminPage() {
           <p className="text-[18px] font-extrabold text-text">{founderSlots ?? '—'}/20 <span className="text-muted text-[12px] font-medium">cupos usados</span></p>
         </div>
         {founderError && <p className="text-warn text-[12.5px] mb-4">{founderError}</p>}
+
+        {(pendingAlerts.length > 0 || alertMsg) && (
+          <div className="bg-card border border-line rounded-2xl p-4 mb-5">
+            <p className="font-bold text-[13.5px] mb-2.5">Avisos cercanos por aprobar ({pendingAlerts.length})</p>
+            {alertMsg && <p className="text-[12.5px] text-mint-dark mb-2.5">{alertMsg}</p>}
+            <div className="flex flex-col gap-2.5">
+              {pendingAlerts.map((a) => (
+                <div key={a.id} className="border border-line rounded-xl p-3">
+                  <p className="text-[11.5px] text-muted mb-0.5">
+                    {a.business_name} · {a.radius_km} km · llegaría a unas {a.estimated} personas
+                  </p>
+                  <p className="font-semibold text-[13.5px]">{a.title}</p>
+                  <p className="text-[12.5px] text-muted mb-2.5">{a.body}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => decideAlert(a.id, true)}
+                      className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                    >
+                      Aprobar y enviar
+                    </button>
+                    <button
+                      onClick={() => decideAlert(a.id, false)}
+                      className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                    >
+                      Rechazar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {(() => {
           const pending = businesses.filter((b) => !b.approved);

@@ -5,6 +5,7 @@ import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble } from '@/components
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
+import { clearCoarseLocation, shareCoarseLocation } from '@/lib/coarse-location';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -112,6 +113,15 @@ export default function PerfilScreen() {
     if (!profile) return;
     const { error } = await supabase.from('profiles').update({ dark_mode: value }).eq('id', profile.id);
     if (!error) await useAuthStore.getState().refreshProfile();
+  }
+
+  async function toggleNearby(value: boolean) {
+    if (!profile) return;
+    const { error } = await supabase.from('profiles').update({ nearby_alerts: value }).eq('id', profile.id);
+    if (error) return;
+    await useAuthStore.getState().refreshProfile();
+    if (value) await shareCoarseLocation(true);
+    else await clearCoarseLocation();
   }
 
   async function toggleRanking(value: boolean) {
@@ -284,6 +294,19 @@ export default function PerfilScreen() {
           <Switch
             value={profile?.ranking_visible ?? true}
             onValueChange={toggleRanking}
+            trackColor={{ true: colors.aqua, false: colors.light.line }}
+          />
+        </View>
+        <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
+          <View className="flex-1 pr-3">
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Avisos de comercios cerca</Text>
+            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-0.5">
+              Usamos tu ubicación aproximada. Máximo 1 aviso por semana.
+            </Text>
+          </View>
+          <Switch
+            value={profile?.nearby_alerts ?? true}
+            onValueChange={toggleNearby}
             trackColor={{ true: colors.aqua, false: colors.light.line }}
           />
         </View>
