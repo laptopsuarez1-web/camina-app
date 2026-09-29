@@ -212,13 +212,21 @@ export default function AdminPage() {
                         {b.category} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
                       </p>
                     </div>
-                    <button
-                      onClick={() => approve(b.id)}
-                      disabled={savingId === b.id}
-                      className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
-                    >
-                      Aprobar
-                    </button>
+                    {b.logo_url && b.cover_url ? (
+                      <button
+                        onClick={() => approve(b.id)}
+                        disabled={savingId === b.id}
+                        className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                      >
+                        Aprobar
+                      </button>
+                    ) : (
+                      <span className="text-[11.5px] text-warn font-semibold text-right">
+                        Faltan fotos:
+                        <br />
+                        {[!b.logo_url && 'logo', !b.cover_url && 'portada'].filter(Boolean).join(' y ')}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

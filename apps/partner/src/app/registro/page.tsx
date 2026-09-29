@@ -1,10 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { ImagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
+import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
+
+const PREFIJOS = [
+  ['+591', 'Bolivia'],
+  ['+54', 'Argentina'],
+  ['+55', 'Brasil'],
+  ['+56', 'Chile'],
+  ['+51', 'Perú'],
+  ['+595', 'Paraguay'],
+  ['+598', 'Uruguay'],
+];
 
 const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
@@ -13,7 +25,11 @@ export default function RegistroPage() {
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
   const [esVirtual, setEsVirtual] = useState(false);
   const [direccion, setDireccion] = useState('');
+  const [step, setStep] = useState(1);
+  const [prefijo, setPrefijo] = useState('+591');
   const [telefono, setTelefono] = useState('');
+  const [logo, setLogo] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,10 +38,25 @@ export default function RegistroPage() {
   const [resending, setResending] = useState(false);
   const router = useRouter();
 
-  const valido = nombre.trim() && (esVirtual || direccion.trim()) && telefono.trim() && email.trim() && password.length >= 6;
+  const datosOk = Boolean(nombre.trim() && (esVirtual || direccion.trim()) && telefono.trim().length >= 6);
+  const cuentaOk = Boolean(email.trim() && password.length >= 6);
+  const valido = datosOk && cuentaOk;
+  const telefonoCompleto = `${prefijo} ${telefono.trim()}`;
+
+  async function pickLogo(file: File) {
+    try {
+      setLogo(await fileToSmallDataUrl(file));
+    } catch {
+      setError('No pudimos leer esa imagen. Probá con otra en PNG o JPG.');
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (step < 3) {
+      if (step === 1 || datosOk) setStep(step + 1);
+      return;
+    }
     if (!valido) return;
     setLoading(true);
     setError(null);
@@ -46,23 +77,25 @@ export default function RegistroPage() {
         name: nombre.trim(),
         category: categoria,
         address: direccion.trim(),
-        phone: telefono.trim(),
+        phone: telefonoCompleto,
         isVirtual: esVirtual,
+        logoDataUrl: logo,
       });
       setLoading(false);
       setAwaitingConfirmation(true);
       return;
     }
 
-    const { error: businessError } = await supabase.from('businesses').insert({
+    const { data: created, error: businessError } = await supabase.from('businesses').insert({
       owner_user_id: data.session.user.id,
       name: nombre.trim(),
       category: categoria,
       address: esVirtual ? null : direccion.trim(),
-      phone: telefono.trim(),
+      phone: telefonoCompleto,
       is_virtual: esVirtual,
       plan: 'primer_paso',
-    });
+    }).select('id').single();
+    if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
     setLoading(false);
     if (businessError) {
       setError(businessError.message);
@@ -101,93 +134,193 @@ export default function RegistroPage() {
     );
   }
 
+  const input = 'w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]';
+
   return (
     <div className="min-h-screen bg-bg flex justify-center">
-      <div className="w-full max-w-[420px] px-6 py-10">
-        <Link href="/login" className="text-muted text-[13px] mb-4.5 inline-block">
-          ‹ Volver
-        </Link>
-        <p className="text-[21px] font-bold mb-1">Sumá tu comercio</p>
-        <p className="text-muted text-[13px] mb-6">
-          Empezás gratis con el plan Primer Paso — cambiás cuando quieras.
-        </p>
+      <div className="w-full max-w-[460px] px-5 py-8">
+        <div className="flex items-center gap-2.5 mb-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/camina-logo.png" alt="Camina" width={36} height={36} className="rounded-full" />
+          <span className="font-extrabold tracking-wide text-[18px]" style={{ color: '#241748' }}>CAMINA</span>
+        </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Field label="Nombre comercial">
-            <input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej: Café Tarija"
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Categoría">
-            <select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            >
-              {CATEGORIAS.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </Field>
-          <label className="flex items-center gap-2 text-[13px] text-muted">
-            <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
-            Es un emprendimiento virtual (no tengo local físico)
-          </label>
+        <form onSubmit={handleSubmit} className="bg-card border border-line rounded-2xl p-5 sm:p-6">
+          <p className="text-mint-dark font-semibold text-[13px] mb-1">Paso {step} de 3</p>
+          <div className="flex gap-1.5 mb-4">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="h-1.5 flex-1 rounded-full" style={{ background: n <= step ? '#62F0B6' : '#e6e3ee' }} />
+            ))}
+          </div>
 
-          {!esVirtual && (
-            <Field label="Dirección">
-              <input
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Calle y número, ciudad"
-                className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-              />
-            </Field>
+          {step === 1 && (
+            <>
+              <h1 className="text-[22px] font-bold mb-1">Sumá tu comercio</h1>
+              <p className="text-muted text-[13px] mb-5">
+                Empezás gratis con el plan Primer Paso — cambiás cuando quieras.
+              </p>
+              <p className="text-[13px] font-semibold mb-2">¿Tu comercio es físico u online?</p>
+              <div className="grid grid-cols-2 gap-2.5 mb-5">
+                {[
+                  { v: false, t: 'Tienda física', d: 'Atiendo en una dirección' },
+                  { v: true, t: 'Solo online', d: 'Vendo únicamente por internet' },
+                ].map((o) => (
+                  <button
+                    type="button"
+                    key={o.t}
+                    onClick={() => setEsVirtual(o.v)}
+                    className="text-left rounded-xl p-3.5 border-2"
+                    style={{ borderColor: esVirtual === o.v ? '#1f9d75' : '#e6e3ee', background: esVirtual === o.v ? '#f0faf6' : '#fff' }}
+                  >
+                    <p className="font-bold text-[14px]">{o.t}</p>
+                    <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="rounded-xl px-6 py-3 font-semibold text-sm"
+                style={{ background: '#241748', color: '#7FEDC4' }}
+              >
+                Continuar
+              </button>
+              <p className="text-muted text-[12px] mt-4">
+                ¿Ya tenés cuenta?{' '}
+                <Link href="/login" className="underline">
+                  Iniciá sesión
+                </Link>
+              </p>
+            </>
           )}
-          <Field label="Teléfono de contacto">
-            <input
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              placeholder="+591 ..."
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Email">
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              placeholder="tucomercio@email.com"
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Contraseña">
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="Mínimo 6 caracteres"
-              className="w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
 
-          {error && <p className="text-warn text-[12.5px]">{error}</p>}
+          {step === 2 && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <h1 className="text-[22px] font-bold mb-1">Creá tu comercio</h1>
+                <p className="text-muted text-[13px]">Completá los datos del comercio.</p>
+              </div>
 
-          <p className="text-muted text-[11.5px]">
-            Después de crear la cuenta, el equipo de Camina revisa tu comercio antes de que aparezca en la app.
-          </p>
+              <div>
+                <span className="block text-[12.5px] font-semibold mb-1.5">Logo del comercio</span>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-full flex items-center gap-3.5 text-left rounded-xl p-3.5 border-2 border-dashed border-line bg-bg"
+                >
+                  <div className="w-[60px] h-[60px] shrink-0 rounded-xl bg-white border border-line flex items-center justify-center overflow-hidden">
+                    {logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={logo} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImagePlus size={24} color="#1f9d75" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-[14px]">{logo ? 'Cambiar imagen' : 'Subir imagen'}</p>
+                    <p className="text-muted text-[12px]">Opcional. La podés subir después desde tu Perfil, antes de publicarte en la app.</p>
+                  </div>
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && pickLogo(e.target.files[0])}
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={!valido || loading}
-            className="w-full rounded-xl py-3.5 font-semibold text-sm mt-2 disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
-          >
-            {loading ? 'Creando cuenta…' : 'Crear cuenta'}
-          </button>
+              <Field label="Nombre comercial">
+                <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Café Tarija" className={input} />
+              </Field>
+              <Field label="Tipo de comercio">
+                <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={input}>
+                  {CATEGORIAS.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </Field>
+              {!esVirtual && (
+                <Field label="Dirección principal">
+                  <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle y número, ciudad" className={input} />
+                </Field>
+              )}
+              <div>
+                <span className="block text-[12.5px] font-semibold mb-1.5">Teléfono / WhatsApp del comercio</span>
+                <div className="flex gap-2">
+                  <select value={prefijo} onChange={(e) => setPrefijo(e.target.value)} className={`${input} !w-[150px] shrink-0`}>
+                    {PREFIJOS.map(([p, n]) => (
+                      <option key={p} value={p}>
+                        {p} {n}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value.replace(/[^\d ]/g, ''))}
+                    inputMode="tel"
+                    placeholder="7 000 0000"
+                    className={`${input} min-w-0`}
+                  />
+                </div>
+              </div>
+
+              {error && <p className="text-warn text-[12.5px]">{error}</p>}
+              <div className="flex gap-2.5">
+                <button type="button" onClick={() => setStep(1)} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                  Volver
+                </button>
+                <button
+                  type="button"
+                  disabled={!datosOk}
+                  onClick={() => {
+                    setError(null);
+                    setStep(3);
+                  }}
+                  className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
+                  style={{ background: '#241748', color: '#7FEDC4' }}
+                >
+                  Continuar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <h1 className="text-[22px] font-bold mb-1">Tu cuenta</h1>
+                <p className="text-muted text-[13px]">Con estos datos vas a entrar al panel.</p>
+              </div>
+              <Field label="Email de trabajo">
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="tucomercio@email.com" className={input} />
+              </Field>
+              <Field label="Contraseña">
+                <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" className={input} />
+              </Field>
+
+              {error && <p className="text-warn text-[12.5px]">{error}</p>}
+
+              <p className="text-muted text-[12px] leading-[18px]">
+                Después de crear la cuenta, el equipo de Camina revisa tu comercio antes de que aparezca en la app.
+                Para publicarte necesitamos el <strong>logo</strong> y una <strong>foto de portada</strong> (las cargás en Perfil).
+              </p>
+
+              <div className="flex gap-2.5">
+                <button type="button" onClick={() => setStep(2)} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                  Volver
+                </button>
+                <button
+                  type="submit"
+                  disabled={!valido || loading}
+                  className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
+                  style={{ background: '#241748', color: '#7FEDC4' }}
+                >
+                  {loading ? 'Creando cuenta…' : 'Crear cuenta'}
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3 },
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
+  { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
   { href: '/plan', label: 'Plan', icon: CreditCard },
 ];
 
@@ -106,7 +107,17 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {!business.approved && (
         <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
           Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
-          Mientras tanto podés completar tu perfil y tu beneficio, van a quedar listos para cuando te aprueben.
+          {(!business.logo_url || !business.cover_url) ? (
+            <>
+              {' '}Para publicarte necesitamos{' '}
+              <strong>
+                {[!business.logo_url && 'tu logo', !business.cover_url && 'una foto de portada'].filter(Boolean).join(' y ')}
+              </strong>
+              . <Link href="/perfil" className="underline font-semibold">Cargalas en Perfil</Link>.
+            </>
+          ) : (
+            <> Ya tenés logo y portada, así que solo falta que lo revisemos. Mientras tanto podés cargar tus beneficios.</>
+          )}
         </div>
       )}
       {children}

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, type Business } from '@/lib/supabase';
 import { consumePendingBusiness } from '@/lib/pending-business';
+import { uploadLogoFromDataUrl } from '@/lib/logo';
 
 export function useBusinessAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -47,7 +48,13 @@ export function useBusinessAuth() {
       })
       .select('*')
       .single();
-    setBusiness(error ? null : (created as Business));
+    if (error || !created) {
+      setBusiness(null);
+      return;
+    }
+    if (pending.logoDataUrl) await uploadLogoFromDataUrl(created.id, pending.logoDataUrl);
+    const { data: fresh } = await supabase.from('businesses').select('*').eq('id', created.id).single();
+    setBusiness((fresh ?? created) as Business);
   }, []);
 
   useEffect(() => {

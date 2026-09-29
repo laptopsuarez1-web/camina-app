@@ -11,6 +11,7 @@ export interface PendingBusiness {
   address: string;
   phone: string;
   isVirtual: boolean;
+  logoDataUrl?: string | null;
 }
 
 const KEY = 'camina_pending_business';
