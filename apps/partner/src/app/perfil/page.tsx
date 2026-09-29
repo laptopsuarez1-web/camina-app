@@ -21,6 +21,8 @@ export default function PerfilPage() {
   const [instagram, setInstagram] = useState('');
   const [website, setWebsite] = useState('');
   const [esVirtual, setEsVirtual] = useState(false);
+  const [ubicacion, setUbicacion] = useState('');
+  const [ubicacionMsg, setUbicacionMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -36,10 +38,47 @@ export default function PerfilPage() {
     setInstagram(business.instagram ?? '');
     setWebsite(business.website ?? '');
     setEsVirtual(business.is_virtual);
+    setUbicacion(business.lat != null && business.lng != null ? `${business.lat}, ${business.lng}` : '');
   }, [business]);
+
+  // Acepta "-21.53, -64.73" o un link largo de Google Maps (…@-21.53,-64.73… o …!3d-21.53!4d-64.73…).
+  function parseUbicacion(text: string): { lat: number; lng: number } | null {
+    const t = text.trim();
+    const m =
+      t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/) ||
+      t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) ||
+      t.match(/[?&](?:q|ll|query)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/) ||
+      t.match(/^(-?\d+\.\d+)\s*[,; ]\s*(-?\d+\.\d+)$/);
+    if (!m) return null;
+    const lat = parseFloat(m[1]);
+    const lng = parseFloat(m[2]);
+    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    return { lat, lng };
+  }
+
+  function usarMiUbicacion() {
+    setUbicacionMsg(null);
+    if (!navigator.geolocation) {
+      setUbicacionMsg('Este navegador no permite obtener la ubicación.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUbicacion(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+        setUbicacionMsg('Listo: se tomó tu ubicación actual. Guardá los cambios abajo.');
+      },
+      () => setUbicacionMsg('No pudimos obtener tu ubicación. Permití el acceso o pegá el link de Google Maps.'),
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  }
 
   async function handleSave() {
     if (!business) return;
+    const punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
+    if (!esVirtual && ubicacion.trim() && !punto) {
+      setUbicacionMsg('No entendimos esa ubicación. Pegá el link largo de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
+      return;
+    }
     setSaving(true);
     setSaved(false);
     const { error } = await supabase
@@ -48,6 +87,8 @@ export default function PerfilPage() {
         name: nombre.trim(),
         category: categoria,
         address: esVirtual ? null : direccion.trim(),
+        lat: esVirtual ? null : punto ? punto.lat : null,
+        lng: esVirtual ? null : punto ? punto.lng : null,
         hours_text: horario.trim(),
         phone: telefono.trim(),
         instagram: instagram.trim() || null,
@@ -141,6 +182,43 @@ export default function PerfilPage() {
                 onChange={(e) => setDireccion(e.target.value)}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
+            </Field>
+          )}
+          {!esVirtual && (
+            <Field label="Ubicación en el mapa" icon={<MapPin size={13} color="#7C6A9C" />}>
+              <input
+                value={ubicacion}
+                onChange={(e) => {
+                  setUbicacion(e.target.value);
+                  setUbicacionMsg(null);
+                }}
+                placeholder="Pegá el link de Google Maps o las coordenadas"
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-[12px]">
+                <button type="button" onClick={usarMiUbicacion} className="text-purple font-semibold">
+                  Usar mi ubicación actual (estando en el local)
+                </button>
+                {(() => {
+                  const p = parseUbicacion(ubicacion);
+                  return p ? (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-muted underline"
+                    >
+                      Ver ese punto en Google Maps
+                    </a>
+                  ) : null;
+                })()}
+              </div>
+              <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+                {ubicacion.trim()
+                  ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección.'
+                  : 'Sin ubicación tu local no aparece en el mapa. En Google Maps, mantené apretado el lugar de tu local y copiá los números que salen arriba.'}
+              </p>
+              {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
             </Field>
           )}
           <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>

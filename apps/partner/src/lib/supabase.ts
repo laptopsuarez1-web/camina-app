@@ -25,6 +25,8 @@ export interface Business {
   category: string;
   description: string | null;
   address: string | null;
+  lat: number | null;
+  lng: number | null;
   phone: string | null;
   instagram: string | null;
   hours_text: string | null;
