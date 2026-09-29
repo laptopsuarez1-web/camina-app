@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Users, Check } from 'lucide-react-native';
 import { BellButton } from '@/components/ui/BellButton';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
 import { usePointsBalance, useSyncSteps } from '@/hooks/usePoints';
 import { useBenefits } from '@/hooks/useBenefits';
@@ -69,7 +70,7 @@ function Wordmark() {
 export default function HomeScreen() {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps, available } = useTodaySteps();
+  const { steps, available, healthConnectStatus } = useTodaySteps();
   const { data: balance } = usePointsBalance();
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: groups } = useGroups();
@@ -251,11 +252,37 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {available === false && (
+        {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
+          <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+            <Text className="text-white font-bold text-[13px] mb-1">
+              {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect para contar tus pasos' : 'Falta el permiso de pasos'}
+            </Text>
+            <Text className="text-auth-muted text-[12px] leading-4 mb-3">
+              Camina cuenta tus pasos desde Health Connect, la fuente oficial de Android. También necesitás una app de pasos que
+              escriba ahí (Google Fit, Samsung Health o Mi Fitness).
+            </Text>
+            <Pressable
+              onPress={() => {
+                if (healthConnectStatus === 'unavailable') {
+                  Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() =>
+                    Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')
+                  );
+                } else {
+                  openHealthConnectSettings();
+                }
+              }}
+              className="bg-mint rounded-xl py-2.5 items-center"
+            >
+              <Text className="text-mint-dark font-bold text-[13px]">
+                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : 'Abrir Health Connect'}
+              </Text>
+            </Pressable>
+          </View>
+        ) : available === false ? (
           <Text className="text-auth-muted text-center text-[11px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.
           </Text>
-        )}
+        ) : null}
       </LinearGradient>
 
       <View className="pt-5 pb-2">

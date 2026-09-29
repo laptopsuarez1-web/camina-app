@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Pedometer } from 'expo-sensors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   isHealthDataAvailable,
   requestAuthorization as requestHealthKitAuthorization,
@@ -24,15 +23,9 @@ import {
 // expo-sensors Pedometer (sensor propio del teléfono nomás) para que la app
 // siga funcionando igual.
 const POLL_MS = 30_000;
-const ANDROID_BASELINE_KEY = 'camina_pedometer_android_baseline_v1';
 const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
 // Health Connect: RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY
 const HC_MANUAL_ENTRY = 3;
-
-function localDateKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 function startOfToday() {
   const d = new Date();
@@ -94,9 +87,12 @@ function useHealthKitSteps(enabled: boolean) {
 }
 
 // ---------- Health Connect (Android) ----------
+export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'ok';
+
 function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState<HealthConnectStatus>('checking');
 
   useEffect(() => {
     if (!enabled || Platform.OS !== 'android') return;
@@ -129,27 +125,28 @@ function useHealthConnectSteps(enabled: boolean) {
     let interval: ReturnType<typeof setInterval> | null = null;
     (async () => {
       try {
-        const status = await getSdkStatus();
-        if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
-          if (!cancelled) setReady(false);
+        const sdkStatus = await getSdkStatus();
+        if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+          if (!cancelled) { setReady(false); setStatus('unavailable'); }
           return;
         }
         const initialized = await initializeHealthConnect();
         if (!initialized) {
-          if (!cancelled) setReady(false);
+          if (!cancelled) { setReady(false); setStatus('unavailable'); }
           return;
         }
         const granted = await requestHealthConnectPermission([{ accessType: 'read', recordType: 'Steps' }]);
         if (!granted.some((p) => 'recordType' in p && p.recordType === 'Steps')) {
-          if (!cancelled) setReady(false);
+          if (!cancelled) { setReady(false); setStatus('denied'); }
           return;
         }
         if (cancelled) return;
         setReady(true);
+        setStatus('ok');
         await readToday();
         interval = setInterval(readToday, POLL_MS);
       } catch {
-        if (!cancelled) setReady(false);
+        if (!cancelled) { setReady(false); setStatus('denied'); }
       }
     })();
 
@@ -159,24 +156,10 @@ function useHealthConnectSteps(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { steps, ready };
+  return { steps, ready, status };
 }
 
-// ---------- Fallback: sensor crudo del teléfono (expo-sensors) ----------
-type AndroidBaseline = { date: string; baselineSteps: number; subscriptionStart: number | null };
-
-async function readBaseline(): Promise<AndroidBaseline> {
-  const raw = await AsyncStorage.getItem(ANDROID_BASELINE_KEY);
-  const today = localDateKey();
-  if (raw) {
-    const parsed = JSON.parse(raw) as AndroidBaseline;
-    if (parsed.date === today) return parsed;
-  }
-  const fresh: AndroidBaseline = { date: today, baselineSteps: 0, subscriptionStart: null };
-  await AsyncStorage.setItem(ANDROID_BASELINE_KEY, JSON.stringify(fresh));
-  return fresh;
-}
-
+// ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
 function useIosSensorSteps(enabled: boolean) {
   const [steps, setSteps] = useState(0);
 
@@ -204,61 +187,13 @@ function useIosSensorSteps(enabled: boolean) {
   return steps;
 }
 
-function useAndroidSensorSteps(enabled: boolean) {
-  const [steps, setSteps] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    let sub: ReturnType<typeof Pedometer.watchStepCount> | null = null;
-
-    (async () => {
-      // Sin este permiso (ACTIVITY_RECOGNITION) Android no entrega pasos y el
-      // contador queda en 0 sin avisar.
-      try {
-        const perm = await Pedometer.requestPermissionsAsync();
-        if (!perm.granted) return;
-      } catch {
-        return;
-      }
-      const baseline = await readBaseline();
-      if (cancelled) return;
-      setSteps(baseline.baselineSteps);
-
-      sub = Pedometer.watchStepCount(async (result) => {
-        const current = await readBaseline();
-        if (current.date !== localDateKey()) {
-          const reset: AndroidBaseline = { date: localDateKey(), baselineSteps: 0, subscriptionStart: result.steps };
-          await AsyncStorage.setItem(ANDROID_BASELINE_KEY, JSON.stringify(reset));
-          setSteps(0);
-          return;
-        }
-        if (current.subscriptionStart === null) {
-          const updated: AndroidBaseline = { ...current, subscriptionStart: result.steps };
-          await AsyncStorage.setItem(ANDROID_BASELINE_KEY, JSON.stringify(updated));
-          setSteps(current.baselineSteps);
-          return;
-        }
-        const delta = Math.max(0, result.steps - current.subscriptionStart);
-        setSteps(current.baselineSteps + delta);
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-      sub?.remove();
-    };
-  }, [enabled]);
-
-  return steps;
-}
-
 export type StepSource = 'healthkit' | 'health-connect' | 'sensor' | null;
 
 export function useTodaySteps() {
   const [sensorAvailable, setSensorAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (Platform.OS !== 'ios') return;
     Pedometer.isAvailableAsync()
       .then(setSensorAvailable)
       .catch(() => setSensorAvailable(false));
@@ -267,28 +202,20 @@ export function useTodaySteps() {
   const healthKit = useHealthKitSteps(Platform.OS === 'ios');
   const healthConnect = useHealthConnectSteps(Platform.OS === 'android');
 
-  // El sensor crudo solo se prende si la fuente de Salud no está lista (sin
-  // permiso, sin Health Connect instalado, etc.) — evita pedir dos permisos
-  // de golpe y usar dos fuentes distintas a la vez.
-  const healthReady = Platform.OS === 'ios' ? healthKit.ready : healthConnect.ready;
-  const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true && !healthReady);
-  // En Android el sensor va siempre prendido: Health Connect puede estar listo
-  // pero vacío (ninguna app de pasos escribe ahí en muchos teléfonos), y en ese
-  // caso se usa lo que cuenta el sensor del teléfono.
-  const androidSensorSteps = useAndroidSensorSteps(Platform.OS === 'android' && sensorAvailable === true);
+  // El sensor de CoreMotion (solo iPhone) se usa únicamente si Salud no está disponible.
+  const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true && !healthKit.ready);
 
   if (Platform.OS === 'ios') {
     if (healthKit.ready && healthKit.steps != null) {
-      return { steps: healthKit.steps, available: true, source: 'healthkit' as StepSource };
+      return { steps: healthKit.steps, available: true, source: 'healthkit' as StepSource, healthConnectStatus: null };
     }
-    return { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? ('sensor' as StepSource) : null };
+    return { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? ('sensor' as StepSource) : null, healthConnectStatus: null };
   }
 
+  // Android: los pasos SOLO salen de Health Connect (la fuente oficial de Android),
+  // así se pueden descartar los cargados a mano. No hay sensor de respaldo.
   if (healthConnect.ready && healthConnect.steps != null) {
-    if (androidSensorSteps > healthConnect.steps) {
-      return { steps: androidSensorSteps, available: true, source: 'sensor' as StepSource };
-    }
-    return { steps: healthConnect.steps, available: true, source: 'health-connect' as StepSource };
+    return { steps: healthConnect.steps, available: true, source: 'health-connect' as StepSource, healthConnectStatus: 'ok' as HealthConnectStatus };
   }
-  return { steps: androidSensorSteps, available: sensorAvailable, source: sensorAvailable ? ('sensor' as StepSource) : null };
+  return { steps: 0, available: healthConnect.status === 'checking' ? null : false, source: null, healthConnectStatus: healthConnect.status };
 }
