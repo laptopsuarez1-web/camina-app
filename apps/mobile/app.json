@@ -34,6 +34,7 @@
     },
     "android": {
       "package": "bo.camina.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#200a52",
         "foregroundImage": "./assets/android-icon-foreground.png",
