@@ -15,7 +15,7 @@ import {
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Bell } from 'lucide-react-native';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Bell, Heart, Star } from 'lucide-react-native';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -25,6 +25,7 @@ import {
   type BenefitWithBusiness,
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
@@ -34,6 +35,11 @@ import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 
 type BusinessT = BenefitWithBusiness['business'];
+
+// Comercios del plan Paso Adelante: van primero, con marco y sello dorado.
+const GOLD = '#E2B33C';
+const GOLD_SOFT = '#FBF1D3';
+const isFeatured = (b: { plan?: string | null }) => b.plan === 'paso_adelante';
 
 // Centro de Tarija (ciudad de lanzamiento) — último respaldo si no hay GPS ni comercios con ubicación.
 const TARIJA_REGION = {
@@ -120,16 +126,18 @@ function businessIcon(name: string, size: number, logoUrl?: string | null) {
   );
 }
 
-function MapMarker({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
+  const size = featured ? 48 : 40;
   return (
+    <View style={{ width: size + 6, height: size + 6, alignItems: 'center', justifyContent: 'center' }}>
     <View
       style={{
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: size,
+        height: size,
+        borderRadius: size / 2,
         backgroundColor: '#fff',
-        borderWidth: 2.5,
-        borderColor: colors.aqua,
+        borderWidth: featured ? 3.5 : 2.5,
+        borderColor: featured ? GOLD : colors.aqua,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -140,10 +148,16 @@ function MapMarker({ name, logoUrl }: { name: string; logoUrl?: string | null })
       }}
     >
       {logoUrl ? (
-        <Image source={{ uri: logoUrl }} style={{ width: 34, height: 34, borderRadius: 17 }} />
+        <Image source={{ uri: logoUrl }} style={{ width: size - 6, height: size - 6, borderRadius: (size - 6) / 2 }} />
       ) : (
-        <Text style={{ color: colors.aqua, fontWeight: '800' }}>{name[0]}</Text>
+        <Text style={{ color: featured ? GOLD : colors.aqua, fontWeight: '800' }}>{name[0]}</Text>
       )}
+    </View>
+    {featured && (
+      <View style={{ position: 'absolute', top: 0, right: 0, width: 18, height: 18, borderRadius: 9, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#fff' }}>
+        <Star size={10} color="#fff" fill="#fff" />
+      </View>
+    )}
     </View>
   );
 }
@@ -171,6 +185,8 @@ export default function CanjesScreen() {
 
   const [category, setCategory] = useState('Todos');
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [onlyFavs, setOnlyFavs] = useState(false);
+  const favorites = useFavorites();
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
@@ -249,9 +265,16 @@ export default function CanjesScreen() {
           : null,
     }));
     if (onlyOpen) list = list.filter((g) => g.openNow);
-    list.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity) || a.business.name.localeCompare(b.business.name));
+    if (onlyFavs) list = list.filter((g) => favorites.isFavorite(g.business.id));
+    // Destacados siempre primero (también dentro de cada categoría), después por cercanía.
+    list.sort(
+      (a, b) =>
+        Number(isFeatured(b.business)) - Number(isFeatured(a.business)) ||
+        (a.distance ?? Infinity) - (b.distance ?? Infinity) ||
+        a.business.name.localeCompare(b.business.name)
+    );
     return list;
-  }, [benefits, category, search, onlyOpen, hasGps, mapRegion]);
+  }, [benefits, category, search, onlyOpen, onlyFavs, favorites.ids, hasGps, mapRegion]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -322,7 +345,7 @@ export default function CanjesScreen() {
             >
               {businessesWithCoords.map((b) => (
                 <Marker key={b.id} coordinate={{ latitude: b.lat!, longitude: b.lng! }}>
-                  <MapMarker name={b.name} logoUrl={b.logo_url} />
+                  <MapMarker name={b.name} logoUrl={b.logo_url} featured={isFeatured(b)} />
                 </Marker>
               ))}
             </MapView>
@@ -426,6 +449,14 @@ export default function CanjesScreen() {
             >
               <Text style={{ fontSize: 12, fontWeight: '600', color: onlyOpen ? '#fff' : colors.light.muted }}>Disponibles ahora</Text>
             </Pressable>
+            <Pressable
+              onPress={() => setOnlyFavs((v) => !v)}
+              className="flex-row items-center rounded-full border px-3.5 py-2"
+              style={{ gap: 5, backgroundColor: onlyFavs ? '#E5484D' : colors.light.card, borderColor: onlyFavs ? '#E5484D' : colors.light.line }}
+            >
+              <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
+              <Text style={{ fontSize: 12, fontWeight: '600', color: onlyFavs ? '#fff' : colors.light.muted }}>Favoritos</Text>
+            </Pressable>
             {categories.map((c) => (
               <Pressable
                 key={c}
@@ -447,8 +478,17 @@ export default function CanjesScreen() {
               key={g.business.id}
               onPress={() => setProfileBusinessId(g.business.id)}
               className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4"
-              style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1 }}
+              style={{
+                shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
+                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
+              }}
             >
+              {isFeatured(g.business) && (
+                <View className="flex-row items-center self-start rounded-full mb-2.5" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
+                  <Star size={11} color={GOLD} fill={GOLD} />
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#9A7413' }}>Destacado</Text>
+                </View>
+              )}
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url)}
                 <View className="flex-1">
@@ -465,10 +505,15 @@ export default function CanjesScreen() {
                     {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
                 </View>
-                <ChevronRight size={18} color={colors.light.muted} />
+                <View className="items-center" style={{ gap: 10 }}>
+                  <Pressable onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
+                    <Heart size={20} color={favorites.isFavorite(g.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(g.business.id) ? '#E5484D' : 'none'} />
+                  </Pressable>
+                  <ChevronRight size={18} color={colors.light.muted} />
+                </View>
               </View>
 
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
+              <Text className="text-[11.5px text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                 {g.benefits.map((b) => (
                   <View
@@ -512,7 +557,7 @@ export default function CanjesScreen() {
                     setTimeout(() => setProfileBusinessId(b.id), 350);
                   }}
                 >
-                  <MapMarker name={b.name} logoUrl={b.logo_url} />
+                  <MapMarker name={b.name} logoUrl={b.logo_url} featured={isFeatured(b)} />
                 </Marker>
               ))}
             </MapView>
@@ -561,9 +606,20 @@ export default function CanjesScreen() {
                 <View style={{ shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4, alignSelf: 'flex-start' }}>
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url)}
                 </View>
-                <Text className="text-[24px] font-extrabold text-text-light dark:text-text-dark mt-3" style={{ letterSpacing: -0.5 }}>
-                  {profileGroup.business.name}
-                </Text>
+                <View className="flex-row items-center justify-between mt-3">
+                  <Text className="flex-1 text-[24px] font-extrabold text-text-light dark:text-text-dark" style={{ letterSpacing: -0.5 }}>
+                    {profileGroup.business.name}
+                  </Text>
+                  <Pressable onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
+                    <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
+                  </Pressable>
+                </View>
+                {isFeatured(profileGroup.business) && (
+                  <View className="flex-row items-center self-start rounded-full mt-1.5" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
+                    <Star size={11} color={GOLD} fill={GOLD} />
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#9A7413' }}>Destacado</Text>
+                  </View>
+                )}
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
 
                 {profileGroup.business.description ? (
