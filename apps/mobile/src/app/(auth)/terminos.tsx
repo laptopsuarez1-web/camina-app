@@ -50,7 +50,8 @@ export default function TerminosScreen() {
           Camina te da Puntos por caminar (1 Punto cada 1.000 pasos, hasta 20 Puntos por día) para
           canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los 90 días de
           haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Los
-          códigos de canje vencen a los 15 minutos de generados. Nos reservamos el derecho de
+          códigos de canje vencen a los 15 minutos de generados. Camina es para personas de 13 años o
+          más. Los pasos ingresados a mano en Salud o Health Connect no suman Puntos. Nos reservamos el derecho de
           suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes.
           Los comercios adheridos son responsables de sus propios beneficios, stock y condiciones;
           Camina actúa como intermediario y no garantiza disponibilidad continua de ningún beneficio.
@@ -58,9 +59,10 @@ export default function TerminosScreen() {
 
         <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Política de privacidad</Text>
         <Text className="text-[12.5px] leading-5 text-muted-light dark:text-muted-dark mb-4">
-          Guardamos tu nombre, correo, foto de perfil (opcional) y los pasos diarios que registrás,
-          ya sea desde el sensor del teléfono, Apple Salud o Google Health Connect — solo el total
-          diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
+          Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tenés 13 años o
+          más; nadie más la ve), foto de perfil (opcional), zona o barrio (opcional), el token de
+          notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google
+          Health Connect — solo el total diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
           la autorizás, únicamente para mostrarte comercios cercanos. Tus pasos y tu nombre solo son
           visibles para otros usuarios si activás "Aparecer en el ranking" o dentro de un grupo al
           que te unís vos mismo. No vendemos tus datos a terceros. Podés pedir la eliminación de tu

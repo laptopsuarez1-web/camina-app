@@ -18,7 +18,8 @@ export function LegalContent() {
           Camina te da Puntos por caminar (1 Punto cada 1.000 pasos, hasta 20 Puntos por día) para
           canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los 90 días de
           haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Los
-          códigos de canje vencen a los 15 minutos de generados. Nos reservamos el derecho de
+          códigos de canje vencen a los 15 minutos de generados. Camina es para personas de 13 años o más. Los pasos ingresados a mano en Salud o Health
+          Connect no suman Puntos. Nos reservamos el derecho de
           suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los
           comercios adheridos son responsables de sus propios beneficios, stock y condiciones;
           Camina actúa como intermediario y no garantiza disponibilidad continua de ningún
@@ -29,9 +30,10 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Política de privacidad</h2>
         <p className="text-[13.5px] leading-6 text-muted">
-          Guardamos tu nombre, correo, foto de perfil (opcional) y los pasos diarios que registrás,
-          ya sea desde el sensor del teléfono, Apple Salud o Google Health Connect — solo el total
-          diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
+          Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tenés 13 años o
+          más; nadie más la ve), foto de perfil (opcional), zona o barrio (opcional), el token de
+          notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google
+          Health Connect — solo el total diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
           la autorizás, únicamente para mostrarte comercios cercanos. Tus pasos y tu nombre solo son
           visibles para otros usuarios si activás &ldquo;Aparecer en el ranking&rdquo; o dentro de
           un grupo al que te unís vos mismo. No vendemos tus datos a terceros. Podés pedir la

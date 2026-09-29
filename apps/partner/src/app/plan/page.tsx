@@ -62,10 +62,10 @@ const PLANS: {
       'Todo lo de Paso Firme',
       'Pin destacado en el mapa',
       'Primero en tu categoría',
-      'Notificaciones push cerca tuyo',
-      'Video promocional dentro de la app',
+      'Notificaciones push a usuarios cerca (próximamente)',
+      'Video promocional dentro de la app (próximamente)',
       'Elegible para espacios publicitarios con convenio con Camina',
-      'Elegible para sorteos',
+      'Elegible para sorteos y retos patrocinados (próximamente)',
     ],
   },
 ];
