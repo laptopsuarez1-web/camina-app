@@ -17,3 +17,7 @@ android/
 *.mobileprovision
 .eas/
 supabase/.temp/
+
+# Generados automáticamente por next dev
+apps/partner/AGENTS.md
+apps/partner/CLAUDE.md

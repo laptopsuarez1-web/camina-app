@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
+import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 
 const NAV = [
   { href: '/inicio', label: 'Inicio', icon: Home },
@@ -54,76 +55,77 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const sidebar = (
+    <>
+      <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
+        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
+        <div>
+          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
+          <p className="text-auth-muted text-[10.5px] mt-0.5">Panel de comercios</p>
+        </div>
+      </div>
+
+      <nav className="flex flex-col gap-1">
+        {NAV.map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
+                active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
+              }`}
+            >
+              <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto pt-5">
+        <div className="bg-auth-bg-soft rounded-xl p-3 mb-2.5">
+          <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
+          <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"
+        >
+          <LogOut size={15} />
+          Cerrar sesión
+        </button>
+      </div>
+    </>
+  );
+
   return (
-    <div className="flex min-h-screen bg-bg">
-      <div className="w-[220px] bg-auth-bg min-h-screen shrink-0 flex flex-col p-3.5">
-        <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
-          <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-          <div>
-            <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-            <p className="text-auth-muted text-[10.5px] mt-0.5">Panel de comercios</p>
-          </div>
+    <ResponsiveFrame sidebar={sidebar}>
+      {!business.approved && (
+        <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
+          Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
+          Mientras tanto podés completar tu perfil y tu beneficio, van a quedar listos para cuando te aprueben.
         </div>
-
-        <nav className="flex flex-col gap-1">
-          {NAV.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] text-[13.5px] ${
-                  active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
-                }`}
-              >
-                <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-5">
-          <div className="bg-auth-bg-soft rounded-xl p-3 mb-2.5">
-            <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
-            <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2.5 w-full text-left text-[#8C7DB8] text-[12.5px]"
-          >
-            <LogOut size={15} />
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-      <div className="flex-1 p-10 max-w-[1100px]">
-        {!business.approved && (
-          <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
-            Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
-            Mientras tanto podés completar tu perfil y tu beneficio, van a quedar listos para cuando te aprueben.
-          </div>
-        )}
-        {children}
-      </div>
-    </div>
+      )}
+      {children}
+    </ResponsiveFrame>
   );
 }
 
 export function TopBar({ title, subtitle }: { title: string; subtitle?: string }) {
   const { business } = useBusinessAuth();
   return (
-    <div className="flex justify-between items-start mb-7">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6 md:mb-7">
       <div>
         <h1 className="text-[22px] font-bold text-text m-0">{title}</h1>
         {subtitle && <p className="text-muted text-[13.5px] mt-1">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2.5 bg-card border border-line rounded-full pl-1.5 pr-3.5 py-1.5">
+      <div className="flex items-center gap-2.5 bg-card border border-line rounded-full pl-1.5 pr-3.5 py-1.5 self-start max-w-full">
         <div className="w-[30px] h-[30px] rounded-full bg-aqua-light flex items-center justify-center">
           <Store size={14} color="#4FC3A8" />
         </div>
-        <span className="text-[13px] font-semibold text-text">{business?.name}</span>
+        <span className="text-[13px] font-semibold text-text truncate">{business?.name}</span>
       </div>
     </div>
   );

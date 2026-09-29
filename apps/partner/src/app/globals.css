@@ -42,3 +42,12 @@ body {
     Arial,
     sans-serif;
 }
+
+/* En el celular, los campos de texto a 16px para que el navegador no haga zoom al tocarlos. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
