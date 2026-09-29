@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Heart } from 'lucide-react-native';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, Map as MapIcon, Heart } from 'lucide-react-native';
 import {
   useBenefits,
   useBenefitsRemainingToday,
