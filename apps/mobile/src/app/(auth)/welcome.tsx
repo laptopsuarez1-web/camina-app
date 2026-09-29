@@ -136,6 +136,28 @@ export default function WelcomeScreen() {
     setRecoverySent(true);
   }
 
+  // Después de confirmar el correo, entra solo: probamos iniciar sesión cada
+  // pocos segundos (y con el botón) sin importar por dónde se abrió el link.
+  const [enteringNow, setEnteringNow] = useState(false);
+  async function tryEnterAfterConfirmation(showError: boolean) {
+    if (!awaitingConfirmation || !password) return;
+    const { data, error } = await supabase.auth.signInWithPassword({ email: awaitingConfirmation, password });
+    if (error || !data.session) {
+      if (showError) Alert.alert('Todavía no está confirmado', 'Abrí el link del correo y después tocá este botón de nuevo.');
+      return;
+    }
+    setAwaitingConfirmation(null);
+    await afterAuth();
+  }
+  useEffect(() => {
+    if (!awaitingConfirmation) return;
+    const id = setInterval(() => {
+      tryEnterAfterConfirmation(false);
+    }, 5000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awaitingConfirmation, password]);
+
   async function resendConfirmation() {
     if (!awaitingConfirmation) return;
     setResending(true);
@@ -161,14 +183,29 @@ export default function WelcomeScreen() {
           entrar acá.
         </Text>
         <Pressable
-          onPress={resendConfirmation}
-          disabled={resending}
+          onPress={async () => {
+            setEnteringNow(true);
+            await tryEnterAfterConfirmation(true);
+            setEnteringNow(false);
+          }}
+          disabled={enteringNow}
           style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
         >
-          {resending ? (
+          {enteringNow ? (
             <ActivityIndicator color={colors.mintDark} />
           ) : (
-            <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
+            <Text style={{ color: colors.mintDark, fontWeight: '700', fontSize: 15 }}>Ya confirmé, entrar</Text>
+          )}
+        </Pressable>
+        <Pressable
+          onPress={resendConfirmation}
+          disabled={resending}
+          style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
+        >
+          {resending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
           )}
         </Pressable>
         <Pressable onPress={() => setAwaitingConfirmation(null)}>

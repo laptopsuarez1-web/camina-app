@@ -212,7 +212,16 @@ function useAndroidSensorSteps(enabled: boolean) {
     let cancelled = false;
     let sub: ReturnType<typeof Pedometer.watchStepCount> | null = null;
 
-    readBaseline().then((baseline) => {
+    (async () => {
+      // Sin este permiso (ACTIVITY_RECOGNITION) Android no entrega pasos y el
+      // contador queda en 0 sin avisar.
+      try {
+        const perm = await Pedometer.requestPermissionsAsync();
+        if (!perm.granted) return;
+      } catch {
+        return;
+      }
+      const baseline = await readBaseline();
       if (cancelled) return;
       setSteps(baseline.baselineSteps);
 
@@ -233,7 +242,7 @@ function useAndroidSensorSteps(enabled: boolean) {
         const delta = Math.max(0, result.steps - current.subscriptionStart);
         setSteps(current.baselineSteps + delta);
       });
-    });
+    })();
 
     return () => {
       cancelled = true;
@@ -263,7 +272,10 @@ export function useTodaySteps() {
   // de golpe y usar dos fuentes distintas a la vez.
   const healthReady = Platform.OS === 'ios' ? healthKit.ready : healthConnect.ready;
   const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true && !healthReady);
-  const androidSensorSteps = useAndroidSensorSteps(Platform.OS === 'android' && sensorAvailable === true && !healthReady);
+  // En Android el sensor va siempre prendido: Health Connect puede estar listo
+  // pero vacío (ninguna app de pasos escribe ahí en muchos teléfonos), y en ese
+  // caso se usa lo que cuenta el sensor del teléfono.
+  const androidSensorSteps = useAndroidSensorSteps(Platform.OS === 'android' && sensorAvailable === true);
 
   if (Platform.OS === 'ios') {
     if (healthKit.ready && healthKit.steps != null) {
@@ -273,6 +285,9 @@ export function useTodaySteps() {
   }
 
   if (healthConnect.ready && healthConnect.steps != null) {
+    if (androidSensorSteps > healthConnect.steps) {
+      return { steps: androidSensorSteps, available: true, source: 'sensor' as StepSource };
+    }
     return { steps: healthConnect.steps, available: true, source: 'health-connect' as StepSource };
   }
   return { steps: androidSensorSteps, available: sensorAvailable, source: sensorAvailable ? ('sensor' as StepSource) : null };
