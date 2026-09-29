@@ -33,6 +33,9 @@ export interface Business {
   logo_url: string | null;
   cover_url: string | null;
   website: string | null;
+  google_review_url: string | null;
+  founder: boolean;
+  founder_until: string | null;
   plan: BusinessPlan;
   approved: boolean;
   is_virtual: boolean;

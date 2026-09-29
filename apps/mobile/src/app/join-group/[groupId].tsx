@@ -71,7 +71,7 @@ export default function JoinGroupScreen() {
         <Users size={32} color={colors.purple} />
       </View>
       <Text className="text-xl font-bold text-text-light dark:text-text-dark text-center mb-1.5">
-        Te invitaron a "{group.name}"
+        Te invitaron a &ldquo;{group.name}&rdquo;
       </Text>
       <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center mb-8">
         {memberCount} miembro{memberCount === 1 ? '' : 's'} caminando juntos en este grupo.

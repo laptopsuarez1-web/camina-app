@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 
@@ -12,6 +12,7 @@ const NAV = [
   { href: '/inicio', label: 'Inicio', icon: Home },
   { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/canjes', label: 'Canjes', icon: Receipt },
+  { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3 },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/plan', label: 'Plan', icon: CreditCard },
 ];

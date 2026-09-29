@@ -3,12 +3,12 @@ import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking,
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Users, Check } from 'lucide-react-native';
 import { BellButton } from '@/components/ui/BellButton';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
+import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps } from '@/hooks/usePoints';
 import { useBenefits } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
@@ -19,7 +19,7 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
-import { Flame, Trophy, ChevronRight, Activity } from 'lucide-react-native';
+import { Flame, Trophy, ChevronRight, Activity, Users, Check } from 'lucide-react-native';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -74,7 +74,13 @@ function Wordmark() {
 export default function HomeScreen() {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps, available, healthConnectStatus, live, refresh: refreshSteps } = useTodaySteps();
+  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
+  // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
+  const isQa = useIsQa();
+  const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
+  const live = isQa ? true : deviceLive;
+  const available = isQa ? true : deviceAvailable;
+  const healthConnectStatus = isQa ? 'ok' : hcStatus;
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   async function onRefresh() {

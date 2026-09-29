@@ -46,7 +46,6 @@ export default function WelcomeScreen() {
       }
       await afterAuth();
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [googleResponse]);
 
   async function handleGoogle() {

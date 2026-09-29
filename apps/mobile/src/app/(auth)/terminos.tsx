@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Check } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -27,6 +27,10 @@ export default function TerminosScreen() {
       if (error) throw error;
       await useAuthStore.getState().refreshProfile();
       const { joinedGroupId } = await consumePendingDeepLinks();
+      if (Platform.OS === 'android') {
+        router.replace({ pathname: '/(auth)/salud', params: joinedGroupId ? { group: joinedGroupId } : {} });
+        return;
+      }
       router.replace(joinedGroupId ? { pathname: '/(tabs)/grupos/[groupId]', params: { groupId: joinedGroupId } } : '/(tabs)');
     } catch (e) {
       Alert.alert('Algo salió mal', e instanceof Error ? e.message : 'Intentá de nuevo.');
@@ -64,7 +68,7 @@ export default function TerminosScreen() {
           notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google
           Health Connect — solo el total diario, no tu ubicación GPS histórica ni tu ruta. Usamos tu ubicación aproximada, cuando
           la autorizás, únicamente para mostrarte comercios cercanos. Tus pasos y tu nombre solo son
-          visibles para otros usuarios si activás "Aparecer en el ranking" o dentro de un grupo al
+          visibles para otros usuarios si activás &ldquo;Aparecer en el ranking&rdquo; o dentro de un grupo al
           que te unís vos mismo. No vendemos tus datos a terceros. Podés pedir la eliminación de tu
           cuenta y tus datos en cualquier momento desde Perfil.
         </Text>

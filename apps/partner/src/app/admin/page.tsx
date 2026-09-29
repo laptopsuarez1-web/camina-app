@@ -21,13 +21,29 @@ export default function AdminPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [founderSlots, setFounderSlots] = useState<number | null>(null);
+  const [founderError, setFounderError] = useState<string | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setListLoading(true);
     const { data } = await supabase.from('businesses').select('*').order('created_at', { ascending: false });
     setBusinesses((data as Business[]) ?? []);
+    const { data: used } = await supabase.rpc('founder_slots_used');
+    setFounderSlots(typeof used === 'number' ? used : null);
     setListLoading(false);
   }, []);
+
+  async function makeFounder(businessId: string) {
+    setSavingId(businessId);
+    setFounderError(null);
+    const { error } = await supabase.rpc('grant_founder', { p_business_id: businessId });
+    setSavingId(null);
+    if (error) {
+      setFounderError(error.message);
+      return;
+    }
+    loadBusinesses();
+  }
 
   async function approve(businessId: string) {
     setSavingId(businessId);
@@ -118,6 +134,15 @@ export default function AdminPage() {
           aplican al toque; bajar de plan queda agendado para cuando termine el período mensual pagado.
         </p>
 
+        <div className="bg-card border border-line rounded-2xl px-4 py-3 mb-5 flex items-center justify-between">
+          <div>
+            <p className="font-bold text-[13.5px] text-text">Programa fundador</p>
+            <p className="text-muted text-[12px]">Los primeros 20 comercios tienen 3 meses gratis de Paso Firme.</p>
+          </div>
+          <p className="text-[18px] font-extrabold text-text">{founderSlots ?? '—'}/20 <span className="text-muted text-[12px] font-medium">cupos usados</span></p>
+        </div>
+        {founderError && <p className="text-warn text-[12.5px] mb-4">{founderError}</p>}
+
         {(() => {
           const pending = businesses.filter((b) => !b.approved);
           return pending.length > 0 ? (
@@ -162,6 +187,7 @@ export default function AdminPage() {
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Estado</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Plan</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Espacios pub.</th>
+                  <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Fundador</th>
                 </tr>
               </thead>
               <tbody>
@@ -217,6 +243,21 @@ export default function AdminPage() {
                         </button>
                       ) : (
                         <span className="text-muted text-[11.5px]">— (solo Paso Adelante)</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {b.founder ? (
+                        <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
+                          Hasta {b.founder_until ? new Date(b.founder_until).toLocaleDateString('es-BO') : '—'}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => makeFounder(b.id)}
+                          disabled={savingId === b.id}
+                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C]"
+                        >
+                          Hacer fundador
+                        </button>
                       )}
                     </td>
                   </tr>

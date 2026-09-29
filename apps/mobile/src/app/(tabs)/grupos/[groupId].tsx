@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
-import { Alert } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy } from 'lucide-react-native';
 import { useAuthStore } from '@/store/useAuthStore';
