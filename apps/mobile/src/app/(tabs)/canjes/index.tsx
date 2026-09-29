@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, Map as MapIcon, Heart } from 'lucide-react-native';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -34,6 +34,7 @@ import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { BusinessHours } from '@/components/BusinessHours';
+import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
@@ -115,18 +116,8 @@ function useCountdown(expiresAt: string | null) {
   return remainingMs;
 }
 
-function businessIcon(name: string, size: number, logoUrl?: string | null) {
-  if (logoUrl) {
-    return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: size * 0.28 }} />;
-  }
-  return (
-    <View
-      style={{ width: size, height: size, borderRadius: size * 0.28 }}
-      className="bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center"
-    >
-      <Text className="text-aqua font-bold" style={{ fontSize: size * 0.4 }}>{name[0]}</Text>
-    </View>
-  );
+function businessIcon(_name: string, size: number, logoUrl?: string | null, category?: string | null) {
+  return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} />;
 }
 
 function GoldBadge({ size = 20 }: { size?: number }) {
@@ -530,16 +521,29 @@ export default function CanjesScreen() {
               <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text style={{ fontSize: 12, fontWeight: '600', color: onlyFavs ? '#fff' : colors.light.muted }}>Favoritos</Text>
             </Pressable>
-            {categories.map((c) => (
-              <Pressable
-                key={c}
-                onPress={() => setCategory(c)}
-                className="rounded-full border px-3.5 py-2"
-                style={{ backgroundColor: category === c ? colors.purple : colors.light.card, borderColor: category === c ? colors.purple : colors.light.line }}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '600', color: category === c ? '#fff' : colors.light.muted }}>{c}</Text>
-              </Pressable>
-            ))}
+            {categories.map((c) => {
+              const st = categoryStyle(c);
+              const CIcon = st.icon;
+              const on = category === c;
+              return (
+                <Pressable
+                  key={c}
+                  onPress={() => setCategory(c)}
+                  className="flex-row items-center rounded-full border"
+                  style={{
+                    gap: 6,
+                    paddingVertical: 7,
+                    paddingLeft: 10,
+                    paddingRight: 13,
+                    backgroundColor: on ? st.to : colors.light.card,
+                    borderColor: on ? st.to : colors.light.line,
+                  }}
+                >
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: on ? '#fff' : colors.light.muted }}>{c}</Text>
+                </Pressable>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -557,7 +561,7 @@ export default function CanjesScreen() {
               }}
             >
               <View className="flex-row items-start" style={{ gap: 14 }}>
-                {businessIcon(g.business.name, 62, g.business.logo_url)}
+                {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category)}
                 <View className="flex-1">
                   <View className="flex-row items-center" style={{ gap: 6 }}>
                     <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
@@ -672,7 +676,7 @@ export default function CanjesScreen() {
 
               <View className="px-5" style={{ marginTop: -36 }}>
                 <View style={{ shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4, alignSelf: 'flex-start' }}>
-                  {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url)}
+                  {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
                 </View>
                 <View className="flex-row items-center justify-between mt-3">
                   <View className="flex-1 flex-row items-center" style={{ gap: 8 }}>
@@ -801,7 +805,7 @@ export default function CanjesScreen() {
 
             <View className="flex-row items-center justify-between gap-2.5 mb-5">
               <View className="flex-row items-center gap-2.5 flex-1">
-                {activeBenefit && businessIcon(activeBenefit.business.name, 38, activeBenefit.business.logo_url)}
+                {activeBenefit && businessIcon(activeBenefit.business.name, 38, activeBenefit.business.logo_url, activeBenefit.business.category)}
                 <View className="flex-1">
                   <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">{activeBenefit?.business.name}</Text>
                   <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>

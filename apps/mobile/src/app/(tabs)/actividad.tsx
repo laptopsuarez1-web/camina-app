@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame } from 'lucide-react-native';
+import { Activity, Flame } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';

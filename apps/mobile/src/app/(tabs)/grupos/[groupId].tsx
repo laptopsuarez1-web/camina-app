@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy } from 'lucide-react-native';
+import { ChevronLeft, Share2, Send, Trophy } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';

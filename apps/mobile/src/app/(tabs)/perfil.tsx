@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut, Gift, Trash2, KeyRound, Pencil } from 'lucide-react-native';
+import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
@@ -241,9 +241,7 @@ export default function PerfilScreen() {
         onPress={inviteFriends}
         className="flex-row items-center gap-3.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl p-4 mb-4"
       >
-        <View className="w-11 h-11 rounded-full bg-white/60 dark:bg-white/10 items-center justify-center">
-          <Gift size={19} color={colors.aqua} />
-        </View>
+        <IconBubble icon={Gift} tone="aqua" size={46} />
         <View className="flex-1">
           <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
           <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">
@@ -302,9 +300,7 @@ export default function PerfilScreen() {
       <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
         {!changingPassword ? (
           <Pressable onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
-            <View className="w-9 h-9 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-              <KeyRound size={16} color={colors.purple} />
-            </View>
+            <IconBubble icon={KeyRound} tone="purple" size={38} />
             <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Cambiar contraseña</Text>
           </Pressable>
         ) : (

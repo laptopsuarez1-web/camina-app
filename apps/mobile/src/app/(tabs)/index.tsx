@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
+import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -19,7 +20,7 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
-import { Flame, Trophy, ChevronRight, Activity, Users, Check } from 'lucide-react-native';
+import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -114,6 +115,8 @@ export default function HomeScreen() {
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+  const stepsText = steps.toLocaleString('es-BO');
+  const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
   const nearby = (() => {
     const map = new Map<string, { business: NonNullable<typeof benefits>[number]['business']; items: NonNullable<typeof benefits> }>();
     for (const b of benefits ?? []) {
@@ -202,17 +205,23 @@ export default function HomeScreen() {
             innerColor={POINTS_COLOR}
           >
             <View className="items-center">
+              {/* El número se achica según los dígitos para que nunca toque el aro fino de Puntos. */}
               <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
                 style={{
                   color: '#fff',
-                  fontSize: 48,
+                  fontSize: stepsFontSize,
                   fontWeight: '900',
                   letterSpacing: -1.4,
-                  lineHeight: 48,
+                  lineHeight: stepsFontSize + 2,
                   fontVariant: ['tabular-nums'],
+                  width: 128,
+                  textAlign: 'center',
                 }}
               >
-                {steps.toLocaleString('es-BO')}
+                {stepsText}
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <View
@@ -339,13 +348,7 @@ export default function HomeScreen() {
                 ...(g.business.plan === 'paso_adelante' ? { borderWidth: 2, borderColor: '#E2B33C' } : {}),
               }}
             >
-              {g.business.logo_url ? (
-                <Image source={{ uri: g.business.logo_url }} style={{ width: 58, height: 58, borderRadius: 16 }} />
-              ) : (
-                <View className="w-[58px] h-[58px] rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                  <Text className="text-aqua font-bold">{g.business.name[0]}</Text>
-                </View>
-              )}
+              <BusinessAvatar logoUrl={g.business.logo_url} category={g.business.category} size={58} />
               <View className="flex-1 min-w-0">
                 <View className="flex-row items-center" style={{ gap: 5 }}>
                   <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>
@@ -425,9 +428,7 @@ export default function HomeScreen() {
           >
             <View className="flex-row items-center justify-between mb-2.5">
               <View className="flex-row items-center gap-2.5">
-                <View className="w-8 h-8 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                  <Flame size={15} color={colors.aqua} />
-                </View>
+                <IconBubble icon={Flame} tone="orange" size={34} />
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">
                   {reto.met}/{reto.target} metas esta semana
                 </Text>
@@ -449,9 +450,7 @@ export default function HomeScreen() {
             className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
           >
             <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Trophy size={15} color={colors.purple} />
-              </View>
+              <IconBubble icon={Trophy} tone="purple" size={34} />
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
@@ -467,9 +466,7 @@ export default function HomeScreen() {
           </Pressable>
           <Pressable onPress={() => router.push('/(tabs)/grupos')} className="flex-row items-center justify-between p-4">
             <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Users size={15} color={colors.purple} />
-              </View>
+              <IconBubble icon={Users} tone="purple" size={34} />
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Tus grupos</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
@@ -485,9 +482,7 @@ export default function HomeScreen() {
           style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
         >
           <View className="flex-row items-center gap-2.5">
-            <View className="w-8 h-8 rounded-xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-              <Activity size={15} color={colors.aqua} />
-            </View>
+            <IconBubble icon={Activity} tone="aqua" size={34} />
             <View>
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
               <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>

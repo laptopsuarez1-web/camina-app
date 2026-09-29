@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } fr
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Share2 } from 'lucide-react-native';
+import { ChevronLeft, Share2 } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks/usePoints';

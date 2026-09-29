@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Bell } from 'lucide-react-native';
+import { ChevronLeft, Bell } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 

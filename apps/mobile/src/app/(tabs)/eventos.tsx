@@ -1,6 +1,5 @@
 import { View, Text, ScrollView, Image } from 'react-native';
-import { Calendar, Users, Flame, CheckCircle2 } from 'lucide-react-native';
-import { colors } from '@/theme/tokens';
+import { Calendar, Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
 import { useWeeklyGoalReto, useTenKStreakReto, useReferralReto } from '@/hooks/useRetos';
 import { RETO_REWARD_WEEKLY_GOAL, RETO_REWARD_TENK_STREAK, RETO_REWARD_REFERRAL } from '@/constants/business-rules';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -21,8 +20,8 @@ export default function EventosScreen() {
         Viví experiencias únicas con tus marcas favoritas
       </Text>
       <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md py-7 px-6 items-center mb-7">
-        <View className="w-14 h-14 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center mb-3.5">
-          <Calendar size={24} color={colors.purple} />
+        <View className="mb-3.5">
+          <IconBubble icon={Calendar} tone="purple" size={58} />
         </View>
         <Text className="font-bold text-[15px] mb-1.5 text-text-light dark:text-text-dark">
           Sin eventos de comercios próximos
@@ -39,21 +38,21 @@ export default function EventosScreen() {
 
       <View className="gap-3">
         <RetoCard
-          icon={<Users size={18} color={colors.purple} />}
+          icon={<IconBubble icon={Users} tone="purple" size={40} />}
           title="Invitá 5 amigos"
           description="Sumá 5 amigos nuevos a Camina y ganá Puntos extra."
           reward={RETO_REWARD_REFERRAL}
           pct={referralReto?.pct ?? 0}
         />
         <RetoCard
-          icon={<Flame size={18} color={colors.aqua} />}
+          icon={<IconBubble icon={Flame} tone="orange" size={40} />}
           title="10.000 pasos x 14 días"
           description="Caminá 10.000 pasos por día durante 14 días seguidos."
           reward={RETO_REWARD_TENK_STREAK}
           pct={tenkReto?.pct ?? 0}
         />
         <RetoCard
-          icon={<CheckCircle2 size={18} color={colors.mintDark} />}
+          icon={<IconBubble icon={CheckCircle2} tone="aqua" size={40} />}
           title="5 metas esta semana"
           description="Cumplí tu meta diaria 5 veces en la misma semana."
           reward={RETO_REWARD_WEEKLY_GOAL}
@@ -81,9 +80,7 @@ function RetoCard({
   return (
     <View className="bg-card-light dark:bg-card-dark rounded-3xl p-4">
       <View className="flex-row items-start gap-3 mb-3">
-        <View className="w-10 h-10 rounded-full bg-bg-light dark:bg-bg-dark items-center justify-center">
-          {icon}
-        </View>
+        {icon}
         <View className="flex-1">
           <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">{title}</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 leading-relaxed">
