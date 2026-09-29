@@ -30,6 +30,7 @@ export interface Business {
   phone: string | null;
   instagram: string | null;
   hours_text: string | null;
+  opening_hours: Record<string, { from: string; to: string } | null> | null;
   logo_url: string | null;
   cover_url: string | null;
   website: string | null;
