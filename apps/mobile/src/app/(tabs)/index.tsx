@@ -21,6 +21,9 @@ import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity } from 'lucide-react-native';
 
+// Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
+const POINTS_COLOR = '#2CFFAE';
+
 function greeting(name: string) {
   const h = new Date().getHours();
   const label = name || 'caminante';
@@ -184,7 +187,14 @@ export default function HomeScreen() {
         </Text>
 
         <View className="items-center justify-center" style={{ marginTop: 16 }}>
-          <ProgressRing size={250} strokeWidth={26} radius={108} progress={pct}>
+          <ProgressRing
+            size={250}
+            strokeWidth={26}
+            radius={108}
+            progress={pct}
+            innerProgress={pointsToday >= DAILY_POINTS_CAP ? 1 : (steps % POINTS_PER_STEP_UNIT) / POINTS_PER_STEP_UNIT}
+            innerColor={POINTS_COLOR}
+          >
             <View className="items-center">
               <Text
                 style={{
@@ -199,10 +209,18 @@ export default function HomeScreen() {
                 {steps.toLocaleString('es-BO')}
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
-              <View className="flex-row items-center gap-1 mt-2.5 bg-mint/15 pl-1.5 pr-3 py-1 rounded-full">
+              <View
+                className="flex-row items-center gap-1 mt-2 pl-1.5 pr-3 py-1 rounded-full"
+                style={{ backgroundColor: 'rgba(44,255,174,0.15)' }}
+              >
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
-                <Text className="text-mint text-xs font-bold">+{pointsToday} Puntos</Text>
+                <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} Puntos</Text>
               </View>
+              <Text style={{ color: POINTS_COLOR, fontSize: 10.5, fontWeight: '600', marginTop: 5 }}>
+                {pointsToday >= DAILY_POINTS_CAP
+                  ? 'Tope de hoy'
+                  : `faltan ${POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT)}`}
+              </Text>
             </View>
           </ProgressRing>
         </View>
