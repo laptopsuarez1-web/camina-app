@@ -7,10 +7,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useColorScheme as useNativewindColorScheme } from 'nativewind';
 import { useAuthStore, initAuthListener } from '@/store/useAuthStore';
 import { startAuthLinkListener } from '@/lib/auth-links';
+import { Sentry, setMonitoringUser } from '@/lib/monitoring';
+import { ForceUpdateGate } from '@/components/ForceUpdateGate';
 
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function RootLayout() {
   const { setColorScheme } = useNativewindColorScheme();
   const profile = useAuthStore((s) => s.profile);
 
@@ -20,6 +22,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    setMonitoringUser(profile?.id ?? null);
+  }, [profile?.id]);
+
+  useEffect(() => {
     setColorScheme(profile?.dark_mode ? 'dark' : 'light');
   }, [profile?.dark_mode, setColorScheme]);
 
@@ -27,9 +33,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }} />
+          <ForceUpdateGate>
+            <Stack screenOptions={{ headerShown: false }} />
+          </ForceUpdateGate>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);

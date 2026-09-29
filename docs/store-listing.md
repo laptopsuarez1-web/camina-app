@@ -82,3 +82,8 @@ Estado al 28/09:
 - **Hecho — función de push protegida:** la función exige el header `x-webhook-secret`. El secreto vive en los secretos de la función y en Supabase Vault (el trigger `notify_send_push` lo lee de ahí). Probado: sin secreto responde 401, y una notificación real por el trigger responde 200.
 - **Falta — probar push real:** hay 0 tokens registrados, así que nunca se probó en un teléfono.
 - Recomendado: restringir la clave de Google Maps (está en `app.json`) a `bo.camina.app` desde Google Cloud.
+
+## Monitoreo, versión mínima y pruebas (pendientes de configurar)
+- **Errores (Sentry):** crear cuenta en sentry.io, proyecto "React Native", copiar el DSN y cargarlo como variable EAS `EXPO_PUBLIC_SENTRY_DSN` (`eas env:create`). Sin DSN la app no reporta nada.
+- **Versión obligatoria:** la app compara su versión con `app_config` (`min_version_ios`/`min_version_android`) y bloquea con aviso amable si es menor. Cargar también `store_url_ios`/`store_url_android` cuando existan las ffichas.
+- **Migración 0018** (avisos amigables, racha, app_config, favoritos, tope de 60.000 pasos/día): aplicar en producción antes de publicar.

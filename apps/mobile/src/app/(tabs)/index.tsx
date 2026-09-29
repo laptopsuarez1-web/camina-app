@@ -101,7 +101,10 @@ export default function HomeScreen() {
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, items: [] });
       map.get(b.business.id)!.items.push(b);
     }
-    return [...map.values()].slice(0, 3);
+    // Los destacados (plan Paso Adelante) van primero.
+    return [...map.values()]
+      .sort((a, b) => Number(b.business.plan === 'paso_adelante') - Number(a.business.plan === 'paso_adelante'))
+      .slice(0, 3);
   })();
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
@@ -270,7 +273,10 @@ export default function HomeScreen() {
               key={g.business.id}
               onPress={() => router.push('/(tabs)/canjes')}
               className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-3.5"
-              style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1 }}
+              style={{
+                shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
+                ...(g.business.plan === 'paso_adelante' ? { borderWidth: 2, borderColor: '#E2B33C' } : {}),
+              }}
             >
               {g.business.logo_url ? (
                 <Image source={{ uri: g.business.logo_url }} style={{ width: 58, height: 58, borderRadius: 16 }} />
