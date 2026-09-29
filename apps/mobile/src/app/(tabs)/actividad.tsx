@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame } from 'lucide-react-native';
+import { Activity, Flame } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -136,7 +136,7 @@ export default function ActividadScreen() {
       <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
       <LinearGradient
-        colors={['#2f1e5c', '#241748']}
+        colors={['#3a1a86', '#200a52']}
         start={{ x: 0.15, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={{ borderRadius: 18, padding: 18, marginBottom: 14 }}

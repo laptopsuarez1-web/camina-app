@@ -1,0 +1,135 @@
+import type { ComponentType } from 'react';
+import { View, type ColorValue } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-native';
+
+// Íconos de la app: Phosphor en estilo duotono (dos tonos). Se exportan con los mismos nombres y
+// props (size, color, fill) que usaba lucide, así cada pantalla solo cambia el import.
+// Se importa cada ícono por separado para no meter los 1.500 en la app.
+import { Bell as Bell_ } from 'phosphor-react-native/src/icons/Bell';
+import { Clock as Clock_ } from 'phosphor-react-native/src/icons/Clock';
+import { CaretDown as CaretDown } from 'phosphor-react-native/src/icons/CaretDown';
+import { CaretUp as CaretUp } from 'phosphor-react-native/src/icons/CaretUp';
+import { CaretRight as CaretRight } from 'phosphor-react-native/src/icons/CaretRight';
+import { CaretLeft as CaretLeft } from 'phosphor-react-native/src/icons/CaretLeft';
+import { Check as Check_ } from 'phosphor-react-native/src/icons/Check';
+import { CheckCircle as CheckCircle } from 'phosphor-react-native/src/icons/CheckCircle';
+import { UsersThree as UsersThree } from 'phosphor-react-native/src/icons/UsersThree';
+import { MagnifyingGlass as MagnifyingGlass } from 'phosphor-react-native/src/icons/MagnifyingGlass';
+import { MapPin as MapPin_ } from 'phosphor-react-native/src/icons/MapPin';
+import { X as X_ } from 'phosphor-react-native/src/icons/X';
+import { Gift as Gift_ } from 'phosphor-react-native/src/icons/Gift';
+import { At as At } from 'phosphor-react-native/src/icons/At';
+import { Crosshair as Crosshair } from 'phosphor-react-native/src/icons/Crosshair';
+import { NavigationArrow as NavigationArrow } from 'phosphor-react-native/src/icons/NavigationArrow';
+import { MapTrifold as MapTrifold } from 'phosphor-react-native/src/icons/MapTrifold';
+import { Heart as Heart_ } from 'phosphor-react-native/src/icons/Heart';
+import { ShareNetwork as ShareNetwork } from 'phosphor-react-native/src/icons/ShareNetwork';
+import { Pulse as Pulse } from 'phosphor-react-native/src/icons/Pulse';
+import { Flame as Flame_ } from 'phosphor-react-native/src/icons/Flame';
+import { House as House } from 'phosphor-react-native/src/icons/House';
+import { CalendarBlank as CalendarBlank } from 'phosphor-react-native/src/icons/CalendarBlank';
+import { ShoppingBag as ShoppingBag_ } from 'phosphor-react-native/src/icons/ShoppingBag';
+import { SignOut as SignOut } from 'phosphor-react-native/src/icons/SignOut';
+import { Trash as Trash } from 'phosphor-react-native/src/icons/Trash';
+import { Key as Key } from 'phosphor-react-native/src/icons/Key';
+import { PencilSimple as PencilSimple } from 'phosphor-react-native/src/icons/PencilSimple';
+import { PaperPlaneTilt as PaperPlaneTilt } from 'phosphor-react-native/src/icons/PaperPlaneTilt';
+import { Trophy as Trophy_ } from 'phosphor-react-native/src/icons/Trophy';
+import { Plus as Plus_ } from 'phosphor-react-native/src/icons/Plus';
+import { Star as Star_ } from 'phosphor-react-native/src/icons/Star';
+
+export type IconProps = {
+  size?: number;
+  color?: ColorValue;
+  // Compatibilidad con lucide: "fill" con un color = ícono relleno.
+  fill?: string;
+  strokeWidth?: number;
+  weight?: IconWeight;
+};
+
+function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'duotone') {
+  return function Icon({ size = 24, color = '#000', fill, weight }: IconProps) {
+    const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : base);
+    return <Comp size={size} color={color as string} weight={w} />;
+  };
+}
+
+// Los íconos "de línea" (flechas, cruz, tilde, más) van en negrita: en duotono se verían casi invisibles.
+export const Bell = make(Bell_);
+export const Clock = make(Clock_);
+export const ChevronDown = make(CaretDown, 'bold');
+export const ChevronUp = make(CaretUp, 'bold');
+export const ChevronRight = make(CaretRight, 'bold');
+export const ChevronLeft = make(CaretLeft, 'bold');
+export const Check = make(Check_, 'bold');
+export const CheckCircle2 = make(CheckCircle);
+export const Users = make(UsersThree);
+export const Search = make(MagnifyingGlass, 'bold');
+export const MapPin = make(MapPin_);
+export const X = make(X_, 'bold');
+export const Gift = make(Gift_);
+export const AtSign = make(At, 'bold');
+export const Locate = make(Crosshair);
+export const Navigation = make(NavigationArrow);
+export const MapIcon = make(MapTrifold);
+export const Heart = make(Heart_);
+export const Share2 = make(ShareNetwork);
+export const Activity = make(Pulse, 'bold');
+export const Flame = make(Flame_);
+export const Home = make(House);
+export const Calendar = make(CalendarBlank);
+export const ShoppingBag = make(ShoppingBag_);
+export const LogOut = make(SignOut);
+export const Trash2 = make(Trash);
+export const KeyRound = make(Key);
+export const Pencil = make(PencilSimple);
+export const Send = make(PaperPlaneTilt);
+export const Trophy = make(Trophy_);
+export const Plus = make(Plus_, 'bold');
+export const Star = make(Star_);
+
+type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint';
+const TONES: Record<Tone, [string, string, string]> = {
+  aqua: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
+  mint: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
+  purple: ['#A672E8', '#8B4FD1', '#8B4FD1'],
+  orange: ['#FFB27A', '#F2985C', '#F2985C'],
+  red: ['#FF7A7E', '#E5484D', '#E5484D'],
+};
+
+// Burbuja de color sólida con degradé y el ícono en blanco.
+export function IconBubble({
+  icon: Icon,
+  tone = 'aqua',
+  size = 44,
+}: {
+  icon: (p: IconProps) => React.ReactElement;
+  tone?: Tone;
+  size?: number;
+}) {
+  const [a, b, shadow] = TONES[tone];
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size * 0.34,
+        shadowColor: shadow,
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 3,
+      }}
+    >
+      <LinearGradient
+        colors={[a, b]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ flex: 1, borderRadius: size * 0.34, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Icon size={size * 0.5} color="#fff" weight="fill" />
+      </LinearGradient>
+    </View>
+  );
+}

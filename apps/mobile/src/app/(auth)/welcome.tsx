@@ -172,7 +172,7 @@ export default function WelcomeScreen() {
 
   if (awaitingConfirmation) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <View style={{ flex: 1, backgroundColor: '#200a52', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
         <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
           Confirmá tu correo
@@ -215,7 +215,7 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <View style={{ flex: 1, backgroundColor: '#200a52', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
       <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700', marginTop: 18, marginBottom: 6 }}>¡Bienvenido!</Text>
       <Text style={{ color: '#C4B8E8', marginBottom: 32, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 260 }}>

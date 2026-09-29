@@ -1,10 +1,31 @@
 import { useEffect } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { Home, Activity, Users, Calendar, ShoppingBag } from 'lucide-react-native';
+import { View } from 'react-native';
+import { Home, Activity, Users, Calendar, ShoppingBag, type IconProps } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { useColorScheme } from 'nativewind';
+
+// Ícono de la barra: el activo va relleno y sobre una pastilla verde suave.
+function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
+  return function TabIcon({ color, focused }: { color: import('react-native').ColorValue; focused: boolean }) {
+    return (
+      <View
+        style={{
+          width: 48,
+          height: 30,
+          borderRadius: 15,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: focused ? 'rgba(79,195,168,0.16)' : 'transparent',
+        }}
+      >
+        <Icon size={23} color={color} weight={focused ? 'fill' : 'duotone'} />
+      </View>
+    );
+  };
+}
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
@@ -30,11 +51,11 @@ export default function TabsLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }} />
-      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: ({ color, size }) => <Activity color={color} size={size} /> }} />
-      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: ({ color, size }) => <Users color={color} size={size} /> }} />
-      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} /> }} />
-      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size} /> }} />
+      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon(Home) }} />
+      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: tabIcon(Activity) }} />
+      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: tabIcon(Users) }} />
+      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: tabIcon(Calendar) }} />
+      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: tabIcon(ShoppingBag) }} />
       {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
           grupos/[groupId] es la pantalla de detalle de un grupo, no un tab propio.
           Sin declararlos acá, Expo Router los agrega solo al tab bar (bug real

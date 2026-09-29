@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Clock, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 
 type DayHours = { from: string; to: string } | null;

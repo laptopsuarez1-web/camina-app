@@ -19,7 +19,7 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
-import { Flame, Trophy, ChevronRight, Activity, Users, Check } from 'lucide-react-native';
+import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -142,7 +142,7 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
     >
       <LinearGradient
-        colors={['#3a2668', '#1c1030', '#120a1e']}
+        colors={['#3a1a86', '#200a52', '#15063a']}
         start={{ x: 0.15, y: -0.1 }}
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
@@ -425,9 +425,7 @@ export default function HomeScreen() {
           >
             <View className="flex-row items-center justify-between mb-2.5">
               <View className="flex-row items-center gap-2.5">
-                <View className="w-8 h-8 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                  <Flame size={15} color={colors.aqua} />
-                </View>
+                <IconBubble icon={Flame} tone="orange" size={34} />
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">
                   {reto.met}/{reto.target} metas esta semana
                 </Text>
@@ -449,9 +447,7 @@ export default function HomeScreen() {
             className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
           >
             <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Trophy size={15} color={colors.purple} />
-              </View>
+              <IconBubble icon={Trophy} tone="purple" size={34} />
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
@@ -467,9 +463,7 @@ export default function HomeScreen() {
           </Pressable>
           <Pressable onPress={() => router.push('/(tabs)/grupos')} className="flex-row items-center justify-between p-4">
             <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Users size={15} color={colors.purple} />
-              </View>
+              <IconBubble icon={Users} tone="purple" size={34} />
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Tus grupos</Text>
             </View>
             <View className="flex-row items-center gap-1.5">
@@ -485,9 +479,7 @@ export default function HomeScreen() {
           style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
         >
           <View className="flex-row items-center gap-2.5">
-            <View className="w-8 h-8 rounded-xl bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-              <Activity size={15} color={colors.aqua} />
-            </View>
+            <IconBubble icon={Activity} tone="aqua" size={34} />
             <View>
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
               <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>

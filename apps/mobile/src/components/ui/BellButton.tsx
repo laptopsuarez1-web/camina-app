@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { Bell } from 'lucide-react-native';
+import { Bell } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 
 // Campanita con puntito rojo cuando hay avisos sin leer; abre la bandeja.

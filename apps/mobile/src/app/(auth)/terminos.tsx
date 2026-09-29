@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
-import { Check } from 'lucide-react-native';
+import { Check } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';

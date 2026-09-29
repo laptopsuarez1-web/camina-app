@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Plus, Users, Trophy } from 'lucide-react-native';
+import { Plus, Users, Trophy, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
@@ -173,9 +173,7 @@ export default function GruposScreen() {
                 onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })}
                 className="flex-row items-center gap-3 bg-auth-bg rounded-2xl p-4"
               >
-                <View className="w-11 h-11 rounded-full bg-white/10 items-center justify-center">
-                  <Users size={19} color={colors.mint} />
-                </View>
+                <IconBubble icon={Users} tone="aqua" size={44} />
                 <View className="flex-1">
                   <Text className="text-white font-semibold text-sm">{g.name}</Text>
                   <Text className="text-auth-muted text-xs">{g.group_members.length} miembros</Text>
