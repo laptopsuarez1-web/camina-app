@@ -285,9 +285,14 @@ export default function HomeScreen() {
                 </View>
               )}
               <View className="flex-1 min-w-0">
-                <Text className="text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
-                  {g.business.name}
-                </Text>
+                <View className="flex-row items-center" style={{ gap: 5 }}>
+                  <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>
+                    {g.business.name}
+                  </Text>
+                  {g.business.plan === 'paso_adelante' && (
+                    <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
+                  )}
+                </View>
                 <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5 mb-1.5" numberOfLines={1}>
                   {g.items.length === 1 ? g.items[0].name : `${g.items.length} premios disponibles`}
                 </Text>

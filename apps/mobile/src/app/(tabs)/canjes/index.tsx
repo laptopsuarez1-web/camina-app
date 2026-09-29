@@ -15,7 +15,7 @@ import {
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Heart, Star } from 'lucide-react-native';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Heart } from 'lucide-react-native';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -39,7 +39,6 @@ type BusinessT = BenefitWithBusiness['business'];
 
 // Comercios del plan Paso Adelante: van primero, con marco y sello dorado.
 const GOLD = '#E2B33C';
-const GOLD_SOFT = '#FBF1D3';
 const isFeatured = (b: { plan?: string | null }) => b.plan === 'paso_adelante';
 
 // Centro de Tarija (ciudad de lanzamiento) — último respaldo si no hay GPS ni comercios con ubicación.
@@ -125,6 +124,10 @@ function businessIcon(name: string, size: number, logoUrl?: string | null) {
       <Text className="text-aqua font-bold" style={{ fontSize: size * 0.4 }}>{name[0]}</Text>
     </View>
   );
+}
+
+function GoldBadge({ size = 20 }: { size?: number }) {
+  return <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />;
 }
 
 function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
@@ -483,16 +486,13 @@ export default function CanjesScreen() {
                 ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
               }}
             >
-              {isFeatured(g.business) && (
-                <View className="flex-row items-center self-start rounded-full mb-2.5" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
-                  <Star size={11} color={GOLD} fill={GOLD} />
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#9A7413' }}>Destacado</Text>
-                </View>
-              )}
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url)}
                 <View className="flex-1">
-                  <Text className="text-[16px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{g.business.name}</Text>
+                  <View className="flex-row items-center" style={{ gap: 6 }}>
+                    <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
+                    {isFeatured(g.business) && <GoldBadge size={18} />}
+                  </View>
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
                   {g.business.address ? (
                     <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
@@ -607,21 +607,18 @@ export default function CanjesScreen() {
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url)}
                 </View>
                 <View className="flex-row items-center justify-between mt-3">
-                  <Text className="flex-1 text-[24px] font-extrabold text-text-light dark:text-text-dark" style={{ letterSpacing: -0.5 }}>
-                    {profileGroup.business.name}
-                  </Text>
+                  <View className="flex-1 flex-row items-center" style={{ gap: 8 }}>
+                    <Text className="text-[24px] font-extrabold text-text-light dark:text-text-dark shrink" style={{ letterSpacing: -0.5 }}>
+                      {profileGroup.business.name}
+                    </Text>
+                    {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
+                  </View>
                   <Pressable onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
-                {isFeatured(profileGroup.business) && (
-                  <View className="flex-row items-center self-start rounded-full mt-2" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
-                    <Star size={11} color={GOLD} fill={GOLD} />
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#9A7413' }}>Destacado</Text>
-                  </View>
-                )}
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
