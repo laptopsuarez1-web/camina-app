@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut, Gift, Trash2, KeyRound } from 'lucide-react-native';
+import { LogOut, Gift, Trash2, KeyRound, Pencil } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadAvatar } from '@/lib/avatar';
+import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -16,6 +19,68 @@ export default function PerfilScreen() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [zoneInput, setZoneInput] = useState('');
+  const [bDay, setBDay] = useState('');
+  const [bMonth, setBMonth] = useState('');
+  const [bYear, setBYear] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  function startEditing() {
+    setNameInput(profile?.full_name ?? '');
+    setZoneInput(profile?.zone ?? '');
+    const b = profile?.birth_date;
+    setBYear(b ? b.slice(0, 4) : '');
+    setBMonth(b ? String(parseInt(b.slice(5, 7), 10)) : '');
+    setBDay(b ? String(parseInt(b.slice(8, 10), 10)) : '');
+    setPhotoUri(null);
+    setEditing(true);
+  }
+
+  async function pickPhoto() {
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1] });
+    if (!result.canceled) setPhotoUri(result.assets[0].uri);
+  }
+
+  async function saveProfile() {
+    if (!profile) return;
+    if (!nameInput.trim()) {
+      Alert.alert('Falta tu nombre', 'Escribí cómo te llamás.');
+      return;
+    }
+    let birth: string | null | undefined;
+    if (bDay || bMonth || bYear) {
+      birth = birthToISO(bDay, bMonth, bYear);
+      if (!birth) {
+        Alert.alert('Fecha no válida', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+        return;
+      }
+      if (ageFromISO(birth) < MIN_AGE) {
+        Alert.alert('Camina es para mayores de 13 años', 'Revisá la fecha de nacimiento.');
+        return;
+      }
+    }
+    setSavingProfile(true);
+    try {
+      const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri) : undefined;
+      const update = {
+        full_name: nameInput.trim(),
+        zone: zoneInput.trim() || null,
+        ...(photoUrl ? { photo_url: photoUrl } : {}),
+      };
+      let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
+      if (error && /birth_date/i.test(error.message)) ({ error } = await supabase.from('profiles').update(update).eq('id', profile.id));
+      if (error) throw error;
+      await useAuthStore.getState().refreshProfile();
+      setEditing(false);
+    } catch (e) {
+      Alert.alert('No pudimos guardar', e instanceof Error ? e.message : 'Intentá de nuevo.');
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   async function savePassword() {
     if (newPassword.length < 6) {
@@ -119,7 +184,49 @@ export default function PerfilScreen() {
             {profile?.zone ?? 'Zona no definida'}
           </Text>
         </View>
+        <Pressable onPress={editing ? () => setEditing(false) : startEditing} hitSlop={8} className="flex-row items-center gap-1.5 rounded-full px-3 py-2 bg-purple-light-light dark:bg-purple-light-dark">
+          <Pencil size={13} color={colors.purple} />
+          <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>{editing ? 'Cerrar' : 'Editar'}</Text>
+        </Pressable>
       </View>
+
+      {editing && (
+        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+          <Pressable onPress={pickPhoto} className="self-center mb-4 items-center">
+            <View className="w-20 h-20 rounded-full bg-mint items-center justify-center overflow-hidden">
+              {photoUri || profile?.photo_url ? (
+                <Image source={{ uri: photoUri ?? profile!.photo_url! }} className="w-full h-full" />
+              ) : (
+                <Text className="font-bold text-mint-dark text-2xl">{(nameInput || 'C')[0]?.toUpperCase()}</Text>
+              )}
+            </View>
+            <Text className="text-[12px] font-semibold mt-1.5" style={{ color: colors.purple }}>Cambiar foto</Text>
+          </Pressable>
+          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
+          <TextInput value={nameInput} onChangeText={setNameInput}
+            className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3" />
+          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Zona o barrio</Text>
+          <TextInput value={zoneInput} onChangeText={setZoneInput} placeholder="Ej: Molino, Centro, Los Chapacos"
+            placeholderTextColor={colors.light.muted}
+            className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3" />
+          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Fecha de nacimiento</Text>
+          <View className="flex-row gap-2 mb-1">
+            <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad"
+              placeholderTextColor={colors.light.muted}
+              className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
+            <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad"
+              placeholderTextColor={colors.light.muted}
+              className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
+            <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad"
+              placeholderTextColor={colors.light.muted}
+              className="flex-[1.4] bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
+          </View>
+          <Text className="text-muted-light dark:text-muted-dark text-[11px] mb-4">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
+          <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua rounded-xl py-3 items-center">
+            {savingProfile ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Guardar cambios</Text>}
+          </Pressable>
+        </View>
+      )}
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 flex-row items-center gap-3 mb-4">
         <View className="flex-1">

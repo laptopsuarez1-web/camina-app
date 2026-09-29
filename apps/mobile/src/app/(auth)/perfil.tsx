@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { decode } from 'base64-arraybuffer';
+import { uploadAvatar } from '@/lib/avatar';
+import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -12,6 +13,9 @@ import { colors } from '@/theme/tokens';
 // intereses quedó como sección opcional editable en Perfil (tab).
 export default function CompletarPerfilScreen() {
   const [fullName, setFullName] = useState('');
+  const [bDay, setBDay] = useState('');
+  const [bMonth, setBMonth] = useState('');
+  const [bYear, setBYear] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,35 +35,28 @@ export default function CompletarPerfilScreen() {
       Alert.alert('Falta tu nombre', 'Contanos cómo te llamás.');
       return;
     }
+    const birth = birthToISO(bDay, bMonth, bYear);
+    if (!birth) {
+      Alert.alert('Falta tu fecha de nacimiento', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+      return;
+    }
+    if (ageFromISO(birth) < MIN_AGE) {
+      Alert.alert('Camina es para mayores de 13 años', 'Por ahora no podés usar la app. ¡Te esperamos cuando cumplas 13!');
+      await supabase.auth.signOut();
+      router.replace('/(auth)/welcome');
+      return;
+    }
     setLoading(true);
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id;
       if (!userId) throw new Error('Sesión inválida');
 
-      let photoUrl: string | undefined;
-      if (photoUri) {
-        const base64 = await fetch(photoUri)
-          .then((r) => r.blob())
-          .then(
-            (blob) =>
-              new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-              })
-          );
-        const path = `${userId}/avatar.jpg`;
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(path, decode(base64), { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) throw uploadError;
-        photoUrl = supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-      }
+      const photoUrl = photoUri ? await uploadAvatar(userId, photoUri) : undefined;
 
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: userId, full_name: fullName.trim(), ...(photoUrl ? { photo_url: photoUrl } : {}) });
+      const base = { id: userId, full_name: fullName.trim(), ...(photoUrl ? { photo_url: photoUrl } : {}) };
+      let { error } = await supabase.from('profiles').upsert({ ...base, birth_date: birth });
+      // Si la base todavía no tiene la columna de fecha de nacimiento, se guarda igual sin ella.
+      if (error && /birth_date/i.test(error.message)) ({ error } = await supabase.from('profiles').upsert(base));
       if (error) throw error;
 
       await useAuthStore.getState().refreshProfile();
@@ -93,8 +90,21 @@ export default function CompletarPerfilScreen() {
         onChangeText={setFullName}
         placeholder="Tu nombre"
         autoFocus
-        className="border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 mb-7 text-[15px] text-text-light dark:text-text-dark"
+        className="border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 mb-4 text-[15px] text-text-light dark:text-text-dark"
       />
+
+      <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2">Fecha de nacimiento</Text>
+      <View className="flex-row gap-2.5 mb-2">
+        <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad" maxLength={2}
+          className="flex-1 border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
+        <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad" maxLength={2}
+          className="flex-1 border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
+        <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad" maxLength={4}
+          className="flex-[1.4] border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
+      </View>
+      <Text className="text-muted-light dark:text-muted-dark text-[11px] mb-7">
+        La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
+      </Text>
 
       <Pressable
         onPress={handleContinue}
