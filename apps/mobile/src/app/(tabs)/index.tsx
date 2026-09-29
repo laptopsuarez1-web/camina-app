@@ -114,6 +114,8 @@ export default function HomeScreen() {
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+  const stepsText = steps.toLocaleString('es-BO');
+  const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
   const nearby = (() => {
     const map = new Map<string, { business: NonNullable<typeof benefits>[number]['business']; items: NonNullable<typeof benefits> }>();
     for (const b of benefits ?? []) {
@@ -202,17 +204,23 @@ export default function HomeScreen() {
             innerColor={POINTS_COLOR}
           >
             <View className="items-center">
+              {/* El número se achica según los dígitos para que nunca toque el aro fino de Puntos. */}
               <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
                 style={{
                   color: '#fff',
-                  fontSize: 48,
+                  fontSize: stepsFontSize,
                   fontWeight: '900',
                   letterSpacing: -1.4,
-                  lineHeight: 48,
+                  lineHeight: stepsFontSize + 2,
                   fontVariant: ['tabular-nums'],
+                  width: 128,
+                  textAlign: 'center',
                 }}
               >
-                {steps.toLocaleString('es-BO')}
+                {stepsText}
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <View
