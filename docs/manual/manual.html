@@ -1,0 +1,179 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Camina — Manual del proyecto</title>
+<style>
+@page{size:A4;margin:18mm 16mm}
+body{font-family:'DejaVu Sans',Arial,sans-serif;color:#1d1240;font-size:10.5pt;line-height:1.5}
+h1{font-size:26pt;margin:0;color:#200a52}
+h2{font-size:15pt;color:#fff;background:#200a52;padding:7px 12px;border-radius:8px;margin:26px 0 10px;page-break-after:avoid}
+h3{font-size:11.5pt;color:#6b3fc4;margin:16px 0 4px;page-break-after:avoid}
+p{margin:4px 0 8px}
+ul{margin:4px 0 10px 18px;padding:0}li{margin:2px 0}
+table{border-collapse:collapse;width:100%;margin:8px 0 12px;font-size:9.8pt}
+th{background:#efe9fb;text-align:left;padding:6px 8px;border:1px solid #d9cff2}
+td{padding:6px 8px;border:1px solid #e3dcf5;vertical-align:top}
+.cover{text-align:center;padding:90px 0 40px;page-break-after:always}
+.cover .sub{font-size:14pt;color:#6b3fc4;margin-top:8px}
+.cover .meta{margin-top:40px;color:#7a6aa8}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:8.8pt;font-weight:bold}
+.ok{background:#d9f5ea;color:#116b4b}.pend{background:#fde9c8;color:#8a5a00}.no{background:#fbd6d6;color:#8f1d1d}
+.box{background:#f5f2fc;border-left:4px solid #7FEDC4;padding:8px 12px;border-radius:6px;margin:8px 0}
+.warn{background:#fff4dc;border-left:4px solid #E2B33C}
+code{background:#f0ebfb;padding:1px 5px;border-radius:4px;font-size:9.2pt}
+.pb{page-break-before:always}
+</style></head><body>
+
+<div class="cover">
+<h1>Camina</h1>
+<div class="sub">Manual del proyecto: todo lo que hicimos, cómo funciona y qué falta</div>
+<div class="meta">Versión 1.0 · 29 de septiembre de 2026<br>Lanzamiento: Tarija → Santa Cruz → toda Bolivia</div>
+</div>
+
+<h2>1. Qué es Camina</h2>
+<p>Camina es una app que convierte los pasos de todos los días en <b>Puntos</b>, y esos Puntos se canjean por premios y descuentos en comercios de la ciudad. Tiene tres partes que trabajan juntas:</p>
+<table>
+<tr><th>Parte</th><th>Qué es</th><th>Dónde vive</th></tr>
+<tr><td><b>App para usuarios</b></td><td>La que se instala en el celular (Android e iPhone).</td><td>Código en <code>apps/mobile</code>. Se arma con Expo (EAS).</td></tr>
+<tr><td><b>Panel de comercios</b></td><td>Web donde cada local crea sus premios, ve sus datos y elige su plan. Incluye un panel de administrador.</td><td><b>caminaapp.com</b> (Vercel, proyecto <code>camina-partner</code>). Código en <code>apps/partner</code>.</td></tr>
+<tr><td><b>Base de datos y servidor</b></td><td>Guarda usuarios, pasos, Puntos, canjes y comercios. Envía las notificaciones y correos.</td><td>Supabase, proyecto <code>lcqqzufpkbdfitgtdjjk</code>. Código en <code>supabase/</code>.</td></tr>
+</table>
+
+<h2>2. Reglas del juego (cómo se ganan y usan los Puntos)</h2>
+<table>
+<tr><th>Regla</th><th>Valor</th></tr>
+<tr><td>Ganar Puntos</td><td>1 Punto cada 1.000 pasos</td></tr>
+<tr><td>Tope diario</td><td>Hasta 20 Puntos por día</td></tr>
+<tr><td>Vigencia de los Puntos</td><td>90 días desde que se ganan</td></tr>
+<tr><td>Código de canje</td><td>Vale 15 minutos. Si vence, se puede generar otro.</td></tr>
+<tr><td>Repetir en el mismo comercio</td><td>Hay una espera de 14 días por comercio</td></tr>
+<tr><td>Meta diaria de pasos</td><td>6.000 por defecto; cada persona la cambia tocando "meta" en Inicio</td></tr>
+<tr><td>Invitar a un amigo</td><td>5 Puntos cuando el amigo se registra y gana su primer Punto</td></tr>
+</table>
+<p>Estas reglas se aplican en el servidor (Supabase), no solo en la app, para que nadie pueda saltárselas.</p>
+
+<h2>3. La app, pantalla por pantalla</h2>
+<h3>Inicio</h3>
+<p>Aro de pasos con el contador grande, la meta y el nombre CAMINA en el centro. Debajo: racha, Puntos de hoy, "Beneficios cerca tuyo" (agrupados por comercio, con el precio en monedas) y accesos a retos y ranking de grupos.</p>
+<h3>Actividad</h3>
+<p>Resumen de "Esta semana", promedio de la comunidad Camina, racha, tarjetas de progreso, gráfico de 7 o 30 días, calendario de metas cumplidas (celdas cuadradas redondeadas) e historial completo.</p>
+<h3>Puntos</h3>
+<p>Saldo, Puntos ganados hoy, aviso de Puntos por vencer, tarjeta para invitar amigos con link para compartir, y la lista de Movimientos con cada ganancia.</p>
+<h3>Canjes</h3>
+<ul>
+<li>Tarjeta de mapa oscuro arriba con el botón <b>Explorar el mapa</b>, que abre el mapa completo con los pines de los comercios.</li>
+<li>Buscador y filtros: <b>Disponibles ahora</b>, <b>Favoritos</b> y categorías.</li>
+<li>Cada comercio muestra logo, categoría, dirección, distancia (si hay ubicación) y sus premios.</li>
+<li>Al tocar un comercio se abre su <b>ficha</b>: portada, descripción, dirección, horario, Instagram, "Premios disponibles" y "Descuentos", cada uno con su botón <b>Canjear</b>.</li>
+<li>Al canjear aparece el <b>código</b> con cuenta regresiva de 15 minutos. El comercio lo mira en la pantalla del cliente.</li>
+</ul>
+<h3>Grupos y Eventos</h3>
+<p>Grupos para caminar con amigos, con ranking y meta semanal de equipo. Eventos y Retos Camina (invitar amigos, mantener la racha, cumplir la meta semanal).</p>
+<h3>Perfil y Avisos</h3>
+<p>Perfil con foto, meta diaria, zona, modo oscuro y eliminar cuenta (exigido por Apple y Google). La campanita abre <b>Avisos</b>, con los mensajes recibidos; un puntito rojo indica que hay nuevos.</p>
+
+<h2>4. Comercios y planes</h2>
+<table>
+<tr><th>Plan</th><th>Precio</th><th>Qué incluye</th></tr>
+<tr><td><b>Primer Paso</b></td><td>Gratis</td><td>Aparece en mapa y categoría. 1 beneficio activo, solo gratis. Mínimo 3 cupones por día.</td></tr>
+<tr><td><b>Paso Firme</b></td><td>Bs 100/mes</td><td>Regalos y descuentos combinados, varios beneficios a la vez, cupones ilimitados, estadísticas básicas.</td></tr>
+<tr><td><b>Paso Adelante</b></td><td>Bs 300/mes</td><td>Todo lo anterior + destacado: marco dorado, logo dorado junto al nombre, siempre primero (también dentro de su categoría y en Inicio) y pin diferente en el mapa.</td></tr>
+</table>
+<h3>Cómo publica un premio un local</h3>
+<ol>
+<li>Se registra en <b>caminaapp.com</b> y completa su perfil (logo, portada, dirección, ubicación, horario, Instagram).</li>
+<li>Camina (administrador) aprueba el comercio.</li>
+<li>En <b>Mis beneficios</b> toca "Agregar", elige regalo o descuento, precio en Puntos, horario/días y cupones por día (o ilimitados).</li>
+<li>El premio aparece al instante en la app, en el mapa y en la lista.</li>
+</ol>
+<p>El cambio de plan lo hace el administrador. Las mejoras de plan se aplican al momento; una baja espera a que termine el mes pagado. El pago es por QR y el comprobante llega por WhatsApp.</p>
+
+<h2>5. Cosas nuevas de esta etapa</h2>
+<table>
+<tr><th>Mejora</th><th>Qué hace</th><th>Estado</th></tr>
+<tr><td>Pasos a mano no suman</td><td>Se descuentan los pasos cargados manualmente en Salud (iPhone) y en Health Connect (Android).</td><td><span class="tag ok">En el código</span></td></tr>
+<tr><td>Tope de pasos</td><td>El servidor recorta a 60.000 pasos por día.</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Avisos amigables</td><td>Código por vencer, Puntos por vencer y racha en juego, con tono cercano.</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Recordatorio de racha</td><td>Todos los días a las 20:00 (hora de La Paz) para quien lleva 2 o más días.</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Bandeja de avisos</td><td>La campanita muestra los avisos y un puntito rojo.</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Favoritos</td><td>Corazón en cada comercio y filtro "Favoritos".</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Versión obligatoria</td><td>Si la app instalada es más vieja que la mínima, se bloquea con un aviso amable para actualizar.</td><td><span class="tag ok">Listo</span> (mínimas en 1.0.0)</td></tr>
+<tr><td>Comercios destacados</td><td>Marco y logo dorado, siempre primeros, pin especial.</td><td><span class="tag ok">En el código</span></td></tr>
+<tr><td>Monitoreo de errores</td><td>Sentry avisa si la app falla en un teléfono.</td><td><span class="tag pend">Falta cuenta y clave</span></td></tr>
+</table>
+<div class="box warn"><b>Honestidad sobre los pasos.</b> Los datos de Salud y Health Connect se pueden falsear en parte. Bloqueamos lo manual y el servidor pone un tope, pero alguien que agite el teléfono o use una app que simula caminatas puede pasar. El tope de 20 Puntos por día limita el daño.</div>
+
+<h3>Cómo se cambia la versión mínima obligatoria</h3>
+<p>En Supabase, tabla <code>app_config</code>: editar <code>min_version_ios</code> o <code>min_version_android</code> con el número de versión mínimo (por ejemplo 1.2.0). Los usuarios con una versión menor verán la pantalla "¡Hay una versión nueva de Camina!". Cargar también <code>store_url_ios</code> y <code>store_url_android</code> con el link de la tienda cuando existan.</p>
+
+<h2 class="pb">6. Notificaciones (cómo funcionan)</h2>
+<ul>
+<li>Un mensaje se guarda en una cola (<code>notifications_outbox</code>) y un disparador llama a la función <code>send-push-notifications</code>, que lo envía al celular.</li>
+<li>La función está protegida con una clave secreta; sin ella responde error 401.</li>
+<li>Textos actuales: "¡Ojo, que se te va el código! ⏳", "Tus Puntos te están esperando 🎁", "¡No cortés tu racha! 🔥".</li>
+<li><b>Aún no se probó en un teléfono real</b>: hoy hay 0 dispositivos registrados. Para Android además falta conectar Firebase.</li>
+</ul>
+
+<h2>7. Cuentas y servicios</h2>
+<table>
+<tr><th>Servicio</th><th>Para qué</th><th>Estado</th></tr>
+<tr><td>Supabase</td><td>Base de datos, usuarios, funciones</td><td><span class="tag ok">Activo</span> · Correos por Resend (<code>no-reply@caminaapp.com</code>), Google y Apple configurados en Supabase</td></tr>
+<tr><td>Vercel</td><td>Publica el panel en caminaapp.com desde la rama <code>main</code></td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Expo / EAS</td><td>Arma los instaladores de la app</td><td><span class="tag ok">Activo</span> · cuenta <code>marcos2114</code>, app <code>bo.camina.app</code></td></tr>
+<tr><td>GitHub</td><td>Guarda el código (repositorio <code>camina-app</code>)</td><td><span class="tag ok">Activo</span></td></tr>
+<tr><td>Sentry</td><td>Avisos de errores</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Apple Developer (USD 99/año)</td><td>Publicar en App Store y usar TestFlight</td><td><span class="tag no">Falta</span></td></tr>
+<tr><td>Google Play Console (USD 25 único)</td><td>Publicar en Play Store</td><td><span class="tag no">Falta</span></td></tr>
+</table>
+
+<h2>8. Cómo probar la app hoy (Android)</h2>
+<p>No se puede con Expo Go: la app usa piezas propias (pasos de Salud/Health Connect, mapa de Google, inicio de sesión) que Expo Go no trae. Se usa un instalador propio (APK):</p>
+<ol>
+<li>Abrir el link de descarga del APK en el celular Android.<br><code>https://expo.dev/artifacts/eas/l3lyU9MZSEVfTQTpeFbY4E4K4G_mAFyzdCD4fGTqKD4.apk</code> (vence el 13/10/2026).</li>
+<li>Permitir instalar desde fuentes desconocidas e instalar.</li>
+<li>Crear cuenta o entrar con Google. Aceptar permisos de ubicación y actividad física.</li>
+<li>Tener <b>Health Connect</b> (viene en Android 14 o más nuevo; antes se baja gratis de Play Store).</li>
+<li>Caminar y comprobar: que el aro suba, que se vea el mapa de Tarija y que se pueda canjear un premio.</li>
+</ol>
+<p>En iPhone todavía no se puede probar: hace falta la cuenta de Apple Developer y TestFlight.</p>
+<p><b>Para armar un instalador nuevo:</b> crear un token en expo.dev (Account settings → Access tokens), cargarlo como variable de entorno <code>EXPO_TOKEN</code> en el entorno del asistente (no pegarlo en el chat) y pedir el armado. Al terminar, borrar el token.</p>
+<div class="box warn"><b>Seguridad.</b> El token de Expo y la clave de Supabase que se pegaron en el chat deben considerarse expuestos: revocar el token de Expo ("camina-build") y, cuando puedas, rotar la clave de acceso de Supabase (Account → Access tokens).</div>
+
+<h2 class="pb">9. Lista para lanzar</h2>
+<table>
+<tr><th>Tarea</th><th>Quién</th><th>Estado</th></tr>
+<tr><td>Cuenta de Apple Developer + App ID con "Sign in with Apple"</td><td>Vos</td><td><span class="tag no">Falta</span></td></tr>
+<tr><td>Cuenta de Google Play Console</td><td>Vos</td><td><span class="tag no">Falta</span></td></tr>
+<tr><td>Registro de marca en SENAPI</td><td>Vos</td><td><span class="tag pend">En curso</span></td></tr>
+<tr><td>Sentry: crear cuenta y cargar la clave <code>EXPO_PUBLIC_SENTRY_DSN</code></td><td>Vos + Claude</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Probar push en un teléfono real (y Firebase para Android)</td><td>Claude + tester</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Sumar 5 a 10 comercios reales de Tarija</td><td>Vos</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Restringir la clave de Google Maps a <code>bo.camina.app</code> (Google Cloud)</td><td>Vos</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Variables de Supabase también en "Preview" de Vercel (evita mails de error)</td><td>Vos</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Capturas finales de tienda sacadas en teléfono real con datos</td><td>Vos + Claude</td><td><span class="tag pend">Pendiente</span></td></tr>
+<tr><td>Redes sociales, anuncios y campañas</td><td>Vos</td><td><span class="tag pend">Tuyo</span></td></tr>
+<tr><td>Campo "ciudad" en comercios y usuarios (antes de sumar Santa Cruz)</td><td>Claude</td><td><span class="tag pend">Pendiente</span></td></tr>
+</table>
+<h3>Cosas por ordenar</h3>
+<ul>
+<li>La página de planes promete "notificaciones push cerca tuyo" y "video promocional" para Paso Adelante, pero <b>hoy no existen</b> (se sacó el video del panel). Conviene ajustar el texto o construirlos antes de cobrar.</li>
+<li>Bloom figura con plan Paso Adelante en la base de datos, por eso aparece como destacado. Se cambia desde el panel de administrador.</li>
+</ul>
+
+<h2>10. Datos para las tiendas</h2>
+<table>
+<tr><td>Nombre</td><td>Camina</td></tr>
+<tr><td>Subtítulo iOS</td><td>Caminá y ganá Puntos</td></tr>
+<tr><td>Bundle ID / Package</td><td><code>bo.camina.app</code></td></tr>
+<tr><td>Categoría</td><td>Salud y bienestar</td></tr>
+<tr><td>Términos / Privacidad</td><td>https://caminaapp.com/terminos · https://caminaapp.com/privacidad</td></tr>
+</table>
+<p>Los textos completos, la justificación de permisos y las notas para el revisor están en <code>docs/store-listing.md</code> del repositorio.</p>
+
+<h2>11. Glosario rápido</h2>
+<ul>
+<li><b>APK:</b> instalador de una app Android.</li>
+<li><b>EAS:</b> servicio de Expo que arma los instaladores.</li>
+<li><b>Migración:</b> cambio en la base de datos. La última aplicada es la 0018.</li>
+<li><b>Health Connect:</b> almacén de datos de salud de Android, de donde la app lee los pasos.</li>
+<li><b>Push:</b> notificación que llega al celular aunque la app esté cerrada.</li>
+<li><b>Sentry:</b> servicio que avisa de errores de la app.</li>
+</ul>
+</body></html>
