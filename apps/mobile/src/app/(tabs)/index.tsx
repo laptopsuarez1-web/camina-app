@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bell, Users, Check } from 'lucide-react-native';
+import { Users, Check } from 'lucide-react-native';
+import { BellButton } from '@/components/ui/BellButton';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -137,9 +138,7 @@ export default function HomeScreen() {
               <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
             </Pressable>
             <View className="flex-row items-center gap-2.5">
-              <View className="bg-white/10 w-8 h-8 rounded-full items-center justify-center">
-                <Bell size={15} color="#C4B8E8" />
-              </View>
+              <BellButton dark color="#C4B8E8" />
               <Pressable
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"

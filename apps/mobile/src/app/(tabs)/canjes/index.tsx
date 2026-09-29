@@ -15,7 +15,7 @@ import {
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Bell, Heart, Star } from 'lucide-react-native';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Clock, Locate, Navigation, Map as MapIcon, Heart, Star } from 'lucide-react-native';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -25,6 +25,7 @@ import {
   type BenefitWithBusiness,
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
+import { BellButton } from '@/components/ui/BellButton';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
@@ -154,9 +155,10 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
       )}
     </View>
     {featured && (
-      <View style={{ position: 'absolute', top: 0, right: 0, width: 18, height: 18, borderRadius: 9, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#fff' }}>
-        <Star size={10} color="#fff" fill="#fff" />
-      </View>
+      <Image
+        source={require('@/../assets/camina-coin-gold.png')}
+        style={{ position: 'absolute', top: -2, right: -4, width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: '#fff' }}
+      />
     )}
     </View>
   );
@@ -368,9 +370,7 @@ export default function CanjesScreen() {
               <Text style={{ fontWeight: '700', fontSize: 15, color: colors.light.text }}>{balance ?? 0}</Text>
             </Pressable>
             <View className="flex-row items-center" style={{ gap: 10 }}>
-              <View className="bg-card-light rounded-full items-center justify-center" style={{ width: 32, height: 32 }}>
-                <Bell size={15} color={colors.light.muted} />
-              </View>
+              <BellButton color={colors.light.muted} bg="#fff" />
               <Pressable
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="bg-mint rounded-full items-center justify-center overflow-hidden"
@@ -614,13 +614,14 @@ export default function CanjesScreen() {
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                 </View>
+
+                <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
                 {isFeatured(profileGroup.business) && (
-                  <View className="flex-row items-center self-start rounded-full mt-1.5" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
+                  <View className="flex-row items-center self-start rounded-full mt-2" style={{ gap: 4, backgroundColor: GOLD_SOFT, paddingHorizontal: 9, paddingVertical: 3 }}>
                     <Star size={11} color={GOLD} fill={GOLD} />
                     <Text style={{ fontSize: 11, fontWeight: '800', color: '#9A7413' }}>Destacado</Text>
                   </View>
                 )}
-                <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>

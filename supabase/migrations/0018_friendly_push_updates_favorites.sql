@@ -117,3 +117,7 @@ alter table favorite_businesses enable row level security;
 create policy "favorites: select own" on favorite_businesses for select using (auth.uid() = user_id);
 create policy "favorites: insert own" on favorite_businesses for insert with check (auth.uid() = user_id);
 create policy "favorites: delete own" on favorite_businesses for delete using (auth.uid() = user_id);
+
+-- ---------- Bandeja de avisos (campanita) ----------
+-- Cada usuario puede leer sus propios avisos (los mismos que salen como push).
+create policy "outbox: select own" on notifications_outbox for select using (auth.uid() = user_id);

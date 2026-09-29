@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
-import { Bell } from 'lucide-react-native';
+import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
@@ -23,9 +23,7 @@ export function HeaderLight() {
         <Text className="text-text-light dark:text-text-dark font-bold text-[15px]">{balance ?? 0}</Text>
       </Pressable>
       <View className="flex-row items-center gap-2.5">
-        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark w-8 h-8 rounded-full items-center justify-center">
-          <Bell size={15} color={colors.light.muted} />
-        </View>
+        <BellButton color={colors.light.muted} />
         <Pressable
           onPress={() => router.push('/(tabs)/perfil')}
           className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"

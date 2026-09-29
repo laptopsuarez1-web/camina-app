@@ -34,6 +34,7 @@ export default function TabsLayout() {
           que se veía como "Grupos" duplicado y "perfil" suelto al final). */}
       <Tabs.Screen name="perfil" options={{ href: null }} />
       <Tabs.Screen name="puntos" options={{ href: null }} />
+      <Tabs.Screen name="notificaciones" options={{ href: null }} />
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null }} />
     </Tabs>
   );
