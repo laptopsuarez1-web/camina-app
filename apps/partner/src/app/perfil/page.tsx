@@ -7,6 +7,12 @@ import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
+import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type WeekHours } from '@/lib/hours';
+
+function firstOpen(w: WeekHours) {
+  for (let i = 0; i < 7; i++) if (w[String(i)]) return i;
+  return 0;
+}
 
 const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
@@ -16,7 +22,7 @@ export default function PerfilPage() {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
   const [direccion, setDireccion] = useState('');
-  const [horario, setHorario] = useState('');
+  const [semana, setSemana] = useState<WeekHours>(emptyWeek());
   const [telefono, setTelefono] = useState('');
   const [instagram, setInstagram] = useState('');
   const [website, setWebsite] = useState('');
@@ -34,7 +40,7 @@ export default function PerfilPage() {
     setNombre(business.name);
     setCategoria(business.category);
     setDireccion(business.address ?? '');
-    setHorario(business.hours_text ?? '');
+    setSemana(business.opening_hours ?? weekFromText(business.hours_text));
     setTelefono(business.phone ?? '');
     setInstagram(business.instagram ?? '');
     setWebsite(business.website ?? '');
@@ -91,7 +97,8 @@ export default function PerfilPage() {
         address: esVirtual ? null : direccion.trim(),
         lat: esVirtual ? null : punto ? punto.lat : null,
         lng: esVirtual ? null : punto ? punto.lng : null,
-        hours_text: horario.trim(),
+        hours_text: summarizeWeek(semana),
+        opening_hours: semana,
         phone: telefono.trim(),
         instagram: instagram.trim() || null,
         website: website.trim() || null,
@@ -225,12 +232,78 @@ export default function PerfilPage() {
             </Field>
           )}
           <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>
-            <input
-              value={horario}
-              onChange={(e) => setHorario(e.target.value)}
-              placeholder="Lun a Sáb 8:00–20:00"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
+            <div className="bg-white border border-line rounded-[10px] p-3 flex flex-col gap-2">
+              {DAY_NAMES.map((name, i) => {
+                const d = semana[String(i)];
+                return (
+                  <div key={name} className="flex items-center gap-2.5 text-[13px]">
+                    <label className="flex items-center gap-2 w-[120px]">
+                      <input
+                        type="checkbox"
+                        checked={!!d}
+                        onChange={(e) =>
+                          setSemana((w) => ({ ...w, [String(i)]: e.target.checked ? { from: '09:00', to: '19:00' } : null }))
+                        }
+                      />
+                      <span className={d ? 'font-semibold' : 'text-muted'}>{name}</span>
+                    </label>
+                    {d ? (
+                      <>
+                        <input
+                          type="time"
+                          value={d.from}
+                          onChange={(e) => setSemana((w) => ({ ...w, [String(i)]: { from: e.target.value, to: d.to } }))}
+                          className="border border-line rounded-[8px] px-2 py-1.5"
+                        />
+                        <span className="text-muted">a</span>
+                        <input
+                          type="time"
+                          value={d.to}
+                          onChange={(e) => setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: e.target.value } }))}
+                          className="border border-line rounded-[8px] px-2 py-1.5"
+                        />
+                      </>
+                    ) : (
+                      <span className="text-muted text-[12.5px]">Cerrado</span>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap gap-3 pt-1 text-[12px]">
+                <button
+                  type="button"
+                  className="text-purple font-semibold"
+                  onClick={() => {
+                    const base = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
+                    setSemana(() => {
+                      const w: WeekHours = emptyWeek();
+                      for (let i = 0; i < 5; i++) w[String(i)] = { ...base };
+                      return w;
+                    });
+                  }}
+                >
+                  Lunes a viernes igual
+                </button>
+                <button
+                  type="button"
+                  className="text-purple font-semibold"
+                  onClick={() => {
+                    const base = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
+                    setSemana(() => {
+                      const w: WeekHours = emptyWeek();
+                      for (let i = 0; i < 7; i++) w[String(i)] = { ...base };
+                      return w;
+                    });
+                  }}
+                >
+                  Todos los días igual
+                </button>
+              </div>
+              <p className="text-[11.5px] text-muted leading-4">
+                Los clientes ven estos días y horarios al tocar tu local en la app. Resumen:{' '}
+                <b>{summarizeWeek(semana) || 'todavía sin horario'}</b>
+              </p>
+            </div>
           </Field>
           <Field label="Contacto (WhatsApp)" icon={<Phone size={13} color="#7C6A9C" />}>
             <input

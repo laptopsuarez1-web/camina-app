@@ -33,6 +33,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
+import { BusinessHours } from '@/components/BusinessHours';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
@@ -708,12 +709,7 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-aqua">{profileGroup.business.address}</Text>
                     </Pressable>
                   ) : null}
-                  {profileGroup.business.hours_text ? (
-                    <View className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2" style={{ gap: 6 }}>
-                      <Clock size={14} color={colors.light.muted} />
-                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{profileGroup.business.hours_text}</Text>
-                    </View>
-                  ) : null}
+                  <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
                   {profileGroup.business.instagram ? (
                     <Pressable
                       onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '')}`)}
