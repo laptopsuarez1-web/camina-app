@@ -82,6 +82,9 @@ export default function LoginPage() {
         <Link href="/registro" className="text-auth-muted text-[12.5px] text-center">
           ¿Todavía no tenés cuenta? Sumar mi comercio
         </Link>
+        <Link href="/unirme" className="text-auth-muted text-[12.5px] text-center">
+          Soy cajero de un comercio
+        </Link>
         <a
           href={SOPORTE_WHATSAPP}
           target="_blank"

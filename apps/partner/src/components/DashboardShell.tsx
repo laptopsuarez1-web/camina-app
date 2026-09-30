@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -17,6 +17,7 @@ const NAV = [
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing },
   { href: '/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
+  { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
   { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
   { href: '/plan', label: 'Plan', icon: CreditCard },
 ];
@@ -28,18 +29,23 @@ const PLAN_LABEL: Record<string, string> = {
 };
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { session, business, isAdmin, loading } = useBusinessAuth();
+  const { session, business, isAdmin, role, loading } = useBusinessAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
+    // Los cajeros solo ven la pantalla de canjes.
+    if (session && business && role === 'cashier' && pathname !== '/canjes') {
+      router.replace('/canjes');
+      return;
+    }
     if (!session) {
       router.replace('/login');
     } else if (!business && isAdmin) {
       router.replace('/admin');
     }
-  }, [loading, session, business, isAdmin, router]);
+  }, [loading, session, business, isAdmin, role, pathname, router]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -69,7 +75,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {NAV.filter((item) => business.account_kind !== 'events_only' || ['/eventos', '/perfil', '/guia'].includes(item.href)).map((item) => {
+        {NAV.filter((item) =>
+          role === 'cashier'
+            ? item.href === '/canjes'
+            : business.account_kind !== 'events_only' || ['/eventos', '/perfil', '/guia', '/equipo'].includes(item.href)
+        ).map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
           return (
@@ -88,10 +98,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="mt-auto pt-5">
-        <div className="bg-auth-bg-soft rounded-xl p-3 mb-2.5">
-          <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
-          <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
-        </div>
+        {role === 'owner' && (
+          <div className="bg-auth-bg-soft rounded-xl p-3 mb-2.5">
+            <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
+            <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
+          </div>
+        )}
         <a
           href={`https://wa.me/59162714286?text=${encodeURIComponent('Hola! Soy de ' + (business.name ?? 'un comercio') + ' y necesito ayuda con el panel de Camina.')}`}
           target="_blank"
@@ -114,7 +126,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ResponsiveFrame sidebar={sidebar}>
-      {!business.approved && (
+      {!business.approved && role === 'owner' && (
         <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
           Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
           {(!business.logo_url || !business.cover_url) ? (

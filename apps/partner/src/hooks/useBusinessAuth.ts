@@ -10,6 +10,7 @@ export function useBusinessAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<'owner' | 'cashier'>('owner');
   const [loading, setLoading] = useState(true);
 
   const refreshBusiness = useCallback(async (userId: string, email: string | undefined) => {
@@ -23,6 +24,7 @@ export function useBusinessAuth() {
       .maybeSingle();
 
     if (data) {
+      setRole('owner');
       setBusiness(data as Business);
       return;
     }
@@ -32,6 +34,16 @@ export function useBusinessAuth() {
     // para este email, se crea el negocio recién ahora.
     const pending = email ? consumePendingBusiness(email) : null;
     if (!pending) {
+      // ¿Es un cajero invitado por un comercio? Se vincula por su correo y entra al comercio como cajero.
+      const { data: staffBusinessId } = await supabase.rpc('claim_staff_invite');
+      if (staffBusinessId) {
+        const { data: staffBusiness } = await supabase.from('businesses').select('*').eq('id', staffBusinessId).maybeSingle();
+        if (staffBusiness) {
+          setRole('cashier');
+          setBusiness(staffBusiness as Business);
+          return;
+        }
+      }
       setBusiness(null);
       return;
     }
@@ -87,5 +99,5 @@ export function useBusinessAuth() {
     };
   }, [refreshBusiness]);
 
-  return { session, business, isAdmin, loading, refreshBusiness };
+  return { session, business, isAdmin, role, loading, refreshBusiness };
 }
