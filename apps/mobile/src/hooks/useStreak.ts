@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { MIN_DAILY_GOAL } from '@/constants/business-rules';
 
 // Racha real calculada desde steps_daily: días consecutivos (terminando hoy
 // o ayer, para no cortar la racha mientras el día de hoy todavía está en
 // curso) donde los pasos llegaron a la meta actual del usuario.
 export function useStreak() {
   const userId = useAuthStore((s) => s.session?.user.id);
-  const goal = useAuthStore((s) => s.profile?.daily_goal ?? 6000);
+  const goal = useAuthStore((s) => Math.max(s.profile?.daily_goal ?? 6000, MIN_DAILY_GOAL));
 
   return useQuery({
     queryKey: ['streak', userId, goal],

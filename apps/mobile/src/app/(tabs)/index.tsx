@@ -112,7 +112,7 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steps, live]);
 
-  const goal = profile?.daily_goal ?? 6000;
+  const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);

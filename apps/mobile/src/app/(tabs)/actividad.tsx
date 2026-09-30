@@ -11,7 +11,7 @@ import { useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
-import { STEP_LENGTH_METERS, KCAL_PER_STEP } from '@/constants/business-rules';
+import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
@@ -46,7 +46,7 @@ export default function ActividadScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: streak } = useStreak();
   const { data: communityAverage } = useCommunityAverage();
-  const goal = profile?.daily_goal ?? 6000;
+  const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
 
   const byDay = useMemo(() => {
