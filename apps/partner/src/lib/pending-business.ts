@@ -12,6 +12,7 @@ export interface PendingBusiness {
   phone: string;
   isVirtual: boolean;
   city?: string;
+  accountKind?: 'commerce' | 'events_only';
   logoDataUrl?: string | null;
 }
 

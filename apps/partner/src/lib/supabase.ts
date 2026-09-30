@@ -36,6 +36,7 @@ export interface Business {
   website: string | null;
   google_review_url: string | null;
   city: string | null;
+  account_kind?: 'commerce' | 'events_only';
   founder: boolean;
   founder_until: string | null;
   plan: BusinessPlan;
@@ -102,5 +103,22 @@ export interface BusinessNotification {
   title: string;
   body: string;
   read: boolean;
+  created_at: string;
+}
+
+export interface Promotion {
+  id: string;
+  business_id: string;
+  kind: 'evento' | 'sorteo';
+  title: string;
+  description: string;
+  prize: string | null;
+  winners_count: number;
+  starts_at: string;
+  ends_at: string;
+  req_steps: number | null;
+  req_days: number | null;
+  price_bs: number;
+  status: 'pending' | 'approved' | 'rejected' | 'finished';
   created_at: string;
 }

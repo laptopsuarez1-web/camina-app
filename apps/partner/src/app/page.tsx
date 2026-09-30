@@ -13,7 +13,7 @@ export default function RootPage() {
     if (!session) {
       router.replace('/login');
     } else if (business) {
-      router.replace('/inicio');
+      router.replace(business.account_kind === 'events_only' ? '/eventos' : '/inicio');
     } else if (isAdmin) {
       router.replace('/admin');
     } else {

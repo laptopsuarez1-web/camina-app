@@ -219,6 +219,7 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { reto_id: string; met: number; target: number; claimable: boolean; claimed_now: boolean }[];
       };
+      join_promotion: { Args: { p_id: string }; Returns: void };
       claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };

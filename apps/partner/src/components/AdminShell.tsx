@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck, Trophy, MapPinned } from 'lucide-react';
+import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -12,6 +12,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 const NAV = [
   { href: '/admin', label: 'Comercios', icon: ShieldCheck },
   { href: '/admin/retos', label: 'Retos', icon: Trophy },
+  { href: '/admin/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
   { href: '/admin/lugares', label: 'Ciudades y barrios', icon: MapPinned },
 ];
 

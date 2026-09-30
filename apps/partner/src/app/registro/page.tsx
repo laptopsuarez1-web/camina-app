@@ -26,6 +26,7 @@ export default function RegistroPage() {
   const [esVirtual, setEsVirtual] = useState(false);
   const [direccion, setDireccion] = useState('');
   const [step, setStep] = useState(1);
+  const [kind, setKind] = useState<'commerce' | 'events_only'>('commerce');
   const [ciudad, setCiudad] = useState('Tarija');
   const [ciudades, setCiudades] = useState<string[]>(['Tarija']);
   const [prefijo, setPrefijo] = useState('+591');
@@ -51,7 +52,7 @@ export default function RegistroPage() {
       });
   }, []);
 
-  const datosOk = Boolean(nombre.trim() && (esVirtual || direccion.trim()) && telefono.trim().length >= 6);
+  const datosOk = Boolean(nombre.trim() && (esVirtual || kind === 'events_only' || direccion.trim()) && telefono.trim().length >= 6);
   const cuentaOk = Boolean(email.trim() && password.length >= 6);
   const valido = datosOk && cuentaOk;
   const telefonoCompleto = `${prefijo} ${telefono.trim()}`;
@@ -88,10 +89,11 @@ export default function RegistroPage() {
       savePendingBusiness({
         email: email.trim(),
         name: nombre.trim(),
-        category: categoria,
+        category: kind === 'events_only' ? 'Eventos' : categoria,
         address: direccion.trim(),
         phone: telefonoCompleto,
-        isVirtual: esVirtual,
+        isVirtual: esVirtual || kind === 'events_only',
+        accountKind: kind,
         city: ciudad,
         logoDataUrl: logo,
       });
@@ -103,15 +105,19 @@ export default function RegistroPage() {
     const row = {
       owner_user_id: data.session.user.id,
       name: nombre.trim(),
-      category: categoria,
-      address: esVirtual ? null : direccion.trim(),
+      category: kind === 'events_only' ? 'Eventos' : categoria,
+      address: esVirtual || kind === 'events_only' ? null : direccion.trim(),
       phone: telefonoCompleto,
-      is_virtual: esVirtual,
+      is_virtual: esVirtual || kind === 'events_only',
       plan: 'primer_paso',
     };
-    let { data: created, error: businessError } = await supabase.from('businesses').insert({ ...row, city: ciudad }).select('id').single();
-    // Si la base todavía no tiene la columna de ciudad, se crea igual sin ella.
-    if (businessError && /city/i.test(businessError.message)) {
+    // Si la base todavía no tiene las columnas nuevas (ciudad / tipo de cuenta), se crea igual sin ellas.
+    let { data: created, error: businessError } = await supabase
+      .from('businesses')
+      .insert({ ...row, city: ciudad, account_kind: kind })
+      .select('id')
+      .single();
+    if (businessError && /city|account_kind/i.test(businessError.message)) {
       ({ data: created, error: businessError } = await supabase.from('businesses').insert(row).select('id').single());
     }
     if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
@@ -174,28 +180,47 @@ export default function RegistroPage() {
 
           {step === 1 && (
             <>
-              <h1 className="text-[22px] font-bold mb-1">Sumá tu comercio</h1>
-              <p className="text-muted text-[13px] mb-5">
-                Empezás gratis con el plan Primer Paso — cambiás cuando quieras.
-              </p>
-              <p className="text-[13px] font-semibold mb-2">¿Tu comercio es físico u online?</p>
-              <div className="grid grid-cols-2 gap-2.5 mb-5">
+              <h1 className="text-[22px] font-bold mb-1">¿Cómo querés usar Camina?</h1>
+              <p className="text-muted text-[13px] mb-5">Elegí el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
+              <div className="flex flex-col gap-2.5 mb-5">
                 {[
-                  { v: false, t: 'Tienda física', d: 'Atiendo en una dirección' },
-                  { v: true, t: 'Solo online', d: 'Vendo únicamente por internet' },
+                  { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y beneficios para canje' },
+                  { v: 'events_only' as const, t: 'Solo quiero publicar un evento o sorteo', d: 'Publicidad dentro de la app, sin estar en el mapa (Bs 400 por publicación)' },
                 ].map((o) => (
                   <button
                     type="button"
-                    key={o.t}
-                    onClick={() => setEsVirtual(o.v)}
+                    key={o.v}
+                    onClick={() => setKind(o.v)}
                     className="text-left rounded-xl p-3.5 border-2"
-                    style={{ borderColor: esVirtual === o.v ? '#1f9d75' : '#e6e3ee', background: esVirtual === o.v ? '#f0faf6' : '#fff' }}
+                    style={{ borderColor: kind === o.v ? '#1f9d75' : '#e6e3ee', background: kind === o.v ? '#f0faf6' : '#fff' }}
                   >
                     <p className="font-bold text-[14px]">{o.t}</p>
                     <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
                   </button>
                 ))}
               </div>
+              {kind === 'commerce' && (
+                <>
+                  <p className="text-[13px] font-semibold mb-2">¿Tu comercio es físico u online?</p>
+                  <div className="grid grid-cols-2 gap-2.5 mb-5">
+                    {[
+                      { v: false, t: 'Tienda física', d: 'Atiendo en una dirección' },
+                      { v: true, t: 'Solo online', d: 'Vendo únicamente por internet' },
+                    ].map((o) => (
+                      <button
+                        type="button"
+                        key={o.t}
+                        onClick={() => setEsVirtual(o.v)}
+                        className="text-left rounded-xl p-3.5 border-2"
+                        style={{ borderColor: esVirtual === o.v ? '#1f9d75' : '#e6e3ee', background: esVirtual === o.v ? '#f0faf6' : '#fff' }}
+                      >
+                        <p className="font-bold text-[14px]">{o.t}</p>
+                        <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => setStep(2)}
@@ -252,13 +277,15 @@ export default function RegistroPage() {
               <Field label="Nombre comercial">
                 <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Café Tarija" className={input} />
               </Field>
-              <Field label="Tipo de comercio">
-                <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={input}>
-                  {CATEGORIAS.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-              </Field>
+              {kind === 'commerce' && (
+                <Field label="Tipo de comercio">
+                  <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={input}>
+                    {CATEGORIAS.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </Field>
+              )}
               <Field label="Ciudad">
                 <select value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={input}>
                   {ciudades.map((c) => (
@@ -266,13 +293,13 @@ export default function RegistroPage() {
                   ))}
                 </select>
               </Field>
-              {!esVirtual && (
+              {!esVirtual && kind === 'commerce' && (
                 <Field label="Dirección principal">
                   <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle y número, ciudad" className={input} />
                 </Field>
               )}
               <div>
-                <span className="block text-[12.5px] font-semibold mb-1.5">Teléfono / WhatsApp del comercio</span>
+                <span className="block text-[12.5px] font-semibold mb-1.5">Teléfono / WhatsApp</span>
                 <div className="flex gap-2">
                   <select value={prefijo} onChange={(e) => setPrefijo(e.target.value)} className={`${input} !w-[150px] shrink-0`}>
                     {PREFIJOS.map(([p, n]) => (

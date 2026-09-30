@@ -46,10 +46,10 @@ export function useBusinessAuth() {
     };
     let { data: created, error } = await supabase
       .from('businesses')
-      .insert({ ...row, city: pending.city ?? 'Tarija' })
+      .insert({ ...row, city: pending.city ?? 'Tarija', account_kind: pending.accountKind ?? 'commerce' })
       .select('*')
       .single();
-    if (error && /city/i.test(error.message)) {
+    if (error && /city|account_kind/i.test(error.message)) {
       ({ data: created, error } = await supabase.from('businesses').insert(row).select('*').single());
     }
     if (error || !created) {

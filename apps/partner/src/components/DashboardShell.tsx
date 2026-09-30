@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/canjes', label: 'Canjes', icon: Receipt },
   { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3 },
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing },
+  { href: '/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
   { href: '/plan', label: 'Plan', icon: CreditCard },
@@ -68,7 +69,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {NAV.map((item) => {
+        {NAV.filter((item) => business.account_kind !== 'events_only' || ['/eventos', '/perfil', '/guia'].includes(item.href)).map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
           return (
