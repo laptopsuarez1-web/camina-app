@@ -344,9 +344,11 @@ export default function GroupDetailScreen() {
               <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
                 {m.id === userId ? `${m.name} (vos)` : m.name}
               </Text>
-              <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">
-                {m.steps.toLocaleString('es-BO')}
-              </Text>
+              <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
+                <Text className="text-[12.5px] font-bold" style={{ color: colors.aqua }}>
+                  {m.steps.toLocaleString('es-BO')}
+                </Text>
+              </View>
               {m.id !== userId && (
                 <Pressable onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
                   <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>

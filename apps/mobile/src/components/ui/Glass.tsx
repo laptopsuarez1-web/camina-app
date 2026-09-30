@@ -1,4 +1,4 @@
-import { View, StyleSheet, type ViewProps, type StyleProp, type ViewStyle } from 'react-native';
+import { View, StyleSheet, Platform, type ViewProps, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'nativewind';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
@@ -57,19 +57,30 @@ export function Glass({
           shadowOpacity: dark ? 0.3 : 0.12,
           shadowRadius: 16,
           shadowOffset: { width: 0, height: 8 },
-          elevation: 3,
         },
         style,
+        // En Android la sombra (elevation) se ve a través del vidrio y dibuja rectángulos: nunca se usa.
+        Platform.OS === 'android' && { elevation: 0, shadowOpacity: 0 },
       ]}
       {...props}
     >
       <LinearGradient
         colors={fill}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0.35, y: 1 }}
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, innerShape]}
       />
+      {level > 0 && !topOnly && (
+        // Brillo fino arriba (borde de luz del vidrio)
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute', top: 0, left: Math.min(radius, 16), right: Math.min(radius, 16), height: 1.5,
+            backgroundColor: dark ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,1)',
+          }}
+        />
+      )}
       {children}
     </View>
   );

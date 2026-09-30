@@ -128,9 +128,11 @@ export default function GruposScreen() {
                 <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>
                   {r.user_id === userId ? `${r.full_name} (vos)` : r.full_name}
                 </Text>
-                <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">
-                  {Number(r.total_steps).toLocaleString('es-BO')}
-                </Text>
+                <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
+                  <Text className="text-[12.5px] font-bold" style={{ color: colors.aqua }}>
+                    {Number(r.total_steps).toLocaleString('es-BO')}
+                  </Text>
+                </View>
               </Glass>
             ))}
             {!rankingLoading && (ranking ?? []).length === 0 && (
