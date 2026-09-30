@@ -5,8 +5,10 @@ import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share,
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy, Users, IconBubble } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
+import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
+import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
+import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
 
@@ -19,6 +21,10 @@ export default function GroupDetailScreen() {
   const [text, setText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   const queryClient = useQueryClient();
+  const blocks = useBlocks();
+  const { data: history } = useGroupHistory(groupId);
+  const [openWeek, setOpenWeek] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
 
@@ -46,11 +52,69 @@ export default function GroupDetailScreen() {
     });
   }
 
+  function askReason(kind: 'message' | 'photo' | 'user', targetUser: string, messageId: string | null) {
+    setSheet({
+      title: '¿Por qué lo reportás?',
+      actions: REPORT_REASONS.map((r) => ({
+        label: r.label,
+        onPress: async () => {
+          try {
+            await reportContent(kind, targetUser, messageId, r.key);
+            Alert.alert('Gracias', 'Recibimos tu reporte. Lo revisamos y, si corresponde, actuamos.');
+          } catch (e) {
+            Alert.alert('No se pudo reportar', e instanceof Error ? e.message : 'Intentá de nuevo.');
+          }
+        },
+      })),
+    });
+  }
+
+  function confirmBlock(id: string, name: string) {
+    Alert.alert(`¿Bloquear a ${name}?`, 'Dejás de ver sus mensajes. Podés desbloquearla o desbloquearlo desde Perfil.', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Bloquear', style: 'destructive', onPress: () => blocks.block.mutate(id) },
+    ]);
+  }
+
+  async function deleteNote(id: string) {
+    const { error } = await supabase.from('group_notes').delete().eq('id', id);
+    if (error) Alert.alert('No se pudo borrar', error.message);
+    else queryClient.invalidateQueries({ queryKey: ['group-notes', groupId] });
+  }
+
+  function openNoteMenu(n: { id: string; user_id: string; author?: { full_name: string } | null }) {
+    const mine = n.user_id === userId;
+    const name = n.author?.full_name ?? 'esta persona';
+    const actions: SheetAction[] = [];
+    if (!mine) {
+      actions.push({ label: 'Reportar mensaje', onPress: () => askReason('message', n.user_id, n.id) });
+      actions.push({ label: `Bloquear a ${name}`, danger: true, onPress: () => confirmBlock(n.user_id, name) });
+    }
+    if (mine || isCreator) actions.push({ label: 'Borrar mensaje', danger: true, onPress: () => deleteNote(n.id) });
+    setSheet({ title: mine ? 'Tu mensaje' : name, actions });
+  }
+
+  function openMemberMenu(m: { id: string; name: string }) {
+    setSheet({
+      title: m.name,
+      actions: [
+        { label: 'Reportar foto o perfil', onPress: () => askReason('photo', m.id, null) },
+        { label: `Bloquear a ${m.name}`, danger: true, onPress: () => confirmBlock(m.id, m.name) },
+      ],
+    });
+  }
+
   async function send() {
     if (!text.trim() || !userId) return;
     const value = text.trim();
     setText('');
-    await postNote.mutateAsync({ userId, text: value });
+    try {
+      await postNote.mutateAsync({ userId, text: value });
+    } catch (e) {
+      setText(value);
+      Alert.alert('No se pudo enviar', e instanceof Error ? e.message : 'Intentá de nuevo.');
+      return;
+    }
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
   }
 
@@ -149,15 +213,51 @@ export default function GroupDetailScreen() {
             <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">
               {m.steps.toLocaleString('es-BO')}
             </Text>
+            {m.id !== userId && (
+              <Pressable onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
+                <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
+              </Pressable>
+            )}
           </View>
         ))}
       </Glass>
 
+      {(history ?? []).length > 0 && (
+        <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
+          <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">Semanas anteriores</Text>
+          {Array.from(new Set((history ?? []).map((r) => r.week_start))).slice(0, 8).map((week, idx) => {
+            const rows = (history ?? []).filter((r) => r.week_start === week);
+            const open = openWeek === week || (openWeek === null && idx === 0);
+            const end = new Date(new Date(week + 'T12:00:00').getTime() + 6 * 86400000);
+            const label = `${new Date(week + 'T12:00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}`;
+            return (
+              <View key={week} className="border-t border-line-light dark:border-line-dark">
+                <Pressable onPress={() => setOpenWeek(open ? '' : week)} className="flex-row items-center justify-between py-2.5">
+                  <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Semana del {label}</Text>
+                  <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">🏆 {rows[0]?.name}</Text>
+                </Pressable>
+                {open &&
+                  rows.map((r) => (
+                    <View key={r.user_id} className="flex-row items-center py-1" style={{ gap: 10 }}>
+                      <Text className="w-6 text-[12px] font-bold text-muted-light dark:text-muted-dark">{r.rank}°</Text>
+                      <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
+                        {r.user_id === userId ? `${r.name} (vos)` : r.name}
+                      </Text>
+                      <Text className="text-[11px] text-muted-light dark:text-muted-dark">{r.goal_days} días de meta</Text>
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{r.steps.toLocaleString('es-BO')}</Text>
+                    </View>
+                  ))}
+              </View>
+            );
+          })}
+        </View>
+      )}
+
       <ScrollView ref={scrollRef} className="flex-1 px-5" contentContainerClassName="gap-2 pb-3" onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}>
-        {(notes ?? []).map((n) => {
+        {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
           const mine = n.user_id === userId;
           return (
-            <View key={n.id} className={mine ? 'self-end items-end' : 'self-start items-start'} style={{ maxWidth: '78%' }}>
+            <Pressable key={n.id} onLongPress={() => openNoteMenu(n)} delayLongPress={350} className={mine ? 'self-end items-end' : 'self-start items-start'} style={{ maxWidth: '78%' }}>
               {!mine && (
                 <Text className="text-[10.5px] text-muted-light dark:text-muted-dark mb-0.5 px-1">
                   {n.author?.full_name ?? 'Caminante'}
@@ -169,12 +269,17 @@ export default function GroupDetailScreen() {
               >
                 <Text style={{ color: mine ? '#fff' : colors.light.text, fontSize: 13.5 }}>{n.text}</Text>
               </View>
-            </View>
+            </Pressable>
           );
         })}
         {(notes ?? []).length === 0 && (
           <Text className="text-center text-muted-light dark:text-muted-dark text-[13px] py-6">
             Todavía no hay mensajes. Escribí el primero.
+          </Text>
+        )}
+        {(notes ?? []).length > 0 && (
+          <Text className="text-center text-muted-light dark:text-muted-dark text-[10.5px] pt-2">
+            Mantené apretado un mensaje para reportarlo, bloquear o borrarlo. Los chats se vacían cada lunes.
           </Text>
         )}
       </ScrollView>
@@ -192,6 +297,7 @@ export default function GroupDetailScreen() {
           <Send size={16} color="#fff" />
         </Pressable>
       </View>
+      <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
     </KeyboardAvoidingView>
   );
 }

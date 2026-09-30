@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,6 +13,8 @@ import { colors } from '@/theme/tokens';
 import { INTERESTS_OPTIONS } from '@/constants/catalog';
 import { referralLink } from '@/constants/sharing';
 import { PlacePicker } from '@/components/PlacePicker';
+import { useBlocks } from '@/hooks/useModeration';
+import { SUPPORT_EMAIL, SUPPORT_WHATSAPP } from '@/constants/contact';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
 import { Glass } from '@/components/ui/Glass';
 
@@ -23,6 +25,7 @@ export default function PerfilScreen() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+  const blocks = useBlocks();
   const glassLevel = useGlassStore((s) => s.level);
   const setGlassLevel = useGlassStore((s) => s.setLevel);
   const [editing, setEditing] = useState(false);
@@ -347,6 +350,36 @@ export default function PerfilScreen() {
             </Pressable>
           ))}
         </View>
+      </Glass>
+
+      <Glass className="rounded-3xl p-4 mb-4">
+        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Ayuda y seguridad</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-3">
+          ¿Algo no anda, viste algo que no corresponde o querés reclamar por una foto tuya? Escribinos.
+        </Text>
+        <Pressable
+          onPress={() => Linking.openURL(`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hola! Necesito ayuda con Camina.')}`)}
+          className="rounded-2xl py-3 items-center mb-2"
+          style={{ backgroundColor: colors.aqua }}
+        >
+          <Text className="text-white font-bold text-[13.5px]">Escribir por WhatsApp</Text>
+        </Pressable>
+        <Pressable onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} className="items-center py-1.5">
+          <Text className="text-[12.5px] font-semibold" style={{ color: colors.aqua }}>{SUPPORT_EMAIL}</Text>
+        </Pressable>
+        {blocks.list.length > 0 && (
+          <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">
+            <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-1.5">Personas que bloqueaste</Text>
+            {blocks.list.map((b) => (
+              <View key={b.id} className="flex-row items-center justify-between py-1.5">
+                <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
+                <Pressable onPress={() => blocks.unblock.mutate(b.id)} hitSlop={8}>
+                  <Text className="text-[12.5px] font-semibold" style={{ color: colors.aqua }}>Desbloquear</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
       </Glass>
 
       <Glass className="rounded-3xl p-4 mb-4">

@@ -182,6 +182,8 @@ export type Database = {
       group_notes: Table<GroupNote, Partial<GroupNote>, Partial<GroupNote>>;
       push_tokens: Table<PushToken, Partial<PushToken>, Partial<PushToken>>;
       retos: Table<RetoRow, Partial<RetoRow>>;
+      group_weekly_results: Table<{ group_id: string; week_start: string; user_id: string; steps: number; goal_days: number; rank: number }, { group_id: string }>;
+      user_blocks: Table<{ blocker_id: string; blocked_id: string; created_at: string }, { blocker_id: string; blocked_id: string }>;
       cities: Table<CityRow, Partial<CityRow>>;
       zones: Table<ZoneRow, Partial<ZoneRow>>;
     };
@@ -220,6 +222,11 @@ export type Database = {
         Returns: { reto_id: string; met: number; target: number; claimable: boolean; claimed_now: boolean }[];
       };
       join_promotion: { Args: { p_id: string }; Returns: void };
+      report_content: {
+        Args: { p_kind: string; p_target_user: string | null; p_message: string | null; p_reason: string };
+        Returns: void;
+      };
+      register_device: { Args: { p_device_id: string }; Returns: void };
       claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };

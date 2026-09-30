@@ -103,3 +103,34 @@ export function usePostGroupNote(groupId: string | undefined) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['group-notes', groupId] }),
   });
 }
+
+export interface WeeklyResult {
+  week_start: string;
+  user_id: string;
+  name: string;
+  steps: number;
+  goal_days: number;
+  rank: number;
+}
+
+// Resultados de las semanas anteriores del grupo (se guardan cada lunes), de mejor a peor.
+export function useGroupHistory(groupId: string | undefined) {
+  return useQuery({
+    queryKey: ['group-history', groupId],
+    enabled: !!groupId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('group_weekly_results')
+        .select('week_start, user_id, steps, goal_days, rank')
+        .eq('group_id', groupId!)
+        .order('week_start', { ascending: false })
+        .order('rank', { ascending: true })
+        .limit(200);
+      if (error || !data) return [] as WeeklyResult[];
+      const ids = Array.from(new Set(data.map((r) => r.user_id as string)));
+      const { data: people } = await supabase.from('public_profiles').select('id, full_name').in('id', ids);
+      const names = new Map((people ?? []).map((p) => [p.id as string, (p.full_name as string) ?? 'Caminante']));
+      return data.map((r) => ({ ...(r as Omit<WeeklyResult, 'name'>), name: names.get(r.user_id as string) ?? 'Caminante' }));
+    },
+  });
+}

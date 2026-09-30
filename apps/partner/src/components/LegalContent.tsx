@@ -43,6 +43,13 @@ export function LegalContent() {
         </p>
       </section>
 
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Contenido de las personas</h2>
+        <p className="text-[13.5px] leading-6 text-muted">
+          Los mensajes de grupo, las fotos de perfil, los nombres y los logos o fotos que suben los comercios son responsabilidad de quien los publica. Solo podés subir contenido propio o que tengas derecho a usar. No se permite acoso, insultos, contenido sexual, odio o discriminación, violencia, spam, ni imágenes de otras personas sin su permiso. Al publicar, nos das una licencia limitada y gratuita para mostrar ese contenido dentro de Camina. Podés reportar mensajes o fotos y bloquear personas desde la app; revisamos los reportes y podemos borrar contenido y suspender cuentas. Los mensajes de grupo se borran automáticamente cada semana. Si creés que una imagen tuya o protegida por derechos de autor se usa sin permiso, escribinos a caminaappbo@gmail.com y la retiramos en pocos días. Camina es para mayores de 13 años.
+        </p>
+      </section>
+
       <section>
         <h2 className="font-bold text-[15px] mb-2">Datos de salud</h2>
         <p className="text-[13.5px] leading-6 text-muted">

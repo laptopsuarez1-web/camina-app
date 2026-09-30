@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
+import { registerDevice } from '@/lib/device';
 import { useColorScheme } from 'nativewind';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 
@@ -38,6 +39,7 @@ export default function TabsLayout() {
     if (session) {
       registerForPushNotificationsAsync();
       shareCoarseLocation();
+      registerDevice();
     }
   }, [session]);
 

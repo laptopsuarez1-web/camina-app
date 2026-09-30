@@ -73,6 +73,11 @@ export default function TerminosScreen() {
           cuenta y tus datos en cualquier momento desde Perfil.
         </Text>
 
+        <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Contenido de las personas</Text>
+        <Text className="text-[12.5px] leading-5 text-muted-light dark:text-muted-dark mb-4">
+          Los mensajes de grupo, las fotos de perfil, los nombres y los logos o fotos que suben los comercios son responsabilidad de quien los publica. Solo podés subir contenido propio o que tengas derecho a usar. No se permite acoso, insultos, contenido sexual, odio o discriminación, violencia, spam, ni imágenes de otras personas sin su permiso. Al publicar, nos das una licencia limitada y gratuita para mostrar ese contenido dentro de Camina. Podés reportar mensajes o fotos y bloquear personas desde la app; revisamos los reportes y podemos borrar contenido y suspender cuentas. Los mensajes de grupo se borran automáticamente cada semana. Si creés que una imagen tuya o protegida por derechos de autor se usa sin permiso, escribinos a caminaappbo@gmail.com y la retiramos en pocos días. Camina es para mayores de 13 años.
+        </Text>
+
         <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Datos de salud</Text>
         <Text className="text-[12.5px] leading-5 text-muted-light dark:text-muted-dark mb-2">
           Si autorizás el acceso a Apple Salud o Google Health Connect, Camina lee únicamente tu
