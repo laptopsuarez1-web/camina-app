@@ -80,7 +80,11 @@ export default function PerfilScreen() {
         ...(photoUrl ? { photo_url: photoUrl } : {}),
       };
       let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
-      if (error && /birth_date/i.test(error.message)) ({ error } = await supabase.from('profiles').update(update).eq('id', profile.id));
+      if (error && /birth_date|city/i.test(error.message)) {
+        // Si la base todavía no tiene alguna columna nueva, se guarda igual lo demás.
+        const { city: _city, ...rest } = update;
+        ({ error } = await supabase.from('profiles').update(rest).eq('id', profile.id));
+      }
       if (error) throw error;
       await useAuthStore.getState().refreshProfile();
       setEditing(false);

@@ -103,9 +103,7 @@ export default function PerfilPage() {
     }
     setSaving(true);
     setSaved(false);
-    const { error } = await supabase
-      .from('businesses')
-      .update({
+    const payload = {
         name: nombre.trim(),
         category: categoria,
         address: esVirtual ? null : direccion.trim(),
@@ -118,9 +116,10 @@ export default function PerfilPage() {
         website: website.trim() || null,
         google_review_url: resenaUrl.trim() || null,
         is_virtual: esVirtual,
-        city: ciudad,
-      })
-      .eq('id', business.id);
+    };
+    let { error } = await supabase.from('businesses').update({ ...payload, city: ciudad }).eq('id', business.id);
+    // Si la base todavía no tiene la columna de ciudad, se guarda igual el resto.
+    if (error && /city/i.test(error.message)) ({ error } = await supabase.from('businesses').update(payload).eq('id', business.id));
     setSaving(false);
     if (!error && session) {
       await refreshBusiness(session.user.id, session.user.email);

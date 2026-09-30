@@ -220,10 +220,9 @@ export default function WelcomeScreen() {
       colors={['#3a2668', '#1c1030', '#120a1e']}
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}
     >
-      <Image
-        source={require('@/../assets/logo-mint.png')}
-        style={{ width: 120, height: 120 }}
-      />
+      <View style={{ width: 104, height: 104, borderRadius: 52, overflow: 'hidden' }}>
+        <Image source={require('@/../assets/icon.png')} style={{ width: 104, height: 104 }} />
+      </View>
       <Text
         style={{
           color: colors.mint,

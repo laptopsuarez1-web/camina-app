@@ -19,16 +19,18 @@ const DIAS = 14;
 
 function Bars({ items, height = 90 }: { items: { label: string; value: number }[]; height?: number }) {
   const max = Math.max(1, ...items.map((i) => i.value));
+  // Con muchas barras no entran todas las etiquetas en el celular: se muestra una sí y una no.
+  const step = items.length > 10 ? 2 : 1;
   return (
-    <div className="flex items-end gap-1.5" style={{ height: height + 22 }}>
-      {items.map((i) => (
-        <div key={i.label} className="flex-1 flex flex-col items-center justify-end gap-1">
-          <span className="text-[10px] text-muted">{i.value > 0 ? i.value : ''}</span>
+    <div className="flex items-end gap-1 w-full overflow-hidden" style={{ height: height + 22 }}>
+      {items.map((i, idx) => (
+        <div key={i.label} className="flex-1 basis-0 min-w-0 flex flex-col items-center justify-end gap-1">
+          <span className="text-[10px] text-muted leading-none">{i.value > 0 ? i.value : ''}</span>
           <div
             className="w-full rounded-t-[6px]"
             style={{ height: Math.max(3, (i.value / max) * height), background: i.value > 0 ? '#4FC3A8' : '#E1D2F5' }}
           />
-          <span className="text-[9.5px] text-muted">{i.label}</span>
+          <span className="text-[9.5px] text-muted leading-none whitespace-nowrap h-[10px]">{idx % step === 0 ? i.label : ''}</span>
         </div>
       ))}
     </div>
@@ -128,12 +130,12 @@ export default function EstadisticasPage() {
             </div>
           </div>
 
-          <div className="bg-card border border-line rounded-2xl p-5 mb-5">
+          <div className="bg-card border border-line rounded-2xl p-5 mb-5 overflow-hidden">
             <p className="font-bold text-[14px] mb-3">Canjes por día (últimos {DIAS} días)</p>
             <Bars items={stats.days} />
           </div>
 
-          <div className="bg-card border border-line rounded-2xl p-5">
+          <div className="bg-card border border-line rounded-2xl p-5 overflow-hidden">
             <p className="font-bold text-[14px] mb-3">Horas con más visitas</p>
             <Bars items={stats.hours} />
           </div>

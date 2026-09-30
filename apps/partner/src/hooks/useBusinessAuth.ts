@@ -35,20 +35,23 @@ export function useBusinessAuth() {
       setBusiness(null);
       return;
     }
-    const { data: created, error } = await supabase
+    const row = {
+      owner_user_id: userId,
+      name: pending.name,
+      category: pending.category,
+      address: pending.isVirtual ? null : pending.address,
+      phone: pending.phone,
+      is_virtual: pending.isVirtual,
+      plan: 'primer_paso',
+    };
+    let { data: created, error } = await supabase
       .from('businesses')
-      .insert({
-        owner_user_id: userId,
-        name: pending.name,
-        category: pending.category,
-        address: pending.isVirtual ? null : pending.address,
-        phone: pending.phone,
-        is_virtual: pending.isVirtual,
-        city: pending.city ?? 'Tarija',
-        plan: 'primer_paso',
-      })
+      .insert({ ...row, city: pending.city ?? 'Tarija' })
       .select('*')
       .single();
+    if (error && /city/i.test(error.message)) {
+      ({ data: created, error } = await supabase.from('businesses').insert(row).select('*').single());
+    }
     if (error || !created) {
       setBusiness(null);
       return;

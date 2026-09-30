@@ -100,16 +100,20 @@ export default function RegistroPage() {
       return;
     }
 
-    const { data: created, error: businessError } = await supabase.from('businesses').insert({
+    const row = {
       owner_user_id: data.session.user.id,
       name: nombre.trim(),
       category: categoria,
       address: esVirtual ? null : direccion.trim(),
       phone: telefonoCompleto,
       is_virtual: esVirtual,
-      city: ciudad,
       plan: 'primer_paso',
-    }).select('id').single();
+    };
+    let { data: created, error: businessError } = await supabase.from('businesses').insert({ ...row, city: ciudad }).select('id').single();
+    // Si la base todavía no tiene la columna de ciudad, se crea igual sin ella.
+    if (businessError && /city/i.test(businessError.message)) {
+      ({ data: created, error: businessError } = await supabase.from('businesses').insert(row).select('id').single());
+    }
     if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
     setLoading(false);
     if (businessError) {
