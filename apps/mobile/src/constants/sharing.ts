@@ -5,10 +5,13 @@
 export const PENDING_REFERRAL_KEY = 'camina_pending_referral';
 export const PENDING_GROUP_JOIN_KEY = 'camina_pending_group_join';
 
+// Links https (se pueden tocar en Instagram, WhatsApp, etc.). La página del panel abre la app con camina://.
+const INVITE_BASE = 'https://caminaapp.com';
+
 export function referralLink(userId: string) {
-  return `camina://r/${userId}`;
+  return `${INVITE_BASE}/r/${userId}`;
 }
 
 export function groupInviteLink(groupId: string) {
-  return `camina://join-group/${groupId}`;
+  return `${INVITE_BASE}/join-group/${groupId}`;
 }

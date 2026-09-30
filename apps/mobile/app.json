@@ -53,7 +53,29 @@
         "googleMaps": {
           "apiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
         }
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "caminaapp.com",
+              "pathPrefix": "/r"
+            },
+            {
+              "scheme": "https",
+              "host": "caminaapp.com",
+              "pathPrefix": "/join-group"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
