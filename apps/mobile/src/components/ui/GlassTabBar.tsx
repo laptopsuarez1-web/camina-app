@@ -9,7 +9,7 @@ import { useGlassStore } from '@/store/useGlassStore';
 // Barra de pestañas flotante de "vidrio": cápsula translúcida con la pestaña activa como botón brillante.
 type TabBarProps = {
   state: { index: number; routes: { key: string; name: string; params?: object }[] };
-  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarIcon?: (p: { focused: boolean; color: string; size: number }) => React.ReactNode } }>;
+  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarStyle?: { display?: string }; tabBarIcon?: (p: { focused: boolean; color: string; size: number }) => React.ReactNode } }>;
   navigation: {
     emit: (e: { type: string; target: string; canPreventDefault?: boolean }) => { defaultPrevented: boolean };
     navigate: (name: string, params?: object) => void;
@@ -22,6 +22,9 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const level = useGlassStore((s) => s.level);
   const insets = useSafeAreaInsets();
   const [a, b] = (dark ? { 0: [0.2, 0.2], 1: [0.18, 0.08], 2: [0.12, 0.04] } : { 0: [1, 1], 1: [0.7, 0.4], 2: [0.5, 0.25] })[level];
+
+  // Algunas pantallas (crear desafío) ocultan la barra para ir a pantalla completa.
+  if (descriptors[state.routes[state.index]?.key]?.options.tabBarStyle?.display === 'none') return null;
 
   return (
     <View

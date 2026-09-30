@@ -131,6 +131,7 @@ grant execute on function join_group_challenge(uuid) to authenticated;
 -- Avance en vivo (o final) de cada participante.
 create or replace function challenge_progress(p_challenge uuid)
 returns table (user_id uuid, steps integer, goal_days integer, best_streak integer, met_goal boolean) as $$
+#variable_conflict use_column
 declare
   c group_challenges;
   v_total_days integer;
