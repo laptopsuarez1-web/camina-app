@@ -43,11 +43,13 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
           borderWidth: 1,
           borderColor: dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.95)',
           shadowColor: dark ? '#000' : '#503C8C',
-          shadowOpacity: dark ? 0.35 : 0.2,
+          // En Android la sombra (elevation) se ve a través del vidrio y ensucia la barra: solo iOS lleva sombra.
+          shadowOpacity: Platform.OS === 'ios' ? (dark ? 0.35 : 0.2) : 0,
           shadowRadius: 18,
           shadowOffset: { width: 0, height: 10 },
-          elevation: 8,
-          backgroundColor: dark ? colors.dark.card : '#fff',
+          elevation: 0,
+          // Transparente de verdad cuando hay vidrio; opaca solo en el modo "Sólido".
+          backgroundColor: level === 0 ? (dark ? colors.dark.card : '#fff') : 'transparent',
         }}
       >
         {Platform.OS === 'ios' && <BlurView intensity={40} tint={dark ? 'dark' : 'light'} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />}
@@ -58,7 +60,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
           pointerEvents="none"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 6 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
             // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null.
@@ -77,21 +79,20 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
                 }}
                 onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
                 style={{
-                  width: 66,
+                  flex: 1,
                   height: 54,
+                  marginHorizontal: 2,
                   borderRadius: 27,
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 2,
                   backgroundColor: focused ? (dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.92)') : 'transparent',
-                  shadowColor: '#503C8C',
-                  shadowOpacity: focused && !dark ? 0.14 : 0,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
                 }}
               >
-                {Icon ? Icon({ focused, color, size: 23 }) : null}
-                <Text style={{ fontSize: 9.5, color, fontWeight: focused ? '800' : '500' }}>
+                <View style={{ width: 26, height: 26, alignItems: 'center', justifyContent: 'center' }}>
+                  {Icon ? Icon({ focused, color, size: 23 }) : null}
+                </View>
+                <Text numberOfLines={1} style={{ fontSize: 9.5, color, fontWeight: focused ? '800' : '500', textAlign: 'center' }}>
                   {typeof options.title === 'string' ? options.title : route.name}
                 </Text>
               </Pressable>
