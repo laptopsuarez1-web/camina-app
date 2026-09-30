@@ -107,13 +107,14 @@ export const Wrench = make(Wrench_);
 export const Storefront = make(Storefront_);
 export const SquaresFour = make(SquaresFour_);
 
-type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint';
+type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
 const TONES: Record<Tone, [string, string, string]> = {
   aqua: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
   mint: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
   purple: ['#A672E8', '#8B4FD1', '#8B4FD1'],
   orange: ['#FFB27A', '#F2985C', '#F2985C'],
   red: ['#FF7A7E', '#E5484D', '#E5484D'],
+  gold: ['#FFDD73', '#E5A91F', '#E5A91F'],
 };
 
 // Burbuja de color sólida con degradé y el ícono en blanco.

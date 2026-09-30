@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
@@ -215,11 +216,31 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
-      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700', marginTop: 18, marginBottom: 6 }}>¡Bienvenido!</Text>
-      <Text style={{ color: '#C4B8E8', marginBottom: 32, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 260 }}>
-        Comenzá tu camino. Registrate o iniciá sesión para seguir.
+    <LinearGradient
+      colors={['#3a2668', '#1c1030', '#120a1e']}
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    >
+      <View style={{ width: 104, height: 104, borderRadius: 52, backgroundColor: '#200a52', shadowColor: '#7FEDC4', shadowOpacity: 0.55, shadowRadius: 26, shadowOffset: { width: 0, height: 0 }, elevation: 12 }}>
+        <View style={{ width: 104, height: 104, borderRadius: 52, overflow: 'hidden' }}>
+          <Image source={require('@/../assets/icon.png')} style={{ width: 104, height: 104 }} />
+        </View>
+      </View>
+      <Text
+        style={{
+          color: colors.mint,
+          fontSize: 32,
+          fontWeight: '900',
+          letterSpacing: -1,
+          marginTop: 16,
+          textShadowColor: 'rgba(127,237,196,0.55)',
+          textShadowOffset: { width: 0, height: 0 },
+          textShadowRadius: 14,
+        }}
+      >
+        CAMINA
+      </Text>
+      <Text style={{ color: '#C4B8E8', marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
+        Caminá, ganá Puntos y canjealos en tu ciudad.
       </Text>
 
       <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
@@ -293,6 +314,6 @@ export default function WelcomeScreen() {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </LinearGradient>
   );
 }

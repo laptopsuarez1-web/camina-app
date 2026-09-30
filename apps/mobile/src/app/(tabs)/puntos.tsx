@@ -3,7 +3,9 @@ import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } fr
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Share2 } from '@/components/icons';
+import { ChevronLeft, Share2, Users, Trophy, Flame, Activity, IconBubble } from '@/components/icons';
+import { useStreak } from '@/hooks/useStreak';
+import { useRetos } from '@/hooks/useRetos';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks/usePoints';
@@ -44,6 +46,7 @@ function useMovimientos() {
       const stepRows = (steps ?? []).map((s) => ({
         id: `steps-${s.day}`,
         day: s.day,
+        reason: 'steps',
         title: 'Actividad diaria',
         subtitle: `Hiciste ${s.steps.toLocaleString('es-BO')} pasos`,
         amount: Math.min(Math.floor(s.steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP),
@@ -53,6 +56,7 @@ function useMovimientos() {
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
         day: l.ref_day ?? l.earned_at.slice(0, 10),
+        reason: l.reason as string,
         title: REASON_LABEL[l.reason] ?? l.reason,
         subtitle: null as string | null,
         amount: l.amount,
@@ -71,6 +75,9 @@ export default function PuntosScreen() {
   const { data: earnedToday } = usePointsToday();
   const { data: expiring } = usePointsExpiringSoon();
   const { data: movimientos, isLoading } = useMovimientos();
+  const { data: streak } = useStreak();
+  const { data: retos } = useRetos();
+  const retosListos = (retos ?? []).filter((r) => r.claimable).length;
   const [copied, setCopied] = useState(false);
 
   const link = useMemo(() => (profile ? referralLink(profile.id) : ''), [profile]);
@@ -119,10 +126,33 @@ export default function PuntosScreen() {
         )}
       </View>
 
-      <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-5.5 rounded-2xl p-4">
-        <Text className="font-bold text-[14px] text-text-light dark:text-text-dark mb-1.5">
-          Invitá a tus amigos y ganá 5 Puntos por cada uno
-        </Text>
+      <View className="flex-row gap-2.5 mx-5 mt-5">
+        <View className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3">
+          <IconBubble icon={Flame} tone="orange" size={34} />
+          <View>
+            <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
+            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">días de racha</Text>
+          </View>
+        </View>
+        <Pressable
+          onPress={() => router.push('/(tabs)/eventos')}
+          className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
+        >
+          <IconBubble icon={Trophy} tone="gold" size={34} />
+          <View>
+            <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{retosListos}</Text>
+            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
+          </View>
+        </Pressable>
+      </View>
+
+      <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
+        <View className="flex-row items-center gap-3 mb-2">
+          <IconBubble icon={Users} tone="purple" size={40} />
+          <Text className="flex-1 font-bold text-[14px] text-text-light dark:text-text-dark">
+            Invitá a tus amigos y ganá 5 Puntos por cada uno
+          </Text>
+        </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
           Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
@@ -148,6 +178,15 @@ export default function PuntosScreen() {
             key={m.id}
             className="bg-card-light dark:bg-card-dark rounded-2xl p-3.5 flex-row items-center justify-between"
           >
+            <View className="mr-3">
+              {m.reason === 'referral' ? (
+                <IconBubble icon={Users} tone="purple" size={36} />
+              ) : m.reason === 'challenge' ? (
+                <IconBubble icon={Trophy} tone="gold" size={36} />
+              ) : (
+                <IconBubble icon={Activity} tone="aqua" size={36} />
+              )}
+            </View>
             <View className="flex-1 pr-3">
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mb-0.5">
                 {dayLabel(m.day)} · {m.title}

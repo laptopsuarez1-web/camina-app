@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame } from '@/components/icons';
+import { Activity, Flame, MapPin, IconBubble, type IconProps } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -171,7 +171,7 @@ export default function ActividadScreen() {
 
       {dailyDiffVsCommunity !== null && (
         <View className="flex-row items-center gap-2.5 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-3.5 py-3 mb-3">
-          <Activity size={20} color={colors.purple} />
+          <IconBubble icon={Activity} tone="purple" size={38} />
           <Text className="flex-1 text-[13px] leading-5 text-text-light dark:text-text-dark">
             {dailyDiffVsCommunity >= 0 ? (
               <>
@@ -190,22 +190,20 @@ export default function ActividadScreen() {
       )}
 
       {(streak ?? 0) > 0 && (
-        <View className="flex-row items-center gap-2.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-2xl px-3.5 py-3 mb-4.5">
-          <View className="w-7.5 h-7.5 rounded-full bg-aqua items-center justify-center">
-            <Flame size={15} color="#fff" />
-          </View>
+        <View className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4.5" style={{ backgroundColor: '#FDEEE2' }}>
+          <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
-            <Text className="text-[13px] font-bold" style={{ color: '#2E9E7C' }}>¡Vas en racha!</Text>
-            <Text className="text-[11.5px]" style={{ color: '#3E8C71' }}>{streak} días consecutivos</Text>
+            <Text className="text-[13.5px] font-bold" style={{ color: '#C0611F' }}>¡Vas en racha!</Text>
+            <Text className="text-[11.5px]" style={{ color: '#C0611F' }}>{streak} días consecutivos</Text>
           </View>
         </View>
       )}
 
       <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Tu progreso</Text>
       <View className="flex-row gap-2.5 mb-4">
-        <StatCard label="Hoy" value={stepsToday.toLocaleString('es-BO')} unit="pasos" color={colors.aqua} pct={goalPct} />
-        <StatCard label="Km hoy" value={km.toFixed(1)} unit="km" color={colors.purple} pct={goalPct} />
-        <StatCard label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} pct={goalPct} />
+        <StatCard icon={Activity} tone="aqua" label="Hoy" value={stepsToday.toLocaleString('es-BO')} unit="pasos" color={colors.aqua} pct={goalPct} />
+        <StatCard icon={MapPin} tone="purple" label="Km hoy" value={km.toFixed(1)} unit="km" color={colors.purple} pct={goalPct} />
+        <StatCard icon={Flame} tone="orange" label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} pct={goalPct} />
       </View>
 
       <View className="flex-row bg-card-light dark:bg-card-dark rounded-full p-1 mb-4">
@@ -322,12 +320,16 @@ export default function ActividadScreen() {
 }
 
 function StatCard({
+  icon,
+  tone,
   label,
   value,
   unit,
   color,
   pct,
 }: {
+  icon: (p: IconProps) => React.ReactElement;
+  tone: 'aqua' | 'purple' | 'orange';
   label: string;
   value: string;
   unit: string;
@@ -336,6 +338,9 @@ function StatCard({
 }) {
   return (
     <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl p-3">
+      <View className="mb-2">
+        <IconBubble icon={icon} tone={tone} size={30} />
+      </View>
       <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1">{label}</Text>
       <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark mb-2">
         {value} <Text className="text-[10.5px] font-semibold text-muted-light dark:text-muted-dark">{unit}</Text>
