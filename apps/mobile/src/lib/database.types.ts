@@ -20,6 +20,7 @@ export interface Profile {
   terms_accepted_at: string | null;
   birth_date?: string | null;
   nearby_alerts?: boolean;
+  city?: string;
   created_at: string;
 }
 
@@ -31,6 +32,7 @@ export interface Business {
   description: string | null;
   address: string | null;
   google_review_url?: string | null;
+  city?: string;
   phone: string | null;
   instagram: string | null;
   hours_text: string | null;
@@ -123,6 +125,30 @@ export interface GroupNote {
   created_at: string;
 }
 
+export interface RetoRow {
+  id: string;
+  title: string;
+  description: string;
+  kind: string;
+  target: number;
+  steps_threshold: number | null;
+  reward_points: number;
+  active: boolean;
+  sort: number;
+}
+
+export interface CityRow {
+  name: string;
+  active: boolean;
+  sort: number;
+}
+
+export interface ZoneRow {
+  id: string;
+  city: string;
+  name: string;
+}
+
 export interface PushToken {
   id: string;
   user_id: string;
@@ -155,6 +181,9 @@ export type Database = {
       group_members: Table<GroupMember, Partial<GroupMember>, Partial<GroupMember>>;
       group_notes: Table<GroupNote, Partial<GroupNote>, Partial<GroupNote>>;
       push_tokens: Table<PushToken, Partial<PushToken>, Partial<PushToken>>;
+      retos: Table<RetoRow, Partial<RetoRow>>;
+      cities: Table<CityRow, Partial<CityRow>>;
+      zones: Table<ZoneRow, Partial<ZoneRow>>;
     };
     Views: {
       public_profiles: {
@@ -186,6 +215,11 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { benefit_id: string; redeemed_today: number }[];
       };
+      reto_progress: {
+        Args: Record<string, never>;
+        Returns: { reto_id: string; met: number; target: number; claimable: boolean; claimed_now: boolean }[];
+      };
+      claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };
     Enums: Record<string, never>;

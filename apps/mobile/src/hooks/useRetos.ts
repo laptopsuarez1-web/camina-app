@@ -1,97 +1,74 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 
-function startOfWeekLocal() {
-  const d = new Date();
-  const day = d.getDay(); // 0=domingo
-  const diffToMonday = day === 0 ? 6 : day - 1;
-  d.setDate(d.getDate() - diffToMonday);
-  d.setHours(0, 0, 0, 0);
-  return d;
+export type RetoKind = 'referrals' | 'steps_streak' | 'weekly_goals';
+
+export interface Reto {
+  id: string;
+  title: string;
+  description: string;
+  kind: RetoKind;
+  target: number;
+  reward_points: number;
+  met: number;
+  pct: number;
+  claimable: boolean;
+  claimed: boolean;
 }
 
-// Reto real (no decorativo): cuántos días de esta semana ya cumpliste tu
-// meta diaria, calculado desde steps_daily — no hay tabla de "retos" todavía,
-// así que por ahora es el único que se puede mostrar sin inventar datos.
+// Los retos los define el equipo de Camina (tabla retos) y el avance lo calcula el servidor
+// (reto_progress), así lo que ves es lo mismo que se paga al reclamar.
+export function useRetos() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['retos', userId],
+    enabled: !!userId,
+    queryFn: async (): Promise<Reto[]> => {
+      const [{ data: retos, error }, { data: progress, error: pError }] = await Promise.all([
+        supabase.from('retos').select('id, title, description, kind, target, reward_points').eq('active', true).order('sort'),
+        supabase.rpc('reto_progress'),
+      ]);
+      if (error) throw error;
+      if (pError) throw pError;
+      const rows = (progress ?? []) as { reto_id: string; met: number; claimable: boolean; claimed_now: boolean }[];
+      const byId = new Map(rows.map((p) => [p.reto_id, p]));
+      return (retos ?? []).map((r) => {
+        const p = byId.get(r.id);
+        const met = p?.met ?? 0;
+        return {
+          ...r,
+          kind: r.kind as RetoKind,
+          met,
+          pct: Math.min(100, Math.round((met / r.target) * 100)),
+          claimable: p?.claimable ?? false,
+          claimed: !!p?.claimed_now,
+        };
+      });
+    },
+  });
+}
+
+// La tarjeta de "metas de esta semana" de Inicio usa el primer reto semanal activo.
 export function useWeeklyGoalReto() {
-  const userId = useAuthStore((s) => s.session?.user.id);
-  const goal = useAuthStore((s) => s.profile?.daily_goal ?? 6000);
-  const TARGET_DAYS = 5;
-
-  return useQuery({
-    queryKey: ['weekly-goal-reto', userId, goal],
-    enabled: !!userId,
-    queryFn: async () => {
-      const monday = startOfWeekLocal();
-      const { data, error } = await supabase
-        .from('steps_daily')
-        .select('steps')
-        .eq('user_id', userId!)
-        .gte('day', monday.toISOString().slice(0, 10));
-      if (error) throw error;
-      const met = (data ?? []).filter((d) => d.steps >= goal).length;
-      return { met: Math.min(met, TARGET_DAYS), target: TARGET_DAYS, pct: Math.min(100, Math.round((met / TARGET_DAYS) * 100)) };
-    },
-  });
+  const query = useRetos();
+  return { ...query, data: query.data?.find((r) => r.kind === 'weekly_goals') };
 }
 
-// Racha de días con 10.000+ pasos, mismo criterio que useStreak pero con
-// umbral fijo (no la meta personal) — es el reto "10.000 pasos x 14 días".
-export function useTenKStreakReto() {
+export function useClaimReto() {
+  const queryClient = useQueryClient();
   const userId = useAuthStore((s) => s.session?.user.id);
-  const TARGET_DAYS = 14;
-  const THRESHOLD = 10000;
-
-  return useQuery({
-    queryKey: ['tenk-streak-reto', userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const since = new Date();
-      since.setDate(since.getDate() - (TARGET_DAYS + 5));
-      const { data, error } = await supabase
-        .from('steps_daily')
-        .select('day, steps')
-        .eq('user_id', userId!)
-        .gte('day', since.toISOString().slice(0, 10))
-        .order('day', { ascending: false });
+  return useMutation({
+    mutationFn: async (retoId: string) => {
+      const { data, error } = await supabase.rpc('claim_reto', { p_reto_id: retoId });
       if (error) throw error;
-
-      const metDays = new Set((data ?? []).filter((d) => d.steps >= THRESHOLD).map((d) => d.day));
-      const localKey = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-      const cursor = new Date();
-      if (!metDays.has(localKey(cursor))) cursor.setDate(cursor.getDate() - 1);
-      let streak = 0;
-      for (; streak < TARGET_DAYS; ) {
-        if (!metDays.has(localKey(cursor))) break;
-        streak += 1;
-        cursor.setDate(cursor.getDate() - 1);
-      }
-      return { met: streak, target: TARGET_DAYS, pct: Math.min(100, Math.round((streak / TARGET_DAYS) * 100)) };
+      return data as number;
     },
-  });
-}
-
-// "Invitá 5 amigos" — cuenta real de filas en referrals donde el usuario es
-// el que invitó, sin importar si ya se acreditó el punto (el reto es por
-// gente sumada, no por puntos ganados).
-export function useReferralReto() {
-  const userId = useAuthStore((s) => s.session?.user.id);
-  const TARGET = 5;
-
-  return useQuery({
-    queryKey: ['referral-reto', userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('referrals')
-        .select('id', { count: 'exact', head: true })
-        .eq('referrer_user_id', userId!);
-      if (error) throw error;
-      const met = count ?? 0;
-      return { met: Math.min(met, TARGET), target: TARGET, pct: Math.min(100, Math.round((met / TARGET) * 100)) };
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['retos', userId] });
+      queryClient.invalidateQueries({ queryKey: ['points-balance', userId] });
+      queryClient.invalidateQueries({ queryKey: ['points-ledger', userId] });
+      queryClient.invalidateQueries({ queryKey: ['points-today', userId] });
     },
   });
 }

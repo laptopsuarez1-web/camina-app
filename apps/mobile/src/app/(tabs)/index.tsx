@@ -19,7 +19,7 @@ import { useGlobalRanking } from '@/hooks/useGlobalRanking';
 import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, RETO_REWARD_WEEKLY_GOAL } from '@/constants/business-rules';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
@@ -430,12 +430,12 @@ export default function HomeScreen() {
               <View className="flex-row items-center gap-2.5">
                 <IconBubble icon={Flame} tone="orange" size={34} />
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">
-                  {reto.met}/{reto.target} metas esta semana
+                  {reto.met}/{reto.target} · {reto.title}
                 </Text>
               </View>
               <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
-                <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{RETO_REWARD_WEEKLY_GOAL}</Text>
+                <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{reto.reward_points}</Text>
               </View>
             </View>
             <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">

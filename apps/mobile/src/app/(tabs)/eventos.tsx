@@ -1,13 +1,20 @@
-import { View, Text, ScrollView, Image } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { Calendar, Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
-import { useWeeklyGoalReto, useTenKStreakReto, useReferralReto } from '@/hooks/useRetos';
-import { RETO_REWARD_WEEKLY_GOAL, RETO_REWARD_TENK_STREAK, RETO_REWARD_REFERRAL } from '@/constants/business-rules';
+import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 
 export default function EventosScreen() {
-  const { data: metaReto } = useWeeklyGoalReto();
-  const { data: tenkReto } = useTenKStreakReto();
-  const { data: referralReto } = useReferralReto();
+  const { data: retos } = useRetos();
+  const claim = useClaimReto();
+
+  async function handleClaim(reto: Reto) {
+    try {
+      const points = await claim.mutateAsync(reto.id);
+      Alert.alert('¡Reto cumplido! 🎉', `Ganaste ${points} Puntos.`);
+    } catch (e) {
+      Alert.alert('No pudimos darte los puntos', e instanceof Error ? e.message : 'Intentá de nuevo.');
+    }
+  }
 
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
@@ -37,27 +44,30 @@ export default function EventosScreen() {
       </Text>
 
       <View className="gap-3">
-        <RetoCard
-          icon={<IconBubble icon={Users} tone="purple" size={40} />}
-          title="Invitá 5 amigos"
-          description="Sumá 5 amigos nuevos a Camina y ganá Puntos extra."
-          reward={RETO_REWARD_REFERRAL}
-          pct={referralReto?.pct ?? 0}
-        />
-        <RetoCard
-          icon={<IconBubble icon={Flame} tone="orange" size={40} />}
-          title="10.000 pasos x 14 días"
-          description="Caminá 10.000 pasos por día durante 14 días seguidos."
-          reward={RETO_REWARD_TENK_STREAK}
-          pct={tenkReto?.pct ?? 0}
-        />
-        <RetoCard
-          icon={<IconBubble icon={CheckCircle2} tone="aqua" size={40} />}
-          title="5 metas esta semana"
-          description="Cumplí tu meta diaria 5 veces en la misma semana."
-          reward={RETO_REWARD_WEEKLY_GOAL}
-          pct={metaReto?.pct ?? 0}
-        />
+        {(retos ?? []).map((reto) => (
+          <RetoCard
+            key={reto.id}
+            icon={
+              reto.kind === 'referrals' ? (
+                <IconBubble icon={Users} tone="purple" size={40} />
+              ) : reto.kind === 'steps_streak' ? (
+                <IconBubble icon={Flame} tone="orange" size={40} />
+              ) : (
+                <IconBubble icon={CheckCircle2} tone="aqua" size={40} />
+              )
+            }
+            title={reto.title}
+            description={reto.description}
+            reward={reto.reward_points}
+            pct={reto.pct}
+            met={reto.met}
+            target={reto.target}
+            claimable={reto.claimable}
+            claimed={reto.claimed}
+            claiming={claim.isPending && claim.variables === reto.id}
+            onClaim={() => handleClaim(reto)}
+          />
+        ))}
       </View>
       </ScrollView>
     </View>
@@ -70,12 +80,24 @@ function RetoCard({
   description,
   reward,
   pct,
+  met,
+  target,
+  claimable,
+  claimed,
+  claiming,
+  onClaim,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   reward: number;
   pct: number;
+  met: number;
+  target: number;
+  claimable: boolean;
+  claimed: boolean;
+  claiming: boolean;
+  onClaim: () => void;
 }) {
   return (
     <View className="bg-card-light dark:bg-card-dark rounded-3xl p-4">
@@ -95,7 +117,20 @@ function RetoCard({
       <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-1.5">
         <View className="h-full bg-aqua rounded-full" style={{ width: `${pct}%` }} />
       </View>
-      <Text className="text-[11px] text-muted-light dark:text-muted-dark">{pct}% completado</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-[11px] text-muted-light dark:text-muted-dark">
+          {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
+        </Text>
+        {claimable && (
+          <Pressable onPress={onClaim} disabled={claiming} className="bg-mint rounded-full px-4 py-1.5">
+            {claiming ? (
+              <ActivityIndicator size="small" color="#1E8F6F" />
+            ) : (
+              <Text className="text-mint-dark text-[12px] font-bold">Reclamar +{reward}</Text>
+            )}
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }

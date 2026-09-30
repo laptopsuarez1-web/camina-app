@@ -12,12 +12,6 @@ export const REDEMPTION_CODE_TTL_MINUTES = 15; // vigencia del código de canje
 export const STEP_LENGTH_METERS = 0.762; // paso promedio de un adulto
 export const KCAL_PER_STEP = 0.04;
 
-// Recompensa que se muestra en cada tarjeta de reto (solo texto informativo
-// por ahora — no hay todavía un mecanismo de "reclamar reto" del lado del
-// servidor, así que no se acredita solo por completarlo).
-export const RETO_REWARD_WEEKLY_GOAL = 6;
-export const RETO_REWARD_TENK_STREAK = 10;
 // Meta semanal de equipo mostrada en el detalle de grupo — display-only, no autoritativa.
 export const TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER = 42_000;
 
-export const RETO_REWARD_REFERRAL = 10;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Ticket } from 'lucide-react';
-import { supabase, type Redemption } from '@/lib/supabase';
+import { supabase, type Redemption, type BusinessNotification } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 
@@ -18,9 +18,18 @@ export default function InicioPage() {
   const [monthCount, setMonthCount] = useState<number | null>(null);
   const [todayQuotaLeft, setTodayQuotaLeft] = useState<number | null>(null);
   const [todayQuotaTotal, setTodayQuotaTotal] = useState<number | null>(null);
+  const [news, setNews] = useState<BusinessNotification[]>([]);
 
   useEffect(() => {
     if (!business) return;
+
+    supabase
+      .from('business_notifications')
+      .select('id, title, body, read, created_at')
+      .eq('business_id', business.id)
+      .order('created_at', { ascending: false })
+      .limit(6)
+      .then(({ data }) => setNews((data as BusinessNotification[]) ?? []));
 
     supabase
       .from('redemptions')
@@ -75,6 +84,23 @@ export default function InicioPage() {
   return (
     <DashboardShell>
       <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Así viene funcionando tu beneficio esta semana." />
+
+      {news.length > 0 && (
+        <div className="bg-card border border-line rounded-2xl mb-5 overflow-hidden">
+          <p className="font-bold text-[14px] px-4 pt-3.5 pb-2">Novedades</p>
+          {news.map((n) => (
+            <div key={n.id} className="px-4 py-2.5 border-t border-line">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="font-semibold text-[13px]">{n.title}</p>
+                <p className="text-muted text-[11px] whitespace-nowrap">
+                  {new Date(n.created_at).toLocaleString('es-BO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+              <p className="text-muted text-[12.5px] leading-[18px]">{n.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3.5 mb-5">
         {todayQuotaTotal != null && (

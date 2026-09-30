@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
+import { Flame, Gift, MapPin, IconBubble } from '@/components/icons';
+
+const ICONS = { Flame, Gift, MapPin } as const;
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
@@ -29,7 +32,9 @@ export default function OnboardingScreen() {
       </Pressable>
 
       <View className="items-center max-w-[300px]">
-        <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42, marginBottom: 24 }} />
+        <View style={{ marginBottom: 24 }}>
+          <IconBubble icon={ICONS[current.icon]} tone={current.tone} size={96} />
+        </View>
         <Text className="text-white text-[22px] font-semibold text-center mb-2.5">{current.title}</Text>
         <Text className="text-auth-muted text-sm text-center leading-5">{current.desc}</Text>
       </View>

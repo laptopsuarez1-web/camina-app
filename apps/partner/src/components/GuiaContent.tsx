@@ -23,7 +23,7 @@ const REGLAS = [
   ['Una vez cada 14 días por comercio', 'Cada persona puede canjear en tu local una vez cada 14 días. Así el beneficio alcanza para más gente.'],
   ['Cupones por día', 'Elegís cuántos cupones das por día, o ilimitados. Cuando se agotan, el beneficio aparece como agotado hasta el día siguiente.'],
   ['Puntos justos', 'Como guía: algo de Bs 10 ronda los 20 puntos. En la app se gana 1 punto cada 1.000 pasos, con un máximo de 20 por día.'],
-  ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Sumar una foto en cada beneficio ayuda a que lo elijan.'],
+  ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada beneficio necesita su propia foto para poder guardarse.'],
   ['Avisos cercanos (Paso Adelante)', 'Hasta 3 por mes. Los revisamos antes de enviarlos, salen entre 8:00 y 21:00 y cada persona recibe como máximo 1 por semana. Nada de mensajes engañosos.'],
   ['Trato respetuoso', 'Las personas que canjean son clientes tuyos: atendelas como a cualquiera. Camina puede pausar comercios con quejas repetidas.'],
 ];

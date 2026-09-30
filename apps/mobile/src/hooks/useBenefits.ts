@@ -1,19 +1,22 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/useAuthStore';
 import type { Benefit, Business, Redemption } from '@/lib/database.types';
 
 export type BenefitWithBusiness = Benefit & { business: Business };
 
+// Solo se muestran los comercios de la ciudad de la persona (por defecto Tarija).
 export function useBenefits() {
+  const city = useAuthStore((s) => s.profile?.city ?? 'Tarija');
   return useQuery({
-    queryKey: ['benefits'],
+    queryKey: ['benefits', city],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('benefits')
         .select('*, business:businesses(*)')
         .eq('active', true);
       if (error) throw error;
-      return data as unknown as BenefitWithBusiness[];
+      return (data as unknown as BenefitWithBusiness[]).filter((b) => (b.business?.city ?? 'Tarija') === city);
     },
   });
 }

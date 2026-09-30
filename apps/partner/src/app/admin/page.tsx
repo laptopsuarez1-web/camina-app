@@ -1,11 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck } from 'lucide-react';
 import { supabase, type Business, type BusinessPlan } from '@/lib/supabase';
-import { ResponsiveFrame } from '@/components/ResponsiveFrame';
+import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 
 const PLAN_LABEL: Record<BusinessPlan, string> = {
@@ -96,11 +94,6 @@ export default function AdminPage() {
     loadBusinesses();
   }, [loading, session, isAdmin, router, loadBusinesses]);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.replace('/login');
-  }
-
   async function changePlan(businessId: string, plan: BusinessPlan) {
     setSavingId(businessId);
     const { data, error } = await supabase.rpc('request_plan_change', {
@@ -120,35 +113,8 @@ export default function AdminPage() {
     return <div className="min-h-screen flex items-center justify-center text-muted">Cargando…</div>;
   }
 
-  const sidebar = (
-    <>
-      <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
-        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-        <div>
-          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-          <p className="text-auth-muted text-[10.5px] mt-0.5">Administrador</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mint/10 text-white text-[13.5px] font-semibold mb-1">
-        <ShieldCheck size={16} color="#7FEDC4" />
-        Comercios
-      </div>
-
-      <div className="mt-auto pt-5">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"
-        >
-          <LogOut size={15} />
-          Cerrar sesión
-        </button>
-      </div>
-    </>
-  );
-
   return (
-    <ResponsiveFrame sidebar={sidebar}>
+    <AdminShell>
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
         <p className="text-muted text-[13.5px] mb-7">
           Aprobá un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
@@ -209,7 +175,7 @@ export default function AdminPage() {
                         {b.name} {b.is_virtual && <span className="text-muted font-normal">· sin local (virtual)</span>}
                       </p>
                       <p className="text-muted text-[11.5px]">
-                        {b.category} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
+                        {b.category} · {b.city ?? 'Tarija'} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
                       </p>
                     </div>
                     {b.logo_url && b.cover_url ? (
@@ -327,6 +293,6 @@ export default function AdminPage() {
             </table>
           </div>
         )}
-    </ResponsiveFrame>
+    </AdminShell>
   );
 }

@@ -12,6 +12,7 @@ import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
 import { INTERESTS_OPTIONS } from '@/constants/catalog';
 import { referralLink } from '@/constants/sharing';
+import { PlacePicker } from '@/components/PlacePicker';
 
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
@@ -22,7 +23,8 @@ export default function PerfilScreen() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState('');
-  const [zoneInput, setZoneInput] = useState('');
+  const [zoneInput, setZoneInput] = useState<string | null>(null);
+  const [cityInput, setCityInput] = useState('Tarija');
   const [bDay, setBDay] = useState('');
   const [bMonth, setBMonth] = useState('');
   const [bYear, setBYear] = useState('');
@@ -31,7 +33,8 @@ export default function PerfilScreen() {
 
   function startEditing() {
     setNameInput(profile?.full_name ?? '');
-    setZoneInput(profile?.zone ?? '');
+    setZoneInput(profile?.zone ?? null);
+    setCityInput(profile?.city ?? 'Tarija');
     const b = profile?.birth_date;
     setBYear(b ? b.slice(0, 4) : '');
     setBMonth(b ? String(parseInt(b.slice(5, 7), 10)) : '');
@@ -68,7 +71,8 @@ export default function PerfilScreen() {
       const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri) : undefined;
       const update = {
         full_name: nameInput.trim(),
-        zone: zoneInput.trim() || null,
+        zone: zoneInput,
+        city: cityInput,
         ...(photoUrl ? { photo_url: photoUrl } : {}),
       };
       let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
@@ -191,7 +195,7 @@ export default function PerfilScreen() {
             {profile?.full_name}
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-            {profile?.zone ?? 'Zona no definida'}
+            {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
           </Text>
         </View>
         <Pressable onPress={editing ? () => setEditing(false) : startEditing} hitSlop={8} className="flex-row items-center gap-1.5 rounded-full px-3 py-2 bg-purple-light-light dark:bg-purple-light-dark">
@@ -215,10 +219,8 @@ export default function PerfilScreen() {
           <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
           <TextInput value={nameInput} onChangeText={setNameInput}
             className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3" />
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Zona o barrio</Text>
-          <TextInput value={zoneInput} onChangeText={setZoneInput} placeholder="Ej: Molino, Centro, Los Chapacos"
-            placeholderTextColor={colors.light.muted}
-            className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3" />
+          <PlacePicker city={cityInput} zone={zoneInput} onChange={(c, z) => { setCityInput(c); setZoneInput(z); }} />
+          <View className="mb-2" />
           <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Fecha de nacimiento</Text>
           <View className="flex-row gap-2 mb-1">
             <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad"

@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
+const SOPORTE_WHATSAPP = `https://wa.me/59162714286?text=${encodeURIComponent('Hola! Tengo una consulta sobre el panel de comercios de Camina.')}`;
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,6 +82,14 @@ export default function LoginPage() {
         <Link href="/registro" className="text-auth-muted text-[12.5px] text-center">
           ¿Todavía no tenés cuenta? Sumar mi comercio
         </Link>
+        <a
+          href={SOPORTE_WHATSAPP}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 text-mint text-[13px] font-semibold text-center border border-mint/40 rounded-xl py-2.5"
+        >
+          ¿Dudas? Escribinos por WhatsApp
+        </a>
       </form>
     </div>
   );

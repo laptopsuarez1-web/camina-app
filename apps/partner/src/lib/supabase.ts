@@ -35,6 +35,7 @@ export interface Business {
   cover_url: string | null;
   website: string | null;
   google_review_url: string | null;
+  city: string | null;
   founder: boolean;
   founder_until: string | null;
   plan: BusinessPlan;
@@ -70,4 +71,36 @@ export interface Redemption {
   status: 'pending' | 'confirmed' | 'expired' | 'cancelled';
   created_at: string;
   confirmed_at: string | null;
+}
+
+export interface Reto {
+  id: string;
+  title: string;
+  description: string;
+  kind: 'referrals' | 'steps_streak' | 'weekly_goals';
+  target: number;
+  steps_threshold: number | null;
+  reward_points: number;
+  active: boolean;
+  sort: number;
+}
+
+export interface City {
+  name: string;
+  active: boolean;
+  sort: number;
+}
+
+export interface Zone {
+  id: string;
+  city: string;
+  name: string;
+}
+
+export interface BusinessNotification {
+  id: string;
+  title: string;
+  body: string;
+  read: boolean;
+  created_at: string;
 }

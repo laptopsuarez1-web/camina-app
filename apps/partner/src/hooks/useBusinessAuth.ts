@@ -44,6 +44,7 @@ export function useBusinessAuth() {
         address: pending.isVirtual ? null : pending.address,
         phone: pending.phone,
         is_virtual: pending.isVirtual,
+        city: pending.city ?? 'Tarija',
         plan: 'primer_paso',
       })
       .select('*')

@@ -63,9 +63,7 @@ const PLANS: {
       'Pin destacado en el mapa',
       'Primero en tu categoría',
       'Notificaciones push a usuarios cerca',
-      'Video promocional dentro de la app',
-      'Elegible para espacios publicitarios con convenio con Camina',
-      'Elegible para sorteos y retos patrocinados',
+      'Difusión de tu local en las redes de Camina',
     ],
   },
 ];

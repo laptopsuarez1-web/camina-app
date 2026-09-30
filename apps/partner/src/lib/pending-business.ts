@@ -11,6 +11,7 @@ export interface PendingBusiness {
   address: string;
   phone: string;
   isVirtual: boolean;
+  city?: string;
   logoDataUrl?: string | null;
 }
 

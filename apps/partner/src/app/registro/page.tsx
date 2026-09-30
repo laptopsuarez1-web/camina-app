@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ImagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,8 @@ export default function RegistroPage() {
   const [esVirtual, setEsVirtual] = useState(false);
   const [direccion, setDireccion] = useState('');
   const [step, setStep] = useState(1);
+  const [ciudad, setCiudad] = useState('Tarija');
+  const [ciudades, setCiudades] = useState<string[]>(['Tarija']);
   const [prefijo, setPrefijo] = useState('+591');
   const [telefono, setTelefono] = useState('');
   const [logo, setLogo] = useState<string | null>(null);
@@ -37,6 +39,17 @@ export default function RegistroPage() {
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [resending, setResending] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    supabase
+      .from('cities')
+      .select('name')
+      .eq('active', true)
+      .order('sort')
+      .then(({ data }) => {
+        if (data && data.length > 0) setCiudades(data.map((c) => c.name));
+      });
+  }, []);
 
   const datosOk = Boolean(nombre.trim() && (esVirtual || direccion.trim()) && telefono.trim().length >= 6);
   const cuentaOk = Boolean(email.trim() && password.length >= 6);
@@ -79,6 +92,7 @@ export default function RegistroPage() {
         address: direccion.trim(),
         phone: telefonoCompleto,
         isVirtual: esVirtual,
+        city: ciudad,
         logoDataUrl: logo,
       });
       setLoading(false);
@@ -93,6 +107,7 @@ export default function RegistroPage() {
       address: esVirtual ? null : direccion.trim(),
       phone: telefonoCompleto,
       is_virtual: esVirtual,
+      city: ciudad,
       plan: 'primer_paso',
     }).select('id').single();
     if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
@@ -236,6 +251,13 @@ export default function RegistroPage() {
               <Field label="Tipo de comercio">
                 <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={input}>
                   {CATEGORIAS.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Ciudad">
+                <select value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={input}>
+                  {ciudades.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>

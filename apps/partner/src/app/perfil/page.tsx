@@ -28,12 +28,25 @@ export default function PerfilPage() {
   const [website, setWebsite] = useState('');
   const [resenaUrl, setResenaUrl] = useState('');
   const [esVirtual, setEsVirtual] = useState(false);
+  const [ciudad, setCiudad] = useState('Tarija');
+  const [ciudades, setCiudades] = useState<string[]>(['Tarija']);
   const [ubicacion, setUbicacion] = useState('');
   const [ubicacionMsg, setUbicacionMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('cities')
+      .select('name')
+      .eq('active', true)
+      .order('sort')
+      .then(({ data }) => {
+        if (data && data.length > 0) setCiudades(data.map((c) => c.name));
+      });
+  }, []);
 
   useEffect(() => {
     if (!business) return;
@@ -46,6 +59,7 @@ export default function PerfilPage() {
     setWebsite(business.website ?? '');
     setResenaUrl(business.google_review_url ?? '');
     setEsVirtual(business.is_virtual);
+    setCiudad(business.city ?? 'Tarija');
     setUbicacion(business.lat != null && business.lng != null ? `${business.lat}, ${business.lng}` : '');
   }, [business]);
 
@@ -104,6 +118,7 @@ export default function PerfilPage() {
         website: website.trim() || null,
         google_review_url: resenaUrl.trim() || null,
         is_virtual: esVirtual,
+        city: ciudad,
       })
       .eq('id', business.id);
     setSaving(false);
@@ -184,6 +199,18 @@ export default function PerfilPage() {
             <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
             Es un emprendimiento virtual (no tengo local físico)
           </label>
+
+ <Field label="Ciudad">
+            <select
+              value={ciudad}
+              onChange={(e) => setCiudad(e.target.value)}
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            >
+              {ciudades.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
 
           {!esVirtual && (
             <Field label="Dirección" icon={<MapPin size={13} color="#7C6A9C" />}>

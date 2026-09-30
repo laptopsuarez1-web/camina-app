@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -91,6 +91,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
           <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
         </div>
+        <a
+          href={`https://wa.me/59162714286?text=${encodeURIComponent('Hola! Soy de ' + (business.name ?? 'un comercio') + ' y necesito ayuda con el panel de Camina.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-mint text-[13px] md:text-[12.5px] font-semibold"
+        >
+          <LifeBuoy size={15} />
+          Soporte por WhatsApp
+        </a>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"

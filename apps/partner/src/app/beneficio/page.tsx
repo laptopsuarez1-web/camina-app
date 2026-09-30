@@ -267,7 +267,7 @@ function BeneficioForm({
             path={`${businessId}/${benefitId ?? 'new'}-photo`}
             value={imageUrl}
             onUploaded={setImageUrl}
-            label="Foto del beneficio"
+            label="Foto del beneficio (obligatoria)"
             shape="wide"
           />
         </div>
@@ -499,12 +499,13 @@ function BeneficioForm({
           </button>
         </div>
 
+        {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Subí una foto del beneficio para poder guardarlo: es lo que ven las personas antes de canjear.</p>}
         {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
         {saved && <p className="text-aqua text-[12.5px] mb-3">Guardado.</p>}
 
         <button
           onClick={handleSave}
-          disabled={saving || !nombre.trim()}
+          disabled={saving || !nombre.trim() || !imageUrl}
           className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
           style={{ background: '#241748', color: '#7FEDC4' }}
         >
