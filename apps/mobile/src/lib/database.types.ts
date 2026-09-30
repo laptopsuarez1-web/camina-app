@@ -182,6 +182,8 @@ export type Database = {
       group_notes: Table<GroupNote, Partial<GroupNote>, Partial<GroupNote>>;
       push_tokens: Table<PushToken, Partial<PushToken>, Partial<PushToken>>;
       retos: Table<RetoRow, Partial<RetoRow>>;
+      group_challenges: Table<Record<string, unknown> & { id: string }, Record<string, unknown>>;
+      group_challenge_entries: Table<{ challenge_id: string; user_id: string; stake_paid: number }, Record<string, unknown>>;
       group_weekly_results: Table<{ group_id: string; week_start: string; user_id: string; steps: number; goal_days: number; rank: number }, { group_id: string }>;
       user_blocks: Table<{ blocker_id: string; blocked_id: string; created_at: string }, { blocker_id: string; blocked_id: string }>;
       cities: Table<CityRow, Partial<CityRow>>;
@@ -222,6 +224,12 @@ export type Database = {
         Returns: { reto_id: string; met: number; target: number; claimable: boolean; claimed_now: boolean }[];
       };
       join_promotion: { Args: { p_id: string }; Returns: void };
+      join_group_challenge: { Args: { p_challenge: string }; Returns: void };
+      challenge_progress: { Args: { p_challenge: string }; Returns: unknown };
+      create_group_challenge: {
+        Args: { p_group: string; p_name: string; p_rule: string; p_daily_goal: number; p_start: string; p_end: string; p_stake: number };
+        Returns: string;
+      };
       report_content: {
         Args: { p_kind: string; p_target_user: string | null; p_message: string | null; p_reason: string };
         Returns: void;

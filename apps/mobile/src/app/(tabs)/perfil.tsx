@@ -323,7 +323,11 @@ export default function PerfilScreen() {
             trackColor={{ true: colors.aqua, false: colors.light.line }}
           />
         </View>
-        <View className="flex-row items-center justify-between p-3.5">
+      </Glass>
+
+      <Glass className="rounded-3xl p-4 mb-4">
+        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark mb-2">Personalización</Text>
+        <View className="flex-row items-center justify-between py-1.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Modo oscuro</Text>
           <Switch
             value={profile?.dark_mode ?? false}
@@ -331,13 +335,7 @@ export default function PerfilScreen() {
             trackColor={{ true: colors.aqua, false: colors.light.line }}
           />
         </View>
-      </Glass>
-
-      <Glass className="rounded-3xl p-4 mb-4">
-        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Transparencia del vidrio</Text>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-3">
-          Elegí cuánto se transparentan las tarjetas y la barra de abajo.
-        </Text>
+        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2 mb-2">Transparencia de las tarjetas</Text>
         <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(124,106,156,0.14)' }}>
           {([[0, 'Sólido'], [1, 'Equilibrado'], [2, 'Cristal']] as [GlassLevel, string][]).map(([lvl, label]) => (
             <Pressable
@@ -352,14 +350,13 @@ export default function PerfilScreen() {
         </View>
       </Glass>
 
-      <Glass className="rounded-3xl p-4 mb-4">
-        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Ayuda y seguridad</Text>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-3">
-          ¿Algo no anda, viste algo que no corresponde o querés reclamar por una foto tuya? Escribinos al correo.
-        </Text>
-        <Pressable onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} className="items-center py-1.5">
-          <Text className="text-[14px] font-bold" style={{ color: colors.aqua }}>{SUPPORT_EMAIL}</Text>
-        </Pressable>
+      <Glass className="rounded-2xl px-4 py-3 mb-4">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
+          <Pressable onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={8}>
+            <Text className="text-[12.5px] font-semibold" style={{ color: colors.aqua }}>{SUPPORT_EMAIL}</Text>
+          </Pressable>
+        </View>
         {blocks.list.length > 0 && (
           <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">
             <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-1.5">Personas que bloqueaste</Text>

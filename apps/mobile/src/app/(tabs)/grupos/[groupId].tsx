@@ -2,8 +2,10 @@ import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy, Users, IconBubble } from '@/components/icons';
+import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, IconBubble } from '@/components/icons';
+import { useGroupChallenge, useJoinChallenge, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
@@ -22,6 +24,8 @@ export default function GroupDetailScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const queryClient = useQueryClient();
   const blocks = useBlocks();
+  const { data: ch } = useGroupChallenge(groupId);
+  const joinChallenge = useJoinChallenge(groupId);
   const { data: history } = useGroupHistory(groupId);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
@@ -131,97 +135,226 @@ export default function GroupDetailScreen() {
   const isCreator = data.group.created_by === userId;
   const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
+  const myRank = data.members.findIndex((m) => m.id === userId) + 1;
+  const top = data.members.slice(0, 3);
+  const podiumOrder = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
+  const heights: Record<number, number> = { 0: 104, 1: 76, 2: 58 };
+  const nameOf = (id: string) => data.members.find((m) => m.id === id)?.name ?? 'Caminante';
+  const active = ch?.active ?? null;
+  const today = new Date().toISOString().slice(0, 10);
+  const canJoin = !!active && !ch?.joined && today <= active.start_day;
+  const pot = active ? active.stake * (ch?.entries ?? 0) : 0;
+
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View className="flex-row items-center justify-between px-5 pt-14 pb-3">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <ChevronLeft size={22} color={colors.light.text} />
-        </Pressable>
-        <Text className="text-base font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
-          {data.group.name}
-        </Text>
-        <Pressable onPress={share} hitSlop={10}>
-          <IconBubble icon={Share2} tone="aqua" size={36} />
-        </Pressable>
-      </View>
-
-      <Glass className="mx-5 rounded-2xl p-4 mb-3">
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center" style={{ gap: 10 }}>
-            <IconBubble icon={Users} tone="purple" size={34} />
-            <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Reto en equipo</Text>
-          </View>
-          <Pressable
-            disabled={!isCreator}
-            onPress={() => {
-              setGoalInput(String(challengeTarget));
-              setEditingGoal(true);
-            }}
-            hitSlop={8}
-          >
-            <Text className="text-xs text-muted-light dark:text-muted-dark">
-              {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos{isCreator ? ' ✎' : ''}
-            </Text>
-          </Pressable>
-        </View>
-        {editingGoal && (
-          <View className="flex-row items-center gap-2 mb-3">
-            <TextInput
-              value={goalInput}
-              onChangeText={setGoalInput}
-              keyboardType="number-pad"
-              placeholder="Meta semanal de pasos"
-              placeholderTextColor={colors.light.muted}
-              className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
-            />
-            <Pressable onPress={saveGoal} className="bg-purple rounded-full px-3.5 py-2">
-              <Text className="text-xs font-semibold text-white">Guardar</Text>
+      <ScrollView ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
+        <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
+          <View className="flex-row items-center justify-between px-5">
+            <Pressable onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+              <ChevronLeft size={18} color="#fff" />
             </Pressable>
-            <Pressable onPress={() => setEditingGoal(false)}>
-              <Text className="text-xs text-muted-light dark:text-muted-dark">Cancelar</Text>
+            <Text className="flex-1 text-center text-[17px] font-bold text-white px-3" numberOfLines={1}>
+              {data.group.name}
+            </Text>
+            <Pressable onPress={share} hitSlop={10}>
+              <IconBubble icon={Share2} tone="aqua" size={36} />
             </Pressable>
           </View>
-        )}
-        <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-          <View style={{ width: `${challengePct}%`, height: '100%', backgroundColor: colors.aqua }} />
-        </View>
-        <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
-          Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
-        </Text>
-      </Glass>
 
-      <Glass className="mx-5 rounded-2xl p-4 mb-3">
-        <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
-          <IconBubble icon={Trophy} tone="gold" size={34} />
-          <Text className="flex-1 text-[13px] font-bold text-text-light dark:text-text-dark">
-            Ranking de la semana · {totalSteps.toLocaleString('es-BO')} pasos en total
-          </Text>
+          <View className="flex-row items-end justify-center px-6" style={{ marginTop: 52, gap: 10 }}>
+            {podiumOrder.map((m) => {
+              const rank = data.members.findIndex((x) => x.id === m.id);
+              return (
+                <View key={m.id} className="items-center" style={{ width: 92 }}>
+                  {rank === 0 && <Text style={{ fontSize: 20, marginBottom: 2 }}>👑</Text>}
+                  {m.photoUrl ? (
+                    <Image source={{ uri: m.photoUrl }} style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }} />
+                  ) : (
+                    <View style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }}>
+                      <Text style={{ fontWeight: '900', color: colors.mintDark, fontSize: 18 }}>{m.name[0]?.toUpperCase()}</Text>
+                    </View>
+                  )}
+                  <Text className="text-[11px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Vos' : m.name}</Text>
+                  <Text className="text-[10px]" style={{ color: '#C4B8E8' }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
+                  <View
+                    style={{
+                      width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+                      backgroundColor: rank === 0 ? 'rgba(127,237,196,0.28)' : 'rgba(255,255,255,0.12)',
+                      borderWidth: 1, borderBottomWidth: 0, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', paddingTop: 8,
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>{rank + 1}</Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </LinearGradient>
+
+        <View className="flex-row px-5 mt-4 mb-3" style={{ gap: 10 }}>
+          <Glass className="flex-1 rounded-2xl p-3.5">
+            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
+            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
+          </Glass>
+          <Glass className="flex-1 rounded-2xl p-3.5">
+            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
+            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">#{myRank || '-'}</Text>
+          </Glass>
         </View>
-        {data.members.map((m, i) => (
-          <View key={m.id} className="flex-row items-center gap-3 py-1.5">
-            <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}°</Text>
-            {m.photoUrl ? (
-              <Image source={{ uri: m.photoUrl }} className="w-8 h-8 rounded-full" />
-            ) : (
-              <View className="w-8 h-8 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Text className="text-purple text-xs font-bold">{m.name[0]?.toUpperCase()}</Text>
-              </View>
-            )}
-            <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
-              {m.id === userId ? `${m.name} (vos)` : m.name}
-            </Text>
-            <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">
-              {m.steps.toLocaleString('es-BO')}
-            </Text>
-            {m.id !== userId && (
-              <Pressable onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
-                <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
+
+        <Glass className="mx-5 rounded-2xl p-4 mb-3">
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center" style={{ gap: 10 }}>
+              <IconBubble icon={Users} tone="purple" size={34} />
+              <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Meta del grupo</Text>
+            </View>
+            <Pressable
+              disabled={!isCreator}
+              onPress={() => {
+                setGoalInput(String(challengeTarget));
+                setEditingGoal(true);
+              }}
+              hitSlop={8}
+            >
+              <Text className="text-xs text-muted-light dark:text-muted-dark">
+                {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos{isCreator ? ' ✎' : ''}
+              </Text>
+            </Pressable>
+          </View>
+          {editingGoal && (
+            <View className="flex-row items-center gap-2 mb-3">
+              <TextInput
+                value={goalInput}
+                onChangeText={setGoalInput}
+                keyboardType="number-pad"
+                placeholder="Meta semanal de pasos"
+                placeholderTextColor={colors.light.muted}
+                className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
+              />
+              <Pressable onPress={saveGoal} className="bg-purple rounded-full px-3.5 py-2">
+                <Text className="text-xs font-semibold text-white">Guardar</Text>
               </Pressable>
-            )}
+              <Pressable onPress={() => setEditingGoal(false)}>
+                <Text className="text-xs text-muted-light dark:text-muted-dark">Cancelar</Text>
+              </Pressable>
+            </View>
+          )}
+          <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+            <View style={{ width: `${challengePct}%`, height: '100%', backgroundColor: colors.aqua }} />
           </View>
-        ))}
-      </Glass>
+          <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
+            Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
+          </Text>
+        </Glass>
 
+        {active ? (
+          <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
+                <IconBubble icon={Trophy} tone="gold" size={34} />
+                <View className="flex-1">
+                  <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{active.name}</Text>
+                  <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">
+                    {RULE_LABEL[active.rule]} · meta {active.daily_goal.toLocaleString('es-BO')} · {today < active.start_day ? 'empieza pronto' : `quedan ${daysLeft(active.end_day)} días`}
+                  </Text>
+                </View>
+              </View>
+              {pot > 0 && (
+                <View className="flex-row items-center rounded-full px-2.5 py-1" style={{ gap: 5, backgroundColor: 'rgba(79,195,168,0.18)' }}>
+                  <Image source={require('@/../assets/camina-coin.png')} style={{ width: 15, height: 15, borderRadius: 7.5 }} />
+                  <Text className="text-[12.5px] font-extrabold text-mint-dark dark:text-mint">{pot}</Text>
+                </View>
+              )}
+            </View>
+            {(ch?.standings ?? []).slice(0, 3).map((st, i) => (
+              <View key={st.user_id} className="flex-row items-center py-1" style={{ gap: 8 }}>
+                <Text className="w-4 text-[12px] font-bold text-text-light dark:text-text-dark">{i + 1}</Text>
+                <Text className="flex-1 text-[12.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{st.user_id === userId ? `${nameOf(st.user_id)} (vos)` : nameOf(st.user_id)}</Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+                  {active.rule === 'steps' ? st.steps.toLocaleString('es-BO') : active.rule === 'days' ? `${st.goal_days} días` : `racha ${st.best_streak}`}
+                </Text>
+              </View>
+            ))}
+            {canJoin ? (
+              <Pressable
+                onPress={async () => {
+                  try {
+                    await joinChallenge.mutateAsync(active.id);
+                  } catch (e) {
+                    Alert.alert('No se pudo sumar', e instanceof Error ? e.message : 'Intentá de nuevo.');
+                  }
+                }}
+                disabled={joinChallenge.isPending}
+                className="bg-mint rounded-2xl py-3 items-center mt-2.5 flex-row justify-center"
+                style={{ gap: 6 }}
+              >
+                <Text className="text-mint-dark font-bold text-[13.5px]">Sumarme{active.stake > 0 ? ' · ponés' : ''}</Text>
+                {active.stake > 0 && (
+                  <>
+                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
+                    <Text className="text-mint-dark font-extrabold text-[13.5px]">{active.stake}</Text>
+                  </>
+                )}
+              </Pressable>
+            ) : ch?.joined ? (
+              <Text className="text-center text-[12px] font-bold text-mint-dark dark:text-mint mt-2">Ya estás dentro ✓</Text>
+            ) : (
+              <Text className="text-center text-[11.5px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
+            )}
+          </Glass>
+        ) : (
+          <Glass className="mx-5 rounded-2xl p-4 mb-3">
+            <View className="flex-row items-center" style={{ gap: 12 }}>
+              <IconBubble icon={Flame} tone="orange" size={40} />
+              <View className="flex-1">
+                <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
+                <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-0.5">
+                  Armá uno: elijan la regla, la meta y cuántos puntos poner en juego.
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })}
+              className="bg-mint rounded-2xl py-3 items-center mt-3 flex-row justify-center"
+              style={{ gap: 6 }}
+            >
+              <Plus size={15} color={colors.mintDark} />
+              <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
+            </Pressable>
+          </Glass>
+        )}
+
+        <Glass className="mx-5 rounded-2xl p-4 mb-3">
+          <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
+            <IconBubble icon={Trophy} tone="gold" size={34} />
+            <Text className="flex-1 text-[13px] font-bold text-text-light dark:text-text-dark">
+              Ranking de la semana
+            </Text>
+          </View>
+          {data.members.map((m, i) => (
+            <View key={m.id} className="flex-row items-center gap-3 py-1.5">
+              <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}°</Text>
+              {m.photoUrl ? (
+                <Image source={{ uri: m.photoUrl }} className="w-8 h-8 rounded-full" />
+              ) : (
+                <View className="w-8 h-8 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+                  <Text className="text-purple text-xs font-bold">{m.name[0]?.toUpperCase()}</Text>
+                </View>
+              )}
+              <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
+                {m.id === userId ? `${m.name} (vos)` : m.name}
+              </Text>
+              <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">
+                {m.steps.toLocaleString('es-BO')}
+              </Text>
+              {m.id !== userId && (
+                <Pressable onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
+                  <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
+                </Pressable>
+              )}
+            </View>
+          ))}
+        </Glass>
       {(history ?? []).length > 0 && (
         <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
           <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">Semanas anteriores</Text>
@@ -253,7 +386,8 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-      <ScrollView ref={scrollRef} className="flex-1 px-5" contentContainerClassName="gap-2 pb-3" onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}>
+        <Text className="mx-5 mt-2 mb-2 text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
+        <View className="px-5 gap-2 pb-2">
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
           const mine = n.user_id === userId;
           return (
@@ -282,6 +416,7 @@ export default function GroupDetailScreen() {
             Mantené apretado un mensaje para reportarlo, bloquear o borrarlo. Los chats se vacían cada lunes.
           </Text>
         )}
+        </View>
       </ScrollView>
 
       <View className="flex-row items-center gap-2.5 px-5 py-3 border-t border-line-light dark:border-line-dark">
