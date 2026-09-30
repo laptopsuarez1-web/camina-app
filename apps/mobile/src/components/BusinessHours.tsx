@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
 import { colors } from '@/theme/tokens';
+import { Glass } from '@/components/ui/Glass';
 
 type DayHours = { from: string; to: string } | null;
 export type OpeningHours = Record<string, DayHours> | null | undefined;
@@ -29,13 +30,13 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
   if (!week) {
     if (!hoursText) return null;
     return (
-      <View
-        className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+      <Glass
+        className="flex-row items-center rounded-full px-3.5 py-2"
         style={{ gap: 6 }}
       >
         <Clock size={14} color={colors.light.muted} />
         <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{hoursText}</Text>
-      </View>
+      </Glass>
     );
   }
 
@@ -59,7 +60,7 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
       </Pressable>
 
       {open && (
-        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl px-4 py-3 mt-2" style={{ gap: 7 }}>
+        <Glass className="rounded-2xl px-4 py-3 mt-2" style={{ gap: 7 }}>
           {DAYS.map((name, i) => {
             const h = week[String(i)] ?? null;
             const isToday = i === today;
@@ -81,7 +82,7 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
               </View>
             );
           })}
-        </View>
+        </Glass>
       )}
     </View>
   );

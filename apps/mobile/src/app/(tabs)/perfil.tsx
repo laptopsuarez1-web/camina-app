@@ -13,6 +13,8 @@ import { colors } from '@/theme/tokens';
 import { INTERESTS_OPTIONS } from '@/constants/catalog';
 import { referralLink } from '@/constants/sharing';
 import { PlacePicker } from '@/components/PlacePicker';
+import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
+import { Glass } from '@/components/ui/Glass';
 
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
@@ -21,6 +23,8 @@ export default function PerfilScreen() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+  const glassLevel = useGlassStore((s) => s.level);
+  const setGlassLevel = useGlassStore((s) => s.setLevel);
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [zoneInput, setZoneInput] = useState<string | null>(null);
@@ -180,7 +184,7 @@ export default function PerfilScreen() {
         Perfil
       </Text>
 
-      <View className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md p-4 mb-4">
+      <Glass className="flex-row items-center gap-3.5 rounded-md p-4 mb-4">
         <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
           {profile?.photo_url ? (
             <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
@@ -202,10 +206,10 @@ export default function PerfilScreen() {
           <Pencil size={13} color={colors.purple} />
           <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>{editing ? 'Cerrar' : 'Editar'}</Text>
         </Pressable>
-      </View>
+      </Glass>
 
       {editing && (
-        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+        <Glass className="rounded-3xl p-4 mb-4">
           <Pressable onPress={pickPhoto} className="self-center mb-4 items-center">
             <View className="w-20 h-20 rounded-full bg-mint items-center justify-center overflow-hidden">
               {photoUri || profile?.photo_url ? (
@@ -237,7 +241,7 @@ export default function PerfilScreen() {
           <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua rounded-xl py-3 items-center">
             {savingProfile ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Guardar cambios</Text>}
           </Pressable>
-        </View>
+        </Glass>
       )}
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 flex-row items-center gap-3 mb-4">
@@ -262,7 +266,7 @@ export default function PerfilScreen() {
         </View>
       </Pressable>
 
-      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-4">
         <Text className="font-bold text-[15px] mb-1 text-text-light dark:text-text-dark">Tus intereses</Text>
         <Text className="text-muted-light dark:text-muted-dark text-xs mb-3">Opcional — nos ayuda a mostrarte mejores beneficios.</Text>
         <View className="flex-row flex-wrap gap-2">
@@ -288,9 +292,9 @@ export default function PerfilScreen() {
             );
           })}
         </View>
-      </View>
+      </Glass>
 
-      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md overflow-hidden mb-6">
+      <Glass className="rounded-md overflow-hidden mb-6">
         <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
           <Switch
@@ -320,9 +324,28 @@ export default function PerfilScreen() {
             trackColor={{ true: colors.aqua, false: colors.light.line }}
           />
         </View>
-      </View>
+      </Glass>
 
-      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-4">
+        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Transparencia del vidrio</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-3">
+          Elegí cuánto se transparentan las tarjetas y la barra de abajo.
+        </Text>
+        <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(124,106,156,0.14)' }}>
+          {([[0, 'Sólido'], [1, 'Equilibrado'], [2, 'Cristal']] as [GlassLevel, string][]).map(([lvl, label]) => (
+            <Pressable
+              key={lvl}
+              onPress={() => setGlassLevel(lvl)}
+              className="flex-1 rounded-full py-2 items-center"
+              style={{ backgroundColor: glassLevel === lvl ? colors.aqua : 'transparent' }}
+            >
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: glassLevel === lvl ? '#fff' : colors.light.muted }}>{label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </Glass>
+
+      <Glass className="rounded-3xl p-4 mb-4">
         {!changingPassword ? (
           <Pressable onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
             <IconBubble icon={KeyRound} tone="purple" size={38} />
@@ -363,7 +386,7 @@ export default function PerfilScreen() {
             </View>
           </View>
         )}
-      </View>
+      </Glass>
 
       <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
         <LogOut size={15} color={colors.warn} />

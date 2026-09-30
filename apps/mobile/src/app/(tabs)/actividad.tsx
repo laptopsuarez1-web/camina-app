@@ -12,6 +12,7 @@ import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP } from '@/constants/business-rules';
+import { Glass } from '@/components/ui/Glass';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
 
@@ -206,7 +207,7 @@ export default function ActividadScreen() {
         <StatCard icon={Flame} tone="orange" label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} pct={goalPct} />
       </View>
 
-      <View className="flex-row bg-card-light dark:bg-card-dark rounded-full p-1 mb-4">
+      <Glass className="flex-row rounded-full p-1 mb-4">
         {([7, 30] as const).map((r) => (
           <Pressable
             key={r}
@@ -222,12 +223,12 @@ export default function ActividadScreen() {
             </Text>
           </Pressable>
         ))}
-      </View>
+      </Glass>
 
       {isLoading ? (
         <ActivityIndicator color={colors.aqua} style={{ marginBottom: 16 }} />
       ) : (
-        <View className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mb-4">
+        <Glass className="rounded-3xl p-4 mb-4">
           <View className="flex-row items-end gap-1.5" style={{ height: 90 }}>
             {chartDays.map((d) => (
               <View key={d.key} className="flex-1 items-center gap-1">
@@ -244,10 +245,10 @@ export default function ActividadScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </Glass>
       )}
 
-      <View className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-4">
         <Text className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
           {monthName[0].toUpperCase() + monthName.slice(1)} — días con objetivo cumplido
         </Text>
@@ -280,16 +281,16 @@ export default function ActividadScreen() {
             )}
           </View>
         ))}
-      </View>
+      </Glass>
 
       <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Toda tu actividad</Text>
       <View className="gap-2.5">
         {fullHistory.map((h) => {
           const met = h.steps >= goal;
           return (
-            <View
+            <Glass
               key={h.day}
-              className="bg-card-light dark:bg-card-dark rounded-2xl p-3.5 flex-row items-center justify-between"
+              className="rounded-2xl p-3.5 flex-row items-center justify-between"
             >
               <View>
                 <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">
@@ -305,7 +306,7 @@ export default function ActividadScreen() {
               >
                 {met ? 'Meta cumplida' : 'Meta no cumplida'}
               </Text>
-            </View>
+            </Glass>
           );
         })}
         {!isLoading && fullHistory.length === 0 && (
@@ -337,7 +338,7 @@ function StatCard({
   pct: number;
 }) {
   return (
-    <View className="flex-1 bg-card-light dark:bg-card-dark rounded-2xl p-3">
+    <Glass className="flex-1 rounded-2xl p-3">
       <View className="mb-2">
         <IconBubble icon={icon} tone={tone} size={30} />
       </View>
@@ -348,6 +349,6 @@ function StatCard({
       <View className="h-1 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
         <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </View>
-    </View>
+    </Glass>
   );
 }

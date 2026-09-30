@@ -13,6 +13,7 @@ import { referralLink } from '@/constants/sharing';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
+import { Glass } from '@/components/ui/Glass';
 
 function useMovimientos() {
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -127,13 +128,13 @@ export default function PuntosScreen() {
       </View>
 
       <View className="flex-row gap-2.5 mx-5 mt-5">
-        <View className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3">
+        <Glass className="flex-1 flex-row items-center gap-2.5 rounded-2xl p-3">
           <IconBubble icon={Flame} tone="orange" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
             <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">días de racha</Text>
           </View>
-        </View>
+        </Glass>
         <Pressable
           onPress={() => router.push('/(tabs)/eventos')}
           className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
@@ -174,9 +175,9 @@ export default function PuntosScreen() {
       <View className="px-5 gap-2">
         {isLoading && <ActivityIndicator color={colors.aqua} />}
         {(movimientos ?? []).map((m) => (
-          <View
+          <Glass
             key={m.id}
-            className="bg-card-light dark:bg-card-dark rounded-2xl p-3.5 flex-row items-center justify-between"
+            className="rounded-2xl p-3.5 flex-row items-center justify-between"
           >
             <View className="mr-3">
               {m.reason === 'referral' ? (
@@ -199,7 +200,7 @@ export default function PuntosScreen() {
               <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>+{m.amount}</Text>
             </View>
-          </View>
+          </Glass>
         ))}
         {!isLoading && (movimientos ?? []).length === 0 && (
           <Text className="text-muted-light dark:text-muted-dark text-[13px]">Todavía no hay movimientos.</Text>

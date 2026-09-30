@@ -40,6 +40,7 @@ import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
+import { Glass } from '@/components/ui/Glass';
 
 type BusinessT = BenefitWithBusiness['business'];
 
@@ -529,7 +530,7 @@ export default function CanjesScreen() {
             </View>
           )}
 
-          <View className="flex-row items-center gap-2 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl px-3.5 py-3 mb-3">
+          <Glass className="flex-row items-center gap-2 rounded-2xl px-3.5 py-3 mb-3">
             <Search size={16} color={colors.light.muted} />
             <TextInput
               value={search}
@@ -538,7 +539,7 @@ export default function CanjesScreen() {
               placeholderTextColor={colors.light.muted}
               className="flex-1 text-[13.5px] text-text-light dark:text-text-dark"
             />
-          </View>
+          </Glass>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
             <Pressable
@@ -782,9 +783,9 @@ export default function CanjesScreen() {
                           const redeeming = redeem.isPending && redeem.variables === b.id;
                           const note = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : !canAfford ? 'Te faltan Puntos' : null;
                           return (
-                            <View
+                            <Glass
                               key={b.id}
-                              className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-3.5"
+                              className="rounded-3xl p-3.5"
                               style={{ opacity: available && !outOfStock ? 1 : 0.7 }}
                             >
                               <View className="flex-row items-center" style={{ gap: 14 }}>
@@ -819,7 +820,7 @@ export default function CanjesScreen() {
                                   {redeeming ? 'Canjeando…' : note ?? 'Canjear'}
                                 </Text>
                               </Pressable>
-                            </View>
+                            </Glass>
                           );
                         })}
                       </View>
@@ -835,7 +836,7 @@ export default function CanjesScreen() {
       {/* Código de canje */}
       <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
-          <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-10">
+          <Glass className="rounded-t-[32px] px-6 pt-3 pb-10">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center justify-between gap-2.5 mb-5">
@@ -951,7 +952,7 @@ export default function CanjesScreen() {
             <Pressable onPress={closeCode}>
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center">Cerrar</Text>
             </Pressable>
-          </View>
+          </Glass>
         </View>
       </Modal>
     </View>

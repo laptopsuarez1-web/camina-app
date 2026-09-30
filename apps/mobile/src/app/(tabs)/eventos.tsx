@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Image, Pressable, Alert, ActivityIndicator } fr
 import { Calendar, Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { HeaderLight } from '@/components/ui/HeaderLight';
+import { Glass } from '@/components/ui/Glass';
 
 export default function EventosScreen() {
   const { data: retos } = useRetos();
@@ -26,7 +27,7 @@ export default function EventosScreen() {
       <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-5">
         Viví experiencias únicas con tus marcas favoritas
       </Text>
-      <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md py-7 px-6 items-center mb-7">
+      <Glass className="rounded-md py-7 px-6 items-center mb-7">
         <View className="mb-3.5">
           <IconBubble icon={Calendar} tone="purple" size={58} />
         </View>
@@ -36,7 +37,7 @@ export default function EventosScreen() {
         <Text className="text-muted-light dark:text-muted-dark text-xs text-center leading-5">
           Estamos armando alianzas con comercios de tu zona. Volvé pronto.
         </Text>
-      </View>
+      </Glass>
 
       <Text className="font-bold text-[17px] mb-1 text-text-light dark:text-text-dark">Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
@@ -100,7 +101,7 @@ function RetoCard({
   onClaim: () => void;
 }) {
   return (
-    <View className="bg-card-light dark:bg-card-dark rounded-3xl p-4">
+    <Glass className="rounded-3xl p-4">
       <View className="flex-row items-start gap-3 mb-3">
         {icon}
         <View className="flex-1">
@@ -131,6 +132,6 @@ function RetoCard({
           </Pressable>
         )}
       </View>
-    </View>
+    </Glass>
   );
 }

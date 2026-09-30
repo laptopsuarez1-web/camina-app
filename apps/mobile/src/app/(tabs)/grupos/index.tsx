@@ -9,6 +9,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { colors } from '@/theme/tokens';
 import { HeaderLight } from '@/components/ui/HeaderLight';
+import { Glass } from '@/components/ui/Glass';
 
 export default function GruposScreen() {
   const { data: groups, isLoading } = useGroups();
@@ -74,7 +75,7 @@ export default function GruposScreen() {
         Caminá, compartí y ganá en equipo
       </Text>
 
-      <View className="flex-row bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full p-1 mb-4">
+      <Glass className="flex-row rounded-full p-1 mb-4">
         <Pressable
           onPress={() => setView('mios')}
           className="flex-1 py-2 rounded-full items-center"
@@ -93,7 +94,7 @@ export default function GruposScreen() {
             Ranking global
           </Text>
         </Pressable>
-      </View>
+      </Glass>
 
       {view === 'ranking' ? (
         <>
@@ -108,9 +109,9 @@ export default function GruposScreen() {
           {rankingLoading && <ActivityIndicator color={colors.aqua} />}
           <View className="gap-2">
             {(ranking ?? []).map((r: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }, i: number) => (
-              <View
+              <Glass
                 key={r.user_id}
-                className="flex-row items-center gap-3 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl p-3.5"
+                className="flex-row items-center gap-3 rounded-2xl p-3.5"
               >
                 <View className="w-7 items-center">
                   {i < 3 ? <Trophy size={16} color={['#F2985C', '#9C8FC2', '#B08D57'][i]} /> : (
@@ -130,7 +131,7 @@ export default function GruposScreen() {
                 <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">
                   {Number(r.total_steps).toLocaleString('es-BO')}
                 </Text>
-              </View>
+              </Glass>
             ))}
             {!rankingLoading && (ranking ?? []).length === 0 && (
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-6">
@@ -142,7 +143,7 @@ export default function GruposScreen() {
       ) : (
         <>
       {creating && (
-        <View className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md p-4 mb-4">
+        <Glass className="rounded-md p-4 mb-4">
           <TextInput
             value={name}
             onChangeText={setName}
@@ -156,7 +157,7 @@ export default function GruposScreen() {
           >
             <Text className="text-white font-semibold">Crear</Text>
           </Pressable>
-        </View>
+        </Glass>
       )}
 
       {isLoading && <ActivityIndicator color={colors.aqua} />}
@@ -189,9 +190,9 @@ export default function GruposScreen() {
       </Text>
       <View className="gap-2.5">
         {other.map((g) => (
-          <View
+          <Glass
             key={g.id}
-            className="flex-row items-center justify-between bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md p-4"
+            className="flex-row items-center justify-between rounded-md p-4"
           >
             <View className="flex-row items-center gap-3">
               <View className="w-9.5 h-9.5 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
@@ -210,7 +211,7 @@ export default function GruposScreen() {
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>
             </Pressable>
-          </View>
+          </Glass>
         ))}
         {!isLoading && other.length === 0 && (
           <Text className="text-muted-light dark:text-muted-dark text-[13px]">

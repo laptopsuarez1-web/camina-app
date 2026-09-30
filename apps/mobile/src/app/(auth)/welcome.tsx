@@ -222,7 +222,7 @@ export default function WelcomeScreen() {
     >
       <Image
         source={require('@/../assets/logo-mint.png')}
-        style={{ width: 120, height: 120, shadowColor: '#7FEDC4', shadowOpacity: 0.5, shadowRadius: 22, shadowOffset: { width: 0, height: 0 } }}
+        style={{ width: 120, height: 120 }}
       />
       <Text
         style={{

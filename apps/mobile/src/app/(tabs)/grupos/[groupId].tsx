@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
 import { colors } from '@/theme/tokens';
+import { Glass } from '@/components/ui/Glass';
 
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -80,7 +81,7 @@ export default function GroupDetailScreen() {
         </Pressable>
       </View>
 
-      <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
+      <Glass className="mx-5 rounded-2xl p-4 mb-3">
         <View className="flex-row items-center justify-between mb-2">
           <View className="flex-row items-center" style={{ gap: 10 }}>
             <IconBubble icon={Users} tone="purple" size={34} />
@@ -123,9 +124,9 @@ export default function GroupDetailScreen() {
         <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
           Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
         </Text>
-      </View>
+      </Glass>
 
-      <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
+      <Glass className="mx-5 rounded-2xl p-4 mb-3">
         <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
           <IconBubble icon={Trophy} tone="gold" size={34} />
           <Text className="flex-1 text-[13px] font-bold text-text-light dark:text-text-dark">
@@ -150,7 +151,7 @@ export default function GroupDetailScreen() {
             </Text>
           </View>
         ))}
-      </View>
+      </Glass>
 
       <ScrollView ref={scrollRef} className="flex-1 px-5" contentContainerClassName="gap-2 pb-3" onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}>
         {(notes ?? []).map((n) => {

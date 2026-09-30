@@ -21,6 +21,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
+import { Glass } from '@/components/ui/Glass';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -428,8 +429,8 @@ export default function HomeScreen() {
         </View>
 
         {topGroupMate && (
-          <View
-            className="flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4"
+          <Glass
+            className="flex-row items-center gap-3 rounded-3xl p-4 mx-5 mt-4"
             style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
           >
             <View className="w-9 h-9 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
@@ -439,7 +440,7 @@ export default function HomeScreen() {
               <Text className="font-bold">{topGroupMate.name}</Text> caminó {topGroupMate.total.toLocaleString('es-BO')} pasos
               esta semana en {groupRanking?.group.name}
             </Text>
-          </View>
+          </Glass>
         )}
 
         {reto && (
@@ -466,7 +467,7 @@ export default function HomeScreen() {
           </Pressable>
         )}
 
-        <View className="bg-card-light dark:bg-card-dark rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+        <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
           <Pressable
             onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
             className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
@@ -496,7 +497,7 @@ export default function HomeScreen() {
               <ChevronRight size={14} color={colors.light.muted} />
             </View>
           </Pressable>
-        </View>
+        </Glass>
 
         <Pressable
           onPress={() => router.push('/(tabs)/actividad')}

@@ -7,6 +7,7 @@ import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import { useColorScheme } from 'nativewind';
+import { GlassTabBar } from '@/components/ui/GlassTabBar';
 
 // Ícono de la barra: el activo va relleno y sobre una pastilla verde suave.
 function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
@@ -19,7 +20,7 @@ function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
           borderRadius: 15,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: focused ? 'rgba(79,195,168,0.16)' : 'transparent',
+          backgroundColor: 'transparent',
         }}
       >
         <Icon size={23} color={color} weight={focused ? 'fill' : 'duotone'} />
@@ -44,6 +45,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <GlassTabBar {...(props as unknown as React.ComponentProps<typeof GlassTabBar>)} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.aqua,

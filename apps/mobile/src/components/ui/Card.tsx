@@ -1,10 +1,6 @@
-import { View, type ViewProps } from 'react-native';
+import { type ViewProps } from 'react-native';
+import { Glass } from '@/components/ui/Glass';
 
 export function Card({ className, ...props }: ViewProps & { className?: string }) {
-  return (
-    <View
-      className={`bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-md ${className ?? ''}`}
-      {...props}
-    />
-  );
+  return <Glass className={`rounded-md ${className ?? ''}`} {...props} />;
 }

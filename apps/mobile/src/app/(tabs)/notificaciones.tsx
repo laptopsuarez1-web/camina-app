@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
+import { Glass } from '@/components/ui/Glass';
 
 function bubbleFor(type?: string) {
   switch (type) {
@@ -54,9 +55,9 @@ export default function NotificacionesScreen() {
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
           return (
-            <View
+            <Glass
               key={n.id}
-              className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl p-4"
+              className="rounded-2xl p-4"
               style={isNew ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}
             >
               <View className="flex-row" style={{ gap: 12 }}>
@@ -69,7 +70,7 @@ export default function NotificacionesScreen() {
                   <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark">{n.body}</Text>
                 </View>
               </View>
-            </View>
+            </Glass>
           );
         })}
         {items.length === 0 && (
