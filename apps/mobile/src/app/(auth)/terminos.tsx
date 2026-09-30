@@ -70,7 +70,17 @@ export default function TerminosScreen() {
           la autorizás, para mostrarte comercios cercanos y, si dejás activados los avisos cercanos, para avisarte de promociones de comercios que estén cerca (guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; podés apagarlo en Perfil y se borra). Tus pasos y tu nombre solo son
           visibles para otros usuarios si activás &ldquo;Aparecer en el ranking&rdquo; o dentro de un grupo al
           que te unís vos mismo. No vendemos tus datos a terceros. Podés pedir la eliminación de tu
-          cuenta y tus datos en cualquier momento desde Perfil.
+          cuenta y tus datos en cualquier momento desde Perfil. Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Los mensajes de grupo se borran automáticamente cada semana; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Podés reportar y bloquear a otras personas dentro de la app.
+        </Text>
+
+        <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Desafíos de grupo y puntos en juego</Text>
+        <Text className="text-[12.5px] leading-5 text-muted-light dark:text-muted-dark mb-4">
+          Dentro de un grupo podés crear un desafío y elegir cuántos de tus propios puntos poner en juego (hasta 50). Los puntos de Camina solo se ganan caminando: no se compran ni se venden. Los puntos de todos los que se suman forman un pozo que se reparte en partes iguales entre quienes cumplan la meta diaria en al menos el 80% de los días del desafío; si nadie cumple, cada persona recupera los suyos. Camina no se queda con ninguna parte del pozo. Los resultados se calculan automáticamente con los pasos registrados en la app y Camina puede anular un resultado si detecta trampa, como pasos falsos o varias cuentas de una misma persona.
+        </Text>
+
+        <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Eventos y sorteos</Text>
+        <Text className="text-[12.5px] leading-5 text-muted-light dark:text-muted-dark mb-4">
+          Los comercios pueden publicar eventos y sorteos dentro de la app, con aprobación previa de Camina. Cada sorteo indica su premio, sus fechas y su condición; los ganadores se eligen al azar entre quienes se anotaron y cumplieron la condición. El premio lo pone y lo entrega cada comercio, que es el único responsable de cumplirlo. Camina no se hace responsable por premios no entregados.
         </Text>
 
         <Text className="font-bold text-[14px] mb-2 text-text-light dark:text-text-dark">Contenido de las personas</Text>

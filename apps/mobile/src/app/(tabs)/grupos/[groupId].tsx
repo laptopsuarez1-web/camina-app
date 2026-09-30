@@ -386,7 +386,10 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-        <Text className="mx-5 mt-2 mb-2 text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
+        <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
+          <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
+          <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">se vacía cada lunes</Text>
+        </View>
         <View className="px-5 gap-2 pb-2">
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
           const mine = n.user_id === userId;
@@ -409,11 +412,6 @@ export default function GroupDetailScreen() {
         {(notes ?? []).length === 0 && (
           <Text className="text-center text-muted-light dark:text-muted-dark text-[13px] py-6">
             Todavía no hay mensajes. Escribí el primero.
-          </Text>
-        )}
-        {(notes ?? []).length > 0 && (
-          <Text className="text-center text-muted-light dark:text-muted-dark text-[10.5px] pt-2">
-            Mantené apretado un mensaje para reportarlo, bloquear o borrarlo. Los chats se vacían cada lunes.
           </Text>
         )}
         </View>
