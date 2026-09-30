@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 
-export type AppNotification = { id: string; title: string; body: string; created_at: string };
+export type AppNotification = { id: string; title: string; body: string; created_at: string; data?: { type?: string } | null };
 
 const seenKey = (userId: string) => `camina_notifications_seen_${userId}`;
 
@@ -27,7 +27,7 @@ export function useNotifications() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('notifications_outbox')
-        .select('id, title, body, created_at')
+        .select('id, title, body, created_at, data')
         .eq('user_id', userId!)
         .order('created_at', { ascending: false })
         .limit(50);

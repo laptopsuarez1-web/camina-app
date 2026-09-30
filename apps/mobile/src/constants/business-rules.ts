@@ -15,3 +15,7 @@ export const KCAL_PER_STEP = 0.04;
 // Meta semanal de equipo mostrada en el detalle de grupo — display-only, no autoritativa.
 export const TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER = 42_000;
 
+
+// Meta diaria de pasos: mínimo permitido, y desde cuánto se considera una meta "muy buena".
+export const MIN_DAILY_GOAL = 1000;
+export const GOOD_DAILY_GOAL = 5000;

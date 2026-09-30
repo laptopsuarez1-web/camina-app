@@ -19,7 +19,7 @@ import { useGlobalRanking } from '@/hooks/useGlobalRanking';
 import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
@@ -130,8 +130,17 @@ export default function HomeScreen() {
   })();
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
+  const goalDraft = parseInt(goalInput, 10) || 0;
+  const goalHint =
+    goalDraft < MIN_DAILY_GOAL
+      ? `La meta mínima es ${MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos`
+      : goalDraft >= GOOD_DAILY_GOAL
+        ? '¡Muy bien! Una meta que suma 💪'
+        : '¡Vos podés más!';
+
   async function saveGoal() {
     const n = parseInt(goalInput, 10);
+    if (n < MIN_DAILY_GOAL) return; // el aviso de meta mínima ya se ve debajo
     if (profile && n > 0) {
       await supabase.from('profiles').update({ daily_goal: n }).eq('id', profile.id);
       await useAuthStore.getState().refreshProfile();
@@ -295,6 +304,19 @@ export default function HomeScreen() {
             </Pressable>
           )}
         </View>
+        {editingGoal && (
+          <Text
+            style={{
+              color: goalDraft < MIN_DAILY_GOAL ? '#FFB27A' : colors.mint,
+              fontSize: 11.5,
+              fontWeight: '600',
+              textAlign: 'center',
+              marginTop: 8,
+            }}
+          >
+            {goalHint}
+          </Text>
+        )}
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>

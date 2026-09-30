@@ -2,7 +2,7 @@ export const ONBOARDING_SEEN_KEY = 'camina_onboarding_seen';
 
 // Se muestra una sola vez, en la primera instalación (ver app/index.tsx).
 export const ONBOARDING = [
-  { icon: 'Flame', tone: 'orange', title: 'Camina y gana', desc: 'Cada paso te acerca a nuevas recompensas, beneficios y experiencias.' },
+  { icon: 'Logo', tone: 'mint', title: 'Camina y gana', desc: 'Cada paso te acerca a nuevas recompensas, beneficios y experiencias.' },
   {
     icon: 'Gift',
     tone: 'purple',
@@ -11,7 +11,7 @@ export const ONBOARDING = [
   },
   {
     icon: 'MapPin',
-    tone: 'aqua',
+    tone: 'mint',
     title: 'Descubrí, explorá, disfrutá',
     desc: 'Eventos, beneficios, retos y mucho más. Todo en una sola app.',
   },

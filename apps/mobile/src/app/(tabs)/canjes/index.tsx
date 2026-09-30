@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
   Linking,
+  Animated,
   Platform,
   RefreshControl,
 } from 'react-native';
@@ -17,7 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -201,6 +202,38 @@ function CoinPrice({ cost, dim }: { cost: number; dim?: boolean }) {
     </View>
   );
 }
+
+// Marca de éxito animada: la burbuja entra con un rebote y el anillo se expande una vez.
+function SuccessMark() {
+  const [scale] = useState(() => new Animated.Value(0.4));
+  const [ring] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, { toValue: 1, friction: 4, tension: 90, useNativeDriver: true }),
+      Animated.timing(ring, { toValue: 1, duration: 900, useNativeDriver: true }),
+    ]).start();
+  }, [scale, ring]);
+  return (
+    <View style={{ width: 84, height: 84, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: 84,
+          height: 84,
+          borderRadius: 42,
+          borderWidth: 3,
+          borderColor: colors.aqua,
+          opacity: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0] }),
+          transform: [{ scale: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.35] }) }],
+        }}
+      />
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <IconBubble icon={Check} tone="aqua" size={62} />
+      </Animated.View>
+    </View>
+  );
+}
+
 
 export default function CanjesScreen() {
   const profile = useAuthStore((s) => s.profile);
@@ -800,7 +833,7 @@ export default function CanjesScreen() {
       </Modal>
 
       {/* Código de canje */}
-      <Modal visible={!!activeRedemption} transparent animationType="slide">
+      <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-10">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
@@ -813,7 +846,17 @@ export default function CanjesScreen() {
                   <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>
                 </View>
               </View>
-              {activeBenefit?.business.lat != null && activeBenefit?.business.lng != null && (
+              {confirmed && activeBenefit?.business.google_review_url ? (
+                <Pressable
+                  hitSlop={8}
+                  onPress={() => Linking.openURL(activeBenefit.business.google_review_url!)}
+                  className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
+                  style={{ backgroundColor: '#FFF3D1' }}
+                >
+                  <Star size={12} color="#C98A0B" weight="fill" />
+                  <Text className="text-[10.5px] font-bold" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
+                </Pressable>
+              ) : !confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
                 <Pressable
                   hitSlop={8}
                   onPress={() => openFullMap(activeBenefit.business.lat!, activeBenefit.business.lng!, activeBenefit.business.name)}
@@ -822,7 +865,7 @@ export default function CanjesScreen() {
                   <Locate size={12} color={colors.purple} />
                   <Text className="text-[10.5px] font-bold text-purple">Cómo llegar</Text>
                 </Pressable>
-              )}
+              ) : null}
             </View>
 
             {activeBenefit && benefitConditions(activeBenefit).length > 0 && (
@@ -836,8 +879,8 @@ export default function CanjesScreen() {
             {confirmed ? (
               <View className="items-center">
                 <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
-                  <Text className="text-[26px] mb-1">🎉</Text>
-                  <Text className="text-aqua font-extrabold text-[17px]">¡Canje confirmado!</Text>
+                  <SuccessMark />
+                  <Text className="text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                     {activeBenefit?.business.name} ya te entregó tu beneficio.
                   </Text>
@@ -860,13 +903,18 @@ export default function CanjesScreen() {
                     {activeBenefit?.business.google_review_url ? (
                       <Pressable
                         onPress={() => Linking.openURL(activeBenefit.business.google_review_url!)}
-                        className="w-full bg-aqua rounded-2xl py-3.5 items-center mb-2.5"
+                        className="w-full rounded-2xl py-3.5 items-center justify-center flex-row mb-2.5"
+                        style={{ backgroundColor: '#FFF3D1', gap: 8 }}
                       >
-                        <Text className="text-white font-bold text-[14px]">⭐ Dejá tu reseña en Google Maps</Text>
+                        <Star size={16} color="#C98A0B" weight="fill" />
+                        <Text className="font-bold text-[14px]" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
                       </Pressable>
                     ) : null}
                   </>
                 )}
+                <Pressable onPress={closeCode} className="w-full bg-aqua rounded-2xl py-4 items-center mt-1">
+                  <Text className="text-white font-bold text-[15px]">Listo</Text>
+                </Pressable>
               </View>
             ) : !expired ? (
               <>

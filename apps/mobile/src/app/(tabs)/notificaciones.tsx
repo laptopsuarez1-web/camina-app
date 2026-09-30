@@ -1,9 +1,27 @@
 import { useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, Bell } from '@/components/icons';
+import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
+
+function bubbleFor(type?: string) {
+  switch (type) {
+    case 'redemption_expiring':
+      return <IconBubble icon={Clock} tone="orange" size={38} />;
+    case 'streak':
+    case 'streak_reminder':
+      return <IconBubble icon={Flame} tone="orange" size={38} />;
+    case 'nearby':
+      return <IconBubble icon={MapPin} tone="purple" size={38} />;
+    case 'reto':
+      return <IconBubble icon={Trophy} tone="gold" size={38} />;
+    case 'redemption':
+      return <IconBubble icon={Gift} tone="purple" size={38} />;
+    default:
+      return <IconBubble icon={Bell} tone="aqua" size={38} />;
+  }
+}
 
 function timeAgo(iso: string) {
   const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -41,19 +59,22 @@ export default function NotificacionesScreen() {
               className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl p-4"
               style={isNew ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}
             >
-              <View className="flex-row items-center justify-between mb-1">
-                <Text className="flex-1 text-[14px] font-bold text-text-light dark:text-text-dark pr-2">{n.title}</Text>
-                <Text className="text-[11px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
+              <View className="flex-row" style={{ gap: 12 }}>
+                {bubbleFor(n.data?.type)}
+                <View className="flex-1">
+                  <View className="flex-row items-center justify-between mb-1">
+                    <Text className="flex-1 text-[14px] font-bold text-text-light dark:text-text-dark pr-2">{n.title}</Text>
+                    <Text className="text-[11px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
+                  </View>
+                  <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark">{n.body}</Text>
+                </View>
               </View>
-              <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark">{n.body}</Text>
             </View>
           );
         })}
         {items.length === 0 && (
           <View className="items-center py-14" style={{ gap: 10 }}>
-            <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-full items-center justify-center" style={{ width: 56, height: 56 }}>
-              <Bell size={24} color={colors.purple} />
-            </View>
+            <IconBubble icon={Bell} tone="purple" size={64} />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
               Cuando tengas un código por vencer, Puntos por vencer o tu racha en juego, te avisamos acá.

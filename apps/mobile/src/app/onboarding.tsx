@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
-import { Flame, Gift, MapPin, IconBubble } from '@/components/icons';
+import { Gift, MapPin, IconBubble } from '@/components/icons';
 
-const ICONS = { Flame, Gift, MapPin } as const;
+const ICONS = { Gift, MapPin } as const;
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
@@ -26,14 +27,18 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <View className="flex-1 bg-auth-bg justify-between items-center px-6 py-5">
+    <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ flex: 1, justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 20 }}>
       <Pressable onPress={skip} className="self-end">
         <Text className="text-auth-muted text-[13px]">Saltar</Text>
       </Pressable>
 
       <View className="items-center max-w-[300px]">
         <View style={{ marginBottom: 24 }}>
-          <IconBubble icon={ICONS[current.icon]} tone={current.tone} size={96} />
+          {current.icon === 'Logo' ? (
+            <Image source={require('@/../assets/logo-mint.png')} style={{ width: 120, height: 120 }} />
+          ) : (
+            <IconBubble icon={ICONS[current.icon]} tone={current.tone} size={96} />
+          )}
         </View>
         <Text className="text-white text-[22px] font-semibold text-center mb-2.5">{current.title}</Text>
         <Text className="text-auth-muted text-sm text-center leading-5">{current.desc}</Text>
@@ -55,6 +60,6 @@ export default function OnboardingScreen() {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </LinearGradient>
   );
 }

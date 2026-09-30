@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy } from '@/components/icons';
+import { ChevronLeft, Share2, Send, Trophy, Users, IconBubble } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
@@ -75,14 +75,17 @@ export default function GroupDetailScreen() {
         <Text className="text-base font-bold text-text-light dark:text-text-dark" numberOfLines={1}>
           {data.group.name}
         </Text>
-        <Pressable onPress={share} hitSlop={10} className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-          <Share2 size={16} color={colors.aqua} />
+        <Pressable onPress={share} hitSlop={10}>
+          <IconBubble icon={Share2} tone="aqua" size={36} />
         </Pressable>
       </View>
 
       <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
         <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-[14px] font-medium text-text-light dark:text-text-dark">Reto en equipo</Text>
+          <View className="flex-row items-center" style={{ gap: 10 }}>
+            <IconBubble icon={Users} tone="purple" size={34} />
+            <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Reto en equipo</Text>
+          </View>
           <Pressable
             disabled={!isCreator}
             onPress={() => {
@@ -123,9 +126,9 @@ export default function GroupDetailScreen() {
       </View>
 
       <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
-        <View className="flex-row items-center gap-2 mb-3">
-          <Trophy size={15} color={colors.purple} />
-          <Text className="text-[13px] font-bold text-text-light dark:text-text-dark">
+        <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
+          <IconBubble icon={Trophy} tone="gold" size={34} />
+          <Text className="flex-1 text-[13px] font-bold text-text-light dark:text-text-dark">
             Ranking de la semana · {totalSteps.toLocaleString('es-BO')} pasos en total
           </Text>
         </View>

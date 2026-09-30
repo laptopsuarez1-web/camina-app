@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Users } from '@/components/icons';
+import { Users, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PENDING_GROUP_JOIN_KEY } from '@/constants/sharing';
@@ -67,8 +67,8 @@ export default function JoinGroupScreen() {
 
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark px-6 justify-center items-center">
-      <View className="w-20 h-20 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center mb-5">
-        <Users size={32} color={colors.purple} />
+      <View className="mb-5">
+        <IconBubble icon={Users} tone="purple" size={84} />
       </View>
       <Text className="text-xl font-bold text-text-light dark:text-text-dark text-center mb-1.5">
         Te invitaron a &ldquo;{group.name}&rdquo;
