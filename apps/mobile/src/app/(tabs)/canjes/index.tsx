@@ -546,6 +546,31 @@ export default function CanjesScreen() {
           </Glass>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+            {categories.filter((c) => c === 'Todos').map((c) => {
+              const st = categoryStyle(c);
+              const CIcon = st.icon;
+              const on = category === c;
+              return (
+                <Pressable
+                  key={c}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: category === c }}
+                  onPress={() => setCategory(c)}
+                  className="flex-row items-center rounded-full border"
+                  style={{
+                    gap: 6,
+                    paddingVertical: 7,
+                    paddingLeft: 10,
+                    paddingRight: 13,
+                    backgroundColor: on ? st.to : colors.light.card,
+                    borderColor: on ? st.to : colors.light.line,
+                  }}
+                >
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: on ? '#fff' : colors.light.muted }}>{c}</Text>
+                </Pressable>
+              );
+            })}
             <Pressable
               accessibilityRole="button"
               accessibilityState={{ selected: onlyOpen }}
@@ -565,7 +590,7 @@ export default function CanjesScreen() {
               <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text style={{ fontSize: 12, fontWeight: '600', color: onlyFavs ? '#fff' : colors.light.muted }}>Favoritos</Text>
             </Pressable>
-            {categories.map((c) => {
+            {categories.filter((c) => c !== 'Todos').map((c) => {
               const st = categoryStyle(c);
               const CIcon = st.icon;
               const on = category === c;
@@ -633,19 +658,31 @@ export default function CanjesScreen() {
                 </View>
               </View>
 
-              <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                {g.benefits.map((b) => (
-                  <View
-                    key={b.id}
-                    className="flex-row items-center bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
-                  >
-                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
-                    <Text className="text-[12px] font-semibold text-text-light dark:text-text-dark">{b.name}</Text>
-                  </View>
-                ))}
-              </ScrollView>
+              {/* Cada premio con su precio en monedas: se ve qué alcanza sin abrir la ficha. */}
+              <View className="mt-3" style={{ gap: 8 }}>
+                {g.benefits.slice(0, 3).map((b) => {
+                  const missing = b.cost_points - (balance ?? 0);
+                  return (
+                    <View key={b.id} className="flex-row items-center border-t border-line-light dark:border-line-dark pt-2.5" style={{ gap: 8 }}>
+                      <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{b.name}</Text>
+                      <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
+                      <Text className="text-[14px] font-extrabold text-text-light dark:text-text-dark">{b.cost_points}</Text>
+                      {missing <= 0 ? (
+                        <View className="bg-aqua-deep rounded-full px-3 py-1.5">
+                          <Text className="text-white text-[12px] font-bold">Canjear</Text>
+                        </View>
+                      ) : (
+                        <View className="rounded-full px-3 py-1.5 border border-line-light dark:border-line-dark">
+                          <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">Faltan {missing}</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+                {g.benefits.length > 3 ? (
+                  <Text className="text-[12px] font-semibold text-aqua-deep dark:text-aqua">Ver {g.benefits.length - 3} premios más</Text>
+                ) : null}
+              </View>
             </Pressable>
           ))}
 
