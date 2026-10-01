@@ -43,12 +43,11 @@ import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { GOLD, isFeatured, GoldBadge, FeaturedChip } from '@/components/ui/Featured';
 
 type BusinessT = BenefitWithBusiness['business'];
 
 // Comercios del plan Paso Adelante: van primero, con marco y sello dorado.
-const GOLD = '#E2B33C';
-const isFeatured = (b: { plan?: string | null }) => b.plan === 'paso_adelante';
 
 // Centro de Tarija (ciudad de lanzamiento) — último respaldo si no hay GPS ni comercios con ubicación.
 const TARIJA_REGION = {
@@ -123,10 +122,6 @@ function useCountdown(expiresAt: string | null) {
 
 function businessIcon(_name: string, size: number, logoUrl?: string | null, category?: string | null) {
   return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} />;
-}
-
-function GoldBadge({ size = 20 }: { size?: number }) {
-  return <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />;
 }
 
 function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
@@ -731,7 +726,12 @@ export default function CanjesScreen() {
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
-                <View style={{ shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4, alignSelf: 'flex-start' }}>
+                <View
+                  style={{
+                    shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
+                  }}
+                >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
                 </View>
                 <View className="flex-row items-center justify-between mt-3">
@@ -747,6 +747,7 @@ export default function CanjesScreen() {
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
+                {isFeatured(profileGroup.business) ? <View className="mt-2"><FeaturedChip /></View> : null}
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>

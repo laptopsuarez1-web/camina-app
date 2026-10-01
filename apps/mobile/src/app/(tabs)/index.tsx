@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl, Animated, Easing } from 'react-native';
+import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -173,7 +174,7 @@ export default function HomeScreen() {
     }
     // Los destacados (plan Paso Adelante) van primero.
     return [...map.values()]
-      .sort((a, b) => Number(b.business.plan === 'paso_adelante') - Number(a.business.plan === 'paso_adelante'))
+      .sort((a, b) => Number(isFeatured(b.business)) - Number(isFeatured(a.business)))
       .slice(0, 3);
   })();
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
@@ -459,7 +460,7 @@ export default function HomeScreen() {
               className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-3.5"
               style={{
                 shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
-                ...(g.business.plan === 'paso_adelante' ? { borderWidth: 2, borderColor: '#E2B33C' } : {}),
+                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
               }}
             >
               <BusinessAvatar logoUrl={g.business.logo_url} category={g.business.category} size={58} />
@@ -468,9 +469,7 @@ export default function HomeScreen() {
                   <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>
                     {g.business.name}
                   </Text>
-                  {g.business.plan === 'paso_adelante' && (
-                    <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
-                  )}
+                  {isFeatured(g.business) && <GoldBadge size={16} />}
                 </View>
                 <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5 mb-1.5" numberOfLines={1}>
                   {g.items.length === 1 ? g.items[0].name : `${g.items.length} premios disponibles`}
