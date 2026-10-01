@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput, Linking } from 'react-native';
 import { router } from 'expo-router';
-import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble } from '@/components/icons';
+import { useColorScheme } from 'nativewind';
+import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble, Coffee, ForkKnife, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, type IconProps } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
@@ -18,8 +19,20 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
 import { Glass } from '@/components/ui/Glass';
 
+const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
+  Café: Coffee,
+  Gastronomía: ForkKnife,
+  Entretenimiento: Ticket,
+  Fitness: Barbell,
+  Compras: ShoppingBag,
+  Belleza: Sparkle,
+  Tecnología: DeviceMobile,
+  Eventos: Calendar,
+};
+
 export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
+  const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
   const [deleting, setDeleting] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -279,19 +292,21 @@ export default function PerfilScreen() {
         <View className="flex-row flex-wrap gap-2">
           {INTERESTS_OPTIONS.map(([name]) => {
             const active = (profile?.interests ?? []).includes(name);
+            const Icon = INTEREST_ICON[name] ?? Sparkle;
             return (
               <Pressable
                 key={name}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: active }}
                 onPress={() => toggleInterest(name)}
-                className="rounded-full px-3.5 py-2 border"
-                style={{
-                  backgroundColor: active ? colors.light.aquaLight : 'transparent',
-                  borderColor: active ? colors.aqua : colors.light.line,
-                }}
+                className={`flex-row items-center gap-1.5 rounded-full pl-2.5 pr-3.5 py-2 border ${
+                  active ? 'bg-aqua-light-light dark:bg-aqua-light-dark' : 'border-line-light dark:border-line-dark'
+                }`}
+                style={active ? { borderColor: colors.aqua } : undefined}
               >
+                <Icon size={16} color={active ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? colors.dark.muted : colors.light.muted} weight={active ? 'fill' : 'regular'} />
                 <Text
-                  className="text-xs font-semibold"
-                  style={{ color: active ? colors.aquaDeep : colors.light.muted }}
+                  className={`text-xs font-semibold ${active ? 'text-aqua-deep dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}
                 >
                   {name}
                 </Text>

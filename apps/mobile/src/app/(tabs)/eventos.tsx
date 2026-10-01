@@ -11,6 +11,7 @@ export default function EventosScreen() {
   const claim = useClaimReto();
   const { data: promos } = usePromotions();
   const join = useJoinPromotion();
+  const hasPromos = (promos ?? []).length > 0;
 
   async function handleJoin(p: PromotionItem) {
     try {
@@ -40,19 +41,7 @@ export default function EventosScreen() {
       <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-5">
         Viví experiencias únicas con tus marcas favoritas
       </Text>
-      {(promos ?? []).length === 0 ? (
-        <Glass className="rounded-md py-7 px-6 items-center mb-7">
-          <View className="mb-3.5">
-            <IconBubble icon={Calendar} tone="purple" size={58} />
-          </View>
-          <Text className="font-bold text-[15px] mb-1.5 text-text-light dark:text-text-dark">
-            Sin eventos de comercios próximos
-          </Text>
-          <Text className="text-muted-light dark:text-muted-dark text-xs text-center leading-5">
-            Estamos armando alianzas con comercios de tu zona. Volvé pronto.
-          </Text>
-        </Glass>
-      ) : (
+      {hasPromos && (
         <View className="gap-3 mb-7">
           {(promos ?? []).map((p) => (
             <Glass key={p.id} className="rounded-3xl p-4">
@@ -98,7 +87,7 @@ export default function EventosScreen() {
         Mientras se suman comercios con eventos propios, estos son nuestros.
       </Text>
 
-      <View className="gap-3">
+      <View className="gap-3 mb-7">
         {(retos ?? []).map((reto) => (
           <RetoCard
             key={reto.id}
@@ -124,6 +113,18 @@ export default function EventosScreen() {
           />
         ))}
       </View>
+
+      {!hasPromos && (
+        <Glass className="flex-row items-center rounded-2xl p-4" style={{ gap: 12 }}>
+          <IconBubble icon={Calendar} tone="purple" size={40} />
+          <View className="flex-1">
+            <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">Sin eventos de comercios por ahora</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5 leading-5">
+              Estamos sumando comercios de tu zona. Volvé pronto.
+            </Text>
+          </View>
+        </Glass>
+      )}
       </ScrollView>
     </View>
   );

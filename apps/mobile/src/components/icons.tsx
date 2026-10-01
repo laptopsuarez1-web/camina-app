@@ -47,6 +47,7 @@ import { FirstAid as FirstAid_ } from 'phosphor-react-native/src/icons/FirstAid'
 import { Wrench as Wrench_ } from 'phosphor-react-native/src/icons/Wrench';
 import { Storefront as Storefront_ } from 'phosphor-react-native/src/icons/Storefront';
 import { SquaresFour as SquaresFour_ } from 'phosphor-react-native/src/icons/SquaresFour';
+import { DeviceMobile as DeviceMobile_ } from 'phosphor-react-native/src/icons/DeviceMobile';
 
 export type IconProps = {
   size?: number;
@@ -106,6 +107,7 @@ export const FirstAid = make(FirstAid_);
 export const Wrench = make(Wrench_);
 export const Storefront = make(Storefront_);
 export const SquaresFour = make(SquaresFour_);
+export const DeviceMobile = make(DeviceMobile_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
 // [arriba, medio, abajo]: el tercer tono, un poco más profundo, le da volumen sin brillos ni relieves.
