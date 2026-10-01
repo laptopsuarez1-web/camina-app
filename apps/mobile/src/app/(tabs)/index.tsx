@@ -298,7 +298,7 @@ export default function HomeScreen() {
               <Text style={{ color: POINTS_COLOR, fontSize: 10.5, fontWeight: '600', marginTop: 5 }}>
                 {pointsToday >= DAILY_POINTS_CAP
                   ? 'Tope de hoy'
-                  : `faltan ${POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT)}`}
+                  : `faltan ${POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT)} pasos`}
               </Text>
             </View>
           </ProgressRing>

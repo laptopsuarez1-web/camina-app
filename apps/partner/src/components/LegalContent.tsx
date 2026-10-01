@@ -17,7 +17,7 @@ export function LegalContent() {
         <p className="text-[13.5px] leading-6 text-muted">
           Camina te da Puntos por caminar (1 Punto cada 1.000 pasos, hasta 20 Puntos por día) para
           canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los 90 días de
-          haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Los
+          haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Al canjear o poner Puntos en juego se usan primero los que vencen antes. Los
           códigos de canje vencen a los 15 minutos de generados. Camina es para personas de 13 años o más. Los pasos ingresados a mano en Salud o Health
           Connect no suman Puntos. Nos reservamos el derecho de
           suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los
