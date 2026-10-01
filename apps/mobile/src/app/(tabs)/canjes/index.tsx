@@ -198,7 +198,7 @@ function CoinPrice({ cost, dim }: { cost: number; dim?: boolean }) {
   return (
     <View
       className="flex-row items-center rounded-full"
-      style={{ gap: 5, backgroundColor: dim ? colors.light.line : colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}
+      style={{ gap: 5, backgroundColor: dim ? colors.light.line : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}
     >
       <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
       <Text style={{ color: dim ? colors.light.muted : '#fff', fontSize: 13, fontWeight: '700' }}>{cost}</Text>
@@ -548,7 +548,7 @@ export default function CanjesScreen() {
             <Pressable
               onPress={() => setOnlyOpen((v) => !v)}
               className="rounded-full border px-3.5 py-2"
-              style={{ backgroundColor: onlyOpen ? colors.aqua : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
+              style={{ backgroundColor: onlyOpen ? colors.aquaDeep : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
             >
               <Text style={{ fontSize: 12, fontWeight: '600', color: onlyOpen ? '#fff' : colors.light.muted }}>Disponibles ahora</Text>
             </Pressable>
@@ -610,10 +610,10 @@ export default function CanjesScreen() {
                   {g.business.address ? (
                     <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
                       <MapPin size={12} color={colors.aqua} />
-                      <Text className="flex-1 text-[12px] text-aqua" numberOfLines={1}>{g.business.address}</Text>
+                      <Text className="flex-1 text-[12px] text-aqua-deep dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
                     </View>
                   ) : null}
-                  <Text className="text-[12px] font-semibold mt-1" style={{ color: g.openNow ? '#2E9E7C' : colors.light.muted }}>
+                  <Text className="text-[12px] font-semibold mt-1" style={{ color: g.openNow ? colors.aquaDeep : colors.light.muted }}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
                     {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
@@ -626,7 +626,7 @@ export default function CanjesScreen() {
                 </View>
               </View>
 
-              <Text className="text-[11.5px text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                 {g.benefits.map((b) => (
                   <View
@@ -750,7 +750,7 @@ export default function CanjesScreen() {
                       style={{ gap: 6 }}
                     >
                       <MapPin size={14} color={colors.aqua} />
-                      <Text className="text-[12.5px] font-semibold text-aqua">{profileGroup.business.address}</Text>
+                      <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">{profileGroup.business.address}</Text>
                     </Pressable>
                   ) : null}
                   <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
@@ -808,7 +808,7 @@ export default function CanjesScreen() {
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={b.cost_points} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[11px] font-semibold text-muted-light dark:text-muted-dark">Quedan {remaining} hoy</Text>
+                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">Quedan {remaining} hoy</Text>
                                     ) : null}
                                   </View>
                                 </View>
@@ -817,7 +817,7 @@ export default function CanjesScreen() {
                                 onPress={() => handleRedeem(b.id, b)}
                                 disabled={!canRedeem || redeem.isPending}
                                 className="rounded-2xl items-center justify-center flex-row mt-3"
-                                style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line, paddingVertical: 11, gap: 8 }}
+                                style={{ backgroundColor: canRedeem ? colors.aquaDeep : colors.light.line, paddingVertical: 11, gap: 8 }}
                               >
                                 {redeeming && <ActivityIndicator size="small" color="#fff" />}
                                 <Text style={{ fontWeight: '700', fontSize: 14, color: canRedeem ? '#fff' : colors.light.muted }}>
@@ -859,7 +859,7 @@ export default function CanjesScreen() {
                   style={{ backgroundColor: '#FFF3D1' }}
                 >
                   <Star size={12} color="#C98A0B" weight="fill" />
-                  <Text className="text-[10.5px] font-bold" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
+                  <Text className="text-[12px] font-bold" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
                 </Pressable>
               ) : !confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
                 <Pressable
@@ -868,7 +868,7 @@ export default function CanjesScreen() {
                   className="flex-row items-center gap-1 bg-purple-light-light dark:bg-purple-light-dark rounded-full px-3 py-1.5"
                 >
                   <Locate size={12} color={colors.purple} />
-                  <Text className="text-[10.5px] font-bold text-purple">Cómo llegar</Text>
+                  <Text className="text-[12px] font-bold text-purple">Cómo llegar</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -876,7 +876,7 @@ export default function CanjesScreen() {
             {activeBenefit && benefitConditions(activeBenefit).length > 0 && (
               <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-4 gap-1">
                 {benefitConditions(activeBenefit).map((line) => (
-                  <Text key={line} className="text-[11.5px] font-semibold text-purple">{line}</Text>
+                  <Text key={line} className="text-[12px] font-semibold text-purple">{line}</Text>
                 ))}
               </View>
             )}
@@ -885,7 +885,7 @@ export default function CanjesScreen() {
               <View className="items-center">
                 <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                   <SuccessMark />
-                  <Text className="text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
+                  <Text className="text-aqua-deep dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                     {activeBenefit?.business.name} ya te entregó tu beneficio.
                   </Text>
@@ -894,7 +894,7 @@ export default function CanjesScreen() {
                   <>
                     <Text className="text-[14px] font-bold text-text-light dark:text-text-dark mb-3">¿Compraste algo más?</Text>
                     <View className="flex-row gap-2.5 w-full mb-2.5">
-                      <Pressable onPress={() => answerFollowup(true)} className="flex-1 bg-aqua rounded-2xl py-3.5 items-center">
+                      <Pressable onPress={() => answerFollowup(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
                         <Text className="text-white font-bold text-[14px]">Sí, compré algo</Text>
                       </Pressable>
                       <Pressable onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
@@ -917,14 +917,14 @@ export default function CanjesScreen() {
                     ) : null}
                   </>
                 )}
-                <Pressable onPress={closeCode} className="w-full bg-aqua rounded-2xl py-4 items-center mt-1">
+                <Pressable onPress={closeCode} className="w-full bg-aqua-deep rounded-2xl py-4 items-center mt-1">
                   <Text className="text-white font-bold text-[15px]">Listo</Text>
                 </Pressable>
               </View>
             ) : !expired ? (
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
                   <Text className="text-[34px] font-extrabold tracking-[8px] text-purple">
                     {activeRedemption?.code.slice(0, 3)} {activeRedemption?.code.slice(3)}
                   </Text>
@@ -935,7 +935,7 @@ export default function CanjesScreen() {
                     Vence en <Text className="font-bold text-text-light dark:text-text-dark">{mm}:{ss}</Text>
                   </Text>
                 </View>
-                <Pressable onPress={closeCode} className="bg-aqua rounded-2xl py-4 items-center mb-2.5">
+                <Pressable onPress={closeCode} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Ya lo mostré</Text>
                 </Pressable>
               </>
@@ -945,7 +945,7 @@ export default function CanjesScreen() {
                   <Text className="text-warn font-bold text-base">Código vencido</Text>
                   <Text className="text-[#8A5A2E] text-xs mt-1">No llegaste a mostrarlo a tiempo.</Text>
                 </View>
-                <Pressable onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua rounded-2xl py-4 items-center mb-2.5">
+                <Pressable onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Cancelar y recuperar Puntos</Text>
                 </Pressable>
                 <Pressable onPress={handleRegenerate} disabled={regenerate.isPending} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">

@@ -59,18 +59,18 @@ export default function EventosScreen() {
               <View className="flex-row items-start" style={{ gap: 12 }}>
                 <IconBubble icon={p.won ? Trophy : p.kind === 'sorteo' ? Gift : Calendar} tone={p.won ? 'gold' : p.kind === 'sorteo' ? 'orange' : 'purple'} size={42} />
                 <View className="flex-1">
-                  <Text className="text-[11px] font-bold text-muted-light dark:text-muted-dark mb-0.5">
+                  <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-0.5">
                     {p.business?.name ?? 'Comercio'} · {p.kind === 'sorteo' ? 'Sorteo' : 'Evento'}
                   </Text>
                   <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">{p.title}</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1 leading-relaxed">{p.description}</Text>
                   {p.prize ? <Text className="text-[12.5px] font-semibold mt-1.5 text-text-light dark:text-text-dark">🎁 {p.prize}</Text> : null}
                   {p.req_steps ? (
-                    <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1">
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
                       Para participar: {p.req_steps.toLocaleString('es-BO')} pasos por día durante {p.req_days} días.
                     </Text>
                   ) : null}
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-1">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
                     Hasta el {new Date(p.ends_at).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' })}
                   </Text>
                 </View>
@@ -166,14 +166,14 @@ function RetoCard({
         </View>
         <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
           <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
-          <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{reward}</Text>
+          <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reward}</Text>
         </View>
       </View>
       <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-1.5">
         <View className="h-full bg-aqua rounded-full" style={{ width: `${pct}%` }} />
       </View>
       <View className="flex-row items-center justify-between">
-        <Text className="text-[11px] text-muted-light dark:text-muted-dark">
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
           {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
         </Text>
         {claimable && (

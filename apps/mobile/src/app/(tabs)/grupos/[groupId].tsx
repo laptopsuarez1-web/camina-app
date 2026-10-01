@@ -225,8 +225,8 @@ export default function GroupDetailScreen() {
                       <Text style={{ fontWeight: '900', color: colors.mintDark, fontSize: 18 }}>{m.name[0]?.toUpperCase()}</Text>
                     </View>
                   )}
-                  <Text className="text-[11px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Vos' : m.name}</Text>
-                  <Text className="text-[10px]" style={{ color: '#C4B8E8' }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
+                  <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Vos' : m.name}</Text>
+                  <Text className="text-[12px]" style={{ color: '#C4B8E8' }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
                   <View
                     style={{
                       width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,
@@ -244,11 +244,11 @@ export default function GroupDetailScreen() {
 
         <View className="flex-row px-5 mt-4 mb-3" style={{ gap: 10 }}>
           <Glass className="flex-1 rounded-2xl p-3.5">
-            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
           </Glass>
           <Glass className="flex-1 rounded-2xl p-3.5">
-            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">#{myRank || '-'}</Text>
           </Glass>
         </View>
@@ -297,7 +297,7 @@ export default function GroupDetailScreen() {
               <Text className="text-[12.5px] font-bold" style={{ color: '#1f7d68' }}>¡Lo lograron juntos!</Text>
             </View>
           ) : (
-            <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2">
               Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
             </Text>
           )}
@@ -310,7 +310,7 @@ export default function GroupDetailScreen() {
                 <IconBubble icon={Trophy} tone="gold" size={34} />
                 <View className="flex-1">
                   <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{active.name}</Text>
-                  <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">
                     {RULE_LABEL[active.rule]} · meta {active.daily_goal.toLocaleString('es-BO')} · {today < active.start_day ? 'empieza pronto' : `quedan ${daysLeft(active.end_day)} días`}
                   </Text>
                 </View>
@@ -355,7 +355,7 @@ export default function GroupDetailScreen() {
             ) : ch?.joined ? (
               <Text className="text-center text-[12px] font-bold text-mint-dark dark:text-mint mt-2">Ya estás dentro ✓</Text>
             ) : (
-              <Text className="text-center text-[11.5px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
+              <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
             )}
           </Glass>
         ) : (
@@ -364,7 +364,7 @@ export default function GroupDetailScreen() {
               <IconBubble icon={Flame} tone="orange" size={40} />
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
-                <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-0.5">
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
                   Armá uno: elijan la regla, la meta y cuántos puntos poner en juego.
                 </Text>
               </View>
@@ -401,7 +401,7 @@ export default function GroupDetailScreen() {
                 {m.id === userId ? `${m.name} (vos)` : m.name}
               </Text>
               <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
-                <Text className="text-[12.5px] font-bold" style={{ color: colors.aqua }}>
+                <Text className="text-[12.5px] font-bold text-aqua-deep dark:text-aqua">
                   {m.steps.toLocaleString('es-BO')}
                 </Text>
               </View>
@@ -425,7 +425,7 @@ export default function GroupDetailScreen() {
               <View key={week} className="border-t border-line-light dark:border-line-dark">
                 <Pressable onPress={() => setOpenWeek(open ? '' : week)} className="flex-row items-center justify-between py-2.5">
                   <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Semana del {label}</Text>
-                  <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">🏆 {rows[0]?.name}</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">🏆 {rows[0]?.name}</Text>
                 </Pressable>
                 {open &&
                   rows.map((r) => (
@@ -434,7 +434,7 @@ export default function GroupDetailScreen() {
                       <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
                         {r.user_id === userId ? `${r.name} (vos)` : r.name}
                       </Text>
-                      <Text className="text-[11px] text-muted-light dark:text-muted-dark">{r.goal_days} días de meta</Text>
+                      <Text className="text-[12px] text-muted-light dark:text-muted-dark">{r.goal_days} días de meta</Text>
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{r.steps.toLocaleString('es-BO')}</Text>
                     </View>
                   ))}
@@ -446,7 +446,7 @@ export default function GroupDetailScreen() {
 
         <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
-          <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">se vacía cada lunes</Text>
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">se vacía cada lunes</Text>
         </View>
         <View className="px-5 gap-2 pb-2">
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
@@ -454,13 +454,13 @@ export default function GroupDetailScreen() {
           return (
             <Pressable key={n.id} onLongPress={() => openNoteMenu(n)} delayLongPress={350} className={mine ? 'self-end items-end' : 'self-start items-start'} style={{ maxWidth: '78%' }}>
               {!mine && (
-                <Text className="text-[10.5px] text-muted-light dark:text-muted-dark mb-0.5 px-1">
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-0.5 px-1">
                   {n.author?.full_name ?? 'Caminante'}
                 </Text>
               )}
               <View
                 className="rounded-2xl px-3.5 py-2.5"
-                style={{ backgroundColor: mine ? colors.aqua : colors.light.card, borderWidth: mine ? 0 : 1, borderColor: colors.light.line }}
+                style={{ backgroundColor: mine ? colors.aquaDeep : colors.light.card, borderWidth: mine ? 0 : 1, borderColor: colors.light.line }}
               >
                 <Text style={{ color: mine ? '#fff' : colors.light.text, fontSize: 13.5 }}>{n.text}</Text>
               </View>
@@ -484,7 +484,7 @@ export default function GroupDetailScreen() {
           className="flex-1 bg-card-light dark:bg-card-dark rounded-full px-4 py-2.5 text-[13.5px] text-text-light dark:text-text-dark"
           multiline
         />
-        <Pressable onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua items-center justify-center">
+        <Pressable onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">
           <Send size={16} color="#fff" />
         </Pressable>
       </View>

@@ -209,7 +209,7 @@ export default function WelcomeScreen() {
           )}
         </Pressable>
         <Pressable onPress={() => setAwaitingConfirmation(null)}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>Volver</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
         </Pressable>
       </View>
     );
@@ -262,7 +262,7 @@ export default function WelcomeScreen() {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
           <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
-          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>o</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>o</Text>
           <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
         </View>
 
@@ -300,14 +300,14 @@ export default function WelcomeScreen() {
 
         {authKind === 'login' && (
           <Pressable onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
-            <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+            <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
               {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
             </Text>
           </Pressable>
         )}
 
         <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+          <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
             {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
           </Text>
         </Pressable>

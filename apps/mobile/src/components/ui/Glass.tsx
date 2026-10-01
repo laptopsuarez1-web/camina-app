@@ -52,7 +52,8 @@ export function Glass({
         {
           ...shape,
           borderWidth: 1,
-          borderColor: dark ? 'rgba(255,255,255,0.2)' : level === 0 ? colors.light.line : 'rgba(255,255,255,0.95)',
+          // En claro el borde va en el lila de las líneas: blanco sobre el fondo casi blanco no se veía (1.09:1), y en Android no hay sombra.
+          borderColor: dark ? 'rgba(255,255,255,0.2)' : colors.light.line,
           shadowColor: dark ? '#000' : '#503C8C',
           shadowOpacity: dark ? 0.3 : 0.12,
           shadowRadius: 16,

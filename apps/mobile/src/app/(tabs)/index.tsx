@@ -298,7 +298,7 @@ export default function HomeScreen() {
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} Puntos</Text>
               </Animated.View>
-              <Text style={{ color: POINTS_COLOR, fontSize: 10.5, fontWeight: '600', marginTop: 5 }}>
+              <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>
                 {pointsToday >= DAILY_POINTS_CAP
                   ? 'Tope de hoy'
                   : (() => { const n = POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT); return n === 1 ? 'falta 1 paso' : `faltan ${n} pasos`; })()}
@@ -314,7 +314,7 @@ export default function HomeScreen() {
               style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <Flame size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '600' }}>{streak} días de racha</Text>
+              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} días de racha</Text>
             </View>
           )}
           {goalMet && (
@@ -326,7 +326,7 @@ export default function HomeScreen() {
               }}
             >
               <Check size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '700' }}>¡Meta cumplida!</Text>
+              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '700' }}>¡Meta cumplida!</Text>
             </Animated.View>
           )}
           {editingGoal ? (
@@ -345,11 +345,11 @@ export default function HomeScreen() {
                   paddingHorizontal: 8,
                   paddingVertical: 4,
                   color: '#fff',
-                  fontSize: 11.5,
+                  fontSize: 12,
                 }}
               />
               <Pressable onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
-                <Text className="text-mint-dark font-bold text-[11px]">OK</Text>
+                <Text className="text-mint-dark font-bold text-[12px]">OK</Text>
               </Pressable>
             </View>
           ) : (
@@ -361,7 +361,7 @@ export default function HomeScreen() {
               className="rounded-full"
               style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
-              <Text style={{ color: '#8C7DB8', fontSize: 10.5 }}>meta {goal} ✎</Text>
+              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal} ✎</Text>
             </Pressable>
           )}
         </View>
@@ -369,7 +369,7 @@ export default function HomeScreen() {
           <Text
             style={{
               color: goalDraft < MIN_DAILY_GOAL ? '#FFB27A' : colors.mint,
-              fontSize: 11.5,
+              fontSize: 12,
               fontWeight: '600',
               textAlign: 'center',
               marginTop: 8,
@@ -412,7 +412,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
         ) : available === false ? (
-          <Text className="text-auth-muted text-center text-[11px] mt-3 px-8">
+          <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.
           </Text>
         ) : null}
@@ -430,7 +430,7 @@ export default function HomeScreen() {
               <Text className="text-[13px] font-bold" style={{ color: '#7A5206' }}>
                 {expiring.amount} {expiring.amount === 1 ? 'punto vence' : 'puntos vencen'} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} día${expiring.days === 1 ? '' : 's'}`}
               </Text>
-              <Text className="text-[11.5px]" style={{ color: '#9A6A08' }}>Canjealos antes de perderlos</Text>
+              <Text className="text-[12px]" style={{ color: '#9A6A08' }}>Canjealos antes de perderlos</Text>
             </View>
             <ChevronRight size={16} color="#9A6A08" />
           </Pressable>
@@ -438,7 +438,7 @@ export default function HomeScreen() {
         <View className="flex-row items-center justify-between px-5 mb-3">
           <Text className="font-bold text-base text-text-light dark:text-text-dark">Beneficios cerca tuyo</Text>
           <Pressable onPress={() => router.push('/(tabs)/canjes?view=lista')}>
-            <Text className="text-aqua text-xs font-semibold">Ver todo</Text>
+            <Text className="text-aqua-deep dark:text-aqua text-xs font-semibold">Ver todo</Text>
           </Pressable>
         </View>
 
@@ -467,10 +467,10 @@ export default function HomeScreen() {
                   {g.items.length === 1 ? g.items[0].name : `${g.items.length} premios disponibles`}
                 </Text>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-[11px] font-semibold" style={{ color: '#2E9E7C' }}>{g.business.category}</Text>
-                  <View className="flex-row items-center bg-aqua rounded-full" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 9 }}>
+                  <Text className="text-[12px] font-semibold text-aqua-deep dark:text-aqua">{g.business.category}</Text>
+                  <View className="flex-row items-center bg-aqua-deep rounded-full" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 9 }}>
                     <Image source={require('@/../assets/camina-coin.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
-                    <Text className="text-white text-[11px] font-bold">
+                    <Text className="text-white text-[12px] font-bold">
                       {g.items.length > 1 ? `desde ${Math.min(...g.items.map((i) => i.cost_points))}` : g.items[0].cost_points}
                     </Text>
                   </View>
@@ -505,7 +505,7 @@ export default function HomeScreen() {
               className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
             >
               <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá beneficios</Text>
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca — mirá qué se puede canjear.</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca — mirá qué se puede canjear.</Text>
             </Pressable>
           )}
         </View>
@@ -540,7 +540,7 @@ export default function HomeScreen() {
               </View>
               <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
-                <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{reto.reward_points}</Text>
+                <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reto.reward_points}</Text>
               </View>
             </View>
             <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
@@ -590,7 +590,7 @@ export default function HomeScreen() {
             <IconBubble icon={Activity} tone="aqua" size={34} />
             <View>
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
-              <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>
             </View>
           </View>
           <ChevronRight size={16} color={colors.light.muted} />

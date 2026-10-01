@@ -101,7 +101,7 @@ export default function TerminosScreen() {
         <Pressable onPress={() => setAccepted((v) => !v)} className="flex-row items-center gap-2.5 mb-4">
           <View
             className="w-5 h-5 rounded-md items-center justify-center"
-            style={{ borderWidth: 1.5, borderColor: accepted ? colors.aqua : colors.light.line, backgroundColor: accepted ? colors.aqua : 'transparent' }}
+            style={{ borderWidth: 1.5, borderColor: accepted ? colors.aquaDeep : colors.light.line, backgroundColor: accepted ? colors.aquaDeep : 'transparent' }}
           >
             {accepted && <Check size={13} color="#fff" />}
           </View>
@@ -113,7 +113,7 @@ export default function TerminosScreen() {
           onPress={accept}
           disabled={!accepted || loading}
           className="rounded-2xl py-4 items-center"
-          style={{ backgroundColor: accepted ? colors.aqua : colors.light.line }}
+          style={{ backgroundColor: accepted ? colors.aquaDeep : colors.light.line }}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />

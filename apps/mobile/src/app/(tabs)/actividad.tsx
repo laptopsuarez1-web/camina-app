@@ -151,7 +151,7 @@ export default function ActividadScreen() {
           </View>
           {weekTrendPct !== null && (
             <View className="bg-mint/15 px-2.5 py-1 rounded-full">
-              <Text className="text-mint text-[11px] font-bold">
+              <Text className="text-mint text-[12px] font-bold">
                 {weekTrendPct >= 0 ? '↑' : '↓'} {Math.abs(weekTrendPct)}%
               </Text>
             </View>
@@ -195,8 +195,8 @@ export default function ActividadScreen() {
         <View className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4.5" style={{ backgroundColor: '#FDEEE2' }}>
           <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
-            <Text className="text-[13.5px] font-bold" style={{ color: '#C0611F' }}>¡Vas en racha!</Text>
-            <Text className="text-[11.5px]" style={{ color: '#C0611F' }}>{streak} días consecutivos</Text>
+            <Text className="text-[13.5px] font-bold" style={{ color: colors.warnDeep }}>¡Vas en racha!</Text>
+            <Text className="text-[12px]" style={{ color: colors.warnDeep }}>{streak} días consecutivos</Text>
           </View>
         </View>
       )}
@@ -214,7 +214,7 @@ export default function ActividadScreen() {
             key={r}
             onPress={() => setRange(r)}
             className="flex-1 rounded-full py-2.5 items-center"
-            style={{ backgroundColor: range === r ? colors.aqua : 'transparent' }}
+            style={{ backgroundColor: range === r ? colors.aquaDeep : 'transparent' }}
           >
             <Text
               className="font-bold text-[13px]"
@@ -237,11 +237,11 @@ export default function ActividadScreen() {
                   className="w-full rounded-md"
                   style={{
                     height: Math.max(4, (d.steps / maxSteps) * 70),
-                    backgroundColor: d.isToday ? colors.warn : colors.aqua,
+                    backgroundColor: d.isToday ? colors.warn : colors.aquaDeep,
                   }}
                 />
                 {range === 7 && (
-                  <Text className="text-[10px] text-muted-light dark:text-muted-dark">{d.label}</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">{d.label}</Text>
                 )}
               </View>
             ))}
@@ -255,7 +255,7 @@ export default function ActividadScreen() {
         </Text>
         <View className="flex-row justify-between mb-1.5">
           {DIAS_CORTO.map((d) => (
-            <Text key={d} className="w-8 text-center text-[10px] text-muted-light dark:text-muted-dark">
+            <Text key={d} className="w-8 text-center text-[12px] text-muted-light dark:text-muted-dark">
               {d}
             </Text>
           ))}
@@ -270,7 +270,7 @@ export default function ActividadScreen() {
                   style={{ backgroundColor: cell.met ? colors.mint : colors.light.line }}
                 >
                   <Text
-                    className="text-[11px] font-bold"
+                    className="text-[12px] font-bold"
                     style={{ color: cell.met ? colors.mintDark : colors.light.muted }}
                   >
                     {cell.day}
@@ -303,7 +303,7 @@ export default function ActividadScreen() {
               </View>
               <Text
                 className="text-[12px] font-bold"
-                style={{ color: met ? '#2E9E7C' : colors.warn }}
+                style={{ color: met ? colors.aquaDeep : colors.warn }}
               >
                 {met ? 'Meta cumplida' : 'Meta no cumplida'}
               </Text>
@@ -344,9 +344,9 @@ function StatCard({
       <View className="mb-2">
         <IconBubble icon={icon} tone={tone} size={30} />
       </View>
-      <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1">{label}</Text>
+      <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1">{label}</Text>
       <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark mb-2">
-        {value} <Text className="text-[10.5px] font-semibold text-muted-light dark:text-muted-dark">{unit}</Text>
+        {value} <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{unit}</Text>
       </Text>
       <View className="h-1 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
         <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />

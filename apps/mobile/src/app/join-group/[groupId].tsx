@@ -76,7 +76,7 @@ export default function JoinGroupScreen() {
       <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center mb-8">
         {memberCount} miembro{memberCount === 1 ? '' : 's'} caminando juntos en este grupo.
       </Text>
-      <Pressable onPress={join} disabled={joining} className="bg-aqua rounded-2xl py-4 px-10 items-center mb-3">
+      <Pressable onPress={join} disabled={joining} className="bg-aqua-deep rounded-2xl py-4 px-10 items-center mb-3">
         {joining ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Unirme al grupo</Text>}
       </Pressable>
       <Pressable onPress={() => router.replace('/(tabs)/grupos')}>

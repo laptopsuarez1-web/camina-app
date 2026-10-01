@@ -26,6 +26,16 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   // Algunas pantallas (crear desafío) ocultan la barra para ir a pantalla completa.
   if (descriptors[state.routes[state.index]?.key]?.options.tabBarStyle?.display === 'none') return null;
 
+  // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null;
+  // expo-router las convierte en tabBarItemStyle { display: 'none' }, así que se filtran acá.
+  const visible = state.routes
+    .map((route, index) => ({ route, index }))
+    .filter(({ route }) => {
+      const { options } = descriptors[route.key];
+      const itemStyle = StyleSheet.flatten(options.tabBarItemStyle as never) as { display?: string } | undefined;
+      return options.href !== null && itemStyle?.display !== 'none';
+    });
+
   return (
     <View
       style={{
@@ -37,7 +47,8 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
     >
       <View
         style={{
-          height: 66,
+          // Alto mínimo (no fijo) para que crezca con la letra grande del sistema.
+          minHeight: 66,
           borderRadius: 33,
           overflow: 'hidden',
           borderWidth: 1,
@@ -60,21 +71,20 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
           pointerEvents="none"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
-          {state.routes.map((route, index) => {
+        <View accessibilityRole="tablist" style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, paddingVertical: 6 }}>
+          {visible.map(({ route, index }, position) => {
             const { options } = descriptors[route.key];
-            // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null;
-            // expo-router las convierte en tabBarItemStyle { display: 'none' }, así que se ocultan por ahí.
-            const itemStyle = StyleSheet.flatten(options.tabBarItemStyle as never) as { display?: string } | undefined;
-            if (options.href === null || itemStyle?.display === 'none') return null;
             const focused = state.index === index;
-            const color = focused ? colors.aqua : dark ? '#B3A6D6' : '#7C6A9C';
+            // Activa: verde oscuro (claro) o menta (oscuro) sobre una pastilla teñida; ambos pasan 4.5:1.
+            const color = focused ? (dark ? colors.mint : colors.aquaDeep) : dark ? colors.dark.muted : colors.light.muted;
             const Icon = options.tabBarIcon;
+            const title = typeof options.title === 'string' ? options.title : route.name;
             return (
               <Pressable
                 key={route.key}
-                accessibilityRole="button"
-                accessibilityState={focused ? { selected: true } : {}}
+                accessibilityRole="tab"
+                accessibilityLabel={`${title}, pestaña ${position + 1} de ${visible.length}`}
+                accessibilityState={{ selected: focused }}
                 onPress={() => {
                   const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
                   if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
@@ -82,19 +92,20 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
                 onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
                 style={{
                   flex: 1,
-                  height: 54,
+                  minHeight: 54,
                   marginHorizontal: 2,
+                  paddingVertical: 4,
                   borderRadius: 27,
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 2,
-                  backgroundColor: focused ? (dark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.92)') : 'transparent',
+                  backgroundColor: focused ? (dark ? 'rgba(127,237,196,0.14)' : colors.light.aquaLight) : 'transparent',
                 }}
               >
                 <View style={{ width: 26, height: 26, alignItems: 'center', justifyContent: 'center' }}>
                   {Icon ? Icon({ focused, color, size: 23 }) : null}
                 </View>
-                <Text numberOfLines={1} style={{ fontSize: 9.5, color, fontWeight: focused ? '800' : '500', textAlign: 'center' }}>
+                <Text numberOfLines={1} style={{ fontSize: 12, color, fontWeight: focused ? '800' : '500', textAlign: 'center' }}>
                   {typeof options.title === 'string' ? options.title : route.name}
                 </Text>
               </Pressable>

@@ -108,16 +108,17 @@ export const Storefront = make(Storefront_);
 export const SquaresFour = make(SquaresFour_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
+// [arriba, medio, abajo]: el tercer tono, un poco más profundo, le da volumen sin brillos ni relieves.
 const TONES: Record<Tone, [string, string, string]> = {
-  aqua: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
-  mint: ['#7FEDC4', '#4FC3A8', '#4FC3A8'],
-  purple: ['#A672E8', '#8B4FD1', '#8B4FD1'],
-  orange: ['#FFB27A', '#F2985C', '#F2985C'],
-  red: ['#FF7A7E', '#E5484D', '#E5484D'],
-  gold: ['#FFDD73', '#E5A91F', '#E5A91F'],
+  aqua: ['#8DF0CB', '#4FC3A8', '#33A68C'],
+  mint: ['#8DF0CB', '#4FC3A8', '#33A68C'],
+  purple: ['#B68AF0', '#8B4FD1', '#7140B8'],
+  orange: ['#FFBE8C', '#F2985C', '#DE7F42'],
+  red: ['#FF8C8F', '#E5484D', '#C93338'],
+  gold: ['#FFE28A', '#EDB52C', '#D39A17'],
 };
 
-// Burbuja de color sólida con degradé y el ícono en blanco.
+// Ficha de color con degradé, un filo de luz y el ícono blanco en dos tonos.
 export function IconBubble({
   icon: Icon,
   tone = 'aqua',
@@ -127,27 +128,37 @@ export function IconBubble({
   tone?: Tone;
   size?: number;
 }) {
-  const [a, b, shadow] = TONES[tone];
+  const [a, b, c] = TONES[tone];
+  const radius = size * 0.32;
   return (
     <View
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.34,
-        shadowColor: shadow,
-        shadowOpacity: 0.35,
+        borderRadius: radius,
+        shadowColor: b,
+        shadowOpacity: 0.3,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 4 },
-        elevation: 3,
+        // Sin elevation: en Android dibuja una sombra gris que no es la del color.
+        elevation: 0,
       }}
     >
       <LinearGradient
-        colors={[a, b]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ flex: 1, borderRadius: size * 0.34, alignItems: 'center', justifyContent: 'center' }}
+        colors={[a, b, c]}
+        locations={[0, 0.55, 1]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={{
+          flex: 1,
+          borderRadius: radius,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.35)',
+        }}
       >
-        <Icon size={size * 0.5} color="#fff" weight="fill" />
+        <Icon size={size * 0.52} color="#fff" weight="duotone" />
       </LinearGradient>
     </View>
   );

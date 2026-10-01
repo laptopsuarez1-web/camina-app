@@ -138,7 +138,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
         <Text style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ fontSize: 13.5, color: colors.light.muted, marginTop: 4, textAlign: 'center', lineHeight: 19 }}>{c.body}</Text> : null}
         {c.points ? <View style={{ marginTop: 14 }}><PointsPill points={c.points} /></View> : null}
-        <Pressable onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aqua, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
+        <Pressable onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{c.cta ?? 'Listo'}</Text>
         </Pressable>
       </Animated.View>

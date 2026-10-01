@@ -11,7 +11,7 @@ import { useColorScheme } from 'nativewind';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 
-// Ícono de la barra: el activo va relleno y sobre una pastilla verde suave.
+// Ícono de la barra: inactivo de línea limpia, activo relleno sobre la pastilla verde suave de GlassTabBar.
 function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
   return function TabIcon({ color, focused }: { color: import('react-native').ColorValue; focused: boolean }) {
     return (
@@ -25,7 +25,7 @@ function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
           backgroundColor: 'transparent',
         }}
       >
-        <Icon size={23} color={color} weight={focused ? 'fill' : 'duotone'} />
+        <Icon size={24} color={color} weight={focused ? 'fill' : 'regular'} />
       </View>
     );
   };
@@ -54,7 +54,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.aqua,
         tabBarInactiveTintColor: '#9C8FC2',
-        tabBarLabelStyle: { fontSize: 10 },
+        tabBarLabelStyle: { fontSize: 12 },
         tabBarStyle: {
           backgroundColor: dark ? colors.dark.card : colors.light.card,
           borderTopColor: dark ? colors.dark.line : colors.light.line,

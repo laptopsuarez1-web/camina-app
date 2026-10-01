@@ -65,7 +65,7 @@ export default function NotificacionesScreen() {
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between mb-1">
                     <Text className="flex-1 text-[14px] font-bold text-text-light dark:text-text-dark pr-2">{n.title}</Text>
-                    <Text className="text-[11px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
                   </View>
                   <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark">{n.body}</Text>
                 </View>

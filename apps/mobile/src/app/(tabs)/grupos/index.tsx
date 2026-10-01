@@ -67,7 +67,7 @@ export default function GruposScreen() {
         <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark">Grupos</Text>
         <Pressable
           onPress={() => setCreating((v) => !v)}
-          className="bg-aqua w-8.5 h-8.5 rounded-full items-center justify-center"
+          className="bg-aqua-deep w-8.5 h-8.5 rounded-full items-center justify-center"
         >
           <Plus size={17} color="#fff" />
         </Pressable>
@@ -80,7 +80,7 @@ export default function GruposScreen() {
         <Pressable
           onPress={() => setView('mios')}
           className="flex-1 py-2 rounded-full items-center"
-          style={{ backgroundColor: view === 'mios' ? colors.aqua : 'transparent' }}
+          style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
         >
           <Text className="text-[12.5px] font-semibold" style={{ color: view === 'mios' ? '#fff' : colors.light.muted }}>
             Mis grupos
@@ -89,7 +89,7 @@ export default function GruposScreen() {
         <Pressable
           onPress={() => setView('ranking')}
           className="flex-1 py-2 rounded-full items-center"
-          style={{ backgroundColor: view === 'ranking' ? colors.aqua : 'transparent' }}
+          style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}
         >
           <Text className="text-[12.5px] font-semibold" style={{ color: view === 'ranking' ? '#fff' : colors.light.muted }}>
             Ranking global
@@ -123,14 +123,14 @@ export default function GruposScreen() {
                   <Image source={{ uri: r.photo_url }} className="w-9 h-9 rounded-full" />
                 ) : (
                   <View className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                    <Text className="text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
+                    <Text className="text-aqua-deep dark:text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
                   </View>
                 )}
                 <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>
                   {r.user_id === userId ? `${r.full_name} (vos)` : r.full_name}
                 </Text>
                 <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
-                  <Text className="text-[12.5px] font-bold" style={{ color: colors.aqua }}>
+                  <Text className="text-[12.5px] font-bold text-aqua-deep dark:text-aqua">
                     {Number(r.total_steps).toLocaleString('es-BO')}
                   </Text>
                 </View>
@@ -156,7 +156,7 @@ export default function GruposScreen() {
           <Pressable
             onPress={() => name.trim() && createGroup.mutate(name.trim())}
             disabled={createGroup.isPending}
-            className="bg-aqua rounded-sm py-3 items-center"
+            className="bg-aqua-deep rounded-sm py-3 items-center"
           >
             <Text className="text-white font-semibold">Crear</Text>
           </Pressable>
@@ -221,7 +221,7 @@ export default function GruposScreen() {
             </View>
             <Pressable
               onPress={() => joinGroup.mutate(g.id)}
-              className="bg-aqua rounded-full px-3.5 py-1.5"
+              className="bg-aqua-deep rounded-full px-3.5 py-1.5"
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>
             </Pressable>

@@ -120,7 +120,7 @@ export default function PuntosScreen() {
             <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balance ?? 0}</Text>
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
-                <Text className="text-mint font-semibold text-[11.5px]">Ganaste {earnedToday} Puntos hoy</Text>
+                <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} Puntos hoy</Text>
               </View>
             )}
           </View>
@@ -138,7 +138,7 @@ export default function PuntosScreen() {
           <IconBubble icon={Flame} tone="orange" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
-            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">días de racha</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">días de racha</Text>
           </View>
         </Glass>
         <Pressable
@@ -148,7 +148,7 @@ export default function PuntosScreen() {
           <IconBubble icon={Trophy} tone="gold" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{retosListos}</Text>
-            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
           </View>
         </Pressable>
       </View>
@@ -171,7 +171,7 @@ export default function PuntosScreen() {
           <Text className="text-white font-bold text-[13px]">Compartir link</Text>
         </Pressable>
         <Pressable onPress={copyLink} className="items-center py-2.5">
-          <Text className="text-aqua font-semibold text-[12.5px]">
+          <Text className="text-aqua-deep dark:text-aqua font-semibold text-[12.5px]">
             {copied ? 'Copiado ✓' : 'Copiar link'}
           </Text>
         </Pressable>
@@ -197,14 +197,14 @@ export default function PuntosScreen() {
               )}
             </View>
             <View className="flex-1 pr-3">
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mb-0.5">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-0.5">
                 {dayLabel(m.day)} · {m.title}
               </Text>
               {m.subtitle && (
                 <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{m.subtitle}</Text>
               )}
             </View>
-            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
+            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
               <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{m.amount > 0 ? '+' : '−'}{Math.abs(m.amount)}</Text>
             </View>

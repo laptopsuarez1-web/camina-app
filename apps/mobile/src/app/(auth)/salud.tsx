@@ -54,7 +54,7 @@ export default function SaludScreen() {
           <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: 15 }}>Ya lo tengo, continuar</Text>
         </Pressable>
         <Pressable onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12.5 }}>Lo hago después</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12.5 }}>Lo hago después</Text>
         </Pressable>
       </ScrollView>
     </View>

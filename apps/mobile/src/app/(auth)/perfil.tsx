@@ -102,7 +102,7 @@ export default function CompletarPerfilScreen() {
         <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad" maxLength={4}
           className="flex-[1.4] border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
       </View>
-      <Text className="text-muted-light dark:text-muted-dark text-[11px] mb-7">
+      <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-7">
         La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
       </Text>
 

@@ -244,8 +244,8 @@ export default function PerfilScreen() {
               placeholderTextColor={colors.light.muted}
               className="flex-[1.4] bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
           </View>
-          <Text className="text-muted-light dark:text-muted-dark text-[11px] mb-4">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
-          <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua rounded-xl py-3 items-center">
+          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
+          <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua-deep rounded-xl py-3 items-center">
             {savingProfile ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Guardar cambios</Text>}
           </Pressable>
         </Glass>
@@ -291,7 +291,7 @@ export default function PerfilScreen() {
               >
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: active ? '#2E9E7C' : colors.light.muted }}
+                  style={{ color: active ? colors.aquaDeep : colors.light.muted }}
                 >
                   {name}
                 </Text>
@@ -313,7 +313,7 @@ export default function PerfilScreen() {
         <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
           <View className="flex-1 pr-3">
             <Text className="text-[14px] text-text-light dark:text-text-dark">Avisos de comercios cerca</Text>
-            <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-0.5">
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
               Usamos tu ubicación aproximada. Máximo 1 aviso por semana.
             </Text>
           </View>
@@ -342,7 +342,7 @@ export default function PerfilScreen() {
               key={lvl}
               onPress={() => setGlassLevel(lvl)}
               className="flex-1 rounded-full py-2 items-center"
-              style={{ backgroundColor: glassLevel === lvl ? colors.aqua : 'transparent' }}
+              style={{ backgroundColor: glassLevel === lvl ? colors.aquaDeep : 'transparent' }}
             >
               <Text style={{ fontSize: 12.5, fontWeight: '700', color: glassLevel === lvl ? '#fff' : colors.light.muted }}>{label}</Text>
             </Pressable>
@@ -354,7 +354,7 @@ export default function PerfilScreen() {
         <View className="flex-row items-center justify-between">
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
           <Pressable onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={8}>
-            <Text className="text-[12.5px] font-semibold" style={{ color: colors.aqua }}>{SUPPORT_EMAIL}</Text>
+            <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">{SUPPORT_EMAIL}</Text>
           </Pressable>
         </View>
         {blocks.list.length > 0 && (
@@ -364,7 +364,7 @@ export default function PerfilScreen() {
               <View key={b.id} className="flex-row items-center justify-between py-1.5">
                 <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
                 <Pressable onPress={() => blocks.unblock.mutate(b.id)} hitSlop={8}>
-                  <Text className="text-[12.5px] font-semibold" style={{ color: colors.aqua }}>Desbloquear</Text>
+                  <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">Desbloquear</Text>
                 </Pressable>
               </View>
             ))}
@@ -393,7 +393,7 @@ export default function PerfilScreen() {
               <Pressable
                 onPress={savePassword}
                 disabled={savingPassword}
-                className="flex-1 bg-aqua rounded-xl py-3 items-center"
+                className="flex-1 bg-aqua-deep rounded-xl py-3 items-center"
               >
                 {savingPassword ? (
                   <ActivityIndicator size="small" color="#fff" />
