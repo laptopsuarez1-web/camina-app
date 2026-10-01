@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } fr
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Share2, Users, Trophy, Flame, Activity, IconBubble } from '@/components/icons';
+import { ChevronLeft, Share2, Users, Trophy, Flame, Activity, Gift, IconBubble } from '@/components/icons';
 import { useStreak } from '@/hooks/useStreak';
 import { useRetos } from '@/hooks/useRetos';
 import { supabase } from '@/lib/supabase';
@@ -35,12 +35,11 @@ function useMovimientos() {
           .order('day', { ascending: false }),
         supabase
           .from('points_ledger')
-          .select('id, amount, reason, ref_day, earned_at')
+          .select('id, amount, reason, note, ref_day, earned_at')
           .eq('user_id', userId!)
           .neq('reason', 'steps')
-          .gt('amount', 0)
           .order('earned_at', { ascending: false })
-          .limit(20),
+          .limit(40),
       ]);
       if (stepsError) throw stepsError;
       if (ledgerError) throw ledgerError;
@@ -54,18 +53,24 @@ function useMovimientos() {
         amount: Math.min(Math.floor(s.steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP),
       }));
 
-      const REASON_LABEL: Record<string, string> = { referral: 'Invitaste a un amigo', challenge: 'Reto cumplido' };
+      // Categoría corta + detalle ("Ana se sumó", "Canje en Bloom", "Pusiste en «Gym bro»"...).
+      const kindOf = (reason: string, note: string | null, amount: number) => {
+        if (reason === 'referral') return 'Invitación';
+        if (reason === 'redemption') return amount < 0 ? 'Canje' : 'Devolución';
+        if (note?.startsWith('Reto:')) return 'Reto';
+        return 'Desafío de grupo';
+      };
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
         day: l.ref_day ?? l.earned_at.slice(0, 10),
         reason: l.reason as string,
-        title: REASON_LABEL[l.reason] ?? l.reason,
-        subtitle: null as string | null,
+        title: kindOf(l.reason, l.note, l.amount),
+        subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,
         amount: l.amount,
       }));
 
       return [...stepRows, ...ledgerRows]
-        .filter((r) => r.amount > 0)
+        .filter((r) => r.amount !== 0)
         .sort((a, b) => (a.day < b.day ? 1 : -1));
     },
   });
@@ -185,6 +190,8 @@ export default function PuntosScreen() {
                 <IconBubble icon={Users} tone="purple" size={36} />
               ) : m.reason === 'challenge' ? (
                 <IconBubble icon={Trophy} tone="gold" size={36} />
+              ) : m.reason === 'redemption' ? (
+                <IconBubble icon={Gift} tone="purple" size={36} />
               ) : (
                 <IconBubble icon={Activity} tone="aqua" size={36} />
               )}
@@ -197,9 +204,9 @@ export default function PuntosScreen() {
                 <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{m.subtitle}</Text>
               )}
             </View>
-            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
+            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
               <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>+{m.amount}</Text>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{m.amount > 0 ? '+' : '−'}{Math.abs(m.amount)}</Text>
             </View>
           </Glass>
         ))}

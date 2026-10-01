@@ -67,6 +67,7 @@ export function useClaimReto() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['retos', userId] });
       queryClient.invalidateQueries({ queryKey: ['points-balance', userId] });
+      queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
       queryClient.invalidateQueries({ queryKey: ['points-ledger', userId] });
       queryClient.invalidateQueries({ queryKey: ['points-today', userId] });
     },

@@ -73,24 +73,18 @@ export function usePointsToday() {
 
 // El lote de Puntos que vence más pronto — para el aviso "N puntos vencen en
 // M días" (mismo criterio de vigencia que POINTS_TTL_DAYS, ver 0001_init.sql).
-export function usePointsExpiringSoon() {
+export function usePointsExpiringSoon(withinDays = 30) {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
-    queryKey: ['points-expiring-soon', userId],
+    queryKey: ['points-expiring-soon', userId, withinDays],
     enabled: !!userId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('points_ledger')
-        .select('amount, expires_at')
-        .eq('user_id', userId!)
-        .not('expires_at', 'is', null)
-        .order('expires_at', { ascending: true })
-        .limit(1);
+      // El servidor ya descuenta lo que gastaste: solo cuenta puntos que de verdad se van a perder.
+      const { data, error } = await supabase.rpc('points_expiring_soon', { p_within_days: withinDays });
       if (error) throw error;
-      const next = data?.[0];
-      if (!next?.expires_at) return null;
-      const days = Math.max(0, Math.ceil((new Date(next.expires_at).getTime() - Date.now()) / 86_400_000));
-      return { amount: next.amount, days };
+      const row = (data as { amount: number; days: number }[] | null)?.[0];
+      if (!row || !row.amount) return null;
+      return { amount: row.amount, days: row.days };
     },
   });
 }

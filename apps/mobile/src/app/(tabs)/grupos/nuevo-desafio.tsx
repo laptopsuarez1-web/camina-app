@@ -62,6 +62,8 @@ export default function NuevoDesafioScreen() {
     }
     queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
     queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+    queryClient.invalidateQueries({ queryKey: ['points-ledger'] });
+    queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
     setDone(true);
   }
 

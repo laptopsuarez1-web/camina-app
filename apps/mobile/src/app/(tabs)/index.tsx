@@ -98,7 +98,7 @@ export default function HomeScreen() {
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
   useHomeMoments(streak);
-  const { data: expiring } = usePointsExpiringSoon();
+  const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
   const { data: globalRanking } = useGlobalRanking();
   const { data: groupRanking } = useMyGroupRanking();

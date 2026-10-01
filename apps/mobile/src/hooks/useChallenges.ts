@@ -80,6 +80,8 @@ export function useJoinChallenge(groupId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
       queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['points-ledger'] });
+      queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
     },
   });
 }

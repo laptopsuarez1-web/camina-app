@@ -47,6 +47,8 @@ export function useRedeemBenefit() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['points-ledger'] });
+      queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
       queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
     },
@@ -80,6 +82,8 @@ export function useCancelExpiredRedemption() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['points-ledger'] });
+      queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
     },
   });
