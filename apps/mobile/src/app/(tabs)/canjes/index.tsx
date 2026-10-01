@@ -556,14 +556,13 @@ export default function CanjesScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: category === c }}
                   onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border"
+                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
                   style={{
                     gap: 6,
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
-                    backgroundColor: on ? st.to : colors.light.card,
-                    borderColor: on ? st.to : colors.light.line,
+                    ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
@@ -575,8 +574,8 @@ export default function CanjesScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected: onlyOpen }}
               onPress={() => setOnlyOpen((v) => !v)}
-              className="rounded-full border px-3.5 py-2"
-              style={{ backgroundColor: onlyOpen ? colors.aquaDeep : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
+              className="rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+              style={{ ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
             >
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
             </Pressable>
@@ -584,8 +583,8 @@ export default function CanjesScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected: onlyFavs }}
               onPress={() => setOnlyFavs((v) => !v)}
-              className="flex-row items-center rounded-full border px-3.5 py-2"
-              style={{ gap: 5, backgroundColor: onlyFavs ? '#E5484D' : colors.light.card, borderColor: onlyFavs ? '#E5484D' : colors.light.line }}
+              className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+              style={{ gap: 5, ...(onlyFavs ? { backgroundColor: '#E5484D', borderColor: '#E5484D' } : null) }}
             >
               <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
@@ -600,14 +599,13 @@ export default function CanjesScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: category === c }}
                   onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border"
+                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
                   style={{
                     gap: 6,
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
-                    backgroundColor: on ? st.to : colors.light.card,
-                    borderColor: on ? st.to : colors.light.line,
+                    ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
@@ -645,7 +643,7 @@ export default function CanjesScreen() {
                       <Text className="flex-1 text-[12px] text-aqua-deep dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
                     </View>
                   ) : null}
-                  <Text className="text-muted-light dark:text-muted-dark text-[12px] font-semibold mt-1" style={{ ...(g.openNow ? { color: colors.aquaDeep } : null) }}>
+                  <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-deep dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
                     {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
