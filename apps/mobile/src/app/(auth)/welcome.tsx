@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -16,7 +16,9 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, i
 type AuthKind = 'login' | 'signup';
 
 export default function WelcomeScreen() {
-  const [authKind, setAuthKind] = useState<AuthKind>('signup');
+  // "Ya tengo cuenta" del onboarding abre directo en iniciar sesión.
+  const { modo } = useLocalSearchParams<{ modo?: string }>();
+  const [authKind, setAuthKind] = useState<AuthKind>(modo === 'login' ? 'login' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
