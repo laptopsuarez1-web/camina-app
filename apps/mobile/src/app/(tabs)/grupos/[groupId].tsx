@@ -78,7 +78,7 @@ export default function GroupDetailScreen() {
     AsyncStorage.getItem(key).then((seen) => {
       if (seen) return;
       AsyncStorage.setItem(key, '1').catch(() => {});
-      celebrate({ kind: 'toast', icon: 'users', title: '¡Lo lograron juntos!', body: `${groupName ?? 'Tu grupo'} cumplió la meta de la semana` });
+      celebrate({ kind: 'toast', at: 'bottom', icon: 'users', title: '¡Lo lograron juntos!', body: `${groupName ?? 'Tu grupo'} cumplió la meta de la semana` });
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
@@ -242,16 +242,20 @@ export default function GroupDetailScreen() {
           </View>
         </LinearGradient>
 
-        <View className="flex-row px-5 mt-4 mb-3" style={{ gap: 10 }}>
-          <Glass className="flex-1 rounded-2xl p-3.5">
+        <Glass className="flex-row mx-5 mt-4 mb-3 rounded-2xl p-3.5">
+          <View className="flex-1">
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
-          </Glass>
-          <Glass className="flex-1 rounded-2xl p-3.5">
+          </View>
+          <View className="w-px mx-3.5 bg-line-light dark:bg-line-dark" />
+          <View className="flex-1">
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">#{myRank || '-'}</Text>
-          </Glass>
-        </View>
+            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">
+              {myRank ? `${myRank}.º` : '-'}
+              <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark"> de {data.members.length}</Text>
+            </Text>
+          </View>
+        </Glass>
 
         <Glass className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
           <View className="flex-row items-center justify-between mb-2">
@@ -259,19 +263,24 @@ export default function GroupDetailScreen() {
               <IconBubble icon={Users} tone="purple" size={34} />
               <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Meta del grupo</Text>
             </View>
-            <Pressable
-              disabled={!isCreator}
-              onPress={() => {
-                setGoalInput(String(challengeTarget));
-                setEditingGoal(true);
-              }}
-              hitSlop={8}
-            >
-              <Text className="text-xs text-muted-light dark:text-muted-dark">
-                {totalSteps.toLocaleString('es-BO')} / {challengeTarget.toLocaleString('es-BO')} pasos{isCreator ? ' ✎' : ''}
-              </Text>
-            </Pressable>
+            {isCreator && !editingGoal && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setGoalInput(String(challengeTarget));
+                  setEditingGoal(true);
+                }}
+                hitSlop={8}
+                className="rounded-full px-3 py-1.5 bg-purple-light-light dark:bg-purple-light-dark"
+              >
+                <Text className="text-xs font-semibold text-purple dark:text-purple-light-light">Cambiar meta</Text>
+              </Pressable>
+            )}
           </View>
+          <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">
+            {totalSteps.toLocaleString('es-BO')}
+            <Text className="font-normal text-muted-light dark:text-muted-dark"> / {challengeTarget.toLocaleString('es-BO')} pasos</Text>
+          </Text>
           {editingGoal && (
             <View className="flex-row items-center gap-2 mb-3">
               <TextInput
@@ -298,7 +307,7 @@ export default function GroupDetailScreen() {
             </View>
           ) : (
             <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2">
-              Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
+              Meta semanal compartida: sumen pasos juntos.
             </Text>
           )}
         </Glass>
@@ -475,13 +484,17 @@ export default function GroupDetailScreen() {
         </View>
       </ScrollView>
 
-      <View className="flex-row items-center gap-2.5 px-5 py-3 border-t border-line-light dark:border-line-dark">
+      <View className="flex-row items-end gap-2.5 px-5 py-2.5 border-t border-line-light dark:border-line-dark">
         <TextInput
           value={text}
           onChangeText={setText}
           placeholder="Escribí un mensaje…"
+          accessibilityLabel="Mensaje para el grupo"
           placeholderTextColor={colors.light.muted}
-          className="flex-1 bg-card-light dark:bg-card-dark rounded-full px-4 py-2.5 text-[13.5px] text-text-light dark:text-text-dark"
+          className="flex-1 bg-card-light dark:bg-card-dark rounded-[20px] px-4 py-2.5 text-[13.5px] text-text-light dark:text-text-dark"
+          style={{ minHeight: 40, maxHeight: 110, textAlignVertical: 'center' }}
+          // En web el textarea arranca en dos líneas si no se le dice otra cosa.
+          {...(Platform.OS === 'web' ? { numberOfLines: 1 } : null)}
           multiline
         />
         <Pressable accessibilityRole="button" accessibilityLabel="Enviar mensaje" onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">

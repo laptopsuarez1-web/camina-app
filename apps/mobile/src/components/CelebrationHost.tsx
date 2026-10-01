@@ -70,18 +70,20 @@ const TOAST_ICON: Record<ToastIcon, (p: { size: number; color: string }) => Reac
 
 function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDone: () => void }) {
   const insets = useSafeAreaInsets();
-  const y = useRef(new Animated.Value(-120)).current;
+  // Abajo se usa cuando el aviso taparía el título de la pantalla (p. ej. en un grupo).
+  const sign = c.at === 'bottom' ? 1 : -1;
+  const y = useRef(new Animated.Value(sign * 120)).current;
   useEffect(() => {
     buzz.light();
     Animated.spring(y, { toValue: 0, friction: 8, tension: 90, useNativeDriver: true }).start();
     const id = setTimeout(() => {
-      Animated.timing(y, { toValue: -140, duration: 260, useNativeDriver: true }).start(onDone);
+      Animated.timing(y, { toValue: sign * 140, duration: 260, useNativeDriver: true }).start(onDone);
     }, 3400);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, top: insets.top + 8, transform: [{ translateY: y }] }}>
+    <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, ...(c.at === 'bottom' ? { bottom: insets.bottom + 84 } : { top: insets.top + 8 }), transform: [{ translateY: y }] }}>
       <Pressable onPress={onDone}>
         <View
           style={{
