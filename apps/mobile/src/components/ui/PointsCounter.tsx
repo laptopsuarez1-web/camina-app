@@ -1,48 +1,46 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Text, View, type TextStyle } from 'react-native';
 
-// Moneda + saldo de puntos. Cuando el saldo sube estando en pantalla, la moneda late una vez
-// y sale un "+N" dorado que se desvanece. Al abrir la app (primer valor) no hace nada.
-export function PointsCounter({ value: rawValue, coinSize = 18, textStyle }: { value: number | undefined; coinSize?: number; textStyle?: TextStyle }) {
-  const value = rawValue ?? 0;
+// Saldo de puntos animado: cuando sube estando en pantalla, el número "cuenta" hasta el valor nuevo
+// y todo el chip (moneda + número + fondo) se agranda un poco y vuelve. Al abrir la app no hace nada.
+export function usePointsPulse(raw: number | undefined) {
+  const value = raw ?? 0;
   const prev = useRef<number | null>(null);
-  const pulse = useRef(new Animated.Value(0)).current;
-  const rise = useRef(new Animated.Value(0)).current;
-  const gain = useRef(0);
+  const [shown, setShown] = useState(value);
+  const scale = useRef(new Animated.Value(1)).current;
+  const counter = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (rawValue === undefined) return; // todavía cargando: no es una ganancia
-    if (prev.current !== null && value > prev.current) {
-      gain.current = value - prev.current;
-      pulse.setValue(0);
-      rise.setValue(0);
-      Animated.parallel([
-        Animated.timing(pulse, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(rise, { toValue: 1, duration: 1100, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      ]).start();
-    }
+    if (raw === undefined) return; // todavía cargando: no es una ganancia
+    const before = prev.current;
     prev.current = value;
-  }, [rawValue, value, pulse, rise]);
+    if (before === null || value <= before) {
+      setShown(value);
+      return;
+    }
+    counter.stopAnimation();
+    counter.removeAllListeners();
+    counter.setValue(0);
+    counter.addListener(({ value: v }) => setShown(Math.round(before + (value - before) * v)));
+    Animated.timing(counter, { toValue: 1, duration: 750, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start(() => {
+      counter.removeAllListeners();
+      setShown(value);
+    });
+    scale.stopAnimation();
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 1.14, duration: 200, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1, duration: 520, easing: Easing.inOut(Easing.cubic), useNativeDriver: true }),
+    ]).start();
+  }, [raw, value, counter, scale]);
 
-  const scale = pulse.interpolate({ inputRange: [0, 0.35, 1], outputRange: [1, 1.35, 1] });
-  const floatY = rise.interpolate({ inputRange: [0, 1], outputRange: [6, -8] });
-  const floatOpacity = rise.interpolate({ inputRange: [0, 0.15, 0.7, 1], outputRange: [0, 1, 1, 0] });
+  return { shown, scale };
+}
 
+export function PointsCounter({ shown, coinSize = 18, textStyle }: { shown: number; coinSize?: number; textStyle?: TextStyle }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <Image source={require('@/../assets/camina-coin.png')} style={{ width: coinSize, height: coinSize, borderRadius: coinSize / 2 }} />
-      </Animated.View>
-      <Text style={textStyle}>{value}</Text>
-      <Animated.Text
-        pointerEvents="none"
-        style={{
-          position: 'absolute', right: -30, top: 0, fontSize: 13, fontWeight: '900', color: '#F2B53C',
-          opacity: floatOpacity, transform: [{ translateY: floatY }],
-        }}
-      >
-        {`+${gain.current || 1}`}
-      </Animated.Text>
+      <Image source={require('@/../assets/camina-coin.png')} style={{ width: coinSize, height: coinSize, borderRadius: coinSize / 2 }} />
+      <Text style={[textStyle, { fontVariant: ['tabular-nums'] }]}>{shown}</Text>
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl, Animated, Easing } from 'react-native';
-import { PointsCounter } from '@/components/ui/PointsCounter';
+import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -92,6 +92,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   }
   const { data: balance } = usePointsBalance();
+  const pointsPulse = usePointsPulse(balance);
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
@@ -203,13 +204,15 @@ export default function HomeScreen() {
         <View style={{ paddingTop: 18 }}>
         <View className="px-5" style={{ position: 'relative' }}>
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
+            <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
             <Pressable
               onPress={() => router.push('/(tabs)/puntos')}
               className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3"
               style={{ height: 32 }}
             >
-              <PointsCounter value={balance} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
+              <PointsCounter shown={pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
             </Pressable>
+            </Animated.View>
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color="#C4B8E8" />
               <Pressable
