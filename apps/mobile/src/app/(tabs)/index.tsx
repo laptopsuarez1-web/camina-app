@@ -13,6 +13,7 @@ import { useTodaySteps } from '@/hooks/usePedometer';
 import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
+import { buzz } from '@/lib/haptics';
 import { useBenefits } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
@@ -136,12 +137,14 @@ export default function HomeScreen() {
     prevSteps.current = steps;
     if (before === null || steps <= before) return;
     if (Math.floor(steps / POINTS_PER_STEP_UNIT) > Math.floor(before / POINTS_PER_STEP_UNIT) && pointsToday <= DAILY_POINTS_CAP) {
+      buzz.light();
       chipPop.setValue(0);
       Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     }
     if (before < goal && steps >= goal) {
       [wave1, wave2].forEach((w) => w.setValue(0));
       celebrating.current = true;
+      buzz.success();
       goalIn.setValue(0);
       Animated.parallel([
         Animated.timing(wave1, { toValue: 1, duration: 1300, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
@@ -298,7 +301,7 @@ export default function HomeScreen() {
               <Text style={{ color: POINTS_COLOR, fontSize: 10.5, fontWeight: '600', marginTop: 5 }}>
                 {pointsToday >= DAILY_POINTS_CAP
                   ? 'Tope de hoy'
-                  : `faltan ${POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT)} pasos`}
+                  : (() => { const n = POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT); return n === 1 ? 'falta 1 paso' : `faltan ${n} pasos`; })()}
               </Text>
             </View>
           </ProgressRing>

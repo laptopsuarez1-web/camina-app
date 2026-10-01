@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/useCelebrationStore';
 import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
+import { buzz } from '@/lib/haptics';
 
 const GOLD = '#E2B33C';
 const SPARKS = ['#4FC3A8', '#E2B33C', '#B7A6F0', '#F2985C'];
@@ -71,6 +72,7 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
   const insets = useSafeAreaInsets();
   const y = useRef(new Animated.Value(-120)).current;
   useEffect(() => {
+    buzz.light();
     Animated.spring(y, { toValue: 0, friction: 8, tension: 90, useNativeDriver: true }).start();
     const id = setTimeout(() => {
       Animated.timing(y, { toValue: -140, duration: 260, useNativeDriver: true }).start(onDone);
@@ -105,6 +107,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
   const fade = useRef(new Animated.Value(0)).current;
   const check = useRef(new Animated.Value(0)).current;
   useEffect(() => {
+    buzz.success();
     Animated.parallel([
       Animated.timing(fade, { toValue: 1, duration: 220, useNativeDriver: true }),
       Animated.spring(y, { toValue: 0, friction: 9, tension: 80, useNativeDriver: true }),
@@ -147,6 +150,7 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
   const fade = useRef(new Animated.Value(0)).current;
   const pop = useRef(new Animated.Value(0)).current;
   useEffect(() => {
+    buzz.success();
     Animated.parallel([
       Animated.timing(fade, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.sequence([Animated.delay(200), Animated.spring(pop, { toValue: 1, friction: 5, tension: 100, useNativeDriver: true })]),
