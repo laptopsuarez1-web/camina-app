@@ -3,7 +3,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame, MapPin, IconBubble, type IconProps } from '@/components/icons';
+import { Activity, Flame, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -41,6 +41,8 @@ function useStepsHistory() {
   });
 }
 
+const CHART_H = 110;
+
 export default function ActividadScreen() {
   const { steps: stepsToday } = useTodaySteps();
   const { data: history, isLoading } = useStepsHistory();
@@ -71,7 +73,6 @@ export default function ActividadScreen() {
     }
     return days;
   }, [byDay]);
-  const weekMax = Math.max(1, ...weekDays.map((d) => d.steps));
   const weekTotal = weekDays.reduce((a, d) => a + d.steps, 0);
 
   const prevWeekTotal = useMemo(() => {
@@ -104,7 +105,9 @@ export default function ActividadScreen() {
     return days;
   }, [byDay, range]);
 
-  const maxSteps = Math.max(1, ...chartDays.map((d) => d.steps));
+  // Escala con margen sobre la meta para que la línea punteada siempre se vea.
+  const chartMax = Math.max(goal * 1.15, ...chartDays.map((d) => d.steps));
+  const rangeTotal = chartDays.reduce((a, d) => a + d.steps, 0);
 
   const calendarWeeks = useMemo(() => {
     const now = new Date();
@@ -144,31 +147,83 @@ export default function ActividadScreen() {
         style={{ borderRadius: 18, padding: 18, marginBottom: 14 }}
       >
         <View className="flex-row justify-between items-start">
-          <View>
-            <Text className="text-auth-muted text-xs mb-1.5">Esta semana</Text>
-            <Text className="text-white text-[30px] font-bold">{weekTotal.toLocaleString('es-BO')}</Text>
-            <Text className="text-auth-muted text-xs mt-1">pasos totales</Text>
+          <View className="flex-1">
+            <Text className="text-auth-muted text-xs mb-1">{range === 7 ? 'Esta semana' : 'Últimos 30 días'}</Text>
+            <Text className="text-white text-[30px] font-bold">{rangeTotal.toLocaleString('es-BO')}</Text>
+            <Text className="text-auth-muted text-xs mt-0.5">
+              pasos · {Math.round(rangeTotal / range).toLocaleString('es-BO')} por día
+              {range === 7 && weekTrendPct !== null ? `  ${weekTrendPct >= 0 ? '↑' : '↓'} ${Math.abs(weekTrendPct)}% vs. la anterior` : ''}
+            </Text>
           </View>
-          {weekTrendPct !== null && (
-            <View className="bg-mint/15 px-2.5 py-1 rounded-full">
-              <Text className="text-mint text-[12px] font-bold">
-                {weekTrendPct >= 0 ? '↑' : '↓'} {Math.abs(weekTrendPct)}%
-              </Text>
+          {/* Selector 7 / 30 días dentro de la tarjeta: cambia el único gráfico de la pantalla. */}
+          <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            {([7, 30] as const).map((r) => (
+              <Pressable
+                key={r}
+                onPress={() => setRange(r)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: range === r }}
+                className="rounded-full px-3 py-1.5"
+                style={{ backgroundColor: range === r ? colors.mint : 'transparent' }}
+              >
+                <Text className="font-bold text-[12px]" style={{ color: range === r ? colors.mintDark : colors.authMuted }}>
+                  {r} días
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {isLoading ? (
+          <ActivityIndicator color={colors.mint} style={{ marginVertical: 40 }} />
+        ) : (
+          <View style={{ height: CHART_H + 40, marginTop: 14 }}>
+            {/* Línea punteada de la meta diaria */}
+            {goal <= chartMax && (
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)' }}>
+                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -18 }}>
+                  meta {goal.toLocaleString('es-BO')}
+                </Text>
+              </View>
+            )}
+            <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
+              {chartDays.map((d) => {
+                const hit = d.steps >= goal;
+                return (
+                  <View
+                    key={d.key}
+                    className="flex-1 items-center justify-end"
+                    style={{ height: '100%' }}
+                    accessible
+                    accessibilityLabel={`${d.isToday ? 'Hoy' : dayLabel(d.key)}: ${d.steps.toLocaleString('es-BO')} pasos${hit ? ', meta cumplida' : ''}`}
+                  >
+                    {d.isToday && range === 7 ? (
+                      <Text className="text-[12px] font-bold text-white mb-1">{d.steps.toLocaleString('es-BO')}</Text>
+                    ) : null}
+                    <View
+                      style={{
+                        width: '100%',
+                        height: Math.max(4, (d.steps / chartMax) * CHART_H),
+                        borderTopLeftRadius: range === 7 ? 8 : 3,
+                        borderTopRightRadius: range === 7 ? 8 : 3,
+                        borderBottomLeftRadius: 3,
+                        borderBottomRightRadius: 3,
+                        backgroundColor: d.isToday ? colors.mint : hit ? colors.aqua : 'rgba(79,195,168,0.4)',
+                        ...(d.isToday ? { borderWidth: 1.5, borderColor: '#fff' } : {}),
+                      }}
+                    />
+                    <Text
+                      className="text-[12px] mt-1.5"
+                      style={{ height: 16, color: d.isToday ? '#fff' : colors.authMuted, fontWeight: d.isToday ? '800' : '500' }}
+                    >
+                      {range === 7 ? (d.isToday ? 'Hoy' : d.label) : ''}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
-          )}
-        </View>
-        <View className="flex-row items-end gap-1.5 mt-3.5" style={{ height: 34 }}>
-          {weekDays.map((d, i) => (
-            <View
-              key={d.key}
-              className="flex-1 rounded-sm"
-              style={{
-                height: Math.max(3, (d.steps / weekMax) * 34),
-                backgroundColor: i === 6 ? 'rgba(255,255,255,0.25)' : colors.aqua,
-              }}
-            />
-          ))}
-        </View>
+          </View>
+        )}
       </LinearGradient>
 
       {dailyDiffVsCommunity !== null && (
@@ -192,7 +247,7 @@ export default function ActividadScreen() {
       )}
 
       {(streak ?? 0) > 0 && (
-        <View className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4.5" style={{ backgroundColor: '#FDEEE2' }}>
+        <View className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4" style={{ backgroundColor: '#FDEEE2' }}>
           <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
             <Text className="text-[13.5px] font-bold" style={{ color: colors.warnDeep }}>¡Vas en racha!</Text>
@@ -201,53 +256,29 @@ export default function ActividadScreen() {
         </View>
       )}
 
-      <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Tu progreso</Text>
-      <View className="flex-row gap-2.5 mb-4">
-        <StatCard icon={Activity} tone="aqua" label="Hoy" value={stepsToday.toLocaleString('es-BO')} unit="pasos" color={colors.aqua} pct={goalPct} />
-        <StatCard icon={MapPin} tone="purple" label="Km hoy" value={km.toFixed(1)} unit="km" color={colors.purple} pct={goalPct} />
-        <StatCard icon={Flame} tone="orange" label="Calorías" value={String(kcal)} unit="kcal" color={colors.warn} pct={goalPct} />
-      </View>
-
-      <Glass className="flex-row rounded-full p-1 mb-4">
-        {([7, 30] as const).map((r) => (
-          <Pressable
-            key={r}
-            onPress={() => setRange(r)}
-            className="flex-1 rounded-full py-2.5 items-center"
-            style={{ backgroundColor: range === r ? colors.aquaDeep : 'transparent' }}
-          >
-            <Text
-              className="font-bold text-[13px]"
-              style={{ color: range === r ? '#fff' : colors.light.muted }}
-            >
-              {r} días
-            </Text>
-          </Pressable>
-        ))}
+      <Text className="font-bold text-base mt-1 mb-2.5 text-text-light dark:text-text-dark">Hoy</Text>
+      <Glass className="rounded-3xl p-4 mb-4">
+        <View className="flex-row mb-3">
+          {[
+            [stepsToday.toLocaleString('es-BO'), 'pasos'],
+            [km.toFixed(1).replace('.', ','), 'km'],
+            [String(kcal), 'kcal'],
+          ].map(([value, unit]) => (
+            <View key={unit} className="flex-1">
+              <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{value}</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">{unit}</Text>
+            </View>
+          ))}
+        </View>
+        <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
+          <View className="h-full rounded-full" style={{ width: `${goalPct}%`, backgroundColor: colors.aquaDeep }} />
+        </View>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+          {goalPct >= 100
+            ? '¡Meta del día cumplida!'
+            : `${goalPct} % de tu meta · faltan ${(goal - stepsToday).toLocaleString('es-BO')} pasos`}
+        </Text>
       </Glass>
-
-      {isLoading ? (
-        <ActivityIndicator color={colors.aqua} style={{ marginBottom: 16 }} />
-      ) : (
-        <Glass className="rounded-3xl p-4 mb-4">
-          <View className="flex-row items-end gap-1.5" style={{ height: 90 }}>
-            {chartDays.map((d) => (
-              <View key={d.key} className="flex-1 items-center gap-1">
-                <View
-                  className="w-full rounded-md"
-                  style={{
-                    height: Math.max(4, (d.steps / maxSteps) * 70),
-                    backgroundColor: d.isToday ? colors.warn : colors.aquaDeep,
-                  }}
-                />
-                {range === 7 && (
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">{d.label}</Text>
-                )}
-              </View>
-            ))}
-          </View>
-        </Glass>
-      )}
 
       <Glass className="rounded-3xl p-4 mb-4">
         <Text className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
@@ -303,7 +334,7 @@ export default function ActividadScreen() {
               </View>
               <Text
                 className="text-[12px] font-bold"
-                style={{ color: met ? colors.aquaDeep : colors.warn }}
+                style={{ color: met ? colors.aquaDeep : colors.warnDeep }}
               >
                 {met ? 'Meta cumplida' : 'Meta no cumplida'}
               </Text>
@@ -322,35 +353,3 @@ export default function ActividadScreen() {
   );
 }
 
-function StatCard({
-  icon,
-  tone,
-  label,
-  value,
-  unit,
-  color,
-  pct,
-}: {
-  icon: (p: IconProps) => React.ReactElement;
-  tone: 'aqua' | 'purple' | 'orange';
-  label: string;
-  value: string;
-  unit: string;
-  color: string;
-  pct: number;
-}) {
-  return (
-    <Glass className="flex-1 rounded-2xl p-3">
-      <View className="mb-2">
-        <IconBubble icon={icon} tone={tone} size={30} />
-      </View>
-      <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1">{label}</Text>
-      <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark mb-2">
-        {value} <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{unit}</Text>
-      </Text>
-      <View className="h-1 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-        <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </View>
-    </Glass>
-  );
-}
