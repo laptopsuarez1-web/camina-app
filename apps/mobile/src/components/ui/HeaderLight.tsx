@@ -20,6 +20,9 @@ export function HeaderLight() {
     <View className="flex-row justify-between items-center px-5 pt-14 pb-3 bg-bg-light dark:bg-bg-dark">
       <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${balance ?? 0} Puntos, ver detalle`}
+        hitSlop={6}
         onPress={() => router.push('/(tabs)/puntos')}
         className="flex-row items-center gap-1.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full pl-1.5 pr-3"
         style={{ height: 32 }}
@@ -30,6 +33,9 @@ export function HeaderLight() {
       <View className="flex-row items-center gap-2.5">
         <BellButton color={colors.light.muted} />
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tu perfil"
+          hitSlop={6}
           onPress={() => router.push('/(tabs)/perfil')}
           className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
         >

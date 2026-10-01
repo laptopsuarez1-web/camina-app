@@ -465,6 +465,9 @@ export default function CanjesScreen() {
             style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tus Puntos, ver detalle"
+              hitSlop={6}
               onPress={() => router.push('/(tabs)/puntos')}
               className="flex-row items-center bg-card-light rounded-full pl-1.5 pr-3"
               style={{ height: 32, gap: 6 }}
@@ -475,6 +478,9 @@ export default function CanjesScreen() {
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <BellButton color={colors.light.muted} bg="#fff" />
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Tu perfil"
+                hitSlop={6}
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="bg-mint rounded-full items-center justify-center overflow-hidden"
                 style={{ width: 32, height: 32 }}
@@ -546,6 +552,8 @@ export default function CanjesScreen() {
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyOpen }}
               onPress={() => setOnlyOpen((v) => !v)}
               className="rounded-full border px-3.5 py-2"
               style={{ backgroundColor: onlyOpen ? colors.aquaDeep : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
@@ -553,6 +561,8 @@ export default function CanjesScreen() {
               <Text style={{ fontSize: 12, fontWeight: '600', color: onlyOpen ? '#fff' : colors.light.muted }}>Disponibles ahora</Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyFavs }}
               onPress={() => setOnlyFavs((v) => !v)}
               className="flex-row items-center rounded-full border px-3.5 py-2"
               style={{ gap: 5, backgroundColor: onlyFavs ? '#E5484D' : colors.light.card, borderColor: onlyFavs ? '#E5484D' : colors.light.line }}
@@ -567,6 +577,8 @@ export default function CanjesScreen() {
               return (
                 <Pressable
                   key={c}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: category === c }}
                   onPress={() => setCategory(c)}
                   className="flex-row items-center rounded-full border"
                   style={{
@@ -619,7 +631,7 @@ export default function CanjesScreen() {
                   </Text>
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
-                  <Pressable onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
                     <Heart size={20} color={favorites.isFavorite(g.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(g.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                   <ChevronRight size={18} color={colors.light.muted} />
@@ -675,6 +687,8 @@ export default function CanjesScreen() {
             </MapView>
           )}
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar mapa"
             onPress={() => setMapOpen(false)}
             className="absolute bg-card-light rounded-full items-center justify-center"
             style={{ top: 56, left: 20, width: 40, height: 40 }}
@@ -706,6 +720,8 @@ export default function CanjesScreen() {
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
                 )}
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Cerrar"
                   onPress={() => setProfileBusinessId(null)}
                   className="absolute bg-card-light rounded-full items-center justify-center"
                   style={{ top: 54, left: 20, width: 40, height: 40 }}
@@ -725,7 +741,7 @@ export default function CanjesScreen() {
                     </Text>
                     {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
                   </View>
-                  <Pressable onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                 </View>

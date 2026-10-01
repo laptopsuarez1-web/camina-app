@@ -340,6 +340,8 @@ export default function PerfilScreen() {
           {([[0, 'Sólido'], [1, 'Equilibrado'], [2, 'Cristal']] as [GlassLevel, string][]).map(([lvl, label]) => (
             <Pressable
               key={lvl}
+              accessibilityRole="button"
+              accessibilityState={{ selected: glassLevel === lvl }}
               onPress={() => setGlassLevel(lvl)}
               className="flex-1 rounded-full py-2 items-center"
               style={{ backgroundColor: glassLevel === lvl ? colors.aquaDeep : 'transparent' }}

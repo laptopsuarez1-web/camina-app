@@ -212,6 +212,9 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
             <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tus Puntos, ver detalle"
+              hitSlop={6}
               onPress={() => router.push('/(tabs)/puntos')}
               className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3"
               style={{ height: 32 }}
@@ -222,6 +225,9 @@ export default function HomeScreen() {
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color="#C4B8E8" />
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Tu perfil"
+                hitSlop={6}
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
               >
@@ -421,7 +427,10 @@ export default function HomeScreen() {
       <View className="pt-5 pb-2">
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
           <Pressable
-            onPress={() => router.push('/(tabs)/puntos')}
+            accessibilityRole="button"
+              accessibilityLabel="Tus Puntos, ver detalle"
+              hitSlop={6}
+              onPress={() => router.push('/(tabs)/puntos')}
             className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
             style={{ gap: 10, backgroundColor: '#FFF3D1', borderWidth: 1, borderColor: '#F3D9A0' }}
           >

@@ -66,6 +66,8 @@ export default function GruposScreen() {
       <View className="flex-row justify-between items-center mb-1">
         <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark">Grupos</Text>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Crear grupo"
           onPress={() => setCreating((v) => !v)}
           className="bg-aqua-deep w-8.5 h-8.5 rounded-full items-center justify-center"
         >
@@ -78,6 +80,8 @@ export default function GruposScreen() {
 
       <Glass className="flex-row rounded-full p-1 mb-4">
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: view === 'mios' }}
           onPress={() => setView('mios')}
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
@@ -87,6 +91,8 @@ export default function GruposScreen() {
           </Text>
         </Pressable>
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: view === 'ranking' }}
           onPress={() => setView('ranking')}
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}

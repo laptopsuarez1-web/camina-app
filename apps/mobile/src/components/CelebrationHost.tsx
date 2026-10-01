@@ -123,7 +123,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
   return (
     <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
       <Animated.View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(43,35,80,0.32)', opacity: fade }}>
-        <Pressable style={{ flex: 1 }} onPress={close} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" style={{ flex: 1 }} onPress={close} />
       </Animated.View>
       <Animated.View
         style={{
