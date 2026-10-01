@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Platform } from 'react-native';
+import { View, Text, Pressable, Platform, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import { useGlassStore } from '@/store/useGlassStore';
 // Barra de pestañas flotante de "vidrio": cápsula translúcida con la pestaña activa como botón brillante.
 type TabBarProps = {
   state: { index: number; routes: { key: string; name: string; params?: object }[] };
-  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarStyle?: { display?: string }; tabBarIcon?: (p: { focused: boolean; color: string; size: number }) => React.ReactNode } }>;
+  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarItemStyle?: unknown; tabBarStyle?: { display?: string }; tabBarIcon?: (p: { focused: boolean; color: string; size: number }) => React.ReactNode } }>;
   navigation: {
     emit: (e: { type: string; target: string; canPreventDefault?: boolean }) => { defaultPrevented: boolean };
     navigate: (name: string, params?: object) => void;
@@ -63,8 +63,10 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
-            // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null.
-            if (options.href === null) return null;
+            // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null;
+            // expo-router las convierte en tabBarItemStyle { display: 'none' }, así que se ocultan por ahí.
+            const itemStyle = StyleSheet.flatten(options.tabBarItemStyle as never) as { display?: string } | undefined;
+            if (options.href === null || itemStyle?.display === 'none') return null;
             const focused = state.index === index;
             const color = focused ? colors.aqua : dark ? '#B3A6D6' : '#7C6A9C';
             const Icon = options.tabBarIcon;
