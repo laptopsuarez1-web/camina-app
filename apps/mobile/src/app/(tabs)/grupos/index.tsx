@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
@@ -163,6 +164,17 @@ export default function GruposScreen() {
       )}
 
       {isLoading && <ActivityIndicator color={colors.aqua} />}
+
+      {!isLoading && my.length === 0 && (
+        <View className="mb-5">
+          <EmptyState
+            title="Todavía no estás en ningún grupo"
+            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate a uno de abajo."
+            actionLabel="Crear un grupo"
+            onAction={() => setCreating(true)}
+          />
+        </View>
+      )}
 
       {my.length > 0 && (
         <>

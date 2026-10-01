@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   View,
   Text,
@@ -28,6 +29,7 @@ import {
   type BenefitWithBusiness,
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
+import { askForReviewOnce } from '@/lib/review';
 import { BellButton } from '@/components/ui/BellButton';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -407,6 +409,7 @@ export default function CanjesScreen() {
   }
 
   function closeCode() {
+    if (confirmed) askForReviewOnce();
     setActiveRedemption(null);
     setActiveBenefit(null);
   }
@@ -640,9 +643,10 @@ export default function CanjesScreen() {
           ))}
 
           {!isLoading && groups.length === 0 && (
-            <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-8">
-              Todavía no hay comercios con estos filtros.
-            </Text>
+            <EmptyState
+              title="No encontramos comercios acá"
+              text="Probá con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, seguí juntando puntos."
+            />
           )}
         </View>
       </ScrollView>

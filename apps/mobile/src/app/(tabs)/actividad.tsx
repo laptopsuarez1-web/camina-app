@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -310,9 +311,10 @@ export default function ActividadScreen() {
           );
         })}
         {!isLoading && fullHistory.length === 0 && (
-          <Text className="text-muted-light dark:text-muted-dark text-[13px]">
-            Todavía no hay historial — sincronizá pasos desde Inicio.
-          </Text>
+          <EmptyState
+            title="Tu historial empieza hoy"
+            text="Abrí Inicio y caminá: tus pasos de cada día se van guardando acá para que veas cómo avanzás."
+          />
         )}
       </View>
       </ScrollView>

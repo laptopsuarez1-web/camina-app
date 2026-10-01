@@ -4,6 +4,7 @@ import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { celebrate } from '@/store/useCelebrationStore';
 
 export default function EventosScreen() {
   const { data: retos } = useRetos();
@@ -23,7 +24,7 @@ export default function EventosScreen() {
   async function handleClaim(reto: Reto) {
     try {
       const points = await claim.mutateAsync(reto.id);
-      Alert.alert('¡Reto cumplido! 🎉', `Ganaste ${points} Puntos.`);
+      celebrate({ kind: 'sheet', title: '¡Reto cumplido!', body: reto.title, points: Number(points) || reto.reward_points });
     } catch (e) {
       Alert.alert('No pudimos darte los puntos', e instanceof Error ? e.message : 'Intentá de nuevo.');
     }

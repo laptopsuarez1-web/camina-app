@@ -1,11 +1,13 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, IconBubble } from '@/components/icons';
-import { useGroupChallenge, useJoinChallenge, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
+import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { celebrate } from '@/store/useCelebrationStore';
+import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { groupInviteLink } from '@/constants/sharing';
@@ -13,6 +15,26 @@ import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
+
+// Lunes de esta semana (hora local): identifica "la semana" para celebrar la meta una sola vez.
+function weekKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// Barra de la meta del grupo: se llena con animación al entrar.
+function GoalBar({ pct }: { pct: number }) {
+  const w = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(w, { toValue: pct, duration: 900, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+  }, [pct, w]);
+  return (
+    <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+      <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: colors.aqua }} />
+    </View>
+  );
+}
 
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -31,6 +53,35 @@ export default function GroupDetailScreen() {
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
+  const { data: lastResult } = useMyChallengeResult(groupId);
+  const groupName = data?.group.name;
+  const groupTotal = data ? data.members.reduce((a, m) => a + m.steps, 0) : 0;
+  const groupTarget = data?.group.challenge_target ?? 0;
+
+  // Gané puntos en un desafío que ya terminó: pantalla de celebración, una sola vez.
+  useEffect(() => {
+    if (!lastResult || lastResult.payout <= 0) return;
+    const key = `camina_ch_win_${lastResult.challengeId}`;
+    AsyncStorage.getItem(key).then((seen) => {
+      if (seen) return;
+      AsyncStorage.setItem(key, '1').catch(() => {});
+      celebrate({ kind: 'win', title: `Ganaste «${lastResult.name}»`, body: `Quedaste #${lastResult.rank}${groupName ? ` en ${groupName}` : ''}`, points: lastResult.payout });
+      queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastResult?.challengeId]);
+
+  // Meta semanal del grupo cumplida: aviso una sola vez por semana.
+  useEffect(() => {
+    if (!groupId || groupTarget <= 0 || groupTotal < groupTarget) return;
+    const key = `camina_gwk_${groupId}_${weekKey()}`;
+    AsyncStorage.getItem(key).then((seen) => {
+      if (seen) return;
+      AsyncStorage.setItem(key, '1').catch(() => {});
+      celebrate({ kind: 'toast', icon: 'users', title: '¡Lo lograron juntos!', body: `${groupName ?? 'Tu grupo'} cumplió la meta de la semana` });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
 
   async function saveGoal() {
     const n = parseInt(goalInput.replace(/\D/g, ''), 10);
@@ -202,7 +253,7 @@ export default function GroupDetailScreen() {
           </Glass>
         </View>
 
-        <Glass className="mx-5 rounded-2xl p-4 mb-3">
+        <Glass className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <IconBubble icon={Users} tone="purple" size={34} />
@@ -239,12 +290,17 @@ export default function GroupDetailScreen() {
               </Pressable>
             </View>
           )}
-          <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-            <View style={{ width: `${challengePct}%`, height: '100%', backgroundColor: colors.aqua }} />
-          </View>
-          <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
-            Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
-          </Text>
+          <GoalBar pct={challengePct} />
+          {challengePct >= 100 ? (
+            <View className="flex-row items-center mt-2.5 rounded-xl px-3 py-2" style={{ gap: 6, backgroundColor: 'rgba(79,195,168,0.14)' }}>
+              <Check size={14} color={colors.aqua} />
+              <Text className="text-[12.5px] font-bold" style={{ color: '#1f7d68' }}>¡Lo lograron juntos!</Text>
+            </View>
+          ) : (
+            <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-2">
+              Meta semanal compartida — sumen pasos juntos.{isCreator ? ' Tocá la meta para cambiarla.' : ''}
+            </Text>
+          )}
         </Glass>
 
         {active ? (

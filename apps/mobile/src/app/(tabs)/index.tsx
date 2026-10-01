@@ -11,7 +11,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
 import { useIsQa } from '@/hooks/useIsQa';
-import { usePointsBalance, useSyncSteps } from '@/hooks/usePoints';
+import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
+import { useHomeMoments } from '@/hooks/useMoments';
 import { useBenefits } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
@@ -96,6 +97,8 @@ export default function HomeScreen() {
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
+  useHomeMoments(streak);
+  const { data: expiring } = usePointsExpiringSoon();
   const { data: reto } = useWeeklyGoalReto();
   const { data: globalRanking } = useGlobalRanking();
   const { data: groupRanking } = useMyGroupRanking();
@@ -375,13 +378,19 @@ export default function HomeScreen() {
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-            <Text className="text-white font-bold text-[13px] mb-1">
-              {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect para contar tus pasos' : 'Falta el permiso de pasos'}
-            </Text>
-            <Text className="text-auth-muted text-[12px] leading-4 mb-3">
-              Camina cuenta tus pasos desde Health Connect, la fuente oficial de Android. También necesitás una app de pasos que
-              escriba ahí (Google Fit, Samsung Health o Mi Fitness).
-            </Text>
+            <View className="flex-row items-center" style={{ gap: 12, marginBottom: 10 }}>
+              <Image source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
+              <View className="flex-1">
+                <Text className="text-white font-bold text-[14px]">
+                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : 'Activá el conteo de pasos'}
+                </Text>
+                <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
+                  {healthConnectStatus === 'unavailable'
+                    ? 'Es la app de Android que le pasa tus pasos a Camina.'
+                    : 'Sin este permiso no podemos sumar tus puntos.'}
+                </Text>
+              </View>
+            </View>
             <Pressable
               onPress={() => {
                 if (healthConnectStatus === 'unavailable') {
@@ -395,7 +404,7 @@ export default function HomeScreen() {
               className="bg-mint rounded-xl py-2.5 items-center"
             >
               <Text className="text-mint-dark font-bold text-[13px]">
-                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : 'Abrir Health Connect'}
+                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : 'Activar'}
               </Text>
             </Pressable>
           </View>
@@ -407,6 +416,22 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
+          <Pressable
+            onPress={() => router.push('/(tabs)/puntos')}
+            className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
+            style={{ gap: 10, backgroundColor: '#FFF3D1', borderWidth: 1, borderColor: '#F3D9A0' }}
+          >
+            <Image source={require('@/../assets/camina-coin.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
+            <View className="flex-1">
+              <Text className="text-[13px] font-bold" style={{ color: '#7A5206' }}>
+                {expiring.amount} {expiring.amount === 1 ? 'punto vence' : 'puntos vencen'} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} día${expiring.days === 1 ? '' : 's'}`}
+              </Text>
+              <Text className="text-[11.5px]" style={{ color: '#9A6A08' }}>Canjealos antes de perderlos</Text>
+            </View>
+            <ChevronRight size={16} color="#9A6A08" />
+          </Pressable>
+        ) : null}
         <View className="flex-row items-center justify-between px-5 mb-3">
           <Text className="font-bold text-base text-text-light dark:text-text-dark">Beneficios cerca tuyo</Text>
           <Pressable onPress={() => router.push('/(tabs)/canjes?view=lista')}>

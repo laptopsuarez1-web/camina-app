@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -203,7 +204,10 @@ export default function PuntosScreen() {
           </Glass>
         ))}
         {!isLoading && (movimientos ?? []).length === 0 && (
-          <Text className="text-muted-light dark:text-muted-dark text-[13px]">Todavía no hay movimientos.</Text>
+          <EmptyState
+            title="Tus puntos van a aparecer acá"
+            text="Cada 1.000 pasos que camines sumás un punto. También ganás por retos, invitando amigos y desafíos de grupo."
+          />
         )}
       </View>
     </ScrollView>

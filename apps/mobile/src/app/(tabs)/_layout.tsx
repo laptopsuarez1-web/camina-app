@@ -9,6 +9,7 @@ import { shareCoarseLocation } from '@/lib/coarse-location';
 import { registerDevice } from '@/lib/device';
 import { useColorScheme } from 'nativewind';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
+import { CelebrationHost } from '@/components/CelebrationHost';
 
 // Ícono de la barra: el activo va relleno y sobre una pastilla verde suave.
 function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
@@ -46,6 +47,7 @@ export default function TabsLayout() {
   if (!initializing && !session) return <Redirect href="/(auth)/welcome" />;
 
   return (
+    <View style={{ flex: 1 }}>
     <Tabs
       tabBar={(props) => <GlassTabBar {...(props as unknown as React.ComponentProps<typeof GlassTabBar>)} />}
       screenOptions={{
@@ -74,5 +76,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null }} />
       <Tabs.Screen name="grupos/nuevo-desafio" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
+    <CelebrationHost />
+    </View>
   );
 }

@@ -88,3 +88,31 @@ export function daysLeft(endDay: string) {
   const end = new Date(endDay + 'T23:59:59');
   return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
 }
+
+// Mi resultado en el último desafío terminado del grupo (para celebrar una sola vez si gané puntos).
+export function useMyChallengeResult(groupId: string | undefined) {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['group-challenge-result', groupId, userId],
+    enabled: !!groupId && !!userId,
+    queryFn: async () => {
+      const { data: ch } = await supabase
+        .from('group_challenges')
+        .select('id, name')
+        .eq('group_id', groupId!)
+        .eq('status', 'finished')
+        .order('settled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!ch) return null;
+      const { data: res } = await supabase
+        .from('group_challenge_results')
+        .select('payout, rank')
+        .eq('challenge_id', ch.id)
+        .eq('user_id', userId!)
+        .maybeSingle();
+      if (!res) return null;
+      return { challengeId: ch.id as string, name: ch.name as string, payout: res.payout as number, rank: res.rank as number };
+    },
+  });
+}
