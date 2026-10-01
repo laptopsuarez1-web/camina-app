@@ -37,6 +37,7 @@ export interface Business {
   google_review_url: string | null;
   city: string | null;
   account_kind?: 'commerce' | 'events_only';
+  plan_onboarded?: boolean;
   founder: boolean;
   founder_until: string | null;
   plan: BusinessPlan;

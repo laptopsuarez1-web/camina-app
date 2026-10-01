@@ -67,12 +67,12 @@ export default function CanjesPage() {
               setResult(null);
             }}
             placeholder="000000"
-            className="flex-1 bg-white text-text rounded-[10px] px-3.5 py-2.5 text-base tracking-[3px] text-center"
+            className="flex-1 min-w-0 w-full bg-white text-text rounded-[10px] px-3.5 py-2.5 text-base tracking-[3px] text-center"
           />
           <button
             onClick={checkCode}
             disabled={checking}
-            className="bg-mint text-mint-dark rounded-[10px] px-4.5 font-semibold text-[13px]"
+            className="shrink-0 bg-mint text-mint-dark rounded-[10px] px-4.5 font-semibold text-[13px]"
           >
             Validar
           </button>

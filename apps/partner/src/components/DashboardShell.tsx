@@ -44,6 +44,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     } else if (!business && isAdmin) {
       router.replace('/admin');
+    } else if (business && role === 'owner' && business.account_kind !== 'events_only' && business.plan_onboarded === false) {
+      // Comercio nuevo: antes de ver el panel elige su plan (gratis o de pago), una sola vez.
+      router.replace('/elegir-plan');
     }
   }, [loading, session, business, isAdmin, role, pathname, router]);
 

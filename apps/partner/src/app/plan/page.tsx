@@ -1,72 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { type BusinessPlan } from '@/lib/supabase';
+import { PLANS, PAYMENT_QR, WHATSAPP_NUMBER } from '@/lib/plans';
+import { PaymentModal } from '@/components/PaymentModal';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
-
-const WHATSAPP_NUMBER = '59162714286';
-
-const PAYMENT_QR: Partial<Record<BusinessPlan, { image: string; amount: string }>> = {
-  paso_firme: { image: '/payment/qr-paso-firme.jpg', amount: 'Bs 100' },
-  paso_adelante: { image: '/payment/qr-paso-adelante.webp', amount: 'Bs 300' },
-};
-
-function whatsappLink(planName: string, amount: string) {
-  const text = `Hola! Soy dueño de un comercio en Camina y quiero pasar al plan ${planName} (${amount}). Te mando el comprobante de la transferencia.`;
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-}
-
-const PLANS: {
-  id: BusinessPlan;
-  name: string;
-  price: string;
-  blurb: string;
-  features: string[];
-  featured?: boolean;
-}[] = [
-  {
-    id: 'primer_paso',
-    name: 'Primer Paso',
-    price: 'Gratis',
-    blurb: 'Empezá a recibir clientes sin costo fijo.',
-    features: [
-      'Aparecés en el mapa y tu categoría',
-      '1 solo beneficio activo, 100% gratis',
-      'Mínimo 3 cupones por día',
-      'Sin estadísticas',
-    ],
-  },
-  {
-    id: 'paso_firme',
-    name: 'Paso Firme',
-    price: 'Bs 100/mes',
-    blurb: 'Combiná regalos y descuentos, sin límite.',
-    features: [
-      'Todo lo de Primer Paso',
-      'Podés combinar regalo y descuento',
-      'Cupones ilimitados',
-      'Varios beneficios a la vez',
-      'Estadísticas básicas',
-    ],
-    featured: true,
-  },
-  {
-    id: 'paso_adelante',
-    name: 'Paso Adelante',
-    price: 'Bs 300/mes',
-    blurb: 'Sé la primera opción de tu zona.',
-    features: [
-      'Todo lo de Paso Firme',
-      'Pin destacado en el mapa',
-      'Primero en tu categoría',
-      'Notificaciones push a usuarios cerca',
-      'Difusión de tu local en las redes de Camina',
-    ],
-  },
-];
 
 export default function PlanPage() {
   const { business } = useBusinessAuth();
@@ -94,40 +34,7 @@ export default function PlanPage() {
       <TopBar title="Tu plan" subtitle="Cambiá cuando quieras — sin permanencia." />
 
       {paying && payingQr && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-[360px] w-full text-center relative">
-            <button
-              onClick={() => setPayingId(null)}
-              aria-label="Cerrar"
-              className="absolute top-3 right-3 w-7 h-7 rounded-full bg-bg text-muted flex items-center justify-center text-[15px]"
-            >
-              ✕
-            </button>
-            <p className="font-bold text-[15px] mb-1">Pasar a {paying.name}</p>
-            <p className="text-muted text-[12.5px] mb-4">
-              Escaneá el código con tu app del banco y transferí el monto exacto ({payingQr.amount}).
-              Después mandanos el comprobante por WhatsApp y activamos tu plan.
-            </p>
-            <div className="rounded-xl overflow-hidden border border-line mb-4">
-              <Image src={payingQr.image} alt={`QR de pago ${paying.name}`} width={340} height={480} className="w-full h-auto" />
-            </div>
-            <a
-              href={whatsappLink(paying.name, payingQr.amount)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full rounded-[10px] py-2.5 font-semibold text-[13px] mb-2"
-              style={{ background: '#25D366', color: '#fff' }}
-            >
-              Enviar comprobante por WhatsApp
-            </a>
-            <button
-              onClick={() => setPayingId(null)}
-              className="w-full bg-bg text-muted border border-line rounded-[10px] py-2.5 font-semibold text-[13px]"
-            >
-              Listo, ya mandé el pago
-            </button>
-          </div>
-        </div>
+        <PaymentModal planName={paying.name} qr={payingQr} onClose={() => setPayingId(null)} />
       )}
 
       {pending && (
