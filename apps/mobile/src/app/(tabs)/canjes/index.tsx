@@ -567,7 +567,7 @@ export default function CanjesScreen() {
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: on ? '#fff' : colors.light.muted }}>{c}</Text>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
                 </Pressable>
               );
             })}
@@ -578,7 +578,7 @@ export default function CanjesScreen() {
               className="rounded-full border px-3.5 py-2"
               style={{ backgroundColor: onlyOpen ? colors.aquaDeep : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
             >
-              <Text style={{ fontSize: 12, fontWeight: '600', color: onlyOpen ? '#fff' : colors.light.muted }}>Disponibles ahora</Text>
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -588,7 +588,7 @@ export default function CanjesScreen() {
               style={{ gap: 5, backgroundColor: onlyFavs ? '#E5484D' : colors.light.card, borderColor: onlyFavs ? '#E5484D' : colors.light.line }}
             >
               <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
-              <Text style={{ fontSize: 12, fontWeight: '600', color: onlyFavs ? '#fff' : colors.light.muted }}>Favoritos</Text>
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
             </Pressable>
             {categories.filter((c) => c !== 'Todos').map((c) => {
               const st = categoryStyle(c);
@@ -611,7 +611,7 @@ export default function CanjesScreen() {
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: on ? '#fff' : colors.light.muted }}>{c}</Text>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
                 </Pressable>
               );
             })}
@@ -645,7 +645,7 @@ export default function CanjesScreen() {
                       <Text className="flex-1 text-[12px] text-aqua-deep dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
                     </View>
                   ) : null}
-                  <Text className="text-[12px] font-semibold mt-1" style={{ color: g.openNow ? colors.aquaDeep : colors.light.muted }}>
+                  <Text className="text-muted-light dark:text-muted-dark text-[12px] font-semibold mt-1" style={{ ...(g.openNow ? { color: colors.aquaDeep } : null) }}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
                     {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>

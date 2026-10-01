@@ -164,7 +164,7 @@ export default function NuevoDesafioScreen() {
             <View className="flex-row" style={{ gap: 8 }}>
               {[3, 7, 10, 14].map((d) => (
                 <Pressable key={d} accessibilityRole="button" accessibilityState={{ selected: days === d }} onPress={() => setDays(d)} className="rounded-full px-4 py-2.5" style={{ backgroundColor: days === d ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
-                  <Text style={{ fontWeight: '800', color: days === d ? '#fff' : colors.light.muted }}>{d} días</Text>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(days === d ? { color: '#fff' } : null) }}>{d} días</Text>
                 </Pressable>
               ))}
             </View>
@@ -180,7 +180,7 @@ export default function NuevoDesafioScreen() {
               {STAKES.map((v) => (
                 <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
                   {v > 0 && <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />}
-                  <Text style={{ fontWeight: '800', color: stake === v ? '#fff' : colors.light.muted }}>{v}</Text>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(stake === v ? { color: '#fff' } : null) }}>{v}</Text>
                 </Pressable>
               ))}
             </View>

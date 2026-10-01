@@ -361,7 +361,7 @@ export default function PerfilScreen() {
               className="flex-1 rounded-full py-2 items-center"
               style={{ backgroundColor: glassLevel === lvl ? colors.aquaDeep : 'transparent' }}
             >
-              <Text style={{ fontSize: 12.5, fontWeight: '700', color: glassLevel === lvl ? '#fff' : colors.light.muted }}>{label}</Text>
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12.5, fontWeight: '700', ...(glassLevel === lvl ? { color: '#fff' } : null) }}>{label}</Text>
             </Pressable>
           ))}
         </View>

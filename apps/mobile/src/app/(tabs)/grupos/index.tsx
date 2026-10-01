@@ -78,7 +78,7 @@ export default function GruposScreen() {
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
         >
-          <Text className="text-[12.5px] font-semibold" style={{ color: view === 'mios' ? '#fff' : colors.light.muted }}>
+          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'mios' ? { color: '#fff' } : null) }}>
             Mis grupos
           </Text>
         </Pressable>
@@ -89,7 +89,7 @@ export default function GruposScreen() {
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}
         >
-          <Text className="text-[12.5px] font-semibold" style={{ color: view === 'ranking' ? '#fff' : colors.light.muted }}>
+          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'ranking' ? { color: '#fff' } : null) }}>
             Ranking global
           </Text>
         </Pressable>
@@ -262,7 +262,7 @@ export default function GruposScreen() {
               <View>
                 <Text className="text-text-light dark:text-text-dark">{g.name}</Text>
                 <Text className="text-muted-light dark:text-muted-dark text-xs">
-                  {g.group_members.length} miembros
+                  {g.group_members.length} {g.group_members.length === 1 ? 'miembro' : 'miembros'}
                 </Text>
               </View>
             </View>
