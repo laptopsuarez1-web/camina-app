@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing } from 'react-native';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,44 +37,6 @@ function greeting(name: string) {
   if (h < 12) return `Buen día, ${label}`;
   if (h < 19) return `Buenas tardes, ${label}`;
   return `Buenas noches, ${label}`;
-}
-
-// "CAMINA" con el cuerpo grueso del original. En nativo no existe
-// -webkit-text-stroke, así que el trazo se simula con copias desplazadas
-// menos de 1px alrededor del texto (en web se usa el trazo real).
-const WORDMARK_STYLE = {
-  color: colors.mint,
-  fontSize: 21,
-  fontWeight: '900' as const,
-  letterSpacing: -0.6,
-};
-const STROKE_OFFSETS: [number, number][] = [
-  [0.8, 0], [-0.8, 0], [0, 0.8], [0, -0.8], [0.6, 0.6], [-0.6, 0.6], [0.6, -0.6], [-0.6, -0.6],
-];
-function Wordmark() {
-  return (
-    <View>
-      {Platform.OS !== 'web' &&
-        STROKE_OFFSETS.map(([x, y], i) => (
-          <Text key={i} style={[WORDMARK_STYLE, { position: 'absolute', left: x, top: y }]}>
-            CAMINA
-          </Text>
-        ))}
-      <Text
-        style={[
-          WORDMARK_STYLE,
-          {
-            textShadowColor: 'rgba(127,237,196,0.6)',
-            textShadowOffset: { width: 0, height: 0 },
-            textShadowRadius: 12,
-          },
-          Platform.OS === 'web' ? ({ WebkitTextStroke: '0.8px #7FEDC4' } as object) : null,
-        ]}
-      >
-        CAMINA
-      </Text>
-    </View>
-  );
 }
 
 export default function HomeScreen() {
@@ -240,19 +202,6 @@ export default function HomeScreen() {
               </Pressable>
             </View>
           </View>
-          {/* Posición absoluta a todo el ancho para que quede centrado de verdad
-              respecto a la pantalla (y al aro de abajo), sin importar que el
-              chip de puntos y los botones de la derecha tengan anchos distintos.
-              El contenedor "relative" no tiene padding propio — así este overlay
-              (top:0/bottom:0) mide exactamente la altura de la fila de arriba,
-              en vez de la altura completa con el padding incluido (que la
-              corría más arriba que el chip de puntos y el avatar). */}
-          <View
-            pointerEvents="none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Wordmark />
-          </View>
         </View>
         </View>
 
@@ -321,7 +270,7 @@ export default function HomeScreen() {
               style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <Flame size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} días de racha</Text>
+              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
             </View>
           )}
           {goalMet && (

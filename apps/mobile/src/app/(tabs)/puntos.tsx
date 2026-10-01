@@ -138,7 +138,7 @@ export default function PuntosScreen() {
           <IconBubble icon={Flame} tone="orange" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">días de racha</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{streak === 1 ? 'día' : 'días'} de racha</Text>
           </View>
         </Glass>
         <Pressable

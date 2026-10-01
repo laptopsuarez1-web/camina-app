@@ -196,7 +196,7 @@ export default function ActividadScreen() {
           <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
             <Text className="text-[13.5px] font-bold" style={{ color: colors.warnDeep }}>¡Vas en racha!</Text>
-            <Text className="text-[12px]" style={{ color: colors.warnDeep }}>{streak} días consecutivos</Text>
+            <Text className="text-[12px]" style={{ color: colors.warnDeep }}>{streak} {streak === 1 ? 'día seguido' : 'días seguidos'}</Text>
           </View>
         </View>
       )}
