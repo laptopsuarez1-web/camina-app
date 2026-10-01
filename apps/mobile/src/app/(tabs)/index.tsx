@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Platform, Linking, RefreshControl, Animated, Easing } from 'react-native';
+import { PointsCounter } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -116,6 +117,45 @@ export default function HomeScreen() {
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+  // Celebraciones suaves (solo cuando ocurren estando en pantalla, nunca al abrir la app):
+  // - cada Punto nuevo: el chip "+N Puntos" late;
+  // - al llegar a la meta del día: dos ondas verdes salen del aro y aparece "Meta cumplida".
+  const chipPop = useRef(new Animated.Value(0)).current;
+  const wave1 = useRef(new Animated.Value(0)).current;
+  const wave2 = useRef(new Animated.Value(0)).current;
+  const goalIn = useRef(new Animated.Value(goalMet ? 1 : 0)).current;
+  const prevSteps = useRef<number | null>(null);
+  const celebrating = useRef(false);
+  useEffect(() => {
+    if (!live) return;
+    const before = prevSteps.current;
+    prevSteps.current = steps;
+    if (before === null || steps <= before) return;
+    if (Math.floor(steps / POINTS_PER_STEP_UNIT) > Math.floor(before / POINTS_PER_STEP_UNIT) && pointsToday <= DAILY_POINTS_CAP) {
+      chipPop.setValue(0);
+      Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    }
+    if (before < goal && steps >= goal) {
+      [wave1, wave2].forEach((w) => w.setValue(0));
+      celebrating.current = true;
+      goalIn.setValue(0);
+      Animated.parallel([
+        Animated.timing(wave1, { toValue: 1, duration: 1300, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.sequence([
+          Animated.delay(260),
+          Animated.timing(wave2, { toValue: 1, duration: 1300, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        ]),
+        Animated.spring(goalIn, { toValue: 1, friction: 6, tension: 120, useNativeDriver: true }),
+      ], { stopTogether: false }).start(() => { celebrating.current = false; });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [steps, live]);
+  useEffect(() => { if (goalMet && !celebrating.current) goalIn.setValue(1); }, [goalMet, goalIn]);
+  const waveStyle = (w: Animated.Value) => ({
+    opacity: w.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 0.65, 0] }),
+    transform: [{ scale: w.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.22] }) }],
+  });
+  const chipScale = chipPop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 1.22, 1] });
   const stepsText = steps.toLocaleString('es-BO');
   const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
   const nearby = (() => {
@@ -168,8 +208,7 @@ export default function HomeScreen() {
               className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3"
               style={{ height: 32 }}
             >
-              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
-              <Text className="text-white font-semibold text-[13px]">{balance ?? 0}</Text>
+              <PointsCounter value={balance} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
             </Pressable>
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color="#C4B8E8" />
@@ -206,6 +245,13 @@ export default function HomeScreen() {
         </Text>
 
         <View className="items-center justify-center" style={{ marginTop: 16 }}>
+          {[wave1, wave2].map((w, i) => (
+            <Animated.View
+              key={i}
+              pointerEvents="none"
+              style={[{ position: 'absolute', width: 250, height: 250, borderRadius: 125, borderWidth: 3, borderColor: POINTS_COLOR }, waveStyle(w)]}
+            />
+          ))}
           <ProgressRing
             size={250}
             strokeWidth={26}
@@ -234,13 +280,15 @@ export default function HomeScreen() {
                 {stepsText}
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
-              <View
-                className="flex-row items-center gap-1 mt-2 pl-1.5 pr-3 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(44,255,174,0.15)' }}
+              <Animated.View
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8, paddingLeft: 6, paddingRight: 12, paddingVertical: 4,
+                  borderRadius: 999, backgroundColor: 'rgba(44,255,174,0.15)', transform: [{ scale: chipScale }],
+                }}
               >
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} Puntos</Text>
-              </View>
+              </Animated.View>
               <Text style={{ color: POINTS_COLOR, fontSize: 10.5, fontWeight: '600', marginTop: 5 }}>
                 {pointsToday >= DAILY_POINTS_CAP
                   ? 'Tope de hoy'
@@ -261,13 +309,16 @@ export default function HomeScreen() {
             </View>
           )}
           {goalMet && (
-            <View
-              className="flex-row items-center rounded-full"
-              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+            <Animated.View
+              style={{
+                flexDirection: 'row', alignItems: 'center', borderRadius: 999,
+                gap: 4, backgroundColor: 'rgba(127,237,196,0.16)', paddingHorizontal: 10, paddingVertical: 4,
+                opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
+              }}
             >
               <Check size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '600' }}>Meta cumplida</Text>
-            </View>
+              <Text style={{ color: colors.mint, fontSize: 10.5, fontWeight: '700' }}>¡Meta cumplida!</Text>
+            </Animated.View>
           )}
           {editingGoal ? (
             <View className="flex-row items-center gap-1.5">

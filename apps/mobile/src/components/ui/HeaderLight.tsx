@@ -1,9 +1,11 @@
 import { View, Text, Pressable, Image } from 'react-native';
+import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
 import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
+import { PointsCounter } from '@/components/ui/PointsCounter';
 
 // Cabecera clara (chip de puntos + campana + avatar) que el original repite
 // arriba de Actividad, Grupos, Eventos y la lista de Canjes — antes solo
@@ -11,6 +13,7 @@ import { colors } from '@/theme/tokens';
 export function HeaderLight() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
+  const dark = useColorScheme().colorScheme === 'dark';
 
   return (
     <View className="flex-row justify-between items-center px-5 pt-14 pb-3 bg-bg-light dark:bg-bg-dark">
@@ -19,8 +22,7 @@ export function HeaderLight() {
         className="flex-row items-center gap-1.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full pl-1.5 pr-3"
         style={{ height: 32 }}
       >
-        <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
-        <Text className="text-text-light dark:text-text-dark font-bold text-[15px]">{balance ?? 0}</Text>
+        <PointsCounter value={balance} coinSize={20} textStyle={{ color: dark ? colors.dark.text : colors.light.text, fontWeight: '700', fontSize: 15 }} />
       </Pressable>
       <View className="flex-row items-center gap-2.5">
         <BellButton color={colors.light.muted} />
