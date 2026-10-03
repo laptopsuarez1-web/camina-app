@@ -588,7 +588,7 @@ export default function CanjesScreen() {
                     ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
                   }}
                 >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
                 </Pressable>
               );
@@ -631,7 +631,7 @@ export default function CanjesScreen() {
                     ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
                   }}
                 >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
                 </Pressable>
               );

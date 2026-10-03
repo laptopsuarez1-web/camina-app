@@ -67,7 +67,7 @@ export type IconProps = {
   weight?: IconWeight;
 };
 
-function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'duotone') {
+function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'regular') {
   return function Icon({ size = 24, color = '#000', fill, weight }: IconProps) {
     const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : base);
     return <Comp size={size} color={color as string} weight={w} />;
@@ -179,7 +179,7 @@ export function IconBubble({
           borderColor: 'rgba(255,255,255,0.35)',
         }}
       >
-        <Icon size={size * 0.52} color="#fff" weight="duotone" />
+        <Icon size={size * 0.52} color="#fff" weight="bold" />
       </LinearGradient>
     </View>
   );
