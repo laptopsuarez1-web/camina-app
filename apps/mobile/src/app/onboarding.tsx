@@ -194,7 +194,7 @@ export default function OnboardingScreen() {
               <Text style={{ color: '#1a1a1a', fontWeight: '700', fontSize: 15.5 }}>Continuar con Google</Text>
             </Pressable>
             <Pressable onPress={() => finish()} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 15 }}>
-              <Text className="text-mint-dark font-extrabold text-[15.5px]">Empezar con mi correo</Text>
+              <Text className="text-mint-dark font-extrabold text-[15.5px]">Otras formas de entrar</Text>
             </Pressable>
             <Pressable onPress={() => finish({ modo: 'login' })} accessibilityRole="button" style={{ alignItems: 'center', paddingVertical: 10 }}>
               <Text style={{ color: '#E4DCF7', fontSize: 14, fontWeight: '600' }}>Ya tengo cuenta</Text>
