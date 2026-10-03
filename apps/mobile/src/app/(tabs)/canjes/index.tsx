@@ -897,11 +897,11 @@ export default function CanjesScreen() {
                               <Pressable
                                 onPress={() => handleRedeem(b.id, b)}
                                 disabled={!canRedeem || redeem.isPending}
-                                className="rounded-2xl items-center justify-center flex-row mt-3"
-                                style={{ backgroundColor: canRedeem ? colors.aquaDeep : colors.light.line, paddingVertical: 11, gap: 8 }}
+                                className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
+                                style={{ paddingVertical: 11, gap: 8 }}
                               >
                                 {redeeming && <ActivityIndicator size="small" color="#fff" />}
-                                <Text style={{ fontWeight: '700', fontSize: 14, color: canRedeem ? '#fff' : colors.light.muted }}>
+                                <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
                                   {redeeming ? 'Canjeando…' : note ?? 'Canjear'}
                                 </Text>
                               </Pressable>

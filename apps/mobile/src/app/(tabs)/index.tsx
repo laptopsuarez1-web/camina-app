@@ -188,6 +188,23 @@ export default function HomeScreen() {
               <PointsCounter shown={pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
             </Pressable>
             </Animated.View>
+            {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
+            <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
+              <Text
+                style={{
+                  color: colors.mint,
+                  fontSize: 17,
+                  fontWeight: '900',
+                  letterSpacing: 4.5,
+                  paddingLeft: 4.5,
+                  textShadowColor: 'rgba(127,237,196,0.55)',
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 14,
+                }}
+              >
+                CAMINA
+              </Text>
+            </View>
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color="#C4B8E8" />
               <Pressable

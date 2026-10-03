@@ -84,12 +84,23 @@ export default function EventosScreen() {
         </View>
       )}
 
+      {!hasPromos && (
+        <Glass className="flex-row items-center rounded-2xl p-4 mb-7" style={{ gap: 12 }}>
+          <IconBubble icon={Calendar} tone="purple" size={40} />
+          <View className="flex-1">
+            <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">Todavía no hay eventos</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5 leading-5">
+              Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
+            </Text>
+          </View>
+        </Glass>
+      )}
       <Text className="font-bold text-[17px] mb-1 text-text-light dark:text-text-dark">Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
-        Mientras se suman comercios con eventos propios, estos son nuestros.
+        Cumplí metas caminando y ganá Puntos extra.
       </Text>
 
-      <View className="gap-3 mb-7">
+      <View className="gap-3">
         {(retos ?? []).map((reto) => (
           <RetoCard
             key={reto.id}
@@ -116,17 +127,6 @@ export default function EventosScreen() {
         ))}
       </View>
 
-      {!hasPromos && (
-        <Glass className="flex-row items-center rounded-2xl p-4" style={{ gap: 12 }}>
-          <IconBubble icon={Calendar} tone="purple" size={40} />
-          <View className="flex-1">
-            <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">Sin eventos de comercios por ahora</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5 leading-5">
-              Estamos sumando comercios de tu zona. Volvé pronto.
-            </Text>
-          </View>
-        </Glass>
-      )}
       </ScrollView>
     </View>
   );

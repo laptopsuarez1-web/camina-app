@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+import { useRef, useState } from 'react';
+import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { useColorScheme } from 'nativewind';
+import { Camera } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
@@ -18,6 +20,7 @@ export default function CompletarPerfilScreen() {
   const [bYear, setBYear] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const isDark = useColorScheme().colorScheme === 'dark';
 
   async function pickPhoto() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -68,51 +71,113 @@ export default function CompletarPerfilScreen() {
     }
   }
 
+  const monthRef = useRef<TextInput>(null);
+  const yearRef = useRef<TextInput>(null);
+  const ready = fullName.trim().length > 0 && bDay.length > 0 && bMonth.length > 0 && bYear.length === 4;
+  const field = 'bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl px-4 py-3.5 text-[16px] text-text-light dark:text-text-dark';
+
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark px-6 justify-center">
-      <Text className="text-xl font-bold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamás?</Text>
-      <Text className="text-muted-light dark:text-muted-dark text-[13px] mb-7">
-        Con esto ya podés empezar a caminar — el resto lo completás cuando quieras, desde Perfil.
-      </Text>
+    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerClassName="px-6 pt-20 pb-10 flex-grow justify-center" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamás?</Text>
+        <Text className="text-muted-light dark:text-muted-dark text-[14px] leading-5 mb-7">
+          Con esto ya podés empezar a caminar. El resto lo completás cuando quieras, desde Perfil.
+        </Text>
 
-      <Pressable onPress={pickPhoto} className="self-center mb-6">
-        <View className="w-24 h-24 rounded-full bg-card-light dark:bg-card-dark border-2 border-dashed border-mint items-center justify-center overflow-hidden">
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} className="w-full h-full" />
-          ) : (
-            <Text className="text-muted-light dark:text-muted-dark text-xs">Foto{'\n'}(opcional)</Text>
-          )}
+        <Pressable accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
+          <View className="w-28 h-28 rounded-full bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark items-center justify-center">
+            <View className="w-full h-full rounded-full overflow-hidden items-center justify-center">
+              {photoUri ? (
+                <Image source={{ uri: photoUri }} className="w-full h-full" />
+              ) : (
+                <Text className="text-aqua-deep dark:text-mint text-[34px] font-extrabold">{(fullName.trim()[0] ?? 'A').toUpperCase()}</Text>
+              )}
+            </View>
+            <View className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-aqua-deep items-center justify-center border-2 border-bg-light dark:border-bg-dark">
+              <Camera size={17} color="#fff" weight="fill" />
+            </View>
+          </View>
+          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] text-center mt-2">Foto (opcional)</Text>
+        </Pressable>
+
+        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2 ml-1">Nombre</Text>
+        <TextInput
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Tu nombre"
+          placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
+          autoCapitalize="words"
+          autoComplete="name"
+          returnKeyType="next"
+          onSubmitEditing={() => undefined}
+          className={`${field} mb-5`}
+        />
+
+        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2 ml-1">Fecha de nacimiento</Text>
+        <View className="flex-row gap-2.5 mb-2">
+          <TextInput
+            value={bDay}
+            onChangeText={(t) => {
+              const v = t.replace(/\D/g, '').slice(0, 2);
+              setBDay(v);
+              if (v.length === 2) monthRef.current?.focus();
+            }}
+            placeholder="Día"
+            placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
+            accessibilityLabel="Día de nacimiento"
+            keyboardType="number-pad"
+            maxLength={2}
+            className={`flex-1 text-center ${field}`}
+            style={{ minWidth: 0 }}
+          />
+          <TextInput
+            ref={monthRef}
+            value={bMonth}
+            onChangeText={(t) => {
+              const v = t.replace(/\D/g, '').slice(0, 2);
+              setBMonth(v);
+              if (v.length === 2) yearRef.current?.focus();
+            }}
+            placeholder="Mes"
+            placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
+            accessibilityLabel="Mes de nacimiento"
+            keyboardType="number-pad"
+            maxLength={2}
+            className={`flex-1 text-center ${field}`}
+            style={{ minWidth: 0 }}
+          />
+          <TextInput
+            ref={yearRef}
+            value={bYear}
+            onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))}
+            placeholder="Año"
+            placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
+            accessibilityLabel="Año de nacimiento"
+            keyboardType="number-pad"
+            maxLength={4}
+            className={`flex-[1.4] text-center ${field}`}
+            style={{ minWidth: 0 }}
+          />
         </View>
-      </Pressable>
+        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1 mb-8">
+          La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
+        </Text>
 
-      <TextInput
-        value={fullName}
-        onChangeText={setFullName}
-        placeholder="Tu nombre"
-        autoFocus
-        className="border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 mb-4 text-[15px] text-text-light dark:text-text-dark"
-      />
-
-      <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2">Fecha de nacimiento</Text>
-      <View className="flex-row gap-2.5 mb-2">
-        <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad" maxLength={2}
-          className="flex-1 border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
-        <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad" maxLength={2}
-          className="flex-1 border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
-        <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad" maxLength={4}
-          className="flex-[1.4] border border-line-light dark:border-line-dark rounded-xl px-4 py-3.5 text-[15px] text-text-light dark:text-text-dark text-center" />
-      </View>
-      <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-7">
-        La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
-      </Text>
-
-      <Pressable
-        onPress={handleContinue}
-        disabled={loading}
-        className="bg-auth-bg rounded-2xl py-4 items-center"
-      >
-        {loading ? <ActivityIndicator color={colors.mint} /> : <Text className="text-mint font-semibold text-[15px]">Empezar a caminar</Text>}
-      </Pressable>
-    </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !ready || loading }}
+          onPress={handleContinue}
+          disabled={loading}
+          className="rounded-2xl py-4 items-center"
+          style={{ backgroundColor: ready ? colors.aquaDeep : isDark ? colors.dark.line : colors.light.line }}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text className={`font-bold text-[16px] ${ready ? 'text-white' : 'text-muted-light dark:text-muted-dark'}`}>Empezar a caminar</Text>
+          )}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
