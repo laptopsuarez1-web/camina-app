@@ -126,12 +126,16 @@ export default function OnboardingScreen() {
     Animated.timing(fade, { toValue: 1, duration: 320, useNativeDriver: true }).start();
   }, [step, fade]);
 
-  async function finish(params?: { modo?: 'login'; via?: 'google' }) {
+  async function finish() {
     await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1');
-    router.replace(params ? { pathname: '/(auth)/welcome', params } : '/(auth)/welcome');
+    router.replace('/(auth)/welcome');
   }
 
   function next() {
+    if (last) {
+      finish();
+      return;
+    }
     scroller.current?.scrollTo({ x: (step + 1) * width, animated: true });
     setStep(step + 1);
   }
@@ -183,28 +187,9 @@ export default function OnboardingScreen() {
             <View key={i} style={{ height: 7, borderRadius: 99, width: i === step ? 24 : 7, backgroundColor: i === step ? colors.mint : 'rgba(255,255,255,0.25)' }} />
           ))}
         </View>
-        {last ? (
-          <View style={{ gap: 10 }}>
-            <Pressable
-              onPress={() => finish({ via: 'google' })}
-              accessibilityRole="button"
-              style={{ backgroundColor: '#fff', borderRadius: 16, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
-            >
-              <Text style={{ fontSize: 17, fontWeight: '800', color: '#4285F4' }}>G</Text>
-              <Text style={{ color: '#1a1a1a', fontWeight: '700', fontSize: 15.5 }}>Continuar con Google</Text>
-            </Pressable>
-            <Pressable onPress={() => finish()} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 15 }}>
-              <Text className="text-mint-dark font-extrabold text-[15.5px]">Otras formas de entrar</Text>
-            </Pressable>
-            <Pressable onPress={() => finish({ modo: 'login' })} accessibilityRole="button" style={{ alignItems: 'center', paddingVertical: 10 }}>
-              <Text style={{ color: '#E4DCF7', fontSize: 14, fontWeight: '600' }}>Ya tengo cuenta</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable onPress={next} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 16 }}>
-            <Text className="text-mint-dark font-extrabold text-[16px]">Siguiente</Text>
-          </Pressable>
-        )}
+        <Pressable onPress={next} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 16 }}>
+          <Text className="text-mint-dark font-extrabold text-[16px]">Continuar</Text>
+        </Pressable>
       </View>
     </LinearGradient>
   );

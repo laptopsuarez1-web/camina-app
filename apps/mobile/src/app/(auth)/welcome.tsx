@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,8 +16,7 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, i
 type AuthKind = 'login' | 'signup';
 
 export default function WelcomeScreen() {
-  // Desde el onboarding: "Ya tengo cuenta" abre en iniciar sesión y "Continuar con Google" lanza Google al entrar.
-  const { modo, via } = useLocalSearchParams<{ modo?: string; via?: string }>();
+  const { modo } = useLocalSearchParams<{ modo?: string }>();
   const [authKind, setAuthKind] = useState<AuthKind>(modo === 'login' ? 'login' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,19 +28,11 @@ export default function WelcomeScreen() {
   const [recoverySent, setRecoverySent] = useState(false);
   const [recovering, setRecovering] = useState(false);
 
-  const [googleRequest, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest(googleClientIds);
-  const googleLaunched = useRef(false);
+  const [, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest(googleClientIds);
 
   useEffect(() => {
     isAppleSignInAvailable().then(setAppleAvailable);
   }, []);
-
-  useEffect(() => {
-    if (via !== 'google' || !googleRequest || googleLaunched.current) return;
-    googleLaunched.current = true;
-    promptGoogleAsync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [via, googleRequest]);
 
   useEffect(() => {
     if (googleResponse?.type !== 'success') return;

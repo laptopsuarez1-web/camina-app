@@ -44,6 +44,7 @@ import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
+import { useRedeemCounts } from '@/hooks/useRedeemCounts';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 type BusinessT = BenefitWithBusiness['business'];
@@ -250,6 +251,7 @@ export default function CanjesScreen() {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const favorites = useFavorites();
+  const { data: redeemCounts } = useRedeemCounts();
   const favIds = favorites.ids;
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
@@ -783,6 +785,11 @@ export default function CanjesScreen() {
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
+                {(redeemCounts?.[profileGroup.business.id] ?? 0) >= 100 ? (
+                  <Text className="text-[13px] font-semibold text-aqua-deep dark:text-aqua mt-1">
+                    {redeemCounts![profileGroup.business.id].toLocaleString('es-BO')} canjes en este local
+                  </Text>
+                ) : null}
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
