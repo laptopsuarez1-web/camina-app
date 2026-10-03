@@ -249,13 +249,13 @@ export default function PerfilScreen() {
           <View className="mb-2" />
           <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Fecha de nacimiento</Text>
           <View className="flex-row gap-2 mb-1">
-            <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad"
+            <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad" style={{ minWidth: 0 }}
               placeholderTextColor={colors.light.muted}
               className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
-            <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad"
+            <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad" style={{ minWidth: 0 }}
               placeholderTextColor={colors.light.muted}
               className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
-            <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad"
+            <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad" style={{ minWidth: 0 }}
               placeholderTextColor={colors.light.muted}
               className="flex-[1.4] bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
           </View>
