@@ -10,6 +10,7 @@ import { startAuthLinkListener } from '@/lib/auth-links';
 import { Sentry, setMonitoringUser } from '@/lib/monitoring';
 import { ForceUpdateGate } from '@/components/ForceUpdateGate';
 import { useGlassStore } from '@/store/useGlassStore';
+import { useBackgroundStore } from '@/store/useBackgroundStore';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ function RootLayout() {
     initAuthListener();
     startAuthLinkListener();
     useGlassStore.getState().hydrate();
+    useBackgroundStore.getState().hydrate();
   }, []);
 
   useEffect(() => {
