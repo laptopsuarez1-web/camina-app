@@ -70,18 +70,20 @@ const TOAST_ICON: Record<ToastIcon, (p: { size: number; color: string }) => Reac
 
 function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDone: () => void }) {
   const insets = useSafeAreaInsets();
-  const y = useRef(new Animated.Value(-120)).current;
+  // Abajo se usa cuando el aviso taparía el título de la pantalla (p. ej. en un grupo).
+  const sign = c.at === 'bottom' ? 1 : -1;
+  const y = useRef(new Animated.Value(sign * 120)).current;
   useEffect(() => {
     buzz.light();
     Animated.spring(y, { toValue: 0, friction: 8, tension: 90, useNativeDriver: true }).start();
     const id = setTimeout(() => {
-      Animated.timing(y, { toValue: -140, duration: 260, useNativeDriver: true }).start(onDone);
+      Animated.timing(y, { toValue: sign * 140, duration: 260, useNativeDriver: true }).start(onDone);
     }, 3400);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, top: insets.top + 8, transform: [{ translateY: y }] }}>
+    <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, ...(c.at === 'bottom' ? { bottom: insets.bottom + 84 } : { top: insets.top + 8 }), transform: [{ translateY: y }] }}>
       <Pressable onPress={onDone}>
         <View
           style={{
@@ -123,7 +125,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
   return (
     <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
       <Animated.View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(43,35,80,0.32)', opacity: fade }}>
-        <Pressable style={{ flex: 1 }} onPress={close} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" style={{ flex: 1 }} onPress={close} />
       </Animated.View>
       <Animated.View
         style={{
@@ -138,7 +140,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
         <Text style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ fontSize: 13.5, color: colors.light.muted, marginTop: 4, textAlign: 'center', lineHeight: 19 }}>{c.body}</Text> : null}
         {c.points ? <View style={{ marginTop: 14 }}><PointsPill points={c.points} /></View> : null}
-        <Pressable onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aqua, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
+        <Pressable onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{c.cta ?? 'Listo'}</Text>
         </Pressable>
       </Animated.View>

@@ -88,7 +88,7 @@ export default function NuevoDesafioScreen() {
             <Text className="text-mint-dark font-bold text-[15px]">Compartir link</Text>
           </Pressable>
           <Pressable onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })} className="items-center py-2">
-            <Text className="font-bold text-[14px]" style={{ color: colors.aqua }}>Ir al grupo</Text>
+            <Text className="font-bold text-[14px] text-aqua-deep dark:text-aqua">Ir al grupo</Text>
           </Pressable>
         </View>
       </View>
@@ -101,7 +101,7 @@ export default function NuevoDesafioScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View className="px-5 pt-14 flex-row items-center justify-between">
-        <Pressable onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
+        <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
           <ChevronLeft size={18} color={colors.aqua} />
         </Pressable>
         <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark">Nuevo desafío</Text>
@@ -154,7 +154,7 @@ export default function NuevoDesafioScreen() {
                 <Text className="text-[22px] font-bold text-text-light dark:text-text-dark">+</Text>
               </Pressable>
             </View>
-            <Text className="text-center text-[11.5px] text-muted-light dark:text-muted-dark mt-1">mínimo {MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos</Text>
+            <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-1">mínimo {MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos</Text>
           </>
         )}
 
@@ -163,8 +163,8 @@ export default function NuevoDesafioScreen() {
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Duración</Text>
             <View className="flex-row" style={{ gap: 8 }}>
               {[3, 7, 10, 14].map((d) => (
-                <Pressable key={d} onPress={() => setDays(d)} className="rounded-full px-4 py-2.5" style={{ backgroundColor: days === d ? colors.aqua : 'rgba(124,106,156,0.14)' }}>
-                  <Text style={{ fontWeight: '800', color: days === d ? '#fff' : colors.light.muted }}>{d} días</Text>
+                <Pressable key={d} accessibilityRole="button" accessibilityState={{ selected: days === d }} onPress={() => setDays(d)} className="rounded-full px-4 py-2.5" style={{ backgroundColor: days === d ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(days === d ? { color: '#fff' } : null) }}>{d} días</Text>
                 </Pressable>
               ))}
             </View>
@@ -178,16 +178,16 @@ export default function NuevoDesafioScreen() {
             </View>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
               {STAKES.map((v) => (
-                <Pressable key={v} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aqua : 'rgba(124,106,156,0.14)' }}>
+                <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
                   {v > 0 && <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />}
-                  <Text style={{ fontWeight: '800', color: stake === v ? '#fff' : colors.light.muted }}>{v}</Text>
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(stake === v ? { color: '#fff' } : null) }}>{v}</Text>
                 </Pressable>
               ))}
             </View>
             {insufficient && <Text className="text-[12px] mt-2" style={{ color: '#E5484D' }}>No te alcanzan los puntos para poner {stake}.</Text>}
             <Glass className="rounded-2xl p-3.5 mt-4">
               <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">Cómo se reparte</Text>
-              <Text className="text-[11.5px] leading-[17px] text-muted-light dark:text-muted-dark mt-1">
+              <Text className="text-[12px] leading-[17px] text-muted-light dark:text-muted-dark mt-1">
                 Los puntos de todos forman un pozo. Lo reparten en partes iguales quienes cumplan la meta diaria en al menos el 80% de los días. Si nadie cumple, cada uno recupera los suyos. Camina no se queda con nada. Los puntos no se compran: solo se ganan caminando.
               </Text>
             </Glass>

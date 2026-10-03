@@ -5,6 +5,8 @@ import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } fro
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { routeForNotification } from '@/lib/push-notifications';
 
 function bubbleFor(type?: string) {
   switch (type) {
@@ -28,23 +30,24 @@ function timeAgo(iso: string) {
   const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   if (min < 1) return 'Recién';
   if (min < 60) return `Hace ${min} min`;
-  const h = Math.round(min / 60);
+  const h = Math.floor(min / 60);
   if (h < 24) return `Hace ${h} h`;
-  const d = Math.round(h / 24);
+  const d = Math.floor(h / 24);
   return d === 1 ? 'Ayer' : `Hace ${d} días`;
 }
 
 export default function NotificacionesScreen() {
+  const tabSpace = useTabBarSpace();
   const { items, seenAt, markAllSeen } = useNotifications();
 
   // Al salir de la pantalla, todo queda como leído (los puntitos se ven mientras estás adentro).
   useEffect(() => () => { markAllSeen(); }, [markAllSeen]);
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
+    <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+          <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
           </Pressable>
           <Text className="text-white text-[17px] font-bold">Avisos</Text>
@@ -55,8 +58,13 @@ export default function NotificacionesScreen() {
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
           return (
-            <Glass
+            <Pressable
               key={n.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${n.title}. ${n.body}`}
+              onPress={() => router.push(routeForNotification(n.data?.type) as never)}
+            >
+            <Glass
               className="rounded-2xl p-4"
               style={isNew ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}
             >
@@ -65,12 +73,13 @@ export default function NotificacionesScreen() {
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between mb-1">
                     <Text className="flex-1 text-[14px] font-bold text-text-light dark:text-text-dark pr-2">{n.title}</Text>
-                    <Text className="text-[11px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{timeAgo(n.created_at)}</Text>
                   </View>
                   <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark">{n.body}</Text>
                 </View>
               </View>
             </Glass>
+            </Pressable>
           );
         })}
         {items.length === 0 && (
@@ -78,7 +87,7 @@ export default function NotificacionesScreen() {
             <IconBubble icon={Bell} tone="purple" size={64} />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
-              Cuando tengas un código por vencer, Puntos por vencer o tu racha en juego, te avisamos acá.
+              Te avisamos acá de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
             </Text>
           </View>
         )}

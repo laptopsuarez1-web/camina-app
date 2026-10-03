@@ -2,7 +2,7 @@ import { Image, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   Coffee,
-  ForkKnife,
+  Food,
   Ticket,
   Barbell,
   Sparkle,
@@ -14,20 +14,20 @@ import {
   type IconProps,
 } from '@/components/icons';
 
-type CategoryStyle = { icon: (p: IconProps) => React.ReactElement; from: string; to: string };
+type CategoryStyle = { icon: (p: IconProps) => React.ReactElement; from: string; to: string; deep: string };
 
 // Ícono y color de cada categoría (las mismas que se eligen en el panel de comercios).
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  Todos: { icon: SquaresFour, from: '#A672E8', to: '#8B4FD1' },
-  Café: { icon: Coffee, from: '#7FEDC4', to: '#4FC3A8' },
-  Gastronomía: { icon: ForkKnife, from: '#FFB27A', to: '#F2985C' },
-  Entretenimiento: { icon: Ticket, from: '#A672E8', to: '#8B4FD1' },
-  Fitness: { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0' },
-  Belleza: { icon: Sparkle, from: '#F27BA0', to: '#D4537E' },
-  Compras: { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1' },
-  Salud: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D' },
-  Servicios: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7' },
-  Otro: { icon: Storefront, from: '#A672E8', to: '#8B4FD1' },
+  Todos: { icon: SquaresFour, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Café: { icon: Coffee, from: '#7FEDC4', to: '#4FC3A8', deep: '#1F7A66' },
+  Gastronomía: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Entretenimiento: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Fitness: { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
+  Belleza: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
+  Compras: { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Salud: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
+  Servicios: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
+  Otro: { icon: Storefront, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
 };
 
 export function categoryStyle(category?: string | null): CategoryStyle {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -16,7 +16,8 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, i
 type AuthKind = 'login' | 'signup';
 
 export default function WelcomeScreen() {
-  const [authKind, setAuthKind] = useState<AuthKind>('signup');
+  const { modo } = useLocalSearchParams<{ modo?: string }>();
+  const [authKind, setAuthKind] = useState<AuthKind>(modo === 'login' ? 'login' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -209,7 +210,7 @@ export default function WelcomeScreen() {
           )}
         </Pressable>
         <Pressable onPress={() => setAwaitingConfirmation(null)}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>Volver</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
         </Pressable>
       </View>
     );
@@ -262,7 +263,7 @@ export default function WelcomeScreen() {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
           <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
-          <Text style={{ color: '#8C7DB8', fontSize: 12 }}>o</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>o</Text>
           <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
         </View>
 
@@ -300,14 +301,20 @@ export default function WelcomeScreen() {
 
         {authKind === 'login' && (
           <Pressable onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
-            <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+            <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
               {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
             </Text>
           </Pressable>
         )}
 
+        <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ marginTop: 8 }}>
+          <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
+            Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
+          </Text>
+        </Pressable>
+
         <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12, textAlign: 'center' }}>
+          <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
             {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
           </Text>
         </Pressable>

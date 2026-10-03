@@ -2,6 +2,7 @@ import { View, Text, Pressable, Linking, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { colors } from '@/theme/tokens';
+import { Footprints, IconBubble } from '@/components/icons';
 
 const HEALTH_CONNECT = 'com.google.android.apps.healthdata';
 const GOOGLE_FIT = 'com.google.android.apps.fitness';
@@ -29,7 +30,7 @@ export default function SaludScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg }}>
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 32 }}>
-        <Text style={{ fontSize: 40, marginBottom: 10 }}>👟</Text>
+        <View style={{ marginBottom: 14 }}><IconBubble icon={Footprints} tone="aqua" size={56} /></View>
         <Text style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activá el conteo de pasos</Text>
         <Text style={{ color: colors.authMuted, fontSize: 14, lineHeight: 21, marginBottom: 24 }}>
           Para que Camina sume tus pasos de forma segura, se leen desde Health Connect. Son tres pasos y lo hacés una sola vez.
@@ -44,7 +45,7 @@ export default function SaludScreen() {
               <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', flex: 1 }}>{title}</Text>
             </View>
             <Text style={{ color: colors.authMuted, fontSize: 12.5, lineHeight: 18, marginBottom: 12 }}>{text}</Text>
-            <Pressable onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`${title}: abrir`} onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
               <Text style={{ color: colors.mint, fontWeight: '700', fontSize: 13 }}>Abrir</Text>
             </Pressable>
           </View>
@@ -54,7 +55,7 @@ export default function SaludScreen() {
           <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: 15 }}>Ya lo tengo, continuar</Text>
         </Pressable>
         <Pressable onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12.5 }}>Lo hago después</Text>
+          <Text style={{ color: '#B3A6D6', fontSize: 12.5 }}>Lo hago después</Text>
         </Pressable>
       </ScrollView>
     </View>

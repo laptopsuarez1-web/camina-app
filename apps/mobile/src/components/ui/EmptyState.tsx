@@ -12,7 +12,7 @@ export function EmptyState({
       <Text className="text-[15px] font-bold text-center text-text-light dark:text-text-dark">{title}</Text>
       <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-1.5" style={{ lineHeight: 18 }}>{text}</Text>
       {actionLabel && onAction ? (
-        <Pressable onPress={onAction} style={{ marginTop: 16, backgroundColor: colors.aqua, borderRadius: 14, paddingVertical: 11, paddingHorizontal: 22 }}>
+        <Pressable onPress={onAction} style={{ marginTop: 16, backgroundColor: colors.aquaDeep, borderRadius: 14, paddingVertical: 11, paddingHorizontal: 22 }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13.5 }}>{actionLabel}</Text>
         </Pressable>
       ) : null}

@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Image, Animated } from 'react-native';
+import { View, Text, Pressable, Image, Animated, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
 import { BellButton } from '@/components/ui/BellButton';
@@ -14,12 +15,16 @@ export function HeaderLight() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
   const dark = useColorScheme().colorScheme === 'dark';
+  const topInset = useSafeAreaInsets().top;
   const { shown, scale } = usePointsPulse(balance);
 
   return (
-    <View className="flex-row justify-between items-center px-5 pt-14 pb-3 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-row justify-between items-center px-5 pb-3" style={{ paddingTop: Platform.OS === 'android' ? topInset + 24 : 56 }}>
       <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${balance ?? 0} Puntos, ver detalle`}
+        hitSlop={6}
         onPress={() => router.push('/(tabs)/puntos')}
         className="flex-row items-center gap-1.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full pl-1.5 pr-3"
         style={{ height: 32 }}
@@ -30,6 +35,9 @@ export function HeaderLight() {
       <View className="flex-row items-center gap-2.5">
         <BellButton color={colors.light.muted} />
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tu perfil"
+          hitSlop={6}
           onPress={() => router.push('/(tabs)/perfil')}
           className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
         >

@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useColorScheme } from 'nativewind';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   View,
@@ -19,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, WhatsApp, Globe, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -43,12 +45,13 @@ import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
+import { useRedeemCounts } from '@/hooks/useRedeemCounts';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 type BusinessT = BenefitWithBusiness['business'];
 
 // Comercios del plan Paso Adelante: van primero, con marco y sello dorado.
-const GOLD = '#E2B33C';
-const isFeatured = (b: { plan?: string | null }) => b.plan === 'paso_adelante';
 
 // Centro de Tarija (ciudad de lanzamiento) — último respaldo si no hay GPS ni comercios con ubicación.
 const TARIJA_REGION = {
@@ -125,10 +128,6 @@ function businessIcon(_name: string, size: number, logoUrl?: string | null, cate
   return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} />;
 }
 
-function GoldBadge({ size = 20 }: { size?: number }) {
-  return <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />;
-}
-
 function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
   const size = featured ? 48 : 40;
   const box = size + 22; // espacio de sobra para que nada se corte al convertir el pin en imagen
@@ -198,7 +197,7 @@ function CoinPrice({ cost, dim }: { cost: number; dim?: boolean }) {
   return (
     <View
       className="flex-row items-center rounded-full"
-      style={{ gap: 5, backgroundColor: dim ? colors.light.line : colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}
+      style={{ gap: 5, backgroundColor: dim ? colors.light.line : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}
     >
       <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
       <Text style={{ color: dim ? colors.light.muted : '#fff', fontSize: 13, fontWeight: '700' }}>{cost}</Text>
@@ -239,6 +238,8 @@ function SuccessMark() {
 
 
 export default function CanjesScreen() {
+  const isDark = useColorScheme().colorScheme === 'dark';
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading } = useBenefits();
   const { data: remainingToday } = useBenefitsRemainingToday();
@@ -253,11 +254,15 @@ export default function CanjesScreen() {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const favorites = useFavorites();
+  const { data: redeemCounts } = useRedeemCounts();
   const favIds = favorites.ids;
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
+  const topInset = useSafeAreaInsets().top;
+  const [mapSearch, setMapSearch] = useState('');
+  const fullMapRef = useRef<MapView>(null);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
@@ -324,6 +329,13 @@ export default function CanjesScreen() {
     return [...map.values()];
   }, [benefits]);
 
+  // "Disponibles ahora": en el mapa solo quedan los comercios con algún premio canjeable en este momento.
+  const mapBusinesses = useMemo(() => {
+    if (!onlyOpen) return businessesWithCoords;
+    const open = new Set((benefits ?? []).filter(isBenefitAvailableNow).map((b) => b.business.id));
+    return businessesWithCoords.filter((b) => open.has(b.id));
+  }, [onlyOpen, benefits, businessesWithCoords]);
+
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
   const mapRegion = useMemo(() => {
@@ -332,6 +344,23 @@ export default function CanjesScreen() {
     const lng = businessesWithCoords.reduce((acc, b) => acc + b.lng!, 0) / businessesWithCoords.length;
     return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
   }, [hasGps, businessesWithCoords, baseRegion]);
+
+  // Buscador del mapa completo: busca en TODOS los comercios con ubicación (sin filtros de categoría).
+  const mapResults = useMemo(() => {
+    const q = mapSearch.trim().toLowerCase();
+    if (!q) return [];
+    return businessesWithCoords
+      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [mapSearch, businessesWithCoords]);
+
+  function focusBusiness(b: BusinessT) {
+    setMapSearch('');
+    fullMapRef.current?.animateToRegion(
+      { latitude: b.lat!, longitude: b.lng!, latitudeDelta: 0.008, longitudeDelta: 0.008 },
+      500
+    );
+  }
 
   const categories = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.business.category));
@@ -418,10 +447,10 @@ export default function CanjesScreen() {
   const ss = String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0');
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="pb-8"
+        contentContainerStyle={{ paddingBottom: tabSpace }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -450,7 +479,7 @@ export default function CanjesScreen() {
               rotateEnabled={false}
               toolbarEnabled={false}
             >
-              {businessesWithCoords.map((b) => (
+              {mapBusinesses.map((b) => (
                 <BusinessMarker key={b.id} business={b} />
               ))}
             </MapView>
@@ -462,9 +491,12 @@ export default function CanjesScreen() {
 
           <View
             pointerEvents="box-none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: Platform.OS === 'android' ? topInset + 24 : 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tus Puntos, ver detalle"
+              hitSlop={6}
               onPress={() => router.push('/(tabs)/puntos')}
               className="flex-row items-center bg-card-light rounded-full pl-1.5 pr-3"
               style={{ height: 32, gap: 6 }}
@@ -475,6 +507,9 @@ export default function CanjesScreen() {
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <BellButton color={colors.light.muted} bg="#fff" />
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Tu perfil"
+                hitSlop={6}
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="bg-mint rounded-full items-center justify-center overflow-hidden"
                 style={{ width: 32, height: 32 }}
@@ -494,7 +529,7 @@ export default function CanjesScreen() {
               className="flex-row items-center bg-card-light rounded-full"
               style={{ gap: 8, paddingHorizontal: 18, paddingVertical: 11, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 }}
             >
-              <MapIcon size={16} color={colors.aqua} />
+              <MapIcon size={16} color={colors.aquaDeep} />
               <Text style={{ fontWeight: '700', fontSize: 13.5, color: colors.light.text }}>Explorar el mapa</Text>
             </Pressable>
           </View>
@@ -522,7 +557,7 @@ export default function CanjesScreen() {
                 <Pressable
                   onPress={() => zoneInput.trim() && saveZone(zoneInput.trim())}
                   disabled={!zoneInput.trim()}
-                  className="bg-purple rounded-full px-3.5 py-2"
+                  className="bg-purple-deep rounded-full px-3.5 py-2"
                 >
                   <Text className="text-xs font-semibold text-white">Guardar</Text>
                 </Pressable>
@@ -545,41 +580,70 @@ export default function CanjesScreen() {
           </Glass>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
-            <Pressable
-              onPress={() => setOnlyOpen((v) => !v)}
-              className="rounded-full border px-3.5 py-2"
-              style={{ backgroundColor: onlyOpen ? colors.aqua : colors.light.card, borderColor: onlyOpen ? colors.aqua : colors.light.line }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: '600', color: onlyOpen ? '#fff' : colors.light.muted }}>Disponibles ahora</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setOnlyFavs((v) => !v)}
-              className="flex-row items-center rounded-full border px-3.5 py-2"
-              style={{ gap: 5, backgroundColor: onlyFavs ? '#E5484D' : colors.light.card, borderColor: onlyFavs ? '#E5484D' : colors.light.line }}
-            >
-              <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
-              <Text style={{ fontSize: 12, fontWeight: '600', color: onlyFavs ? '#fff' : colors.light.muted }}>Favoritos</Text>
-            </Pressable>
-            {categories.map((c) => {
+            {categories.filter((c) => c === 'Todos').map((c) => {
               const st = categoryStyle(c);
               const CIcon = st.icon;
               const on = category === c;
               return (
                 <Pressable
                   key={c}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: category === c }}
                   onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border"
+                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
                   style={{
                     gap: 6,
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
-                    backgroundColor: on ? st.to : colors.light.card,
-                    borderColor: on ? st.to : colors.light.line,
+                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
                   }}
                 >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'duotone'} />
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: on ? '#fff' : colors.light.muted }}>{c}</Text>
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
+                </Pressable>
+              );
+            })}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyOpen }}
+              onPress={() => setOnlyOpen((v) => !v)}
+              className="rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+              style={{ ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
+            >
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyFavs }}
+              onPress={() => setOnlyFavs((v) => !v)}
+              className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+              style={{ gap: 5, ...(onlyFavs ? { backgroundColor: '#E5484D', borderColor: '#E5484D' } : null) }}
+            >
+              <Heart size={12} color={onlyFavs ? '#fff' : colors.light.muted} fill={onlyFavs ? '#fff' : 'none'} />
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
+            </Pressable>
+            {categories.filter((c) => c !== 'Todos').map((c) => {
+              const st = categoryStyle(c);
+              const CIcon = st.icon;
+              const on = category === c;
+              return (
+                <Pressable
+                  key={c}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: category === c }}
+                  onPress={() => setCategory(c)}
+                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+                  style={{
+                    gap: 6,
+                    paddingVertical: 7,
+                    paddingLeft: 10,
+                    paddingRight: 13,
+                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
+                  }}
+                >
+                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
+                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
                 </Pressable>
               );
             })}
@@ -599,6 +663,15 @@ export default function CanjesScreen() {
                 ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
               }}
             >
+              {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
+              {g.business.cover_url ? (
+                <Image
+                  source={{ uri: g.business.cover_url }}
+                  accessibilityIgnoresInvertColors
+                  resizeMode="cover"
+                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}
+                />
+              ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category)}
                 <View className="flex-1">
@@ -609,33 +682,35 @@ export default function CanjesScreen() {
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
                   {g.business.address ? (
                     <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
-                      <MapPin size={12} color={colors.aqua} />
-                      <Text className="flex-1 text-[12px] text-aqua" numberOfLines={1}>{g.business.address}</Text>
+                      <MapPin size={12} color={isDark ? colors.aqua : colors.aquaDeep} />
+                      <Text className="flex-1 text-[12px] text-aqua-deep dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
                     </View>
                   ) : null}
-                  <Text className="text-[12px] font-semibold mt-1" style={{ color: g.openNow ? '#2E9E7C' : colors.light.muted }}>
+                  <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-deep dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
                     {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
-                  <Pressable onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
                     <Heart size={20} color={favorites.isFavorite(g.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(g.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                   <ChevronRight size={18} color={colors.light.muted} />
                 </View>
               </View>
 
-              <Text className="text-[11.5px text-muted-light dark:text-muted-dark mt-3.5 mb-2">Premios disponibles</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              {/* Cada premio en una pastilla con su precio adentro: el canje se hace en la ficha. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3" contentContainerStyle={{ gap: 8 }}>
                 {g.benefits.map((b) => (
                   <View
                     key={b.id}
-                    className="flex-row items-center bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-full"
+                    accessibilityLabel={`${b.name}, ${b.cost_points} Puntos`}
+                    className="flex-row items-center bg-aqua-deep rounded-full"
                     style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
                   >
-                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
-                    <Text className="text-[12px] font-semibold text-text-light dark:text-text-dark">{b.name}</Text>
+                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+                    <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
+                    <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
                   </View>
                 ))}
               </ScrollView>
@@ -656,13 +731,14 @@ export default function CanjesScreen() {
         <View style={{ flex: 1, backgroundColor: '#1d1b2e' }}>
           {mapRegion && (
             <MapView
+              ref={fullMapRef}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
               initialRegion={mapRegion}
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
             >
-              {businessesWithCoords.map((b) => (
+              {mapBusinesses.map((b) => (
                 <BusinessMarker
                   key={b.id}
                   business={b}
@@ -675,20 +751,73 @@ export default function CanjesScreen() {
             </MapView>
           )}
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar mapa"
             onPress={() => setMapOpen(false)}
             className="absolute bg-card-light rounded-full items-center justify-center"
             style={{ top: 56, left: 20, width: 40, height: 40 }}
           >
             <X size={18} color={colors.light.text} />
           </Pressable>
+          <View style={{ position: 'absolute', top: 56, left: 70, right: 20 }}>
+            <View className="flex-row items-center bg-card-light rounded-full" style={{ height: 40, paddingHorizontal: 14, gap: 8 }}>
+              <Search size={16} color={colors.light.muted} />
+              <TextInput
+                value={mapSearch}
+                onChangeText={setMapSearch}
+                placeholder="Buscar locales y premios"
+                placeholderTextColor={colors.light.muted}
+                returnKeyType="search"
+                onSubmitEditing={() => mapResults[0] && focusBusiness(mapResults[0])}
+                style={{ flex: 1, fontSize: 13.5, color: colors.light.text }}
+              />
+              {!!mapSearch && (
+                <Pressable accessibilityLabel="Borrar búsqueda" onPress={() => setMapSearch('')} hitSlop={8}>
+                  <X size={14} color={colors.light.muted} />
+                </Pressable>
+              )}
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyOpen }}
+              onPress={() => setOnlyOpen((v) => !v)}
+              className="self-start rounded-full"
+              style={{ marginTop: 8, paddingHorizontal: 14, height: 32, justifyContent: 'center', backgroundColor: onlyOpen ? colors.aquaDeep : '#fff' }}
+            >
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: onlyOpen ? '#fff' : colors.light.text }}>Disponibles ahora</Text>
+            </Pressable>
+            {mapResults.length > 0 && (
+              <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
+                {mapResults.map((b) => (
+                  <Pressable
+                    key={b.id}
+                    onPress={() => focusBusiness(b)}
+                    style={{ paddingHorizontal: 16, paddingVertical: 11, flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                  >
+                    <MapPin size={15} color={colors.purple} />
+                    <View style={{ flex: 1 }}>
+                      <Text numberOfLines={1} style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>{b.name}</Text>
+                      <Text numberOfLines={1} style={{ fontSize: 11.5, color: colors.light.muted }}>{b.category}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+            {!!mapSearch.trim() && mapResults.length === 0 && (
+              <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, padding: 14 }}>
+                <Text style={{ fontSize: 12.5, color: colors.light.muted }}>No encontramos “{mapSearch.trim()}” en el mapa.</Text>
+              </View>
+            )}
+          </View>
           {mapRegion && (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Abrir en Google Maps"
               onPress={() => openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
-              className="absolute flex-row items-center bg-card-light rounded-full"
-              style={{ bottom: 44, alignSelf: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 12 }}
+              className="absolute items-center justify-center rounded-full"
+              style={{ bottom: 44, right: 20, width: 44, height: 44, backgroundColor: 'rgba(29,27,46,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}
             >
-              <Navigation size={15} color={colors.purple} />
-              <Text style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>Abrir en Google Maps</Text>
+              <Navigation size={18} color="#fff" />
             </Pressable>
           )}
         </View>
@@ -706,6 +835,8 @@ export default function CanjesScreen() {
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
                 )}
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Cerrar"
                   onPress={() => setProfileBusinessId(null)}
                   className="absolute bg-card-light rounded-full items-center justify-center"
                   style={{ top: 54, left: 20, width: 40, height: 40 }}
@@ -715,7 +846,12 @@ export default function CanjesScreen() {
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
-                <View style={{ shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4, alignSelf: 'flex-start' }}>
+                <View
+                  style={{
+                    shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
+                  }}
+                >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
                 </View>
                 <View className="flex-row items-center justify-between mt-3">
@@ -725,12 +861,17 @@ export default function CanjesScreen() {
                     </Text>
                     {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
                   </View>
-                  <Pressable onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : colors.light.muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
                   </Pressable>
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
+                {(redeemCounts?.[profileGroup.business.id] ?? 0) >= 100 ? (
+                  <Text className="text-[13px] font-semibold text-aqua-deep dark:text-aqua mt-1">
+                    {redeemCounts![profileGroup.business.id].toLocaleString('es-BO')} canjes en este local
+                  </Text>
+                ) : null}
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
@@ -749,20 +890,49 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-aqua-light-light dark:bg-aqua-light-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <MapPin size={14} color={colors.aqua} />
-                      <Text className="text-[12.5px] font-semibold text-aqua">{profileGroup.business.address}</Text>
+                      <MapPin size={14} color={isDark ? colors.aqua : colors.aquaDeep} />
+                      <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">{profileGroup.business.address}</Text>
                     </Pressable>
                   ) : null}
                   <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
                   {profileGroup.business.instagram ? (
                     <Pressable
-                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '')}`)}
+                      accessibilityRole="link"
+                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '').trim()}`)}
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <AtSign size={14} color={colors.light.text} />
+                      <Instagram size={15} color="#C13584" weight="bold" />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
                         {profileGroup.business.instagram.replace('@', '')}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.phone ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
+                      onPress={() => Linking.openURL(`https://wa.me/${profileGroup.business.phone!.replace(/\D/g, '')}`)}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <WhatsApp size={15} color="#1FA855" weight="fill" />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.website ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => {
+                        const url = profileGroup.business.website!.trim();
+                        Linking.openURL(/^https?:\/\//.test(url) ? url : `https://${url}`);
+                      }}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <Globe size={15} color={colors.purple} weight="bold" />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>
+                        {profileGroup.business.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                       </Text>
                     </Pressable>
                   ) : null}
@@ -808,7 +978,7 @@ export default function CanjesScreen() {
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={b.cost_points} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[11px] font-semibold text-muted-light dark:text-muted-dark">Quedan {remaining} hoy</Text>
+                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">Quedan {remaining} hoy</Text>
                                     ) : null}
                                   </View>
                                 </View>
@@ -816,11 +986,11 @@ export default function CanjesScreen() {
                               <Pressable
                                 onPress={() => handleRedeem(b.id, b)}
                                 disabled={!canRedeem || redeem.isPending}
-                                className="rounded-2xl items-center justify-center flex-row mt-3"
-                                style={{ backgroundColor: canRedeem ? colors.aqua : colors.light.line, paddingVertical: 11, gap: 8 }}
+                                className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
+                                style={{ paddingVertical: 11, gap: 8 }}
                               >
                                 {redeeming && <ActivityIndicator size="small" color="#fff" />}
-                                <Text style={{ fontWeight: '700', fontSize: 14, color: canRedeem ? '#fff' : colors.light.muted }}>
+                                <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
                                   {redeeming ? 'Canjeando…' : note ?? 'Canjear'}
                                 </Text>
                               </Pressable>
@@ -859,7 +1029,7 @@ export default function CanjesScreen() {
                   style={{ backgroundColor: '#FFF3D1' }}
                 >
                   <Star size={12} color="#C98A0B" weight="fill" />
-                  <Text className="text-[10.5px] font-bold" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
+                  <Text className="text-[12px] font-bold" style={{ color: '#9A6A08' }}>Calificar en Google Maps</Text>
                 </Pressable>
               ) : !confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
                 <Pressable
@@ -868,7 +1038,7 @@ export default function CanjesScreen() {
                   className="flex-row items-center gap-1 bg-purple-light-light dark:bg-purple-light-dark rounded-full px-3 py-1.5"
                 >
                   <Locate size={12} color={colors.purple} />
-                  <Text className="text-[10.5px] font-bold text-purple">Cómo llegar</Text>
+                  <Text className="text-[12px] font-bold text-purple">Cómo llegar</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -876,7 +1046,7 @@ export default function CanjesScreen() {
             {activeBenefit && benefitConditions(activeBenefit).length > 0 && (
               <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-4 gap-1">
                 {benefitConditions(activeBenefit).map((line) => (
-                  <Text key={line} className="text-[11.5px] font-semibold text-purple">{line}</Text>
+                  <Text key={line} className="text-[12px] font-semibold text-purple">{line}</Text>
                 ))}
               </View>
             )}
@@ -885,7 +1055,7 @@ export default function CanjesScreen() {
               <View className="items-center">
                 <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                   <SuccessMark />
-                  <Text className="text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
+                  <Text className="text-aqua-deep dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                     {activeBenefit?.business.name} ya te entregó tu beneficio.
                   </Text>
@@ -894,7 +1064,7 @@ export default function CanjesScreen() {
                   <>
                     <Text className="text-[14px] font-bold text-text-light dark:text-text-dark mb-3">¿Compraste algo más?</Text>
                     <View className="flex-row gap-2.5 w-full mb-2.5">
-                      <Pressable onPress={() => answerFollowup(true)} className="flex-1 bg-aqua rounded-2xl py-3.5 items-center">
+                      <Pressable onPress={() => answerFollowup(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
                         <Text className="text-white font-bold text-[14px]">Sí, compré algo</Text>
                       </Pressable>
                       <Pressable onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
@@ -917,14 +1087,14 @@ export default function CanjesScreen() {
                     ) : null}
                   </>
                 )}
-                <Pressable onPress={closeCode} className="w-full bg-aqua rounded-2xl py-4 items-center mt-1">
+                <Pressable onPress={closeCode} className="w-full bg-aqua-deep rounded-2xl py-4 items-center mt-1">
                   <Text className="text-white font-bold text-[15px]">Listo</Text>
                 </Pressable>
               </View>
             ) : !expired ? (
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
                   <Text className="text-[34px] font-extrabold tracking-[8px] text-purple">
                     {activeRedemption?.code.slice(0, 3)} {activeRedemption?.code.slice(3)}
                   </Text>
@@ -935,7 +1105,7 @@ export default function CanjesScreen() {
                     Vence en <Text className="font-bold text-text-light dark:text-text-dark">{mm}:{ss}</Text>
                   </Text>
                 </View>
-                <Pressable onPress={closeCode} className="bg-aqua rounded-2xl py-4 items-center mb-2.5">
+                <Pressable onPress={closeCode} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Ya lo mostré</Text>
                 </Pressable>
               </>
@@ -945,7 +1115,7 @@ export default function CanjesScreen() {
                   <Text className="text-warn font-bold text-base">Código vencido</Text>
                   <Text className="text-[#8A5A2E] text-xs mt-1">No llegaste a mostrarlo a tiempo.</Text>
                 </View>
-                <Pressable onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua rounded-2xl py-4 items-center mb-2.5">
+                <Pressable onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Cancelar y recuperar Puntos</Text>
                 </Pressable>
                 <Pressable onPress={handleRegenerate} disabled={regenerate.isPending} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">

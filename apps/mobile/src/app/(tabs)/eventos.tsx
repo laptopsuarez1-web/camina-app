@@ -5,12 +5,15 @@ import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/use
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
 import { celebrate } from '@/store/useCelebrationStore';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 export default function EventosScreen() {
+  const tabSpace = useTabBarSpace();
   const { data: retos } = useRetos();
   const claim = useClaimReto();
   const { data: promos } = usePromotions();
   const join = useJoinPromotion();
+  const hasPromos = (promos ?? []).length > 0;
 
   async function handleJoin(p: PromotionItem) {
     try {
@@ -31,46 +34,34 @@ export default function EventosScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3 pb-10">
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold mb-0.5 text-text-light dark:text-text-dark">
         Eventos
       </Text>
       <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-5">
         Viví experiencias únicas con tus marcas favoritas
       </Text>
-      {(promos ?? []).length === 0 ? (
-        <Glass className="rounded-md py-7 px-6 items-center mb-7">
-          <View className="mb-3.5">
-            <IconBubble icon={Calendar} tone="purple" size={58} />
-          </View>
-          <Text className="font-bold text-[15px] mb-1.5 text-text-light dark:text-text-dark">
-            Sin eventos de comercios próximos
-          </Text>
-          <Text className="text-muted-light dark:text-muted-dark text-xs text-center leading-5">
-            Estamos armando alianzas con comercios de tu zona. Volvé pronto.
-          </Text>
-        </Glass>
-      ) : (
+      {hasPromos && (
         <View className="gap-3 mb-7">
           {(promos ?? []).map((p) => (
             <Glass key={p.id} className="rounded-3xl p-4">
               <View className="flex-row items-start" style={{ gap: 12 }}>
                 <IconBubble icon={p.won ? Trophy : p.kind === 'sorteo' ? Gift : Calendar} tone={p.won ? 'gold' : p.kind === 'sorteo' ? 'orange' : 'purple'} size={42} />
                 <View className="flex-1">
-                  <Text className="text-[11px] font-bold text-muted-light dark:text-muted-dark mb-0.5">
+                  <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-0.5">
                     {p.business?.name ?? 'Comercio'} · {p.kind === 'sorteo' ? 'Sorteo' : 'Evento'}
                   </Text>
                   <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">{p.title}</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1 leading-relaxed">{p.description}</Text>
                   {p.prize ? <Text className="text-[12.5px] font-semibold mt-1.5 text-text-light dark:text-text-dark">🎁 {p.prize}</Text> : null}
                   {p.req_steps ? (
-                    <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1">
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
                       Para participar: {p.req_steps.toLocaleString('es-BO')} pasos por día durante {p.req_days} días.
                     </Text>
                   ) : null}
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mt-1">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
                     Hasta el {new Date(p.ends_at).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' })}
                   </Text>
                 </View>
@@ -93,11 +84,25 @@ export default function EventosScreen() {
         </View>
       )}
 
+      {!hasPromos && (
+        <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
+          <IconBubble icon={Calendar} tone="purple" size={84} />
+          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 18 }}>
+            Todavía no hay eventos
+          </Text>
+          <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
+            Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
+          </Text>
+        </Glass>
+      )}
       <Text className="font-bold text-[17px] mb-1 text-text-light dark:text-text-dark">Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
-        Mientras se suman comercios con eventos propios, estos son nuestros.
+        Cumplí metas caminando y ganá Puntos extra.
       </Text>
 
+      {(retos ?? []).length === 0 && (
+        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay retos activos.</Text>
+      )}
       <View className="gap-3">
         {(retos ?? []).map((reto) => (
           <RetoCard
@@ -124,6 +129,7 @@ export default function EventosScreen() {
           />
         ))}
       </View>
+
       </ScrollView>
     </View>
   );
@@ -166,14 +172,14 @@ function RetoCard({
         </View>
         <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
           <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
-          <Text className="text-mint-dark dark:text-mint text-[11px] font-bold">+{reward}</Text>
+          <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reward}</Text>
         </View>
       </View>
       <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-1.5">
         <View className="h-full bg-aqua rounded-full" style={{ width: `${pct}%` }} />
       </View>
       <View className="flex-row items-center justify-between">
-        <Text className="text-[11px] text-muted-light dark:text-muted-dark">
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
           {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
         </Text>
         {claimable && (
