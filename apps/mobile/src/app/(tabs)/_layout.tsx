@@ -4,11 +4,9 @@ import { View, Platform } from 'react-native';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { Home, ChartBar, Users, Calendar, ShoppingBag, type IconProps } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
-import { colors } from '@/theme/tokens';
-import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
+import { registerForPushNotificationsAsync, useNotificationTaps } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import { registerDevice } from '@/lib/device';
-import { useColorScheme } from 'nativewind';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 
@@ -24,8 +22,6 @@ function tabIcon(Icon: (p: IconProps) => React.ReactElement, symbol: SFSymbol) {
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
-  const { colorScheme } = useColorScheme();
-  const dark = colorScheme === 'dark';
 
   useEffect(() => {
     if (session) {
@@ -35,6 +31,8 @@ export default function TabsLayout() {
     }
   }, [session]);
 
+  useNotificationTaps(!!session);
+
   if (!initializing && !session) return <Redirect href="/(auth)/welcome" />;
 
   return (
@@ -43,13 +41,6 @@ export default function TabsLayout() {
       tabBar={(props) => <GlassTabBar {...(props as unknown as React.ComponentProps<typeof GlassTabBar>)} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.aqua,
-        tabBarInactiveTintColor: '#9C8FC2',
-        tabBarLabelStyle: { fontSize: 12 },
-        tabBarStyle: {
-          backgroundColor: dark ? colors.dark.card : colors.light.card,
-          borderTopColor: dark ? colors.dark.line : colors.light.line,
-        },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon(Home, 'house.fill') }} />

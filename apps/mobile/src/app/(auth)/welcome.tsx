@@ -307,6 +307,12 @@ export default function WelcomeScreen() {
           </Pressable>
         )}
 
+        <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ marginTop: 8 }}>
+          <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
+            Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
+          </Text>
+        </Pressable>
+
         <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
           <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
             {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}

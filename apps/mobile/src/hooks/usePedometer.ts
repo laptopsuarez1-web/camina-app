@@ -91,7 +91,7 @@ function useHealthKitSteps(enabled: boolean) {
 }
 
 // ---------- Health Connect (Android) ----------
-export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'ok';
+export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'error' | 'ok';
 
 function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
@@ -152,7 +152,8 @@ function useHealthConnectSteps(enabled: boolean) {
         await readToday();
         interval = setInterval(readToday, POLL_MS);
       } catch {
-        if (!cancelled) { setReady(false); setStatus('denied'); }
+        // Un fallo técnico no es lo mismo que negar el permiso.
+        if (!cancelled) { setReady(false); setStatus('error'); }
       }
     })();
 

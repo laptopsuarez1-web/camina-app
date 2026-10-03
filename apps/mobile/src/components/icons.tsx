@@ -43,6 +43,7 @@ import { BowlFood as BowlFood_ } from 'phosphor-react-native/src/icons/BowlFood'
 import { WhatsappLogo as WhatsappLogo_ } from 'phosphor-react-native/src/icons/WhatsappLogo';
 import { InstagramLogo as InstagramLogo_ } from 'phosphor-react-native/src/icons/InstagramLogo';
 import { Globe as Globe_ } from 'phosphor-react-native/src/icons/Globe';
+import { Footprints as Footprints_ } from 'phosphor-react-native/src/icons/Footprints';
 import { Camera as Camera_ } from 'phosphor-react-native/src/icons/Camera';
 import { ChartBar as ChartBar_ } from 'phosphor-react-native/src/icons/ChartBar';
 import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
@@ -111,6 +112,7 @@ export const Instagram = make(InstagramLogo_);
 export const Globe = make(Globe_);
 export const ChartBar = make(ChartBar_);
 export const Camera = make(Camera_);
+export const Footprints = make(Footprints_);
 export const Ticket = make(Ticket_);
 export const Barbell = make(Barbell_);
 export const Sparkle = make(Sparkle_);

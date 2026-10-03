@@ -22,9 +22,6 @@
         "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
         "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
         "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
-        "UIBackgroundModes": [
-          "fetch"
-        ],
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
@@ -43,7 +40,6 @@
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "ACTIVITY_RECOGNITION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",

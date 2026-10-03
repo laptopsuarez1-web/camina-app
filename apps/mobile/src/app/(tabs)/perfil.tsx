@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
 import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
@@ -18,6 +19,7 @@ import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
 import { Glass } from '@/components/ui/Glass';
+import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
@@ -37,6 +39,21 @@ export default function PerfilScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
   const [deleting, setDeleting] = useState(false);
+  const [pushStatus, setPushStatus] = useState<'granted' | 'denied' | 'undetermined' | null>(null);
+  useEffect(() => {
+    Notifications.getPermissionsAsync().then((p) => setPushStatus(p.status as 'granted' | 'denied' | 'undetermined')).catch(() => undefined);
+  }, []);
+  async function enablePush() {
+    const current = await Notifications.getPermissionsAsync();
+    if (current.status === 'denied' && !current.canAskAgain) {
+      Linking.openSettings();
+      return;
+    }
+    await registerForPushNotificationsAsync();
+    const next = await Notifications.getPermissionsAsync();
+    setPushStatus(next.status as 'granted' | 'denied' | 'undetermined');
+    if (next.status !== 'granted') Linking.openSettings();
+  }
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
@@ -172,6 +189,7 @@ export default function PerfilScreen() {
   }
 
   async function handleLogout() {
+    await unregisterPushToken();
     const { error } = await supabase.auth.signOut();
     if (error) Alert.alert('No pudimos cerrar sesión', error.message);
     else router.replace('/(auth)/welcome');
@@ -180,7 +198,7 @@ export default function PerfilScreen() {
   function confirmDeleteAccount() {
     Alert.alert(
       'Eliminar tu cuenta',
-      'Se borran tu perfil, tus Puntos, tu historial de canjes y todo lo demás. Esto no se puede deshacer.',
+      'Se borran tu perfil, tu foto, tus Puntos, tus pasos y tu historial de canjes. Los resultados semanales de grupo ya cerrados se conservan, sin tu foto. Esto no se puede deshacer.',
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Eliminar', style: 'destructive', onPress: deleteAccount },
@@ -193,7 +211,7 @@ export default function PerfilScreen() {
     const { error } = await supabase.functions.invoke('delete-account');
     if (error) {
       setDeleting(false);
-      Alert.alert('No pudimos eliminar tu cuenta', error.message);
+      Alert.alert('No pudimos eliminar tu cuenta', `Intentá de nuevo en un rato o escribinos a ${SUPPORT_EMAIL}.`);
       return;
     }
     await supabase.auth.signOut();
@@ -221,7 +239,7 @@ export default function PerfilScreen() {
             {profile?.full_name}
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-            {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
+            {profile?.zone ?? 'Barrio no definido'} · {profile?.city ?? 'Tarija'}
           </Text>
         </View>
         <Pressable onPress={editing ? () => setEditing(false) : startEditing} hitSlop={8} className="flex-row items-center gap-1.5 rounded-full px-3 py-2 bg-purple-light-light dark:bg-purple-light-dark">
@@ -334,8 +352,25 @@ export default function PerfilScreen() {
           <Switch
             value={profile?.ranking_visible ?? true}
             onValueChange={toggleRanking}
-            trackColor={{ true: colors.aqua, false: colors.light.line }}
+            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
           />
+        </View>
+        <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
+          <View className="flex-1 pr-3">
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Notificaciones</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
+              {pushStatus === 'granted' ? 'Activadas. Se cambian en los ajustes del teléfono.' : 'Desactivadas: no te avisamos de códigos por vencer ni de tu racha.'}
+            </Text>
+          </View>
+          {pushStatus === 'granted' ? (
+            <Pressable accessibilityRole="button" onPress={() => Linking.openSettings()} hitSlop={8} className="px-3 py-2 rounded-full bg-purple-light-light dark:bg-purple-light-dark">
+              <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>Ajustes</Text>
+            </Pressable>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={enablePush} hitSlop={8} className="px-3 py-2 rounded-full bg-aqua-deep">
+              <Text className="text-[12px] font-semibold text-white">Activar</Text>
+            </Pressable>
+          )}
         </View>
         <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
           <View className="flex-1 pr-3">
@@ -347,7 +382,7 @@ export default function PerfilScreen() {
           <Switch
             value={profile?.nearby_alerts ?? true}
             onValueChange={toggleNearby}
-            trackColor={{ true: colors.aqua, false: colors.light.line }}
+            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
           />
         </View>
       </Glass>
@@ -359,11 +394,11 @@ export default function PerfilScreen() {
           <Switch
             value={profile?.dark_mode ?? false}
             onValueChange={toggleDarkMode}
-            trackColor={{ true: colors.aqua, false: colors.light.line }}
+            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
           />
         </View>
         <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2 mb-2">Transparencia de las tarjetas</Text>
-        <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(124,106,156,0.14)' }}>
+        <View className="flex-row rounded-full p-1" style={{ backgroundColor: isDark ? 'rgba(179,166,214,0.16)' : 'rgba(124,106,156,0.14)' }}>
           {([[0, 'Sólido'], [1, 'Equilibrado'], [2, 'Cristal']] as [GlassLevel, string][]).map(([lvl, label]) => (
             <Pressable
               key={lvl}
@@ -443,6 +478,10 @@ export default function PerfilScreen() {
           </View>
         )}
       </Glass>
+
+      <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} className="flex-row items-center justify-center py-3">
+        <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Términos y política de privacidad</Text>
+      </Pressable>
 
       <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
         <LogOut size={15} color={colors.warn} />

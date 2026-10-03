@@ -361,12 +361,14 @@ export default function HomeScreen() {
               <Image source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
               <View className="flex-1">
                 <Text className="text-white font-bold text-[14px]">
-                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : 'Activá el conteo de pasos'}
+                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'Activá el conteo de pasos'}
                 </Text>
                 <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
                   {healthConnectStatus === 'unavailable'
                     ? 'Es la app de Android que le pasa tus pasos a Camina.'
-                    : 'Sin este permiso no podemos sumar tus puntos.'}
+                    : healthConnectStatus === 'error'
+                      ? 'Fue un problema pasajero. Tocá Reintentar.'
+                      : 'Sin este permiso no podemos sumar tus puntos.'}
                 </Text>
               </View>
             </View>
@@ -376,6 +378,8 @@ export default function HomeScreen() {
                   Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() =>
                     Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')
                   );
+                } else if (healthConnectStatus === 'error') {
+                  refreshSteps();
                 } else {
                   openHealthConnectSettings();
                 }
@@ -383,7 +387,7 @@ export default function HomeScreen() {
               className="bg-mint rounded-xl py-2.5 items-center"
             >
               <Text className="text-mint-dark font-bold text-[13px]">
-                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : 'Activar'}
+                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : healthConnectStatus === 'error' ? 'Reintentar' : 'Activar'}
               </Text>
             </Pressable>
           </View>

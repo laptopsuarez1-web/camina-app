@@ -6,6 +6,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { routeForNotification } from '@/lib/push-notifications';
 
 function bubbleFor(type?: string) {
   switch (type) {
@@ -29,9 +30,9 @@ function timeAgo(iso: string) {
   const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   if (min < 1) return 'Recién';
   if (min < 60) return `Hace ${min} min`;
-  const h = Math.round(min / 60);
+  const h = Math.floor(min / 60);
   if (h < 24) return `Hace ${h} h`;
-  const d = Math.round(h / 24);
+  const d = Math.floor(h / 24);
   return d === 1 ? 'Ayer' : `Hace ${d} días`;
 }
 
@@ -57,8 +58,13 @@ export default function NotificacionesScreen() {
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
           return (
-            <Glass
+            <Pressable
               key={n.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${n.title}. ${n.body}`}
+              onPress={() => router.push(routeForNotification(n.data?.type) as never)}
+            >
+            <Glass
               className="rounded-2xl p-4"
               style={isNew ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}
             >
@@ -73,6 +79,7 @@ export default function NotificacionesScreen() {
                 </View>
               </View>
             </Glass>
+            </Pressable>
           );
         })}
         {items.length === 0 && (
@@ -80,7 +87,7 @@ export default function NotificacionesScreen() {
             <IconBubble icon={Bell} tone="purple" size={64} />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
-              Cuando tengas un código por vencer, Puntos por vencer o tu racha en juego, te avisamos acá.
+              Te avisamos acá de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
             </Text>
           </View>
         )}

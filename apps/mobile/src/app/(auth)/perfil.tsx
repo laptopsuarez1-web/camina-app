@@ -9,15 +9,17 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
+import { PlacePicker } from '@/components/PlacePicker';
 
-// Único paso obligatorio después de crear la cuenta. Zona e intereses ya no
-// están acá: zona se pregunta en Canjes la primera vez que hace falta, e
-// intereses quedó como sección opcional editable en Perfil (tab).
+// Único paso obligatorio después de crear la cuenta. Ciudad y barrio son opcionales (Tarija por defecto);
+// los intereses se editan después desde Perfil.
 export default function CompletarPerfilScreen() {
   const [fullName, setFullName] = useState('');
   const [bDay, setBDay] = useState('');
   const [bMonth, setBMonth] = useState('');
   const [bYear, setBYear] = useState('');
+  const [city, setCity] = useState('Tarija');
+  const [zone, setZone] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -44,7 +46,7 @@ export default function CompletarPerfilScreen() {
       return;
     }
     if (ageFromISO(birth) < MIN_AGE) {
-      Alert.alert('Camina es para mayores de 13 años', 'Por ahora no podés usar la app. ¡Te esperamos cuando cumplas 13!');
+      Alert.alert('Camina es para personas de 13 años o más', 'Por ahora no podés usar la app. ¡Te esperamos cuando cumplas 13!');
       await supabase.auth.signOut();
       router.replace('/(auth)/welcome');
       return;
@@ -57,9 +59,9 @@ export default function CompletarPerfilScreen() {
       const photoUrl = photoUri ? await uploadAvatar(userId, photoUri) : undefined;
 
       const base = { id: userId, full_name: fullName.trim(), ...(photoUrl ? { photo_url: photoUrl } : {}) };
-      let { error } = await supabase.from('profiles').upsert({ ...base, birth_date: birth });
-      // Si la base todavía no tiene la columna de fecha de nacimiento, se guarda igual sin ella.
-      if (error && /birth_date/i.test(error.message)) ({ error } = await supabase.from('profiles').upsert(base));
+      let { error } = await supabase.from('profiles').upsert({ ...base, birth_date: birth, city, zone });
+      // Si la base todavía no tiene alguna de las columnas nuevas, se guarda igual sin ella.
+      if (error && /birth_date|city/i.test(error.message)) ({ error } = await supabase.from('profiles').upsert({ ...base, zone }));
       if (error) throw error;
 
       await useAuthStore.getState().refreshProfile();
@@ -81,7 +83,7 @@ export default function CompletarPerfilScreen() {
       <ScrollView contentContainerClassName="px-6 pt-20 pb-10 flex-grow justify-center" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamás?</Text>
         <Text className="text-muted-light dark:text-muted-dark text-[14px] leading-5 mb-7">
-          Con esto ya podés empezar a caminar. El resto lo completás cuando quieras, desde Perfil.
+          Con esto ya podés empezar a caminar. Tu barrio es opcional y el resto lo completás cuando quieras, desde Perfil.
         </Text>
 
         <Pressable accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
@@ -159,9 +161,16 @@ export default function CompletarPerfilScreen() {
             style={{ minWidth: 0 }}
           />
         </View>
-        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1 mb-8">
+        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1 mb-6">
           La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
         </Text>
+
+        <View className="mb-6">
+          <PlacePicker city={city} zone={zone} onChange={(c, z) => { setCity(c); setZone(z); }} />
+          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1">
+            Opcional. Te mostramos primero los comercios de tu barrio.
+          </Text>
+        </View>
 
         <Pressable
           accessibilityRole="button"
