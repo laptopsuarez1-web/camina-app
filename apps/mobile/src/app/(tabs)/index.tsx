@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useColorScheme } from 'nativewind';
 import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform } from 'react-native';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,8 +25,8 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, Trophy, Check, IconBubble } from '@/components/icons';
-import { StepsChartCard, NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
+import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
+import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
@@ -41,7 +42,30 @@ function greeting(name: string) {
   return `Buenas noches, ${label}`;
 }
 
+function LinkRow({
+  icon, tone, title, value, onPress, last,
+}: { icon: (p: IconProps) => React.ReactElement; tone: 'aqua' | 'purple' | 'gold'; title: string; value: string; onPress: () => void; last?: boolean }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${value}`}
+      onPress={onPress}
+      className={`flex-row items-center justify-between p-4 ${last ? '' : 'border-b border-line-light dark:border-line-dark'}`}
+    >
+      <View className="flex-row items-center gap-2.5">
+        <IconBubble icon={icon} tone={tone} size={34} />
+        <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{title}</Text>
+      </View>
+      <View className="flex-row items-center gap-1.5">
+        <Text className="text-xs text-muted-light dark:text-muted-dark">{value}</Text>
+        <ChevronRight size={14} color={colors.light.muted} />
+      </View>
+    </Pressable>
+  );
+}
+
 export default function HomeScreen() {
+  const isDark = useColorScheme().colorScheme === 'dark';
   const tabSpace = useTabBarSpace();
   // Debajo de la barra de estado (hora, batería): en Android el contenido llega hasta el borde de la pantalla.
   const topInset = useSafeAreaInsets().top;
@@ -74,7 +98,6 @@ export default function HomeScreen() {
   const { data: globalRanking } = useGlobalRanking();
   const rankingOpen = useGlobalRankingOpen();
   const { data: groupRanking } = useMyGroupRanking();
-  const topGroupMate = groupRanking?.ranked.find((r) => r.total > 0);
   const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
@@ -408,117 +431,80 @@ export default function HomeScreen() {
               hitSlop={6}
               onPress={() => router.push('/(tabs)/puntos')}
             className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
-            style={{ gap: 10, backgroundColor: '#FFF3D1', borderWidth: 1, borderColor: '#F3D9A0' }}
+            style={{ gap: 10, backgroundColor: isDark ? 'rgba(245,198,69,0.14)' : '#FFF3D1', borderWidth: 1, borderColor: isDark ? 'rgba(245,198,69,0.35)' : '#F3D9A0' }}
           >
             <Image source={require('@/../assets/camina-coin.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
             <View className="flex-1">
-              <Text className="text-[13px] font-bold" style={{ color: '#7A5206' }}>
+              <Text className="text-[13px] font-bold" style={{ color: isDark ? '#F5D77A' : '#7A5206' }}>
                 {expiring.amount} {expiring.amount === 1 ? 'punto vence' : 'puntos vencen'} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} día${expiring.days === 1 ? '' : 's'}`}
               </Text>
-              <Text className="text-[12px]" style={{ color: '#9A6A08' }}>Canjealos antes de perderlos</Text>
+              <Text className="text-[12px]" style={{ color: isDark ? '#E0BC63' : '#9A6A08' }}>Canjealos antes de perderlos</Text>
             </View>
             <ChevronRight size={16} color="#9A6A08" />
           </Pressable>
         ) : null}
-        <StepsChartCard todaySteps={steps} goal={goal} streak={streak ?? 0} />
-
-        {myGroup && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Tu grupo ${myGroup.name}`}
-            onPress={() => router.push('/(tabs)/grupos')}
-            className="flex-row items-center gap-3.5 bg-auth-bg rounded-3xl p-3.5 mx-5 mt-4"
-            style={{ shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
-          >
-            <View className="w-[58px] h-[58px] rounded-2xl bg-white/10 items-center justify-center">
-              <Users size={22} color={colors.mint} />
-            </View>
-            <View className="flex-1 min-w-0">
-              <Text className="text-[14px] font-bold text-white" numberOfLines={1}>
-                {myGroup.name}
-              </Text>
-              <Text className="text-xs text-auth-muted mt-0.5">
-                {myGroup.group_members.length} miembro{myGroup.group_members.length === 1 ? '' : 's'}
-              </Text>
-            </View>
-          </Pressable>
-        )}
-
-        {topGroupMate && (
-          <Glass
-            className="flex-row items-center gap-3 rounded-3xl p-4 mx-5 mt-4"
-            style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
-          >
-            <View className="w-9 h-9 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-              <Text className="text-purple font-bold text-xs">{topGroupMate.name[0]?.toUpperCase()}</Text>
-            </View>
-            <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark leading-relaxed">
-              <Text className="font-bold">{topGroupMate.name}</Text> caminó {topGroupMate.total.toLocaleString('es-BO')} pasos
-              esta semana en {groupRanking?.group.name}
-            </Text>
-          </Glass>
-        )}
-
-        {reto && (
-          <Pressable
-            onPress={() => router.push('/(tabs)/eventos')}
-            className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4"
-            style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
-          >
-            <View className="flex-row items-center justify-between mb-2.5">
-              <View className="flex-row items-center gap-2.5">
-                <IconBubble icon={Flame} tone="orange" size={34} />
-                <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">
-                  {reto.met}/{reto.target} · {reto.title}
-                </Text>
-              </View>
-              <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
-                <Image source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
-                <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reto.reward_points}</Text>
-              </View>
-            </View>
-            <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-              <View className="h-full bg-aqua rounded-full" style={{ width: `${reto.pct}%` }} />
-            </View>
-          </Pressable>
-        )}
+        <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
 
         <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
-          {rankingOpen && (
-            <Pressable
+          <LinkRow
+            icon={Target}
+            tone="aqua"
+            title="Retos"
+            value={reto ? `${reto.met} de ${reto.target}` : 'Ver retos'}
+            onPress={() => router.push('/(tabs)/eventos')}
+          />
+          {rankingOpen ? (
+            <LinkRow
+              icon={Trophy}
+              tone="gold"
+              title="Ranking semanal"
+              value={profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}°` : 'Fuera del top 20'}
               onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
-              className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
-            >
-              <View className="flex-row items-center gap-2.5">
-                <IconBubble icon={Trophy} tone="purple" size={34} />
-                <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
-              </View>
-              <View className="flex-row items-center gap-1.5">
-                <Text className="text-xs text-muted-light dark:text-muted-dark">
-                  {profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}°` : 'Fuera del top 20'}
-                </Text>
-                <ChevronRight size={14} color={colors.light.muted} />
-              </View>
-            </Pressable>
-          )}
-          <Pressable onPress={() => router.push('/(tabs)/grupos')} className={`flex-row items-center justify-between p-4`}>
-            <View className="flex-row items-center gap-2.5">
-              <IconBubble icon={Users} tone="purple" size={34} />
-              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Tus grupos</Text>
-            </View>
-            <View className="flex-row items-center gap-1.5">
-              <Text className="text-xs text-muted-light dark:text-muted-dark">{myGroup ? '1 activo' : 'Ninguno'}</Text>
-              <ChevronRight size={14} color={colors.light.muted} />
-            </View>
-          </Pressable>
+            />
+          ) : myGroup ? (
+            <LinkRow
+              icon={Trophy}
+              tone="gold"
+              title="Ranking de tu grupo"
+              value={groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}°` : 'Ver'}
+              onPress={() => router.push('/(tabs)/grupos')}
+            />
+          ) : null}
+          <LinkRow
+            icon={Users}
+            tone="purple"
+            title="Tus grupos"
+            value={myGroup ? '1 activo' : 'Ninguno'}
+            onPress={() => router.push('/(tabs)/grupos')}
+            last
+          />
         </Glass>
 
-        <View style={{ marginTop: 26 }}>
-          <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
-        </View>
-        <View style={{ marginTop: 14 }}>
-          <MyRedemptionsSection redemptions={redemptions as unknown as RedemptionRow[] | undefined} loading={redemptionsLoading} />
-        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver toda tu actividad"
+          onPress={() => router.push('/(tabs)/actividad')}
+          className="mx-5"
+          style={{ marginTop: 14 }}
+        >
+          <Glass className="rounded-3xl p-4 flex-row items-center justify-between">
+            <View className="flex-row items-center" style={{ gap: 12 }}>
+              <IconBubble icon={Activity} tone="aqua" size={42} />
+              <View>
+                <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark">Gráfico, calendario e historial</Text>
+              </View>
+            </View>
+            <ChevronRight size={16} color={colors.light.muted} />
+          </Glass>
+        </Pressable>
+
+        {(redemptions?.length ?? 0) > 0 && (
+          <View style={{ marginTop: 26 }}>
+            <MyRedemptionsSection redemptions={redemptions as unknown as RedemptionRow[] | undefined} loading={redemptionsLoading} />
+          </View>
+        )}
 
       </View>
     </ScrollView>

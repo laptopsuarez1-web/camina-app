@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 import { useGlassStore } from '@/store/useGlassStore';
+import { barFill, blurWeb, glassOn } from '@/components/ui/glassMath';
 
 // Barra de pestañas al estilo iOS: una cápsula de vidrio que flota sobre el contenido,
 // con la pestaña activa en una pastilla y teñida del verde de Camina.
@@ -31,7 +32,7 @@ const liquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
 export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
-  const level = useGlassStore((s) => s.level);
+  const amount = useGlassStore((s) => s.amount);
   const insets = useSafeAreaInsets();
 
   // Algunas pantallas (crear desafío, chat del grupo) ocultan la barra para ir a pantalla completa.
@@ -47,30 +48,24 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
       return options.href !== null && itemStyle?.display !== 'none';
     });
 
-  const solid = level === 0;
+  const solid = !glassOn(amount);
   const capsule: ViewStyle = {
     minHeight: BAR_HEIGHT,
     borderRadius: BAR_HEIGHT / 2,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: dark ? 'rgba(255,255,255,0.16)' : 'rgba(41,28,71,0.08)',
+    borderColor: dark ? 'rgba(255,255,255,0.16)' : solid ? 'rgba(41,28,71,0.08)' : 'rgba(255,255,255,0.8)',
   };
   // Relleno cuando no hay vidrio del sistema: más denso en Android, donde no hay desenfoque.
-  const fill = solid
-    ? dark ? colors.dark.card : '#fff'
-    : Platform.OS === 'android'
-      ? dark ? 'rgba(34,25,51,0.96)' : 'rgba(255,255,255,0.96)'
-      : Platform.OS === 'web'
-        ? dark ? 'rgba(34,25,51,0.84)' : 'rgba(255,255,255,0.84)'
-        : dark ? 'rgba(34,25,51,0.74)' : 'rgba(255,255,255,0.7)';
+  const fill = barFill(amount, dark, Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios');
 
   const items = (
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
       {visible.map(({ route, index }, position) => {
         const { options } = descriptors[route.key];
         const focused = state.index === index;
-        // Activa en verde de Camina (pasa 4.5:1 en los dos modos); el resto en el color del texto, como en iOS.
-        const color = focused ? (dark ? colors.mint : colors.aquaDeep) : dark ? colors.dark.text : colors.light.text;
+        // Activa en verde de Camina (pasa 4.5:1 en los dos modos); el resto en gris violáceo (trazo), como en iOS.
+        const color = focused ? (dark ? colors.mint : colors.aquaDeep) : dark ? colors.dark.muted : colors.light.muted;
         const Icon = options.tabBarIcon;
         const title = typeof options.title === 'string' ? options.title : route.name;
         return (
@@ -126,7 +121,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
         }}
       >
         {liquidGlass && !solid ? (
-          <GlassView glassEffectStyle="regular" isInteractive colorScheme={dark ? 'dark' : 'light'} style={capsule}>
+          <GlassView glassEffectStyle="regular" isInteractive colorScheme={dark ? 'dark' : 'light'} tintColor={dark ? undefined : `rgba(167,139,250,${(0.22 * amount).toFixed(3)})`} style={capsule}>
             {items}
           </GlassView>
         ) : (
@@ -135,7 +130,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
               capsule,
               { backgroundColor: Platform.OS === 'ios' && !solid ? 'transparent' : fill },
               // En web el navegador desenfoca lo que pasa por debajo, como el vidrio de iOS.
-              Platform.OS === 'web' && !solid ? ({ backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' } as object) : null,
+              Platform.OS === 'web' && !solid ? ({ backdropFilter: blurWeb(amount), WebkitBackdropFilter: blurWeb(amount) } as object) : null,
             ]}
           >
             {Platform.OS === 'ios' && !solid && (

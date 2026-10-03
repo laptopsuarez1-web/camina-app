@@ -12,7 +12,8 @@ import { colors } from '@/theme/tokens';
 import { referralLink } from '@/constants/sharing';
 import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
-import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
+import { useGlassStore } from '@/store/useGlassStore';
+import { GlassSlider } from '@/components/ui/GlassSlider';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
@@ -43,8 +44,9 @@ export default function PerfilScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
   const blocks = useBlocks();
-  const glassLevel = useGlassStore((s) => s.level);
-  const setGlassLevel = useGlassStore((s) => s.setLevel);
+  const glassAmount = useGlassStore((s) => s.amount);
+  const setGlassAmount = useGlassStore((s) => s.setAmount);
+  const persistGlass = useGlassStore((s) => s.persist);
   const [pushStatus, setPushStatus] = useState<Perm>(null);
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
@@ -179,26 +181,38 @@ export default function PerfilScreen() {
           </View>
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-xl py-3 mt-3 bg-purple-light-light dark:bg-purple-light-dark">
-          <Pencil size={14} color={colors.purple} />
-          <Text className="text-[13.5px] font-semibold" style={{ color: colors.purple }}>Editar perfil</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
+          <Pencil size={14} color="#fff" />
+          <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
         </Pressable>
       </Glass>
 
-      <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 flex-row items-center gap-3 mb-4">
-        <View className="flex-1">
-          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} Puntos</Text>
-          <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
-        </View>
-      </View>
+      <Glass className="rounded-2xl overflow-hidden mb-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${balance ?? 0} Puntos, ver detalle`}
+          onPress={() => router.push('/(tabs)/puntos')}
+          className="flex-row items-center p-4"
+          style={{ gap: 12 }}
+        >
+          <Image source={require('@/../assets/camina-coin.png')} style={{ width: 34, height: 34, borderRadius: 17 }} />
+          <View className="flex-1">
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} Puntos</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
+          </View>
+          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+        </Pressable>
+      </Glass>
 
-      <Pressable onPress={inviteFriends} className="flex-row items-center gap-3.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl p-4 mb-4">
-        <IconBubble icon={Gift} tone="aqua" size={46} />
-        <View className="flex-1">
-          <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
-          <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Ganá 5 Puntos cuando tu amigo empiece a caminar</Text>
-        </View>
-      </Pressable>
+      <Glass className="rounded-3xl overflow-hidden mb-4">
+        <Pressable onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
+          <IconBubble icon={Gift} tone="aqua" size={46} />
+          <View className="flex-1">
+            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Ganá 5 Puntos cuando tu amigo empiece a caminar</Text>
+          </View>
+        </Pressable>
+      </Glass>
 
       <Glass className="rounded-2xl overflow-hidden mb-4">
         <Pressable
@@ -273,20 +287,11 @@ export default function PerfilScreen() {
             trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
           />
         </View>
-        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2 mb-2">Transparencia de las tarjetas</Text>
-        <View className="flex-row rounded-full p-1" style={{ backgroundColor: isDark ? 'rgba(179,166,214,0.16)' : 'rgba(124,106,156,0.14)' }}>
-          {([[0, 'Sólido'], [1, 'Equilibrado'], [2, 'Cristal']] as [GlassLevel, string][]).map(([lvl, label]) => (
-            <Pressable
-              key={lvl}
-              accessibilityRole="button"
-              accessibilityState={{ selected: glassLevel === lvl }}
-              onPress={() => setGlassLevel(lvl)}
-              className="flex-1 rounded-full py-2 items-center"
-              style={{ backgroundColor: glassLevel === lvl ? colors.aquaDeep : 'transparent' }}
-            >
-              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12.5, fontWeight: '700', ...(glassLevel === lvl ? { color: '#fff' } : null) }}>{label}</Text>
-            </Pressable>
-          ))}
+        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">Vidrio de las tarjetas y la barra</Text>
+        <GlassSlider label="Vidrio de las tarjetas y la barra" value={glassAmount} onChange={setGlassAmount} onDone={persistGlass} />
+        <View className="flex-row justify-between">
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Sólido</Text>
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cristal</Text>
         </View>
       </Glass>
 

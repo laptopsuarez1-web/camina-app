@@ -166,9 +166,6 @@ export default function GruposScreen() {
 
       {my.length > 0 && (
         <>
-          <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">
-            Mis grupos
-          </Text>
           <View className="gap-2.5 mb-5">
             {my.map((g) => {
               const w = week?.[g.id];
@@ -311,7 +308,7 @@ export default function GruposScreen() {
             className="flex-row items-center gap-3 rounded-2xl p-4"
             style={{ borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#C9B5EA' }}
           >
-            <View className="w-9.5 h-9.5 rounded-full bg-purple items-center justify-center">
+            <View className="w-9.5 h-9.5 rounded-full bg-purple-deep items-center justify-center">
               <Plus size={16} color="#fff" />
             </View>
             <View className="flex-1">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
@@ -237,6 +238,7 @@ function SuccessMark() {
 
 
 export default function CanjesScreen() {
+  const isDark = useColorScheme().colorScheme === 'dark';
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading } = useBenefits();
@@ -527,7 +529,7 @@ export default function CanjesScreen() {
               className="flex-row items-center bg-card-light rounded-full"
               style={{ gap: 8, paddingHorizontal: 18, paddingVertical: 11, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 }}
             >
-              <MapIcon size={16} color={colors.aqua} />
+              <MapIcon size={16} color={colors.aquaDeep} />
               <Text style={{ fontWeight: '700', fontSize: 13.5, color: colors.light.text }}>Explorar el mapa</Text>
             </Pressable>
           </View>
@@ -555,7 +557,7 @@ export default function CanjesScreen() {
                 <Pressable
                   onPress={() => zoneInput.trim() && saveZone(zoneInput.trim())}
                   disabled={!zoneInput.trim()}
-                  className="bg-purple rounded-full px-3.5 py-2"
+                  className="bg-purple-deep rounded-full px-3.5 py-2"
                 >
                   <Text className="text-xs font-semibold text-white">Guardar</Text>
                 </Pressable>
@@ -594,7 +596,7 @@ export default function CanjesScreen() {
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
-                    ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
+                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
@@ -637,7 +639,7 @@ export default function CanjesScreen() {
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
-                    ...(on ? { backgroundColor: st.to, borderColor: st.to } : null),
+                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
                   }}
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
@@ -680,7 +682,7 @@ export default function CanjesScreen() {
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
                   {g.business.address ? (
                     <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
-                      <MapPin size={12} color={colors.aqua} />
+                      <MapPin size={12} color={isDark ? colors.aqua : colors.aquaDeep} />
                       <Text className="flex-1 text-[12px] text-aqua-deep dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
                     </View>
                   ) : null}
@@ -703,12 +705,12 @@ export default function CanjesScreen() {
                   <View
                     key={b.id}
                     accessibilityLabel={`${b.name}, ${b.cost_points} Puntos`}
-                    className="flex-row items-center bg-aqua-light-light dark:bg-aqua-light-dark rounded-full"
+                    className="flex-row items-center bg-aqua-deep rounded-full"
                     style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
                   >
                     <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
-                    <Text className="text-[13px] font-extrabold text-aqua-deep dark:text-mint">{b.cost_points}</Text>
-                    <Text className="text-[13px] font-semibold text-text-light dark:text-text-dark">{b.name}</Text>
+                    <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
+                    <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
                   </View>
                 ))}
               </ScrollView>
@@ -888,7 +890,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-aqua-light-light dark:bg-aqua-light-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <MapPin size={14} color={colors.aqua} />
+                      <MapPin size={14} color={isDark ? colors.aqua : colors.aquaDeep} />
                       <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">{profileGroup.business.address}</Text>
                     </Pressable>
                   ) : null}

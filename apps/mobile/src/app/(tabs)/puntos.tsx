@@ -167,7 +167,7 @@ export default function PuntosScreen() {
         </Text>
         <Pressable
           onPress={shareLink}
-          className="bg-purple rounded-xl py-3 items-center flex-row justify-center gap-2"
+          className="bg-purple-deep rounded-xl py-3 items-center flex-row justify-center gap-2"
         >
           <Share2 size={15} color="#fff" />
           <Text className="text-white font-bold text-[13px]">Compartir link</Text>

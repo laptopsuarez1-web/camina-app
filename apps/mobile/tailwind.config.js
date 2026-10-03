@@ -17,6 +17,7 @@ module.exports = {
         'aqua-deep': '#1F7A66',
         'aqua-light': { light: '#E3F5F0', dark: '#1C3A34' },
         purple: '#8B4FD1',
+        'purple-deep': '#5B31A3',
         'purple-light': { light: '#F1EBFA', dark: '#2E2247' },
         warn: '#F2985C',
         'warn-deep': '#A34F14',

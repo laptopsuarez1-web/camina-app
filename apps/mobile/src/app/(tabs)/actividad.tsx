@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -49,6 +50,7 @@ const CAL_BG = { met: colors.mint, partial: '#FBD9BD', miss: '#F9C9C6', none: co
 const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14', none: colors.light.muted };
 
 export default function ActividadScreen() {
+  const isDark = useColorScheme().colorScheme === 'dark';
   const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
@@ -267,7 +269,7 @@ export default function ActividadScreen() {
       </LinearGradient>
 
       {dailyDiffVsCommunity !== null && (
-        <View className="flex-row items-center gap-2.5 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-3.5 py-3 mb-3">
+        <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-3">
           <IconBubble icon={Activity} tone="purple" size={38} />
           <Text className="flex-1 text-[13px] leading-5 text-text-light dark:text-text-dark">
             {dailyDiffVsCommunity >= 0 ? (
@@ -283,17 +285,17 @@ export default function ActividadScreen() {
               </>
             )}
           </Text>
-        </View>
+        </Glass>
       )}
 
       {(streak ?? 0) > 0 && (
-        <View className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4" style={{ backgroundColor: '#FDEEE2' }}>
+        <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4">
           <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
-            <Text className="text-[13.5px] font-bold" style={{ color: colors.warnDeep }}>¡Vas en racha!</Text>
-            <Text className="text-[12px]" style={{ color: colors.warnDeep }}>{streak} {streak === 1 ? 'día seguido' : 'días seguidos'}</Text>
+            <Text className="text-[13.5px] font-bold" style={{ color: isDark ? '#FFB27A' : colors.warnDeep }}>¡Vas en racha!</Text>
+            <Text className="text-[12px]" style={{ color: isDark ? '#FFB27A' : colors.warnDeep }}>{streak} {streak === 1 ? 'día seguido' : 'días seguidos'}</Text>
           </View>
-        </View>
+        </Glass>
       )}
 
       <Text className="font-bold text-base mt-1 mb-2.5 text-text-light dark:text-text-dark">Hoy</Text>

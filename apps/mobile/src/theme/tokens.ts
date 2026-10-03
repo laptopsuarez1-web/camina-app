@@ -23,6 +23,8 @@ export const colors = {
   // Para texto y fondos de botón con texto blanco (5.2:1); el aqua queda para íconos, barras y decoración.
   aquaDeep: '#1F7A66',
   purple: '#8B4FD1',
+  // Morado oscuro para botones y filtros con texto blanco, parejo con el verde oscuro (aquaDeep).
+  purpleDeep: '#5B31A3',
   warn: '#F2985C',
   warnDeep: '#A34F14',
   warnLight: '#FDEEE2',

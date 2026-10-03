@@ -293,7 +293,7 @@ export default function GroupDetailScreen() {
                 placeholderTextColor={colors.light.muted}
                 className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
               />
-              <Pressable onPress={saveGoal} className="bg-purple rounded-full px-3.5 py-2">
+              <Pressable onPress={saveGoal} className="bg-purple-deep rounded-full px-3.5 py-2">
                 <Text className="text-xs font-semibold text-white">Guardar</Text>
               </Pressable>
               <Pressable onPress={() => setEditingGoal(false)}>

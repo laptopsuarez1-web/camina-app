@@ -85,14 +85,14 @@ export default function EventosScreen() {
       )}
 
       {!hasPromos && (
-        <Glass className="flex-row items-center rounded-2xl p-4 mb-7" style={{ gap: 12 }}>
-          <IconBubble icon={Calendar} tone="purple" size={40} />
-          <View className="flex-1">
-            <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">Todavía no hay eventos</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5 leading-5">
-              Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
-            </Text>
-          </View>
+        <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
+          <IconBubble icon={Calendar} tone="purple" size={84} />
+          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 18 }}>
+            Todavía no hay eventos
+          </Text>
+          <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
+            Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
+          </Text>
         </Glass>
       )}
       <Text className="font-bold text-[17px] mb-1 text-text-light dark:text-text-dark">Retos Camina</Text>
@@ -100,6 +100,9 @@ export default function EventosScreen() {
         Cumplí metas caminando y ganá Puntos extra.
       </Text>
 
+      {(retos ?? []).length === 0 && (
+        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay retos activos.</Text>
+      )}
       <View className="gap-3">
         {(retos ?? []).map((reto) => (
           <RetoCard

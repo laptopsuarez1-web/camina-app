@@ -14,8 +14,8 @@ import { CelebrationHost } from '@/components/CelebrationHost';
 // Ícono de la barra: en iOS el símbolo del sistema (SF Symbols), como las apps de Apple;
 // en Android y web, el mismo dibujo en Phosphor relleno.
 function tabIcon(Icon: (p: IconProps) => React.ReactElement, symbol: SFSymbol) {
-  return function TabIcon({ color }: { color: import('react-native').ColorValue; focused: boolean }) {
-    const fallback = <Icon size={25} color={color} weight="fill" />;
+  return function TabIcon({ color, focused }: { color: import('react-native').ColorValue; focused: boolean }) {
+    const fallback = <Icon size={25} color={color} weight={focused ? 'fill' : 'regular'} />;
     if (Platform.OS !== 'ios') return fallback;
     return <SymbolView name={symbol} size={24} tintColor={color} type="monochrome" fallback={fallback} />;
   };

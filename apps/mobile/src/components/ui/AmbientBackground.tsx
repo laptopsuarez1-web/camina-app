@@ -4,8 +4,8 @@ import { useColorScheme } from 'nativewind';
 
 // Fondo con un degradé suave y parejo (sin manchas ni círculos): le da color al vidrio de las
 // tarjetas y de la barra de abajo sin ensuciar la pantalla.
-const LIGHT = ['#DDF8EC', '#F1EEFF', '#FFEFE2'] as const;
-const DARK = ['#14262A', '#1B1530', '#2A1A2E'] as const;
+const LIGHT = ['#DDF8EC', '#F1EEFF', '#D9C9FA'] as const;
+const DARK = ['#14262A', '#1B1530', '#34206B'] as const;
 
 export function AmbientBackground() {
   const dark = useColorScheme().colorScheme === 'dark';

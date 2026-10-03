@@ -1,12 +1,13 @@
 import type { ComponentType } from 'react';
-import { View, type ColorValue } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Platform, type ColorValue, type ViewStyle } from 'react-native';
+import { useColorScheme } from 'nativewind';
 import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-native';
 
 // Íconos de la app: Phosphor en estilo duotono (dos tonos). Se exportan con los mismos nombres y
 // props (size, color, fill) que usaba lucide, así cada pantalla solo cambia el import.
 // Se importa cada ícono por separado para no meter los 1.500 en la app.
 import { ShieldCheck as ShieldCheck_ } from 'phosphor-react-native/src/icons/ShieldCheck';
+import { Target as Target_ } from 'phosphor-react-native/src/icons/Target';
 import { Bell as Bell_ } from 'phosphor-react-native/src/icons/Bell';
 import { Clock as Clock_ } from 'phosphor-react-native/src/icons/Clock';
 import { CaretDown as CaretDown } from 'phosphor-react-native/src/icons/CaretDown';
@@ -77,6 +78,7 @@ function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'regular') 
 
 // Los íconos "de línea" (flechas, cruz, tilde, más) van en negrita: en duotono se verían casi invisibles.
 export const Bell = make(Bell_);
+export const Target = make(Target_);
 export const ShieldCheck = make(ShieldCheck_);
 export const Clock = make(Clock_);
 export const ChevronDown = make(CaretDown, 'bold');
@@ -131,17 +133,18 @@ export const SquaresFour = make(SquaresFour_);
 export const DeviceMobile = make(DeviceMobile_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
-// [arriba, medio, abajo]: el tercer tono, un poco más profundo, le da volumen sin brillos ni relieves.
-const TONES: Record<Tone, [string, string, string]> = {
-  aqua: ['#8DF0CB', '#4FC3A8', '#33A68C'],
-  mint: ['#8DF0CB', '#4FC3A8', '#33A68C'],
-  purple: ['#B68AF0', '#8B4FD1', '#7140B8'],
-  orange: ['#FFBE8C', '#F2985C', '#DE7F42'],
-  red: ['#FF8C8F', '#E5484D', '#C93338'],
-  gold: ['#FFE28A', '#EDB52C', '#D39A17'],
+
+// Ficha de vidrio teñido: el ícono va relleno en el color de la categoría, sobre un vidrio con borde del mismo tono.
+const GLYPH: Record<Tone, [string, string]> = {
+  // [modo claro, modo oscuro]
+  aqua: ['#1B8F73', '#5BD9B5'],
+  mint: ['#1B8F73', '#5BD9B5'],
+  purple: ['#7A3FC4', '#B791F2'],
+  orange: ['#D2691F', '#FFA866'],
+  red: ['#D23B40', '#FF8388'],
+  gold: ['#B97D0A', '#F5C645'],
 };
 
-// Ficha de color con degradé, un filo de luz y el ícono blanco en dos tonos.
 export function IconBubble({
   icon: Icon,
   tone = 'aqua',
@@ -151,38 +154,33 @@ export function IconBubble({
   tone?: Tone;
   size?: number;
 }) {
-  const [a, b, c] = TONES[tone];
+  const dark = useColorScheme().colorScheme === 'dark';
+  const [lightColor, darkColor] = GLYPH[tone];
+  const color = dark ? darkColor : lightColor;
   const radius = size * 0.32;
   return (
     <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius,
-        shadowColor: b,
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        // Sin elevation: en Android dibuja una sombra gris que no es la del color.
-        elevation: 0,
-      }}
-    >
-      <LinearGradient
-        colors={[a, b, c]}
-        locations={[0, 0.55, 1]}
-        start={{ x: 0.2, y: 0 }}
-        end={{ x: 0.8, y: 1 }}
-        style={{
-          flex: 1,
+      style={[
+        {
+          width: size,
+          height: size,
           borderRadius: radius,
           alignItems: 'center',
           justifyContent: 'center',
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.35)',
-        }}
-      >
-        <Icon size={size * 0.52} color="#fff" weight="bold" />
-      </LinearGradient>
+          borderWidth: 1.5,
+          borderColor: `${color}${dark ? '88' : '70'}`,
+          backgroundColor: dark ? 'rgba(255,255,255,0.1)' : `${color}26`,
+          shadowColor: color,
+          shadowOpacity: dark ? 0 : 0.18,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          // Sin elevation: en Android dibuja una sombra gris que no es la del color.
+          elevation: 0,
+        },
+        Platform.OS === 'web' && ({ backdropFilter: 'blur(14px) saturate(170%)', WebkitBackdropFilter: 'blur(14px) saturate(170%)' } as ViewStyle),
+      ]}
+    >
+      <Icon size={size * 0.54} color={color} weight="fill" />
     </View>
   );
 }
