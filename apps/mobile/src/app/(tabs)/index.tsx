@@ -274,7 +274,7 @@ export default function HomeScreen() {
               <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>
                 {pointsToday >= DAILY_POINTS_CAP
                   ? 'Tope de hoy'
-                  : (() => { const n = POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT); return n === 1 ? 'falta 1 paso' : `faltan ${n} pasos`; })()}
+                  : (() => { const n = POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT); return `${n === 1 ? '1 paso' : `${n} pasos`} para +1 Punto`; })()}
               </Text>
             </View>
           </ProgressRing>

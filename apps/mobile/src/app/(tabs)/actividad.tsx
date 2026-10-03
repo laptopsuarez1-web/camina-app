@@ -50,7 +50,7 @@ const CAL_FG = { met: colors.mintDark, miss: '#9B1C14', none: colors.light.muted
 
 export default function ActividadScreen() {
   const tabSpace = useTabBarSpace();
-  const { steps: stepsToday } = useTodaySteps();
+  const { steps: deviceStepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
@@ -58,6 +58,10 @@ export default function ActividadScreen() {
   const { data: communityAverage } = useCommunityAverage();
   const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
+
+  // Hoy: lo que diga el teléfono o lo ya guardado en la base, lo que sea mayor (así coincide con Inicio y el historial).
+  const savedToday = (history ?? []).find((h) => h.day === localKey(new Date()))?.steps ?? 0;
+  const stepsToday = Math.max(deviceStepsToday, savedToday);
 
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
@@ -218,8 +222,8 @@ export default function ActividadScreen() {
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {/* Línea punteada de la meta diaria */}
             {goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)' }}>
-                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -18 }}>
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)', zIndex: 2, elevation: 2 }}>
+                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -20, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, overflow: 'hidden', backgroundColor: 'rgba(20,14,40,0.75)' }}>
                   meta {goal.toLocaleString('es-BO')}
                 </Text>
               </View>

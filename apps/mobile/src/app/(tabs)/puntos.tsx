@@ -27,7 +27,7 @@ function useMovimientos() {
       since.setDate(since.getDate() - 30);
       const sinceISO = since.toISOString().slice(0, 10);
 
-      const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }] = await Promise.all([
+      const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }, { data: canjes }] = await Promise.all([
         supabase
           .from('steps_daily')
           .select('day, steps')
@@ -40,6 +40,13 @@ function useMovimientos() {
           .eq('user_id', userId!)
           .neq('reason', 'steps')
           .order('earned_at', { ascending: false })
+          .limit(40),
+        // Los canjes viejos se guardaron sin nota: se busca el comercio en el canje mismo.
+        supabase
+          .from('redemptions')
+          .select('created_at, cost_points, business:businesses(name)')
+          .eq('user_id', userId!)
+          .order('created_at', { ascending: false })
           .limit(40),
       ]);
       if (stepsError) throw stepsError;
@@ -61,12 +68,25 @@ function useMovimientos() {
         if (note?.startsWith('Reto:')) return 'Reto';
         return 'Desafío de grupo';
       };
+      const canjeNote = (earnedAt: string, amount: number) => {
+        const t = new Date(earnedAt).getTime();
+        const match = (canjes ?? []).find(
+          (c) => c.cost_points === -amount && Math.abs(new Date(c.created_at).getTime() - t) < 60_000
+        );
+        const business = match?.business as { name?: string } | { name?: string }[] | null | undefined;
+        const name = Array.isArray(business) ? business[0]?.name : business?.name;
+        return name ? `Canje en ${name}` : null;
+      };
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
         day: l.ref_day ?? l.earned_at.slice(0, 10),
         reason: l.reason as string,
         title: kindOf(l.reason, l.note, l.amount),
-        subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,
+        subtitle: (l.note
+          ? l.note.replace(/^Reto: /, '')
+          : l.reason === 'redemption' && l.amount < 0
+            ? canjeNote(l.earned_at, l.amount)
+            : null) as string | null,
         amount: l.amount,
       }));
 
