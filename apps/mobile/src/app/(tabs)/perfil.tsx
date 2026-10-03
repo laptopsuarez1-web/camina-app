@@ -227,7 +227,7 @@ export default function PerfilScreen() {
         <Pressable onPress={editing ? () => setEditing(false) : startEditing} hitSlop={8} className="flex-row items-center gap-1.5 rounded-full px-3 py-2 bg-purple-light-light dark:bg-purple-light-dark">
           <Pencil size={13} color={colors.purple} />
           <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>{editing ? 'Cerrar' : 'Editar'}</Text>
-        </Pressable>
+          </Pressable>
       </Glass>
 
       {editing && (
@@ -262,6 +262,16 @@ export default function PerfilScreen() {
           <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
           <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua-deep rounded-xl py-3 items-center">
             {savingProfile ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Guardar cambios</Text>}
+          </Pressable>
+          <Pressable onPress={confirmDeleteAccount} disabled={deleting} className="flex-row items-center justify-center gap-2 pt-4 mt-4 border-t border-line-light dark:border-line-dark">
+            {deleting ? (
+              <ActivityIndicator color={colors.warn} size="small" />
+            ) : (
+              <>
+                <Trash2 size={15} color={colors.warn} />
+                <Text className="text-warn font-semibold">Eliminar cuenta</Text>
+              </>
+            )}
           </Pressable>
         </Glass>
       )}
@@ -437,17 +447,6 @@ export default function PerfilScreen() {
       <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
         <LogOut size={15} color={colors.warn} />
         <Text className="text-warn font-semibold">Cerrar sesión</Text>
-      </Pressable>
-
-      <Pressable onPress={confirmDeleteAccount} disabled={deleting} className="flex-row items-center justify-center gap-2 py-3.5">
-        {deleting ? (
-          <ActivityIndicator color={colors.warn} size="small" />
-        ) : (
-          <>
-            <Trash2 size={15} color={colors.warn} />
-            <Text className="text-warn font-semibold">Eliminar cuenta</Text>
-          </>
-        )}
       </Pressable>
     </ScrollView>
   );
