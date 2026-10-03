@@ -60,7 +60,9 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
     ? dark ? colors.dark.card : '#fff'
     : Platform.OS === 'android'
       ? dark ? 'rgba(34,25,51,0.96)' : 'rgba(255,255,255,0.96)'
-      : dark ? 'rgba(34,25,51,0.74)' : 'rgba(255,255,255,0.7)';
+      : Platform.OS === 'web'
+        ? dark ? 'rgba(34,25,51,0.84)' : 'rgba(255,255,255,0.84)'
+        : dark ? 'rgba(34,25,51,0.74)' : 'rgba(255,255,255,0.7)';
 
   const items = (
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>

@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, Linking, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, Gift, Pencil, IconBubble, Bell, Heartbeat, MapPin } from '@/components/icons';
-import { clearCoarseLocation, shareCoarseLocation } from '@/lib/coarse-location';
+import { LogOut, Gift, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -49,6 +48,8 @@ export default function PerfilScreen() {
   const [pushStatus, setPushStatus] = useState<Perm>(null);
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
+  const [permsOpen, setPermsOpen] = useState(false);
+  const pendingPerms = [pushStatus, Platform.OS === 'ios' ? 'granted' : stepsStatus, locationStatus].filter((x) => x !== 'granted').length;
 
   // Los permisos se vuelven a leer cada vez que se entra a la pantalla (por si se cambiaron en los ajustes).
   const loadPermissions = useCallback(async () => {
@@ -131,15 +132,6 @@ export default function PerfilScreen() {
     if (!error) await useAuthStore.getState().refreshProfile();
   }
 
-  async function toggleNearby(value: boolean) {
-    if (!profile) return;
-    const { error } = await supabase.from('profiles').update({ nearby_alerts: value }).eq('id', profile.id);
-    if (error) return;
-    await useAuthStore.getState().refreshProfile();
-    if (value) await shareCoarseLocation(true);
-    else await clearCoarseLocation();
-  }
-
   async function toggleRanking(value: boolean) {
     if (!profile) return;
     const { error } = await supabase
@@ -208,8 +200,36 @@ export default function PerfilScreen() {
         </View>
       </Pressable>
 
-      <Text className="text-[12px] font-bold uppercase tracking-wide text-muted-light dark:text-muted-dark mb-2 ml-1">Permisos</Text>
       <Glass className="rounded-2xl overflow-hidden mb-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Permisos: ${pendingPerms === 0 ? 'todo activo' : `${pendingPerms} sin activar`}`}
+          onPress={() => setPermsOpen(true)}
+          className="flex-row items-center justify-between p-3.5"
+        >
+          <View className="flex-row items-center" style={{ gap: 12 }}>
+            <IconBubble icon={ShieldCheck} tone="aqua" size={34} />
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Permisos</Text>
+          </View>
+          <View className="flex-row items-center" style={{ gap: 6 }}>
+            <Text className="text-[12px]" style={{ color: pendingPerms === 0 ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? '#FFB27A' : colors.warnDeep }}>
+              {pendingPerms === 0 ? 'Todo activo' : `${pendingPerms} sin activar`}
+            </Text>
+            <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+          </View>
+        </Pressable>
+      </Glass>
+
+      <Modal visible={permsOpen} transparent animationType="slide" onRequestClose={() => setPermsOpen(false)}>
+        <Pressable accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
+        <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32 }}>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text accessibilityRole="header" className="font-bold text-[17px] text-text-light dark:text-text-dark ml-1">Permisos</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={10} onPress={() => setPermsOpen(false)}>
+              <Text className="text-[14px] font-semibold text-aqua-deep dark:text-aqua">Listo</Text>
+            </Pressable>
+          </View>
+          <Glass className="rounded-2xl overflow-hidden">
         <PermRow
           icon={Bell}
           title="Notificaciones"
@@ -232,19 +252,14 @@ export default function PerfilScreen() {
           onPress={locationAction}
           last
         />
-      </Glass>
+          </Glass>
+        </View>
+      </Modal>
 
       <Glass className="rounded-md overflow-hidden mb-4">
-        <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
+        <View className="flex-row items-center justify-between p-3.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
           <Switch value={profile?.ranking_visible ?? true} onValueChange={toggleRanking} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
-        </View>
-        <View className="flex-row items-center justify-between p-3.5">
-          <View className="flex-1 pr-3">
-            <Text className="text-[14px] text-text-light dark:text-text-dark">Avisos de comercios cerca</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Usamos tu ubicación aproximada. Máximo 1 aviso por semana.</Text>
-          </View>
-          <Switch value={profile?.nearby_alerts ?? true} onValueChange={toggleNearby} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
       </Glass>
 

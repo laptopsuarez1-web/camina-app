@@ -8,7 +8,7 @@ import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
-import { ChevronRight, Flame, Trophy, MapPin, Check } from '@/components/icons';
+import { ChevronRight, Flame } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { dayLabel } from '@/lib/format';
@@ -159,10 +159,6 @@ export function StepsChartCard({ todaySteps, goal, streak }: { todaySteps: numbe
     return out;
   }, [byDay, range, goal, firstKey]);
 
-  const tracked = days.filter((d) => d.tracked);
-  const total = tracked.reduce((a, d) => a + d.steps, 0);
-  const avg = tracked.length ? total / tracked.length : 0;
-  const metCount = tracked.filter((d) => d.met).length;
   const chartMax = Math.max(goal * 1.2, ...days.map((d) => d.steps), ...days.map((d) => d.goal));
   const goalBottom = (goal / chartMax) * CHART_H;
 
@@ -207,24 +203,6 @@ export function StepsChartCard({ todaySteps, goal, streak }: { todaySteps: numbe
           <Text className="text-aqua-deep dark:text-aqua text-[12.5px] font-semibold">Ver actividad</Text>
           <ChevronRight size={13} color={dark ? colors.aqua : colors.aquaDeep} />
         </Pressable>
-      </View>
-
-      <View className="flex-row items-end justify-between" style={{ marginTop: 14 }}>
-        <View>
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Promedio por día</Text>
-          <View className="flex-row items-baseline" style={{ gap: 5 }}>
-            <Text className="text-text-light dark:text-text-dark" style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.6, fontVariant: ['tabular-nums'] }}>
-              {fmt(avg)}
-            </Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">pasos</Text>
-          </View>
-        </View>
-        <View className="flex-row items-center rounded-full bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 4, paddingHorizontal: 10, paddingVertical: 5 }}>
-          <Check size={12} color={dark ? colors.mint : colors.aquaDeep} />
-          <Text className="text-[12px] font-semibold text-aqua-deep dark:text-mint">
-            {metCount} de {tracked.length} {tracked.length === 1 ? 'día' : 'días'} con meta
-          </Text>
-        </View>
       </View>
 
       {/* Gráfico: barras verdes si cumplió la meta, lilas si no; línea punteada de meta; hoy resaltado. */}
@@ -303,115 +281,7 @@ export function StepsChartCard({ todaySteps, goal, streak }: { todaySteps: numbe
   );
 }
 
-// ---------------------------------------------------------------------------------------------
-// Tu ranking (solo cuando hay suficientes usuarios; quien llama decide cuándo mostrarlo)
-// ---------------------------------------------------------------------------------------------
-
-export function RankingCard({
-  position, weekSteps, hidden,
-}: { position: number; weekSteps: number | null; hidden: boolean }) {
-  const dark = useColorScheme().colorScheme === 'dark';
-  const headline = hidden ? 'Activalo en Perfil' : position > 0 ? `Vas ${position}°` : 'Fuera del top 20';
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Tu ranking: ${headline}. Ver ranking semanal`}
-      onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
-      className="mx-5"
-    >
-      <Glass className="rounded-3xl p-4 flex-row items-center" style={{ gap: 14 }}>
-        <View
-          className="items-center justify-center rounded-full bg-purple-light-light dark:bg-purple-light-dark"
-          style={{ width: 52, height: 52 }}
-        >
-          <Trophy size={26} color={dark ? '#C9A6F5' : colors.purple} />
-        </View>
-        <View className="flex-1 min-w-0">
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu ranking</Text>
-          <Text className="text-text-light dark:text-text-dark" style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.4 }} numberOfLines={1}>
-            {headline}
-          </Text>
-          <Text className="text-[12.5px] text-muted-light dark:text-muted-dark" style={{ marginTop: 2 }}>
-            {position > 0 && weekSteps != null
-              ? `${fmt(weekSteps)} pasos esta semana · Seguí caminando para subir posiciones`
-              : 'Seguí caminando para subir posiciones'}
-          </Text>
-        </View>
-        <ChevronRight size={16} color={dark ? colors.dark.muted : colors.light.muted} />
-      </Glass>
-    </Pressable>
-  );
-}
-
-// ---------------------------------------------------------------------------------------------
-// Premios que te copan
-// ---------------------------------------------------------------------------------------------
-
 const ROW_CONTENT = { paddingHorizontal: 20, gap: 12, paddingTop: 4, paddingBottom: 18 } as const;
-
-export function RewardsRow({
-  benefits, balance, pos,
-}: { benefits: BenefitWithBusiness[]; balance: number | undefined; pos: { latitude: number; longitude: number } | null }) {
-  const dark = useColorScheme().colorScheme === 'dark';
-  const list = useMemo(
-    () =>
-      [...benefits]
-        .sort((a, b) => Number(isFeatured(b.business)) - Number(isFeatured(a.business)) || a.cost_points - b.cost_points)
-        .slice(0, 8),
-    [benefits],
-  );
-  if (list.length === 0) return null;
-  return (
-    <View>
-      <SectionHeader title="Premios que te copan" actionLabel="Ver todo" onAction={() => router.push('/(tabs)/canjes?view=lista')} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ROW_CONTENT} style={{ marginBottom: -10 }}>
-        {list.map((b) => {
-          const featured = isFeatured(b.business);
-          const d = distanceTo(pos, b.business);
-          const missing = balance != null && b.cost_points > balance ? b.cost_points - balance : 0;
-          return (
-            <Pressable
-              key={b.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${b.name}, ${b.business.name}, ${b.cost_points} Puntos${d != null ? `, a ${formatDistance(d)}` : ''}`}
-              onPress={() => router.push('/(tabs)/canjes')}
-              style={{ width: 232 }}
-            >
-              <Glass
-                className="rounded-3xl"
-                style={[{ flex: 1, padding: 14 }, featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : null]}
-              >
-                <View className="flex-row items-center" style={{ gap: 10 }}>
-                  <BusinessAvatar logoUrl={b.business.logo_url} category={b.business.category} size={44} />
-                  <View className="flex-1 min-w-0">
-                    <View className="flex-row items-center" style={{ gap: 5 }}>
-                      <Text className="text-[13px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{b.business.name}</Text>
-                      {featured && <GoldBadge size={15} />}
-                    </View>
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
-                      {d != null ? `A ${formatDistance(d)}` : b.business.category}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="text-[15px] font-bold text-text-light dark:text-text-dark" numberOfLines={2} style={{ marginTop: 12, minHeight: 40, lineHeight: 20 }}>
-                  {b.name}
-                </Text>
-                <View className="flex-row items-center justify-between" style={{ marginTop: 10 }}>
-                  <CoinPill value={b.cost_points} />
-                  {missing > 0 ? (
-                    <Text className="text-[12px] font-semibold" style={{ color: dark ? '#FFB27A' : colors.warnDeep }}>Te faltan {missing}</Text>
-                  ) : balance != null ? (
-                    <Text className="text-[12px] font-semibold text-aqua-deep dark:text-mint">Ya te alcanza</Text>
-                  ) : null}
-                </View>
-              </Glass>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-    </View>
-  );
-}
 
 // ---------------------------------------------------------------------------------------------
 // Locales cerca tuyo
@@ -420,7 +290,6 @@ export function RewardsRow({
 export function NearbyRow({
   benefits, pos, loading,
 }: { benefits: BenefitWithBusiness[]; pos: { latitude: number; longitude: number } | null; loading: boolean }) {
-  const dark = useColorScheme().colorScheme === 'dark';
   const places = useMemo(() => {
     const map = new Map<string, { business: Business; count: number; minCost: number }>();
     for (const b of benefits) {
@@ -470,23 +339,29 @@ export function NearbyRow({
               accessibilityRole="button"
               accessibilityLabel={`${p.business.name}, ${p.business.category}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}`}
               onPress={() => router.push('/(tabs)/canjes')}
-              style={{ width: 156 }}
+              style={{ width: 232 }}
             >
               <Glass
-                className="rounded-3xl items-center"
-                style={[{ flex: 1, paddingVertical: 16, paddingHorizontal: 12 }, featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : null]}
+                className="rounded-3xl"
+                style={[{ flex: 1, padding: 14 }, featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : null]}
               >
-                <BusinessAvatar logoUrl={p.business.logo_url} category={p.business.category} size={60} />
-                <View className="flex-row items-center justify-center" style={{ gap: 5, marginTop: 10, maxWidth: '100%' }}>
-                  <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{p.business.name}</Text>
-                  {featured && <GoldBadge size={15} />}
+                <View className="flex-row items-center" style={{ gap: 10 }}>
+                  <BusinessAvatar logoUrl={p.business.logo_url} category={p.business.category} size={52} />
+                  <View className="flex-1 min-w-0">
+                    <View className="flex-row items-center" style={{ gap: 5 }}>
+                      <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{p.business.name}</Text>
+                      {featured && <GoldBadge size={15} />}
+                    </View>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+                      {p.distance != null ? `${p.business.category} · ${formatDistance(p.distance)}` : p.business.category}
+                    </Text>
+                  </View>
                 </View>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1} style={{ marginTop: 2 }}>{p.business.category}</Text>
-                <View className="flex-row items-center" style={{ gap: 3, marginTop: 8 }}>
-                  {p.distance != null ? <MapPin size={12} color={dark ? colors.aqua : colors.aquaDeep} /> : null}
-                  <Text className="text-[12px] font-semibold text-aqua-deep dark:text-aqua" numberOfLines={1}>
-                    {p.distance != null ? formatDistance(p.distance) : `${p.count} ${p.count === 1 ? 'premio' : 'premios'}`}
-                  </Text>
+                <Text className="text-[13px] font-semibold text-aqua-deep dark:text-mint" style={{ marginTop: 12 }}>
+                  {p.count} {p.count === 1 ? 'premio disponible' : 'premios disponibles'}
+                </Text>
+                <View style={{ marginTop: 8 }}>
+                  <CoinPill value={p.minCost} prefix="desde" />
                 </View>
               </Glass>
             </Pressable>

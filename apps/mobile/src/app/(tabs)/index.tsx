@@ -24,8 +24,8 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, Check, IconBubble } from '@/components/icons';
-import { StepsChartCard, RankingCard, RewardsRow, NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
+import { Flame, ChevronRight, Users, Trophy, Check, IconBubble } from '@/components/icons';
+import { StepsChartCard, NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
@@ -271,11 +271,9 @@ export default function HomeScreen() {
                 <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} Puntos</Text>
               </Animated.View>
-              <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>
-                {pointsToday >= DAILY_POINTS_CAP
-                  ? 'Tope de hoy'
-                  : (() => { const n = POINTS_PER_STEP_UNIT - (steps % POINTS_PER_STEP_UNIT); return `${n === 1 ? '1 paso' : `${n} pasos`} para +1 Punto`; })()}
-              </Text>
+              {pointsToday >= DAILY_POINTS_CAP && (
+                <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>Tope de hoy</Text>
+              )}
             </View>
           </ProgressRing>
         </View>
@@ -485,17 +483,24 @@ export default function HomeScreen() {
           </Pressable>
         )}
 
-        {rankingOpen && (
-          <View style={{ marginTop: 16 }}>
-            <RankingCard
-              position={myGlobalPosition}
-              weekSteps={myGlobalPosition > 0 ? Number(globalRanking?.[myGlobalPosition - 1]?.total_steps ?? 0) : null}
-              hidden={profile?.ranking_visible === false}
-            />
-          </View>
-        )}
-
         <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+          {rankingOpen && (
+            <Pressable
+              onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
+              className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
+            >
+              <View className="flex-row items-center gap-2.5">
+                <IconBubble icon={Trophy} tone="purple" size={34} />
+                <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
+              </View>
+              <View className="flex-row items-center gap-1.5">
+                <Text className="text-xs text-muted-light dark:text-muted-dark">
+                  {profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}°` : 'Fuera del top 20'}
+                </Text>
+                <ChevronRight size={14} color={colors.light.muted} />
+              </View>
+            </Pressable>
+          )}
           <Pressable onPress={() => router.push('/(tabs)/grupos')} className={`flex-row items-center justify-between p-4`}>
             <View className="flex-row items-center gap-2.5">
               <IconBubble icon={Users} tone="purple" size={34} />
@@ -509,9 +514,6 @@ export default function HomeScreen() {
         </Glass>
 
         <View style={{ marginTop: 26 }}>
-          <RewardsRow benefits={benefits ?? []} balance={balance} pos={pos} />
-        </View>
-        <View style={{ marginTop: 14 }}>
           <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
         </View>
         <View style={{ marginTop: 14 }}>

@@ -327,6 +327,13 @@ export default function CanjesScreen() {
     return [...map.values()];
   }, [benefits]);
 
+  // "Disponibles ahora": en el mapa solo quedan los comercios con algún premio canjeable en este momento.
+  const mapBusinesses = useMemo(() => {
+    if (!onlyOpen) return businessesWithCoords;
+    const open = new Set((benefits ?? []).filter(isBenefitAvailableNow).map((b) => b.business.id));
+    return businessesWithCoords.filter((b) => open.has(b.id));
+  }, [onlyOpen, benefits, businessesWithCoords]);
+
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
   const mapRegion = useMemo(() => {
@@ -470,7 +477,7 @@ export default function CanjesScreen() {
               rotateEnabled={false}
               toolbarEnabled={false}
             >
-              {businessesWithCoords.map((b) => (
+              {mapBusinesses.map((b) => (
                 <BusinessMarker key={b.id} business={b} />
               ))}
             </MapView>
@@ -729,7 +736,7 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
             >
-              {businessesWithCoords.map((b) => (
+              {mapBusinesses.map((b) => (
                 <BusinessMarker
                   key={b.id}
                   business={b}
@@ -768,6 +775,15 @@ export default function CanjesScreen() {
                 </Pressable>
               )}
             </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: onlyOpen }}
+              onPress={() => setOnlyOpen((v) => !v)}
+              className="self-start rounded-full"
+              style={{ marginTop: 8, paddingHorizontal: 14, height: 32, justifyContent: 'center', backgroundColor: onlyOpen ? colors.aquaDeep : '#fff' }}
+            >
+              <Text style={{ fontSize: 12.5, fontWeight: '700', color: onlyOpen ? '#fff' : colors.light.text }}>Disponibles ahora</Text>
+            </Pressable>
             {mapResults.length > 0 && (
               <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
                 {mapResults.map((b) => (

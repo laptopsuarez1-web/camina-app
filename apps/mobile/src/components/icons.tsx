@@ -6,6 +6,7 @@ import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-nati
 // Íconos de la app: Phosphor en estilo duotono (dos tonos). Se exportan con los mismos nombres y
 // props (size, color, fill) que usaba lucide, así cada pantalla solo cambia el import.
 // Se importa cada ícono por separado para no meter los 1.500 en la app.
+import { ShieldCheck as ShieldCheck_ } from 'phosphor-react-native/src/icons/ShieldCheck';
 import { Bell as Bell_ } from 'phosphor-react-native/src/icons/Bell';
 import { Clock as Clock_ } from 'phosphor-react-native/src/icons/Clock';
 import { CaretDown as CaretDown } from 'phosphor-react-native/src/icons/CaretDown';
@@ -76,6 +77,7 @@ function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'regular') 
 
 // Los íconos "de línea" (flechas, cruz, tilde, más) van en negrita: en duotono se verían casi invisibles.
 export const Bell = make(Bell_);
+export const ShieldCheck = make(ShieldCheck_);
 export const Clock = make(Clock_);
 export const ChevronDown = make(CaretDown, 'bold');
 export const ChevronUp = make(CaretUp, 'bold');
