@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   View,
@@ -257,6 +257,8 @@ export default function CanjesScreen() {
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
+  const [mapSearch, setMapSearch] = useState('');
+  const fullMapRef = useRef<MapView>(null);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
@@ -331,6 +333,23 @@ export default function CanjesScreen() {
     const lng = businessesWithCoords.reduce((acc, b) => acc + b.lng!, 0) / businessesWithCoords.length;
     return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
   }, [hasGps, businessesWithCoords, baseRegion]);
+
+  // Buscador del mapa completo: busca en TODOS los comercios con ubicación (sin filtros de categoría).
+  const mapResults = useMemo(() => {
+    const q = mapSearch.trim().toLowerCase();
+    if (!q) return [];
+    return businessesWithCoords
+      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [mapSearch, businessesWithCoords]);
+
+  function focusBusiness(b: BusinessT) {
+    setMapSearch('');
+    fullMapRef.current?.animateToRegion(
+      { latitude: b.lat!, longitude: b.lng!, latitudeDelta: 0.008, longitudeDelta: 0.008 },
+      500
+    );
+  }
 
   const categories = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.business.category));
@@ -701,6 +720,7 @@ export default function CanjesScreen() {
         <View style={{ flex: 1, backgroundColor: '#1d1b2e' }}>
           {mapRegion && (
             <MapView
+              ref={fullMapRef}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
               initialRegion={mapRegion}
@@ -728,6 +748,47 @@ export default function CanjesScreen() {
           >
             <X size={18} color={colors.light.text} />
           </Pressable>
+          <View style={{ position: 'absolute', top: 56, left: 70, right: 20 }}>
+            <View className="flex-row items-center bg-card-light rounded-full" style={{ height: 40, paddingHorizontal: 14, gap: 8 }}>
+              <Search size={16} color={colors.light.muted} />
+              <TextInput
+                value={mapSearch}
+                onChangeText={setMapSearch}
+                placeholder="Buscar locales y premios"
+                placeholderTextColor={colors.light.muted}
+                returnKeyType="search"
+                onSubmitEditing={() => mapResults[0] && focusBusiness(mapResults[0])}
+                style={{ flex: 1, fontSize: 13.5, color: colors.light.text }}
+              />
+              {!!mapSearch && (
+                <Pressable accessibilityLabel="Borrar búsqueda" onPress={() => setMapSearch('')} hitSlop={8}>
+                  <X size={14} color={colors.light.muted} />
+                </Pressable>
+              )}
+            </View>
+            {mapResults.length > 0 && (
+              <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
+                {mapResults.map((b) => (
+                  <Pressable
+                    key={b.id}
+                    onPress={() => focusBusiness(b)}
+                    style={{ paddingHorizontal: 16, paddingVertical: 11, flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                  >
+                    <MapPin size={15} color={colors.purple} />
+                    <View style={{ flex: 1 }}>
+                      <Text numberOfLines={1} style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>{b.name}</Text>
+                      <Text numberOfLines={1} style={{ fontSize: 11.5, color: colors.light.muted }}>{b.category}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+            {!!mapSearch.trim() && mapResults.length === 0 && (
+              <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, padding: 14 }}>
+                <Text style={{ fontSize: 12.5, color: colors.light.muted }}>No encontramos “{mapSearch.trim()}” en el mapa.</Text>
+              </View>
+            )}
+          </View>
           {mapRegion && (
             <Pressable
               onPress={() => openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
