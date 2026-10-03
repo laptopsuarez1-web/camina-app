@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useColorScheme } from 'nativewind';
 import { useGlassStore } from '@/store/useGlassStore';
-import { useBackgroundStore } from '@/store/useBackgroundStore';
 import { paletteFor } from '@/components/ui/backgrounds';
 import { cardFill, blurWeb, glassOn } from '@/components/ui/glassMath';
 import { colors } from '@/theme/tokens';
@@ -44,8 +43,7 @@ export function Glass({
   const innerShape: ViewStyle = topOnly
     ? { borderTopLeftRadius: Number(topOnly[1]) - 1, borderTopRightRadius: Number(topOnly[1]) - 1 }
     : { borderRadius: Math.max(0, radius - 1) };
-  const bgId = useBackgroundStore((s) => s.id);
-  const fill = cardFill(amount, dark, colors.dark.card, paletteFor(bgId, dark).tint);
+  const fill = cardFill(amount, dark, colors.dark.card, paletteFor(dark).tint);
 
   return (
     <View
@@ -73,7 +71,7 @@ export function Glass({
           <GlassView
             glassEffectStyle="regular"
             colorScheme={dark ? 'dark' : 'light'}
-            tintColor={dark ? undefined : `rgba(${(paletteFor(bgId, dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount).toFixed(3)})`}
+            tintColor={dark ? undefined : `rgba(${(paletteFor(dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount).toFixed(3)})`}
             pointerEvents="none"
             style={[StyleSheet.absoluteFill, innerShape]}
           />

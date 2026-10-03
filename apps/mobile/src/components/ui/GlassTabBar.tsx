@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 import { useGlassStore } from '@/store/useGlassStore';
-import { useBackgroundStore } from '@/store/useBackgroundStore';
 import { paletteFor } from '@/components/ui/backgrounds';
 import { barFill, blurWeb, glassOn } from '@/components/ui/glassMath';
 
@@ -35,7 +34,6 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
   const amount = useGlassStore((s) => s.amount);
-  const bgId = useBackgroundStore((s) => s.id);
   const insets = useSafeAreaInsets();
 
   // Algunas pantallas (crear desafío, chat del grupo) ocultan la barra para ir a pantalla completa.
@@ -60,7 +58,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
     borderColor: dark ? 'rgba(255,255,255,0.16)' : solid ? 'rgba(41,28,71,0.08)' : 'rgba(255,255,255,0.8)',
   };
   // Relleno cuando no hay vidrio del sistema: más denso en Android, donde no hay desenfoque.
-  const fill = barFill(amount, dark, Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios', paletteFor(bgId, dark).tint);
+  const fill = barFill(amount, dark, Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios', paletteFor(dark).tint);
 
   const items = (
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
@@ -124,7 +122,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
         }}
       >
         {liquidGlass && !solid ? (
-          <GlassView glassEffectStyle="regular" isInteractive colorScheme={dark ? 'dark' : 'light'} tintColor={dark ? undefined : `rgba(${(paletteFor(bgId, dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount).toFixed(3)})`} style={capsule}>
+          <GlassView glassEffectStyle="regular" isInteractive colorScheme={dark ? 'dark' : 'light'} tintColor={dark ? undefined : `rgba(${(paletteFor(dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount).toFixed(3)})`} style={capsule}>
             {items}
           </GlassView>
         ) : (

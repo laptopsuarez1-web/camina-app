@@ -14,7 +14,6 @@ import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
 import { GlassSlider } from '@/components/ui/GlassSlider';
-import { BackgroundPicker } from '@/components/ui/BackgroundPicker';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
@@ -294,8 +293,6 @@ export default function PerfilScreen() {
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">Sólido</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cristal</Text>
         </View>
-        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-4 mb-2">Fondo</Text>
-        <BackgroundPicker />
       </Glass>
 
       <Glass className="rounded-2xl px-4 py-3 mb-4">
