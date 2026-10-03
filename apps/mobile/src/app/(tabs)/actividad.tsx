@@ -45,12 +45,12 @@ function useStepsHistory() {
 const CHART_H = 110;
 
 // Colores del calendario: verde (cumplió), naranja (caminó pero no llegó), rojo (no caminó).
-const CAL_BG = { met: colors.mint, partial: '#FBD9BD', miss: '#F9C9C6', none: colors.light.line };
-const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14', none: colors.light.muted };
+const CAL_BG = { met: colors.mint, miss: '#F9C9C6', none: colors.light.line };
+const CAL_FG = { met: colors.mintDark, miss: '#9B1C14', none: colors.light.muted };
 
 export default function ActividadScreen() {
   const tabSpace = useTabBarSpace();
-  const { steps: stepsToday } = useTodaySteps();
+  const { steps: deviceStepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
@@ -58,6 +58,10 @@ export default function ActividadScreen() {
   const { data: communityAverage } = useCommunityAverage();
   const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
+
+  // Hoy: lo que diga el teléfono o lo ya guardado en la base, lo que sea mayor (así coincide con Inicio y el historial).
+  const savedToday = (history ?? []).find((h) => h.day === localKey(new Date()))?.steps ?? 0;
+  const stepsToday = Math.max(deviceStepsToday, savedToday);
 
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
@@ -147,18 +151,17 @@ export default function ActividadScreen() {
     const startOffset = (firstOfMonth.getDay() + 6) % 7; // 0 = lunes
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const cells: ({ day: number; key: string; state: 'met' | 'partial' | 'miss' | 'none' } | null)[] = [];
+    const cells: ({ day: number; key: string; state: 'met' | 'miss' | 'none' } | null)[] = [];
     for (let i = 0; i < startOffset; i++) cells.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
       const key = localKey(new Date(year, month, day));
       const steps = byDay.get(key) ?? 0;
       const g = goalByDay.get(key) ?? goal;
-      // Verde: cumplió su meta de ese día. Naranja: caminó pero no llegó. Rojo: no caminó. Sin color: hoy en curso, el futuro o antes de usar la app.
-      const state: 'met' | 'partial' | 'miss' | 'none' =
+      // Verde: cumplió su meta de ese día. Rojo: no la cumplió. Sin color: hoy en curso, el futuro o antes de usar la app.
+      const state: 'met' | 'miss' | 'none' =
         key > todayKey || key < firstDay ? 'none'
         : steps >= g ? 'met'
         : key === todayKey ? 'none'
-        : steps > 0 ? 'partial'
         : 'miss';
       cells.push({ day, key, state });
     }
@@ -219,8 +222,8 @@ export default function ActividadScreen() {
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {/* Línea punteada de la meta diaria */}
             {goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)' }}>
-                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -18 }}>
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)', zIndex: 2, elevation: 2 }}>
+                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -20, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, overflow: 'hidden', backgroundColor: 'rgba(20,14,40,0.75)' }}>
                   meta {goal.toLocaleString('es-BO')}
                 </Text>
               </View>
@@ -338,7 +341,7 @@ export default function ActividadScreen() {
                 <Pressable
                   key={cell.key}
                   accessibilityRole="button"
-                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'partial' ? 'meta no cumplida' : cell.state === 'miss' ? 'sin pasos' : 'sin datos'}. Ver detalle`}
+                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'miss' ? 'meta no cumplida' : 'sin datos'}. Ver detalle`}
                   disabled={cell.key > todayKey}
                   onPress={() => setSelected(cell.key)}
                   className="w-8 h-8 rounded-md items-center justify-center"
@@ -358,7 +361,7 @@ export default function ActividadScreen() {
           </View>
         ))}
         <View className="flex-row flex-wrap mt-2" style={{ gap: 12 }}>
-          {([['met', 'Meta cumplida'], ['partial', 'No llegaste'], ['miss', 'Sin pasos']] as const).map(([k, label]) => (
+          {([['met', 'Meta cumplida'], ['miss', 'No cumpliste la meta']] as const).map(([k, label]) => (
             <View key={k} className="flex-row items-center" style={{ gap: 5 }}>
               <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: CAL_BG[k] }} />
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{label}</Text>
@@ -417,7 +420,7 @@ export default function ActividadScreen() {
                   <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
                 </View>
                 <Text className="text-[13px] font-semibold" style={{ color: met ? colors.aquaDeep : colors.warnDeep }}>
-                  {met ? 'Meta cumplida' : steps > 0 ? 'No llegaste a la meta' : 'Sin pasos ese día'}
+                  {met ? 'Meta cumplida' : 'No llegaste a la meta'}
                 </Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
                 {selected !== todayKey && steps - (countedByDay.get(selected) ?? 0) > 0 && (
