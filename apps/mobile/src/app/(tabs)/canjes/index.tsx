@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   View,
@@ -257,6 +258,7 @@ export default function CanjesScreen() {
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
+  const topInset = useSafeAreaInsets().top;
   const [mapSearch, setMapSearch] = useState('');
   const fullMapRef = useRef<MapView>(null);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
@@ -480,7 +482,7 @@ export default function CanjesScreen() {
 
           <View
             pointerEvents="box-none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: Platform.OS === 'android' ? topInset + 24 : 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <Pressable
               accessibilityRole="button"

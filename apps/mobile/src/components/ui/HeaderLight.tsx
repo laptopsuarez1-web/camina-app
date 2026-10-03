@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Image, Animated } from 'react-native';
+import { View, Text, Pressable, Image, Animated, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
 import { BellButton } from '@/components/ui/BellButton';
@@ -14,10 +15,11 @@ export function HeaderLight() {
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
   const dark = useColorScheme().colorScheme === 'dark';
+  const topInset = useSafeAreaInsets().top;
   const { shown, scale } = usePointsPulse(balance);
 
   return (
-    <View className="flex-row justify-between items-center px-5 pt-14 pb-3">
+    <View className="flex-row justify-between items-center px-5 pb-3" style={{ paddingTop: Platform.OS === 'android' ? topInset + 24 : 56 }}>
       <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
         accessibilityRole="button"

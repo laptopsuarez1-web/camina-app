@@ -178,7 +178,7 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View style={{ paddingTop: Math.max(topInset, 24) + 14 }}>
+        <View style={{ paddingTop: Platform.OS === 'android' ? topInset + 28 : Math.max(topInset, 24) + 14 }}>
         <View className="px-5" style={{ position: 'relative' }}>
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
             <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
