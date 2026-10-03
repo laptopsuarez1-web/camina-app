@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View } from 'react-native';
-import { Home, Activity, Users, Calendar, ShoppingBag, type IconProps } from '@/components/icons';
+import { View, Platform } from 'react-native';
+import { SymbolView, type SFSymbol } from 'expo-symbols';
+import { Home, ChartBar, Users, Calendar, ShoppingBag, type IconProps } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
@@ -11,23 +12,13 @@ import { useColorScheme } from 'nativewind';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 
-// Ícono de la barra: inactivo de línea limpia, activo relleno sobre la pastilla verde suave de GlassTabBar.
-function tabIcon(Icon: (p: IconProps) => React.ReactElement) {
-  return function TabIcon({ color, focused }: { color: import('react-native').ColorValue; focused: boolean }) {
-    return (
-      <View
-        style={{
-          width: 48,
-          height: 30,
-          borderRadius: 15,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'transparent',
-        }}
-      >
-        <Icon size={24} color={color} weight={focused ? 'fill' : 'regular'} />
-      </View>
-    );
+// Ícono de la barra: en iOS el símbolo del sistema (SF Symbols), como las apps de Apple;
+// en Android y web, el mismo dibujo en Phosphor relleno.
+function tabIcon(Icon: (p: IconProps) => React.ReactElement, symbol: SFSymbol) {
+  return function TabIcon({ color }: { color: import('react-native').ColorValue; focused: boolean }) {
+    const fallback = <Icon size={25} color={color} weight="fill" />;
+    if (Platform.OS !== 'ios') return fallback;
+    return <SymbolView name={symbol} size={24} tintColor={color} type="monochrome" fallback={fallback} />;
   };
 }
 
@@ -61,11 +52,11 @@ export default function TabsLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon(Home) }} />
-      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: tabIcon(Activity) }} />
-      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: tabIcon(Users) }} />
-      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: tabIcon(Calendar) }} />
-      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: tabIcon(ShoppingBag) }} />
+      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon(Home, 'house.fill') }} />
+      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: tabIcon(ChartBar, 'chart.bar.fill') }} />
+      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: tabIcon(Users, 'person.3.fill') }} />
+      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: tabIcon(Calendar, 'calendar') }} />
+      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: tabIcon(ShoppingBag, 'bag.fill') }} />
       {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
           grupos/[groupId] es la pantalla de detalle de un grupo, no un tab propio.
           Sin declararlos acá, Expo Router los agrega solo al tab bar (bug real
@@ -73,7 +64,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="perfil" options={{ href: null }} />
       <Tabs.Screen name="puntos" options={{ href: null }} />
       <Tabs.Screen name="notificaciones" options={{ href: null }} />
-      <Tabs.Screen name="grupos/[groupId]" options={{ href: null }} />
+      <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo-desafio" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
     <CelebrationHost />

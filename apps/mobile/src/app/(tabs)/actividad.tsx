@@ -14,6 +14,7 @@ import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
 
@@ -44,6 +45,7 @@ function useStepsHistory() {
 const CHART_H = 110;
 
 export default function ActividadScreen() {
+  const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
@@ -137,7 +139,7 @@ export default function ActividadScreen() {
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3 pb-10">
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
       <LinearGradient

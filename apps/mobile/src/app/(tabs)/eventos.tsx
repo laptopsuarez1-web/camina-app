@@ -5,8 +5,10 @@ import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/use
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
 import { celebrate } from '@/store/useCelebrationStore';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 export default function EventosScreen() {
+  const tabSpace = useTabBarSpace();
   const { data: retos } = useRetos();
   const claim = useClaimReto();
   const { data: promos } = usePromotions();
@@ -34,7 +36,7 @@ export default function EventosScreen() {
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3 pb-10">
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold mb-0.5 text-text-light dark:text-text-dark">
         Eventos
       </Text>

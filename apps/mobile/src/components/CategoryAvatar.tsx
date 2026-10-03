@@ -2,7 +2,7 @@ import { Image, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   Coffee,
-  ForkKnife,
+  Food,
   Ticket,
   Barbell,
   Sparkle,
@@ -20,7 +20,7 @@ type CategoryStyle = { icon: (p: IconProps) => React.ReactElement; from: string;
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   Todos: { icon: SquaresFour, from: '#A672E8', to: '#8B4FD1' },
   Café: { icon: Coffee, from: '#7FEDC4', to: '#4FC3A8' },
-  Gastronomía: { icon: ForkKnife, from: '#FFB27A', to: '#F2985C' },
+  Gastronomía: { icon: Food, from: '#FFB27A', to: '#F2985C' },
   Entretenimiento: { icon: Ticket, from: '#A672E8', to: '#8B4FD1' },
   Fitness: { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0' },
   Belleza: { icon: Sparkle, from: '#F27BA0', to: '#D4537E' },

@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, WhatsApp, Globe, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -43,7 +43,8 @@ import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
-import { GOLD, isFeatured, GoldBadge, FeaturedChip } from '@/components/ui/Featured';
+import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 type BusinessT = BenefitWithBusiness['business'];
 
@@ -234,6 +235,7 @@ function SuccessMark() {
 
 
 export default function CanjesScreen() {
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading } = useBenefits();
   const { data: remainingToday } = useBenefitsRemainingToday();
@@ -416,7 +418,7 @@ export default function CanjesScreen() {
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="pb-8"
+        contentContainerStyle={{ paddingBottom: tabSpace }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -629,6 +631,15 @@ export default function CanjesScreen() {
                 ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
               }}
             >
+              {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
+              {g.business.cover_url ? (
+                <Image
+                  source={{ uri: g.business.cover_url }}
+                  accessibilityIgnoresInvertColors
+                  resizeMode="cover"
+                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}
+                />
+              ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category)}
                 <View className="flex-1">
@@ -656,31 +667,21 @@ export default function CanjesScreen() {
                 </View>
               </View>
 
-              {/* Cada premio con su precio en monedas: se ve qué alcanza sin abrir la ficha. */}
-              <View className="mt-3" style={{ gap: 8 }}>
-                {g.benefits.slice(0, 3).map((b) => {
-                  const missing = b.cost_points - (balance ?? 0);
-                  return (
-                    <View key={b.id} className="flex-row items-center border-t border-line-light dark:border-line-dark pt-2.5" style={{ gap: 8 }}>
-                      <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{b.name}</Text>
-                      <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
-                      <Text className="text-[14px] font-extrabold text-text-light dark:text-text-dark">{b.cost_points}</Text>
-                      {missing <= 0 ? (
-                        <View className="bg-aqua-deep rounded-full px-3 py-1.5">
-                          <Text className="text-white text-[12px] font-bold">Canjear</Text>
-                        </View>
-                      ) : (
-                        <View className="rounded-full px-3 py-1.5 border border-line-light dark:border-line-dark">
-                          <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">Faltan {missing}</Text>
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
-                {g.benefits.length > 3 ? (
-                  <Text className="text-[12px] font-semibold text-aqua-deep dark:text-aqua">Ver {g.benefits.length - 3} premios más</Text>
-                ) : null}
-              </View>
+              {/* Cada premio en una pastilla con su precio adentro: el canje se hace en la ficha. */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3" contentContainerStyle={{ gap: 8 }}>
+                {g.benefits.map((b) => (
+                  <View
+                    key={b.id}
+                    accessibilityLabel={`${b.name}, ${b.cost_points} Puntos`}
+                    className="flex-row items-center bg-aqua-light-light dark:bg-aqua-light-dark rounded-full"
+                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
+                  >
+                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+                    <Text className="text-[13px] font-extrabold text-aqua-deep dark:text-mint">{b.cost_points}</Text>
+                    <Text className="text-[13px] font-semibold text-text-light dark:text-text-dark">{b.name}</Text>
+                  </View>
+                ))}
+              </ScrollView>
             </Pressable>
           ))}
 
@@ -782,7 +783,6 @@ export default function CanjesScreen() {
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
-                {isFeatured(profileGroup.business) ? <View className="mt-2"><FeaturedChip /></View> : null}
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
@@ -808,13 +808,42 @@ export default function CanjesScreen() {
                   <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
                   {profileGroup.business.instagram ? (
                     <Pressable
-                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '')}`)}
+                      accessibilityRole="link"
+                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '').trim()}`)}
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <AtSign size={14} color={colors.light.text} />
+                      <Instagram size={15} color="#C13584" weight="bold" />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
                         {profileGroup.business.instagram.replace('@', '')}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.phone ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
+                      onPress={() => Linking.openURL(`https://wa.me/${profileGroup.business.phone!.replace(/\D/g, '')}`)}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <WhatsApp size={15} color="#1FA855" weight="fill" />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.website ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => {
+                        const url = profileGroup.business.website!.trim();
+                        Linking.openURL(/^https?:\/\//.test(url) ? url : `https://${url}`);
+                      }}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <Globe size={15} color={colors.purple} weight="bold" />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>
+                        {profileGroup.business.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                       </Text>
                     </Pressable>
                   ) : null}

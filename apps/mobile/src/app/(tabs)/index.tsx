@@ -26,6 +26,7 @@ import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -40,6 +41,7 @@ function greeting(name: string) {
 }
 
 export default function HomeScreen() {
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
   const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
@@ -162,6 +164,7 @@ export default function HomeScreen() {
   return (
     <ScrollView
       className="flex-1 bg-bg-light dark:bg-bg-dark"
+      contentContainerStyle={{ paddingBottom: tabSpace }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
     >
       <LinearGradient

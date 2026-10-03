@@ -12,8 +12,10 @@ import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking'
 import { colors } from '@/theme/tokens';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 export default function GruposScreen() {
+  const tabSpace = useTabBarSpace();
   const { data: groups, isLoading } = useGroups();
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
@@ -64,7 +66,7 @@ export default function GruposScreen() {
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3">
+      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark mb-1">Grupos</Text>
       <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4">
         Caminá, compartí y ganá en equipo

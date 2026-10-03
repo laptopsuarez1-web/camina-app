@@ -5,6 +5,7 @@ import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } fro
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 function bubbleFor(type?: string) {
   switch (type) {
@@ -35,13 +36,14 @@ function timeAgo(iso: string) {
 }
 
 export default function NotificacionesScreen() {
+  const tabSpace = useTabBarSpace();
   const { items, seenAt, markAllSeen } = useNotifications();
 
   // Al salir de la pantalla, todo queda como leído (los puntitos se ven mientras estás adentro).
   useEffect(() => () => { markAllSeen(); }, [markAllSeen]);
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
+    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
         <View className="flex-row items-center gap-3">
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

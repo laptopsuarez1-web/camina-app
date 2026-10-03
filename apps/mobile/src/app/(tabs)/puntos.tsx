@@ -15,6 +15,7 @@ import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rul
 import { colors } from '@/theme/tokens';
 import { dayLabel } from '@/lib/format';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 function useMovimientos() {
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -77,6 +78,7 @@ function useMovimientos() {
 }
 
 export default function PuntosScreen() {
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: balance } = usePointsBalance();
   const { data: earnedToday } = usePointsToday();
@@ -105,7 +107,7 @@ export default function PuntosScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
+    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

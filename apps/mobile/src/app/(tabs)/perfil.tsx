@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble, Coffee, ForkKnife, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, type IconProps } from '@/components/icons';
+import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, type IconProps } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
@@ -18,10 +18,11 @@ import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
 import { Glass } from '@/components/ui/Glass';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
   Café: Coffee,
-  Gastronomía: ForkKnife,
+  Gastronomía: Food,
   Entretenimiento: Ticket,
   Fitness: Barbell,
   Compras: ShoppingBag,
@@ -31,6 +32,7 @@ const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
 };
 
 export default function PerfilScreen() {
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
@@ -199,7 +201,7 @@ export default function PerfilScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14">
+    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold mb-4 text-text-light dark:text-text-dark">
         Perfil
       </Text>

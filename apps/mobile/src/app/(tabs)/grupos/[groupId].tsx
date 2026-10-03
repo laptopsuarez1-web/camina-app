@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -37,6 +38,7 @@ function GoalBar({ pct }: { pct: number }) {
 }
 
 export default function GroupDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const userId = useAuthStore((s) => s.session?.user.id);
   const { data, isLoading } = useGroupDetail(groupId);
@@ -484,7 +486,7 @@ export default function GroupDetailScreen() {
         </View>
       </ScrollView>
 
-      <View className="flex-row items-end gap-2.5 px-5 py-2.5 border-t border-line-light dark:border-line-dark">
+      <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
         <TextInput
           value={text}
           onChangeText={setText}
