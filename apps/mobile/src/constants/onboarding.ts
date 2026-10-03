@@ -8,7 +8,7 @@ export const ONBOARDING = [
   {
     art: 'ring',
     title: 'Cada paso cuenta',
-    desc: 'Camina cuenta tus pasos solo, con el teléfono en el bolsillo. No tenés que abrir la app para sumar.',
+    desc: 'Camina cuenta tus pasos con el teléfono en el bolsillo. Abrí la app cada día para que esos pasos sumen Puntos.',
   },
   {
     art: 'points',
