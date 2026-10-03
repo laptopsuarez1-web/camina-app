@@ -791,12 +791,13 @@ export default function CanjesScreen() {
           </View>
           {mapRegion && (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Abrir en Google Maps"
               onPress={() => openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
-              className="absolute flex-row items-center bg-card-light rounded-full"
-              style={{ bottom: 44, alignSelf: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 12 }}
+              className="absolute items-center justify-center rounded-full"
+              style={{ bottom: 44, right: 20, width: 44, height: 44, backgroundColor: 'rgba(29,27,46,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}
             >
-              <Navigation size={15} color={colors.purple} />
-              <Text style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>Abrir en Google Maps</Text>
+              <Navigation size={18} color="#fff" />
             </Pressable>
           )}
         </View>
