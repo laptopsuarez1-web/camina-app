@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform } from 'react-native';
-import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
-import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -16,7 +14,7 @@ import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
 import { buzz } from '@/lib/haptics';
-import { useBenefits } from '@/hooks/useBenefits';
+import { useBenefits, useMyRedemptions } from '@/hooks/useBenefits';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
@@ -26,7 +24,8 @@ import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, Trophy, ChevronRight, Activity, Users, Check, IconBubble } from '@/components/icons';
+import { Flame, ChevronRight, Users, Check, IconBubble } from '@/components/icons';
+import { StepsChartCard, RankingCard, RewardsRow, NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
@@ -65,6 +64,8 @@ export default function HomeScreen() {
   const { data: balance } = usePointsBalance();
   const pointsPulse = usePointsPulse(balance);
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
+  const { data: redemptions, isLoading: redemptionsLoading } = useMyRedemptions();
+  const pos = useHomePosition();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
   useHomeMoments(streak);
@@ -135,17 +136,6 @@ export default function HomeScreen() {
   const chipScale = chipPop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 1.22, 1] });
   const stepsText = steps.toLocaleString('es-BO');
   const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
-  const nearby = (() => {
-    const map = new Map<string, { business: NonNullable<typeof benefits>[number]['business']; items: NonNullable<typeof benefits> }>();
-    for (const b of benefits ?? []) {
-      if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, items: [] });
-      map.get(b.business.id)!.items.push(b);
-    }
-    // Los destacados (plan Paso Adelante) van primero.
-    return [...map.values()]
-      .sort((a, b) => Number(isFeatured(b.business)) - Number(isFeatured(a.business)))
-      .slice(0, 3);
-  })();
   const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
 
   const goalDraft = parseInt(goalInput, 10) || 0;
@@ -194,10 +184,12 @@ export default function HomeScreen() {
             </Pressable>
             </Animated.View>
             {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
-            <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }}>
+            <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
               <Text
                 style={{
                   color: colors.mint,
+                  lineHeight: 20,
+                  includeFontPadding: false,
                   fontSize: 17,
                   fontWeight: '900',
                   letterSpacing: 4.5,
@@ -430,78 +422,29 @@ export default function HomeScreen() {
             <ChevronRight size={16} color="#9A6A08" />
           </Pressable>
         ) : null}
-        <View className="flex-row items-center justify-between px-5 mb-3">
-          <Text className="font-bold text-base text-text-light dark:text-text-dark">Beneficios cerca tuyo</Text>
-          <Pressable onPress={() => router.push('/(tabs)/canjes?view=lista')}>
-            <Text className="text-aqua-deep dark:text-aqua text-xs font-semibold">Ver todo</Text>
+        <StepsChartCard todaySteps={steps} goal={goal} streak={streak ?? 0} />
+
+        {myGroup && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Tu grupo ${myGroup.name}`}
+            onPress={() => router.push('/(tabs)/grupos')}
+            className="flex-row items-center gap-3.5 bg-auth-bg rounded-3xl p-3.5 mx-5 mt-4"
+            style={{ shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
+          >
+            <View className="w-[58px] h-[58px] rounded-2xl bg-white/10 items-center justify-center">
+              <Users size={22} color={colors.mint} />
+            </View>
+            <View className="flex-1 min-w-0">
+              <Text className="text-[14px] font-bold text-white" numberOfLines={1}>
+                {myGroup.name}
+              </Text>
+              <Text className="text-xs text-auth-muted mt-0.5">
+                {myGroup.group_members.length} miembro{myGroup.group_members.length === 1 ? '' : 's'}
+              </Text>
+            </View>
           </Pressable>
-        </View>
-
-        <View className="px-5 gap-2.5">
-          {nearby.map((g) => (
-            <Pressable
-              key={g.business.id}
-              onPress={() => router.push('/(tabs)/canjes')}
-              className="flex-row items-center gap-3.5 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-3.5"
-              style={{
-                shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
-                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
-              }}
-            >
-              <BusinessAvatar logoUrl={g.business.logo_url} category={g.business.category} size={58} />
-              <View className="flex-1 min-w-0">
-                <View className="flex-row items-center" style={{ gap: 5 }}>
-                  <Text className="text-[14px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>
-                    {g.business.name}
-                  </Text>
-                  {isFeatured(g.business) && <GoldBadge size={16} />}
-                </View>
-                <Text className="text-xs text-muted-light dark:text-muted-dark mt-0.5 mb-1.5" numberOfLines={1}>
-                  {g.items.length === 1 ? g.items[0].name : `${g.items.length} premios disponibles`}
-                </Text>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-[12px] font-semibold text-aqua-deep dark:text-aqua">{g.business.category}</Text>
-                  <View className="flex-row items-center bg-aqua-deep rounded-full" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 9 }}>
-                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
-                    <Text className="text-white text-[12px] font-bold">
-                      {g.items.length > 1 ? `desde ${Math.min(...g.items.map((i) => i.cost_points))}` : g.items[0].cost_points}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </Pressable>
-          ))}
-
-          {myGroup && (
-            <Pressable
-              onPress={() => router.push('/(tabs)/grupos')}
-              className="flex-row items-center gap-3.5 bg-auth-bg rounded-3xl p-3.5"
-              style={{ shadowColor: '#291C47', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
-            >
-              <View className="w-[58px] h-[58px] rounded-2xl bg-white/10 items-center justify-center">
-                <Users size={22} color={colors.mint} />
-              </View>
-              <View className="flex-1 min-w-0">
-                <Text className="text-[14px] font-bold text-white" numberOfLines={1}>
-                  {myGroup.name}
-                </Text>
-                <Text className="text-xs text-auth-muted mt-0.5">
-                  {myGroup.group_members.length} miembro{myGroup.group_members.length === 1 ? '' : 's'}
-                </Text>
-              </View>
-            </Pressable>
-          )}
-
-          {nearby.length === 0 && !benefitsLoading && !myGroup && (
-            <Pressable
-              onPress={() => router.push('/(tabs)/canjes?view=lista')}
-              className="bg-card-light dark:bg-card-dark rounded-3xl p-4"
-            >
-              <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá beneficios</Text>
-              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca — mirá qué se puede canjear.</Text>
-            </Pressable>
-          )}
-        </View>
+        )}
 
         {topGroupMate && (
           <Glass
@@ -542,28 +485,17 @@ export default function HomeScreen() {
           </Pressable>
         )}
 
+        {rankingOpen && (
+          <View style={{ marginTop: 16 }}>
+            <RankingCard
+              position={myGlobalPosition}
+              weekSteps={myGlobalPosition > 0 ? Number(globalRanking?.[myGlobalPosition - 1]?.total_steps ?? 0) : null}
+              hidden={profile?.ranking_visible === false}
+            />
+          </View>
+        )}
+
         <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
-          {rankingOpen && (
-          <Pressable
-            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
-            className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
-          >
-            <View className="flex-row items-center gap-2.5">
-              <IconBubble icon={Trophy} tone="purple" size={34} />
-              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ranking semanal</Text>
-            </View>
-            <View className="flex-row items-center gap-1.5">
-              <Text className="text-xs text-muted-light dark:text-muted-dark">
-                {profile?.ranking_visible === false
-                  ? 'Activalo en Perfil'
-                  : myGlobalPosition > 0
-                    ? `Vas ${myGlobalPosition}°`
-                    : 'Fuera del top 20'}
-              </Text>
-              <ChevronRight size={14} color={colors.light.muted} />
-            </View>
-          </Pressable>
-          )}
           <Pressable onPress={() => router.push('/(tabs)/grupos')} className={`flex-row items-center justify-between p-4`}>
             <View className="flex-row items-center gap-2.5">
               <IconBubble icon={Users} tone="purple" size={34} />
@@ -576,20 +508,15 @@ export default function HomeScreen() {
           </Pressable>
         </Glass>
 
-        <Pressable
-          onPress={() => router.push('/(tabs)/actividad')}
-          className="bg-card-light dark:bg-card-dark rounded-3xl p-4 mx-5 mt-4 flex-row items-center justify-between"
-          style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}
-        >
-          <View className="flex-row items-center gap-2.5">
-            <IconBubble icon={Activity} tone="aqua" size={34} />
-            <View>
-              <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
-              <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Gráfico, calendario e historial</Text>
-            </View>
-          </View>
-          <ChevronRight size={16} color={colors.light.muted} />
-        </Pressable>
+        <View style={{ marginTop: 26 }}>
+          <RewardsRow benefits={benefits ?? []} balance={balance} pos={pos} />
+        </View>
+        <View style={{ marginTop: 14 }}>
+          <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
+        </View>
+        <View style={{ marginTop: 14 }}>
+          <MyRedemptionsSection redemptions={redemptions as unknown as RedemptionRow[] | undefined} loading={redemptionsLoading} />
+        </View>
 
       </View>
     </ScrollView>
