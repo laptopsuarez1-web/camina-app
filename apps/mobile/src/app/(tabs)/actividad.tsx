@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Flame, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useTodaySteps } from '@/hooks/usePedometer';
+import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreak } from '@/hooks/useStreak';
 import { useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -51,6 +51,7 @@ const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14'
 export default function ActividadScreen() {
   const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
+  const healthDaily = useHealthDailySteps(35);
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
   const { data: streak } = useStreak();
@@ -61,9 +62,18 @@ export default function ActividadScreen() {
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
     for (const h of history ?? []) map.set(h.day, h.steps);
+    // Salud guarda los pasos de los días en que no abriste la app: se muestran acá, pero no suman Puntos.
+    for (const [k, v] of Object.entries(healthDaily)) map.set(k, Math.max(map.get(k) ?? 0, v));
     map.set(localKey(new Date()), stepsToday);
     return map;
-  }, [history, stepsToday]);
+  }, [history, stepsToday, healthDaily]);
+
+  // Pasos que hay en la base (los que sí dieron Puntos), para avisar cuando un día tiene más.
+  const countedByDay = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const h of history ?? []) map.set(h.day, h.steps);
+    return map;
+  }, [history]);
 
   // Meta que tenía cada día: si después se cambia la meta, los días anteriores no se tocan.
   const goalByDay = useMemo(() => {
@@ -73,7 +83,9 @@ export default function ActividadScreen() {
     return map;
   }, [history, goal]);
   const goalFor = (key: string) => goalByDay.get(key) ?? goal;
-  const firstDay = (history ?? [])[0]?.day ?? localKey(new Date());
+  const firstDay = [(history ?? [])[0]?.day, ...Object.entries(healthDaily).filter(([, v]) => v > 0).map(([k]) => k)]
+    .filter((k): k is string => !!k)
+    .sort()[0] ?? localKey(new Date());
   const todayKey = localKey(new Date());
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -408,6 +420,11 @@ export default function ActividadScreen() {
                   {met ? 'Meta cumplida' : steps > 0 ? 'No llegaste a la meta' : 'Sin pasos ese día'}
                 </Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
+                {selected !== todayKey && steps - (countedByDay.get(selected) ?? 0) > 0 && (
+                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">
+                    {(steps - (countedByDay.get(selected) ?? 0)).toLocaleString('es-BO')} de estos pasos no sumaron Puntos: los Puntos solo se cargan cuando abrís la app ese día.
+                  </Text>
+                )}
                 <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">
                   <Text className="font-semibold text-[13.5px]" style={{ color: colors.purple }}>Cerrar</Text>
                 </Pressable>

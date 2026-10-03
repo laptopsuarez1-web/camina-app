@@ -1,9 +1,21 @@
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'nativewind';
-import { colors } from '@/theme/tokens';
 
-// Fondo liso detrás de todas las pantallas (sin manchas de color).
+// Fondo con un degradé suave y parejo (sin manchas ni círculos): le da color al vidrio de las
+// tarjetas y de la barra de abajo sin ensuciar la pantalla.
+const LIGHT = ['#DDF8EC', '#F1EEFF', '#FFEFE2'] as const;
+const DARK = ['#14262A', '#1B1530', '#2A1A2E'] as const;
+
 export function AmbientBackground() {
   const dark = useColorScheme().colorScheme === 'dark';
-  return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dark ? colors.dark.bg : colors.light.bg }]} />;
+  return (
+    <LinearGradient
+      pointerEvents="none"
+      colors={dark ? DARK : LIGHT}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
+      style={StyleSheet.absoluteFill}
+    />
+  );
 }
