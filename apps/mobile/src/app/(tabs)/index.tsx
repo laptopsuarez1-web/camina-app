@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform } from 'react-native';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -44,7 +44,7 @@ export default function HomeScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
+  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, source: stepSource, refresh: refreshSteps } = useTodaySteps();
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
   const isQa = useIsQa();
   const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
@@ -361,14 +361,14 @@ export default function HomeScreen() {
               <Image source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
               <View className="flex-1">
                 <Text className="text-white font-bold text-[14px]">
-                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'Activá el conteo de pasos'}
+                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'El podómetro no funciona sin este permiso'}
                 </Text>
                 <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
                   {healthConnectStatus === 'unavailable'
                     ? 'Es la app de Android que le pasa tus pasos a Camina.'
                     : healthConnectStatus === 'error'
                       ? 'Fue un problema pasajero. Tocá Reintentar.'
-                      : 'Sin este permiso no podemos sumar tus puntos.'}
+                      : 'Activá el permiso de Pasos para Camina en Health Connect y volvé a abrir la app: sin eso no sumás Puntos.'}
                 </Text>
               </View>
             </View>
@@ -387,10 +387,17 @@ export default function HomeScreen() {
               className="bg-mint rounded-xl py-2.5 items-center"
             >
               <Text className="text-mint-dark font-bold text-[13px]">
-                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : healthConnectStatus === 'error' ? 'Reintentar' : 'Activar'}
+                {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : healthConnectStatus === 'error' ? 'Reintentar' : 'Activar permiso'}
               </Text>
             </Pressable>
           </View>
+        ) : Platform.OS === 'ios' && stepSource === 'healthkit' && deviceSteps === 0 ? (
+          <Pressable accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+            <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
+            <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
+              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Activalo en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina &gt; Pasos. Toca acá para abrir los ajustes.
+            </Text>
+          </Pressable>
         ) : available === false ? (
           <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.
