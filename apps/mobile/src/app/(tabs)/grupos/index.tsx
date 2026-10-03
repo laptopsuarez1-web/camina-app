@@ -12,6 +12,7 @@ import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking'
 import { colors } from '@/theme/tokens';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { useGlobalRankingOpen } from '@/hooks/useUserCount';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 export default function GruposScreen() {
@@ -22,7 +23,10 @@ export default function GruposScreen() {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
   const params = useLocalSearchParams<{ view?: string }>();
-  const [view, setView] = useState<'mios' | 'ranking'>(params.view === 'ranking' ? 'ranking' : 'mios');
+  const rankingOpen = useGlobalRankingOpen();
+  const [pickedView, setView] = useState<'mios' | 'ranking'>(params.view === 'ranking' ? 'ranking' : 'mios');
+  // Hasta que haya más de 1.000 usuarios no hay ranking global: solo se ven los grupos.
+  const view = rankingOpen ? pickedView : 'mios';
   const { data: ranking, isLoading: rankingLoading } = useGlobalRanking();
   const { data: average } = useCommunityAverage();
 
@@ -64,7 +68,7 @@ export default function GruposScreen() {
   const { data: week } = useMyGroupsWeek(my, userId);
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark mb-1">Grupos</Text>
@@ -72,6 +76,7 @@ export default function GruposScreen() {
         Caminá, compartí y ganá en equipo
       </Text>
 
+      {rankingOpen && (
       <Glass className="flex-row rounded-full p-1 mb-4">
         <Pressable
           accessibilityRole="button"
@@ -96,6 +101,7 @@ export default function GruposScreen() {
           </Text>
         </Pressable>
       </Glass>
+      )}
 
       {view === 'ranking' ? (
         <>

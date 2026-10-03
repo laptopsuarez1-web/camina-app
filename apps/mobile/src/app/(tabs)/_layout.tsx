@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { registerForPushNotificationsAsync, useNotificationTaps } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import { registerDevice } from '@/lib/device';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 
@@ -38,6 +39,12 @@ export default function TabsLayout() {
   return (
     <View style={{ flex: 1 }}>
     <Tabs
+      screenLayout={({ children }) => (
+        <View style={{ flex: 1 }}>
+          <AmbientBackground />
+          {children}
+        </View>
+      )}
       tabBar={(props) => <GlassTabBar {...(props as unknown as React.ComponentProps<typeof GlassTabBar>)} />}
       screenOptions={{
         headerShown: false,
@@ -56,6 +63,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="puntos" options={{ href: null }} />
       <Tabs.Screen name="notificaciones" options={{ href: null }} />
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="editar-perfil" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo-desafio" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
     <CelebrationHost />

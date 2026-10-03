@@ -19,7 +19,7 @@ function radiusFrom(className?: string): number {
 }
 
 // Capas de relleno por nivel: [arriba, abajo] en opacidad de blanco (claro) o de la tarjeta (oscuro).
-const LIGHT: Record<GlassLevel, [number, number]> = { 0: [1, 1], 1: [0.82, 0.5], 2: [0.6, 0.28] };
+const LIGHT: Record<GlassLevel, [number, number]> = { 0: [1, 1], 1: [0.7, 0.4], 2: [0.5, 0.22] };
 const DARK: Record<GlassLevel, [number, number]> = { 0: [1, 1], 1: [0.16, 0.07], 2: [0.1, 0.035] };
 
 // En iOS 26 las tarjetas usan el vidrio líquido del sistema; en iOS anterior, desenfoque real;

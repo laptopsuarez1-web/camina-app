@@ -21,6 +21,7 @@ export default function CompletarPerfilScreen() {
   const [city, setCity] = useState('Tarija');
   const [zone, setZone] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoB64, setPhotoB64] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const isDark = useColorScheme().colorScheme === 'dark';
 
@@ -32,7 +33,10 @@ export default function CompletarPerfilScreen() {
       allowsEditing: true,
       aspect: [1, 1],
     });
-    if (!result.canceled) setPhotoUri(result.assets[0].uri);
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+      setPhotoB64(result.assets[0].base64 ?? null);
+    }
   }
 
   async function handleContinue() {
@@ -56,7 +60,7 @@ export default function CompletarPerfilScreen() {
       const userId = (await supabase.auth.getUser()).data.user?.id;
       if (!userId) throw new Error('Sesión inválida');
 
-      const photoUrl = photoUri ? await uploadAvatar(userId, photoUri) : undefined;
+      const photoUrl = photoUri ? await uploadAvatar(userId, photoUri, photoB64) : undefined;
 
       const base = { id: userId, full_name: fullName.trim(), ...(photoUrl ? { photo_url: photoUrl } : {}) };
       let { error } = await supabase.from('profiles').upsert({ ...base, birth_date: birth, city, zone });

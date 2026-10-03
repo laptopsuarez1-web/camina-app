@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Flame, IconBubble } from '@/components/icons';
@@ -32,7 +32,7 @@ function useStepsHistory() {
       since.setDate(since.getDate() - 34);
       const { data, error } = await supabase
         .from('steps_daily')
-        .select('day, steps')
+        .select('day, steps, goal')
         .eq('user_id', userId!)
         .gte('day', since.toISOString().slice(0, 10))
         .order('day', { ascending: true });
@@ -43,6 +43,10 @@ function useStepsHistory() {
 }
 
 const CHART_H = 110;
+
+// Colores del calendario: verde (cumplió), naranja (caminó pero no llegó), rojo (no caminó).
+const CAL_BG = { met: colors.mint, partial: '#FBD9BD', miss: '#F9C9C6', none: colors.light.line };
+const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14', none: colors.light.muted };
 
 export default function ActividadScreen() {
   const tabSpace = useTabBarSpace();
@@ -60,6 +64,18 @@ export default function ActividadScreen() {
     map.set(localKey(new Date()), stepsToday);
     return map;
   }, [history, stepsToday]);
+
+  // Meta que tenía cada día: si después se cambia la meta, los días anteriores no se tocan.
+  const goalByDay = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const h of history ?? []) if (h.goal) map.set(h.day, Math.max(h.goal, MIN_DAILY_GOAL));
+    map.set(localKey(new Date()), goal);
+    return map;
+  }, [history, goal]);
+  const goalFor = (key: string) => goalByDay.get(key) ?? goal;
+  const firstDay = (history ?? [])[0]?.day ?? localKey(new Date());
+  const todayKey = localKey(new Date());
+  const [selected, setSelected] = useState<string | null>(null);
 
   const km = (stepsToday * STEP_LENGTH_METERS) / 1000;
   const kcal = Math.round(stepsToday * KCAL_PER_STEP);
@@ -119,25 +135,34 @@ export default function ActividadScreen() {
     const startOffset = (firstOfMonth.getDay() + 6) % 7; // 0 = lunes
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const cells: ({ day: number; key: string; met: boolean } | null)[] = [];
+    const cells: ({ day: number; key: string; state: 'met' | 'partial' | 'miss' | 'none' } | null)[] = [];
     for (let i = 0; i < startOffset; i++) cells.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
       const key = localKey(new Date(year, month, day));
-      cells.push({ day, key, met: (byDay.get(key) ?? 0) >= goal });
+      const steps = byDay.get(key) ?? 0;
+      const g = goalByDay.get(key) ?? goal;
+      // Verde: cumplió su meta de ese día. Naranja: caminó pero no llegó. Rojo: no caminó. Sin color: hoy en curso, el futuro o antes de usar la app.
+      const state: 'met' | 'partial' | 'miss' | 'none' =
+        key > todayKey || key < firstDay ? 'none'
+        : steps >= g ? 'met'
+        : key === todayKey ? 'none'
+        : steps > 0 ? 'partial'
+        : 'miss';
+      cells.push({ day, key, state });
     }
     while (cells.length % 7 !== 0) cells.push(null);
 
     const weeks: (typeof cells)[] = [];
     for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
     return weeks;
-  }, [byDay, goal]);
+  }, [byDay, goal, goalByDay, firstDay, todayKey]);
 
   const monthName = new Date().toLocaleDateString('es-BO', { month: 'long' });
 
   const fullHistory = useMemo(() => [...(history ?? [])].reverse(), [history]);
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
@@ -190,14 +215,15 @@ export default function ActividadScreen() {
             )}
             <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
               {chartDays.map((d) => {
-                const hit = d.steps >= goal;
+                const hit = d.steps >= goalFor(d.key);
                 return (
-                  <View
+                  <Pressable
                     key={d.key}
+                    onPress={() => setSelected(d.key)}
                     className="flex-1 items-center justify-end"
                     style={{ height: '100%' }}
-                    accessible
-                    accessibilityLabel={`${d.isToday ? 'Hoy' : dayLabel(d.key)}: ${d.steps.toLocaleString('es-BO')} pasos${hit ? ', meta cumplida' : ''}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${d.isToday ? 'Hoy' : dayLabel(d.key)}: ${d.steps.toLocaleString('es-BO')} pasos${hit ? ', meta cumplida' : ''}. Ver detalle`}
                   >
                     {d.isToday && range === 7 ? (
                       <Text className="text-[12px] font-bold text-white mb-1">{d.steps.toLocaleString('es-BO')}</Text>
@@ -220,7 +246,7 @@ export default function ActividadScreen() {
                     >
                       {range === 7 ? (d.isToday ? 'Hoy' : d.label) : ''}
                     </Text>
-                  </View>
+                  </Pressable>
                 );
               })}
             </View>
@@ -297,30 +323,43 @@ export default function ActividadScreen() {
           <View key={i} className="flex-row justify-between mb-1.5">
             {week.map((cell, j) =>
               cell ? (
-                <View
+                <Pressable
                   key={cell.key}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'partial' ? 'meta no cumplida' : cell.state === 'miss' ? 'sin pasos' : 'sin datos'}. Ver detalle`}
+                  disabled={cell.key > todayKey}
+                  onPress={() => setSelected(cell.key)}
                   className="w-8 h-8 rounded-md items-center justify-center"
-                  style={{ backgroundColor: cell.met ? colors.mint : colors.light.line }}
+                  style={{
+                    backgroundColor: CAL_BG[cell.state],
+                    ...(cell.key === todayKey ? { borderWidth: 1.5, borderColor: colors.aquaDeep } : {}),
+                  }}
                 >
-                  <Text
-                    className="text-[12px] font-bold"
-                    style={{ color: cell.met ? colors.mintDark : colors.light.muted }}
-                  >
+                  <Text className="text-[12px] font-bold" style={{ color: CAL_FG[cell.state] }}>
                     {cell.day}
                   </Text>
-                </View>
+                </Pressable>
               ) : (
                 <View key={`empty-${i}-${j}`} className="w-8 h-8" />
               )
             )}
           </View>
         ))}
+        <View className="flex-row flex-wrap mt-2" style={{ gap: 12 }}>
+          {([['met', 'Meta cumplida'], ['partial', 'No llegaste'], ['miss', 'Sin pasos']] as const).map(([k, label]) => (
+            <View key={k} className="flex-row items-center" style={{ gap: 5 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: CAL_BG[k] }} />
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{label}</Text>
+            </View>
+          ))}
+        </View>
+        <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
       </Glass>
 
       <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Toda tu actividad</Text>
       <View className="gap-2.5">
         {fullHistory.map((h) => {
-          const met = h.steps >= goal;
+          const met = h.steps >= (h.goal ? Math.max(h.goal, MIN_DAILY_GOAL) : goal);
           return (
             <Glass
               key={h.day}
@@ -350,6 +389,33 @@ export default function ActividadScreen() {
           />
         )}
       </View>
+      <Modal visible={selected != null} transparent animationType="fade" onRequestClose={() => setSelected(null)}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar detalle" onPress={() => setSelected(null)} className="flex-1 items-center justify-center px-8" style={{ backgroundColor: 'rgba(20,12,36,0.55)' }}>
+          {selected != null && (() => {
+            const steps = byDay.get(selected) ?? 0;
+            const g = goalFor(selected);
+            const met = steps >= g;
+            const dayKm = (steps * STEP_LENGTH_METERS) / 1000;
+            return (
+              <Pressable onPress={() => undefined} className="w-full rounded-3xl p-5 bg-card-light dark:bg-card-dark" style={{ maxWidth: 360 }}>
+                <Text accessibilityRole="header" className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{selected === todayKey ? 'Hoy' : dayLabel(selected)}</Text>
+                <Text className="text-[30px] font-extrabold mt-2 text-text-light dark:text-text-dark">{steps.toLocaleString('es-BO')}</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3">pasos · {dayKm.toFixed(1).replace('.', ',')} km · {Math.round(steps * KCAL_PER_STEP)} kcal</Text>
+                <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
+                  <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
+                </View>
+                <Text className="text-[13px] font-semibold" style={{ color: met ? colors.aquaDeep : colors.warnDeep }}>
+                  {met ? 'Meta cumplida' : steps > 0 ? 'No llegaste a la meta' : 'Sin pasos ese día'}
+                </Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
+                <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">
+                  <Text className="font-semibold text-[13.5px]" style={{ color: colors.purple }}>Cerrar</Text>
+                </Pressable>
+              </Pressable>
+            );
+          })()}
+        </Pressable>
+      </Modal>
       </ScrollView>
     </View>
   );

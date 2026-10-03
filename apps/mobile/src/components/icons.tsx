@@ -17,7 +17,6 @@ import { CheckCircle as CheckCircle } from 'phosphor-react-native/src/icons/Chec
 import { UsersThree as UsersThree } from 'phosphor-react-native/src/icons/UsersThree';
 import { MagnifyingGlass as MagnifyingGlass } from 'phosphor-react-native/src/icons/MagnifyingGlass';
 import { MapPin as MapPin_ } from 'phosphor-react-native/src/icons/MapPin';
-import { X as X_ } from 'phosphor-react-native/src/icons/X';
 import { Gift as Gift_ } from 'phosphor-react-native/src/icons/Gift';
 import { At as At } from 'phosphor-react-native/src/icons/At';
 import { Crosshair as Crosshair } from 'phosphor-react-native/src/icons/Crosshair';
@@ -44,6 +43,10 @@ import { WhatsappLogo as WhatsappLogo_ } from 'phosphor-react-native/src/icons/W
 import { InstagramLogo as InstagramLogo_ } from 'phosphor-react-native/src/icons/InstagramLogo';
 import { Globe as Globe_ } from 'phosphor-react-native/src/icons/Globe';
 import { Footprints as Footprints_ } from 'phosphor-react-native/src/icons/Footprints';
+import { Eye as Eye_ } from 'phosphor-react-native/src/icons/Eye';
+import { EyeSlash as EyeSlash_ } from 'phosphor-react-native/src/icons/EyeSlash';
+import { Heartbeat as Heartbeat_ } from 'phosphor-react-native/src/icons/Heartbeat';
+import { X as X_ } from 'phosphor-react-native/src/icons/X';
 import { Camera as Camera_ } from 'phosphor-react-native/src/icons/Camera';
 import { ChartBar as ChartBar_ } from 'phosphor-react-native/src/icons/ChartBar';
 import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
@@ -112,6 +115,9 @@ export const Instagram = make(InstagramLogo_);
 export const Globe = make(Globe_);
 export const ChartBar = make(ChartBar_);
 export const Camera = make(Camera_);
+export const Eye = make(Eye_);
+export const EyeSlash = make(EyeSlash_);
+export const Heartbeat = make(Heartbeat_);
 export const Footprints = make(Footprints_);
 export const Ticket = make(Ticket_);
 export const Barbell = make(Barbell_);

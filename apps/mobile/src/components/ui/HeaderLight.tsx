@@ -17,7 +17,7 @@ export function HeaderLight() {
   const { shown, scale } = usePointsPulse(balance);
 
   return (
-    <View className="flex-row justify-between items-center px-5 pt-14 pb-3 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-row justify-between items-center px-5 pt-14 pb-3">
       <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
         accessibilityRole="button"

@@ -4,6 +4,7 @@ import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
@@ -20,6 +21,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
 import { useGlobalRanking } from '@/hooks/useGlobalRanking';
+import { useGlobalRankingOpen } from '@/hooks/useUserCount';
 import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
@@ -42,6 +44,8 @@ function greeting(name: string) {
 
 export default function HomeScreen() {
   const tabSpace = useTabBarSpace();
+  // Debajo de la barra de estado (hora, batería): en Android el contenido llega hasta el borde de la pantalla.
+  const topInset = useSafeAreaInsets().top;
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
   const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, source: stepSource, refresh: refreshSteps } = useTodaySteps();
@@ -67,6 +71,7 @@ export default function HomeScreen() {
   const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
   const { data: globalRanking } = useGlobalRanking();
+  const rankingOpen = useGlobalRankingOpen();
   const { data: groupRanking } = useMyGroupRanking();
   const topGroupMate = groupRanking?.ranked.find((r) => r.total > 0);
   const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
@@ -163,7 +168,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
     >
@@ -173,7 +178,7 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
       >
-        <View style={{ paddingTop: 18 }}>
+        <View style={{ paddingTop: Math.max(topInset, 24) + 14 }}>
         <View className="px-5" style={{ position: 'relative' }}>
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
             <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
@@ -538,6 +543,7 @@ export default function HomeScreen() {
         )}
 
         <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+          {rankingOpen && (
           <Pressable
             onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
             className="flex-row items-center justify-between p-4 border-b border-line-light dark:border-line-dark"
@@ -557,7 +563,8 @@ export default function HomeScreen() {
               <ChevronRight size={14} color={colors.light.muted} />
             </View>
           </Pressable>
-          <Pressable onPress={() => router.push('/(tabs)/grupos')} className="flex-row items-center justify-between p-4">
+          )}
+          <Pressable onPress={() => router.push('/(tabs)/grupos')} className={`flex-row items-center justify-between p-4`}>
             <View className="flex-row items-center gap-2.5">
               <IconBubble icon={Users} tone="purple" size={34} />
               <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">Tus grupos</Text>

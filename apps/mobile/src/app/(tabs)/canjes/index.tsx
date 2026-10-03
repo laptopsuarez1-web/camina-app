@@ -417,7 +417,7 @@ export default function CanjesScreen() {
   const ss = String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0');
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: tabSpace }}

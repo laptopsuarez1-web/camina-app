@@ -1,48 +1,88 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, ActivityIndicator, TextInput, Linking } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, Linking, Platform } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { LogOut, Gift, Trash2, KeyRound, Pencil, IconBubble, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, type IconProps } from '@/components/icons';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadAvatar } from '@/lib/avatar';
-import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
+import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
+import { LogOut, Gift, Pencil, IconBubble, Bell, Heartbeat, MapPin } from '@/components/icons';
 import { clearCoarseLocation, shareCoarseLocation } from '@/lib/coarse-location';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
-import { INTERESTS_OPTIONS } from '@/constants/catalog';
 import { referralLink } from '@/constants/sharing';
-import { PlacePicker } from '@/components/PlacePicker';
 import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore, type GlassLevel } from '@/store/useGlassStore';
 import { Glass } from '@/components/ui/Glass';
-import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 
-const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
-  Café: Coffee,
-  Gastronomía: Food,
-  Entretenimiento: Ticket,
-  Fitness: Barbell,
-  Compras: ShoppingBag,
-  Belleza: Sparkle,
-  Tecnología: DeviceMobile,
-  Eventos: Calendar,
-};
+type Perm = 'granted' | 'denied' | 'unknown' | null;
+
+function PermRow({ icon, title, text, status, onPress, last }: { icon: (p: { size?: number; color?: string }) => React.ReactElement; title: string; text: string; status: Perm; onPress: () => void; last?: boolean }) {
+  const dark = useColorScheme().colorScheme === 'dark';
+  const Icon = icon;
+  const on = status === 'granted';
+  return (
+    <View className={`flex-row items-center p-3.5 ${last ? '' : 'border-b border-line-light dark:border-line-dark'}`} style={{ gap: 12 }}>
+      <Icon size={22} color={on ? (dark ? colors.mint : colors.aquaDeep) : dark ? colors.dark.muted : colors.light.muted} />
+      <View className="flex-1">
+        <Text className="text-[14px] text-text-light dark:text-text-dark">{title}</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">{text}</Text>
+      </View>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${title}: ${on ? 'ajustes' : 'activar'}`} onPress={onPress} hitSlop={8} className={`px-3 py-2 rounded-full ${on ? 'bg-purple-light-light dark:bg-purple-light-dark' : 'bg-aqua-deep'}`}>
+        <Text className={`text-[12px] font-semibold ${on ? '' : 'text-white'}`} style={on ? { color: colors.purple } : undefined}>{on ? 'Ajustes' : 'Activar'}</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function PerfilScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
-  const [deleting, setDeleting] = useState(false);
-  const [pushStatus, setPushStatus] = useState<'granted' | 'denied' | 'undetermined' | null>(null);
-  useEffect(() => {
-    Notifications.getPermissionsAsync().then((p) => setPushStatus(p.status as 'granted' | 'denied' | 'undetermined')).catch(() => undefined);
+  const blocks = useBlocks();
+  const glassLevel = useGlassStore((s) => s.level);
+  const setGlassLevel = useGlassStore((s) => s.setLevel);
+  const [pushStatus, setPushStatus] = useState<Perm>(null);
+  const [stepsStatus, setStepsStatus] = useState<Perm>(null);
+  const [locationStatus, setLocationStatus] = useState<Perm>(null);
+
+  // Los permisos se vuelven a leer cada vez que se entra a la pantalla (por si se cambiaron en los ajustes).
+  const loadPermissions = useCallback(async () => {
+    try {
+      const p = await Notifications.getPermissionsAsync();
+      setPushStatus(p.status === 'granted' ? 'granted' : 'denied');
+    } catch {
+      setPushStatus('unknown');
+    }
+    if (Platform.OS === 'android') {
+      try {
+        if ((await getSdkStatus()) !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+          setStepsStatus('denied');
+        } else {
+          await initializeHealthConnect();
+          const granted = await getGrantedPermissions();
+          setStepsStatus(granted.some((g) => 'recordType' in g && g.recordType === 'Steps') ? 'granted' : 'denied');
+        }
+      } catch {
+        setStepsStatus('unknown');
+      }
+    } else {
+      // iPhone no deja saber si se negó el acceso de lectura a Salud: solo se puede mandar a los ajustes.
+      setStepsStatus('unknown');
+    }
+    try {
+      const Location = await import('expo-location');
+      setLocationStatus((await Location.getForegroundPermissionsAsync()).granted ? 'granted' : 'denied');
+    } catch {
+      setLocationStatus('unknown');
+    }
   }, []);
+  useFocusEffect(useCallback(() => { loadPermissions(); }, [loadPermissions]));
+
   async function enablePush() {
     const current = await Notifications.getPermissionsAsync();
     if (current.status === 'denied' && !current.canAskAgain) {
@@ -50,110 +90,39 @@ export default function PerfilScreen() {
       return;
     }
     await registerForPushNotificationsAsync();
-    const next = await Notifications.getPermissionsAsync();
-    setPushStatus(next.status as 'granted' | 'denied' | 'undetermined');
-    if (next.status !== 'granted') Linking.openSettings();
-  }
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [savingPassword, setSavingPassword] = useState(false);
-  const blocks = useBlocks();
-  const glassLevel = useGlassStore((s) => s.level);
-  const setGlassLevel = useGlassStore((s) => s.setLevel);
-  const [editing, setEditing] = useState(false);
-  const [nameInput, setNameInput] = useState('');
-  const [zoneInput, setZoneInput] = useState<string | null>(null);
-  const [cityInput, setCityInput] = useState('Tarija');
-  const [bDay, setBDay] = useState('');
-  const [bMonth, setBMonth] = useState('');
-  const [bYear, setBYear] = useState('');
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [savingProfile, setSavingProfile] = useState(false);
-
-  function startEditing() {
-    setNameInput(profile?.full_name ?? '');
-    setZoneInput(profile?.zone ?? null);
-    setCityInput(profile?.city ?? 'Tarija');
-    const b = profile?.birth_date;
-    setBYear(b ? b.slice(0, 4) : '');
-    setBMonth(b ? String(parseInt(b.slice(5, 7), 10)) : '');
-    setBDay(b ? String(parseInt(b.slice(8, 10), 10)) : '');
-    setPhotoUri(null);
-    setEditing(true);
+    await loadPermissions();
   }
 
-  async function pickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1] });
-    if (!result.canceled) setPhotoUri(result.assets[0].uri);
-  }
-
-  async function saveProfile() {
-    if (!profile) return;
-    if (!nameInput.trim()) {
-      Alert.alert('Falta tu nombre', 'Escribí cómo te llamás.');
-      return;
-    }
-    let birth: string | null | undefined;
-    if (bDay || bMonth || bYear) {
-      birth = birthToISO(bDay, bMonth, bYear);
-      if (!birth) {
-        Alert.alert('Fecha no válida', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+  async function stepsAction() {
+    if (Platform.OS === 'android') {
+      if (stepsStatus === 'granted') {
+        openHealthConnectSettings();
         return;
       }
-      if (ageFromISO(birth) < MIN_AGE) {
-        Alert.alert('Camina es para mayores de 13 años', 'Revisá la fecha de nacimiento.');
-        return;
+      try {
+        await initializeHealthConnect();
+        await requestHealthConnectPermission([{ accessType: 'read', recordType: 'Steps' }]);
+      } catch {
+        openHealthConnectSettings();
       }
-    }
-    setSavingProfile(true);
-    try {
-      const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri) : undefined;
-      const update = {
-        full_name: nameInput.trim(),
-        zone: zoneInput,
-        city: cityInput,
-        ...(photoUrl ? { photo_url: photoUrl } : {}),
-      };
-      let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
-      if (error && /birth_date|city/i.test(error.message)) {
-        // Si la base todavía no tiene alguna columna nueva, se guarda igual lo demás.
-        const { city: _city, ...rest } = update;
-        ({ error } = await supabase.from('profiles').update(rest).eq('id', profile.id));
-      }
-      if (error) throw error;
-      await useAuthStore.getState().refreshProfile();
-      setEditing(false);
-    } catch (e) {
-      Alert.alert('No pudimos guardar', e instanceof Error ? e.message : 'Intentá de nuevo.');
-    } finally {
-      setSavingProfile(false);
-    }
-  }
-
-  async function savePassword() {
-    if (newPassword.length < 6) {
-      Alert.alert('Contraseña muy corta', 'Necesita al menos 6 caracteres.');
+      await loadPermissions();
       return;
     }
-    setSavingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSavingPassword(false);
-    if (error) {
-      Alert.alert('No pudimos cambiarla', error.message);
-      return;
-    }
-    setNewPassword('');
-    setChangingPassword(false);
-    Alert.alert('Listo', 'Tu contraseña se actualizó.');
+    Alert.alert('Pasos desde Salud', 'En Ajustes > Salud > Acceso a datos y dispositivos > Camina, activá "Pasos".', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
+    ]);
   }
 
-  async function toggleInterest(name: string) {
-    if (!profile) return;
-    const current = new Set(profile.interests ?? []);
-    if (current.has(name)) current.delete(name);
-    else current.add(name);
-    const { error } = await supabase.from('profiles').update({ interests: [...current] }).eq('id', profile.id);
-    if (!error) await useAuthStore.getState().refreshProfile();
+  async function locationAction() {
+    if (locationStatus === 'granted') {
+      Linking.openSettings();
+      return;
+    }
+    const Location = await import('expo-location');
+    const r = await Location.requestForegroundPermissionsAsync();
+    if (!r.granted && !r.canAskAgain) Linking.openSettings();
+    await loadPermissions();
   }
 
   async function toggleDarkMode(value: boolean) {
@@ -195,195 +164,87 @@ export default function PerfilScreen() {
     else router.replace('/(auth)/welcome');
   }
 
-  function confirmDeleteAccount() {
-    Alert.alert(
-      'Eliminar tu cuenta',
-      'Se borran tu perfil, tu foto, tus Puntos, tus pasos y tu historial de canjes. Los resultados semanales de grupo ya cerrados se conservan, sin tu foto. Esto no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: deleteAccount },
-      ]
-    );
-  }
-
-  async function deleteAccount() {
-    setDeleting(true);
-    const { error } = await supabase.functions.invoke('delete-account');
-    if (error) {
-      setDeleting(false);
-      Alert.alert('No pudimos eliminar tu cuenta', `Intentá de nuevo en un rato o escribinos a ${SUPPORT_EMAIL}.`);
-      return;
-    }
-    await supabase.auth.signOut();
-    router.replace('/(auth)/welcome');
-  }
+  const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text className="text-[21px] font-extrabold mb-4 text-text-light dark:text-text-dark">
-        Perfil
-      </Text>
+    <ScrollView className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-4 text-text-light dark:text-text-dark">Perfil</Text>
 
-      <Glass className="flex-row items-center gap-3.5 rounded-md p-4 mb-4">
-        <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
-          {profile?.photo_url ? (
-            <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
-          ) : (
-            <Text className="font-bold text-mint-dark text-xl">
-              {(profile?.full_name || 'C')[0]?.toUpperCase()}
-            </Text>
-          )}
-        </View>
-        <View className="flex-1">
-          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">
-            {profile?.full_name}
-          </Text>
-          <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-            {profile?.zone ?? 'Barrio no definido'} · {profile?.city ?? 'Tarija'}
-          </Text>
-        </View>
-        <Pressable onPress={editing ? () => setEditing(false) : startEditing} hitSlop={8} className="flex-row items-center gap-1.5 rounded-full px-3 py-2 bg-purple-light-light dark:bg-purple-light-dark">
-          <Pencil size={13} color={colors.purple} />
-          <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>{editing ? 'Cerrar' : 'Editar'}</Text>
-          </Pressable>
-      </Glass>
-
-      {editing && (
-        <Glass className="rounded-3xl p-4 mb-4">
-          <Pressable onPress={pickPhoto} className="self-center mb-4 items-center">
-            <View className="w-20 h-20 rounded-full bg-mint items-center justify-center overflow-hidden">
-              {photoUri || profile?.photo_url ? (
-                <Image source={{ uri: photoUri ?? profile!.photo_url! }} className="w-full h-full" />
-              ) : (
-                <Text className="font-bold text-mint-dark text-2xl">{(nameInput || 'C')[0]?.toUpperCase()}</Text>
-              )}
-            </View>
-            <Text className="text-[12px] font-semibold mt-1.5" style={{ color: colors.purple }}>Cambiar foto</Text>
-          </Pressable>
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
-          <TextInput value={nameInput} onChangeText={setNameInput}
-            className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3" />
-          <PlacePicker city={cityInput} zone={zoneInput} onChange={(c, z) => { setCityInput(c); setZoneInput(z); }} />
-          <View className="mb-2" />
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Fecha de nacimiento</Text>
-          <View className="flex-row gap-2 mb-1">
-            <TextInput value={bDay} onChangeText={(t) => setBDay(t.replace(/\D/g, '').slice(0, 2))} placeholder="Día" keyboardType="number-pad" style={{ minWidth: 0 }}
-              placeholderTextColor={colors.light.muted}
-              className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
-            <TextInput value={bMonth} onChangeText={(t) => setBMonth(t.replace(/\D/g, '').slice(0, 2))} placeholder="Mes" keyboardType="number-pad" style={{ minWidth: 0 }}
-              placeholderTextColor={colors.light.muted}
-              className="flex-1 bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
-            <TextInput value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" keyboardType="number-pad" style={{ minWidth: 0 }}
-              placeholderTextColor={colors.light.muted}
-              className="flex-[1.4] bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark" />
-          </View>
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
-          <Pressable onPress={saveProfile} disabled={savingProfile} className="bg-aqua-deep rounded-xl py-3 items-center">
-            {savingProfile ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Guardar cambios</Text>}
-          </Pressable>
-          <Pressable onPress={confirmDeleteAccount} disabled={deleting} className="flex-row items-center justify-center gap-2 pt-4 mt-4 border-t border-line-light dark:border-line-dark">
-            {deleting ? (
-              <ActivityIndicator color={colors.warn} size="small" />
+      <Glass className="rounded-3xl p-4 mb-4">
+        <View className="flex-row items-center gap-3.5">
+          <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
+            {profile?.photo_url ? (
+              <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
             ) : (
-              <>
-                <Trash2 size={15} color={colors.warn} />
-                <Text className="text-warn font-semibold">Eliminar cuenta</Text>
-              </>
+              <Text className="font-bold text-mint-dark text-xl">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
             )}
-          </Pressable>
-        </Glass>
-      )}
+          </View>
+          <View className="flex-1">
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{profile?.full_name}</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
+              {profile?.zone ?? 'Barrio no definido'} · {profile?.city ?? 'Tarija'}
+            </Text>
+          </View>
+        </View>
+        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-xl py-3 mt-3 bg-purple-light-light dark:bg-purple-light-dark">
+          <Pencil size={14} color={colors.purple} />
+          <Text className="text-[13.5px] font-semibold" style={{ color: colors.purple }}>Editar perfil</Text>
+        </Pressable>
+      </Glass>
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 flex-row items-center gap-3 mb-4">
         <View className="flex-1">
-          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">
-            {balance ?? 0} Puntos
-          </Text>
+          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} Puntos</Text>
           <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
         </View>
       </View>
 
-      <Pressable
-        onPress={inviteFriends}
-        className="flex-row items-center gap-3.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl p-4 mb-4"
-      >
+      <Pressable onPress={inviteFriends} className="flex-row items-center gap-3.5 bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl p-4 mb-4">
         <IconBubble icon={Gift} tone="aqua" size={46} />
         <View className="flex-1">
           <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
-          <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">
-            Ganá 5 Puntos cuando tu amigo empiece a caminar
-          </Text>
+          <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Ganá 5 Puntos cuando tu amigo empiece a caminar</Text>
         </View>
       </Pressable>
 
-      <Glass className="rounded-3xl p-4 mb-4">
-        <Text className="font-bold text-[15px] mb-1 text-text-light dark:text-text-dark">Tus intereses</Text>
-        <Text className="text-muted-light dark:text-muted-dark text-xs mb-3">Opcional — nos ayuda a mostrarte mejores beneficios.</Text>
-        <View className="flex-row flex-wrap gap-2">
-          {INTERESTS_OPTIONS.map(([name]) => {
-            const active = (profile?.interests ?? []).includes(name);
-            const Icon = INTEREST_ICON[name] ?? Sparkle;
-            return (
-              <Pressable
-                key={name}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: active }}
-                onPress={() => toggleInterest(name)}
-                className={`flex-row items-center gap-1.5 rounded-full pl-2.5 pr-3.5 py-2 border ${
-                  active ? 'bg-aqua-light-light dark:bg-aqua-light-dark' : 'border-line-light dark:border-line-dark'
-                }`}
-                style={active ? { borderColor: colors.aqua } : undefined}
-              >
-                <Icon size={16} color={active ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? colors.dark.muted : colors.light.muted} weight={active ? 'fill' : 'regular'} />
-                <Text
-                  className={`text-xs font-semibold ${active ? 'text-aqua-deep dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}
-                >
-                  {name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <Text className="text-[12px] font-bold uppercase tracking-wide text-muted-light dark:text-muted-dark mb-2 ml-1">Permisos</Text>
+      <Glass className="rounded-2xl overflow-hidden mb-4">
+        <PermRow
+          icon={Bell}
+          title="Notificaciones"
+          text={pushStatus === 'granted' ? 'Te avisamos de códigos por vencer, tu racha y retos.' : 'Sin esto no te avisamos de códigos por vencer ni de tu racha.'}
+          status={pushStatus}
+          onPress={pushStatus === 'granted' ? () => Linking.openSettings() : enablePush}
+        />
+        <PermRow
+          icon={Heartbeat}
+          title={Platform.OS === 'ios' ? 'Pasos (Salud)' : 'Pasos (Health Connect)'}
+          text={stepsStatus === 'granted' ? 'Camina cuenta tus pasos desde Health Connect.' : 'Sin este permiso el podómetro no funciona y no sumás Puntos.'}
+          status={Platform.OS === 'ios' ? 'denied' : stepsStatus}
+          onPress={stepsAction}
+        />
+        <PermRow
+          icon={MapPin}
+          title="Ubicación"
+          text={locationStatus === 'granted' ? 'La usamos para mostrarte comercios cerca.' : 'Para ver comercios cerca de vos en el mapa.'}
+          status={locationStatus}
+          onPress={locationAction}
+          last
+        />
       </Glass>
 
-      <Glass className="rounded-md overflow-hidden mb-6">
+      <Glass className="rounded-md overflow-hidden mb-4">
         <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
-          <Switch
-            value={profile?.ranking_visible ?? true}
-            onValueChange={toggleRanking}
-            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
-          />
+          <Switch value={profile?.ranking_visible ?? true} onValueChange={toggleRanking} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
-        <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
-          <View className="flex-1 pr-3">
-            <Text className="text-[14px] text-text-light dark:text-text-dark">Notificaciones</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
-              {pushStatus === 'granted' ? 'Activadas. Se cambian en los ajustes del teléfono.' : 'Desactivadas: no te avisamos de códigos por vencer ni de tu racha.'}
-            </Text>
-          </View>
-          {pushStatus === 'granted' ? (
-            <Pressable accessibilityRole="button" onPress={() => Linking.openSettings()} hitSlop={8} className="px-3 py-2 rounded-full bg-purple-light-light dark:bg-purple-light-dark">
-              <Text className="text-[12px] font-semibold" style={{ color: colors.purple }}>Ajustes</Text>
-            </Pressable>
-          ) : (
-            <Pressable accessibilityRole="button" onPress={enablePush} hitSlop={8} className="px-3 py-2 rounded-full bg-aqua-deep">
-              <Text className="text-[12px] font-semibold text-white">Activar</Text>
-            </Pressable>
-          )}
-        </View>
-        <View className="flex-row items-center justify-between p-3.5 border-b border-line-light dark:border-line-dark">
+        <View className="flex-row items-center justify-between p-3.5">
           <View className="flex-1 pr-3">
             <Text className="text-[14px] text-text-light dark:text-text-dark">Avisos de comercios cerca</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
-              Usamos tu ubicación aproximada. Máximo 1 aviso por semana.
-            </Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Usamos tu ubicación aproximada. Máximo 1 aviso por semana.</Text>
           </View>
-          <Switch
-            value={profile?.nearby_alerts ?? true}
-            onValueChange={toggleNearby}
-            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
-          />
+          <Switch value={profile?.nearby_alerts ?? true} onValueChange={toggleNearby} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
       </Glass>
 
@@ -432,49 +293,6 @@ export default function PerfilScreen() {
                 </Pressable>
               </View>
             ))}
-          </View>
-        )}
-      </Glass>
-
-      <Glass className="rounded-3xl p-4 mb-4">
-        {!changingPassword ? (
-          <Pressable onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
-            <IconBubble icon={KeyRound} tone="purple" size={38} />
-            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Cambiar contraseña</Text>
-          </Pressable>
-        ) : (
-          <View>
-            <Text className="font-bold text-[14.5px] mb-2.5 text-text-light dark:text-text-dark">Nueva contraseña</Text>
-            <TextInput
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-              placeholder="Mínimo 6 caracteres"
-              placeholderTextColor={colors.light.muted}
-              className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-3"
-            />
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={savePassword}
-                disabled={savingPassword}
-                className="flex-1 bg-aqua-deep rounded-xl py-3 items-center"
-              >
-                {savingPassword ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text className="text-white font-bold text-[13.5px]">Guardar</Text>
-                )}
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setChangingPassword(false);
-                  setNewPassword('');
-                }}
-                className="flex-1 border border-line-light dark:border-line-dark rounded-xl py-3 items-center"
-              >
-                <Text className="text-muted-light dark:text-muted-dark font-semibold text-[13.5px]">Cancelar</Text>
-              </Pressable>
-            </View>
           </View>
         )}
       </Glass>
