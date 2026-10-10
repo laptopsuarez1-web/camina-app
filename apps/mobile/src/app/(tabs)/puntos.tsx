@@ -231,7 +231,7 @@ export default function PuntosScreen() {
         {!isLoading && !isError && (movimientos ?? []).length === 0 && (
           <EmptyState
             title="Tus puntos van a aparecer acá"
-            text="Cada 1.000 pasos que camines sumás un punto. También ganás por retos, invitando amigos y desafíos de grupo."
+            text="Cada 1.000 pasos que camines sumás un punto, siempre que abras la app ese día. También ganás por retos, invitando amigos y desafíos de grupo."
           />
         )}
       </View>
