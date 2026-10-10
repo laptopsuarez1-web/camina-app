@@ -12,7 +12,7 @@ import { colors } from '@/theme/tokens';
 const COIN = require('@/../assets/camina-coin.png');
 
 function Coin({ size, style }: { size: number; style?: object }) {
-  return <Image source={COIN} style={[{ width: size, height: size, borderRadius: size / 2 }, style]} />;
+  return <Image source={COIN} accessible={false} importantForAccessibility="no" style={[{ width: size, height: size, borderRadius: size / 2 }, style]} />;
 }
 
 // 1. El aro de Inicio llenándose, con monedas alrededor.
@@ -36,7 +36,7 @@ function PointsArt() {
       <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>
         {POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} <Text style={{ color: '#D5CBF0', fontSize: 17, fontWeight: '500' }}>pasos</Text>
       </Text>
-      <Text style={{ color: colors.mint, fontSize: 28, fontWeight: '800' }}>↓</Text>
+      <Text importantForAccessibility="no" accessibilityElementsHidden style={{ color: colors.mint, fontSize: 28, fontWeight: '800' }}>↓</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Coin size={64} />
         <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>1 Punto</Text>
@@ -80,7 +80,7 @@ function RewardArt() {
 function GroupArt() {
   const step = (letter: string, place: number, height: number, avatar: number, bg: string, first?: boolean) => (
     <View style={{ alignItems: 'center', gap: 6 }}>
-      {first ? <Text style={{ fontSize: 22 }}>👑</Text> : null}
+      {first ? <Text importantForAccessibility="no" accessibilityElementsHidden style={{ fontSize: 22 }}>👑</Text> : null}
       <View style={{ width: avatar, height: avatar, borderRadius: avatar / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: avatar * 0.4 }}>{letter}</Text>
       </View>
@@ -95,7 +95,7 @@ function GroupArt() {
     </View>
   );
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }} accessible={false} importantForAccessibility="no-hide-descendants">
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }} accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       {step('A', 2, 76, 48, colors.mint)}
       {step('L', 1, 112, 56, colors.mint, true)}
       {step('C', 3, 56, 48, '#C6A2F5')}

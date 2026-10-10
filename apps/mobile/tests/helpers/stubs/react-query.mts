@@ -9,6 +9,9 @@ export const rq = {
   /** Lo que devuelve useQuery (por ejemplo { data: [...] }) para hooks que leen el resultado de otro hook. */
   queryResult: { data: undefined } as any,
   invalidated: [] as any[],
+  /** Cuántas veces el QueryClient real de la app fue vaciado / se le cancelaron consultas. */
+  clears: 0,
+  cancels: 0,
 };
 
 export function resetRq() {
@@ -17,6 +20,14 @@ export function resetRq() {
   rq.lastMutation = undefined;
   rq.queryResult = { data: undefined };
   rq.invalidated = [];
+  rq.clears = 0;
+  rq.cancels = 0;
+}
+
+export class QueryClient {
+  clear() { rq.clears++; }
+  cancelQueries() { rq.cancels++; return Promise.resolve(); }
+  invalidateQueries(arg: any) { rq.invalidated.push(arg); }
 }
 
 export function useQuery(options: any) {

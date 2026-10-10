@@ -5,6 +5,7 @@ import { Check } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
+import { friendlyError } from '@/lib/errors';
 import { LegalSections } from '@/components/LegalSections';
 import { colors } from '@/theme/tokens';
 import { useColorScheme } from 'nativewind';
@@ -19,8 +20,13 @@ export default function TerminosScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
 
   async function accept() {
-    const userId = (await supabase.auth.getUser()).data.user?.id;
-    if (!userId) return;
+    // Usuario de la sesión guardada en el teléfono (getUser() llama al servidor y falla sin red).
+    const userId = useAuthStore.getState().session?.user.id;
+    if (!userId) {
+      Alert.alert('Tu sesión venció', 'Volvé a iniciar sesión para continuar.');
+      router.replace('/(auth)/welcome');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase
@@ -36,7 +42,7 @@ export default function TerminosScreen() {
       }
       router.replace(joinedGroupId ? { pathname: '/(tabs)/grupos/[groupId]', params: { groupId: joinedGroupId } } : '/(tabs)');
     } catch (e) {
-      Alert.alert('Algo salió mal', e instanceof Error ? e.message : 'Intentá de nuevo.');
+      Alert.alert('Algo salió mal', friendlyError(e, 'Intentá de nuevo.'));
     } finally {
       setLoading(false);
     }
@@ -56,10 +62,10 @@ export default function TerminosScreen() {
       </ScrollView>
 
       <View className="px-6 py-4 border-t border-line-light dark:border-line-dark">
-        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} onPress={() => setAccepted((v) => !v)} className="flex-row items-center gap-2.5 mb-4">
+        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} aria-checked={accepted} hitSlop={{ top: 8, bottom: 8 }} onPress={() => setAccepted((v) => !v)} className="flex-row items-center gap-2.5 mb-4">
           <View
             className="w-5 h-5 rounded-md items-center justify-center"
-            style={{ borderWidth: 1.5, borderColor: accepted ? colors.aquaDeep : isDark ? colors.dark.line : colors.light.line, backgroundColor: accepted ? colors.aquaDeep : 'transparent' }}
+            style={{ borderWidth: 1.5, borderColor: accepted ? colors.aquaDeep : isDark ? colors.dark.muted : colors.light.muted, backgroundColor: accepted ? colors.aquaDeep : 'transparent' }}
           >
             {accepted && <Check size={13} color="#fff" />}
           </View>
@@ -68,6 +74,9 @@ export default function TerminosScreen() {
           </Text>
         </Pressable>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Aceptar y continuar"
+          accessibilityState={{ busy: loading }}
           onPress={accept}
           disabled={!accepted || loading}
           className="rounded-2xl py-4 items-center"

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
 import { emailRedirectUrl } from '@/lib/auth-links';
+import { friendlyError } from '@/lib/errors';
 import { colors } from '@/theme/tokens';
 import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
 
@@ -24,6 +25,8 @@ export default function WelcomeScreen() {
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [oauthProvider, setOauthProvider] = useState<'google' | 'apple' | null>(null);
+  const passwordRef = useRef<TextInput>(null);
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [recoverySent, setRecoverySent] = useState(false);
   const [recovering, setRecovering] = useState(false);
@@ -40,22 +43,23 @@ export default function WelcomeScreen() {
     if (!idToken) return;
     (async () => {
       setOauthLoading(true);
-      const { error } = await completeGoogleSignIn(idToken);
-      setOauthLoading(false);
-      if (error) {
-        Alert.alert('No pudimos iniciar sesión con Google', error.message);
-        return;
+      setOauthProvider('google');
+      try {
+        const { error } = await completeGoogleSignIn(idToken);
+        if (error) {
+          Alert.alert('No pudimos iniciar sesión con Google', friendlyError(error));
+          return;
+        }
+        await afterAuth();
+      } finally {
+        setOauthLoading(false);
       }
-      await afterAuth();
     })();
   }, [googleResponse]);
 
   async function handleGoogle() {
     if (!googleOAuthConfigured) {
-      Alert.alert(
-        'Google todavía no está configurado',
-        'Faltan los Client ID de Google en las variables de entorno de la app — usá tu email por ahora.'
-      );
+      Alert.alert('Google no está disponible ahora', 'Usá tu correo para continuar.');
       return;
     }
     await promptGoogleAsync();
@@ -63,13 +67,14 @@ export default function WelcomeScreen() {
 
   async function handleApple() {
     setOauthLoading(true);
+    setOauthProvider('apple');
     try {
       await signInWithApple();
       await afterAuth();
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Intentá de nuevo.';
+      const message = e instanceof Error ? e.message : '';
       if (!message.includes('ERR_REQUEST_CANCELED')) {
-        Alert.alert('No pudimos iniciar sesión con Apple', message);
+        Alert.alert('No pudimos iniciar sesión con Apple', friendlyError(e, 'Intentá de nuevo.'));
       }
     } finally {
       setOauthLoading(false);
@@ -78,7 +83,12 @@ export default function WelcomeScreen() {
 
   async function afterAuth() {
     await useAuthStore.getState().refreshProfile();
-    const profile = useAuthStore.getState().profile;
+    const { profile, profileError } = useAuthStore.getState();
+    if (!profile && profileError) {
+      // No pudimos LEER el perfil (mala señal): la raíz muestra el reintento en vez de mandar a un alta nueva.
+      router.replace('/');
+      return;
+    }
     if (!profile?.full_name?.trim()) {
       // El signup nuevo termina en /perfil, que consume las invitaciones
       // pendientes recién al final (ahí ya hay full_name).
@@ -110,7 +120,7 @@ export default function WelcomeScreen() {
         setAwaitingConfirmation(email.trim());
         return;
       }
-      Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', error.message);
+      Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', friendlyError(error));
       return;
     }
     if (authKind === 'signup' && !data.session) {
@@ -131,7 +141,7 @@ export default function WelcomeScreen() {
     });
     setRecovering(false);
     if (error) {
-      Alert.alert('No pudimos mandar el correo', error.message);
+      Alert.alert('No pudimos mandar el correo', friendlyError(error));
       return;
     }
     setRecoverySent(true);
@@ -168,157 +178,207 @@ export default function WelcomeScreen() {
       options: { emailRedirectTo: emailRedirectUrl() },
     });
     setResending(false);
-    if (error) Alert.alert('No pudimos reenviar el correo', error.message);
+    if (error) Alert.alert('No pudimos reenviar el correo', friendlyError(error));
     else Alert.alert('Listo', 'Te mandamos el correo de nuevo.');
   }
 
   if (awaitingConfirmation) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
-        <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
-          Confirmá tu correo
-        </Text>
-        <Text style={{ color: '#C4B8E8', marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
-          Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
-          entrar acá.
-        </Text>
-        <Pressable
-          onPress={async () => {
-            setEnteringNow(true);
-            await tryEnterAfterConfirmation(true);
-            setEnteringNow(false);
-          }}
-          disabled={enteringNow}
-          style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
-        >
-          {enteringNow ? (
-            <ActivityIndicator color={colors.mintDark} />
-          ) : (
-            <Text style={{ color: colors.mintDark, fontWeight: '700', fontSize: 15 }}>Ya confirmé, entrar</Text>
-          )}
-        </Pressable>
-        <Pressable
-          onPress={resendConfirmation}
-          disabled={resending}
-          style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
-        >
-          {resending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
-          )}
-        </Pressable>
-        <Pressable onPress={() => setAwaitingConfirmation(null)}>
-          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
-        </Pressable>
+      <View style={{ flex: 1, backgroundColor: '#241748' }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }} showsVerticalScrollIndicator={false}>
+          <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
+          <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
+            Confirmá tu correo
+          </Text>
+          <Text style={{ color: '#C4B8E8', marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
+            Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
+            entrar acá.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ya confirmé, entrar"
+            accessibilityState={{ busy: enteringNow }}
+            onPress={async () => {
+              setEnteringNow(true);
+              await tryEnterAfterConfirmation(true);
+              setEnteringNow(false);
+            }}
+            disabled={enteringNow}
+            style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
+          >
+            {enteringNow ? (
+              <ActivityIndicator color={colors.mintDark} />
+            ) : (
+              <Text style={{ color: colors.mintDark, fontWeight: '700', fontSize: 15 }}>Ya confirmé, entrar</Text>
+            )}
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Reenviar correo"
+            accessibilityState={{ busy: resending }}
+            onPress={resendConfirmation}
+            disabled={resending}
+            style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
+          >
+            {resending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
+            )}
+          </Pressable>
+          <Pressable accessibilityRole="button" hitSlop={{ top: 10, bottom: 15 }} onPress={() => setAwaitingConfirmation(null)}>
+            <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
+          </Pressable>
+        </ScrollView>
       </View>
     );
   }
 
+  const googleBusy = oauthLoading && oauthProvider === 'google';
+  const appleBusy = oauthLoading && oauthProvider === 'apple';
+
   return (
-    <LinearGradient
-      colors={['#3a2668', '#1c1030', '#120a1e']}
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}
-    >
-      <View style={{ width: 104, height: 104, borderRadius: 52, overflow: 'hidden' }}>
-        <Image source={require('@/../assets/icon.png')} style={{ width: 104, height: 104 }} />
-      </View>
-      <Text
-        style={{
-          color: colors.mint,
-          fontSize: 32,
-          fontWeight: '900',
-          letterSpacing: -1,
-          marginTop: 16,
-          textShadowColor: 'rgba(127,237,196,0.55)',
-          textShadowOffset: { width: 0, height: 0 },
-          textShadowRadius: 14,
-        }}
-      >
-        CAMINA
-      </Text>
-      <Text style={{ color: '#C4B8E8', marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
-        Caminá, ganá Puntos y canjealos en tu ciudad.
-      </Text>
-
-      <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
-        <Pressable
-          onPress={handleGoogle}
-          disabled={oauthLoading}
-          style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center' }}
+    <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ flex: 1 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}
         >
-          <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
-        </Pressable>
-
-        {appleAvailable && (
-          <Pressable
-            onPress={handleApple}
-            disabled={oauthLoading}
-            style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center' }}
+          <View style={{ width: 104, height: 104, borderRadius: 52, overflow: 'hidden' }}>
+            <Image source={require('@/../assets/icon.png')} style={{ width: 104, height: 104 }} />
+          </View>
+          <Text
+            accessibilityRole="header"
+            style={{
+              color: colors.mint,
+              fontSize: 32,
+              fontWeight: '900',
+              letterSpacing: -1,
+              marginTop: 16,
+              textShadowColor: 'rgba(127,237,196,0.55)',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 14,
+            }}
           >
-            <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
-          </Pressable>
-        )}
-
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
-          <Text style={{ color: '#B3A6D6', fontSize: 12 }}>o</Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
-        </View>
-
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Correo electrónico"
-          placeholderTextColor="#6E6291"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14 }}
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Contraseña"
-          placeholderTextColor="#6E6291"
-          secureTextEntry
-          style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14 }}
-        />
-
-        <Pressable
-          onPress={handleSubmit}
-          disabled={loading}
-          style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 }}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.mintDark} />
-          ) : (
-            <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>
-              {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
-            </Text>
-          )}
-        </Pressable>
-
-        {authKind === 'login' && (
-          <Pressable onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
-            <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
-              {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
-            </Text>
-          </Pressable>
-        )}
-
-        <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ marginTop: 8 }}>
-          <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
-            Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
+            CAMINA
           </Text>
-        </Pressable>
-
-        <Pressable onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
-          <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
-            {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
+          <Text style={{ color: '#C4B8E8', marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
+            Caminá, ganá Puntos y canjealos en tu ciudad.
           </Text>
-        </Pressable>
-      </View>
+
+          <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Continuar con Google"
+              accessibilityState={{ busy: googleBusy }}
+              onPress={handleGoogle}
+              disabled={oauthLoading}
+              style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
+            >
+              {googleBusy ? (
+                <ActivityIndicator color="#1a1a1a" />
+              ) : (
+                <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
+              )}
+            </Pressable>
+
+            {appleAvailable && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Continuar con Apple"
+                accessibilityState={{ busy: appleBusy }}
+                onPress={handleApple}
+                disabled={oauthLoading}
+                style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
+              >
+                {appleBusy ? (
+                  <ActivityIndicator color={colors.mint} />
+                ) : (
+                  <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
+                )}
+              </Pressable>
+            )}
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
+              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>o</Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
+            </View>
+
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Correo electrónico"
+              placeholderTextColor="#6E6291"
+              accessibilityLabel="Correo electrónico"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+              keyboardType="email-address"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 44 }}
+            />
+            <TextInput
+              ref={passwordRef}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña"
+              placeholderTextColor="#6E6291"
+              accessibilityLabel="Contraseña"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete={authKind === 'login' ? 'current-password' : 'new-password'}
+              textContentType={authKind === 'login' ? 'password' : 'newPassword'}
+              secureTextEntry
+              returnKeyType="go"
+              onSubmitEditing={() => {
+                if (!loading) handleSubmit();
+              }}
+              style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 44 }}
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+              accessibilityState={{ busy: loading }}
+              onPress={handleSubmit}
+              disabled={loading}
+              style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 }}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.mintDark} />
+              ) : (
+                <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>
+                  {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+                </Text>
+              )}
+            </Pressable>
+
+            {authKind === 'login' && (
+              <Pressable accessibilityRole="button" hitSlop={{ top: 2, bottom: 2 }} onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
+                <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
+                  {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
+                </Text>
+              </Pressable>
+            )}
+
+            <Pressable accessibilityRole="link" hitSlop={{ top: 3, bottom: 3 }} onPress={() => router.push('/legal')} style={{ marginTop: 8 }}>
+              <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
+                Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
+              </Text>
+            </Pressable>
+
+            <Pressable accessibilityRole="button" hitSlop={{ top: 1, bottom: 15 }} onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
+              <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
+                {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }

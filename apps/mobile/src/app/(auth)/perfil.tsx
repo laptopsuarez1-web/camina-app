@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { PlacePicker } from '@/components/PlacePicker';
+import { friendlyError } from '@/lib/errors';
 
 // Único paso obligatorio después de crear la cuenta. Ciudad y barrio son opcionales (Tarija por defecto);
 // los intereses se editan después desde Perfil.
@@ -44,9 +45,13 @@ export default function CompletarPerfilScreen() {
       Alert.alert('Falta tu nombre', 'Contanos cómo te llamás.');
       return;
     }
+    if (!bDay.trim() || !bMonth.trim() || !bYear.trim()) {
+      Alert.alert('Falta tu fecha de nacimiento', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+      return;
+    }
     const birth = birthToISO(bDay, bMonth, bYear);
     if (!birth) {
-      Alert.alert('Falta tu fecha de nacimiento', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+      Alert.alert('Esa fecha no existe', 'Revisá día, mes y año.');
       return;
     }
     if (ageFromISO(birth) < MIN_AGE) {
@@ -71,12 +76,13 @@ export default function CompletarPerfilScreen() {
       await useAuthStore.getState().refreshProfile();
       router.replace('/(auth)/terminos');
     } catch (e) {
-      Alert.alert('Algo salió mal', e instanceof Error ? e.message : 'Intentá de nuevo.');
+      Alert.alert('Algo salió mal', friendlyError(e, 'Intentá de nuevo.'));
     } finally {
       setLoading(false);
     }
   }
 
+  const dayRef = useRef<TextInput>(null);
   const monthRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
   const ready = fullName.trim().length > 0 && bDay.length > 0 && bMonth.length > 0 && bYear.length === 4;
@@ -96,7 +102,7 @@ export default function CompletarPerfilScreen() {
               {photoUri ? (
                 <Image source={{ uri: photoUri }} className="w-full h-full" />
               ) : (
-                <Text className="text-aqua-deep dark:text-mint text-[34px] font-extrabold">{(fullName.trim()[0] ?? 'A').toUpperCase()}</Text>
+                <Text className="text-aqua-ink dark:text-mint text-[34px] font-extrabold">{(fullName.trim()[0] ?? 'A').toUpperCase()}</Text>
               )}
             </View>
             <View className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-aqua-deep items-center justify-center border-2 border-bg-light dark:border-bg-dark">
@@ -114,14 +120,16 @@ export default function CompletarPerfilScreen() {
           placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
           autoCapitalize="words"
           autoComplete="name"
+          accessibilityLabel="Nombre"
           returnKeyType="next"
-          onSubmitEditing={() => undefined}
+          onSubmitEditing={() => dayRef.current?.focus()}
           className={`${field} mb-5`}
         />
 
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2 ml-1">Fecha de nacimiento</Text>
         <View className="flex-row gap-2.5 mb-2">
           <TextInput
+            ref={dayRef}
             value={bDay}
             onChangeText={(t) => {
               const v = t.replace(/\D/g, '').slice(0, 2);
@@ -178,7 +186,8 @@ export default function CompletarPerfilScreen() {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityState={{ disabled: !ready || loading }}
+          accessibilityLabel="Empezar a caminar"
+          accessibilityState={{ disabled: !ready || loading, busy: loading }}
           onPress={handleContinue}
           disabled={loading}
           className="rounded-2xl py-4 items-center"

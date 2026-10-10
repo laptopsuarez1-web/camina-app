@@ -15,6 +15,12 @@ export const db = {
   user: null as null | { id: string },
 };
 
+/** Sesión y escucha de cambios de sesión (supabase.auth.getSession / onAuthStateChange). */
+export const authEvents = {
+  session: null as any,
+  listener: null as null | ((event: string, session: any) => void | Promise<void>),
+};
+
 export function resetDb() {
   db.tables = {};
   db.rpc = {};
@@ -77,6 +83,11 @@ export const supabase = {
   from(table: string) { return new Query(table); },
   auth: {
     async getUser() { return { data: { user: db.user }, error: null }; },
+    async getSession() { return { data: { session: authEvents.session }, error: null }; },
+    onAuthStateChange(cb: (event: string, session: any) => void | Promise<void>) {
+      authEvents.listener = cb;
+      return { data: { subscription: { unsubscribe() {} } } };
+    },
   },
   async rpc(name: string, args?: any) {
     db.rpcLog.push({ name, args });

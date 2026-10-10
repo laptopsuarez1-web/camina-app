@@ -26,7 +26,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark px-8">
-      <ActivityIndicator color={colors.aqua} />
+      <ActivityIndicator accessibilityLabel="Cargando" color={colors.aqua} />
       <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-4 text-center">
         Confirmando tu cuenta…
       </Text>
