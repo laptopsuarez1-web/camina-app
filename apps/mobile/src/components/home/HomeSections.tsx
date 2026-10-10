@@ -4,6 +4,7 @@ import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import { useColorScheme } from 'nativewind';
+import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
@@ -115,7 +116,29 @@ export function NearbyRow({
   }, [benefits, pos]);
 
   if (places.length === 0) {
-    if (loading) return null;
+    // Mientras cargan los locales se reserva el lugar de la tarjeta (mismo alto): así Retos no salta cuando llegan.
+    if (loading) {
+      return (
+        <View>
+          <SectionHeader title="Locales cerca tuyo" />
+          <SkeletonGroup style={{ marginBottom: -10 }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 18 }}>
+              <Glass className="rounded-3xl" style={{ width: 268, padding: 18 }}>
+                <View className="flex-row items-center" style={{ gap: 10 }}>
+                  <Skeleton width={62} height={62} radius={20} />
+                  <View style={{ flex: 1, gap: 8 }}>
+                    <Skeleton width="70%" height={16} />
+                    <Skeleton width="45%" height={13} />
+                  </View>
+                </View>
+                <Skeleton width="60%" height={14} style={{ marginTop: 14 }} />
+                <Skeleton width={96} height={28} radius={14} style={{ marginTop: 10 }} />
+              </Glass>
+            </View>
+          </SkeletonGroup>
+        </View>
+      );
+    }
     return (
       <View>
         <SectionHeader title="Locales cerca tuyo" />
@@ -200,7 +223,23 @@ function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; 
 export function MyRedemptionsSection({ redemptions, loading }: { redemptions: RedemptionRow[] | undefined; loading: boolean }) {
   const dark = useColorScheme().colorScheme === 'dark';
   const list = (redemptions ?? []).slice(0, 3);
-  if (loading && !redemptions) return null;
+  if (loading && !redemptions) {
+    return (
+      <View>
+        <SectionHeader title="Tus canjes" />
+        <SkeletonGroup style={{ marginHorizontal: 20 }}>
+          <Glass className="rounded-3xl overflow-hidden" style={{ padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Skeleton width={42} height={42} radius={14} />
+            <View style={{ flex: 1, gap: 7 }}>
+              <Skeleton width="60%" height={14} />
+              <Skeleton width="40%" height={12} />
+            </View>
+            <Skeleton width={70} height={26} radius={13} />
+          </Glass>
+        </SkeletonGroup>
+      </View>
+    );
+  }
   return (
     <View>
       <SectionHeader title="Tus canjes" />

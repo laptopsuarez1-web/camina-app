@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TextInput, Alert } from 'react-native';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -128,7 +129,11 @@ export default function GruposScreen() {
               </Text>
             </View>
           )}
-          {rankingLoading && <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />}
+          {rankingLoading && (
+            <SkeletonGroup style={{ gap: 8 }}>
+              {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+            </SkeletonGroup>
+          )}
           <View className="gap-2">
             {(ranking ?? []).map((r: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }, i: number) => (
               <Glass
@@ -170,7 +175,11 @@ export default function GruposScreen() {
         </>
       ) : (
         <>
-      {isLoading && <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />}
+      {isLoading && (
+        <SkeletonGroup style={{ gap: 8 }}>
+          {[0, 1].map((i) => <SkeletonRow key={i} chip={false} />)}
+        </SkeletonGroup>
+      )}
 
       {isError && !groups && (
         <View className="mb-5">

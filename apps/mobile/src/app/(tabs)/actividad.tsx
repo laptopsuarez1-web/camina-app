@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, ActivityIndicator, Modal, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Modal, StyleSheet } from 'react-native';
 import { Press } from '@/components/ui/Press';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +18,9 @@ import { dayLabel } from '@/lib/format';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { GrowIn } from '@/components/ui/GrowIn';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -198,7 +201,7 @@ export default function ActividadScreen() {
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
             <Text className="text-auth-muted text-xs mb-1">{range === 7 ? 'Esta semana' : 'Últimos 30 días'}</Text>
-            <Text numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display}>{rangeTotal.toLocaleString('es-BO')}</Text>
+            <AnimatedNumber id={`actividad-total-${range}`} value={rangeTotal} ready={!isLoading} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display} />
             <View className="flex-row flex-wrap items-center mt-0.5" style={{ columnGap: 8 }}>
               <Text className="text-auth-muted text-xs">pasos · {Math.round(rangeTotal / range).toLocaleString('es-BO')} por día</Text>
               {range === 7 && weekTrendPct !== null ? (
@@ -232,7 +235,13 @@ export default function ActividadScreen() {
         </View>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.mint} style={{ marginVertical: 40 }} />
+          <SkeletonGroup style={{ height: CHART_H + 40, marginTop: 14, flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+            {[0.5, 0.72, 0.9, 0.62, 0.8, 0.55, 0.3].map((h, i) => (
+              <View key={i} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                <Skeleton onDark height={Math.max(8, h * CHART_H)} radius={11} style={{ marginBottom: 22 }} />
+              </View>
+            ))}
+          </SkeletonGroup>
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {/* Línea punteada de la meta diaria */}
@@ -244,7 +253,7 @@ export default function ActividadScreen() {
               </View>
             )}
             <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
-              {chartDays.map((d) => {
+              {chartDays.map((d, i) => {
                 const hit = d.steps >= goalFor(d.key);
                 return (
                   <Press
@@ -258,6 +267,7 @@ export default function ActividadScreen() {
                     {d.isToday && range === 7 ? (
                       <Text className="text-[12px] font-bold text-white mb-1">{d.steps.toLocaleString('es-BO')}</Text>
                     ) : null}
+                    <GrowIn id="actividad-barras" index={i} count={chartDays.length}>
                     {(() => {
                       const barStyle = {
                         width: '100%' as const,
@@ -281,6 +291,7 @@ export default function ActividadScreen() {
                         />
                       );
                     })()}
+                    </GrowIn>
                     <Text
                       className="text-[12px] mt-1.5"
                       style={{ height: 16, color: d.isToday ? '#fff' : colors.authMuted, fontWeight: d.isToday ? '800' : '500' }}
@@ -329,13 +340,13 @@ export default function ActividadScreen() {
       <Text accessibilityRole="header" className="mt-1 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Hoy</Text>
       <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row mb-3">
-          {[
-            [stepsToday.toLocaleString('es-BO'), 'pasos'],
-            [km.toFixed(1).replace('.', ','), 'km'],
-            [String(kcal), 'kcal'],
-          ].map(([value, unit]) => (
+          {([
+            [stepsToday, 'pasos', (n: number) => n.toLocaleString('es-BO')],
+            [km, 'km', (n: number) => n.toFixed(1).replace('.', ',')],
+            [kcal, 'kcal', (n: number) => String(Math.round(n))],
+          ] as const).map(([value, unit, fmt]) => (
             <View key={unit} className="flex-1">
-              <Text className="text-text-light dark:text-text-dark" style={{ fontSize: 28, lineHeight: 32, fontWeight: '800', letterSpacing: -0.5, fontVariant: ['tabular-nums'] }}>{value}</Text>
+              <AnimatedNumber id={`actividad-hoy-${unit}`} value={value} ready={!isLoading} format={fmt} className="text-text-light dark:text-text-dark" style={{ fontSize: 28, lineHeight: 32, fontWeight: '800', letterSpacing: -0.5, fontVariant: ['tabular-nums'] }} />
               <Text className="text-[12px] text-muted-light dark:text-muted-dark">{unit}</Text>
             </View>
           ))}

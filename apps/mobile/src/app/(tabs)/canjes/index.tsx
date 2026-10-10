@@ -32,6 +32,7 @@ import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
@@ -691,7 +692,11 @@ export default function CanjesScreen() {
         </View>
 
         <View className="px-5 pt-4" style={{ gap: 12 }}>
-          {isLoading && <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />}
+          {isLoading && (
+            <SkeletonGroup style={{ gap: 12 }}>
+              {[0, 1, 2].map((i) => <SkeletonBusinessCard key={i} />)}
+            </SkeletonGroup>
+          )}
 
           {isError && !benefits && (
             <EmptyState

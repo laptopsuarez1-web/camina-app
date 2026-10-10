@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Share, ActivityIndicator, Image, AccessibilityInfo, Platform } from 'react-native';
+import { View, Text, ScrollView, Share, Image, AccessibilityInfo, Platform } from 'react-native';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -16,6 +16,8 @@ import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rul
 import { colors } from '@/theme/tokens';
 import { dayLabel, localDay, plural } from '@/lib/format';
 import { Glass } from '@/components/ui/Glass';
+import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { DarkHeader } from '@/components/ui/DarkHeader';
 import { CoinHalo } from '@/components/ui/CoinHalo';
 import { typo } from '@/theme/type';
@@ -127,7 +129,11 @@ export default function PuntosScreen() {
             <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 58, height: 58, borderRadius: 29 }} />
           </CoinHalo>
           <View>
-            <Text numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }}>{balanceError && balance === undefined ? '—' : (balance ?? 0).toLocaleString('es-BO')}</Text>
+            {balanceError && balance === undefined ? (
+              <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }}>—</Text>
+            ) : (
+              <AnimatedNumber id="puntos-saldo" value={balance ?? 0} ready={balance !== undefined} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }} />
+            )}
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
                 <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} {plural(earnedToday ?? 0, 'Punto', 'Puntos')} hoy</Text>
@@ -196,7 +202,11 @@ export default function PuntosScreen() {
 
       <Text accessibilityRole="header" className="px-5 mt-7 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Movimientos</Text>
       <View className="px-5 gap-2">
-        {isLoading && <ActivityIndicator color={colors.aqua} />}
+        {isLoading && (
+          <SkeletonGroup style={{ gap: 8 }}>
+            {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </SkeletonGroup>
+        )}
         {(movimientos ?? []).map((m) => (
           <Glass
             key={m.id}
