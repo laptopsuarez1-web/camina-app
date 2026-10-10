@@ -36,11 +36,12 @@ export function usePointsPulse(raw: number | undefined) {
   return { shown, scale };
 }
 
-export function PointsCounter({ shown, coinSize = 18, textStyle }: { shown: number; coinSize?: number; textStyle?: TextStyle }) {
+// `shown` null = el saldo no pudo cargarse: se muestra "—" en vez de un 0 que parece real.
+export function PointsCounter({ shown, coinSize = 18, textStyle }: { shown: number | null; coinSize?: number; textStyle?: TextStyle }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       <Image source={require('@/../assets/camina-coin.png')} style={{ width: coinSize, height: coinSize, borderRadius: coinSize / 2 }} />
-      <Text style={[textStyle, { fontVariant: ['tabular-nums'] }]}>{shown}</Text>
+      <Text style={[textStyle, { fontVariant: ['tabular-nums'] }]}>{shown === null ? '—' : shown.toLocaleString('es-BO')}</Text>
     </View>
   );
 }

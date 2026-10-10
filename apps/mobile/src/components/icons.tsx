@@ -137,12 +137,13 @@ type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
 // Ficha de vidrio teñido: el ícono va relleno en el color de la categoría, sobre un vidrio con borde del mismo tono.
 const GLYPH: Record<Tone, [string, string]> = {
   // [modo claro, modo oscuro]
-  aqua: ['#1B8F73', '#5BD9B5'],
-  mint: ['#1B8F73', '#5BD9B5'],
-  purple: ['#7A3FC4', '#B791F2'],
-  orange: ['#D2691F', '#FFA866'],
+  // Todos llegan a 3:1 (ícono) sobre el vidrio del fondo, también con el vidrio al máximo.
+  aqua: ['#1A876D', '#5BD9B5'],
+  mint: ['#1A876D', '#5BD9B5'],
+  purple: ['#7A3FC4', '#C9ADF5'],
+  orange: ['#BE5F1C', '#FFA866'],
   red: ['#D23B40', '#FF8388'],
-  gold: ['#B97D0A', '#F5C645'],
+  gold: ['#A57009', '#F5C645'],
 };
 
 export function IconBubble({
