@@ -7,7 +7,7 @@ import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
-import { dayLabel } from '@/lib/format';
+import { dayLabel, localDay, plural } from '@/lib/format';
 import { colors } from '@/theme/tokens';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
 
@@ -22,8 +22,8 @@ export function SectionHeader({
     <View className="flex-row items-center justify-between px-5 mb-3">
       <Text accessibilityRole="header" className="font-bold text-base text-text-light dark:text-text-dark">{title}</Text>
       {actionLabel && onAction ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} hitSlop={8} onPress={onAction}>
-          <Text className="text-aqua-deep dark:text-aqua text-xs font-semibold">{actionLabel}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }} onPress={onAction}>
+          <Text className="text-aqua-ink dark:text-aqua text-xs font-semibold">{actionLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -33,7 +33,7 @@ export function SectionHeader({
 function CoinPill({ value, prefix }: { value: number; prefix?: string }) {
   return (
     <View className="flex-row items-center bg-aqua-deep rounded-full self-start" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}>
-      <Image source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
+      <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
       <Text className="text-white text-[12px] font-bold">{prefix ? `${prefix} ` : ''}{value}</Text>
     </View>
   );
@@ -137,7 +137,7 @@ export function NearbyRow({
             <Pressable
               key={p.business.id}
               accessibilityRole="button"
-              accessibilityLabel={`${p.business.name}, ${p.business.category}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}`}
+              accessibilityLabel={`${p.business.name}, ${p.business.category}${featured ? ', destacado' : ''}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}, desde ${p.minCost} ${plural(p.minCost, 'Punto', 'Puntos')}`}
               onPress={() => router.push('/(tabs)/canjes')}
               style={{ width: 268 }}
             >
@@ -157,7 +157,7 @@ export function NearbyRow({
                     </Text>
                   </View>
                 </View>
-                <Text className="text-[14.5px] font-semibold text-aqua-deep dark:text-mint" style={{ marginTop: 14 }}>
+                <Text className="text-[14.5px] font-semibold text-aqua-ink dark:text-mint" style={{ marginTop: 14 }}>
                   {p.count} {p.count === 1 ? 'premio disponible' : 'premios disponibles'}
                 </Text>
                 <View style={{ marginTop: 10 }}>
@@ -190,7 +190,7 @@ const STATUS_LABEL: Record<RedemptionRow['status'], string> = {
 };
 
 function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; fg: string } {
-  if (s === 'confirmed') return dark ? { bg: 'rgba(127,237,196,0.16)', fg: colors.mint } : { bg: colors.light.aquaLight, fg: colors.aquaDeep };
+  if (s === 'confirmed') return dark ? { bg: 'rgba(127,237,196,0.16)', fg: colors.mint } : { bg: colors.light.aquaLight, fg: colors.aquaInk };
   if (s === 'pending') return dark ? { bg: 'rgba(242,152,92,0.18)', fg: '#FFB27A' } : { bg: colors.warnLight, fg: colors.warnDeep };
   return dark ? { bg: 'rgba(255,255,255,0.08)', fg: colors.dark.muted } : { bg: colors.light.purpleLight, fg: colors.light.muted };
 }
@@ -215,6 +215,8 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
         <Glass className="rounded-3xl mx-5 overflow-hidden">
           {list.map((r, i) => {
             const c = statusColors(r.status, dark);
+            // Día LOCAL del canje (no el de UTC); se recortan los decimales extra por si Hermes no los acepta.
+            const when = dayLabel(localDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
             return (
               <Pressable
                 key={r.id}
@@ -228,7 +230,7 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
                 <View className="flex-1 min-w-0">
                   <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{r.benefit?.name ?? 'Premio'}</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
-                    {r.business?.name ?? 'Comercio'} · {dayLabel(r.created_at.slice(0, 10))}
+                    {r.business?.name ?? 'Comercio'} · {when}
                   </Text>
                 </View>
                 <View className="rounded-full" style={{ backgroundColor: c.bg, paddingHorizontal: 10, paddingVertical: 4 }}>

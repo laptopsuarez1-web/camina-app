@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { routeForNotification } from '@/lib/push-notifications';
 
@@ -38,10 +39,11 @@ function timeAgo(iso: string) {
 
 export default function NotificacionesScreen() {
   const tabSpace = useTabBarSpace();
-  const { items, seenAt, markAllSeen } = useNotifications();
+  const { items, seenAt, markAllSeen, isLoading, isError, refetch } = useNotifications();
 
-  // Al salir de la pantalla, todo queda como leído (los puntitos se ven mientras estás adentro).
-  useEffect(() => () => { markAllSeen(); }, [markAllSeen]);
+  // Al salir de la pantalla (las pestañas no se desmontan, por eso se usa el foco), todo queda como leído:
+  // los avisos nuevos se ven resaltados mientras estás adentro.
+  useFocusEffect(useCallback(() => () => { markAllSeen(); }, [markAllSeen]));
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
@@ -50,19 +52,22 @@ export default function NotificacionesScreen() {
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
           </Pressable>
-          <Text className="text-white text-[17px] font-bold">Avisos</Text>
+          <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Avisos</Text>
         </View>
       </View>
 
       <View className="px-5 pt-5" style={{ gap: 10 }}>
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
+          // Si el destino es esta misma pantalla no hay a dónde ir: la fila queda solo para leer.
+          const dest = routeForNotification(n.data?.type);
+          const opens = dest !== '/(tabs)/notificaciones';
           return (
             <Pressable
               key={n.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${n.title}. ${n.body}`}
-              onPress={() => router.push(routeForNotification(n.data?.type) as never)}
+              accessibilityRole={opens ? 'button' : undefined}
+              accessibilityLabel={`${isNew ? 'Nueva. ' : ''}${n.title}. ${n.body}. ${timeAgo(n.created_at)}`}
+              onPress={opens ? () => router.push(dest as never) : undefined}
             >
             <Glass
               className="rounded-2xl p-4"
@@ -82,7 +87,15 @@ export default function NotificacionesScreen() {
             </Pressable>
           );
         })}
-        {items.length === 0 && (
+        {isError && items.length === 0 && (
+          <EmptyState
+            title="No pudimos cargar"
+            text="Revisá tu conexión e intentá de nuevo."
+            actionLabel="Reintentar"
+            onAction={() => refetch()}
+          />
+        )}
+        {!isLoading && !isError && items.length === 0 && (
           <View className="items-center py-14" style={{ gap: 10 }}>
             <IconBubble icon={Bell} tone="purple" size={64} />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>

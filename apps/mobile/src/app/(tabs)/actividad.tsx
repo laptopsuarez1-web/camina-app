@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Flame, IconBubble } from '@/components/icons';
@@ -12,6 +12,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { dayLabel } from '@/lib/format';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
@@ -35,7 +36,7 @@ function useStepsHistory() {
         .from('steps_daily')
         .select('day, steps, goal')
         .eq('user_id', userId!)
-        .gte('day', since.toISOString().slice(0, 10))
+        .gte('day', localKey(since))
         .order('day', { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -51,6 +52,8 @@ const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14'
 
 export default function ActividadScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
+  // Textos de color (estado de la meta, "Cerrar") con su par para oscuro.
+  const { accentText, warnText, purpleText } = useThemeColors();
   const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
@@ -179,7 +182,7 @@ export default function ActividadScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
+      <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
       <LinearGradient
         colors={['#2f1e5c', '#241748']}
@@ -204,6 +207,8 @@ export default function ActividadScreen() {
                 onPress={() => setRange(r)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: range === r }}
+                aria-pressed={range === r}
+                hitSlop={{ top: 9, bottom: 9 }}
                 className="rounded-full px-3 py-1.5"
                 style={{ backgroundColor: range === r ? colors.mint : 'transparent' }}
               >
@@ -268,7 +273,8 @@ export default function ActividadScreen() {
         )}
       </LinearGradient>
 
-      {dailyDiffVsCommunity !== null && (
+      {/* Con la comunidad en 0 o sin diferencia no hay nada que comparar: no se muestra "supera por 0 pasos". */}
+      {dailyDiffVsCommunity !== null && dailyDiffVsCommunity !== 0 && Number(communityAverage) > 0 && (
         <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-3">
           <IconBubble icon={Activity} tone="purple" size={38} />
           <Text className="flex-1 text-[13px] leading-5 text-text-light dark:text-text-dark">
@@ -298,7 +304,7 @@ export default function ActividadScreen() {
         </Glass>
       )}
 
-      <Text className="font-bold text-base mt-1 mb-2.5 text-text-light dark:text-text-dark">Hoy</Text>
+      <Text accessibilityRole="header" className="font-bold text-base mt-1 mb-2.5 text-text-light dark:text-text-dark">Hoy</Text>
       <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row mb-3">
           {[
@@ -323,7 +329,7 @@ export default function ActividadScreen() {
       </Glass>
 
       <Glass className="rounded-3xl p-4 mb-4">
-        <Text className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
+        <Text accessibilityRole="header" className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
           {monthName[0].toUpperCase() + monthName.slice(1)} — días con objetivo cumplido
         </Text>
         <View className="flex-row justify-between mb-1.5">
@@ -340,8 +346,9 @@ export default function ActividadScreen() {
                 <Pressable
                   key={cell.key}
                   accessibilityRole="button"
-                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'partial' ? 'meta no cumplida' : cell.state === 'miss' ? 'sin pasos' : 'sin datos'}. Ver detalle`}
+                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'partial' ? 'meta no cumplida' : cell.state === 'miss' ? 'sin pasos' : cell.key === todayKey ? 'hoy, en curso' : 'sin datos'}. Ver detalle`}
                   disabled={cell.key > todayKey}
+                  hitSlop={{ top: 3, bottom: 3, left: 6, right: 6 }}
                   onPress={() => setSelected(cell.key)}
                   className="w-8 h-8 rounded-md items-center justify-center"
                   style={{
@@ -370,7 +377,7 @@ export default function ActividadScreen() {
         <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
       </Glass>
 
-      <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Toda tu actividad</Text>
+      <Text accessibilityRole="header" className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Toda tu actividad</Text>
       <View className="gap-2.5">
         {fullHistory.map((h) => {
           const met = h.steps >= (h.goal ? Math.max(h.goal, MIN_DAILY_GOAL) : goal);
@@ -389,7 +396,7 @@ export default function ActividadScreen() {
               </View>
               <Text
                 className="text-[12px] font-bold"
-                style={{ color: met ? colors.aquaDeep : colors.warnDeep }}
+                style={{ color: met ? accentText : warnText }}
               >
                 {met ? 'Meta cumplida' : 'Meta no cumplida'}
               </Text>
@@ -404,21 +411,23 @@ export default function ActividadScreen() {
         )}
       </View>
       <Modal visible={selected != null} transparent animationType="fade" onRequestClose={() => setSelected(null)}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar detalle" onPress={() => setSelected(null)} className="flex-1 items-center justify-center px-8" style={{ backgroundColor: 'rgba(20,12,36,0.55)' }}>
+        <View className="flex-1 items-center justify-center px-8" style={{ backgroundColor: 'rgba(20,12,36,0.55)' }}>
+          {/* El fondo que cierra el detalle es hermano de la tarjeta (no su padre): así el lector de pantalla llega al contenido y al botón Cerrar. */}
+          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar detalle" onPress={() => setSelected(null)} style={StyleSheet.absoluteFill} />
           {selected != null && (() => {
             const steps = byDay.get(selected) ?? 0;
             const g = goalFor(selected);
             const met = steps >= g;
             const dayKm = (steps * STEP_LENGTH_METERS) / 1000;
             return (
-              <Pressable onPress={() => undefined} className="w-full rounded-3xl p-5 bg-card-light dark:bg-card-dark" style={{ maxWidth: 360 }}>
+              <View className="w-full rounded-3xl p-5 bg-card-light dark:bg-card-dark" style={{ maxWidth: 360 }}>
                 <Text accessibilityRole="header" className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{selected === todayKey ? 'Hoy' : dayLabel(selected)}</Text>
                 <Text className="text-[30px] font-extrabold mt-2 text-text-light dark:text-text-dark">{steps.toLocaleString('es-BO')}</Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3">pasos · {dayKm.toFixed(1).replace('.', ',')} km · {Math.round(steps * KCAL_PER_STEP)} kcal</Text>
                 <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
                   <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
                 </View>
-                <Text className="text-[13px] font-semibold" style={{ color: met ? colors.aquaDeep : colors.warnDeep }}>
+                <Text className="text-[13px] font-semibold" style={{ color: met ? accentText : warnText }}>
                   {met ? 'Meta cumplida' : steps > 0 ? 'No llegaste a la meta' : 'Sin pasos ese día'}
                 </Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
@@ -428,12 +437,12 @@ export default function ActividadScreen() {
                   </Text>
                 )}
                 <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">
-                  <Text className="font-semibold text-[13.5px]" style={{ color: colors.purple }}>Cerrar</Text>
+                  <Text className="font-semibold text-[13.5px]" style={{ color: purpleText }}>Cerrar</Text>
                 </Pressable>
-              </Pressable>
+              </View>
             );
           })()}
-        </Pressable>
+        </View>
       </Modal>
       </ScrollView>
     </View>

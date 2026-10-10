@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MIN_DAILY_GOAL } from '@/constants/business-rules';
+import { localDay } from '@/lib/format';
 
 // Racha real calculada desde steps_daily: días consecutivos (terminando hoy
 // o ayer, para no cortar la racha mientras el día de hoy todavía está en
@@ -20,7 +21,7 @@ export function useStreak() {
         .from('steps_daily')
         .select('day, steps, goal')
         .eq('user_id', userId!)
-        .gte('day', since.toISOString().slice(0, 10))
+        .gte('day', localDay(since))
         .order('day', { ascending: false });
       if (error) throw error;
 

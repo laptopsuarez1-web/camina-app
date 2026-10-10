@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -24,13 +24,15 @@ import { useGlobalRankingOpen } from '@/hooks/useUserCount';
 import { useMyGroupRanking } from '@/hooks/useGroupRanking';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
+import { plural } from '@/lib/format';
+import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
-// Color de los Puntos del día: el aro fino, el chip "+N Puntos" y el "faltan …" usan este mismo verde.
+// Color de los Puntos del día: el aro fino, el chip "+N Puntos" y "Tope de hoy" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
 
 function greeting(name: string) {
@@ -45,6 +47,7 @@ function greeting(name: string) {
 function LinkRow({
   icon, tone, title, value, onPress, last,
 }: { icon: (p: IconProps) => React.ReactElement; tone: 'aqua' | 'purple' | 'gold'; title: string; value: string; onPress: () => void; last?: boolean }) {
+  const isDark = useColorScheme().colorScheme === 'dark';
   return (
     <Pressable
       accessibilityRole="button"
@@ -58,7 +61,7 @@ function LinkRow({
       </View>
       <View className="flex-row items-center gap-1.5">
         <Text className="text-xs text-muted-light dark:text-muted-dark">{value}</Text>
-        <ChevronRight size={14} color={colors.light.muted} />
+        <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
       </View>
     </Pressable>
   );
@@ -85,7 +88,7 @@ export default function HomeScreen() {
     await Promise.all([refreshSteps(), queryClient.invalidateQueries()]);
     setRefreshing(false);
   }
-  const { data: balance } = usePointsBalance();
+  const { data: balance, isError: balanceError } = usePointsBalance();
   const pointsPulse = usePointsPulse(balance);
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: redemptions, isLoading: redemptionsLoading } = useMyRedemptions();
@@ -101,16 +104,33 @@ export default function HomeScreen() {
   const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
+  // Reintento del envío de pasos: valor que se reintenta, cuántas veces y el temporizador pendiente.
+  const retryFor = useRef({ steps: 0, tries: 0 });
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [retryTick, setRetryTick] = useState(0);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
 
   useEffect(() => {
     if (live && steps > 0 && steps !== lastSynced.current) {
       lastSynced.current = steps;
-      syncSteps.mutate(steps);
+      if (retryFor.current.steps !== steps) retryFor.current = { steps, tries: 0 };
+      syncSteps.mutate(steps, {
+        onError: (error) => {
+          // Ese valor no quedó sincronizado: se reintenta con la próxima lectura o, si los pasos no cambian, a los ~15 s (hasta 3 veces).
+          if (lastSynced.current === steps) lastSynced.current = 0;
+          if (/No autorizado|Fecha de sincronización inválida/.test(error.message)) return;
+          if (retryFor.current.steps !== steps || retryFor.current.tries >= 3) return;
+          retryFor.current.tries += 1;
+          if (retryTimer.current) clearTimeout(retryTimer.current);
+          retryTimer.current = setTimeout(() => setRetryTick((t) => t + 1), 15_000);
+        },
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [steps, live]);
+  }, [steps, live, retryTick]);
+  // Al salir de Inicio no queda ningún reintento pendiente.
+  useEffect(() => () => { if (retryTimer.current) clearTimeout(retryTimer.current); }, []);
 
   const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const pct = goal > 0 ? steps / goal : 0;
@@ -159,15 +179,34 @@ export default function HomeScreen() {
   const chipScale = chipPop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 1.22, 1] });
   const stepsText = steps.toLocaleString('es-BO');
   const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
-  const myGroup = (groups ?? []).find((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
+  // Los grupos de la persona: se puede estar en más de uno.
+  const myGroups = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
+  const myGroup = myGroups[0];
+  const groupsValue = myGroups.length === 0 ? 'Ninguno' : myGroups.length === 1 ? '1 activo' : `${myGroups.length} activos`;
 
   const goalDraft = parseInt(goalInput, 10) || 0;
   const goalHint =
     goalDraft < MIN_DAILY_GOAL
       ? `La meta mínima es ${MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos`
       : goalDraft >= GOOD_DAILY_GOAL
-        ? '¡Muy bien! Una meta que suma 💪'
+        ? '¡Muy bien! Una meta que suma'
         : '¡Vos podés más!';
+  // El emoji se ve pero no se lee: el aviso accesible es solo el texto.
+  const goalHintEmoji = goalDraft >= MIN_DAILY_GOAL && goalDraft >= GOOD_DAILY_GOAL ? ' 💪' : '';
+  // iOS ignora accessibilityLiveRegion: cuando el aviso cambia mientras se edita la meta, se anuncia a mano.
+  const lastGoalHint = useRef('');
+  useEffect(() => {
+    const prev = lastGoalHint.current;
+    lastGoalHint.current = editingGoal ? goalHint : '';
+    if (editingGoal && prev && prev !== goalHint && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(goalHint);
+  }, [editingGoal, goalHint]);
+
+  // Aviso de Puntos por vencer: el mismo texto se ve y se lee.
+  const expiringMsg =
+    expiring && expiring.amount > 0
+      ? `${expiring.amount} ${plural(expiring.amount, 'Punto vence', 'Puntos vencen')} ${expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}`
+      : '';
+  const expiringHint = expiring?.amount === 1 ? 'Canjealo antes de perderlo' : 'Canjealos antes de perderlos';
 
   async function saveGoal() {
     const n = parseInt(goalInput, 10);
@@ -197,13 +236,13 @@ export default function HomeScreen() {
             <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Tus Puntos, ver detalle"
+              accessibilityLabel={balanceError && balance === undefined ? 'Puntos, ver detalle' : `${balance ?? 0} Puntos, ver detalle`}
               hitSlop={6}
               onPress={() => router.push('/(tabs)/puntos')}
               className="flex-row items-center gap-1.5 bg-white/10 rounded-full pl-1.5 pr-3"
               style={{ height: 32 }}
             >
-              <PointsCounter shown={pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
+              <PointsCounter shown={balanceError && balance === undefined ? null : pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
             </Pressable>
             </Animated.View>
             {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
@@ -234,11 +273,11 @@ export default function HomeScreen() {
                 onPress={() => router.push('/(tabs)/perfil')}
                 className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
               >
-                {profile?.photo_url ? (
-                  <Image source={{ uri: profile.photo_url }} style={{ width: '100%', height: '100%' }} />
-                ) : (
-                  <Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
-                )}
+                <AvatarImage
+                  uri={profile?.photo_url}
+                  style={{ width: '100%', height: '100%' }}
+                  fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
+                />
               </Pressable>
             </View>
           </View>
@@ -291,8 +330,8 @@ export default function HomeScreen() {
                   borderRadius: 999, backgroundColor: 'rgba(44,255,174,0.15)', transform: [{ scale: chipScale }],
                 }}
               >
-                <Image source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
-                <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} Puntos</Text>
+                <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
+                <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} {plural(pointsToday, 'Punto', 'Puntos')}</Text>
               </Animated.View>
               {pointsToday >= DAILY_POINTS_CAP && (
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>Tope de hoy</Text>
@@ -326,6 +365,7 @@ export default function HomeScreen() {
           {editingGoal ? (
             <View className="flex-row items-center gap-1.5">
               <TextInput
+                accessibilityLabel="Meta diaria de pasos"
                 value={goalInput}
                 onChangeText={(v) => setGoalInput(v.replace(/\D/g, ''))}
                 keyboardType="number-pad"
@@ -342,12 +382,15 @@ export default function HomeScreen() {
                   fontSize: 12,
                 }}
               />
-              <Pressable onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
+              <Pressable accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
                 <Text className="text-mint-dark font-bold text-[12px]">OK</Text>
               </Pressable>
             </View>
           ) : (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Cambiar meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
               onPress={() => {
                 setGoalInput(String(goal));
                 setEditingGoal(true);
@@ -355,12 +398,14 @@ export default function HomeScreen() {
               className="rounded-full"
               style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
-              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal} ✎</Text>
+              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal.toLocaleString('es-BO')} ✎</Text>
             </Pressable>
           )}
         </View>
         {editingGoal && (
           <Text
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={goalHint}
             style={{
               color: goalDraft < MIN_DAILY_GOAL ? '#FFB27A' : colors.mint,
               fontSize: 12,
@@ -369,14 +414,14 @@ export default function HomeScreen() {
               marginTop: 8,
             }}
           >
-            {goalHint}
+            {goalHint}{goalHintEmoji}
           </Text>
         )}
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
             <View className="flex-row items-center" style={{ gap: 12, marginBottom: 10 }}>
-              <Image source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
+              <Image accessible={false} source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
               <View className="flex-1">
                 <Text className="text-white font-bold text-[14px]">
                   {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'El podómetro no funciona sin este permiso'}
@@ -391,6 +436,7 @@ export default function HomeScreen() {
               </View>
             </View>
             <Pressable
+              accessibilityRole="button"
               onPress={() => {
                 if (healthConnectStatus === 'unavailable') {
                   Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() =>
@@ -413,7 +459,7 @@ export default function HomeScreen() {
           <Pressable accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
             <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
             <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
-              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Activalo en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina &gt; Pasos. Toca acá para abrir los ajustes.
+              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Tocá acá y activá Pasos en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina.
             </Text>
           </Pressable>
         ) : available === false ? (
@@ -427,20 +473,20 @@ export default function HomeScreen() {
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
           <Pressable
             accessibilityRole="button"
-              accessibilityLabel="Tus Puntos, ver detalle"
-              hitSlop={6}
-              onPress={() => router.push('/(tabs)/puntos')}
+            accessibilityLabel={`${expiringMsg}. ${expiringHint}. Ver detalle`}
+            hitSlop={6}
+            onPress={() => router.push('/(tabs)/puntos')}
             className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
             style={{ gap: 10, backgroundColor: isDark ? 'rgba(245,198,69,0.14)' : '#FFF3D1', borderWidth: 1, borderColor: isDark ? 'rgba(245,198,69,0.35)' : '#F3D9A0' }}
           >
-            <Image source={require('@/../assets/camina-coin.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
+            <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
             <View className="flex-1">
               <Text className="text-[13px] font-bold" style={{ color: isDark ? '#F5D77A' : '#7A5206' }}>
-                {expiring.amount} {expiring.amount === 1 ? 'punto vence' : 'puntos vencen'} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} día${expiring.days === 1 ? '' : 's'}`}
+                {expiringMsg}
               </Text>
-              <Text className="text-[12px]" style={{ color: isDark ? '#E0BC63' : '#9A6A08' }}>Canjealos antes de perderlos</Text>
+              <Text className="text-[12px]" style={{ color: isDark ? '#E0BC63' : colors.goldInk }}>{expiringHint}</Text>
             </View>
-            <ChevronRight size={16} color="#9A6A08" />
+            <ChevronRight size={16} color={isDark ? '#E0BC63' : '#9A6A08'} />
           </Pressable>
         ) : null}
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
@@ -458,7 +504,7 @@ export default function HomeScreen() {
               icon={Trophy}
               tone="gold"
               title="Ranking semanal"
-              value={profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}°` : 'Fuera del top 20'}
+              value={profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}.º` : 'Fuera del top 20'}
               onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
             />
           ) : myGroup ? (
@@ -466,7 +512,7 @@ export default function HomeScreen() {
               icon={Trophy}
               tone="gold"
               title="Ranking de tu grupo"
-              value={groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}°` : 'Ver'}
+              value={groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}.º` : 'Ver'}
               onPress={() => router.push('/(tabs)/grupos')}
             />
           ) : null}
@@ -474,7 +520,7 @@ export default function HomeScreen() {
             icon={Users}
             tone="purple"
             title="Tus grupos"
-            value={myGroup ? '1 activo' : 'Ninguno'}
+            value={groupsValue}
             onPress={() => router.push('/(tabs)/grupos')}
             last
           />
@@ -496,7 +542,7 @@ export default function HomeScreen() {
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark">Gráfico, calendario e historial</Text>
               </View>
             </View>
-            <ChevronRight size={16} color={colors.light.muted} />
+            <ChevronRight size={16} color={isDark ? colors.dark.muted : colors.light.muted} />
           </Glass>
         </Pressable>
 

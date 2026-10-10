@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image, AccessibilityInfo, Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks
 import { referralLink } from '@/constants/sharing';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
-import { dayLabel } from '@/lib/format';
+import { dayLabel, localDay, plural } from '@/lib/format';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
@@ -25,7 +25,7 @@ function useMovimientos() {
     queryFn: async () => {
       const since = new Date();
       since.setDate(since.getDate() - 30);
-      const sinceISO = since.toISOString().slice(0, 10);
+      const sinceISO = localDay(since);
 
       const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }] = await Promise.all([
         supabase
@@ -63,7 +63,7 @@ function useMovimientos() {
       };
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
-        day: l.ref_day ?? l.earned_at.slice(0, 10),
+        day: l.ref_day ?? localDay(new Date(l.earned_at)),
         reason: l.reason as string,
         title: kindOf(l.reason, l.note, l.amount),
         subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,
@@ -80,10 +80,10 @@ function useMovimientos() {
 export default function PuntosScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
-  const { data: balance } = usePointsBalance();
+  const { data: balance, isError: balanceError } = usePointsBalance();
   const { data: earnedToday } = usePointsToday();
   const { data: expiring } = usePointsExpiringSoon();
-  const { data: movimientos, isLoading } = useMovimientos();
+  const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
   const { data: streak } = useStreak();
   const { data: retos } = useRetos();
   const retosListos = (retos ?? []).filter((r) => r.claimable).length;
@@ -95,6 +95,8 @@ export default function PuntosScreen() {
     if (!link) return;
     await Clipboard.setStringAsync(link);
     setCopied(true);
+    // iOS ignora accessibilityLiveRegion: el aviso de "copiado" se anuncia a mano.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Link copiado');
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -113,16 +115,16 @@ export default function PuntosScreen() {
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
           </Pressable>
-          <Text className="text-white text-[17px] font-bold">Tus Puntos</Text>
+          <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Tus Puntos</Text>
         </View>
 
         <View className="flex-row items-center gap-3">
-          <Image source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
+          <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
           <View>
-            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balance ?? 0}</Text>
+            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balanceError && balance === undefined ? '—' : (balance ?? 0).toLocaleString('es-BO')}</Text>
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
-                <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} Puntos hoy</Text>
+                <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} {plural(earnedToday ?? 0, 'Punto', 'Puntos')} hoy</Text>
               </View>
             )}
           </View>
@@ -130,7 +132,7 @@ export default function PuntosScreen() {
 
         {expiring && expiring.days <= 30 && (
           <Text className="text-auth-muted text-xs mt-3">
-            {expiring.amount} puntos vencen en {expiring.days} día{expiring.days === 1 ? '' : 's'}
+            {expiring.amount} {plural(expiring.amount, 'Punto vence', 'Puntos vencen')} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}
           </Text>
         )}
       </View>
@@ -144,6 +146,7 @@ export default function PuntosScreen() {
           </View>
         </Glass>
         <Pressable
+          accessibilityRole="button"
           onPress={() => router.push('/(tabs)/eventos')}
           className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
         >
@@ -166,20 +169,25 @@ export default function PuntosScreen() {
           Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
         <Pressable
+          accessibilityRole="button"
           onPress={shareLink}
           className="bg-purple-deep rounded-xl py-3 items-center flex-row justify-center gap-2"
         >
           <Share2 size={15} color="#fff" />
           <Text className="text-white font-bold text-[13px]">Compartir link</Text>
         </Pressable>
-        <Pressable onPress={copyLink} className="items-center py-2.5">
-          <Text className="text-aqua-deep dark:text-aqua font-semibold text-[12.5px]">
+        <Pressable accessibilityRole="button" onPress={copyLink} className="items-center py-2.5">
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={copied ? 'Link copiado' : 'Copiar link'}
+            className="text-aqua-ink dark:text-aqua font-semibold text-[12.5px]"
+          >
             {copied ? 'Copiado ✓' : 'Copiar link'}
           </Text>
         </Pressable>
       </View>
 
-      <Text className="font-bold text-base px-5 mt-6 mb-3 text-text-light dark:text-text-dark">Movimientos</Text>
+      <Text accessibilityRole="header" className="font-bold text-base px-5 mt-6 mb-3 text-text-light dark:text-text-dark">Movimientos</Text>
       <View className="px-5 gap-2">
         {isLoading && <ActivityIndicator color={colors.aqua} />}
         {(movimientos ?? []).map((m) => (
@@ -207,12 +215,20 @@ export default function PuntosScreen() {
               )}
             </View>
             <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
-              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+              <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{m.amount > 0 ? '+' : '−'}{Math.abs(m.amount)}</Text>
             </View>
           </Glass>
         ))}
-        {!isLoading && (movimientos ?? []).length === 0 && (
+        {isError && !movimientos && (
+          <EmptyState
+            title="No pudimos cargar"
+            text="Revisá tu conexión e intentá de nuevo."
+            actionLabel="Reintentar"
+            onAction={() => refetch()}
+          />
+        )}
+        {!isLoading && !isError && (movimientos ?? []).length === 0 && (
           <EmptyState
             title="Tus puntos van a aparecer acá"
             text="Cada 1.000 pasos que camines sumás un punto. También ganás por retos, invitando amigos y desafíos de grupo."

@@ -162,7 +162,7 @@ test('un error de la base se propaga (la pantalla muestra su estado de error)', 
   });
 });
 
-test('BUG conocido: el filtro de fecha usa el día UTC; desde las 20:00 en La Paz pide un día de menos', { todo: 'hooks/useStreak.ts:23 (since.toISOString().slice(0, 10)); usar el día local como el resto del hook' }, async () => {
+test('el filtro de fecha usa el día local: desde las 20:00 en La Paz sigue pidiendo desde el día correcto', async () => {
   // 02:30 UTC del 3/10 = 22:30 del 2/10 en La Paz. Hace 60 días (local) es el 3/8.
   await atTime('2026-10-03T02:30:00Z', LA_PAZ, async () => {
     seed([]);
