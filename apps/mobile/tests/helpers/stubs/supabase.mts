@@ -92,7 +92,7 @@ export const supabase = {
   async rpc(name: string, args?: any) {
     db.rpcLog.push({ name, args });
     const handler = db.rpc[name];
-    if (!handler) return { data: null, error: { message: `rpc ${name} no programada` } };
+    if (!handler) return { data: null, error: { code: 'PGRST202', message: `Could not find the function public.${name} in the schema cache` } };
     const out = typeof handler === 'function' ? handler(args) : handler;
     if (out && typeof out === 'object' && ('data' in out || 'error' in out)) return { data: out.data ?? null, error: out.error ?? null };
     return { data: out, error: null };

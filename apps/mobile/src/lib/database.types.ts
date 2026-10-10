@@ -210,6 +210,10 @@ export type Database = {
       cancel_expired_redemption: { Args: { p_redemption_id: string }; Returns: Redemption };
       capture_referral: { Args: { p_referrer_id: string }; Returns: void };
       group_member_count: { Args: { p_group_id: string }; Returns: number };
+      group_members_steps: {
+        Args: { p_since?: string };
+        Returns: { user_id: string; day: string; steps: number }[];
+      };
       global_weekly_ranking: {
         Args: { p_limit?: number };
         Returns: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }[];

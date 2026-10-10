@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { localDay } from '@/lib/format';
+import { fetchMemberSteps } from '@/lib/group-steps';
 
 function startOfWeekLocal() {
   const d = new Date();
@@ -28,16 +29,15 @@ export function useMyGroupsWeek(groups: { id: string; group_members: { user_id: 
     queryFn: async () => {
       const monday = localDay(startOfWeekLocal());
       const today = localDay();
-      const [{ data: steps, error: stepsError }, { data: profiles, error: profilesError }] = await Promise.all([
-        supabase.from('steps_daily').select('user_id, steps, day').in('user_id', ids).gte('day', monday),
+      const [steps, { data: profiles, error: profilesError }] = await Promise.all([
+        fetchMemberSteps(ids, monday),
         supabase.from('public_profiles').select('id, full_name, photo_url').in('id', ids),
       ]);
-      if (stepsError) throw stepsError;
       if (profilesError) throw profilesError;
 
       const week = new Map<string, number>();
       const walkedToday = new Set<string>();
-      for (const row of steps ?? []) {
+      for (const row of steps) {
         week.set(row.user_id, (week.get(row.user_id) ?? 0) + row.steps);
         if (row.day === today && row.steps > 0) walkedToday.add(row.user_id);
       }

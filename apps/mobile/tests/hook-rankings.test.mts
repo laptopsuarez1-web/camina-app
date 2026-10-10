@@ -188,3 +188,37 @@ test('BUG conocido (dispositivos al este de UTC): la semana arranca el domingo p
     assert.equal(gte, '2026-09-28');
   });
 });
+
+// ---------------------------------------------------------------- pasos de los integrantes (migración 0051, función group_members_steps)
+test('pasos de grupo: con la función 0051 ven los pasos de los demás, y solo de gente del grupo', async () => {
+  await atTime('2026-10-03T15:00:00Z', LA_PAZ, async () => {
+    db.rpc.group_members_steps = () => [
+      { user_id: USER, day: '2026-10-01', steps: 3000 },
+      { user_id: 'b', day: '2026-10-02', steps: 7000 },
+      { user_id: 'ajena', day: '2026-10-02', steps: 50000 }, // de otro grupo en común: no entra al ranking
+    ];
+    db.tables.public_profiles = [{ id: 'b', full_name: 'Beto' }];
+    const r = await runGroupRanking([GROUP]).queryFn();
+    assert.deepEqual(r.ranked.map((x: any) => [x.name, x.total]).slice(0, 2), [['Beto', 7000], ['Caminante', 3000]]);
+    assert.deepEqual(db.rpcLog[0], { name: 'group_members_steps', args: { p_since: '2026-09-28' } });
+    assert.equal(db.log.some((l) => l.table === 'steps_daily'), false, 'no lee steps_daily si la función existe');
+  });
+});
+
+test('pasos de grupo: si la base todavía no tiene la función 0051, sigue leyendo steps_daily como antes', async () => {
+  await atTime('2026-10-03T15:00:00Z', LA_PAZ, async () => {
+    db.tables.steps_daily = [{ user_id: USER, day: '2026-10-01', steps: 3000 }];
+    db.tables.public_profiles = [];
+    const r = await runGroupRanking([GROUP]).queryFn();
+    assert.equal(r.ranked.find((x: any) => x.id === USER).total, 3000);
+    assert.ok(db.log.some((l) => l.table === 'steps_daily'));
+  });
+});
+
+test('pasos de grupo: un error que no es "falta la función" (sin red) se propaga y no se esconde con ceros', async () => {
+  await atTime('2026-10-03T15:00:00Z', LA_PAZ, async () => {
+    db.rpc.group_members_steps = () => ({ error: { code: '08006', message: 'Failed to fetch' } });
+    await assert.rejects(() => runGroupRanking([GROUP]).queryFn(), (e: any) => e.message === 'Failed to fetch');
+    assert.equal(db.log.some((l) => l.table === 'steps_daily'), false);
+  });
+});
