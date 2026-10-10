@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
@@ -14,7 +14,9 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { BarrioPicker } from '@/components/BarrioPicker';
 import { usePlaces } from '@/hooks/usePlaces';
 import { emailRedirectUrl } from '@/lib/auth-links';
+import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
+import { AvatarImage } from '@/components/ui/AvatarImage';
 
 const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
   Café: Coffee,
@@ -123,9 +125,12 @@ export default function EditarPerfilScreen() {
       }
       if (error) throw error;
       await useAuthStore.getState().refreshProfile();
+      // La pantalla sigue montada: sin esto el próximo guardado volvería a subir la misma foto.
+      setPhotoUri(null);
+      setPhotoB64(null);
       router.back();
     } catch (e) {
-      Alert.alert('No pudimos guardar', e instanceof Error ? e.message : 'Intentá de nuevo.');
+      Alert.alert('No pudimos guardar', friendlyError(e, 'Intentá de nuevo.'));
     } finally {
       setSaving(false);
     }
@@ -159,7 +164,7 @@ export default function EditarPerfilScreen() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setSavingPassword(false);
     if (error) {
-      Alert.alert('No pudimos cambiarla', error.message);
+      Alert.alert('No pudimos cambiarla', friendlyError(error, 'Intentá de nuevo.'));
       return;
     }
     setCurrentPassword('');
@@ -175,7 +180,7 @@ export default function EditarPerfilScreen() {
     if (!email) return;
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: emailRedirectUrl() });
     if (error) {
-      Alert.alert('No pudimos mandar el correo', error.message);
+      Alert.alert('No pudimos mandar el correo', friendlyError(error, 'Intentá de nuevo.'));
       return;
     }
     setRecoverySent(true);
@@ -201,7 +206,7 @@ export default function EditarPerfilScreen() {
       return;
     }
     await supabase.auth.signOut();
-    router.replace('/(auth)/welcome');
+    router.replace('/(auth)/welcome?modo=login');
   }
 
   const photo = photoUri ?? profile?.photo_url ?? null;
@@ -222,13 +227,17 @@ export default function EditarPerfilScreen() {
           <Pressable accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={pickPhoto} className="self-center mb-5 items-center">
             <View className="w-24 h-24 rounded-full bg-mint items-center justify-center">
               <View className="w-full h-full rounded-full overflow-hidden items-center justify-center">
-                {photo ? <Image source={{ uri: photo }} className="w-full h-full" /> : <Text className="font-bold text-mint-dark text-3xl">{(nameInput || 'C')[0]?.toUpperCase()}</Text>}
+                <AvatarImage
+                  uri={photo}
+                  style={{ width: '100%', height: '100%' }}
+                  fallback={<Text className="font-bold text-mint-dark text-3xl">{(nameInput || 'C')[0]?.toUpperCase()}</Text>}
+                />
               </View>
               <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-aqua-deep items-center justify-center border-2 border-bg-light dark:border-bg-dark">
                 <Camera size={15} color="#fff" weight="fill" />
               </View>
             </View>
-            <Text className="text-[12.5px] font-semibold mt-2" style={{ color: colors.purple }}>Cambiar foto</Text>
+            <Text className="text-[12.5px] font-semibold mt-2 text-purple-ink dark:text-purple-soft">Cambiar foto</Text>
           </Pressable>
 
           <Glass className="rounded-3xl p-4 mb-4">
@@ -248,10 +257,11 @@ export default function EditarPerfilScreen() {
                   key={c}
                   accessibilityRole="button"
                   accessibilityState={{ selected: c === city }}
+                  aria-pressed={c === city}
                   onPress={() => { if (c !== city) { setCity(c); setZone(null); } }}
                   className={`rounded-full px-3.5 py-2 mr-2 mb-2 border ${c === city ? 'bg-mint border-mint' : 'border-line-light dark:border-line-dark'}`}
                 >
-                  <Text style={{ color: c === city ? '#1E8F6F' : isDark ? colors.dark.muted : colors.light.muted, fontWeight: c === city ? '700' : '500', fontSize: 13 }}>{c}</Text>
+                  <Text style={{ color: c === city ? colors.mintInk : isDark ? colors.dark.muted : colors.light.muted, fontWeight: c === city ? '700' : '500', fontSize: 13 }}>{c}</Text>
                 </Pressable>
               ))}
             </View>
@@ -278,12 +288,14 @@ export default function EditarPerfilScreen() {
                     key={name}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: active }}
+                    aria-checked={active}
+                    hitSlop={4}
                     onPress={() => setInterests((cur) => (cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]))}
                     className={`flex-row items-center gap-1.5 rounded-full pl-2.5 pr-3.5 py-2 border ${active ? 'bg-aqua-light-light dark:bg-aqua-light-dark' : 'border-line-light dark:border-line-dark'}`}
                     style={active ? { borderColor: colors.aqua } : undefined}
                   >
                     <Icon size={16} color={active ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? colors.dark.muted : colors.light.muted} weight={active ? 'fill' : 'regular'} />
-                    <Text className={`text-xs font-semibold ${active ? 'text-aqua-deep dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}>{name}</Text>
+                    <Text className={`text-xs font-semibold ${active ? 'text-aqua-ink dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}>{name}</Text>
                   </Pressable>
                 );
               })}
@@ -309,7 +321,7 @@ export default function EditarPerfilScreen() {
                   <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
                   <PasswordField label="Repetí la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
                   <Pressable accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
-                    <Text className="text-aqua-deep dark:text-mint text-[13px] font-semibold underline">
+                    <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">
                       {recoverySent ? `Te mandamos un link a ${email}. Abrilo para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
                     </Text>
                   </Pressable>
@@ -332,11 +344,11 @@ export default function EditarPerfilScreen() {
 
           <Pressable accessibilityRole="button" onPress={confirmDelete} disabled={deleting} className="flex-row items-center justify-center gap-2 py-4">
             {deleting ? (
-              <ActivityIndicator color={colors.warn} size="small" />
+              <ActivityIndicator color={isDark ? colors.warn : colors.warnDeep} size="small" />
             ) : (
               <>
-                <Trash2 size={15} color={colors.warn} />
-                <Text className="text-warn font-semibold">Eliminar cuenta</Text>
+                <Trash2 size={15} color={isDark ? colors.warn : colors.warnDeep} />
+                <Text className="text-warn-deep dark:text-warn font-semibold">Eliminar cuenta</Text>
               </>
             )}
           </Pressable>

@@ -63,16 +63,19 @@ export function useNotificationTaps(enabled: boolean) {
 export async function unregisterPushToken(): Promise<void> {
   const token = currentToken;
   registered = false;
-  currentToken = null;
   if (!token) return;
   try {
-    await supabase.from('push_tokens').delete().eq('token', token);
+    // supabase-js no lanza: devuelve { error }. Si falló, se guarda el token para reintentar si vuelve a cerrar sesión.
+    const { error } = await supabase.from('push_tokens').delete().eq('token', token);
+    if (!error) currentToken = null;
   } catch {
     // Sin conexión: el token se reasigna cuando otra cuenta inicie sesión en este teléfono.
   }
 }
 
-export async function registerForPushNotificationsAsync(): Promise<void> {
+// `userInitiated`: el pedido viene de un toque de la persona (botón Activar de Perfil), así que
+// se saltea la guarda de "ya preguntamos en esta sesión". La llamada automática del layout no lo usa.
+export async function registerForPushNotificationsAsync(opts?: { userInitiated?: boolean }): Promise<void> {
   if (registered) return;
 
   if (Platform.OS === 'android') {
@@ -86,7 +89,7 @@ export async function registerForPushNotificationsAsync(): Promise<void> {
   const existing = await Notifications.getPermissionsAsync();
   let status = existing.status;
   // Si ya dijo que no (y el sistema no deja volver a preguntar), no insistimos: se reactiva desde Perfil.
-  if (status !== 'granted' && (askedThisSession || (existing.status === 'denied' && !existing.canAskAgain))) return;
+  if (status !== 'granted' && ((!opts?.userInitiated && askedThisSession) || (existing.status === 'denied' && !existing.canAskAgain))) return;
   if (status !== 'granted') {
     askedThisSession = true;
     const requested = await Notifications.requestPermissionsAsync({

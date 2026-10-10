@@ -15,6 +15,9 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
 import { GlassSlider } from '@/components/ui/GlassSlider';
 import { Glass } from '@/components/ui/Glass';
+import { AvatarImage } from '@/components/ui/AvatarImage';
+import { plural } from '@/lib/format';
+import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 
@@ -32,7 +35,7 @@ function PermRow({ icon, title, text, status, onPress, last }: { icon: (p: { siz
         <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">{text}</Text>
       </View>
       <Pressable accessibilityRole="button" accessibilityLabel={`${title}: ${on ? 'ajustes' : 'activar'}`} onPress={onPress} hitSlop={8} className={`px-3 py-2 rounded-full ${on ? 'bg-purple-light-light dark:bg-purple-light-dark' : 'bg-aqua-deep'}`}>
-        <Text className={`text-[12px] font-semibold ${on ? '' : 'text-white'}`} style={on ? { color: colors.purple } : undefined}>{on ? 'Ajustes' : 'Activar'}</Text>
+        <Text className={`text-[12px] font-semibold ${on ? 'text-purple-ink dark:text-purple-soft' : 'text-white'}`}>{on ? 'Ajustes' : 'Activar'}</Text>
       </Pressable>
     </View>
   );
@@ -92,7 +95,7 @@ export default function PerfilScreen() {
       Linking.openSettings();
       return;
     }
-    await registerForPushNotificationsAsync();
+    await registerForPushNotificationsAsync({ userInitiated: true });
     await loadPermissions();
   }
 
@@ -154,8 +157,12 @@ export default function PerfilScreen() {
   async function handleLogout() {
     await unregisterPushToken();
     const { error } = await supabase.auth.signOut();
-    if (error) Alert.alert('No pudimos cerrar sesión', error.message);
-    else router.replace('/(auth)/welcome');
+    // Sin red, signOut devuelve error aunque la sesión local ya se cerró: ahí no hay nada que avisar.
+    if (error && (await supabase.auth.getSession()).data.session) {
+      Alert.alert('No pudimos cerrar sesión', friendlyError(error, 'Intentá de nuevo.'));
+      return;
+    }
+    router.replace('/(auth)/welcome?modo=login');
   }
 
   const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
@@ -167,11 +174,11 @@ export default function PerfilScreen() {
       <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row items-center gap-3.5">
           <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
-            {profile?.photo_url ? (
-              <Image source={{ uri: profile.photo_url }} className="w-full h-full" />
-            ) : (
-              <Text className="font-bold text-mint-dark text-xl">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>
-            )}
+            <AvatarImage
+              uri={profile?.photo_url}
+              style={{ width: '100%', height: '100%' }}
+              fallback={<Text className="font-bold text-mint-dark text-xl">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
+            />
           </View>
           <View className="flex-1">
             <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{profile?.full_name}</Text>
@@ -190,14 +197,14 @@ export default function PerfilScreen() {
       <Glass className="rounded-2xl overflow-hidden mb-4">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${balance ?? 0} Puntos, ver detalle`}
+          accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`}
           onPress={() => router.push('/(tabs)/puntos')}
           className="flex-row items-center p-4"
           style={{ gap: 12 }}
         >
           <Image source={require('@/../assets/camina-coin.png')} style={{ width: 34, height: 34, borderRadius: 17 }} />
           <View className="flex-1">
-            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} Puntos</Text>
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} {plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
             <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
           </View>
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
@@ -205,7 +212,7 @@ export default function PerfilScreen() {
       </Glass>
 
       <Glass className="rounded-3xl overflow-hidden mb-4">
-        <Pressable onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
+        <Pressable accessibilityRole="button" onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
           <IconBubble icon={Gift} tone="aqua" size={46} />
           <View className="flex-1">
             <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
@@ -226,7 +233,7 @@ export default function PerfilScreen() {
             <Text className="text-[14px] text-text-light dark:text-text-dark">Permisos</Text>
           </View>
           <View className="flex-row items-center" style={{ gap: 6 }}>
-            <Text className="text-[12px]" style={{ color: pendingPerms === 0 ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? '#FFB27A' : colors.warnDeep }}>
+            <Text className="text-[12px]" style={{ color: pendingPerms === 0 ? (isDark ? colors.mint : colors.aquaInk) : isDark ? colors.warnSoft : colors.warnDeep }}>
               {pendingPerms === 0 ? 'Todo activo' : `${pendingPerms} sin activar`}
             </Text>
             <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
@@ -235,12 +242,12 @@ export default function PerfilScreen() {
       </Glass>
 
       <Modal visible={permsOpen} transparent animationType="slide" onRequestClose={() => setPermsOpen(false)}>
-        <Pressable accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
         <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32 }}>
           <View className="flex-row items-center justify-between mb-3">
             <Text accessibilityRole="header" className="font-bold text-[17px] text-text-light dark:text-text-dark ml-1">Permisos</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={10} onPress={() => setPermsOpen(false)}>
-              <Text className="text-[14px] font-semibold text-aqua-deep dark:text-aqua">Listo</Text>
+            <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setPermsOpen(false)}>
+              <Text className="text-[14px] font-semibold text-aqua-ink dark:text-aqua">Listo</Text>
             </Pressable>
           </View>
           <Glass className="rounded-2xl overflow-hidden">
@@ -273,7 +280,7 @@ export default function PerfilScreen() {
       <Glass className="rounded-md overflow-hidden mb-4">
         <View className="flex-row items-center justify-between p-3.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
-          <Switch value={profile?.ranking_visible ?? true} onValueChange={toggleRanking} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
+          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={toggleRanking} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
       </Glass>
 
@@ -282,6 +289,7 @@ export default function PerfilScreen() {
         <View className="flex-row items-center justify-between py-1.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Modo oscuro</Text>
           <Switch
+            accessibilityLabel="Modo oscuro"
             value={profile?.dark_mode ?? false}
             onValueChange={toggleDarkMode}
             trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
@@ -298,8 +306,8 @@ export default function PerfilScreen() {
       <Glass className="rounded-2xl px-4 py-3 mb-4">
         <View className="flex-row items-center justify-between">
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
-          <Pressable onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={8}>
-            <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">{SUPPORT_EMAIL}</Text>
+          <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>
+            <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{SUPPORT_EMAIL}</Text>
           </Pressable>
         </View>
         {blocks.list.length > 0 && (
@@ -308,8 +316,8 @@ export default function PerfilScreen() {
             {blocks.list.map((b) => (
               <View key={b.id} className="flex-row items-center justify-between py-1.5">
                 <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
-                <Pressable onPress={() => blocks.unblock.mutate(b.id)} hitSlop={8}>
-                  <Text className="text-[12.5px] font-semibold text-aqua-deep dark:text-aqua">Desbloquear</Text>
+                <Pressable accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ top: 6, bottom: 6, left: 12, right: 12 }}>
+                  <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">Desbloquear</Text>
                 </Pressable>
               </View>
             ))}
@@ -321,9 +329,9 @@ export default function PerfilScreen() {
         <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Términos y política de privacidad</Text>
       </Pressable>
 
-      <Pressable onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
-        <LogOut size={15} color={colors.warn} />
-        <Text className="text-warn font-semibold">Cerrar sesión</Text>
+      <Pressable accessibilityRole="button" onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
+        <LogOut size={15} color={isDark ? colors.warn : colors.warnDeep} />
+        <Text className="text-warn-deep dark:text-warn font-semibold">Cerrar sesión</Text>
       </Pressable>
     </ScrollView>
   );

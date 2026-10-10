@@ -1,13 +1,17 @@
 import { View, Text } from 'react-native';
 import { SUPPORT_EMAIL } from '@/constants/contact';
+import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
 export const LEGAL_UPDATED = 'octubre de 2026';
 
+// 1000 → "1.000" (a mano: no depende del soporte de Intl del teléfono).
+const miles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
 const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'Términos de uso',
-    body: `Camina te da Puntos por caminar (1 Punto cada 1.000 pasos, hasta 20 Puntos por día) para canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los 90 días de haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Al canjear o poner Puntos en juego se usan primero los que vencen antes. Los códigos de canje vencen a los 15 minutos de generados. Camina es para personas de 13 años o más. Los Puntos de tus pasos se cargan solo si abrís la app ese día; los pasos de días en que no la abriste se ven en Actividad pero no suman Puntos. Los pasos ingresados a mano en Salud o Health Connect no suman Puntos. Nos reservamos el derecho de suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los comercios adheridos son responsables de sus propios beneficios, stock y condiciones; Camina actúa como intermediario y no garantiza disponibilidad continua de ningún beneficio.`,
+    body: `Camina te da Puntos por caminar (1 Punto cada ${miles(POINTS_PER_STEP_UNIT)} pasos, hasta ${DAILY_POINTS_CAP} Puntos por día) para canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los ${POINTS_TTL_DAYS} días de haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Al canjear o poner Puntos en juego se usan primero los que vencen antes. Los códigos de canje vencen a los ${REDEMPTION_CODE_TTL_MINUTES} minutos de generados. Camina es para personas de 13 años o más. Los Puntos de tus pasos se cargan solo si abrís la app ese día; los pasos de días en que no la abriste se ven en Actividad pero no suman Puntos. Los pasos ingresados a mano en Salud o Health Connect no suman Puntos. Nos reservamos el derecho de suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los comercios adheridos son responsables de sus propios beneficios, stock y condiciones; Camina actúa como intermediario y no garantiza disponibilidad continua de ningún beneficio.`,
   },
   {
     title: 'Política de privacidad',
@@ -21,7 +25,7 @@ Guardamos también un identificador de tu celular (un código técnico, no perso
 
 Los mensajes de grupo se borran automáticamente cada semana; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Podés reportar y bloquear a otras personas dentro de la app.
 
-Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no podés entrar a la app, escribinos a ${SUPPORT_EMAIL} y la eliminamos.`,
+Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar perfil > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no podés entrar a la app, escribinos a ${SUPPORT_EMAIL} y la eliminamos.`,
   },
   {
     title: 'Desafíos de grupo y puntos en juego',
