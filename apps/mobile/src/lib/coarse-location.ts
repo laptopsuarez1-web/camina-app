@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase';
 const KEY = 'camina_coarse_location_last';
 const EVERY_MS = 6 * 60 * 60 * 1000; // como máximo una vez cada 6 horas
 
+// Se redondea acá a la misma grilla de ~550 m que usa el servidor, así la ubicación exacta nunca sale del teléfono.
+const roundCoarse = (x: number) => Number((Math.round(x / 0.005) * 0.005).toFixed(3));
+
 // Manda al servidor una ubicación APROXIMADA (el servidor la redondea a ~550 m) para poder avisarte
 // de comercios cercanos. Solo si ya diste permiso de ubicación; nunca lo pide por su cuenta.
 export async function shareCoarseLocation(force = false) {
@@ -17,7 +20,7 @@ export async function shareCoarseLocation(force = false) {
     }
     const pos = (await Location.getLastKnownPositionAsync()) ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }));
     if (!pos) return;
-    const { error } = await supabase.rpc('save_coarse_location', { p_lat: pos.coords.latitude, p_lng: pos.coords.longitude });
+    const { error } = await supabase.rpc('save_coarse_location', { p_lat: roundCoarse(pos.coords.latitude), p_lng: roundCoarse(pos.coords.longitude) });
     if (!error) await AsyncStorage.setItem(KEY, String(Date.now()));
   } catch {
     // sin conexión o sin la función todavía: no pasa nada, se reintenta la próxima vez
