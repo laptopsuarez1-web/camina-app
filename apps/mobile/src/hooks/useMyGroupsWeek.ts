@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { localDay } from '@/lib/format';
 
 function startOfWeekLocal() {
   const d = new Date();
@@ -25,8 +26,8 @@ export function useMyGroupsWeek(groups: { id: string; group_members: { user_id: 
     queryKey: ['my-groups-week', groups.map((g) => g.id).join(','), ids.length],
     enabled: groups.length > 0,
     queryFn: async () => {
-      const monday = startOfWeekLocal().toISOString().slice(0, 10);
-      const today = new Date().toISOString().slice(0, 10);
+      const monday = localDay(startOfWeekLocal());
+      const today = localDay();
       const [{ data: steps, error: stepsError }, { data: profiles, error: profilesError }] = await Promise.all([
         supabase.from('steps_daily').select('user_id, steps, day').in('user_id', ids).gte('day', monday),
         supabase.from('public_profiles').select('id, full_name, photo_url').in('id', ids),

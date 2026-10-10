@@ -34,11 +34,21 @@ test('grupo pendiente: se anota a la persona y devuelve el grupo al que navegar'
   assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined);
 });
 
-test('grupo pendiente con error al anotarse: no navega y la marca se borra (caracterización)', async () => {
+test('grupo pendiente con error pasajero al anotarse: no navega y la marca queda para reintentar', async () => {
   await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
-  db.errors['group_members:write'] = { message: 'grupo lleno' };
+  db.errors['group_members:write'] = { message: 'Failed to fetch' };
   assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: null });
-  assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined);
+  assert.equal(dump()[PENDING_GROUP_JOIN_KEY], 'g-1');
+});
+
+test('grupo pendiente con error permanente (grupo borrado o id inválido): no navega y la marca se descarta', async () => {
+  for (const code of ['23503', '22P02']) {
+    resetStorage();
+    await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
+    db.errors['group_members:write'] = { message: 'no existe', code };
+    assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: null });
+    assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined, code);
+  }
 });
 
 test('grupo pendiente sin usuario logueado: no se anota y no navega', async () => {
@@ -56,9 +66,16 @@ test('las dos invitaciones juntas se aplican', async () => {
   assert.deepEqual(dump(), {});
 });
 
-test('BUG conocido: si capture_referral falla (sin red, servidor caído), la invitación se borra igual y el referido se pierde', { todo: 'lib/deep-links.ts:18-22: el error del rpc no tira excepción y la marca se borra siempre; borrarla solo si no hubo error de red' }, async () => {
+test('si capture_referral falla por un error pasajero (sin red, servidor caído), la invitación queda guardada para reintentar', async () => {
   await AsyncStorage.setItem(PENDING_REFERRAL_KEY, 'ref-user');
   db.rpc.capture_referral = () => ({ error: { message: 'Failed to fetch' } });
   await consumePendingDeepLinks();
   assert.equal(dump()[PENDING_REFERRAL_KEY], 'ref-user');
+});
+
+test('si capture_referral falla con un error permanente (id inválido o inexistente), la invitación se descarta', async () => {
+  await AsyncStorage.setItem(PENDING_REFERRAL_KEY, 'ref-user');
+  db.rpc.capture_referral = () => ({ error: { message: 'invalid input syntax for type uuid', code: '22P02' } });
+  await consumePendingDeepLinks();
+  assert.equal(dump()[PENDING_REFERRAL_KEY], undefined);
 });

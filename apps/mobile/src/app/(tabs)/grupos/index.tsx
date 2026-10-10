@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Plus, Users, Trophy, IconBubble } from '@/components/icons';
@@ -10,14 +10,19 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
 import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { colors } from '@/theme/tokens';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { AvatarImage } from '@/components/ui/AvatarImage';
+import { plural } from '@/lib/format';
 import { useGlobalRankingOpen } from '@/hooks/useUserCount';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { friendlyServerError } from '@/lib/errors';
 
 export default function GruposScreen() {
   const tabSpace = useTabBarSpace();
-  const { data: groups, isLoading } = useGroups();
+  const { dark } = useThemeColors();
+  const { data: groups, isLoading, isError, refetch } = useGroups();
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
@@ -50,17 +55,20 @@ export default function GruposScreen() {
       setName('');
       queryClient.invalidateQueries({ queryKey: ['groups'] });
     },
-    onError: (e) => Alert.alert('No se pudo crear el grupo', e.message),
+    onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intentá de nuevo.')),
   });
 
   const joinGroup = useMutation({
     mutationFn: async (groupId: string) => {
       if (!userId) throw new Error('Sin sesión');
-      const { error } = await supabase.from('group_members').insert({ group_id: groupId, user_id: userId });
+      // upsert: un doble toque no debe devolver el error crudo de clave duplicada (23505).
+      const { error } = await supabase
+        .from('group_members')
+        .upsert({ group_id: groupId, user_id: userId }, { onConflict: 'group_id,user_id' });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
-    onError: (e) => Alert.alert('No se pudo unir al grupo', e.message),
+    onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intentá de nuevo.')),
   });
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
@@ -81,6 +89,7 @@ export default function GruposScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ selected: view === 'mios' }}
+          aria-pressed={view === 'mios'}
           onPress={() => setView('mios')}
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
@@ -92,6 +101,7 @@ export default function GruposScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ selected: view === 'ranking' }}
+          aria-pressed={view === 'ranking'}
           onPress={() => setView('ranking')}
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}
@@ -113,30 +123,34 @@ export default function GruposScreen() {
               </Text>
             </View>
           )}
-          {rankingLoading && <ActivityIndicator color={colors.aqua} />}
+          {rankingLoading && <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />}
           <View className="gap-2">
             {(ranking ?? []).map((r: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }, i: number) => (
               <Glass
                 key={r.user_id}
+                accessible
+                accessibilityLabel={`Puesto ${i + 1}: ${r.full_name || 'Caminante'}${r.user_id === userId ? ' (vos)' : ''}, ${Number(r.total_steps).toLocaleString('es-BO')} ${plural(Number(r.total_steps), 'paso', 'pasos')}`}
                 className="flex-row items-center gap-3 rounded-2xl p-3.5"
               >
                 <View className="w-7 items-center">
                   {i < 3 ? <Trophy size={16} color={['#F2985C', '#9C8FC2', '#B08D57'][i]} /> : (
-                    <Text className="text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}°</Text>
+                    <Text className="text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
                   )}
                 </View>
-                {r.photo_url ? (
-                  <Image source={{ uri: r.photo_url }} className="w-9 h-9 rounded-full" />
-                ) : (
-                  <View className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                    <Text className="text-aqua-deep dark:text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
-                  </View>
-                )}
+                <AvatarImage
+                  uri={r.photo_url}
+                  style={{ width: 36, height: 36, borderRadius: 18 }}
+                  fallback={
+                    <View className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
+                      <Text className="text-aqua-ink dark:text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
+                    </View>
+                  }
+                />
                 <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>
                   {r.user_id === userId ? `${r.full_name} (vos)` : r.full_name}
                 </Text>
                 <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
-                  <Text className="text-[12.5px] font-bold text-aqua-deep dark:text-aqua">
+                  <Text className="text-[12.5px] font-bold text-aqua-ink dark:text-aqua">
                     {Number(r.total_steps).toLocaleString('es-BO')}
                   </Text>
                 </View>
@@ -151,9 +165,20 @@ export default function GruposScreen() {
         </>
       ) : (
         <>
-      {isLoading && <ActivityIndicator color={colors.aqua} />}
+      {isLoading && <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />}
 
-      {!isLoading && my.length === 0 && (
+      {isError && !groups && (
+        <View className="mb-5">
+          <EmptyState
+            title="No pudimos cargar"
+            text="Revisá tu conexión e intentá de nuevo."
+            actionLabel="Reintentar"
+            onAction={() => refetch()}
+          />
+        </View>
+      )}
+
+      {!isLoading && !(isError && !groups) && my.length === 0 && (
         <View className="mb-5">
           <EmptyState
             title="Todavía no estás en ningún grupo"
@@ -226,11 +251,11 @@ export default function GruposScreen() {
                             className="w-7 h-7 rounded-full items-center justify-center overflow-hidden"
                             style={{ marginLeft: i === 0 ? 0 : -8, borderWidth: 2, borderColor: colors.authBg, backgroundColor: i % 2 ? '#C6A2F5' : colors.mint }}
                           >
-                            {a.photoUrl ? (
-                              <Image source={{ uri: a.photoUrl }} className="w-full h-full" />
-                            ) : (
-                              <Text className="text-[12px] font-bold" style={{ color: colors.authBg }}>{(a.name || 'C')[0]?.toUpperCase()}</Text>
-                            )}
+                            <AvatarImage
+                              uri={a.photoUrl}
+                              style={{ width: '100%', height: '100%' }}
+                              fallback={<Text className="text-[12px] font-bold" style={{ color: colors.authBg }}>{(a.name || 'C')[0]?.toUpperCase()}</Text>}
+                            />
                           </View>
                         ))}
                         {count > w.avatars.length && (
@@ -262,7 +287,7 @@ export default function GruposScreen() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-9.5 h-9.5 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Users size={16} color={colors.purple} />
+                <Users size={16} color={dark ? colors.purpleSoft : colors.purple} />
               </View>
               <View>
                 <Text className="text-text-light dark:text-text-dark">{g.name}</Text>
@@ -275,6 +300,7 @@ export default function GruposScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Unirme a ${g.name}`}
               onPress={() => joinGroup.mutate(g.id)}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
               className="bg-aqua-deep rounded-full px-3.5 py-1.5"
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>

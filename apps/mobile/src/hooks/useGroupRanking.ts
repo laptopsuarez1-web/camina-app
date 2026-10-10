@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { localDay } from '@/lib/format';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
 
@@ -34,7 +35,7 @@ export function useMyGroupRanking() {
           .from('steps_daily')
           .select('user_id, steps')
           .in('user_id', memberIds)
-          .gte('day', monday.toISOString().slice(0, 10)),
+          .gte('day', localDay(monday)),
         supabase.from('public_profiles').select('id, full_name').in('id', memberIds),
       ]);
       if (stepsError) throw stepsError;

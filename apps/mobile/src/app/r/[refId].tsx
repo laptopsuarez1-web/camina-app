@@ -12,24 +12,27 @@ import { colors } from '@/theme/tokens';
 export default function ReferralLinkScreen() {
   const { refId } = useLocalSearchParams<{ refId: string }>();
   const session = useAuthStore((s) => s.session);
+  const initializing = useAuthStore((s) => s.initializing);
   const handled = useRef(false);
 
   useEffect(() => {
-    if (handled.current) return;
+    // Con la app cerrada, la sesión todavía se está leyendo: esperar antes de decidir
+    // (si no, una persona con sesión válida terminaba en el login).
+    if (initializing || handled.current) return;
     handled.current = true;
     (async () => {
       if (!session && refId) {
-        await AsyncStorage.setItem(PENDING_REFERRAL_KEY, refId);
+        await AsyncStorage.setItem(PENDING_REFERRAL_KEY, refId).catch(() => {});
         router.replace('/(auth)/welcome');
       } else {
         router.replace(session ? '/(tabs)' : '/(auth)/welcome');
       }
     })();
-  }, [refId, session]);
+  }, [refId, session, initializing]);
 
   return (
     <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-      <ActivityIndicator color={colors.aqua} />
+      <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />
     </View>
   );
 }
