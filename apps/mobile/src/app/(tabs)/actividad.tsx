@@ -14,6 +14,7 @@ import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { dayLabel } from '@/lib/format';
+import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -46,9 +47,9 @@ function useStepsHistory() {
 
 const CHART_H = 110;
 
-// Colores del calendario: verde (cumplió), naranja (caminó pero no llegó), rojo (no caminó).
-const CAL_BG = { met: colors.mint, partial: '#FBD9BD', miss: '#F9C9C6', none: colors.light.line };
-const CAL_FG = { met: colors.mintDark, partial: colors.warnDeep, miss: '#9B1C14', none: colors.light.muted };
+// Colores del calendario: verde (abrió la app y cumplió), rojo (abrió la app y no llegó), gris (no abrió la app).
+const CAL_BG = { met: colors.mint, miss: '#F4A8A2', idle: '#D3D3DA', none: colors.light.line };
+const CAL_FG = { met: colors.mintDark, miss: '#7A1510', idle: '#45454F', none: colors.light.muted };
 
 export default function ActividadScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -88,9 +89,9 @@ export default function ActividadScreen() {
     return map;
   }, [history, goal]);
   const goalFor = (key: string) => goalByDay.get(key) ?? goal;
-  const firstDay = [(history ?? [])[0]?.day, ...Object.entries(healthDaily).filter(([, v]) => v > 0).map(([k]) => k)]
-    .filter((k): k is string => !!k)
-    .sort()[0] ?? localKey(new Date());
+  // Días en que la app abrió y sincronizó pasos: solo esos cuentan para la meta y los Puntos.
+  const openedDays = useMemo(() => new Set((history ?? []).map((h) => h.day)), [history]);
+  const firstDay = (history ?? []).reduce<string>((min, h) => (h.day < min ? h.day : min), localKey(new Date()));
   const todayKey = localKey(new Date());
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -152,19 +153,20 @@ export default function ActividadScreen() {
     const startOffset = (firstOfMonth.getDay() + 6) % 7; // 0 = lunes
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const cells: ({ day: number; key: string; state: 'met' | 'partial' | 'miss' | 'none' } | null)[] = [];
+    const cells: ({ day: number; key: string; state: CalendarState } | null)[] = [];
     for (let i = 0; i < startOffset; i++) cells.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
       const key = localKey(new Date(year, month, day));
-      const steps = byDay.get(key) ?? 0;
-      const g = goalByDay.get(key) ?? goal;
-      // Verde: cumplió su meta de ese día. Naranja: caminó pero no llegó. Rojo: no caminó. Sin color: hoy en curso, el futuro o antes de usar la app.
-      const state: 'met' | 'partial' | 'miss' | 'none' =
-        key > todayKey || key < firstDay ? 'none'
-        : steps >= g ? 'met'
-        : key === todayKey ? 'none'
-        : steps > 0 ? 'partial'
-        : 'miss';
+      // Verde: abrió la app y cumplió la meta de ese día. Rojo: abrió la app y no llegó. Gris: no abrió la app.
+      // Sin color: hoy en curso, el futuro o antes de usar la app.
+      const state = calendarDayState({
+        key,
+        todayKey,
+        firstDay,
+        opened: openedDays.has(key),
+        steps: byDay.get(key) ?? 0,
+        goal: goalByDay.get(key) ?? goal,
+      });
       cells.push({ day, key, state });
     }
     while (cells.length % 7 !== 0) cells.push(null);
@@ -172,7 +174,7 @@ export default function ActividadScreen() {
     const weeks: (typeof cells)[] = [];
     for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
     return weeks;
-  }, [byDay, goal, goalByDay, firstDay, todayKey]);
+  }, [byDay, goal, goalByDay, firstDay, todayKey, openedDays]);
 
   const monthName = new Date().toLocaleDateString('es-BO', { month: 'long' });
 
@@ -346,7 +348,7 @@ export default function ActividadScreen() {
                 <Pressable
                   key={cell.key}
                   accessibilityRole="button"
-                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'partial' ? 'meta no cumplida' : cell.state === 'miss' ? 'sin pasos' : cell.key === todayKey ? 'hoy, en curso' : 'sin datos'}. Ver detalle`}
+                  accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'miss' ? 'meta no cumplida' : cell.state === 'idle' ? 'no abriste la app' : cell.key === todayKey ? 'hoy, en curso' : 'sin datos'}. Ver detalle`}
                   disabled={cell.key > todayKey}
                   hitSlop={{ top: 3, bottom: 3, left: 6, right: 6 }}
                   onPress={() => setSelected(cell.key)}
@@ -367,7 +369,7 @@ export default function ActividadScreen() {
           </View>
         ))}
         <View className="flex-row flex-wrap mt-2" style={{ gap: 12 }}>
-          {([['met', 'Meta cumplida'], ['partial', 'No llegaste'], ['miss', 'Sin pasos']] as const).map(([k, label]) => (
+          {([['met', 'Meta cumplida'], ['miss', 'No cumpliste'], ['idle', 'No abriste la app']] as const).map(([k, label]) => (
             <View key={k} className="flex-row items-center" style={{ gap: 5 }}>
               <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: CAL_BG[k] }} />
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{label}</Text>
@@ -417,21 +419,32 @@ export default function ActividadScreen() {
           {selected != null && (() => {
             const steps = byDay.get(selected) ?? 0;
             const g = goalFor(selected);
-            const met = steps >= g;
+            const opened = selected === todayKey || openedDays.has(selected);
+            const met = opened && steps >= g;
             const dayKm = (steps * STEP_LENGTH_METERS) / 1000;
             return (
               <View className="w-full rounded-3xl p-5 bg-card-light dark:bg-card-dark" style={{ maxWidth: 360 }}>
                 <Text accessibilityRole="header" className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{selected === todayKey ? 'Hoy' : dayLabel(selected)}</Text>
                 <Text className="text-[30px] font-extrabold mt-2 text-text-light dark:text-text-dark">{steps.toLocaleString('es-BO')}</Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3">pasos · {dayKm.toFixed(1).replace('.', ',')} km · {Math.round(steps * KCAL_PER_STEP)} kcal</Text>
-                <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
-                  <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
-                </View>
-                <Text className="text-[13px] font-semibold" style={{ color: met ? accentText : warnText }}>
-                  {met ? 'Meta cumplida' : steps > 0 ? 'No llegaste a la meta' : 'Sin pasos ese día'}
+                {opened && (
+                  <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
+                    <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
+                  </View>
+                )}
+                <Text
+                  className={`text-[13px] font-semibold ${opened ? '' : 'text-text-light dark:text-text-dark'}`}
+                  style={opened ? { color: met ? accentText : warnText } : undefined}
+                >
+                  {!opened ? 'No abriste la app ese día' : met ? 'Meta cumplida' : 'No cumpliste la meta'}
                 </Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
-                {selected !== todayKey && steps - (countedByDay.get(selected) ?? 0) > 0 && (
+                {!opened && (
+                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">
+                    Para que los pasos cuenten y sumen Puntos, tenés que abrir la app ese día.
+                  </Text>
+                )}
+                {opened && selected !== todayKey && steps - (countedByDay.get(selected) ?? 0) > 0 && (
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">
                     {(steps - (countedByDay.get(selected) ?? 0)).toLocaleString('es-BO')} de estos pasos no sumaron Puntos: los Puntos solo se cargan cuando abrís la app ese día.
                   </Text>
