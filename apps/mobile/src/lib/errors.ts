@@ -17,6 +17,14 @@ const BY_CODE: Record<string, string> = {
 const OFFLINE = 'No hay conexión. Revisá tu internet e intentá de nuevo.';
 const GENERIC = 'Algo salió mal. Intentá de nuevo.';
 
+// Errores de RPC con "raise exception" (código P0001): el servidor ya escribió el aviso en español
+// y dice qué pasó ("Saldo insuficiente", "El desafío ya empezó"); cualquier otro error se traduce.
+export function friendlyServerError(error: unknown, fallback: string = GENERIC): string {
+  const e = (error ?? {}) as { code?: unknown; message?: unknown };
+  if (e.code === 'P0001' && typeof e.message === 'string' && e.message) return e.message;
+  return friendlyError(error, fallback);
+}
+
 export function friendlyError(error: unknown, fallback: string = GENERIC): string {
   const e = (error ?? {}) as { code?: unknown; message?: unknown; name?: unknown };
   const code = typeof e.code === 'string' ? e.code : '';

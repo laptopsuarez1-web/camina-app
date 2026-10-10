@@ -65,3 +65,11 @@ test('friendlyError: ningún texto que ve la persona está en inglés ni muestra
     assert.doesNotMatch(text, /raw|_|\b(invalid|error|failed|rate|limit)\b/i, code);
   }
 });
+
+test('friendlyServerError: el aviso en español del servidor (P0001) se muestra tal cual; el resto se traduce', async () => {
+  const { friendlyServerError } = await import('../src/lib/errors.ts');
+  assert.equal(friendlyServerError({ code: 'P0001', message: 'Saldo insuficiente' }), 'Saldo insuficiente');
+  assert.equal(friendlyServerError({ code: '42501', message: 'new row violates row-level security policy' }, 'Intentá de nuevo.'), 'Intentá de nuevo.');
+  assert.match(friendlyServerError({ message: 'Failed to fetch' }), /No hay conexión/);
+  assert.equal(friendlyServerError(null, 'x'), 'x');
+});
