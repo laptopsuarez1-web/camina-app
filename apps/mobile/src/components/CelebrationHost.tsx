@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

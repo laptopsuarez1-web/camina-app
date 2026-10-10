@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ActivityIndicator, Alert, Linking } from 'react-native';
+import { View, ActivityIndicator, Alert, Linking } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import * as Location from 'expo-location';
 import { useColorScheme } from 'nativewind';

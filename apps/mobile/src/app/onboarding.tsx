@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { View, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';

@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 

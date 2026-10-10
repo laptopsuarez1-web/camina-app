@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';

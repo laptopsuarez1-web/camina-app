@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator, Image, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Alert, ActivityIndicator, Image, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';

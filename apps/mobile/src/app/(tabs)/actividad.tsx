@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Modal, StyleSheet } from 'react-native';
+import { View, ScrollView, Modal, StyleSheet } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';

@@ -1,4 +1,5 @@
-import { Modal, View, Text } from 'react-native';
+import { Modal, View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 
 export interface SheetAction {

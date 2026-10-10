@@ -1,4 +1,5 @@
-import { View, Text, Linking, ScrollView } from 'react-native';
+import { View, Linking, ScrollView } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openHealthConnectSettings } from 'react-native-health-connect';

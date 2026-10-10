@@ -1,4 +1,5 @@
-import { View, Text, Animated, Platform } from 'react-native';
+import { View, Animated, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';

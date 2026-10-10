@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, Text, ScrollView, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
+import { View, ScrollView, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';

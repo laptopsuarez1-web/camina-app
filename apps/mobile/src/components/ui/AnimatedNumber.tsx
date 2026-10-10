@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Text, type TextProps } from 'react-native';
+import { type TextProps } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useReducedMotion } from 'react-native-reanimated';
 
 // Cifra grande que cuenta de 0 al valor en 900 ms (salida suave) la PRIMERA vez que se abre una pantalla en la sesión.

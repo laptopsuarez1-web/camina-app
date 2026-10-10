@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Image, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { View, ScrollView, Image, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, Check, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';

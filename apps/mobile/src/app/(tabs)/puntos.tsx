@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Share, Image, AccessibilityInfo, Platform } from 'react-native';
+import { View, ScrollView, Share, Image, AccessibilityInfo, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';

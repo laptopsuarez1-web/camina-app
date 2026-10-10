@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Text, View, type TextStyle } from 'react-native';
+import { Animated, Easing, Image, View, type TextStyle } from 'react-native';
+import { Text } from '@/components/ui/Text';
 
 // Saldo de puntos animado: cuando sube estando en pantalla, el número "cuenta" hasta el valor nuevo
 // y todo el chip (moneda + número + fondo) se agranda un poco y vuelve. Al abrir la app no hace nada.

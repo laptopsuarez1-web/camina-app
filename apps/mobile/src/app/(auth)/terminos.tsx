@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import { Check } from '@/components/icons';

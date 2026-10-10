@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Platform, StyleSheet, type ViewStyle } from 'react-native';
+import { View, Pressable, Platform, StyleSheet, type ViewStyle } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
@@ -134,7 +135,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
               {Icon ? Icon({ focused, color, size: 25 }) : null}
             </View>
-            <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
+            <Text numberOfLines={1} maxFontSizeMultiplier={1.1} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
               {title}
             </Text>
           </Pressable>

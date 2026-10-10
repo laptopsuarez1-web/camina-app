@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { View, Text, Linking, Platform } from 'react-native';
+import { View, Linking, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';

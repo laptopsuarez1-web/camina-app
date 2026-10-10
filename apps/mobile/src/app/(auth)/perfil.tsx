@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Text, TextInput, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
 import { Camera } from '@/components/icons';

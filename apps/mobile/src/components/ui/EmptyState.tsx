@@ -1,4 +1,5 @@
-import { View, Text, Image } from 'react-native';
+import { View, Image } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';

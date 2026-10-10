@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Linking } from 'react-native';
+import { View, ScrollView, Linking } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import { ChevronLeft } from '@/components/icons';

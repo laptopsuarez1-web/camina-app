@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 

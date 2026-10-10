@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
-import { View, Text, ScrollView, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Image, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
