@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -31,7 +32,7 @@ export function ProfileRetry() {
   return (
     <View className="flex-1 justify-center bg-bg-light dark:bg-bg-dark px-6">
       <EmptyState title="No pudimos cargar tu perfil" text="Revisá tu conexión e intentá de nuevo." />
-      <Pressable
+      <Press
         accessibilityRole="button"
         accessibilityLabel="Reintentar"
         accessibilityState={{ busy: retrying }}
@@ -40,10 +41,10 @@ export function ProfileRetry() {
         style={{ marginTop: 16, backgroundColor: colors.aquaDeep, borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
       >
         {retrying ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>Reintentar</Text>}
-      </Pressable>
-      <Pressable accessibilityRole="button" onPress={logout} style={{ paddingVertical: 14, alignItems: 'center' }}>
+      </Press>
+      <Press accessibilityRole="button" onPress={logout} style={{ paddingVertical: 14, alignItems: 'center' }}>
         <Text className="text-aqua-ink dark:text-mint text-[13.5px] font-semibold">Cerrar sesión</Text>
-      </Pressable>
+      </Press>
     </View>
   );
 }

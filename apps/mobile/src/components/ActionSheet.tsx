@@ -1,4 +1,5 @@
-import { Modal, View, Text, Pressable } from 'react-native';
+import { Modal, View, Text } from 'react-native';
+import { Press } from '@/components/ui/Press';
 
 export interface SheetAction {
   label: string;
@@ -21,12 +22,12 @@ export function ActionSheet({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Fondo y hoja no son accesibles: así el lector llega a cada acción por separado (Cancelar cierra). */}
-      <Pressable accessible={false} className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.5)' }} onPress={onClose}>
-        <Pressable accessible={false} className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3 pb-9" onPress={() => {}}>
+      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.5)' }} onPress={onClose}>
+        <Press accessible={false} feedback="none" className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3 pb-9" onPress={() => {}}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-4" />
           {title ? <Text accessibilityRole="header" className="text-[13px] font-bold text-center text-muted-light dark:text-muted-dark mb-3">{title}</Text> : null}
           {actions.map((a) => (
-            <Pressable
+            <Press
               key={a.label}
               accessibilityRole="button"
               onPress={() => {
@@ -41,13 +42,13 @@ export function ActionSheet({
               >
                 {a.label}
               </Text>
-            </Pressable>
+            </Press>
           ))}
-          <Pressable accessibilityRole="button" onPress={onClose} className="py-3.5 items-center border-t border-line-light dark:border-line-dark">
+          <Press accessibilityRole="button" onPress={onClose} className="py-3.5 items-center border-t border-line-light dark:border-line-dark">
             <Text className="text-[15px] text-muted-light dark:text-muted-dark">Cancelar</Text>
-          </Pressable>
-        </Pressable>
-      </Pressable>
+          </Press>
+        </Press>
+      </Press>
     </Modal>
   );
 }

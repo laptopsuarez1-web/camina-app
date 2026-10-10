@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Image } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import { useColorScheme } from 'nativewind';
@@ -23,9 +24,9 @@ export function SectionHeader({
     <View className="flex-row items-center justify-between px-5 mb-3">
       <Text accessibilityRole="header" className="text-text-light dark:text-text-dark" style={typo.section}>{title}</Text>
       {actionLabel && onAction ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }} onPress={onAction}>
+        <Press accessibilityRole="button" accessibilityLabel={actionLabel} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }} onPress={onAction}>
           <Text className="text-aqua-ink dark:text-aqua text-xs font-semibold">{actionLabel}</Text>
-        </Pressable>
+        </Press>
       ) : null}
     </View>
   );
@@ -118,12 +119,12 @@ export function NearbyRow({
     return (
       <View>
         <SectionHeader title="Locales cerca tuyo" />
-        <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/canjes?view=lista')} className="mx-5">
+        <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/canjes?view=lista')} className="mx-5">
           <Glass className="rounded-3xl p-4">
             <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá comercios</Text>
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mirá qué se puede canjear.</Text>
           </Glass>
-        </Pressable>
+        </Press>
       </View>
     );
   }
@@ -135,7 +136,7 @@ export function NearbyRow({
         {places.map((p) => {
           const featured = isFeatured(p.business);
           return (
-            <Pressable
+            <Press
               key={p.business.id}
               accessibilityRole="button"
               accessibilityLabel={`${p.business.name}, ${p.business.category}${featured ? ', destacado' : ''}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}, desde ${p.minCost} ${plural(p.minCost, 'Punto', 'Puntos')}`}
@@ -165,7 +166,7 @@ export function NearbyRow({
                   <CoinPill value={p.minCost} prefix="desde" />
                 </View>
               </Glass>
-            </Pressable>
+            </Press>
           );
         })}
       </ScrollView>
@@ -219,7 +220,7 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
             // Día LOCAL del canje (no el de UTC); se recortan los decimales extra por si Hermes no los acepta.
             const when = dayLabel(localDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
             return (
-              <Pressable
+              <Press
                 key={r.id}
                 accessibilityRole="button"
                 accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
@@ -237,7 +238,7 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
                 <View className="rounded-full" style={{ backgroundColor: c.bg, paddingHorizontal: 10, paddingVertical: 4 }}>
                   <Text style={{ color: c.fg, fontSize: 12, fontWeight: '700' }}>{STATUS_LABEL[r.status]}</Text>
                 </View>
-              </Pressable>
+              </Press>
             );
           })}
         </Glass>

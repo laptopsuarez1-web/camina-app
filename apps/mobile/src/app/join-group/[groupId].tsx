@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ActivityIndicator, Alert } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Users, IconBubble } from '@/components/icons';
@@ -81,7 +82,7 @@ export default function JoinGroupScreen() {
       <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center mb-8">
         {memberCount} {plural(memberCount, 'miembro', 'miembros')} caminando juntos en este grupo.
       </Text>
-      <Pressable
+      <Press
         onPress={join}
         disabled={joining}
         accessibilityRole="button"
@@ -90,10 +91,10 @@ export default function JoinGroupScreen() {
         className="bg-aqua-deep rounded-2xl py-4 px-10 items-center mb-3"
       >
         {joining ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Unirme al grupo</Text>}
-      </Pressable>
-      <Pressable accessibilityRole="button" onPress={() => router.replace('/(tabs)/grupos')}>
+      </Press>
+      <Press accessibilityRole="button" onPress={() => router.replace('/(tabs)/grupos')}>
         <Text className="text-muted-light dark:text-muted-dark text-[13px]">Ahora no</Text>
-      </Pressable>
+      </Press>
     </View>
   );
 }

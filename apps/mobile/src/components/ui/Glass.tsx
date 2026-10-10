@@ -24,6 +24,16 @@ function radiusFrom(className?: string): number {
 // en web, backdrop-filter; en Android (sin desenfoque) queda solo el relleno translúcido.
 const LIQUID = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
+// Borde de luz direccional: [arriba, izquierda, derecha, abajo].
+const EDGE_LIGHT: ViewStyle = {
+  borderTopColor: 'rgba(255,255,255,0.95)', borderLeftColor: 'rgba(255,255,255,0.8)',
+  borderRightColor: 'rgba(150,125,215,0.16)', borderBottomColor: 'rgba(110,80,190,0.17)',
+};
+const EDGE_DARK: ViewStyle = {
+  borderTopColor: 'rgba(255,255,255,0.36)', borderLeftColor: 'rgba(255,255,255,0.22)',
+  borderRightColor: 'rgba(255,255,255,0.12)', borderBottomColor: 'rgba(255,255,255,0.05)',
+};
+
 // Tarjeta de "vidrio": relleno translúcido con degradé, borde brillante arriba y sombra suave.
 export function Glass({
   className,
@@ -44,6 +54,7 @@ export function Glass({
     ? { borderTopLeftRadius: Number(topOnly[1]) - 1, borderTopRightRadius: Number(topOnly[1]) - 1 }
     : { borderRadius: Math.max(0, radius - 1) };
   const fill = cardFill(amount, dark, colors.dark.card, paletteFor(dark).tint);
+  const ownBorder = !!(StyleSheet.flatten(style) as ViewStyle | undefined)?.borderColor;
 
   return (
     <View
@@ -52,14 +63,16 @@ export function Glass({
         {
           ...shape,
           borderWidth: 1,
-          // En claro el borde va en el lila de las líneas: blanco sobre el fondo casi blanco no se veía (1.09:1), y en Android no hay sombra.
-          borderColor: dark ? 'rgba(255,255,255,0.2)' : on ? 'rgba(255,255,255,0.85)' : colors.light.line,
-          shadowColor: dark ? '#000' : '#503C8C',
-          shadowOpacity: dark ? 0.3 : 0.12,
-          shadowRadius: 16,
+          // Con vidrio, el borde tiene luz con dirección (la luz viene de arriba a la izquierda): casi blanco de ese lado y lila apenas visible del otro.
+          // Sin vidrio (Sólido) en claro el borde va en el lila de las líneas: blanco sobre el fondo casi blanco no se veía (1.09:1), y en Android no hay sombra.
+          // Si la tarjeta trae su propio borderColor (p. ej. el dorado de paso_adelante), ese gana: los colores por lado le ganarían a borderColor.
+          ...(ownBorder ? null : on ? (dark ? EDGE_DARK : EDGE_LIGHT) : { borderColor: dark ? 'rgba(255,255,255,0.2)' : colors.light.line }),
+          shadowColor: dark ? '#000' : colors.purpleDeep,
+          shadowOpacity: dark ? 0.3 : 0.13,
+          shadowRadius: 18,
           shadowOffset: { width: 0, height: 8 },
         },
-        on && Platform.OS === 'web' && ({ backdropFilter: blurWeb(amount), WebkitBackdropFilter: blurWeb(amount) } as ViewStyle),
+        on && Platform.OS === 'web' && ({ backdropFilter: blurWeb(amount), WebkitBackdropFilter: blurWeb(amount), boxShadow: dark ? '0 1px 2px rgba(0,0,0,0.25), 0 10px 28px rgba(0,0,0,0.30)' : '0 1px 2px rgba(41,28,71,0.08), 0 10px 28px rgba(91,49,163,0.13)' } as ViewStyle),
         style,
         // En Android la sombra (elevation) se ve a través del vidrio y dibuja rectángulos: nunca se usa.
         Platform.OS === 'android' && { elevation: 0, shadowOpacity: 0 },
@@ -96,13 +109,13 @@ export function Glass({
         </>
       )}
       {on && !topOnly && !LIQUID && (
-        // Brillo fino arriba (borde de luz del vidrio)
-        <View
+        // Brillo especular suave desde la esquina superior izquierda: se apaga hacia el centro. Va debajo del contenido.
+        <LinearGradient
+          colors={dark ? ['rgba(255,255,255,0.10)', 'rgba(255,255,255,0)'] : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.55, y: 0.5 }}
           pointerEvents="none"
-          style={{
-            position: 'absolute', top: 0, left: Math.min(radius, 16), right: Math.min(radius, 16), height: 1.5,
-            backgroundColor: dark ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,1)',
-          }}
+          style={[StyleSheet.absoluteFill, innerShape]}
         />
       )}
       {children}

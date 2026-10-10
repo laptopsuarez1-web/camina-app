@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Image, Pressable, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { View, Text, ScrollView, Image, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, Check, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
@@ -90,9 +91,9 @@ export default function EventosScreen() {
                   </View>
                 </View>
               ) : (
-                <Pressable accessibilityRole="button" onPress={() => handleJoin(p)} disabled={join.isPending} className="bg-mint rounded-2xl py-3 items-center mt-3">
+                <Press accessibilityRole="button" onPress={() => handleJoin(p)} disabled={join.isPending} className="bg-mint rounded-2xl py-3 items-center mt-3">
                   <Text className="text-mint-dark font-bold text-[13.5px]">{p.kind === 'sorteo' ? 'Participar del sorteo' : 'Anotarme'}</Text>
-                </Pressable>
+                </Press>
               )}
             </Glass>
           ))}
@@ -208,13 +209,13 @@ function RetoCard({
           {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
         </Text>
         {claimable && (
-          <Pressable accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} disabled={claiming} className="bg-mint rounded-full px-4 py-1.5">
+          <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} className="bg-mint rounded-full px-4 py-1.5">
             {claiming ? (
               <ActivityIndicator size="small" color="#1E8F6F" />
             ) : (
               <Text className="text-mint-dark text-[12px] font-bold">Reclamar +{reward}</Text>
             )}
-          </Pressable>
+          </Press>
         )}
       </View>
     </Glass>

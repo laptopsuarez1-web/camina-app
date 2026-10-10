@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, Text, ScrollView, TextInput, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -199,16 +200,16 @@ export default function GroupDetailScreen() {
         <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark mt-2">
           Puede que ya no exista o que no tengas conexión.
         </Text>
-        <Pressable accessibilityRole="button" onPress={() => refetch()} className="bg-aqua-deep rounded-2xl py-3 px-8 mt-6">
+        <Press accessibilityRole="button" onPress={() => refetch()} className="bg-aqua-deep rounded-2xl py-3 px-8 mt-6">
           <Text className="text-white font-bold text-[14px]">Reintentar</Text>
-        </Pressable>
-        <Pressable
+        </Press>
+        <Press
           accessibilityRole="button"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/grupos'))}
           className="py-3 px-6 mt-2"
         >
           <Text className="font-bold text-[14px] text-aqua-ink dark:text-mint">Volver</Text>
-        </Pressable>
+        </Press>
       </View>
     );
   }
@@ -234,15 +235,15 @@ export default function GroupDetailScreen() {
       <ScrollView ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
         <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
-            <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
-            </Pressable>
+            </Press>
             <Text className="flex-1 text-center text-[17px] font-bold text-white px-3" numberOfLines={1}>
               {data.group.name}
             </Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Compartir invitación al grupo" onPress={share} hitSlop={10}>
+            <Press accessibilityRole="button" accessibilityLabel="Compartir invitación al grupo" onPress={share} hitSlop={10}>
               <IconBubble icon={Share2} tone="aqua" size={36} />
-            </Pressable>
+            </Press>
           </View>
 
           <View className="flex-row items-end justify-center px-6" style={{ marginTop: 52, gap: 10 }}>
@@ -299,7 +300,7 @@ export default function GroupDetailScreen() {
               <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Meta del grupo</Text>
             </View>
             {isCreator && !editingGoal && (
-              <Pressable
+              <Press
                 accessibilityRole="button"
                 onPress={() => {
                   setGoalInput(String(challengeTarget));
@@ -309,7 +310,7 @@ export default function GroupDetailScreen() {
                 className="rounded-full px-3 py-1.5 bg-purple-light-light dark:bg-purple-light-dark"
               >
                 <Text className="text-xs font-semibold text-purple-ink dark:text-purple-soft">Cambiar meta</Text>
-              </Pressable>
+              </Press>
             )}
           </View>
           <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">
@@ -327,12 +328,12 @@ export default function GroupDetailScreen() {
                 placeholderTextColor={muted}
                 className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
               />
-              <Pressable accessibilityRole="button" onPress={saveGoal} className="bg-purple-deep rounded-full px-3.5 py-2">
+              <Press accessibilityRole="button" onPress={saveGoal} className="bg-purple-deep rounded-full px-3.5 py-2">
                 <Text className="text-xs font-semibold text-white">Guardar</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => setEditingGoal(false)}>
+              </Press>
+              <Press accessibilityRole="button" onPress={() => setEditingGoal(false)}>
                 <Text className="text-xs text-muted-light dark:text-muted-dark">Cancelar</Text>
-              </Pressable>
+              </Press>
             </View>
           )}
           <GoalBar pct={challengePct} />
@@ -377,7 +378,7 @@ export default function GroupDetailScreen() {
               </View>
             ))}
             {canJoin ? (
-              <Pressable
+              <Press
                 accessibilityRole="button"
                 onPress={async () => {
                   try {
@@ -397,7 +398,7 @@ export default function GroupDetailScreen() {
                     <Text className="text-mint-dark font-extrabold text-[13.5px]">{active.stake}</Text>
                   </>
                 )}
-              </Pressable>
+              </Press>
             ) : ch?.joined ? (
               <View accessible accessibilityLabel="Ya estás dentro" className="flex-row items-center justify-center mt-2" style={{ gap: 4 }}>
                 <Check size={14} color={accentText} />
@@ -418,7 +419,7 @@ export default function GroupDetailScreen() {
                 </Text>
               </View>
             </View>
-            <Pressable
+            <Press
               accessibilityRole="button"
               onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })}
               className="bg-mint rounded-2xl py-3 items-center mt-3 flex-row justify-center"
@@ -426,7 +427,7 @@ export default function GroupDetailScreen() {
             >
               <Plus size={15} color={colors.mintDark} />
               <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
-            </Pressable>
+            </Press>
           </Glass>
         )}
 
@@ -458,9 +459,9 @@ export default function GroupDetailScreen() {
                 </Text>
               </View>
               {m.id !== userId && (
-                <Pressable accessibilityRole="button" accessibilityLabel={`Opciones de ${m.name}`} onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
+                <Press accessibilityRole="button" accessibilityLabel={`Opciones de ${m.name}`} onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
                   <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
-                </Pressable>
+                </Press>
               )}
             </View>
           ))}
@@ -475,13 +476,13 @@ export default function GroupDetailScreen() {
             const label = `${new Date(week + 'T12:00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}`;
             return (
               <View key={week} className="border-t border-line-light dark:border-line-dark">
-                <Pressable accessibilityRole="button" onPress={() => setOpenWeek(open ? '' : week)} className="flex-row items-center justify-between py-2.5">
+                <Press accessibilityRole="button" onPress={() => setOpenWeek(open ? '' : week)} className="flex-row items-center justify-between py-2.5">
                   <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Semana del {label}</Text>
                   <View accessible={!!rows[0]} accessibilityLabel={rows[0] ? `Ganó ${rows[0].name}` : undefined} className="flex-row items-center" style={{ gap: 4 }}>
                     <Trophy size={14} color={warnText} />
                     <Text importantForAccessibility="no" className="text-[12px] text-muted-light dark:text-muted-dark">{rows[0]?.name}</Text>
                   </View>
-                </Pressable>
+                </Press>
                 {open &&
                   rows.map((r) => (
                     <View key={r.user_id} className="flex-row items-center py-1" style={{ gap: 10 }}>
@@ -507,7 +508,7 @@ export default function GroupDetailScreen() {
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
           const mine = n.user_id === userId;
           return (
-            <Pressable
+            <Press
               key={n.id}
               onLongPress={() => openNoteMenu(n)}
               delayLongPress={350}
@@ -529,7 +530,7 @@ export default function GroupDetailScreen() {
               >
                 <Text style={{ color: mine ? '#fff' : colors.light.text, fontSize: 13.5 }}>{n.text}</Text>
               </View>
-            </Pressable>
+            </Press>
           );
         })}
         {(notes ?? []).length === 0 && (
@@ -553,9 +554,9 @@ export default function GroupDetailScreen() {
           {...(Platform.OS === 'web' ? { numberOfLines: 1 } : null)}
           multiline
         />
-        <Pressable accessibilityRole="button" accessibilityLabel="Enviar mensaje" onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">
+        <Press accessibilityRole="button" accessibilityLabel="Enviar mensaje" onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">
           <Send size={16} color="#fff" />
-        </Pressable>
+        </Press>
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
     </KeyboardAvoidingView>

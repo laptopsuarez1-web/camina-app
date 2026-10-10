@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Modal, StyleSheet } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Flame, IconBubble, ChevronUp, ChevronDown } from '@/components/icons';
@@ -211,9 +212,10 @@ export default function ActividadScreen() {
           {/* Selector 7 / 30 días dentro de la tarjeta: cambia el único gráfico de la pantalla. */}
           <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
             {([7, 30] as const).map((r) => (
-              <Pressable
+              <Press
                 key={r}
                 onPress={() => setRange(r)}
+                haptic="selection"
                 accessibilityRole="button"
                 accessibilityState={{ selected: range === r }}
                 aria-pressed={range === r}
@@ -224,7 +226,7 @@ export default function ActividadScreen() {
                 <Text className="font-bold text-[12px]" style={{ color: range === r ? colors.mintDark : colors.authMuted }}>
                   {r} días
                 </Text>
-              </Pressable>
+              </Press>
             ))}
           </View>
         </View>
@@ -245,7 +247,7 @@ export default function ActividadScreen() {
               {chartDays.map((d) => {
                 const hit = d.steps >= goalFor(d.key);
                 return (
-                  <Pressable
+                  <Press
                     key={d.key}
                     onPress={() => setSelected(d.key)}
                     className="flex-1 items-center justify-end"
@@ -285,7 +287,7 @@ export default function ActividadScreen() {
                     >
                       {range === 7 ? (d.isToday ? 'Hoy' : d.label) : ''}
                     </Text>
-                  </Pressable>
+                  </Press>
                 );
               })}
             </View>
@@ -363,7 +365,7 @@ export default function ActividadScreen() {
           <View key={i} className="flex-row justify-between mb-1.5">
             {week.map((cell, j) =>
               cell ? (
-                <Pressable
+                <Press
                   key={cell.key}
                   accessibilityRole="button"
                   accessibilityLabel={`Día ${cell.day}: ${cell.state === 'met' ? 'meta cumplida' : cell.state === 'miss' ? 'meta no cumplida' : cell.state === 'idle' ? 'no abriste la app' : cell.key === todayKey ? 'hoy, en curso' : 'sin datos'}. Ver detalle`}
@@ -379,7 +381,7 @@ export default function ActividadScreen() {
                   <Text className="text-[12px] font-bold" style={{ color: CAL_FG[cell.state] }}>
                     {cell.day}
                   </Text>
-                </Pressable>
+                </Press>
               ) : (
                 <View key={`empty-${i}-${j}`} className="w-8 h-8" />
               )
@@ -433,7 +435,7 @@ export default function ActividadScreen() {
       <Modal visible={selected != null} transparent animationType="fade" onRequestClose={() => setSelected(null)}>
         <View className="flex-1 items-center justify-center px-8" style={{ backgroundColor: 'rgba(20,12,36,0.55)' }}>
           {/* El fondo que cierra el detalle es hermano de la tarjeta (no su padre): así el lector de pantalla llega al contenido y al botón Cerrar. */}
-          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar detalle" onPress={() => setSelected(null)} style={StyleSheet.absoluteFill} />
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar detalle" onPress={() => setSelected(null)} style={StyleSheet.absoluteFill} />
           {selected != null && (() => {
             const steps = byDay.get(selected) ?? 0;
             const g = goalFor(selected);
@@ -467,9 +469,9 @@ export default function ActividadScreen() {
                     {(steps - (countedByDay.get(selected) ?? 0)).toLocaleString('es-BO')} de estos pasos no sumaron Puntos: los Puntos solo se cargan cuando abrís la app ese día.
                   </Text>
                 )}
-                <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">
+                <Press accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">
                   <Text className="font-semibold text-[13.5px]" style={{ color: purpleText }}>Cerrar</Text>
-                </Pressable>
+                </Press>
               </View>
             );
           })()}

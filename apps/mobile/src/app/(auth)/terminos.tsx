@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import { Check } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
@@ -62,7 +63,7 @@ export default function TerminosScreen() {
       </ScrollView>
 
       <View className="px-6 py-4 border-t border-line-light dark:border-line-dark">
-        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} aria-checked={accepted} hitSlop={{ top: 8, bottom: 8 }} onPress={() => setAccepted((v) => !v)} className="flex-row items-center gap-2.5 mb-4">
+        <Press accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} aria-checked={accepted} hitSlop={{ top: 8, bottom: 8 }} onPress={() => setAccepted((v) => !v)} className="flex-row items-center gap-2.5 mb-4">
           <View
             className="w-5 h-5 rounded-md items-center justify-center"
             style={{ borderWidth: 1.5, borderColor: accepted ? colors.aquaDeep : isDark ? colors.dark.muted : colors.light.muted, backgroundColor: accepted ? colors.aquaDeep : 'transparent' }}
@@ -72,8 +73,8 @@ export default function TerminosScreen() {
           <Text className="flex-1 text-[12.5px] text-text-light dark:text-text-dark">
             Leí y acepto los Términos de uso y la Política de privacidad de Camina.
           </Text>
-        </Pressable>
-        <Pressable
+        </Press>
+        <Press
           accessibilityRole="button"
           accessibilityLabel="Aceptar y continuar"
           accessibilityState={{ busy: loading }}
@@ -89,7 +90,7 @@ export default function TerminosScreen() {
               Aceptar y continuar
             </Text>
           )}
-        </Pressable>
+        </Press>
       </View>
     </View>
   );

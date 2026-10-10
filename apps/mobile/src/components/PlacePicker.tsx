@@ -1,4 +1,5 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -6,7 +7,7 @@ import { usePlaces } from '@/hooks/usePlaces';
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   const dark = useColorScheme().colorScheme === 'dark';
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityState={{ selected }}
       aria-pressed={selected}
@@ -21,7 +22,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
       }}
     >
       <Text style={{ color: selected ? colors.mintInk : dark ? colors.dark.muted : colors.light.muted, fontWeight: selected ? '700' : '500', fontSize: 13 }}>{label}</Text>
-    </Pressable>
+    </Press>
   );
 }
 

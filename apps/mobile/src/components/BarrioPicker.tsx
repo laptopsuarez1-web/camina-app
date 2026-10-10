@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, Linking } from 'react-native';
+import { View, Text, TextInput, ActivityIndicator, Alert, Linking } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import * as Location from 'expo-location';
 import { useColorScheme } from 'nativewind';
 import { Search, Locate, X, Check } from '@/components/icons';
@@ -55,9 +56,9 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         <View className="flex-row items-center self-start rounded-full pl-3.5 pr-2 py-2 mb-2 bg-mint" style={{ gap: 8 }}>
           <Check size={13} color={colors.mintInk} />
           <Text style={{ color: colors.mintInk, fontWeight: '700', fontSize: 13 }}>{zone}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel={`Quitar barrio ${zone}`} onPress={() => onChange(null)} hitSlop={15}>
+          <Press accessibilityRole="button" accessibilityLabel={`Quitar barrio ${zone}`} onPress={() => onChange(null)} hitSlop={15}>
             <X size={14} color={colors.mintInk} />
-          </Pressable>
+          </Press>
         </View>
       )}
       <View className="flex-row items-center bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3" style={{ gap: 8 }}>
@@ -76,7 +77,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
       {q.length > 0 && (
         <View className="flex-row flex-wrap mt-2">
           {matches.map((z) => (
-            <Pressable
+            <Press
               key={z}
               accessibilityRole="button"
               onPress={() => { onChange(z); setQuery(''); }}
@@ -84,15 +85,15 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
               style={{ minHeight: 40, justifyContent: 'center' }}
             >
               <Text className="text-text-light dark:text-text-dark text-[13px] font-medium">{z}</Text>
-            </Pressable>
+            </Press>
           ))}
           {matches.length === 0 && <Text className="text-muted-light dark:text-muted-dark text-[12.5px]">No hay un barrio con ese nombre.</Text>}
         </View>
       )}
-      <Pressable accessibilityRole="button" accessibilityState={{ busy: locating }} onPress={useMyLocation} disabled={locating} className="flex-row items-center self-start mt-2 py-1.5" style={{ gap: 6 }}>
+      <Press accessibilityRole="button" accessibilityState={{ busy: locating }} onPress={useMyLocation} disabled={locating} className="flex-row items-center self-start mt-2 py-1.5" style={{ gap: 6 }}>
         {locating ? <ActivityIndicator size="small" color={colors.aquaDeep} /> : <Locate size={15} color={dark ? colors.mint : colors.aquaInk} />}
         <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold">Usar mi ubicación actual</Text>
-      </Pressable>
+      </Press>
     </View>
   );
 }

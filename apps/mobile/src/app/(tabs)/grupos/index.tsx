@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Plus, Users, Trophy, IconBubble } from '@/components/icons';
@@ -88,30 +89,32 @@ export default function GruposScreen() {
 
       {rankingOpen && (
       <Glass className="flex-row rounded-full p-1 mb-4">
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityState={{ selected: view === 'mios' }}
           aria-pressed={view === 'mios'}
           onPress={() => setView('mios')}
+          haptic="selection"
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
         >
           <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'mios' ? { color: '#fff' } : null) }}>
             Mis grupos
           </Text>
-        </Pressable>
-        <Pressable
+        </Press>
+        <Press
           accessibilityRole="button"
           accessibilityState={{ selected: view === 'ranking' }}
           aria-pressed={view === 'ranking'}
           onPress={() => setView('ranking')}
+          haptic="selection"
           className="flex-1 py-2 rounded-full items-center"
           style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}
         >
           <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'ranking' ? { color: '#fff' } : null) }}>
             Ranking global
           </Text>
-        </Pressable>
+        </Press>
       </Glass>
       )}
 
@@ -200,7 +203,7 @@ export default function GruposScreen() {
               const progress = target > 0 && w ? Math.min(1, w.total / target) : 0;
               const count = g.group_members.length;
               return (
-                <Pressable
+                <Press
                   key={g.id}
                   accessibilityRole="button"
                   accessibilityLabel={`${g.name}, ${count} ${count === 1 ? 'miembro' : 'miembros'}${w?.myRank ? `, vas ${w.myRank}.º` : ''}`}
@@ -269,7 +272,7 @@ export default function GruposScreen() {
                       )}
                     </View>
                   )}
-                </Pressable>
+                </Press>
               );
             })}
           </View>
@@ -298,7 +301,7 @@ export default function GruposScreen() {
                 </Text>
               </View>
             </View>
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel={`Unirme a ${g.name}`}
               onPress={() => joinGroup.mutate(g.id)}
@@ -307,7 +310,7 @@ export default function GruposScreen() {
               style={{ flexShrink: 0, marginLeft: 8 }}
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>
-            </Pressable>
+            </Press>
           </Glass>
         ))}
         {creating && (
@@ -320,18 +323,18 @@ export default function GruposScreen() {
               autoFocus
               className="border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 mb-2.5 text-text-light dark:text-text-dark"
             />
-            <Pressable
+            <Press
               accessibilityRole="button"
               onPress={() => name.trim() && createGroup.mutate(name.trim())}
               disabled={createGroup.isPending}
               className="bg-aqua-deep rounded-sm py-3 items-center"
             >
               <Text className="text-white font-semibold">Crear</Text>
-            </Pressable>
+            </Press>
           </Glass>
         )}
         {!creating && my.length > 0 && (
-          <Pressable
+          <Press
             accessibilityRole="button"
             onPress={() => setCreating(true)}
             className="flex-row items-center gap-3 rounded-2xl p-4"
@@ -348,7 +351,7 @@ export default function GruposScreen() {
                 Armá tu propio grupo y sumá amigos
               </Text>
             </View>
-          </Pressable>
+          </Press>
         )}
       </View>
         </>

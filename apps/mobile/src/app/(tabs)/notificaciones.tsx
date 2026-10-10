@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -50,9 +51,9 @@ export default function NotificacionesScreen() {
     <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader style={{ paddingBottom: 24 }}>
         <View className="flex-row items-center gap-3">
-          <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+          <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
-          </Pressable>
+          </Press>
           <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Avisos</Text>
         </View>
       </DarkHeader>
@@ -64,7 +65,7 @@ export default function NotificacionesScreen() {
           const dest = routeForNotification(n.data?.type);
           const opens = dest !== '/(tabs)/notificaciones';
           return (
-            <Pressable
+            <Press
               key={n.id}
               accessibilityRole={opens ? 'button' : undefined}
               accessibilityLabel={`${isNew ? 'Nueva. ' : ''}${n.title}. ${n.body}. ${timeAgo(n.created_at)}`}
@@ -85,7 +86,7 @@ export default function NotificacionesScreen() {
                 </View>
               </View>
             </Glass>
-            </Pressable>
+            </Press>
           );
         })}
         {isError && items.length === 0 && (

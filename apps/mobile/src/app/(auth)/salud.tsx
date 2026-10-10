@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Linking, ScrollView } from 'react-native';
+import { View, Text, Linking, ScrollView } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { colors } from '@/theme/tokens';
@@ -45,18 +46,18 @@ export default function SaludScreen() {
               <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', flex: 1 }}>{title}</Text>
             </View>
             <Text style={{ color: colors.authMuted, fontSize: 12.5, lineHeight: 18, marginBottom: 12 }}>{text}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${title}: abrir`} hitSlop={{ top: 5, bottom: 5 }} onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
+            <Press accessibilityRole="button" accessibilityLabel={`${title}: abrir`} hitSlop={{ top: 5, bottom: 5 }} onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
               <Text style={{ color: colors.mint, fontWeight: '700', fontSize: 13 }}>Abrir</Text>
-            </Pressable>
+            </Press>
           </View>
         ))}
 
-        <Pressable accessibilityRole="button" onPress={next} style={{ backgroundColor: colors.mint, borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 12 }}>
+        <Press accessibilityRole="button" onPress={next} style={{ backgroundColor: colors.mint, borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 12 }}>
           <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: 15 }}>Ya lo tengo, continuar</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
+        </Press>
+        <Press accessibilityRole="button" onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
           <Text style={{ color: '#B3A6D6', fontSize: 12.5 }}>Lo hago después</Text>
-        </Pressable>
+        </Press>
       </ScrollView>
     </View>
   );

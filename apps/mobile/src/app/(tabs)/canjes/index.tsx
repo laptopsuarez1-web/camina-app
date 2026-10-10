@@ -2,22 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TextInput,
-  Modal,
-  ActivityIndicator,
-  Alert,
-  Image,
-  Linking,
-  Animated,
-  Platform,
-  RefreshControl,
-  AccessibilityInfo,
-} from 'react-native';
+import { View, Text, ScrollView, TextInput, Modal, ActivityIndicator, Alert, Image, Linking, Animated, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
@@ -536,7 +522,7 @@ export default function CanjesScreen() {
             pointerEvents="box-none"
             style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: Platform.OS === 'android' ? topInset + 24 : 54, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel={balanceError && balance === undefined ? 'Puntos, ver detalle' : `${balance ?? 0} Puntos, ver detalle`}
               hitSlop={6}
@@ -546,10 +532,10 @@ export default function CanjesScreen() {
             >
               <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
               <Text style={{ fontWeight: '700', fontSize: 15, color: colors.light.text }}>{balanceText}</Text>
-            </Pressable>
+            </Press>
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <BellButton color={colors.light.muted} bg="#fff" />
-              <Pressable
+              <Press
                 accessibilityRole="button"
                 accessibilityLabel="Tu perfil"
                 hitSlop={6}
@@ -562,12 +548,12 @@ export default function CanjesScreen() {
                   style={{ width: '100%', height: '100%' }}
                   fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
                 />
-              </Pressable>
+              </Press>
             </View>
           </View>
 
           <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 18, alignItems: 'center' }}>
-            <Pressable
+            <Press
               accessibilityRole="button"
               onPress={() => setMapOpen(true)}
               className="flex-row items-center bg-card-light rounded-full"
@@ -575,7 +561,7 @@ export default function CanjesScreen() {
             >
               <MapIcon size={16} color={colors.aquaDeep} />
               <Text style={{ fontWeight: '700', fontSize: 13.5, color: colors.light.text }}>Explorar el mapa</Text>
-            </Pressable>
+            </Press>
           </View>
         </View>
 
@@ -597,19 +583,19 @@ export default function CanjesScreen() {
                   onSubmitEditing={() => zoneInput.trim() && saveZone(zoneInput.trim())}
                   returnKeyType="done"
                 />
-                <Pressable
+                <Press
                   accessibilityRole="button"
                   onPress={() => zoneInput.trim() && saveZone(zoneInput.trim())}
                   disabled={!zoneInput.trim()}
                   className="bg-purple-deep rounded-full px-3.5 py-2"
                 >
                   <Text className="text-xs font-semibold text-white">Guardar</Text>
-                </Pressable>
+                </Press>
               </View>
               {/* hitSlop solo hacia abajo: arriba pisaría la fila del campo y "Guardar". */}
-              <Pressable accessibilityRole="button" hitSlop={{ bottom: 16 }} onPress={() => setShowZonePrompt(false)}>
+              <Press accessibilityRole="button" hitSlop={{ bottom: 16 }} onPress={() => setShowZonePrompt(false)}>
                 <Text className="text-xs text-muted-light dark:text-muted-dark mt-2">Ahora no</Text>
-              </Pressable>
+              </Press>
             </View>
           )}
 
@@ -631,7 +617,7 @@ export default function CanjesScreen() {
               const CIcon = st.icon;
               const on = category === c;
               return (
-                <Pressable
+                <Press
                   key={c}
                   accessibilityRole="button"
                   accessibilityState={{ selected: category === c }}
@@ -649,36 +635,38 @@ export default function CanjesScreen() {
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
-                </Pressable>
+                </Press>
               );
             })}
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityState={{ selected: onlyOpen }}
               aria-pressed={onlyOpen}
+              haptic="selection"
               onPress={() => setOnlyOpen((v) => !v)}
               className="rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
               style={{ minHeight: 40, justifyContent: 'center', ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
             >
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
-            </Pressable>
-            <Pressable
+            </Press>
+            <Press
               accessibilityRole="button"
               accessibilityState={{ selected: onlyFavs }}
               aria-pressed={onlyFavs}
+              haptic="selection"
               onPress={() => setOnlyFavs((v) => !v)}
               className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
               style={{ gap: 5, minHeight: 40, ...(onlyFavs ? { backgroundColor: colors.dangerFill, borderColor: colors.dangerFill } : null) }}
             >
               <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
-            </Pressable>
+            </Press>
             {categories.filter((c) => c !== 'Todos').map((c) => {
               const st = categoryStyle(c);
               const CIcon = st.icon;
               const on = category === c;
               return (
-                <Pressable
+                <Press
                   key={c}
                   accessibilityRole="button"
                   accessibilityState={{ selected: category === c }}
@@ -696,7 +684,7 @@ export default function CanjesScreen() {
                 >
                   <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
-                </Pressable>
+                </Press>
               );
             })}
           </ScrollView>
@@ -715,7 +703,7 @@ export default function CanjesScreen() {
           )}
 
           {groups.map((g) => (
-            <Pressable
+            <Press
               key={g.business.id}
               // En web el corazón de adentro ya es un botón y un <button> no puede ir dentro de otro <button>.
               accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
@@ -759,9 +747,9 @@ export default function CanjesScreen() {
                   </Text>
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
-                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
+                  <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
                     <Heart size={20} color={favorites.isFavorite(g.business.id) ? '#E5484D' : muted} fill={favorites.isFavorite(g.business.id) ? '#E5484D' : 'none'} />
-                  </Pressable>
+                  </Press>
                   <ChevronRight size={18} color={muted} />
                 </View>
               </View>
@@ -782,7 +770,7 @@ export default function CanjesScreen() {
                   </View>
                 ))}
               </ScrollView>
-            </Pressable>
+            </Press>
           ))}
 
           {!isLoading && !isError && groups.length === 0 && (
@@ -818,7 +806,7 @@ export default function CanjesScreen() {
               ))}
             </MapView>
           )}
-          <Pressable
+          <Press
             accessibilityRole="button"
             accessibilityLabel="Cerrar mapa"
             onPress={() => setMapOpen(false)}
@@ -826,7 +814,7 @@ export default function CanjesScreen() {
             style={{ top: 56, left: 20, width: 40, height: 40 }}
           >
             <X size={18} color={colors.light.text} />
-          </Pressable>
+          </Press>
           <View style={{ position: 'absolute', top: 56, left: 70, right: 20 }}>
             <View className="flex-row items-center bg-card-light rounded-full" style={{ height: 40, paddingHorizontal: 14, gap: 8 }}>
               <Search size={16} color={colors.light.muted} />
@@ -841,25 +829,26 @@ export default function CanjesScreen() {
                 style={{ flex: 1, fontSize: 13.5, color: colors.light.text }}
               />
               {!!mapSearch && (
-                <Pressable accessibilityRole="button" accessibilityLabel="Borrar búsqueda" onPress={() => setMapSearch('')} hitSlop={8}>
+                <Press accessibilityRole="button" accessibilityLabel="Borrar búsqueda" onPress={() => setMapSearch('')} hitSlop={8}>
                   <X size={14} color={colors.light.muted} />
-                </Pressable>
+                </Press>
               )}
             </View>
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityState={{ selected: onlyOpen }}
               aria-pressed={onlyOpen}
+              haptic="selection"
               onPress={() => setOnlyOpen((v) => !v)}
               className="self-start rounded-full"
               style={{ marginTop: 8, paddingHorizontal: 14, height: 32, justifyContent: 'center', backgroundColor: onlyOpen ? colors.aquaDeep : '#fff' }}
             >
               <Text style={{ fontSize: 12.5, fontWeight: '700', color: onlyOpen ? '#fff' : colors.light.text }}>Disponibles ahora</Text>
-            </Pressable>
+            </Press>
             {mapResults.length > 0 && (
               <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
                 {mapResults.map((b) => (
-                  <Pressable
+                  <Press
                     key={b.id}
                     accessibilityRole="button"
                     onPress={() => focusBusiness(b)}
@@ -870,7 +859,7 @@ export default function CanjesScreen() {
                       <Text numberOfLines={1} style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>{b.name}</Text>
                       <Text numberOfLines={1} style={{ fontSize: 11.5, color: colors.light.muted }}>{b.category}</Text>
                     </View>
-                  </Pressable>
+                  </Press>
                 ))}
               </View>
             )}
@@ -881,7 +870,7 @@ export default function CanjesScreen() {
             )}
           </View>
           {mapRegion && (
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel="Abrir en Google Maps"
               onPress={() => openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
@@ -889,7 +878,7 @@ export default function CanjesScreen() {
               style={{ bottom: 44, right: 20, width: 44, height: 44, backgroundColor: 'rgba(29,27,46,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}
             >
               <Navigation size={18} color="#fff" />
-            </Pressable>
+            </Press>
           )}
         </View>
       </Modal>
@@ -905,7 +894,7 @@ export default function CanjesScreen() {
                 ) : (
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
                 )}
-                <Pressable
+                <Press
                   accessibilityRole="button"
                   accessibilityLabel="Cerrar"
                   onPress={() => setProfileBusinessId(null)}
@@ -913,7 +902,7 @@ export default function CanjesScreen() {
                   style={{ top: 54, left: 20, width: 40, height: 40 }}
                 >
                   <X size={18} color={colors.light.text} />
-                </Pressable>
+                </Press>
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
@@ -932,9 +921,9 @@ export default function CanjesScreen() {
                     </Text>
                     {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
                   </View>
-                  <Pressable accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
+                  <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
-                  </Pressable>
+                  </Press>
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
@@ -950,7 +939,7 @@ export default function CanjesScreen() {
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
                   {profileGroup.business.address ? (
-                    <Pressable
+                    <Press
                       accessibilityRole="link"
                       onPress={() =>
                         profileGroup.business.lat != null && profileGroup.business.lng != null
@@ -964,11 +953,11 @@ export default function CanjesScreen() {
                     >
                       <MapPin size={14} color={isDark ? colors.aqua : colors.aquaDeep} />
                       <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{profileGroup.business.address}</Text>
-                    </Pressable>
+                    </Press>
                   ) : null}
                   <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
                   {profileGroup.business.instagram ? (
-                    <Pressable
+                    <Press
                       accessibilityRole="link"
                       onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '').trim()}`)}
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
@@ -978,10 +967,10 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
                         {profileGroup.business.instagram.replace('@', '')}
                       </Text>
-                    </Pressable>
+                    </Press>
                   ) : null}
                   {profileGroup.business.phone ? (
-                    <Pressable
+                    <Press
                       accessibilityRole="link"
                       accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
                       onPress={() => Linking.openURL(`https://wa.me/${profileGroup.business.phone!.replace(/\D/g, '')}`)}
@@ -990,10 +979,10 @@ export default function CanjesScreen() {
                     >
                       <WhatsApp size={15} color="#1FA855" weight="fill" />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
-                    </Pressable>
+                    </Press>
                   ) : null}
                   {profileGroup.business.website ? (
-                    <Pressable
+                    <Press
                       accessibilityRole="link"
                       onPress={() => {
                         const url = profileGroup.business.website!.trim();
@@ -1006,7 +995,7 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>
                         {profileGroup.business.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                       </Text>
-                    </Pressable>
+                    </Press>
                   ) : null}
                 </View>
 
@@ -1055,10 +1044,11 @@ export default function CanjesScreen() {
                                   </View>
                                 </View>
                               </View>
-                              <Pressable
+                              <Press
                                 accessibilityRole="button"
                                 accessibilityState={{ busy: redeeming }}
                                 onPress={() => handleRedeem(b.id, b)}
+                                haptic="light"
                                 disabled={!canRedeem || redeem.isPending}
                                 className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
                                 style={{ paddingVertical: 11, gap: 8 }}
@@ -1067,7 +1057,7 @@ export default function CanjesScreen() {
                                 <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
                                   {redeeming ? 'Canjeando…' : note ?? 'Canjear'}
                                 </Text>
-                              </Pressable>
+                              </Press>
                             </Glass>
                           );
                         })}
@@ -1096,7 +1086,7 @@ export default function CanjesScreen() {
                 </View>
               </View>
               {confirmed && reviewUrl ? (
-                <Pressable
+                <Press
                   accessibilityRole="link"
                   hitSlop={8}
                   onPress={() => Linking.openURL(reviewUrl)}
@@ -1105,9 +1095,9 @@ export default function CanjesScreen() {
                 >
                   <Star size={12} color="#C98A0B" weight="fill" />
                   <Text className="text-[12px] font-bold text-gold-ink">Calificar en Google Maps</Text>
-                </Pressable>
+                </Press>
               ) : !confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
-                <Pressable
+                <Press
                   accessibilityRole="link"
                   hitSlop={8}
                   onPress={() => openFullMap(activeBenefit.business.lat!, activeBenefit.business.lng!, activeBenefit.business.name)}
@@ -1115,7 +1105,7 @@ export default function CanjesScreen() {
                 >
                   <Locate size={12} color={colors.purple} />
                   <Text className="text-[12px] font-bold text-purple-ink dark:text-purple-soft">Cómo llegar</Text>
-                </Pressable>
+                </Press>
               ) : null}
             </View>
 
@@ -1140,19 +1130,19 @@ export default function CanjesScreen() {
                   <>
                     <Text className="text-[14px] font-bold text-text-light dark:text-text-dark mb-3">¿Compraste algo más?</Text>
                     <View className="flex-row gap-2.5 w-full mb-2.5">
-                      <Pressable accessibilityRole="button" onPress={() => answerFollowup(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
+                      <Press accessibilityRole="button" onPress={() => answerFollowup(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
                         <Text className="text-white font-bold text-[14px]">Sí, compré algo</Text>
-                      </Pressable>
-                      <Pressable accessibilityRole="button" onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
+                      </Press>
+                      <Press accessibilityRole="button" onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
                         <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">Solo el beneficio</Text>
-                      </Pressable>
+                      </Press>
                     </View>
                   </>
                 ) : (
                   <>
                     <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-3 text-center">¡Gracias por contarnos!</Text>
                     {reviewUrl ? (
-                      <Pressable
+                      <Press
                         accessibilityRole="link"
                         onPress={() => Linking.openURL(reviewUrl)}
                         className="w-full rounded-2xl py-3.5 items-center justify-center flex-row mb-2.5"
@@ -1160,13 +1150,13 @@ export default function CanjesScreen() {
                       >
                         <Star size={16} color="#C98A0B" weight="fill" />
                         <Text className="font-bold text-[14px] text-gold-ink">Calificar en Google Maps</Text>
-                      </Pressable>
+                      </Press>
                     ) : null}
                   </>
                 )}
-                <Pressable accessibilityRole="button" onPress={closeCode} className="w-full bg-aqua-deep rounded-2xl py-4 items-center mt-1">
+                <Press accessibilityRole="button" onPress={closeCode} className="w-full bg-aqua-deep rounded-2xl py-4 items-center mt-1">
                   <Text className="text-white font-bold text-[15px]">Listo</Text>
-                </Pressable>
+                </Press>
               </View>
             ) : !expired ? (
               <>
@@ -1186,9 +1176,9 @@ export default function CanjesScreen() {
                     Vence en <Text className="font-bold text-text-light dark:text-text-dark">{mm}:{ss}</Text>
                   </Text>
                 </View>
-                <Pressable accessibilityRole="button" onPress={closeCode} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
+                <Press accessibilityRole="button" onPress={closeCode} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Ya lo mostré</Text>
-                </Pressable>
+                </Press>
               </>
             ) : (
               <>
@@ -1196,17 +1186,17 @@ export default function CanjesScreen() {
                   <Text accessibilityLiveRegion="polite" className="text-warn-deep font-bold text-base">Código vencido</Text>
                   <Text className="text-[#8A5A2E] text-xs mt-1">No llegaste a mostrarlo a tiempo.</Text>
                 </View>
-                <Pressable accessibilityRole="button" onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
+                <Press accessibilityRole="button" onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Cancelar y recuperar Puntos</Text>
-                </Pressable>
-                <Pressable accessibilityRole="button" onPress={handleRegenerate} disabled={regenerate.isPending} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">
+                </Press>
+                <Press accessibilityRole="button" onPress={handleRegenerate} disabled={regenerate.isPending} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">
                   <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">Generar un código nuevo</Text>
-                </Pressable>
+                </Press>
               </>
             )}
-            <Pressable accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode}>
+            <Press accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode}>
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center">Cerrar</Text>
-            </Pressable>
+            </Press>
           </Glass>
         </View>
       </Modal>

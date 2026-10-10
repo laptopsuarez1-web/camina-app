@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
@@ -50,7 +51,7 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
 
   return (
     <View className="w-full">
-      <Pressable
+      <Press
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         aria-expanded={open}
@@ -62,7 +63,7 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
         <Clock size={14} color={muted} />
         <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{status}</Text>
         {open ? <ChevronUp size={14} color={muted} /> : <ChevronDown size={14} color={muted} />}
-      </Pressable>
+      </Press>
 
       {open && (
         <Glass className="rounded-2xl px-4 py-3 mt-2" style={{ gap: 7 }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, Alert, ActivityIndicator, Image, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Alert, ActivityIndicator, Image, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, Trophy, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
@@ -82,16 +83,16 @@ export default function NuevoDesafioScreen() {
           Del {fmtShort(start)} al {fmtShort(end)}. Invitá a tu grupo: quienes cumplan la meta se reparten los puntos.
         </Text>
         <View className="absolute left-5 right-5" style={{ bottom: 50 }}>
-          <Pressable
+          <Press
             accessibilityRole="button"
             onPress={() => Share.share({ message: `Sumate a mi desafío "${name.trim()}" en Camina.\n${groupInviteLink(groupId!)}` })}
             className="bg-mint rounded-2xl py-4 items-center mb-3"
           >
             <Text className="text-mint-dark font-bold text-[15px]">Compartir link</Text>
-          </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })} className="items-center py-2">
+          </Press>
+          <Press accessibilityRole="button" onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })} className="items-center py-2">
             <Text className="font-bold text-[14px] text-aqua-ink dark:text-aqua">Ir al grupo</Text>
-          </Pressable>
+          </Press>
         </View>
       </View>
     );
@@ -103,9 +104,9 @@ export default function NuevoDesafioScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View className="px-5 pt-14 flex-row items-center justify-between">
-        <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
+        <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
           <ChevronLeft size={18} color={accentIcon} />
-        </Pressable>
+        </Press>
         <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark">Nuevo desafío</Text>
         <View style={{ width: 36 }} />
       </View>
@@ -137,7 +138,7 @@ export default function NuevoDesafioScreen() {
           <>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Elegí la regla</Text>
             {RULES.map((r) => (
-              <Pressable
+              <Press
                 key={r.key}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: rule === r.key }}
@@ -151,17 +152,17 @@ export default function NuevoDesafioScreen() {
                     <Text className="text-[12px] text-muted-light dark:text-muted-dark">{r.desc}</Text>
                   </View>
                 </Glass>
-              </Pressable>
+              </Press>
             ))}
             <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark mt-4 mb-2">Meta diaria por persona</Text>
             <View className="flex-row items-center justify-center" style={{ gap: 20 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="Bajar meta 500 pasos" onPress={() => setGoal(Math.max(MIN_DAILY_GOAL, goal - 500))} className="w-11 h-11 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
+              <Press accessibilityRole="button" accessibilityLabel="Bajar meta 500 pasos" onPress={() => setGoal(Math.max(MIN_DAILY_GOAL, goal - 500))} className="w-11 h-11 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
                 <Text className="text-[22px] font-bold text-text-light dark:text-text-dark">−</Text>
-              </Pressable>
+              </Press>
               <Text className="text-[34px] font-extrabold text-text-light dark:text-text-dark">{goal.toLocaleString('es-BO')}</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Subir meta 500 pasos" onPress={() => setGoal(Math.min(30000, goal + 500))} className="w-11 h-11 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
+              <Press accessibilityRole="button" accessibilityLabel="Subir meta 500 pasos" onPress={() => setGoal(Math.min(30000, goal + 500))} className="w-11 h-11 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
                 <Text className="text-[22px] font-bold text-text-light dark:text-text-dark">+</Text>
-              </Pressable>
+              </Press>
             </View>
             <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-1">mínimo {MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos</Text>
           </>
@@ -172,9 +173,9 @@ export default function NuevoDesafioScreen() {
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Duración</Text>
             <View className="flex-row" style={{ gap: 8 }}>
               {[3, 7, 10, 14].map((d) => (
-                <Pressable key={d} accessibilityRole="button" accessibilityState={{ selected: days === d }} aria-pressed={days === d} onPress={() => setDays(d)} className="rounded-full px-4 py-2.5" style={{ backgroundColor: days === d ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
+                <Press key={d} accessibilityRole="button" accessibilityState={{ selected: days === d }} aria-pressed={days === d} onPress={() => setDays(d)} className="rounded-full px-4 py-2.5" style={{ backgroundColor: days === d ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(days === d ? { color: '#fff' } : null) }}>{d} días</Text>
-                </Pressable>
+                </Press>
               ))}
             </View>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-3">Empieza hoy ({fmtShort(start)}) y termina el {fmtShort(end)}.</Text>
@@ -187,10 +188,10 @@ export default function NuevoDesafioScreen() {
             </View>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
               {STAKES.map((v) => (
-                <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} aria-pressed={stake === v} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
+                <Press key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} aria-pressed={stake === v} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
                   {v > 0 && <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />}
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(stake === v ? { color: '#fff' } : null) }}>{v}</Text>
-                </Pressable>
+                </Press>
               ))}
             </View>
             {insufficient && <Text className="text-[12px] mt-2" style={{ color: dangerText }}>No te alcanzan los puntos para poner {stake}.</Text>}
@@ -205,7 +206,7 @@ export default function NuevoDesafioScreen() {
       </View>
 
       <View className="px-5 pb-8">
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel={step < 3 ? 'Siguiente' : 'Crear desafío'}
           accessibilityState={{ busy: saving }}
@@ -215,7 +216,7 @@ export default function NuevoDesafioScreen() {
           style={{ backgroundColor: colors.mint, opacity: !canNext || (step === 3 && insufficient) ? 0.5 : 1 }}
         >
           {saving ? <ActivityIndicator color={colors.mintDark} /> : <Text className="text-mint-dark font-bold text-[15px]">{step < 3 ? 'Siguiente' : 'Crear desafío'}</Text>}
-        </Pressable>
+        </Press>
       </View>
     </KeyboardAvoidingView>
   );

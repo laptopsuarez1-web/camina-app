@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, Pressable, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, Text, View } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/useCelebrationStore';
@@ -107,7 +108,7 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
   }, []);
   return (
     <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, ...(c.at === 'bottom' ? { bottom: insets.bottom + 84 } : { top: insets.top + 8 }), transform: [{ translateY: y }] }}>
-      <Pressable accessibilityRole="alert" accessibilityLiveRegion="polite" onPress={onDone}>
+      <Press accessibilityRole="alert" accessibilityLiveRegion="polite" onPress={onDone}>
         <View
           style={{
             flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: '#fff',
@@ -122,7 +123,7 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
             {c.body ? <Text style={{ fontSize: 12, color: colors.light.muted, marginTop: 1 }}>{c.body}</Text> : null}
           </View>
         </View>
-      </Pressable>
+      </Press>
     </Animated.View>
   );
 }
@@ -149,7 +150,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
   return (
     <View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
       <Animated.View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(43,35,80,0.32)', opacity: fade }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" style={{ flex: 1 }} onPress={close} />
+        <Press accessibilityRole="button" accessibilityLabel="Cerrar" style={{ flex: 1 }} onPress={close} />
       </Animated.View>
       <Animated.View
         style={{
@@ -164,9 +165,9 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
         <Text ref={titleRef} accessibilityRole="header" style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ fontSize: 13.5, color: colors.light.muted, marginTop: 4, textAlign: 'center', lineHeight: 19 }}>{c.body}</Text> : null}
         {c.points ? <View style={{ marginTop: 14 }}><PointsPill points={c.points} /></View> : null}
-        <Pressable accessibilityRole="button" onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
+        <Press accessibilityRole="button" onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{c.cta ?? 'Listo'}</Text>
-        </Pressable>
+        </Press>
       </Animated.View>
     </View>
   );
@@ -201,9 +202,9 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
         {c.body ? <Text style={{ color: '#B9B0D4', fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>{c.body}</Text> : null}
         <Text style={{ color: '#B9B0D4', fontSize: 13, marginTop: 24 }}>Te llevaste</Text>
         <View style={{ marginTop: 8 }}><PointsPill points={c.points} big /></View>
-        <Pressable accessibilityRole="button" onPress={onDone} style={{ alignSelf: 'stretch', marginTop: 34, backgroundColor: GOLD, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+        <Press accessibilityRole="button" onPress={onDone} style={{ alignSelf: 'stretch', marginTop: 34, backgroundColor: GOLD, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
           <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 15 }}>¡Genial!</Text>
-        </Pressable>
+        </Press>
       </LinearGradient>
     </Animated.View>
   );

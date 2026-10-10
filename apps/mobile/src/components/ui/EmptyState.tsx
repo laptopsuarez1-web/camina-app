@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Image } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
 
@@ -12,9 +13,9 @@ export function EmptyState({
       <Text accessibilityRole="header" className="text-[15px] font-bold text-center text-text-light dark:text-text-dark">{title}</Text>
       <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-1.5" style={{ lineHeight: 18 }}>{text}</Text>
       {actionLabel && onAction ? (
-        <Pressable accessibilityRole="button" onPress={onAction} style={{ marginTop: 16, backgroundColor: colors.aquaDeep, borderRadius: 14, paddingVertical: 11, paddingHorizontal: 22 }}>
+        <Press accessibilityRole="button" onPress={onAction} style={{ marginTop: 16, backgroundColor: colors.aquaDeep, borderRadius: 14, paddingVertical: 11, paddingHorizontal: 22 }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13.5 }}>{actionLabel}</Text>
-        </Pressable>
+        </Press>
       ) : null}
     </Glass>
   );

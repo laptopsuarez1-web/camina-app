@@ -4,6 +4,7 @@ import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
+import { buzz } from '@/lib/haptics';
 import { useGlassStore } from '@/store/useGlassStore';
 import { paletteFor } from '@/components/ui/backgrounds';
 import { barFill, blurWeb, glassOn } from '@/components/ui/glassMath';
@@ -80,7 +81,10 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             aria-selected={focused}
             onPress={() => {
               const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+              if (!focused && !event.defaultPrevented) {
+                buzz.selection();
+                navigation.navigate(route.name, route.params);
+              }
             }}
             onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
             style={({ pressed }) => ({

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, Text, ScrollView, Pressable, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
+import { View, Text, ScrollView, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
@@ -14,6 +15,7 @@ import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
 import { GlassSlider } from '@/components/ui/GlassSlider';
+import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -35,9 +37,9 @@ function PermRow({ icon, title, text, status, onPress, last }: { icon: (p: { siz
         <Text className="text-[14px] text-text-light dark:text-text-dark">{title}</Text>
         <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">{text}</Text>
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${title}: ${on ? 'ajustes' : 'activar'}`} onPress={onPress} hitSlop={8} className={`px-3 py-2 rounded-full ${on ? 'bg-purple-light-light dark:bg-purple-light-dark' : 'bg-aqua-deep'}`}>
+      <Press accessibilityRole="button" accessibilityLabel={`${title}: ${on ? 'ajustes' : 'activar'}`} onPress={onPress} hitSlop={8} className={`px-3 py-2 rounded-full ${on ? 'bg-purple-light-light dark:bg-purple-light-dark' : 'bg-aqua-deep'}`}>
         <Text className={`text-[12px] font-semibold ${on ? 'text-purple-ink dark:text-purple-soft' : 'text-white'}`}>{on ? 'Ajustes' : 'Activar'}</Text>
-      </Pressable>
+      </Press>
     </View>
   );
 }
@@ -189,14 +191,14 @@ export default function PerfilScreen() {
           </View>
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
+        <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
           <Pencil size={14} color="#fff" />
           <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
-        </Pressable>
+        </Press>
       </Glass>
 
       <Glass className="rounded-2xl overflow-hidden mb-4">
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`}
           onPress={() => router.push('/(tabs)/puntos')}
@@ -209,21 +211,21 @@ export default function PerfilScreen() {
             <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
           </View>
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
-        </Pressable>
+        </Press>
       </Glass>
 
       <Glass className="rounded-3xl overflow-hidden mb-4">
-        <Pressable accessibilityRole="button" onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
+        <Press accessibilityRole="button" onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
           <IconBubble icon={Gift} tone="aqua" size={46} />
           <View className="flex-1">
             <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
             <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Ganá 5 Puntos cuando tu amigo empiece a caminar</Text>
           </View>
-        </Pressable>
+        </Press>
       </Glass>
 
       <Glass className="rounded-2xl overflow-hidden mb-4">
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel={`Permisos: ${pendingPerms === 0 ? 'todo activo' : `${pendingPerms} sin activar`}`}
           onPress={() => setPermsOpen(true)}
@@ -239,17 +241,17 @@ export default function PerfilScreen() {
             </Text>
             <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
           </View>
-        </Pressable>
+        </Press>
       </Glass>
 
       <Modal visible={permsOpen} transparent animationType="slide" onRequestClose={() => setPermsOpen(false)}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
+        <Press accessibilityRole="button" accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
         <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32 }}>
           <View className="flex-row items-center justify-between mb-3">
             <Text accessibilityRole="header" className="font-bold text-[17px] text-text-light dark:text-text-dark ml-1">Permisos</Text>
-            <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setPermsOpen(false)}>
+            <Press accessibilityRole="button" hitSlop={10} onPress={() => setPermsOpen(false)}>
               <Text className="text-[14px] font-semibold text-aqua-ink dark:text-aqua">Listo</Text>
-            </Pressable>
+            </Press>
           </View>
           <Glass className="rounded-2xl overflow-hidden">
         <PermRow
@@ -281,7 +283,7 @@ export default function PerfilScreen() {
       <Glass className="rounded-md overflow-hidden mb-4">
         <View className="flex-row items-center justify-between p-3.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
-          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={toggleRanking} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
+          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
       </Glass>
 
@@ -292,7 +294,7 @@ export default function PerfilScreen() {
           <Switch
             accessibilityLabel="Modo oscuro"
             value={profile?.dark_mode ?? false}
-            onValueChange={toggleDarkMode}
+            onValueChange={(v) => { buzz.selection(); toggleDarkMode(v); }}
             trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
           />
         </View>
@@ -307,9 +309,9 @@ export default function PerfilScreen() {
       <Glass className="rounded-2xl px-4 py-3 mb-4">
         <View className="flex-row items-center justify-between">
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
-          <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>
+          <Press accessibilityRole="link" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>
             <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{SUPPORT_EMAIL}</Text>
-          </Pressable>
+          </Press>
         </View>
         {blocks.list.length > 0 && (
           <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">
@@ -317,23 +319,23 @@ export default function PerfilScreen() {
             {blocks.list.map((b) => (
               <View key={b.id} className="flex-row items-center justify-between" style={{ minHeight: 44 }}>
                 <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
-                <Pressable accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ left: 12, right: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
+                <Press accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ left: 12, right: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
                   <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">Desbloquear</Text>
-                </Pressable>
+                </Press>
               </View>
             ))}
           </View>
         )}
       </Glass>
 
-      <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} className="flex-row items-center justify-center py-3">
+      <Press accessibilityRole="link" onPress={() => router.push('/legal')} className="flex-row items-center justify-center py-3">
         <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Términos y política de privacidad</Text>
-      </Pressable>
+      </Press>
 
-      <Pressable accessibilityRole="button" onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
+      <Press accessibilityRole="button" onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
         <LogOut size={15} color={isDark ? colors.warn : colors.warnDeep} />
         <Text className="text-warn-deep dark:text-warn font-semibold">Cerrar sesión</Text>
-      </Pressable>
+      </Press>
     </ScrollView>
   );
 }

@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Animated, Platform } from 'react-native';
+import { View, Text, Animated, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
@@ -24,7 +25,7 @@ export function HeaderLight() {
   return (
     <View className="flex-row justify-between items-center px-5 pb-3" style={{ paddingTop: Platform.OS === 'android' ? topInset + 24 : 56 }}>
       <Animated.View style={{ transform: [{ scale }] }}>
-      <Pressable
+      <Press
         accessibilityRole="button"
         accessibilityLabel={noBalance ? 'Puntos, ver detalle' : `${balance ?? 0} Puntos, ver detalle`}
         hitSlop={6}
@@ -33,11 +34,11 @@ export function HeaderLight() {
         style={{ height: 32 }}
       >
         <PointsCounter shown={noBalance ? null : shown} coinSize={20} textStyle={{ color: dark ? colors.dark.text : colors.light.text, fontWeight: '700', fontSize: 15 }} />
-      </Pressable>
+      </Press>
       </Animated.View>
       <View className="flex-row items-center gap-2.5">
         <BellButton color={dark ? colors.dark.muted : colors.light.muted} />
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel="Tu perfil"
           hitSlop={6}
@@ -49,7 +50,7 @@ export function HeaderLight() {
             style={{ width: '100%', height: '100%' }}
             fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
           />
-        </Pressable>
+        </Press>
       </View>
     </View>
   );

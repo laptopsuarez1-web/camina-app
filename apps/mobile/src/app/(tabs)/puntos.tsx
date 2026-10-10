@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image, AccessibilityInfo, Platform } from 'react-native';
+import { View, Text, ScrollView, Share, ActivityIndicator, Image, AccessibilityInfo, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -115,9 +116,9 @@ export default function PuntosScreen() {
     <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+          <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
-          </Pressable>
+          </Press>
           <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Tus Puntos</Text>
         </View>
 
@@ -150,7 +151,7 @@ export default function PuntosScreen() {
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">{streak === 1 ? 'día' : 'días'} de racha</Text>
           </View>
         </Glass>
-        <Pressable
+        <Press
           accessibilityRole="button"
           onPress={() => router.push('/(tabs)/eventos')}
           className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
@@ -160,7 +161,7 @@ export default function PuntosScreen() {
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{retosListos}</Text>
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
           </View>
-        </Pressable>
+        </Press>
       </View>
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
@@ -173,15 +174,16 @@ export default function PuntosScreen() {
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
           Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
-        <Pressable
+        <Press
           accessibilityRole="button"
           onPress={shareLink}
+          haptic="light"
           className="bg-purple-deep rounded-xl py-3 items-center flex-row justify-center gap-2"
         >
           <Share2 size={15} color="#fff" />
           <Text className="text-white font-bold text-[13px]">Compartir link</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={copyLink} className="items-center py-2.5">
+        </Press>
+        <Press accessibilityRole="button" onPress={copyLink} className="items-center py-2.5">
           <Text
             accessibilityLiveRegion="polite"
             accessibilityLabel={copied ? 'Link copiado' : 'Copiar link'}
@@ -189,7 +191,7 @@ export default function PuntosScreen() {
           >
             {copied ? 'Copiado' : 'Copiar link'}
           </Text>
-        </Pressable>
+        </Press>
       </View>
 
       <Text accessibilityRole="header" className="px-5 mt-7 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Movimientos</Text>

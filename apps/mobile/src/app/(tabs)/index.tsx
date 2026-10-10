@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
-import { View, Text, ScrollView, Pressable, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { View, Text, ScrollView, Image, TextInput, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -49,7 +50,7 @@ function LinkRow({
 }: { icon: (p: IconProps) => React.ReactElement; tone: 'aqua' | 'purple' | 'gold'; title: string; value: string; onPress: () => void; last?: boolean }) {
   const isDark = useColorScheme().colorScheme === 'dark';
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityLabel={`${title}: ${value}`}
       onPress={onPress}
@@ -63,7 +64,7 @@ function LinkRow({
         <Text className="text-xs text-muted-light dark:text-muted-dark">{value}</Text>
         <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
       </View>
-    </Pressable>
+    </Press>
   );
 }
 
@@ -232,7 +233,7 @@ export default function HomeScreen() {
         <View className="px-5" style={{ position: 'relative' }}>
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
             <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel={balanceError && balance === undefined ? 'Puntos, ver detalle' : `${balance ?? 0} Puntos, ver detalle`}
               hitSlop={6}
@@ -241,7 +242,7 @@ export default function HomeScreen() {
               style={{ height: 32 }}
             >
               <PointsCounter shown={balanceError && balance === undefined ? null : pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
-            </Pressable>
+            </Press>
             </Animated.View>
             {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
             <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
@@ -265,7 +266,7 @@ export default function HomeScreen() {
             </View>
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color={colors.authMuted} />
-              <Pressable
+              <Press
                 accessibilityRole="button"
                 accessibilityLabel="Tu perfil"
                 hitSlop={6}
@@ -277,7 +278,7 @@ export default function HomeScreen() {
                   style={{ width: '100%', height: '100%' }}
                   fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
                 />
-              </Pressable>
+              </Press>
             </View>
           </View>
         </View>
@@ -381,12 +382,12 @@ export default function HomeScreen() {
                   fontSize: 12,
                 }}
               />
-              <Pressable accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
+              <Press accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
                 <Text className="text-mint-dark font-bold text-[12px]">OK</Text>
-              </Pressable>
+              </Press>
             </View>
           ) : (
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel={`Cambiar meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
               hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
@@ -401,7 +402,7 @@ export default function HomeScreen() {
                 <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
                 <Pencil size={14} color="#B3A6D6" />
               </View>
-            </Pressable>
+            </Press>
           )}
         </View>
         {editingGoal && (
@@ -437,7 +438,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-            <Pressable
+            <Press
               accessibilityRole="button"
               onPress={() => {
                 if (healthConnectStatus === 'unavailable') {
@@ -455,15 +456,15 @@ export default function HomeScreen() {
               <Text className="text-mint-dark font-bold text-[13px]">
                 {healthConnectStatus === 'unavailable' ? 'Instalar Health Connect' : healthConnectStatus === 'error' ? 'Reintentar' : 'Activar permiso'}
               </Text>
-            </Pressable>
+            </Press>
           </View>
         ) : Platform.OS === 'ios' && stepSource === 'healthkit' && deviceSteps === 0 ? (
-          <Pressable accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+          <Press accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
             <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
             <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
               Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Tocá acá y activá Pasos en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina.
             </Text>
-          </Pressable>
+          </Press>
         ) : available === false ? (
           <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.
@@ -473,7 +474,7 @@ export default function HomeScreen() {
 
       <View className="pt-5 pb-2">
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
-          <Pressable
+          <Press
             accessibilityRole="button"
             accessibilityLabel={`${expiringMsg}. ${expiringHint}. Ver detalle`}
             hitSlop={6}
@@ -489,7 +490,7 @@ export default function HomeScreen() {
               <Text className="text-[12px]" style={{ color: isDark ? '#E0BC63' : colors.goldInk }}>{expiringHint}</Text>
             </View>
             <ChevronRight size={16} color={isDark ? '#E0BC63' : '#9A6A08'} />
-          </Pressable>
+          </Press>
         ) : null}
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
 
@@ -529,7 +530,7 @@ export default function HomeScreen() {
         </Glass>
 
 
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel="Ver toda tu actividad"
           onPress={() => router.push('/(tabs)/actividad')}
@@ -546,7 +547,7 @@ export default function HomeScreen() {
             </View>
             <ChevronRight size={16} color={isDark ? colors.dark.muted : colors.light.muted} />
           </Glass>
-        </Pressable>
+        </Press>
 
         {(redemptions?.length ?? 0) > 0 && (
           <View style={{ marginTop: 26 }}>

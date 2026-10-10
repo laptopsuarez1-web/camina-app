@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
@@ -194,7 +195,7 @@ export default function WelcomeScreen() {
             Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
             entrar acá.
           </Text>
-          <Pressable
+          <Press
             accessibilityRole="button"
             accessibilityLabel="Ya confirmé, entrar"
             accessibilityState={{ busy: enteringNow }}
@@ -211,8 +212,8 @@ export default function WelcomeScreen() {
             ) : (
               <Text style={{ color: colors.mintDark, fontWeight: '700', fontSize: 15 }}>Ya confirmé, entrar</Text>
             )}
-          </Pressable>
-          <Pressable
+          </Press>
+          <Press
             accessibilityRole="button"
             accessibilityLabel="Reenviar correo"
             accessibilityState={{ busy: resending }}
@@ -225,10 +226,10 @@ export default function WelcomeScreen() {
             ) : (
               <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
             )}
-          </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => setAwaitingConfirmation(null)} style={{ minHeight: 44, justifyContent: 'center' }}>
+          </Press>
+          <Press accessibilityRole="button" onPress={() => setAwaitingConfirmation(null)} style={{ minHeight: 44, justifyContent: 'center' }}>
             <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
-          </Pressable>
+          </Press>
         </ScrollView>
       </View>
     );
@@ -268,7 +269,7 @@ export default function WelcomeScreen() {
           </Text>
 
           <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel="Continuar con Google"
               accessibilityState={{ busy: googleBusy }}
@@ -281,10 +282,10 @@ export default function WelcomeScreen() {
               ) : (
                 <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
               )}
-            </Pressable>
+            </Press>
 
             {appleAvailable && (
-              <Pressable
+              <Press
                 accessibilityRole="button"
                 accessibilityLabel="Continuar con Apple"
                 accessibilityState={{ busy: appleBusy }}
@@ -297,7 +298,7 @@ export default function WelcomeScreen() {
                 ) : (
                   <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
                 )}
-              </Pressable>
+              </Press>
             )}
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
@@ -340,7 +341,7 @@ export default function WelcomeScreen() {
               style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 44 }}
             />
 
-            <Pressable
+            <Press
               accessibilityRole="button"
               accessibilityLabel={authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
               accessibilityState={{ busy: loading }}
@@ -355,27 +356,27 @@ export default function WelcomeScreen() {
                   {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
                 </Text>
               )}
-            </Pressable>
+            </Press>
 
             {authKind === 'login' && (
-              <Pressable accessibilityRole="button" onPress={handleForgotPassword} disabled={recovering} style={{ minHeight: 44, justifyContent: 'center' }}>
+              <Press accessibilityRole="button" onPress={handleForgotPassword} disabled={recovering} style={{ minHeight: 44, justifyContent: 'center' }}>
                 <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
                   {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
                 </Text>
-              </Pressable>
+              </Press>
             )}
 
-            <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}>
+            <Press accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
                 Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
               </Text>
-            </Pressable>
+            </Press>
 
-            <Pressable accessibilityRole="button" onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ minHeight: 44, justifyContent: 'center' }}>
+            <Press accessibilityRole="button" onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
                 {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
               </Text>
-            </Pressable>
+            </Press>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

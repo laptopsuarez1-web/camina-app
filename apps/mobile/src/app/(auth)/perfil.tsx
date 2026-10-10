@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
 import { Camera } from '@/components/icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -96,7 +97,7 @@ export default function CompletarPerfilScreen() {
           Con esto ya podés empezar a caminar. Tu barrio es opcional y el resto lo completás cuando quieras, desde Perfil.
         </Text>
 
-        <Pressable accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
+        <Press accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
           <View className="w-28 h-28 rounded-full bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark items-center justify-center">
             <View className="w-full h-full rounded-full overflow-hidden items-center justify-center">
               {photoUri ? (
@@ -110,7 +111,7 @@ export default function CompletarPerfilScreen() {
             </View>
           </View>
           <Text className="text-muted-light dark:text-muted-dark text-[12.5px] text-center mt-2">Foto (opcional)</Text>
-        </Pressable>
+        </Press>
 
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-2 ml-1">Nombre</Text>
         <TextInput
@@ -184,7 +185,7 @@ export default function CompletarPerfilScreen() {
           </Text>
         </View>
 
-        <Pressable
+        <Press
           accessibilityRole="button"
           accessibilityLabel="Empezar a caminar"
           accessibilityState={{ disabled: !ready || loading, busy: loading }}
@@ -198,7 +199,7 @@ export default function CompletarPerfilScreen() {
           ) : (
             <Text className={`font-bold text-[16px] ${ready ? 'text-white' : 'text-muted-light dark:text-muted-dark'}`}>Empezar a caminar</Text>
           )}
-        </Pressable>
+        </Press>
       </ScrollView>
     </KeyboardAvoidingView>
   );

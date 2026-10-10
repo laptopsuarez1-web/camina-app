@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
@@ -50,9 +51,9 @@ function PasswordField({ label, value, onChange, placeholder, autoComplete }: { 
           className="flex-1 py-3 text-[14px] text-text-light dark:text-text-dark"
           style={{ minWidth: 0 }}
         />
-        <Pressable accessibilityRole="button" accessibilityLabel={shown ? 'Ocultar contraseña' : 'Mostrar contraseña'} onPress={() => setShown((v) => !v)} hitSlop={8} className="p-2">
+        <Press accessibilityRole="button" accessibilityLabel={shown ? 'Ocultar contraseña' : 'Mostrar contraseña'} onPress={() => setShown((v) => !v)} hitSlop={8} className="p-2">
           {shown ? <EyeSlash size={20} color={muted} /> : <Eye size={20} color={muted} />}
-        </Pressable>
+        </Press>
       </View>
     </View>
   );
@@ -217,15 +218,15 @@ export default function EditarPerfilScreen() {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="bg-auth-bg pt-14 pb-5 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
           <View className="flex-row items-center gap-3">
-            <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
               <ChevronLeft size={16} color="#fff" />
-            </Pressable>
+            </Press>
             <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Editar perfil</Text>
           </View>
         </View>
 
         <View className="px-5 pt-5">
-          <Pressable accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={pickPhoto} className="self-center mb-5 items-center">
+          <Press accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={pickPhoto} className="self-center mb-5 items-center">
             <View className="w-24 h-24 rounded-full bg-mint items-center justify-center">
               <View className="w-full h-full rounded-full overflow-hidden items-center justify-center">
                 <AvatarImage
@@ -239,7 +240,7 @@ export default function EditarPerfilScreen() {
               </View>
             </View>
             <Text className="text-[12.5px] font-semibold mt-2 text-purple-ink dark:text-purple-soft">Cambiar foto</Text>
-          </Pressable>
+          </Press>
 
           <Glass className="rounded-3xl p-4 mb-4">
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
@@ -254,7 +255,7 @@ export default function EditarPerfilScreen() {
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1.5">Ciudad</Text>
             <View className="flex-row flex-wrap mb-2">
               {(places?.cities ?? [city]).map((c) => (
-                <Pressable
+                <Press
                   key={c}
                   accessibilityRole="button"
                   accessibilityState={{ selected: c === city }}
@@ -264,7 +265,7 @@ export default function EditarPerfilScreen() {
                   style={{ minHeight: 40, justifyContent: 'center' }}
                 >
                   <Text style={{ color: c === city ? colors.mintInk : isDark ? colors.dark.muted : colors.light.muted, fontWeight: c === city ? '700' : '500', fontSize: 13 }}>{c}</Text>
-                </Pressable>
+                </Press>
               ))}
             </View>
             <BarrioPicker city={city} zone={zone} onChange={setZone} />
@@ -286,7 +287,7 @@ export default function EditarPerfilScreen() {
                 const active = interests.includes(name);
                 const Icon = INTEREST_ICON[name] ?? Sparkle;
                 return (
-                  <Pressable
+                  <Press
                     key={name}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: active }}
@@ -298,23 +299,23 @@ export default function EditarPerfilScreen() {
                   >
                     <Icon size={16} color={active ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? colors.dark.muted : colors.light.muted} weight={active ? 'fill' : 'regular'} />
                     <Text className={`text-xs font-semibold ${active ? 'text-aqua-ink dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}>{name}</Text>
-                  </Pressable>
+                  </Press>
                 );
               })}
             </View>
           </Glass>
 
-          <Pressable accessibilityRole="button" onPress={save} disabled={saving} className="bg-aqua-deep rounded-2xl py-4 items-center mb-6">
+          <Press accessibilityRole="button" onPress={save} disabled={saving} className="bg-aqua-deep rounded-2xl py-4 items-center mb-6">
             {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
-          </Pressable>
+          </Press>
 
           {hasPassword && (
             <Glass className="rounded-3xl p-4 mb-4">
               {!changingPassword ? (
-                <Pressable accessibilityRole="button" onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
+                <Press accessibilityRole="button" onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
                   <IconBubble icon={KeyRound} tone="purple" size={38} />
                   <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Cambiar contraseña</Text>
-                </Pressable>
+                </Press>
               ) : (
                 <View>
                   <Text className="font-bold text-[14.5px] mb-1 text-text-light dark:text-text-dark">Cambiar contraseña</Text>
@@ -322,29 +323,29 @@ export default function EditarPerfilScreen() {
                   <PasswordField label="Contraseña actual" value={currentPassword} onChange={setCurrentPassword} autoComplete="password" />
                   <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
                   <PasswordField label="Repetí la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
-                  <Pressable accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
+                  <Press accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
                     <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">
                       {recoverySent ? `Te mandamos un link a ${email}. Abrilo para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
                     </Text>
-                  </Pressable>
+                  </Press>
                   <View className="flex-row gap-2">
-                    <Pressable accessibilityRole="button" onPress={savePassword} disabled={savingPassword} className="flex-1 bg-aqua-deep rounded-xl py-3 items-center">
+                    <Press accessibilityRole="button" onPress={savePassword} disabled={savingPassword} className="flex-1 bg-aqua-deep rounded-xl py-3 items-center">
                       {savingPassword ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Cambiar contraseña</Text>}
-                    </Pressable>
-                    <Pressable
+                    </Press>
+                    <Press
                       accessibilityRole="button"
                       onPress={() => { setChangingPassword(false); setCurrentPassword(''); setNewPassword(''); setRepeatPassword(''); }}
                       className="border border-line-light dark:border-line-dark rounded-xl px-4 py-3 items-center"
                     >
                       <Text className="text-muted-light dark:text-muted-dark font-semibold text-[13.5px]">Cancelar</Text>
-                    </Pressable>
+                    </Press>
                   </View>
                 </View>
               )}
             </Glass>
           )}
 
-          <Pressable accessibilityRole="button" onPress={confirmDelete} disabled={deleting} className="flex-row items-center justify-center gap-2 py-4">
+          <Press accessibilityRole="button" onPress={confirmDelete} disabled={deleting} className="flex-row items-center justify-center gap-2 py-4">
             {deleting ? (
               <ActivityIndicator color={isDark ? colors.warn : colors.warnDeep} size="small" />
             ) : (
@@ -353,7 +354,7 @@ export default function EditarPerfilScreen() {
                 <Text className="text-warn-deep dark:text-warn font-semibold">Eliminar cuenta</Text>
               </>
             )}
-          </Pressable>
+          </Press>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

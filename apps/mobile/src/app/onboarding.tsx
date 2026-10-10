@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { View, Text, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
@@ -144,9 +145,9 @@ export default function OnboardingScreen() {
     <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ flex: 1, paddingTop: 52, paddingBottom: 28 }}>
       <View style={{ alignItems: 'flex-end', paddingHorizontal: 16, height: 44 }}>
         {!last && (
-          <Pressable onPress={() => finish()} accessibilityRole="button" hitSlop={10} style={{ paddingHorizontal: 10, paddingVertical: 10 }}>
+          <Press onPress={() => finish()} accessibilityRole="button" hitSlop={10} style={{ paddingHorizontal: 10, paddingVertical: 10 }}>
             <Text style={{ color: '#E4DCF7', fontSize: 15, fontWeight: '600' }}>Saltar</Text>
-          </Pressable>
+          </Press>
         )}
       </View>
 
@@ -193,9 +194,9 @@ export default function OnboardingScreen() {
             <View key={i} style={{ height: 7, borderRadius: 99, width: i === step ? 24 : 7, backgroundColor: i === step ? colors.mint : 'rgba(255,255,255,0.25)' }} />
           ))}
         </View>
-        <Pressable onPress={next} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 16 }}>
+        <Press onPress={next} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 16 }}>
           <Text className="text-mint-dark font-extrabold text-[16px]">Continuar</Text>
-        </Pressable>
+        </Press>
       </View>
     </LinearGradient>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { View, Text, Pressable, Linking, Platform } from 'react-native';
+import { View, Text, Linking, Platform } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme/tokens';
@@ -52,13 +53,13 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
         Actualizá la app para seguir sumando Puntos con tus pasos. Es rapidito.
       </Text>
       {storeUrl ? (
-        <Pressable
+        <Press
           accessibilityRole="button"
           onPress={() => Linking.openURL(storeUrl)}
           style={{ backgroundColor: colors.mint, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
         >
           <Text style={{ color: colors.authBg, fontWeight: '800', fontSize: 15 }}>Actualizar ahora</Text>
-        </Pressable>
+        </Press>
       ) : null}
     </View>
   );
