@@ -13,6 +13,8 @@ import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { typo } from '@/theme/type';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { plural } from '@/lib/format';
 import { useGlobalRankingOpen } from '@/hooks/useUserCount';
@@ -79,8 +81,8 @@ export default function GruposScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark mb-1">Grupos</Text>
-      <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4">
+      <ScreenTitle>Grupos</ScreenTitle>
+      <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Caminá, compartí y ganá en equipo
       </Text>
 
@@ -275,7 +277,7 @@ export default function GruposScreen() {
       )}
 
       {other.length > 0 && (
-        <Text className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">
+        <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
           Grupos para unirte
         </Text>
       )}

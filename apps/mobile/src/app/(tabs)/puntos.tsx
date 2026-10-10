@@ -15,6 +15,9 @@ import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rul
 import { colors } from '@/theme/tokens';
 import { dayLabel, localDay, plural } from '@/lib/format';
 import { Glass } from '@/components/ui/Glass';
+import { DarkHeader } from '@/components/ui/DarkHeader';
+import { CoinHalo } from '@/components/ui/CoinHalo';
+import { typo } from '@/theme/type';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 function useMovimientos() {
@@ -110,7 +113,7 @@ export default function PuntosScreen() {
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+      <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
@@ -119,9 +122,11 @@ export default function PuntosScreen() {
         </View>
 
         <View className="flex-row items-center gap-3">
-          <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
+          <CoinHalo size={58}>
+            <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 58, height: 58, borderRadius: 29 }} />
+          </CoinHalo>
           <View>
-            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balanceError && balance === undefined ? '—' : (balance ?? 0).toLocaleString('es-BO')}</Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }}>{balanceError && balance === undefined ? '—' : (balance ?? 0).toLocaleString('es-BO')}</Text>
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
                 <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} {plural(earnedToday ?? 0, 'Punto', 'Puntos')} hoy</Text>
@@ -135,7 +140,7 @@ export default function PuntosScreen() {
             {expiring.amount} {plural(expiring.amount, 'Punto vence', 'Puntos vencen')} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}
           </Text>
         )}
-      </View>
+      </DarkHeader>
 
       <View className="flex-row gap-2.5 mx-5 mt-5">
         <Glass className="flex-1 flex-row items-center gap-2.5 rounded-2xl p-3">
@@ -182,12 +187,12 @@ export default function PuntosScreen() {
             accessibilityLabel={copied ? 'Link copiado' : 'Copiar link'}
             className="text-aqua-ink dark:text-aqua font-semibold text-[12.5px]"
           >
-            {copied ? 'Copiado ✓' : 'Copiar link'}
+            {copied ? 'Copiado' : 'Copiar link'}
           </Text>
         </Pressable>
       </View>
 
-      <Text accessibilityRole="header" className="font-bold text-base px-5 mt-6 mb-3 text-text-light dark:text-text-dark">Movimientos</Text>
+      <Text accessibilityRole="header" className="px-5 mt-7 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Movimientos</Text>
       <View className="px-5 gap-2">
         {isLoading && <ActivityIndicator color={colors.aqua} />}
         {(movimientos ?? []).map((m) => (

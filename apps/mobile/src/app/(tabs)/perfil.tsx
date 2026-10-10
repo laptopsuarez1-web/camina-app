@@ -15,6 +15,7 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
 import { GlassSlider } from '@/components/ui/GlassSlider';
 import { Glass } from '@/components/ui/Glass';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
@@ -169,7 +170,7 @@ export default function PerfilScreen() {
 
   return (
     <ScrollView className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-4 text-text-light dark:text-text-dark">Perfil</Text>
+      <ScreenTitle marginBottom={16}>Perfil</ScreenTitle>
 
       <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row items-center gap-3.5">

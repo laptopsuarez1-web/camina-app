@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame, IconBubble } from '@/components/icons';
+import { Activity, Flame, IconBubble, ChevronUp, ChevronDown } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
@@ -17,6 +17,8 @@ import { dayLabel } from '@/lib/format';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { typo } from '@/theme/type';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
@@ -184,7 +186,7 @@ export default function ActividadScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
+      <ScreenTitle marginBottom={14}>Actividad</ScreenTitle>
 
       <LinearGradient
         colors={[colors.authBgSoft, colors.authBg]}
@@ -195,11 +197,16 @@ export default function ActividadScreen() {
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
             <Text className="text-auth-muted text-xs mb-1">{range === 7 ? 'Esta semana' : 'Últimos 30 días'}</Text>
-            <Text className="text-white text-[30px] font-bold">{rangeTotal.toLocaleString('es-BO')}</Text>
-            <Text className="text-auth-muted text-xs mt-0.5">
-              pasos · {Math.round(rangeTotal / range).toLocaleString('es-BO')} por día
-              {range === 7 && weekTrendPct !== null ? `  ${weekTrendPct >= 0 ? '↑' : '↓'} ${Math.abs(weekTrendPct)}% vs. la anterior` : ''}
-            </Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display}>{rangeTotal.toLocaleString('es-BO')}</Text>
+            <View className="flex-row flex-wrap items-center mt-0.5" style={{ columnGap: 8 }}>
+              <Text className="text-auth-muted text-xs">pasos · {Math.round(rangeTotal / range).toLocaleString('es-BO')} por día</Text>
+              {range === 7 && weekTrendPct !== null ? (
+                <View className="flex-row items-center" style={{ gap: 2 }}>
+                  {weekTrendPct >= 0 ? <ChevronUp size={14} color={colors.authMuted} /> : <ChevronDown size={14} color={colors.authMuted} />}
+                  <Text className="text-auth-muted text-xs">{Math.abs(weekTrendPct)}% vs. la anterior</Text>
+                </View>
+              ) : null}
+            </View>
           </View>
           {/* Selector 7 / 30 días dentro de la tarjeta: cambia el único gráfico de la pantalla. */}
           <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
@@ -228,10 +235,10 @@ export default function ActividadScreen() {
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {/* Línea punteada de la meta diaria */}
             {goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.5)' }}>
-                <Text className="text-[12px] text-white" style={{ position: 'absolute', left: 0, top: -18 }}>
-                  meta {goal.toLocaleString('es-BO')}
-                </Text>
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
+                <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: 'rgba(127,237,196,0.16)', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
+                  <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
+                </View>
               </View>
             )}
             <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
@@ -249,18 +256,29 @@ export default function ActividadScreen() {
                     {d.isToday && range === 7 ? (
                       <Text className="text-[12px] font-bold text-white mb-1">{d.steps.toLocaleString('es-BO')}</Text>
                     ) : null}
-                    <View
-                      style={{
-                        width: '100%',
+                    {(() => {
+                      const barStyle = {
+                        width: '100%' as const,
                         height: Math.max(4, (d.steps / chartMax) * CHART_H),
-                        borderTopLeftRadius: range === 7 ? 8 : 3,
-                        borderTopRightRadius: range === 7 ? 8 : 3,
+                        borderTopLeftRadius: range === 7 ? 11 : 3,
+                        borderTopRightRadius: range === 7 ? 11 : 3,
                         borderBottomLeftRadius: 3,
                         borderBottomRightRadius: 3,
-                        backgroundColor: d.isToday ? colors.mint : hit ? colors.aqua : 'rgba(79,195,168,0.4)',
-                        ...(d.isToday ? { borderWidth: 1.5, borderColor: '#fff' } : {}),
-                      }}
-                    />
+                      };
+                      // En 7 días las barras llevan degradé suave; en 30 días (30 barras finas) van de color liso.
+                      if (range !== 7) {
+                        return <View style={{ ...barStyle, backgroundColor: d.isToday ? colors.mint : hit ? colors.aqua : 'rgba(79,195,168,0.4)', ...(d.isToday ? { borderWidth: 1.5, borderColor: '#fff' } : {}) }} />;
+                      }
+                      const grad = d.isToday ? ['#A4F7DB', colors.mint] : hit ? ['#6FE0BF', '#3FAE95'] : ['rgba(79,195,168,0.5)', 'rgba(79,195,168,0.22)'];
+                      return (
+                        <LinearGradient
+                          colors={grad as [string, string]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={{ ...barStyle, ...(d.isToday ? { shadowColor: colors.mint, shadowOpacity: 0.55, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } } : {}) }}
+                        />
+                      );
+                    })()}
                     <Text
                       className="text-[12px] mt-1.5"
                       style={{ height: 16, color: d.isToday ? '#fff' : colors.authMuted, fontWeight: d.isToday ? '800' : '500' }}
@@ -306,7 +324,7 @@ export default function ActividadScreen() {
         </Glass>
       )}
 
-      <Text accessibilityRole="header" className="font-bold text-base mt-1 mb-2.5 text-text-light dark:text-text-dark">Hoy</Text>
+      <Text accessibilityRole="header" className="mt-1 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Hoy</Text>
       <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row mb-3">
           {[
@@ -315,7 +333,7 @@ export default function ActividadScreen() {
             [String(kcal), 'kcal'],
           ].map(([value, unit]) => (
             <View key={unit} className="flex-1">
-              <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{value}</Text>
+              <Text className="text-text-light dark:text-text-dark" style={{ fontSize: 28, lineHeight: 32, fontWeight: '800', letterSpacing: -0.5, fontVariant: ['tabular-nums'] }}>{value}</Text>
               <Text className="text-[12px] text-muted-light dark:text-muted-dark">{unit}</Text>
             </View>
           ))}
@@ -379,7 +397,7 @@ export default function ActividadScreen() {
         <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
       </Glass>
 
-      <Text accessibilityRole="header" className="font-bold text-base mb-2.5 text-text-light dark:text-text-dark">Toda tu actividad</Text>
+      <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>Toda tu actividad</Text>
       <View className="gap-2.5">
         {fullHistory.map((h) => {
           const met = h.steps >= (h.goal ? Math.max(h.goal, MIN_DAILY_GOAL) : goal);

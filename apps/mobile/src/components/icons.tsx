@@ -44,6 +44,7 @@ import { BowlFood as BowlFood_ } from 'phosphor-react-native/src/icons/BowlFood'
 import { WhatsappLogo as WhatsappLogo_ } from 'phosphor-react-native/src/icons/WhatsappLogo';
 import { InstagramLogo as InstagramLogo_ } from 'phosphor-react-native/src/icons/InstagramLogo';
 import { Globe as Globe_ } from 'phosphor-react-native/src/icons/Globe';
+import { Crown as Crown_ } from 'phosphor-react-native/src/icons/Crown';
 import { Footprints as Footprints_ } from 'phosphor-react-native/src/icons/Footprints';
 import { Eye as Eye_ } from 'phosphor-react-native/src/icons/Eye';
 import { EyeSlash as EyeSlash_ } from 'phosphor-react-native/src/icons/EyeSlash';
@@ -69,10 +70,17 @@ export type IconProps = {
   weight?: IconWeight;
 };
 
+// Trazo parejo: el grosor real del trazo sale del peso y del tamaño. De 18 px para abajo el peso regular queda a menos de 1 px, así que
+// esos íconos van en negrita; de 20 para arriba va regular. Debajo de 14 px el dibujo no se lee: se sube a 14.
+const MIN_ICON = 14;
+const BOLD_UP_TO = 18;
+
 function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'regular') {
   return function Icon({ size = 24, color = '#000', fill, weight }: IconProps) {
-    const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : base);
-    return <Comp size={size} color={color as string} weight={w} />;
+    const px = Math.max(size, MIN_ICON);
+    const auto: IconWeight = base === 'regular' && px <= BOLD_UP_TO ? 'bold' : base;
+    const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : auto);
+    return <Comp size={px} color={color as string} weight={w} />;
   };
 }
 
@@ -123,6 +131,7 @@ export const Eye = make(Eye_);
 export const EyeSlash = make(EyeSlash_);
 export const Heartbeat = make(Heartbeat_);
 export const Footprints = make(Footprints_);
+export const Crown = make(Crown_);
 export const Ticket = make(Ticket_);
 export const Barbell = make(Barbell_);
 export const Sparkle = make(Sparkle_);

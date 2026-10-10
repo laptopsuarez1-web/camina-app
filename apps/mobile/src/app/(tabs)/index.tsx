@@ -27,7 +27,7 @@ import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
+import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -37,7 +37,7 @@ const POINTS_COLOR = '#2CFFAE';
 
 function greeting(name: string) {
   const h = new Date().getHours();
-  const label = name || 'caminante';
+  const label = name.trim().split(/\s+/)[0] || 'caminante';
   if (h < 6) return `¿Todavía despierto, ${label}?`;
   if (h < 12) return `Buen día, ${label}`;
   if (h < 19) return `Buenas tardes, ${label}`;
@@ -191,8 +191,6 @@ export default function HomeScreen() {
       : goalDraft >= GOOD_DAILY_GOAL
         ? '¡Muy bien! Una meta que suma'
         : '¡Vos podés más!';
-  // El emoji se ve pero no se lee: el aviso accesible es solo el texto.
-  const goalHintEmoji = goalDraft >= MIN_DAILY_GOAL && goalDraft >= GOOD_DAILY_GOAL ? ' 💪' : '';
   // iOS ignora accessibilityLiveRegion: cuando el aviso cambia mientras se edita la meta, se anuncia a mano.
   const lastGoalHint = useRef('');
   useEffect(() => {
@@ -285,7 +283,7 @@ export default function HomeScreen() {
         </View>
         </View>
 
-        <Text className="text-auth-muted px-5 font-semibold text-[14px]" style={{ paddingTop: 16 }}>
+        <Text className="text-auth-muted px-5" style={{ paddingTop: 12, fontSize: 17, lineHeight: 22, fontWeight: '700' }}>
           {greeting(profile?.full_name ?? '')}
         </Text>
 
@@ -399,7 +397,10 @@ export default function HomeScreen() {
               className="rounded-full"
               style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
-              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal.toLocaleString('es-BO')} ✎</Text>
+              <View className="flex-row items-center" style={{ gap: 4 }}>
+                <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
+                <Pencil size={14} color="#B3A6D6" />
+              </View>
             </Pressable>
           )}
         </View>
@@ -415,7 +416,7 @@ export default function HomeScreen() {
               marginTop: 8,
             }}
           >
-            {goalHint}{goalHintEmoji}
+            {goalHint}
           </Text>
         )}
 

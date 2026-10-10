@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { Coffee, IconBubble } from '@/components/icons';
+import { Coffee, ChevronDown, Crown, IconBubble } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 
 const COIN = require('@/../assets/camina-coin.png');
@@ -36,7 +36,7 @@ function PointsArt() {
       <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>
         {POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} <Text style={{ color: '#D5CBF0', fontSize: 17, fontWeight: '500' }}>pasos</Text>
       </Text>
-      <Text importantForAccessibility="no" accessibilityElementsHidden style={{ color: colors.mint, fontSize: 28, fontWeight: '800' }}>↓</Text>
+      <View importantForAccessibility="no" accessibilityElementsHidden><ChevronDown size={28} color={colors.mint} /></View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Coin size={64} />
         <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>1 Punto</Text>
@@ -80,7 +80,7 @@ function RewardArt() {
 function GroupArt() {
   const step = (letter: string, place: number, height: number, avatar: number, bg: string, first?: boolean) => (
     <View style={{ alignItems: 'center', gap: 6 }}>
-      {first ? <Text importantForAccessibility="no" accessibilityElementsHidden style={{ fontSize: 22 }}>👑</Text> : null}
+      {first ? <View importantForAccessibility="no" accessibilityElementsHidden><Crown size={22} color={colors.warn} weight="fill" /></View> : null}
       <View style={{ width: avatar, height: avatar, borderRadius: avatar / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: avatar * 0.4 }}>{letter}</Text>
       </View>

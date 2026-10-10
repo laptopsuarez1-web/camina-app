@@ -6,7 +6,7 @@ import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, Share,
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -46,7 +46,7 @@ function GoalBar({ pct }: { pct: number }) {
 
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
-  const { muted, accentText, accentIcon } = useThemeColors();
+  const { muted, accentText, accentIcon, warnText } = useThemeColors();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const userId = useAuthStore((s) => s.session?.user.id);
   const { data, isLoading, refetch } = useGroupDetail(groupId);
@@ -250,7 +250,7 @@ export default function GroupDetailScreen() {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
                 <View key={m.id} className="items-center" style={{ width: 92 }}>
-                  {rank === 0 && <Text importantForAccessibility="no" accessibilityElementsHidden style={{ fontSize: 20, marginBottom: 2 }}>👑</Text>}
+                  {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 2 }}><Crown size={20} color={colors.warn} weight="fill" /></View>}
                   <AvatarImage
                     uri={m.photoUrl}
                     style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }}
@@ -399,7 +399,10 @@ export default function GroupDetailScreen() {
                 )}
               </Pressable>
             ) : ch?.joined ? (
-              <Text accessibilityLabel="Ya estás dentro" className="text-center text-[12px] font-bold text-mint-dark dark:text-mint mt-2">Ya estás dentro ✓</Text>
+              <View accessible accessibilityLabel="Ya estás dentro" className="flex-row items-center justify-center mt-2" style={{ gap: 4 }}>
+                <Check size={14} color={accentText} />
+                <Text importantForAccessibility="no" className="text-center text-[12px] font-bold text-mint-dark dark:text-mint">Ya estás dentro</Text>
+              </View>
             ) : (
               <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
             )}
@@ -474,7 +477,10 @@ export default function GroupDetailScreen() {
               <View key={week} className="border-t border-line-light dark:border-line-dark">
                 <Pressable accessibilityRole="button" onPress={() => setOpenWeek(open ? '' : week)} className="flex-row items-center justify-between py-2.5">
                   <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Semana del {label}</Text>
-                  <Text accessibilityLabel={rows[0] ? `Ganó ${rows[0].name}` : undefined} className="text-[12px] text-muted-light dark:text-muted-dark">🏆 {rows[0]?.name}</Text>
+                  <View accessible={!!rows[0]} accessibilityLabel={rows[0] ? `Ganó ${rows[0].name}` : undefined} className="flex-row items-center" style={{ gap: 4 }}>
+                    <Trophy size={14} color={warnText} />
+                    <Text importantForAccessibility="no" className="text-[12px] text-muted-light dark:text-muted-dark">{rows[0]?.name}</Text>
+                  </View>
                 </Pressable>
                 {open &&
                   rows.map((r) => (

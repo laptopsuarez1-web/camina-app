@@ -9,6 +9,7 @@ import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { dayLabel, localDay, plural } from '@/lib/format';
 import { colors } from '@/theme/tokens';
+import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
 
 // ---------------------------------------------------------------------------------------------
@@ -20,7 +21,7 @@ export function SectionHeader({
 }: { title: string; actionLabel?: string; onAction?: () => void }) {
   return (
     <View className="flex-row items-center justify-between px-5 mb-3">
-      <Text accessibilityRole="header" className="font-bold text-base text-text-light dark:text-text-dark">{title}</Text>
+      <Text accessibilityRole="header" className="text-text-light dark:text-text-dark" style={typo.section}>{title}</Text>
       {actionLabel && onAction ? (
         <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }} onPress={onAction}>
           <Text className="text-aqua-ink dark:text-aqua text-xs font-semibold">{actionLabel}</Text>

@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
+import { DarkHeader } from '@/components/ui/DarkHeader';
 import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -47,14 +48,14 @@ export default function NotificacionesScreen() {
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+      <DarkHeader style={{ paddingBottom: 24 }}>
         <View className="flex-row items-center gap-3">
           <Pressable accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
           </Pressable>
           <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Avisos</Text>
         </View>
-      </View>
+      </DarkHeader>
 
       <View className="px-5 pt-5" style={{ gap: 10 }}>
         {items.map((n) => {

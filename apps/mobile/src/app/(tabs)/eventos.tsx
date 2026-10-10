@@ -1,17 +1,21 @@
 import { View, Text, ScrollView, Image, Pressable, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
-import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, IconBubble } from '@/components/icons';
+import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, Check, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { typo } from '@/theme/type';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { colors } from '@/theme/tokens';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 
 export default function EventosScreen() {
   const tabSpace = useTabBarSpace();
+  const t = useThemeColors();
   const { data: retos } = useRetos();
   const claim = useClaimReto();
   const { data: promos, isLoading: promosLoading, isError: promosError, refetch: refetchPromos } = usePromotions();
@@ -42,10 +46,8 @@ export default function EventosScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-0.5 text-text-light dark:text-text-dark">
-        Eventos
-      </Text>
-      <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-5">
+      <ScreenTitle>Eventos</ScreenTitle>
+      <Text className="text-muted-light dark:text-muted-dark mb-5" style={typo.body}>
         Viví experiencias únicas con tus marcas favoritas
       </Text>
       {hasPromos && (
@@ -60,7 +62,12 @@ export default function EventosScreen() {
                   </Text>
                   <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">{p.title}</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1 leading-relaxed">{p.description}</Text>
-                  {p.prize ? <Text accessibilityLabel={`Premio: ${p.prize}`} className="text-[12.5px] font-semibold mt-1.5 text-text-light dark:text-text-dark">🎁 {p.prize}</Text> : null}
+                  {p.prize ? (
+                    <View accessible accessibilityLabel={`Premio: ${p.prize}`} className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
+                      <Gift size={14} color={t.purpleText} />
+                      <Text importantForAccessibility="no" className="text-[12.5px] font-semibold text-text-light dark:text-text-dark shrink">{p.prize}</Text>
+                    </View>
+                  ) : null}
                   {p.req_steps ? (
                     <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
                       Para participar: {p.req_steps.toLocaleString('es-BO')} pasos por día durante {p.req_days} días.
@@ -77,7 +84,10 @@ export default function EventosScreen() {
                 </View>
               ) : p.joined ? (
                 <View className="rounded-2xl py-3 items-center mt-3 bg-mint/15">
-                  <Text accessibilityLiveRegion="polite" accessibilityLabel="Ya estás anotado" className="text-mint-dark dark:text-mint font-bold text-[13px]">Ya estás anotado ✓</Text>
+                  <View accessible accessibilityLiveRegion="polite" accessibilityLabel="Ya estás anotado" className="flex-row items-center" style={{ gap: 5 }}>
+                    <Check size={14} color={t.accentText} />
+                    <Text importantForAccessibility="no" className="text-mint-dark dark:text-mint font-bold text-[13px]">Ya estás anotado</Text>
+                  </View>
                 </View>
               ) : (
                 <Pressable accessibilityRole="button" onPress={() => handleJoin(p)} disabled={join.isPending} className="bg-mint rounded-2xl py-3 items-center mt-3">
@@ -110,7 +120,7 @@ export default function EventosScreen() {
           </Text>
         </Glass>
       )}
-      <Text accessibilityRole="header" className="font-bold text-[17px] mb-1 text-text-light dark:text-text-dark">Retos Camina</Text>
+      <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
         Cumplí metas caminando y ganá Puntos extra.
       </Text>

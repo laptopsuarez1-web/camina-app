@@ -46,6 +46,8 @@ import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { typo } from '@/theme/type';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -578,10 +580,8 @@ export default function CanjesScreen() {
         </View>
 
         <View className="px-5 pt-5">
-          <Text className="text-[21px] font-extrabold text-text-light dark:text-text-dark" style={{ letterSpacing: -0.5 }}>
-            Canjear
-          </Text>
-          <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4">{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
+          <ScreenTitle>Canjear</ScreenTitle>
+          <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
 
           {!profile?.zone && showZonePrompt && (
             <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-3.5">
@@ -1015,7 +1015,7 @@ export default function CanjesScreen() {
                   if (list.length === 0) return null;
                   return (
                     <View key={type} className="mt-7">
-                      <Text className="text-[17px] font-bold text-text-light dark:text-text-dark mb-3">
+                      <Text className="text-text-light dark:text-text-dark mb-3" style={typo.section}>
                         {type === 'gratis' ? 'Premios disponibles' : 'Descuentos'}
                       </Text>
                       <View style={{ gap: 12 }}>
