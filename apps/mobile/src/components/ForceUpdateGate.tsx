@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { View, Text, Pressable, Linking, Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
+import { colors } from '@/theme/tokens';
 
 // Compara versiones "1.2.3" → -1 / 0 / 1.
 function compareVersions(a: string, b: string) {
@@ -41,7 +42,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
   if (!blocked) return <>{children}</>;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+    <View style={{ flex: 1, backgroundColor: colors.authBg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
       <Text importantForAccessibility="no" accessibilityElementsHidden style={{ fontSize: 44, marginBottom: 12 }}>🚶</Text>
       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
         ¡Hay una versión nueva de Camina!
@@ -53,9 +54,9 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
         <Pressable
           accessibilityRole="button"
           onPress={() => Linking.openURL(storeUrl)}
-          style={{ backgroundColor: '#7FEDC4', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
+          style={{ backgroundColor: colors.mint, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
         >
-          <Text style={{ color: '#241748', fontWeight: '800', fontSize: 15 }}>Actualizar ahora</Text>
+          <Text style={{ color: colors.authBg, fontWeight: '800', fontSize: 15 }}>Actualizar ahora</Text>
         </Pressable>
       ) : null}
     </View>

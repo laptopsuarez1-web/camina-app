@@ -261,7 +261,7 @@ export default function GroupDetailScreen() {
                     }
                   />
                   <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Vos' : m.name}</Text>
-                  <Text className="text-[12px]" style={{ color: '#C4B8E8' }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
+                  <Text className="text-[12px]" style={{ color: colors.authMuted }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
                   <View
                     style={{
                       width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,

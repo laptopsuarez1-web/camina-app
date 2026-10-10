@@ -133,7 +133,7 @@ export default function GruposScreen() {
                 className="flex-row items-center gap-3 rounded-2xl p-3.5"
               >
                 <View className="w-7 items-center">
-                  {i < 3 ? <Trophy size={16} color={['#F2985C', '#9C8FC2', '#B08D57'][i]} /> : (
+                  {i < 3 ? <Trophy size={16} color={[colors.warn, '#9C8FC2', '#B08D57'][i]} /> : (
                     <Text className="text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
                   )}
                 </View>

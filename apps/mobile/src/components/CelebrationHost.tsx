@@ -8,7 +8,7 @@ import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 
 const GOLD = '#E2B33C';
-const SPARKS = ['#4FC3A8', '#E2B33C', '#B7A6F0', '#F2985C'];
+const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
 const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];
 const coin = require('@/../assets/camina-coin.png');
 
@@ -114,8 +114,8 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
             borderWidth: 1, borderColor: '#E9E4F5', elevation: 8, shadowColor: '#2b2350', shadowOpacity: 0.2, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
           }}
         >
-          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c.icon === 'flame' ? '#FFE6D4' : '#E3F5F0', alignItems: 'center', justifyContent: 'center' }}>
-            {TOAST_ICON[c.icon]({ size: 20, color: c.icon === 'flame' ? '#F2985C' : colors.aqua })}
+          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c.icon === 'flame' ? '#FFE6D4' : colors.light.aquaLight, alignItems: 'center', justifyContent: 'center' }}>
+            {TOAST_ICON[c.icon]({ size: 20, color: c.icon === 'flame' ? colors.warn : colors.aqua })}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontWeight: '800', fontSize: 14, color: colors.light.text }}>{c.title}</Text>
@@ -157,7 +157,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
           paddingTop: 24, paddingBottom: 30, paddingHorizontal: 24,
         }}
       >
-        <Animated.View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: '#E3F5F0', alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
+        <Animated.View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: colors.light.aquaLight, alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
           <Check size={30} color={colors.aqua} />
         </Animated.View>
         {c.sparks !== false && <Sparks x="50%" y={52} radius={78} palette={SPARKS} delay={250} />}

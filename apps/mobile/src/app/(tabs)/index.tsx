@@ -222,7 +222,7 @@ export default function HomeScreen() {
     <ScrollView
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7FEDC4" colors={['#4FC3A8']} progressBackgroundColor="#2F1E5C" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.mint} colors={[colors.aqua]} progressBackgroundColor={colors.authBgSoft} />}
     >
       <LinearGradient
         colors={['#3a2668', '#1c1030', '#120a1e']}
@@ -266,7 +266,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <View className="flex-row items-center gap-2.5">
-              <BellButton dark color="#C4B8E8" />
+              <BellButton dark color={colors.authMuted} />
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Tu perfil"
@@ -492,7 +492,7 @@ export default function HomeScreen() {
         ) : null}
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
 
-        <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: '#291C47', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+        <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
           <LinkRow
             icon={Target}
             tone="aqua"

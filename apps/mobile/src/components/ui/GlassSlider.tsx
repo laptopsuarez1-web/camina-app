@@ -74,7 +74,7 @@ export function GlassSlider({
         style={{
           position: 'absolute', left, width: THUMB, height: THUMB, borderRadius: THUMB / 2,
           backgroundColor: '#fff', borderWidth: 1, borderColor: 'rgba(41,28,71,0.12)',
-          shadowColor: '#291C47', shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+          shadowColor: colors.light.text, shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
         }}
       />
     </View>

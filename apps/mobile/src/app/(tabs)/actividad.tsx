@@ -187,7 +187,7 @@ export default function ActividadScreen() {
       <Text accessibilityRole="header" className="text-[21px] font-extrabold mb-3.5 text-text-light dark:text-text-dark">Actividad</Text>
 
       <LinearGradient
-        colors={['#2f1e5c', '#241748']}
+        colors={[colors.authBgSoft, colors.authBg]}
         start={{ x: 0.15, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={{ borderRadius: 18, padding: 18, marginBottom: 14 }}

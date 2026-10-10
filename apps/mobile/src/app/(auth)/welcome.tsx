@@ -184,13 +184,13 @@ export default function WelcomeScreen() {
 
   if (awaitingConfirmation) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#241748' }}>
+      <View style={{ flex: 1, backgroundColor: colors.authBg }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }} showsVerticalScrollIndicator={false}>
           <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
           <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
             Confirmá tu correo
           </Text>
-          <Text style={{ color: '#C4B8E8', marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
+          <Text style={{ color: colors.authMuted, marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
             Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
             entrar acá.
           </Text>
@@ -263,7 +263,7 @@ export default function WelcomeScreen() {
           >
             CAMINA
           </Text>
-          <Text style={{ color: '#C4B8E8', marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
+          <Text style={{ color: colors.authMuted, marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
             Caminá, ganá Puntos y canjealos en tu ciudad.
           </Text>
 
