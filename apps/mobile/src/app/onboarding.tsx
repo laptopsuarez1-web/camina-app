@@ -162,8 +162,14 @@ export default function OnboardingScreen() {
         {ONBOARDING.map((slide, i) => {
           const Art = ART[slide.art];
           return (
-            <View key={slide.art} style={{ width, height: pageHeight || undefined, paddingHorizontal: 28, alignItems: 'center' }}>
-              <Animated.View style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', opacity: i === step ? fade : 1 }}>
+            // Vertical con flexGrow: con letra normal se ve igual que antes; con texto grande el contenido crece y se desplaza.
+            <ScrollView
+              key={slide.art}
+              style={{ width, height: pageHeight || undefined }}
+              contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, alignItems: 'center' }}
+              showsVerticalScrollIndicator={false}
+            >
+              <Animated.View style={{ flexGrow: 1, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, opacity: i === step ? fade : 1 }}>
                 <Art />
               </Animated.View>
               <View style={{ maxWidth: 330, alignItems: 'center', paddingBottom: 8 }}>
@@ -172,7 +178,7 @@ export default function OnboardingScreen() {
                 </Text>
                 <Text style={{ color: '#D5CBF0', fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
               </View>
-            </View>
+            </ScrollView>
           );
         })}
       </ScrollView>

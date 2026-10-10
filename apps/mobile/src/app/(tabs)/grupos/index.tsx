@@ -285,11 +285,11 @@ export default function GruposScreen() {
             key={g.id}
             className="flex-row items-center justify-between rounded-md p-4"
           >
-            <View className="flex-row items-center gap-3">
+            <View className="flex-row items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
               <View className="w-9.5 h-9.5 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
                 <Users size={16} color={dark ? colors.purpleSoft : colors.purple} />
               </View>
-              <View>
+              <View style={{ flexShrink: 1 }}>
                 <Text className="text-text-light dark:text-text-dark">{g.name}</Text>
                 <Text className="text-muted-light dark:text-muted-dark text-xs">
                   {g.group_members.length} {g.group_members.length === 1 ? 'miembro' : 'miembros'}
@@ -302,6 +302,7 @@ export default function GruposScreen() {
               onPress={() => joinGroup.mutate(g.id)}
               hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
               className="bg-aqua-deep rounded-full px-3.5 py-1.5"
+              style={{ flexShrink: 0, marginLeft: 8 }}
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>
             </Pressable>

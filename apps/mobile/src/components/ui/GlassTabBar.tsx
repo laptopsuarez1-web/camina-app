@@ -99,7 +99,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
               {Icon ? Icon({ focused, color, size: 25 }) : null}
             </View>
-            <Text numberOfLines={1} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
+            <Text numberOfLines={1} maxFontSizeMultiplier={1.3} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
               {title}
             </Text>
           </Pressable>

@@ -248,6 +248,7 @@ export default function HomeScreen() {
             {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
             <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
               <Text
+                allowFontScaling={false}
                 style={{
                   color: colors.mint,
                   lineHeight: 20,

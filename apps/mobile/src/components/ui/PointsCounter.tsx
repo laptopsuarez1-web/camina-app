@@ -41,7 +41,7 @@ export function PointsCounter({ shown, coinSize = 18, textStyle }: { shown: numb
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       <Image source={require('@/../assets/camina-coin.png')} style={{ width: coinSize, height: coinSize, borderRadius: coinSize / 2 }} />
-      <Text style={[textStyle, { fontVariant: ['tabular-nums'] }]}>{shown === null ? '—' : shown.toLocaleString('es-BO')}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={[textStyle, { fontVariant: ['tabular-nums'] }]}>{shown === null ? '—' : shown.toLocaleString('es-BO')}</Text>
     </View>
   );
 }
