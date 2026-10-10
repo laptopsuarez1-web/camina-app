@@ -174,7 +174,7 @@ export default function PerfilScreen() {
     <ScrollView className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle marginBottom={16}>Perfil</ScreenTitle>
 
-      <Glass className="rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-3">
         <View className="flex-row items-center gap-3.5">
           <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
             <AvatarImage
@@ -197,7 +197,7 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
-      <Glass className="rounded-2xl overflow-hidden mb-4">
+      <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
           accessibilityRole="button"
           accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`}
@@ -214,7 +214,7 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
-      <Glass className="rounded-3xl overflow-hidden mb-4">
+      <Glass className="rounded-3xl overflow-hidden mb-3">
         <Press accessibilityRole="button" onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
           <IconBubble icon={Gift} tone="aqua" size={46} />
           <View className="flex-1">
@@ -224,7 +224,7 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
-      <Glass className="rounded-2xl overflow-hidden mb-4">
+      <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
           accessibilityRole="button"
           accessibilityLabel={`Permisos: ${pendingPerms === 0 ? 'todo activo' : `${pendingPerms} sin activar`}`}
@@ -280,14 +280,14 @@ export default function PerfilScreen() {
         </View>
       </Modal>
 
-      <Glass className="rounded-md overflow-hidden mb-4">
+      <Glass className="rounded-md overflow-hidden mb-3">
         <View className="flex-row items-center justify-between p-3.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
           <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
       </Glass>
 
-      <Glass className="rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-3">
         <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark mb-2">Personalización</Text>
         <View className="flex-row items-center justify-between py-1.5">
           <Text className="text-[14px] text-text-light dark:text-text-dark">Modo oscuro</Text>
@@ -306,7 +306,7 @@ export default function PerfilScreen() {
         </View>
       </Glass>
 
-      <Glass className="rounded-2xl px-4 py-3 mb-4">
+      <Glass className="rounded-2xl px-4 py-3 mb-3">
         <View className="flex-row items-center justify-between">
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
           <Press accessibilityRole="link" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>

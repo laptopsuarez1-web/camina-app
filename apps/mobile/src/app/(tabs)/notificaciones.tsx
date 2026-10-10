@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
+import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
 import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
@@ -99,7 +100,7 @@ export default function NotificacionesScreen() {
         )}
         {!isLoading && !isError && items.length === 0 && (
           <View className="items-center py-14" style={{ gap: 10 }}>
-            <IconBubble icon={Bell} tone="purple" size={64} />
+            <EmptyIllustration kind="avisos" />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
               Te avisamos acá de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.

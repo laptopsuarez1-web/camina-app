@@ -550,7 +550,7 @@ export default function HomeScreen() {
         </Press>
 
         {(redemptions?.length ?? 0) > 0 && (
-          <View style={{ marginTop: 26 }}>
+          <View style={{ marginTop: 28 }}>
             <MyRedemptionsSection redemptions={redemptions as unknown as RedemptionRow[] | undefined} loading={redemptionsLoading} />
           </View>
         )}

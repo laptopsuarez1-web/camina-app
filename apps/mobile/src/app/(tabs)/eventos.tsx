@@ -8,6 +8,7 @@ import { Glass } from '@/components/ui/Glass';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -48,7 +49,7 @@ export default function EventosScreen() {
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Eventos</ScreenTitle>
-      <Text className="text-muted-light dark:text-muted-dark mb-5" style={typo.body}>
+      <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Viví experiencias únicas con tus marcas favoritas
       </Text>
       {hasPromos && (
@@ -112,8 +113,8 @@ export default function EventosScreen() {
       )}
       {!promosLoading && !promosError && !hasPromos && (
         <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
-          <IconBubble icon={Calendar} tone="purple" size={84} />
-          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 18 }}>
+          <EmptyIllustration kind="eventos" />
+          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
             Todavía no hay eventos
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>

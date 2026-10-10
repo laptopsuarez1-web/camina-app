@@ -190,13 +190,13 @@ export default function ActividadScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle marginBottom={14}>Actividad</ScreenTitle>
+      <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
 
       <LinearGradient
         colors={[colors.authBgSoft, colors.authBg]}
         start={{ x: 0.15, y: 0 }}
         end={{ x: 0.9, y: 1 }}
-        style={{ borderRadius: 18, padding: 18, marginBottom: 14 }}
+        style={{ borderRadius: 18, padding: 18, marginBottom: 12 }}
       >
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
@@ -328,7 +328,7 @@ export default function ActividadScreen() {
       )}
 
       {(streak ?? 0) > 0 && (
-        <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-4">
+        <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-3">
           <IconBubble icon={Flame} tone="orange" size={38} />
           <View className="flex-1">
             <Text className="text-[13.5px] font-bold" style={{ color: isDark ? '#FFB27A' : colors.warnDeep }}>¡Vas en racha!</Text>
@@ -337,8 +337,8 @@ export default function ActividadScreen() {
         </Glass>
       )}
 
-      <Text accessibilityRole="header" className="mt-1 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Hoy</Text>
-      <Glass className="rounded-3xl p-4 mb-4">
+      <Text accessibilityRole="header" className="mt-4 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Hoy</Text>
+      <Glass className="rounded-3xl p-4 mb-3">
         <View className="flex-row mb-3">
           {([
             [stepsToday, 'pasos', (n: number) => n.toLocaleString('es-BO')],
@@ -361,7 +361,7 @@ export default function ActividadScreen() {
         </Text>
       </Glass>
 
-      <Glass className="rounded-3xl p-4 mb-4">
+      <Glass className="rounded-3xl p-4 mb-7">
         <Text accessibilityRole="header" className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
           {monthName[0].toUpperCase() + monthName.slice(1)} — días con objetivo cumplido
         </Text>

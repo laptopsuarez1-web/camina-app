@@ -149,7 +149,7 @@ export default function PuntosScreen() {
         )}
       </DarkHeader>
 
-      <View className="flex-row gap-2.5 mx-5 mt-5">
+      <View className="flex-row gap-3 mx-5 mt-4">
         <Glass className="flex-1 flex-row items-center gap-2.5 rounded-2xl p-3">
           <IconBubble icon={Flame} tone="orange" size={34} />
           <View>
@@ -247,6 +247,7 @@ export default function PuntosScreen() {
         )}
         {!isLoading && !isError && (movimientos ?? []).length === 0 && (
           <EmptyState
+            illustration="puntos"
             title="Tus puntos van a aparecer acá"
             text="Cada 1.000 pasos que camines sumás un punto, siempre que abras la app ese día. También ganás por retos, invitando amigos y desafíos de grupo."
           />

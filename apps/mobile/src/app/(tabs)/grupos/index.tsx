@@ -182,7 +182,7 @@ export default function GruposScreen() {
       )}
 
       {isError && !groups && (
-        <View className="mb-5">
+        <View className="mb-7">
           <EmptyState
             title="No pudimos cargar"
             text="Revisá tu conexión e intentá de nuevo."
@@ -193,7 +193,7 @@ export default function GruposScreen() {
       )}
 
       {!isLoading && !(isError && !groups) && my.length === 0 && (
-        <View className="mb-5">
+        <View className="mb-7">
           <EmptyState
             title="Todavía no estás en ningún grupo"
             text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate a uno de abajo."
@@ -205,7 +205,7 @@ export default function GruposScreen() {
 
       {my.length > 0 && (
         <>
-          <View className="gap-2.5 mb-5">
+          <View className="gap-3 mb-7">
             {my.map((g) => {
               const w = week?.[g.id];
               const target = g.challenge_target ?? 0;
