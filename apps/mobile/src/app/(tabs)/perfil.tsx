@@ -314,9 +314,9 @@ export default function PerfilScreen() {
           <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">
             <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-1.5">Personas que bloqueaste</Text>
             {blocks.list.map((b) => (
-              <View key={b.id} className="flex-row items-center justify-between py-1.5">
+              <View key={b.id} className="flex-row items-center justify-between" style={{ minHeight: 44 }}>
                 <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
-                <Pressable accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ top: 6, bottom: 6, left: 12, right: 12 }}>
+                <Pressable accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ left: 12, right: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
                   <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">Desbloquear</Text>
                 </Pressable>
               </View>

@@ -103,19 +103,20 @@ test('etiquetas de las reglas de desafío', () => {
   assert.deepEqual(RULE_LABEL, { steps: 'Más pasos', days: 'Más días', streak: 'Mejor racha' });
 });
 
-test('daysLeft: cuenta días enteros hacia arriba hasta el final del día de cierre; nunca negativo', async () => {
+test('daysLeft: cuenta los días que faltan después de hoy (el día de cierre da 0 = "último día"); nunca negativo', async () => {
   await atTime('2026-10-03T15:00:00Z', 'America/La_Paz', () => {
-    assert.equal(daysLeft('2026-10-03'), 1); // termina hoy a las 23:59: queda menos de un día => 1
-    assert.equal(daysLeft('2026-10-04'), 2);
-    assert.equal(daysLeft('2026-10-10'), 8);
+    assert.equal(daysLeft('2026-10-03'), 0); // termina hoy: último día (antes decía "queda 1 día" todo el día)
+    assert.equal(daysLeft('2026-10-04'), 1);
+    assert.equal(daysLeft('2026-10-10'), 7);
     assert.equal(daysLeft('2026-10-02'), 0);
     assert.equal(daysLeft('2025-01-01'), 0);
   });
 });
 
-test('daysLeft: justo al final del día de cierre queda 0 días', async () => {
+test('daysLeft: usa el día local, no el UTC (de noche en La Paz ya es mañana en UTC)', async () => {
   await atTime('2026-10-04T03:59:59Z', 'America/La_Paz', () => { // 23:59:59 del 3/10 en La Paz
     assert.equal(daysLeft('2026-10-03'), 0);
+    assert.equal(daysLeft('2026-10-04'), 1);
   });
 });
 
@@ -208,4 +209,13 @@ test('mi resultado en el último desafío terminado: devuelve premio y puesto, o
   assert.deepEqual(await rq.lastQuery.queryFn(), { challengeId: 'c2', name: 'Reciente', payout: 15, rank: 1 });
   db.tables.group_challenge_results = [{ challenge_id: 'c2', user_id: 'otro', payout: 15, rank: 1 }];
   assert.equal(await rq.lastQuery.queryFn(), null);
+});
+
+// ---------------------------------------------------------------- días que faltan en un desafío de grupo
+
+test('daysLeft: el último día da 0 ("último día"), el anterior 1 y nunca baja de 0', () => {
+  assert.equal(daysLeft('2026-10-10', '2026-10-10'), 0);
+  assert.equal(daysLeft('2026-10-10', '2026-10-09'), 1);
+  assert.equal(daysLeft('2026-10-10', '2026-10-03'), 7);
+  assert.equal(daysLeft('2026-10-10', '2026-10-12'), 0);
 });

@@ -206,7 +206,8 @@ export default function EditarPerfilScreen() {
       return;
     }
     await supabase.auth.signOut();
-    router.replace('/(auth)/welcome?modo=login');
+    // La cuenta ya no existe: la bienvenida abre en "Crear cuenta", no en "Iniciar sesión".
+    router.replace('/(auth)/welcome');
   }
 
   const photo = photoUri ?? profile?.photo_url ?? null;
@@ -260,6 +261,7 @@ export default function EditarPerfilScreen() {
                   aria-pressed={c === city}
                   onPress={() => { if (c !== city) { setCity(c); setZone(null); } }}
                   className={`rounded-full px-3.5 py-2 mr-2 mb-2 border ${c === city ? 'bg-mint border-mint' : 'border-line-light dark:border-line-dark'}`}
+                  style={{ minHeight: 40, justifyContent: 'center' }}
                 >
                   <Text style={{ color: c === city ? colors.mintInk : isDark ? colors.dark.muted : colors.light.muted, fontWeight: c === city ? '700' : '500', fontSize: 13 }}>{c}</Text>
                 </Pressable>
@@ -292,7 +294,7 @@ export default function EditarPerfilScreen() {
                     hitSlop={4}
                     onPress={() => setInterests((cur) => (cur.includes(name) ? cur.filter((n) => n !== name) : [...cur, name]))}
                     className={`flex-row items-center gap-1.5 rounded-full pl-2.5 pr-3.5 py-2 border ${active ? 'bg-aqua-light-light dark:bg-aqua-light-dark' : 'border-line-light dark:border-line-dark'}`}
-                    style={active ? { borderColor: colors.aqua } : undefined}
+                    style={{ minHeight: 40, ...(active ? { borderColor: colors.aqua } : null) }}
                   >
                     <Icon size={16} color={active ? (isDark ? colors.mint : colors.aquaDeep) : isDark ? colors.dark.muted : colors.light.muted} weight={active ? 'fill' : 'regular'} />
                     <Text className={`text-xs font-semibold ${active ? 'text-aqua-ink dark:text-mint' : 'text-muted-light dark:text-muted-dark'}`}>{name}</Text>

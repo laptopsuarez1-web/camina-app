@@ -81,6 +81,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
               accessibilityRole="button"
               onPress={() => { onChange(z); setQuery(''); }}
               className="rounded-full px-3.5 py-2 mr-2 mb-2 border border-line-light dark:border-line-dark"
+              style={{ minHeight: 40, justifyContent: 'center' }}
             >
               <Text className="text-text-light dark:text-text-dark text-[13px] font-medium">{z}</Text>
             </Pressable>

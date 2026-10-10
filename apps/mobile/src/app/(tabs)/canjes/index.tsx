@@ -640,6 +640,7 @@ export default function CanjesScreen() {
                   className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
                   style={{
                     gap: 6,
+                    minHeight: 40,
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,
@@ -657,7 +658,7 @@ export default function CanjesScreen() {
               aria-pressed={onlyOpen}
               onPress={() => setOnlyOpen((v) => !v)}
               className="rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-              style={{ ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
+              style={{ minHeight: 40, justifyContent: 'center', ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
             >
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
             </Pressable>
@@ -667,7 +668,7 @@ export default function CanjesScreen() {
               aria-pressed={onlyFavs}
               onPress={() => setOnlyFavs((v) => !v)}
               className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-              style={{ gap: 5, ...(onlyFavs ? { backgroundColor: colors.dangerFill, borderColor: colors.dangerFill } : null) }}
+              style={{ gap: 5, minHeight: 40, ...(onlyFavs ? { backgroundColor: colors.dangerFill, borderColor: colors.dangerFill } : null) }}
             >
               <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
@@ -686,6 +687,7 @@ export default function CanjesScreen() {
                   className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
                   style={{
                     gap: 6,
+                    minHeight: 40,
                     paddingVertical: 7,
                     paddingLeft: 10,
                     paddingRight: 13,

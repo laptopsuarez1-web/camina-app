@@ -226,7 +226,7 @@ export default function WelcomeScreen() {
               <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
             )}
           </Pressable>
-          <Pressable accessibilityRole="button" hitSlop={{ top: 10, bottom: 15 }} onPress={() => setAwaitingConfirmation(null)}>
+          <Pressable accessibilityRole="button" onPress={() => setAwaitingConfirmation(null)} style={{ minHeight: 44, justifyContent: 'center' }}>
             <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
           </Pressable>
         </ScrollView>
@@ -358,20 +358,20 @@ export default function WelcomeScreen() {
             </Pressable>
 
             {authKind === 'login' && (
-              <Pressable accessibilityRole="button" hitSlop={{ top: 2, bottom: 2 }} onPress={handleForgotPassword} disabled={recovering} style={{ marginTop: 2 }}>
+              <Pressable accessibilityRole="button" onPress={handleForgotPassword} disabled={recovering} style={{ minHeight: 44, justifyContent: 'center' }}>
                 <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
                   {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
                 </Text>
               </Pressable>
             )}
 
-            <Pressable accessibilityRole="link" hitSlop={{ top: 3, bottom: 3 }} onPress={() => router.push('/legal')} style={{ marginTop: 8 }}>
+            <Pressable accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
                 Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
               </Text>
             </Pressable>
 
-            <Pressable accessibilityRole="button" hitSlop={{ top: 1, bottom: 15 }} onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ marginTop: 4 }}>
+            <Pressable accessibilityRole="button" onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
                 {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
               </Text>

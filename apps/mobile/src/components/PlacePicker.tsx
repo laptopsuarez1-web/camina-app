@@ -14,6 +14,8 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
       onPress={onPress}
       className="rounded-full px-3.5 py-2 mr-2 mb-2 border"
       style={{
+        minHeight: 40,
+        justifyContent: 'center',
         backgroundColor: selected ? colors.mint : 'transparent',
         borderColor: selected ? colors.mint : dark ? colors.dark.line : colors.light.line,
       }}

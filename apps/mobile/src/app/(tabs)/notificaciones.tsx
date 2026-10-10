@@ -7,7 +7,7 @@ import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
-import { routeForNotification } from '@/lib/push-notifications';
+import { routeForNotification } from '@/lib/notification-routes';
 
 function bubbleFor(type?: string) {
   switch (type) {

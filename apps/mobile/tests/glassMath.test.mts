@@ -107,10 +107,10 @@ test('barFill: valores exactos en Cristal (1)', () => {
   assert.equal(barFill(1, true, 'ios'), 'rgba(34,25,51,0.600)');
   assert.equal(barFill(1, true, 'android'), 'rgba(34,25,51,0.820)');
   assert.equal(barFill(1, true, 'web'), 'rgba(34,25,51,0.660)');
-  // claro/iOS: canal = 255 - (255 - tinte) * 0,58 => (204, 188, 252) y opacidad 0,45
-  assert.equal(barFill(1, false, 'ios'), 'rgba(204,188,252,0.450)');
+  // claro: canal = 255 - (255 - tinte) * 0,58 => (204, 188, 252). Velo mínimo: iOS y web no bajan de 0,5 (antes 0,45 y 0,26).
+  assert.equal(barFill(1, false, 'ios'), 'rgba(204,188,252,0.500)');
   assert.equal(barFill(1, false, 'android'), 'rgba(204,188,252,0.800)');
-  assert.equal(barFill(1, false, 'web'), 'rgba(204,188,252,0.260)');
+  assert.equal(barFill(1, false, 'web'), 'rgba(204,188,252,0.500)');
 });
 
 test('barFill: la opacidad nunca sube al aumentar el cristal, en las tres plataformas', () => {

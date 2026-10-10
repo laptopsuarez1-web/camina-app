@@ -30,7 +30,9 @@ export function barFill(amount: number, dark: boolean, platform: 'ios' | 'androi
     const a = platform === 'android' ? lerp(0.97, 0.82, amount) : platform === 'web' ? lerp(0.9, 0.66, amount) : lerp(0.85, 0.6, amount);
     return `rgba(34,25,51,${a.toFixed(3)})`;
   }
-  const a = platform === 'android' ? lerp(0.97, 0.8, amount) : platform === 'web' ? 0.96 - 0.7 * amount : lerp(0.9, 0.45, amount);
+  // Velo mínimo: con Cristal al máximo la barra no baja de 0,5 de opacidad (el valor del vidrio por defecto), para que la etiqueta
+  // se lea sobre una tarjeta de color (medido: con 0,26 la etiqueta "Canjes" daba 2,85:1).
+  const a = platform === 'android' ? lerp(0.97, 0.8, amount) : Math.max(0.5, platform === 'web' ? 0.96 - 0.7 * amount : lerp(0.9, 0.45, amount));
   const u = clamp01(amount / 0.65);
   const rgb = [0, 1, 2].map((i) => Math.round(255 - (255 - tint[i]) * 0.58 * u));
   return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a.toFixed(3)})`;

@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { routeForNotification } from '@/lib/notification-routes';
 
 // No hay push notifications reales en simulador/emulador (Apple y Google no
 // entregan tokens ahí) ni en Expo Go desde SDK 53 — hace falta development
@@ -22,22 +23,7 @@ let askedThisSession = false;
 let currentToken: string | null = null;
 let lastHandledTap: string | null = null;
 
-// A qué pantalla lleva cada tipo de aviso (al tocar la notificación o la fila de la bandeja).
-export function routeForNotification(type?: string): string {
-  switch (type) {
-    case 'redemption_expiring':
-    case 'redemption':
-    case 'nearby':
-      return '/(tabs)/canjes';
-    case 'reto':
-      return '/(tabs)/eventos';
-    case 'streak':
-    case 'streak_reminder':
-      return '/(tabs)';
-    default:
-      return '/(tabs)/notificaciones';
-  }
-}
+export { routeForNotification };
 
 // Abre la pantalla correspondiente cuando se toca un push, también si la app estaba cerrada.
 export function useNotificationTaps(enabled: boolean) {

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { localDay } from '@/lib/format';
 
 export type ChallengeRule = 'steps' | 'days' | 'streak';
 
@@ -86,9 +87,9 @@ export function useJoinChallenge(groupId: string | undefined) {
   });
 }
 
-export function daysLeft(endDay: string) {
-  const end = new Date(endDay + 'T23:59:59');
-  return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+// Días que faltan DESPUÉS de hoy: el último día del desafío da 0 ("último día"), el anterior da 1.
+export function daysLeft(endDay: string, today: string = localDay()) {
+  return Math.max(0, Math.round((Date.parse(endDay) - Date.parse(today)) / 86400000));
 }
 
 // Mi resultado en el último desafío terminado del grupo (para celebrar una sola vez si gané puntos).

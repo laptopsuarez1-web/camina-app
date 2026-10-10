@@ -429,7 +429,7 @@ export default function ActividadScreen() {
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3">pasos · {dayKm.toFixed(1).replace('.', ',')} km · {Math.round(steps * KCAL_PER_STEP)} kcal</Text>
                 {opened && (
                   <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-2">
-                    <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? colors.aquaDeep : colors.warn }} />
+                    <View className="h-full rounded-full" style={{ width: `${Math.min(100, Math.round((steps / g) * 100))}%`, backgroundColor: met ? (isDark ? colors.mint : colors.aquaDeep) : colors.warn }} />
                   </View>
                 )}
                 <Text
