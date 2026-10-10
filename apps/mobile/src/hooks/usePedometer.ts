@@ -20,10 +20,9 @@ import {
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
 // escriben ahí, no solo el sensor del teléfono) y Health Connect en Android
-// (mismo rol: unifica Google Fit, relojes, etc.). Si el usuario no tiene
-// Health Connect instalado o rechaza el permiso, se cae al viejo esquema de
-// expo-sensors Pedometer (sensor propio del teléfono nomás) para que la app
-// siga funcionando igual.
+// (mismo rol: unifica Google Fit, relojes, etc.). En iPhone, si Salud no está
+// disponible, se cae al sensor del teléfono (expo-sensors Pedometer). En Android
+// no hay sensor de respaldo: sin Health Connect no se cuentan pasos.
 const POLL_MS = 15_000;
 const STEPS_CACHE_KEY = 'camina_steps_cache_v1';
 const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';

@@ -67,6 +67,8 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
         const focused = state.index === index;
         // Activa en verde de Camina (pasa 4.5:1 en los dos modos); el resto en gris violáceo (trazo), como en iOS.
         const color = focused ? (dark ? colors.mint : colors.aquaDeep) : dark ? colors.dark.muted : colors.light.muted;
+        // La etiqueta activa va en verde de texto (aquaInk): aquaDeep no llega a 4,5:1 sobre el vidrio. El ícono queda en aquaDeep.
+        const labelColor = focused ? (dark ? colors.mint : colors.aquaInk) : color;
         const Icon = options.tabBarIcon;
         const title = typeof options.title === 'string' ? options.title : route.name;
         return (
@@ -75,6 +77,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             accessibilityRole="tab"
             accessibilityLabel={`${title}, pestaña ${position + 1} de ${visible.length}`}
             accessibilityState={{ selected: focused }}
+            aria-selected={focused}
             onPress={() => {
               const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
               if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
@@ -96,7 +99,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
               {Icon ? Icon({ focused, color, size: 25 }) : null}
             </View>
-            <Text numberOfLines={1} style={{ fontSize: 12, color, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
+            <Text numberOfLines={1} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
               {title}
             </Text>
           </Pressable>

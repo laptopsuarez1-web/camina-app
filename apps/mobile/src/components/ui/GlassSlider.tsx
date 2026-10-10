@@ -57,14 +57,18 @@ export function GlassSlider({
       accessibilityRole="adjustable"
       accessibilityLabel={label}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100), text: `${Math.round(value * 100)} por ciento` }}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(value * 100)}
+      aria-valuetext={`${Math.round(value * 100)} por ciento`}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(e: AccessibilityActionEvent) => step(e.nativeEvent.actionName === 'increment' ? 1 : -1)}
       onLayout={onLayout}
       style={{ height: 44, justifyContent: 'center' }}
       {...pan.panHandlers}
     >
-      <View style={{ height: TRACK, borderRadius: TRACK / 2, backgroundColor: dark ? 'rgba(179,166,214,0.22)' : 'rgba(110,92,143,0.2)' }} />
-      <View style={{ position: 'absolute', left: THUMB / 2, height: TRACK, width: left, borderRadius: TRACK / 2, backgroundColor: colors.aquaDeep }} />
+      <View pointerEvents="none" style={{ height: TRACK, borderRadius: TRACK / 2, backgroundColor: dark ? 'rgba(179,166,214,0.22)' : 'rgba(110,92,143,0.2)' }} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: THUMB / 2, height: TRACK, width: left, borderRadius: TRACK / 2, backgroundColor: colors.aquaDeep }} />
       <View
         pointerEvents="none"
         style={{

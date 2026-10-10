@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Pressable, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, Pressable, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/useCelebrationStore';
@@ -42,6 +42,25 @@ function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | 
   );
 }
 
+// Avisa al lector de pantalla y, si se pide, le lleva el foco al título (para las hojas que tapan la pantalla).
+function useAnnounce(message: string, focusTitle: boolean) {
+  const titleRef = useRef<Text>(null);
+  useEffect(() => {
+    AccessibilityInfo.announceForAccessibility(message);
+    if (!focusTitle) return;
+    const id = setTimeout(() => {
+      const node = findNodeHandle(titleRef.current);
+      if (node) AccessibilityInfo.setAccessibilityFocus(node);
+    }, 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return titleRef;
+}
+
+const messageOf = (c: { title: string; body?: string; points?: number }) =>
+  [c.title, c.body, c.points ? `${c.points} Puntos` : null].filter(Boolean).join('. ');
+
 function PointsPill({ points, big }: { points: number; big?: boolean }) {
   const t = useRef(new Animated.Value(0)).current;
   const [shown, setShown] = useState(0);
@@ -53,13 +72,15 @@ function PointsPill({ points, big }: { points: number; big?: boolean }) {
   const pop = t.interpolate({ inputRange: [0, 0.2, 1], outputRange: [0.7, 1.08, 1] });
   return (
     <Animated.View
+      accessible
+      accessibilityLabel={`${points} Puntos`}
       style={{
         flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center', borderRadius: 18, paddingVertical: big ? 8 : 6, paddingHorizontal: big ? 20 : 16,
         backgroundColor: big ? 'rgba(226,179,60,0.16)' : '#FFF3D1', borderWidth: big ? 1 : 0, borderColor: 'rgba(226,179,60,0.5)', transform: [{ scale: pop }],
       }}
     >
       <Image source={coin} style={{ width: big ? 26 : 20, height: big ? 26 : 20, borderRadius: 13 }} />
-      <Text style={{ fontWeight: '900', fontSize: big ? 26 : 20, color: big ? '#FFD97A' : '#9A6A08', fontVariant: ['tabular-nums'] }}>+{shown}</Text>
+      <Text style={{ fontWeight: '900', fontSize: big ? 26 : 20, color: big ? '#FFD97A' : colors.goldInk, fontVariant: ['tabular-nums'] }}>+{shown}</Text>
     </Animated.View>
   );
 }
@@ -75,6 +96,8 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
   const y = useRef(new Animated.Value(sign * 120)).current;
   useEffect(() => {
     buzz.light();
+    // En iOS se anuncia a mano; en Android y web lo anuncia la live region del aviso.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(messageOf(c));
     Animated.spring(y, { toValue: 0, friction: 8, tension: 90, useNativeDriver: true }).start();
     const id = setTimeout(() => {
       Animated.timing(y, { toValue: sign * 140, duration: 260, useNativeDriver: true }).start(onDone);
@@ -84,7 +107,7 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
   }, []);
   return (
     <Animated.View pointerEvents="box-none" style={{ position: 'absolute', left: 14, right: 14, ...(c.at === 'bottom' ? { bottom: insets.bottom + 84 } : { top: insets.top + 8 }), transform: [{ translateY: y }] }}>
-      <Pressable onPress={onDone}>
+      <Pressable accessibilityRole="alert" accessibilityLiveRegion="polite" onPress={onDone}>
         <View
           style={{
             flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: '#fff',
@@ -108,6 +131,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
   const y = useRef(new Animated.Value(320)).current;
   const fade = useRef(new Animated.Value(0)).current;
   const check = useRef(new Animated.Value(0)).current;
+  const titleRef = useAnnounce(messageOf(c), true);
   useEffect(() => {
     buzz.success();
     Animated.parallel([
@@ -123,7 +147,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
     ]).start(onDone);
   }
   return (
-    <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
+    <View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
       <Animated.View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(43,35,80,0.32)', opacity: fade }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" style={{ flex: 1 }} onPress={close} />
       </Animated.View>
@@ -137,10 +161,10 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
           <Check size={30} color={colors.aqua} />
         </Animated.View>
         {c.sparks !== false && <Sparks x="50%" y={52} radius={78} palette={SPARKS} delay={250} />}
-        <Text style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
+        <Text ref={titleRef} accessibilityRole="header" style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ fontSize: 13.5, color: colors.light.muted, marginTop: 4, textAlign: 'center', lineHeight: 19 }}>{c.body}</Text> : null}
         {c.points ? <View style={{ marginTop: 14 }}><PointsPill points={c.points} /></View> : null}
-        <Pressable onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
+        <Pressable accessibilityRole="button" onPress={close} style={{ alignSelf: 'stretch', marginTop: 18, backgroundColor: colors.aquaDeep, borderRadius: 16, paddingVertical: 13, alignItems: 'center' }}>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{c.cta ?? 'Listo'}</Text>
         </Pressable>
       </Animated.View>
@@ -151,6 +175,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
 function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: () => void }) {
   const fade = useRef(new Animated.Value(0)).current;
   const pop = useRef(new Animated.Value(0)).current;
+  const titleRef = useAnnounce(messageOf(c), true);
   useEffect(() => {
     buzz.success();
     Animated.parallel([
@@ -159,7 +184,7 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
     ]).start();
   }, [fade, pop]);
   return (
-    <Animated.View style={{ position: 'absolute', inset: 0, opacity: fade }}>
+    <Animated.View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, opacity: fade }}>
       <LinearGradient colors={['#2A1F4D', '#15112A']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
         <Animated.View
           style={{
@@ -172,11 +197,11 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
         <View style={{ position: 'absolute', left: 0, right: 0, top: '50%', alignItems: 'center' }} pointerEvents="none">
           <Sparks x="50%" y={-52} radius={120} palette={GOLD_SPARKS} delay={350} count={16} />
         </View>
-        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 24, marginTop: 26, textAlign: 'center' }}>{c.title}</Text>
+        <Text ref={titleRef} accessibilityRole="header" style={{ color: '#fff', fontWeight: '900', fontSize: 24, marginTop: 26, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ color: '#B9B0D4', fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>{c.body}</Text> : null}
         <Text style={{ color: '#B9B0D4', fontSize: 13, marginTop: 24 }}>Te llevaste</Text>
         <View style={{ marginTop: 8 }}><PointsPill points={c.points} big /></View>
-        <Pressable onPress={onDone} style={{ alignSelf: 'stretch', marginTop: 34, backgroundColor: GOLD, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+        <Pressable accessibilityRole="button" onPress={onDone} style={{ alignSelf: 'stretch', marginTop: 34, backgroundColor: GOLD, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
           <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 15 }}>¡Genial!</Text>
         </Pressable>
       </LinearGradient>

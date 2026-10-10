@@ -42,7 +42,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#241748', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-      <Text style={{ fontSize: 44, marginBottom: 12 }}>🚶</Text>
+      <Text importantForAccessibility="no" accessibilityElementsHidden style={{ fontSize: 44, marginBottom: 12 }}>🚶</Text>
       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
         ¡Hay una versión nueva de Camina!
       </Text>
@@ -51,6 +51,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
       </Text>
       {storeUrl ? (
         <Pressable
+          accessibilityRole="button"
           onPress={() => Linking.openURL(storeUrl)}
           style={{ backgroundColor: '#7FEDC4', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
         >

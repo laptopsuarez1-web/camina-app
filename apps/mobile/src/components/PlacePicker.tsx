@@ -9,6 +9,8 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      aria-pressed={selected}
+      hitSlop={{ top: 4, bottom: 4 }}
       onPress={onPress}
       className="rounded-full px-3.5 py-2 mr-2 mb-2 border"
       style={{
@@ -16,7 +18,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
         borderColor: selected ? colors.mint : dark ? colors.dark.line : colors.light.line,
       }}
     >
-      <Text style={{ color: selected ? '#1E8F6F' : dark ? colors.dark.muted : colors.light.muted, fontWeight: selected ? '700' : '500', fontSize: 13 }}>{label}</Text>
+      <Text style={{ color: selected ? colors.mintInk : dark ? colors.dark.muted : colors.light.muted, fontWeight: selected ? '700' : '500', fontSize: 13 }}>{label}</Text>
     </Pressable>
   );
 }
