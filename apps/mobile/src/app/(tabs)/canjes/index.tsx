@@ -148,7 +148,7 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
         }}
       >
         {logoUrl ? (
-          <Image source={{ uri: logoUrl }} style={{ width: size - 8, height: size - 8, borderRadius: (size - 8) / 2 }} />
+          <Image source={{ uri: logoUrl }} resizeMode="cover" style={{ width: size - 8, height: size - 8, borderRadius: (size - 8) / 2 }} />
         ) : (
           <Text style={{ color: featured ? GOLD : colors.aqua, fontWeight: '800', fontSize: 16 }}>{name[0]}</Text>
         )}
