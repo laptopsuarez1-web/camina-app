@@ -39,7 +39,7 @@ export interface Business {
   photos?: string[] | null;
   tiktok?: string | null;
   hours_text: string | null;
-  opening_hours?: Record<string, { from: string; to: string } | null> | null;
+  opening_hours?: Record<string, { from: string; to: string; from2?: string; to2?: string } | null> | null;
   lat: number | null;
   lng: number | null;
   logo_url: string | null;
