@@ -26,6 +26,10 @@ export default function AdminPage() {
     { id: string; business_name: string; title: string; body: string; radius_km: number; estimated: number }[]
   >([]);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [reviewMsg, setReviewMsg] = useState<string | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setListLoading(true);
@@ -70,6 +74,65 @@ export default function AdminPage() {
     if (!error) {
       setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, approved: true } : b)));
     }
+  }
+
+  // Aprobar también limpia un rechazo anterior.
+  async function approveBusiness(businessId: string) {
+    setSavingId(businessId);
+    setReviewMsg(null);
+    const { error } = await supabase
+      .from('businesses')
+      .update({ approved: true, rejected_at: null, rejection_reason: null })
+      .eq('id', businessId);
+    setSavingId(null);
+    if (error) {
+      // Si todavía no está la migración del rechazo, se aprueba igual.
+      if (/rejected_at|rejection_reason/i.test(error.message)) return approve(businessId);
+      setReviewMsg(error.message);
+      return;
+    }
+    loadBusinesses();
+  }
+
+  async function rejectBusiness(businessId: string) {
+    const reason = rejectReason.trim();
+    if (!reason) return;
+    setSavingId(businessId);
+    setReviewMsg(null);
+    const { error } = await supabase
+      .from('businesses')
+      .update({ approved: false, rejected_at: new Date().toISOString(), rejection_reason: reason })
+      .eq('id', businessId);
+    setSavingId(null);
+    if (error) {
+      setReviewMsg(
+        /rejected_at|rejection_reason/i.test(error.message)
+          ? 'Falta aplicar la migración 0038 en la base de datos para poder rechazar con motivo.'
+          : error.message
+      );
+      return;
+    }
+    setRejectingId(null);
+    setRejectReason('');
+    loadBusinesses();
+  }
+
+  async function deleteBusiness(b: Business) {
+    setSavingId(b.id);
+    setReviewMsg(null);
+    // El logo y la portada no se borran solos con la fila; se intenta sacarlos (si falla, no pasa nada).
+    for (const bucket of ['business-logos']) {
+      const { data: files } = await supabase.storage.from(bucket).list(b.id);
+      if (files && files.length > 0) await supabase.storage.from(bucket).remove(files.map((f) => `${b.id}/${f.name}`));
+    }
+    const { error } = await supabase.from('businesses').delete().eq('id', b.id);
+    setSavingId(null);
+    setDeletingId(null);
+    if (error) {
+      setReviewMsg(error.message);
+      return;
+    }
+    setBusinesses((prev) => prev.filter((x) => x.id !== b.id));
   }
 
   async function toggleAdEligible(businessId: string, value: boolean) {
@@ -162,42 +225,168 @@ export default function AdminPage() {
           </div>
         )}
 
+        {reviewMsg && <p className="text-warn text-[12.5px] mb-4">{reviewMsg}</p>}
+
         {(() => {
-          const pending = businesses.filter((b) => !b.approved);
-          return pending.length > 0 ? (
-            <div className="bg-warn-light rounded-2xl p-4 mb-7" style={{ color: '#8A5A2E' }}>
-              <p className="font-bold text-[13.5px] mb-2.5">Pendientes de aprobación ({pending.length})</p>
-              <div className="flex flex-col gap-2">
-                {pending.map((b) => (
-                  <div key={b.id} className="flex items-center justify-between bg-white rounded-xl px-3.5 py-2.5">
-                    <div>
-                      <p className="font-semibold text-text text-[13px]">
-                        {b.name} {b.is_virtual && <span className="text-muted font-normal">· sin local (virtual)</span>}
-                      </p>
-                      <p className="text-muted text-[11.5px]">
-                        {b.category} · {b.city ?? 'Tarija'} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
-                      </p>
-                    </div>
-                    {b.logo_url && b.cover_url ? (
-                      <button
-                        onClick={() => approve(b.id)}
-                        disabled={savingId === b.id}
-                        className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
-                      >
-                        Aprobar
-                      </button>
-                    ) : (
-                      <span className="text-[11.5px] text-warn font-semibold text-right">
-                        Faltan fotos:
-                        <br />
-                        {[!b.logo_url && 'logo', !b.cover_url && 'portada'].filter(Boolean).join(' y ')}
-                      </span>
-                    )}
-                  </div>
-                ))}
+          const pending = businesses.filter((b) => !b.approved && !b.rejected_at);
+          const rejected = businesses.filter((b) => !b.approved && b.rejected_at);
+
+          const confirmDelete = (b: Business) => (
+            <div className="mt-2 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: '#FDEEE2', color: '#8A5A2E' }}>
+              <p className="mb-2">
+                ¿Eliminar <b>{b.name}</b> para siempre? Se borran también sus beneficios y canjes. No se puede deshacer.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => deleteBusiness(b)}
+                  disabled={savingId === b.id}
+                  className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
+                  style={{ background: '#C0392B' }}
+                >
+                  Sí, eliminar
+                </button>
+                <button
+                  onClick={() => setDeletingId(null)}
+                  className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
-          ) : null;
+          );
+
+          return (
+            <>
+              {pending.length > 0 && (
+                <div className="bg-warn-light rounded-2xl p-4 mb-5" style={{ color: '#8A5A2E' }}>
+                  <p className="font-bold text-[13.5px] mb-2.5">Pendientes de aprobación ({pending.length})</p>
+                  <div className="flex flex-col gap-2">
+                    {pending.map((b) => (
+                      <div key={b.id} className="bg-white rounded-xl px-3.5 py-2.5">
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div>
+                            <p className="font-semibold text-text text-[13px]">
+                              {b.name} {b.is_virtual && <span className="text-muted font-normal">· sin local (virtual)</span>}
+                            </p>
+                            <p className="text-muted text-[11.5px]">
+                              {b.category} · {b.city ?? 'Tarija'} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
+                            </p>
+                            {(!b.logo_url || !b.cover_url) && (
+                              <p className="text-[11.5px] text-warn font-semibold mt-0.5">
+                                Faltan fotos: {[!b.logo_url && 'logo', !b.cover_url && 'portada'].filter(Boolean).join(' y ')}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {b.logo_url && b.cover_url && (
+                              <button
+                                onClick={() => approveBusiness(b.id)}
+                                disabled={savingId === b.id}
+                                className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              >
+                                Aprobar
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setRejectingId(rejectingId === b.id ? null : b.id);
+                                setRejectReason('');
+                                setDeletingId(null);
+                              }}
+                              className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                            >
+                              Rechazar
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeletingId(deletingId === b.id ? null : b.id);
+                                setRejectingId(null);
+                              }}
+                              className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              style={{ background: '#FDEEE2', color: '#C0392B' }}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                        {rejectingId === b.id && (
+                          <div className="mt-2.5">
+                            <label className="block text-[12px] font-semibold text-text mb-1">
+                              ¿Por qué lo rechazás? El dueño lo va a ver en su panel y lo puede corregir y volver a enviar.
+                            </label>
+                            <textarea
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              rows={2}
+                              placeholder="Ej: La foto de portada no se ve bien. Subí una foto del local o de tus productos."
+                              className="w-full bg-white border border-line rounded-[10px] px-3 py-2 text-[13px] text-text"
+                            />
+                            <div className="flex gap-2 mt-1.5">
+                              <button
+                                onClick={() => rejectBusiness(b.id)}
+                                disabled={!rejectReason.trim() || savingId === b.id}
+                                className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold disabled:opacity-50"
+                                style={{ background: '#241748', color: '#7FEDC4' }}
+                              >
+                                Rechazar y avisar
+                              </button>
+                              <button
+                                onClick={() => setRejectingId(null)}
+                                className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {deletingId === b.id && confirmDelete(b)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {rejected.length > 0 && (
+                <div className="bg-card border border-line rounded-2xl p-4 mb-7">
+                  <p className="font-bold text-[13.5px] mb-2.5">Rechazados, esperando corrección ({rejected.length})</p>
+                  <div className="flex flex-col gap-2">
+                    {rejected.map((b) => (
+                      <div key={b.id} className="border border-line rounded-xl px-3.5 py-2.5">
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div>
+                            <p className="font-semibold text-text text-[13px]">{b.name}</p>
+                            <p className="text-muted text-[11.5px]">
+                              Rechazado el {new Date(b.rejected_at as string).toLocaleDateString('es-BO')}
+                            </p>
+                            <p className="text-[12px] mt-1" style={{ color: '#8A5A2E' }}>
+                              Motivo: {b.rejection_reason}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => approveBusiness(b.id)}
+                              disabled={savingId === b.id}
+                              className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                            >
+                              Aprobar igual
+                            </button>
+                            <button
+                              onClick={() => setDeletingId(deletingId === b.id ? null : b.id)}
+                              className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              style={{ background: '#FDEEE2', color: '#C0392B' }}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                        {deletingId === b.id && confirmDelete(b)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          );
         })()}
 
         {listLoading ? (
@@ -206,7 +395,7 @@ export default function AdminPage() {
           <p className="text-muted text-[13.5px]">Todavía no hay comercios registrados.</p>
         ) : (
           <div className="bg-card border border-line rounded-2xl overflow-x-auto">
-            <table className="w-full min-w-[760px] text-[13px]">
+            <table className="w-full min-w-[840px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left">
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Nombre</th>
@@ -215,6 +404,7 @@ export default function AdminPage() {
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Plan</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Espacios pub.</th>
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Fundador</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -226,6 +416,10 @@ export default function AdminPage() {
                       {b.approved ? (
                         <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
                           Aprobado
+                        </span>
+                      ) : b.rejected_at ? (
+                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: '#FDEEE2', color: '#C0392B' }}>
+                          Rechazado
                         </span>
                       ) : (
                         <span className="text-warn bg-warn-light rounded-full px-2.5 py-1 text-[11px] font-bold">
@@ -284,6 +478,31 @@ export default function AdminPage() {
                           className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C]"
                         >
                           Hacer fundador
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {deletingId === b.id ? (
+                        <span className="inline-flex items-center gap-2 text-[11.5px]">
+                          <button
+                            onClick={() => deleteBusiness(b)}
+                            disabled={savingId === b.id}
+                            className="rounded-[8px] px-2.5 py-1.5 font-bold text-white disabled:opacity-50"
+                            style={{ background: '#C0392B' }}
+                          >
+                            Sí, eliminar
+                          </button>
+                          <button onClick={() => setDeletingId(null)} className="text-muted font-semibold">
+                            No
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setDeletingId(b.id)}
+                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                          style={{ background: '#FDEEE2', color: '#C0392B' }}
+                        >
+                          Eliminar
                         </button>
                       )}
                     </td>

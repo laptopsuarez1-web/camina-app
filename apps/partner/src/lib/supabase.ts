@@ -30,6 +30,8 @@ export interface Business {
   phone: string | null;
   instagram: string | null;
   facebook?: string | null;
+  rejection_reason?: string | null;
+  rejected_at?: string | null;
   tiktok?: string | null;
   hours_text: string | null;
   opening_hours: Record<string, { from: string; to: string } | null> | null;
