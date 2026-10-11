@@ -267,6 +267,8 @@ export default function CanjesScreen() {
   const [zoneInput, setZoneInput] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
 
@@ -380,6 +382,11 @@ export default function CanjesScreen() {
     const list = (benefits ?? []).filter((b) => b.business.id === profileBusinessId);
     return list.length ? { business: list[0].business, benefits: list } : null;
   }, [benefits, profileBusinessId]);
+
+  // Portada primero y después las demás fotos del local.
+  const galleryPhotos = profileGroup
+    ? ([profileGroup.business.cover_url, ...(profileGroup.business.photos ?? [])].filter(Boolean) as string[])
+    : [];
 
   async function handleRedeem(benefitId: string, benefit: BenefitWithBusiness) {
     try {
@@ -707,11 +714,29 @@ export default function CanjesScreen() {
         {profileGroup && (
           <View className="flex-1 bg-bg-light dark:bg-bg-dark">
             <ScrollView contentContainerClassName="pb-12" showsVerticalScrollIndicator={false}>
-              <View style={{ height: 170, backgroundColor: colors.purple }}>
+              <View style={{ height: 232, backgroundColor: colors.purple }}>
                 {profileGroup.business.cover_url ? (
-                  <Image source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  <Pressable
+                    onPress={() => {
+                      setGalleryIndex(0);
+                      setGalleryOpen(true);
+                    }}
+                    style={{ width: '100%', height: '100%' }}
+                    accessibilityLabel="Ver las fotos del local"
+                  >
+                    <Image source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  </Pressable>
                 ) : (
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
+                )}
+                {galleryPhotos.length > 1 && (
+                  <View
+                    pointerEvents="none"
+                    className="absolute flex-row items-center rounded-full"
+                    style={{ right: 16, bottom: 46, gap: 5, backgroundColor: 'rgba(18,10,30,0.62)', paddingHorizontal: 11, paddingVertical: 6 }}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>{galleryPhotos.length} fotos</Text>
+                  </View>
                 )}
                 <Pressable
                   onPress={() => setProfileBusinessId(null)}
@@ -833,6 +858,11 @@ export default function CanjesScreen() {
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
                                     {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
+                                  {b.description ? (
+                                    <Text className="text-[12.5px] leading-[17px] text-muted-light dark:text-muted-dark mt-1" numberOfLines={3}>
+                                      {b.description}
+                                    </Text>
+                                  ) : null}
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={b.cost_points} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
@@ -859,10 +889,101 @@ export default function CanjesScreen() {
                     </View>
                   );
                 })}
+
+                {profileGroup.business.lat != null && profileGroup.business.lng != null ? (
+                  <View className="mt-8">
+                    <Text className="text-[17px] font-bold text-text-light dark:text-text-dark mb-3">Cómo llegar</Text>
+                    <Pressable
+                      onPress={() => openFullMap(profileGroup.business.lat!, profileGroup.business.lng!, profileGroup.business.name)}
+                      style={{ height: 170, borderRadius: 22, overflow: 'hidden', backgroundColor: '#1d1b2e' }}
+                      accessibilityLabel="Abrir la ubicación en el mapa"
+                    >
+                      <MapView
+                        key={profileGroup.business.id}
+                        provider={PROVIDER_GOOGLE}
+                        style={{ flex: 1 }}
+                        pointerEvents="none"
+                        initialRegion={{
+                          latitude: profileGroup.business.lat,
+                          longitude: profileGroup.business.lng,
+                          latitudeDelta: 0.006,
+                          longitudeDelta: 0.006,
+                        }}
+                        scrollEnabled={false}
+                        zoomEnabled={false}
+                        pitchEnabled={false}
+                        rotateEnabled={false}
+                        toolbarEnabled={false}
+                      >
+                        <Marker coordinate={{ latitude: profileGroup.business.lat, longitude: profileGroup.business.lng }} />
+                      </MapView>
+                    </Pressable>
+                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
+                    {profileGroup.business.address ? (
+                      <Text className="text-[13px] leading-[18px] text-muted-light dark:text-muted-dark mt-0.5">{profileGroup.business.address}</Text>
+                    ) : null}
+                    <Pressable
+                      onPress={() => openFullMap(profileGroup.business.lat!, profileGroup.business.lng!, profileGroup.business.name)}
+                      className="rounded-2xl items-center justify-center flex-row mt-3 bg-purple-light-light dark:bg-purple-light-dark"
+                      style={{ paddingVertical: 13, gap: 8 }}
+                    >
+                      <Navigation size={16} color={colors.purple} />
+                      <Text style={{ fontWeight: '700', fontSize: 14, color: colors.purple }}>Cómo llegar</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             </ScrollView>
           </View>
         )}
+      </Modal>
+
+      {/* Fotos del local */}
+      <Modal visible={galleryOpen && galleryPhotos.length > 0} animationType="fade" onRequestClose={() => setGalleryOpen(false)}>
+        <View style={{ flex: 1, backgroundColor: '#0B0B10' }}>
+          <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
+            <Pressable
+              onPress={() => setGalleryOpen(false)}
+              className="rounded-full items-center justify-center"
+              style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.16)' }}
+              accessibilityLabel="Cerrar las fotos"
+            >
+              <X size={18} color="#fff" />
+            </Pressable>
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+              {Math.min(galleryIndex + 1, galleryPhotos.length)} de {galleryPhotos.length}
+            </Text>
+            <View style={{ width: 40 }} />
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 12 }}>
+            {galleryPhotos[galleryIndex] ? (
+              <Image
+                source={{ uri: galleryPhotos[galleryIndex] }}
+                style={{ width: '100%', height: '88%', borderRadius: 20 }}
+                resizeMode="contain"
+              />
+            ) : null}
+          </View>
+          {galleryPhotos.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 36 }}>
+              {galleryPhotos.map((uri, i) => (
+                <Pressable key={uri} onPress={() => setGalleryIndex(i)} accessibilityLabel={`Foto ${i + 1}`}>
+                  <Image
+                    source={{ uri }}
+                    style={{
+                      width: 74,
+                      height: 74,
+                      borderRadius: 14,
+                      opacity: i === galleryIndex ? 1 : 0.55,
+                      borderWidth: i === galleryIndex ? 2 : 0,
+                      borderColor: '#fff',
+                    }}
+                  />
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
+        </View>
       </Modal>
 
       {/* Código de canje */}
@@ -900,6 +1021,10 @@ export default function CanjesScreen() {
                 </Pressable>
               ) : null}
             </View>
+
+            {activeBenefit?.description ? (
+              <Text className="text-[13.5px] leading-5 text-muted-light dark:text-muted-dark mb-4">{activeBenefit.description}</Text>
+            ) : null}
 
             {activeBenefit && benefitConditions(activeBenefit).length > 0 && (
               <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-4 gap-1">

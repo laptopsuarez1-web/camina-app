@@ -30,6 +30,7 @@ export interface Business {
   phone: string | null;
   instagram: string | null;
   facebook?: string | null;
+  photos?: string[] | null;
   rejection_reason?: string | null;
   rejected_at?: string | null;
   tiktok?: string | null;
@@ -59,6 +60,7 @@ export interface Benefit {
   business_id: string;
   name: string;
   type: 'gratis' | 'descuento';
+  description?: string | null;
   discount_detail: string | null;
   discount_percent: number | null;
   cost_points: number;

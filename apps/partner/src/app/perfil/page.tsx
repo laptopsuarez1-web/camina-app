@@ -8,6 +8,8 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
+import { GalleryUpload } from '@/components/GalleryUpload';
+import { CATEGORIAS, opcionesCategoria } from '@/lib/categories';
 import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type WeekHours } from '@/lib/hours';
 
 function firstOpen(w: WeekHours) {
@@ -15,7 +17,6 @@ function firstOpen(w: WeekHours) {
   return 0;
 }
 
-const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
 export default function PerfilPage() {
   const { business, refreshBusiness, session } = useBusinessAuth();
@@ -29,6 +30,8 @@ export default function PerfilPage() {
   const [facebook, setFacebook] = useState('');
   const [tiktok, setTiktok] = useState('');
   const [resenaError, setResenaError] = useState<string | null>(null);
+  const [descripcion, setDescripcion] = useState('');
+  const [descripcionError, setDescripcionError] = useState<string | null>(null);
   const [website, setWebsite] = useState('');
   const [resenaUrl, setResenaUrl] = useState('');
   const [esVirtual, setEsVirtual] = useState(false);
@@ -57,6 +60,7 @@ export default function PerfilPage() {
     setNombre(business.name);
     setCategoria(business.category);
     setDireccion(business.address ?? '');
+    setDescripcion(business.description ?? '');
     setSemana(business.opening_hours ?? weekFromText(business.hours_text));
     setTelefono(business.phone ?? '');
     setInstagram(business.instagram ?? '');
@@ -152,6 +156,12 @@ export default function PerfilPage() {
       return;
     }
     setResenaError(null);
+    if (descripcion.trim().length < 15) {
+      setDescripcionError('Este dato es obligatorio: contá en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
+      document.getElementById('campo-descripcion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setDescripcionError(null);
     let punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
     if (!esVirtual && !punto && esLinkCorto(ubicacion)) {
       punto = await resolverLinkCorto(ubicacion);
@@ -165,6 +175,7 @@ export default function PerfilPage() {
     setSaved(false);
     const payload = {
         name: nombre.trim(),
+        description: descripcion.trim(),
         category: categoria,
         address: esVirtual ? null : direccion.trim(),
         lat: esVirtual ? null : punto ? punto.lat : null,
@@ -199,6 +210,12 @@ export default function PerfilPage() {
   async function handlePhotoUploaded(field: 'logo_url' | 'cover_url', url: string) {
     if (!business || !session) return;
     await supabase.from('businesses').update({ [field]: url }).eq('id', business.id);
+    await refreshBusiness(session.user.id, session.user.email);
+  }
+
+  async function handlePhotosChange(photos: string[]) {
+    if (!business || !session) return;
+    await supabase.from('businesses').update({ photos }).eq('id', business.id);
     await refreshBusiness(session.user.id, session.user.email);
   }
 
@@ -245,6 +262,8 @@ export default function PerfilPage() {
             )}
           </div>
 
+          {business && <GalleryUpload businessId={business.id} photos={business.photos ?? []} onChange={handlePhotosChange} />}
+
           <Field label="Nombre comercial">
             <input
               value={nombre}
@@ -252,13 +271,31 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
+          <Field label="Descripción del local *">
+            <textarea
+              id="campo-descripcion"
+              value={descripcion}
+              onChange={(e) => {
+                setDescripcion(e.target.value);
+                setDescripcionError(null);
+              }}
+              rows={4}
+              maxLength={500}
+              placeholder="Ej: Menú a base de papas fritas artesanales, salchipapas y panchos con variedad de salsas. Ambiente tranquilo, a pasos de la plaza."
+              className={`w-full bg-white border rounded-[10px] px-3 py-2.5 text-[13.5px] ${descripcionError ? 'border-warn' : 'border-line'}`}
+            />
+            {descripcionError && <p className="text-warn text-[12px] mt-1.5">{descripcionError}</p>}
+            <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+              Obligatoria. Es lo primero que lee un cliente en tu ficha de la app: qué ofrecés, qué te hace especial.
+            </p>
+          </Field>
           <Field label="Categoría">
             <select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             >
-              {CATEGORIAS.map((c) => (
+              {opcionesCategoria(business?.category).map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
+import { CATEGORIAS } from '@/lib/categories';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -18,7 +19,6 @@ const PREFIJOS = [
   ['+598', 'Uruguay'],
 ];
 
-const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
 export default function RegistroPage() {
   const [nombre, setNombre] = useState('');
