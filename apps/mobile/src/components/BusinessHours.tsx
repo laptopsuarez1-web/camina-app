@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
-import { colors } from '@/theme/tokens';
+import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
 
 // Un día puede tener dos tramos (horario partido): from/to y from2/to2.
@@ -43,6 +45,7 @@ function closesAt(h: NonNullable<DayHours>) {
 // Chip de horario que al tocarlo muestra qué días abre el comercio y en qué horario.
 export function BusinessHours({ openingHours, hoursText }: { openingHours: OpeningHours; hoursText: string | null }) {
   const [open, setOpen] = useState(false);
+  const { muted } = useThemeColors();
   const today = todayIndex();
   const week = openingHours ?? null;
 
@@ -54,7 +57,7 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
         className="flex-row items-center rounded-full px-3.5 py-2"
         style={{ gap: 6 }}
       >
-        <Clock size={14} color={colors.light.muted} />
+        <Clock size={14} color={muted} />
         <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{hoursText}</Text>
       </Glass>
     );
@@ -69,15 +72,19 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
 
   return (
     <View className="w-full">
-      <Pressable
+      <Press
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        aria-expanded={open}
+        hitSlop={{ top: 6, bottom: 6 }}
         onPress={() => setOpen((v) => !v)}
         className="flex-row items-center self-start bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
         style={{ gap: 6 }}
       >
-        <Clock size={14} color={colors.light.muted} />
+        <Clock size={14} color={muted} />
         <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{status}</Text>
-        {open ? <ChevronUp size={14} color={colors.light.muted} /> : <ChevronDown size={14} color={colors.light.muted} />}
-      </Pressable>
+        {open ? <ChevronUp size={14} color={muted} /> : <ChevronDown size={14} color={muted} />}
+      </Press>
 
       {open && (
         <Glass className="rounded-2xl px-4 py-3 mt-2" style={{ gap: 7 }}>
@@ -94,8 +101,8 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
                   {isToday ? ' (hoy)' : ''}
                 </Text>
                 <Text
-                  className="text-[13px]"
-                  style={{ fontWeight: isToday ? '800' : '500', color: h ? colors.aqua : colors.light.muted }}
+                  className={h ? 'text-[13px] text-aqua-ink dark:text-aqua' : 'text-[13px] text-muted-light dark:text-muted-dark'}
+                  style={{ fontWeight: isToday ? '800' : '500' }}
                 >
                   {h ? rangesText(h) : 'Cerrado'}
                 </Text>

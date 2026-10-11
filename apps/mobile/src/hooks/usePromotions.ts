@@ -36,7 +36,9 @@ export function usePromotions() {
         supabase.from('promotion_entries').select('promotion_id').eq('user_id', userId!),
         supabase.from('promotion_winners').select('promotion_id').eq('user_id', userId!),
       ]);
-      if (error) return [];
+      // La consulta principal propaga el error (así la pantalla puede ofrecer "Reintentar");
+      // las de entries y wins siguen tolerantes: si fallan, solo falta el "anotado" y el "ganaste".
+      if (error) throw error;
       const joined = new Set((entries ?? []).map((e: { promotion_id: string }) => e.promotion_id));
       const won = new Set((wins ?? []).map((e: { promotion_id: string }) => e.promotion_id));
       return ((data ?? []) as unknown as (PromotionItem & { status: string })[])

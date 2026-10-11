@@ -13,16 +13,16 @@ import {
   initialize as initializeHealthConnect,
   requestPermission as requestHealthConnectPermission,
   aggregateRecord,
+  aggregateGroupByPeriod,
   readRecords,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
 // escriben ahí, no solo el sensor del teléfono) y Health Connect en Android
-// (mismo rol: unifica Google Fit, relojes, etc.). Si el usuario no tiene
-// Health Connect instalado o rechaza el permiso, se cae al viejo esquema de
-// expo-sensors Pedometer (sensor propio del teléfono nomás) para que la app
-// siga funcionando igual.
+// (mismo rol: unifica Google Fit, relojes, etc.). En iPhone, si Salud no está
+// disponible, se cae al sensor del teléfono (expo-sensors Pedometer). En Android
+// no hay sensor de respaldo: sin Health Connect no se cuentan pasos.
 const POLL_MS = 15_000;
 const STEPS_CACHE_KEY = 'camina_steps_cache_v1';
 const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
@@ -91,7 +91,7 @@ function useHealthKitSteps(enabled: boolean) {
 }
 
 // ---------- Health Connect (Android) ----------
-export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'ok';
+export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'error' | 'ok';
 
 function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
@@ -152,7 +152,8 @@ function useHealthConnectSteps(enabled: boolean) {
         await readToday();
         interval = setInterval(readToday, POLL_MS);
       } catch {
-        if (!cancelled) { setReady(false); setStatus('denied'); }
+        // Un fallo técnico no es lo mismo que negar el permiso.
+        if (!cancelled) { setReady(false); setStatus('error'); }
       }
     })();
 
@@ -269,4 +270,61 @@ export function useTodaySteps() {
   // `steps` es lo que se muestra (con el último valor conocido mientras carga);
   // `live` indica si viene de la fuente real — solo eso se manda al servidor.
   return { ...result, steps: result.live ? result.steps : Math.max(result.steps, cached ?? 0), refresh };
+}
+
+// ---------- Historial de pasos por día (solo para mostrar en Actividad) ----------
+// Salud ya tiene los pasos de los días en que no abriste la app. Se muestran en Actividad pero NO
+// suman Puntos: los Puntos solo se cargan con la app abierta (earn_points_from_steps).
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function useHealthDailySteps(days = 35) {
+  const [byDay, setByDay] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    let cancelled = false;
+    const start = startOfToday();
+    start.setDate(start.getDate() - (days - 1));
+
+    (async () => {
+      try {
+        const out: Record<string, number> = {};
+        if (Platform.OS === 'ios') {
+          if (!isHealthDataAvailable()) return;
+          const queries = Array.from({ length: days }, (_, i) => {
+            const from = new Date(start);
+            from.setDate(from.getDate() + i);
+            const to = new Date(from);
+            to.setDate(to.getDate() + 1);
+            return queryStatisticsForQuantity(STEP_COUNT_IDENTIFIER, ['cumulativeSum'], {
+              filter: { date: { startDate: from, endDate: to } },
+              unit: 'count',
+            }).then((r) => {
+              out[dayKey(from)] = Math.max(0, Math.round(r.sumQuantity?.quantity ?? 0));
+            });
+          });
+          await Promise.all(queries);
+        } else {
+          if ((await getSdkStatus()) !== SdkAvailabilityStatus.SDK_AVAILABLE) return;
+          await initializeHealthConnect();
+          const groups = await aggregateGroupByPeriod({
+            recordType: 'Steps',
+            timeRangeFilter: { operator: 'between', startTime: start.toISOString(), endTime: new Date().toISOString() },
+            timeRangeSlicer: { period: 'DAYS', length: 1 },
+          });
+          for (const g of groups) out[dayKey(new Date(g.startTime))] = Math.max(0, Math.round(g.result.COUNT_TOTAL ?? 0));
+        }
+        if (!cancelled) setByDay(out);
+      } catch {
+        // Sin permiso o sin Salud: Actividad muestra solo lo que ya guardó la app.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [days]);
+
+  return byDay;
 }

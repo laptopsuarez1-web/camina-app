@@ -19,3 +19,6 @@ export const TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER = 42_000;
 // Meta diaria de pasos: mínimo permitido, y desde cuánto se considera una meta "muy buena".
 export const MIN_DAILY_GOAL = 1000;
 export const GOOD_DAILY_GOAL = 5000;
+
+// El ranking global aparece cuando la app tiene más de esta cantidad de usuarios (antes se vería vacío).
+export const RANKING_MIN_USERS = 1000;

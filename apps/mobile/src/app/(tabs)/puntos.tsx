@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, Text, ScrollView, Pressable, Share, ActivityIndicator, Image } from 'react-native';
+import { View, ScrollView, Share, Image, AccessibilityInfo, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
@@ -13,8 +15,14 @@ import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks
 import { referralLink } from '@/constants/sharing';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
-import { dayLabel } from '@/lib/format';
+import { dayLabel, localDay, plural } from '@/lib/format';
 import { Glass } from '@/components/ui/Glass';
+import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { DarkHeader } from '@/components/ui/DarkHeader';
+import { CoinHalo } from '@/components/ui/CoinHalo';
+import { typo } from '@/theme/type';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 
 function useMovimientos() {
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -24,7 +32,7 @@ function useMovimientos() {
     queryFn: async () => {
       const since = new Date();
       since.setDate(since.getDate() - 30);
-      const sinceISO = since.toISOString().slice(0, 10);
+      const sinceISO = localDay(since);
 
       const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }] = await Promise.all([
         supabase
@@ -62,7 +70,7 @@ function useMovimientos() {
       };
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
-        day: l.ref_day ?? l.earned_at.slice(0, 10),
+        day: l.ref_day ?? localDay(new Date(l.earned_at)),
         reason: l.reason as string,
         title: kindOf(l.reason, l.note, l.amount),
         subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,
@@ -77,11 +85,12 @@ function useMovimientos() {
 }
 
 export default function PuntosScreen() {
+  const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
-  const { data: balance } = usePointsBalance();
+  const { data: balance, isError: balanceError } = usePointsBalance();
   const { data: earnedToday } = usePointsToday();
   const { data: expiring } = usePointsExpiringSoon();
-  const { data: movimientos, isLoading } = useMovimientos();
+  const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
   const { data: streak } = useStreak();
   const { data: retos } = useRetos();
   const retosListos = (retos ?? []).filter((r) => r.claimable).length;
@@ -93,6 +102,8 @@ export default function PuntosScreen() {
     if (!link) return;
     await Clipboard.setStringAsync(link);
     setCopied(true);
+    // iOS ignora accessibilityLiveRegion: el aviso de "copiado" se anuncia a mano.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Link copiado');
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -105,22 +116,28 @@ export default function PuntosScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-bg-light dark:bg-bg-dark" contentContainerClassName="pb-10">
-      <View className="bg-auth-bg pt-14 pb-6 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+    <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
-          <Pressable onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+          <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
             <ChevronLeft size={16} color="#fff" />
-          </Pressable>
-          <Text className="text-white text-[17px] font-bold">Tus Puntos</Text>
+          </Press>
+          <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Tus Puntos</Text>
         </View>
 
         <View className="flex-row items-center gap-3">
-          <Image source={require('@/../assets/camina-coin.png')} style={{ width: 46, height: 46, borderRadius: 23 }} />
+          <CoinHalo size={58}>
+            <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 58, height: 58, borderRadius: 29 }} />
+          </CoinHalo>
           <View>
-            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', lineHeight: 30 }}>{balance ?? 0}</Text>
+            {balanceError && balance === undefined ? (
+              <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }}>—</Text>
+            ) : (
+              <AnimatedNumber id="puntos-saldo" value={balance ?? 0} ready={balance !== undefined} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} style={{ ...typo.display, fontSize: 46, lineHeight: 50, color: '#fff' }} />
+            )}
             {(earnedToday ?? 0) > 0 && (
               <View className="bg-mint/15 px-2.5 py-0.5 rounded-full self-start mt-1.5">
-                <Text className="text-mint font-semibold text-[11.5px]">Ganaste {earnedToday} Puntos hoy</Text>
+                <Text className="text-mint font-semibold text-[12px]">Ganaste {earnedToday} {plural(earnedToday ?? 0, 'Punto', 'Puntos')} hoy</Text>
               </View>
             )}
           </View>
@@ -128,29 +145,30 @@ export default function PuntosScreen() {
 
         {expiring && expiring.days <= 30 && (
           <Text className="text-auth-muted text-xs mt-3">
-            {expiring.amount} puntos vencen en {expiring.days} día{expiring.days === 1 ? '' : 's'}
+            {expiring.amount} {plural(expiring.amount, 'Punto vence', 'Puntos vencen')} {expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}
           </Text>
         )}
-      </View>
+      </DarkHeader>
 
-      <View className="flex-row gap-2.5 mx-5 mt-5">
+      <View className="flex-row gap-3 mx-5 mt-4">
         <Glass className="flex-1 flex-row items-center gap-2.5 rounded-2xl p-3">
           <IconBubble icon={Flame} tone="orange" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
-            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">días de racha</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{streak === 1 ? 'día' : 'días'} de racha</Text>
           </View>
         </Glass>
-        <Pressable
+        <Press
+          accessibilityRole="button"
           onPress={() => router.push('/(tabs)/eventos')}
           className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
         >
           <IconBubble icon={Trophy} tone="gold" size={34} />
           <View>
             <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{retosListos}</Text>
-            <Text className="text-[10.5px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
           </View>
-        </Pressable>
+        </Press>
       </View>
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
@@ -163,23 +181,33 @@ export default function PuntosScreen() {
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
           Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
-        <Pressable
+        <Press
+          accessibilityRole="button"
           onPress={shareLink}
-          className="bg-purple rounded-xl py-3 items-center flex-row justify-center gap-2"
+          haptic="light"
+          className="bg-purple-deep rounded-xl py-3 items-center flex-row justify-center gap-2"
         >
           <Share2 size={15} color="#fff" />
           <Text className="text-white font-bold text-[13px]">Compartir link</Text>
-        </Pressable>
-        <Pressable onPress={copyLink} className="items-center py-2.5">
-          <Text className="text-aqua font-semibold text-[12.5px]">
-            {copied ? 'Copiado ✓' : 'Copiar link'}
+        </Press>
+        <Press accessibilityRole="button" onPress={copyLink} className="items-center py-2.5">
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={copied ? 'Link copiado' : 'Copiar link'}
+            className="text-aqua-ink dark:text-aqua font-semibold text-[12.5px]"
+          >
+            {copied ? 'Copiado' : 'Copiar link'}
           </Text>
-        </Pressable>
+        </Press>
       </View>
 
-      <Text className="font-bold text-base px-5 mt-6 mb-3 text-text-light dark:text-text-dark">Movimientos</Text>
+      <Text accessibilityRole="header" className="px-5 mt-7 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Movimientos</Text>
       <View className="px-5 gap-2">
-        {isLoading && <ActivityIndicator color={colors.aqua} />}
+        {isLoading && (
+          <SkeletonGroup style={{ gap: 8 }}>
+            {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </SkeletonGroup>
+        )}
         {(movimientos ?? []).map((m) => (
           <Glass
             key={m.id}
@@ -197,23 +225,32 @@ export default function PuntosScreen() {
               )}
             </View>
             <View className="flex-1 pr-3">
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mb-0.5">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-0.5">
                 {dayLabel(m.day)} · {m.title}
               </Text>
               {m.subtitle && (
                 <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{m.subtitle}</Text>
               )}
             </View>
-            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aqua, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
-              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+            <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
+              <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{m.amount > 0 ? '+' : '−'}{Math.abs(m.amount)}</Text>
             </View>
           </Glass>
         ))}
-        {!isLoading && (movimientos ?? []).length === 0 && (
+        {isError && !movimientos && (
           <EmptyState
+            title="No pudimos cargar"
+            text="Revisá tu conexión e intentá de nuevo."
+            actionLabel="Reintentar"
+            onAction={() => refetch()}
+          />
+        )}
+        {!isLoading && !isError && (movimientos ?? []).length === 0 && (
+          <EmptyState
+            illustration="puntos"
             title="Tus puntos van a aparecer acá"
-            text="Cada 1.000 pasos que camines sumás un punto. También ganás por retos, invitando amigos y desafíos de grupo."
+            text="Cada 1.000 pasos que camines sumás un punto, siempre que abras la app ese día. También ganás por retos, invitando amigos y desafíos de grupo."
           />
         )}
       </View>

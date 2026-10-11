@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { localDay } from '@/lib/format';
+import { fetchMemberSteps } from '@/lib/group-steps';
 import type { GroupNote } from '@/lib/database.types';
 
 function startOfWeekLocal() {
@@ -26,19 +28,14 @@ export function useGroupDetail(groupId: string | undefined) {
       if (membersError) throw membersError;
 
       const memberIds = (members ?? []).map((m) => m.user_id);
-      const [{ data: profiles, error: profilesError }, { data: steps, error: stepsError }] = await Promise.all([
+      const [{ data: profiles, error: profilesError }, steps] = await Promise.all([
         supabase.from('public_profiles').select('id, full_name, photo_url').in('id', memberIds),
-        supabase
-          .from('steps_daily')
-          .select('user_id, steps')
-          .in('user_id', memberIds)
-          .gte('day', monday.toISOString().slice(0, 10)),
+        fetchMemberSteps(memberIds, localDay(monday)),
       ]);
       if (profilesError) throw profilesError;
-      if (stepsError) throw stepsError;
 
       const totals = new Map<string, number>(memberIds.map((id) => [id, 0]));
-      for (const row of steps ?? []) {
+      for (const row of steps) {
         totals.set(row.user_id, (totals.get(row.user_id) ?? 0) + row.steps);
       }
       const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));

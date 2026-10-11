@@ -91,16 +91,38 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (messages.length > 0) {
-    await fetch(EXPO_PUSH_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'Accept-Encoding': 'gzip, deflate',
-      },
-      body: JSON.stringify(messages),
-    });
+  // Expo admite hasta 100 mensajes por llamada. Si una llamada falla, no se marcan como enviadas
+  // las filas para reintentarlas en la próxima corrida; los tokens inválidos se borran.
+  let failed = false;
+  const deadTokens: string[] = [];
+  for (let i = 0; i < messages.length; i += 100) {
+    const chunk = messages.slice(i, i + 100);
+    try {
+      const res = await fetch(EXPO_PUSH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Accept-Encoding': 'gzip, deflate',
+        },
+        body: JSON.stringify(chunk),
+      });
+      if (!res.ok) {
+        failed = true;
+        continue;
+      }
+      const body = (await res.json()) as { data?: Array<{ status: string; details?: { error?: string } }> };
+      (body.data ?? []).forEach((ticket, idx) => {
+        if (ticket.status === 'error' && ticket.details?.error === 'DeviceNotRegistered') deadTokens.push(chunk[idx].to);
+      });
+    } catch {
+      failed = true;
+    }
+  }
+  if (deadTokens.length > 0) await supabase.from('push_tokens').delete().in('token', deadTokens);
+
+  if (failed) {
+    return new Response(JSON.stringify({ error: 'Expo no respondió bien; se reintenta', pushes: messages.length }), { status: 502 });
   }
 
   const ids = rows.map((r) => r.id);

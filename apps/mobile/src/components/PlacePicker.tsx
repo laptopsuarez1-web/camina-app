@@ -1,19 +1,29 @@
-import { View, Text, Pressable } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
+import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 import { usePlaces } from '@/hooks/usePlaces';
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const dark = useColorScheme().colorScheme === 'dark';
   return (
-    <Pressable
+    <Press
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      aria-pressed={selected}
+      hitSlop={{ top: 4, bottom: 4 }}
       onPress={onPress}
       className="rounded-full px-3.5 py-2 mr-2 mb-2 border"
       style={{
+        minHeight: 40,
+        justifyContent: 'center',
         backgroundColor: selected ? colors.mint : 'transparent',
-        borderColor: selected ? colors.mint : colors.light.line,
+        borderColor: selected ? colors.mint : dark ? colors.dark.line : colors.light.line,
       }}
     >
-      <Text style={{ color: selected ? '#1E8F6F' : colors.light.muted, fontWeight: selected ? '700' : '500', fontSize: 13 }}>{label}</Text>
-    </Pressable>
+      <Text style={{ color: selected ? colors.mintInk : dark ? colors.dark.muted : colors.light.muted, fontWeight: selected ? '700' : '500', fontSize: 13 }}>{label}</Text>
+    </Press>
   );
 }
 
@@ -41,7 +51,7 @@ export function PlacePicker({
       </View>
       {zones.length > 0 && (
         <>
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-1 mb-1.5">Zona o barrio</Text>
+          <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-1 mb-1.5">Barrio</Text>
           <View className="flex-row flex-wrap">
             {zones.map((z) => (
               <Chip key={z.id} label={z.name} selected={z.name === zone} onPress={() => onChange(city, z.name === zone ? null : z.name)} />

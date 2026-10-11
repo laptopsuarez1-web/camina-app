@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { localDay } from '@/lib/format';
+import { fetchMemberSteps } from '@/lib/group-steps';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
 
@@ -29,19 +31,14 @@ export function useMyGroupRanking() {
       const memberIds: string[] = myGroup!.group_members.map((m: { user_id: string }) => m.user_id);
       const monday = startOfWeekLocal();
 
-      const [{ data: steps, error: stepsError }, { data: profiles, error: profilesError }] = await Promise.all([
-        supabase
-          .from('steps_daily')
-          .select('user_id, steps')
-          .in('user_id', memberIds)
-          .gte('day', monday.toISOString().slice(0, 10)),
+      const [steps, { data: profiles, error: profilesError }] = await Promise.all([
+        fetchMemberSteps(memberIds, localDay(monday)),
         supabase.from('public_profiles').select('id, full_name').in('id', memberIds),
       ]);
-      if (stepsError) throw stepsError;
       if (profilesError) throw profilesError;
 
       const totals = new Map<string, number>(memberIds.map((id) => [id, 0]));
-      for (const row of steps ?? []) {
+      for (const row of steps) {
         totals.set(row.user_id, (totals.get(row.user_id) ?? 0) + row.steps);
       }
       const names = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));

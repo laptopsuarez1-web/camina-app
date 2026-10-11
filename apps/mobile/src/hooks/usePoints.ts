@@ -15,6 +15,13 @@ function todayISO() {
   return `${y}-${m}-${day}`;
 }
 
+// Medianoche local del dispositivo como instante exacto (con zona), para filtrar "hoy" bien en la base.
+function startOfTodayISO() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
 export function usePointsBalance() {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
@@ -64,7 +71,7 @@ export function usePointsToday() {
         .from('points_ledger')
         .select('amount, earned_at')
         .eq('user_id', userId!)
-        .gte('earned_at', `${todayISO()}T00:00:00`);
+        .gte('earned_at', startOfTodayISO());
       if (error) throw error;
       return (data ?? []).reduce((sum, row) => sum + row.amount, 0);
     },

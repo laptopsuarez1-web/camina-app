@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { colors } from '@/theme/tokens';
 
 interface ProgressRingProps {
   size?: number;
@@ -22,7 +23,7 @@ export function ProgressRing({
   radius,
   progress,
   trackColor = 'rgba(255,255,255,0.1)',
-  progressColor = '#7FEDC4',
+  progressColor = colors.mint,
   innerProgress,
   innerColor = '#2CFFAE',
   innerRadius = 80,

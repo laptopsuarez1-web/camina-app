@@ -1,0 +1,23 @@
+# Pruebas VIEJAS cuya regla una propuesta cambia a propósito. En modo PROPUESTAS=1 un FAIL con uno de estos nombres se informa como "obsoleta"
+# y no cuenta como FAIL (sin la variable PROPUESTAS no se leen). Formato: nombre exacto de la prueba <TAB> motivo. Las líneas con # se ignoran.
+#
+# --- 0042 (SEC-03 B): la plausibilidad deja de ser incremental (pasos previos + 2.000 + 300/min desde la última sync) y pasa a ser una curva
+# --- absoluta desde la medianoche; estas pruebas asumían el margen incremental o dependen de la hora del día.
+150.000 pasos: se guardan 60.000 (trigger 0018; el 100.000 de 0038 no se alcanza nunca)	0042: con la curva absoluta, de madrugada lo permitido es menos de 60.000
+hace 1 minuto con 5.000: se permite hasta 5.000 + 2.000 + 300 = 7.300	0042: ya no hay margen incremental sobre los pasos previos
+... y eso da 7 Puntos	0042: consecuencia de la anterior
+recién sincronizado: se permite solo el margen de 2.000 (7.000)	0042: ya no hay margen incremental sobre los pasos previos
+10 minutos desde 0: se permite 2.000 + 3.000 = 5.000	0042: ya no se cuenta desde la última sincronización
+#
+# --- 0048 (SEC-22): global_weekly_ranking devuelve vacío con 1.000 usuarios o menos (estas pruebas usan 5 a 110 usuarios).
+# --- La cobertura equivalente con más de 1.000 usuarios está en tests/propuestas/48_global_ranking_min_users.sql.
+orden descendente por pasos de la semana, sin ocultos ni gente en cero	0048: el ranking global exige más de 1.000 usuarios
+los pasos de la semana pasada no cuentan (el lunes arranca la semana)	0048
+el límite pedido se respeta	0048
+límite 0 se trata como 1	0048
+límite negativo se trata como 1	0048
+el límite máximo es 100	0048
+por defecto devuelve 20	0048
+#
+# --- 0052 (R01): el barrido agrega una segunda función que cancela canjes; la prueba que contaba 'una sola' cambia a propósito.
+hoy hay una sola función que cancela canjes (la que dispara el cliente)	0052: ahora hay dos (cancel_expired_redemption, que dispara el cliente, y el barrido expire_pending_redemptions)

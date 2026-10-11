@@ -1,7 +1,10 @@
-import { View, Text, Pressable, Linking, ScrollView } from 'react-native';
+import { View, Linking, ScrollView } from 'react-native';
+import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { colors } from '@/theme/tokens';
+import { Footprints, IconBubble } from '@/components/icons';
 
 const HEALTH_CONNECT = 'com.google.android.apps.healthdata';
 const GOOGLE_FIT = 'com.google.android.apps.fitness';
@@ -29,8 +32,8 @@ export default function SaludScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg }}>
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 32 }}>
-        <Text style={{ fontSize: 40, marginBottom: 10 }}>👟</Text>
-        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activá el conteo de pasos</Text>
+        <View style={{ marginBottom: 14 }}><IconBubble icon={Footprints} tone="aqua" size={56} /></View>
+        <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activá el conteo de pasos</Text>
         <Text style={{ color: colors.authMuted, fontSize: 14, lineHeight: 21, marginBottom: 24 }}>
           Para que Camina sume tus pasos de forma segura, se leen desde Health Connect. Son tres pasos y lo hacés una sola vez.
         </Text>
@@ -44,18 +47,18 @@ export default function SaludScreen() {
               <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', flex: 1 }}>{title}</Text>
             </View>
             <Text style={{ color: colors.authMuted, fontSize: 12.5, lineHeight: 18, marginBottom: 12 }}>{text}</Text>
-            <Pressable onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
+            <Press accessibilityRole="button" accessibilityLabel={`${title}: abrir`} hitSlop={{ top: 5, bottom: 5 }} onPress={onPress} style={{ backgroundColor: 'rgba(127,237,196,0.18)', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
               <Text style={{ color: colors.mint, fontWeight: '700', fontSize: 13 }}>Abrir</Text>
-            </Pressable>
+            </Press>
           </View>
         ))}
 
-        <Pressable onPress={next} style={{ backgroundColor: colors.mint, borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 12 }}>
+        <Press accessibilityRole="button" onPress={next} style={{ backgroundColor: colors.mint, borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginTop: 12 }}>
           <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: 15 }}>Ya lo tengo, continuar</Text>
-        </Pressable>
-        <Pressable onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
-          <Text style={{ color: '#8C7DB8', fontSize: 12.5 }}>Lo hago después</Text>
-        </Pressable>
+        </Press>
+        <Press accessibilityRole="button" onPress={next} style={{ paddingVertical: 14, alignItems: 'center' }}>
+          <Text style={{ color: '#B3A6D6', fontSize: 12.5 }}>Lo hago después</Text>
+        </Press>
       </ScrollView>
     </View>
   );
