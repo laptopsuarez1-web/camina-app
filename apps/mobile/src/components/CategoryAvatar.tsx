@@ -50,6 +50,13 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   'Ropa & Accesorios': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1' },
   'Tienda Online': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1' },
   Kiosco: { icon: Storefront, from: '#FFB27A', to: '#F2985C' },
+  Barbería: { icon: Sparkle, from: '#F27BA0', to: '#D4537E' },
+  Peluquería: { icon: Sparkle, from: '#F27BA0', to: '#D4537E' },
+  'Uñas & Spa': { icon: Sparkle, from: '#F27BA0', to: '#D4537E' },
+  Óptica: { icon: Storefront, from: '#86A6E6', to: '#5B7FC7' },
+  'Librería & Papelería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1' },
+  'Joyería & Relojería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1' },
+  Lavandería: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7' },
   'Plantas & Flores': { icon: Sparkle, from: '#7FEDC4', to: '#4FC3A8' },
 };
 

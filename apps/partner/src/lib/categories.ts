@@ -13,6 +13,9 @@ export const CATEGORIAS = [
   'Kiosco',
   'Dietética & Saludable',
   'Estética & Belleza',
+  'Barbería',
+  'Peluquería',
+  'Uñas & Spa',
   'Farmacias',
   'Yoga & Pilates',
   'Gimnasio & Deporte',
@@ -25,6 +28,10 @@ export const CATEGORIAS = [
   'Ropa & Accesorios',
   'Tienda Online',
   'Plantas & Flores',
+  'Óptica',
+  'Librería & Papelería',
+  'Joyería & Relojería',
+  'Lavandería',
   'Otros',
 ];
 
