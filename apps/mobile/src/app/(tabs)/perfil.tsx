@@ -329,10 +329,6 @@ export default function PerfilScreen() {
         )}
       </Glass>
 
-      <Press accessibilityRole="link" onPress={() => router.push('/onboarding')} className="flex-row items-center justify-center py-3">
-        <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Ver la introducción</Text>
-      </Press>
-
       <Press accessibilityRole="link" onPress={() => router.push('/legal')} className="flex-row items-center justify-center py-3">
         <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Términos y política de privacidad</Text>
       </Press>
