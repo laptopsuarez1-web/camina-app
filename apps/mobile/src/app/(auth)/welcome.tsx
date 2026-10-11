@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
 import { emailRedirectUrl } from '@/lib/auth-links';
 import { friendlyError } from '@/lib/errors';
+import { Eye, EyeSlash } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
 
@@ -23,6 +24,7 @@ export default function WelcomeScreen() {
   const [authKind, setAuthKind] = useState<AuthKind>(modo === 'login' ? 'login' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
@@ -324,24 +326,35 @@ export default function WelcomeScreen() {
               onSubmitEditing={() => passwordRef.current?.focus()}
               style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 44 }}
             />
-            <TextInput
-              ref={passwordRef}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Contraseña"
-              placeholderTextColor="#6E6291"
-              accessibilityLabel="Contraseña"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete={authKind === 'login' ? 'current-password' : 'new-password'}
-              textContentType={authKind === 'login' ? 'password' : 'newPassword'}
-              secureTextEntry
-              returnKeyType="go"
-              onSubmitEditing={() => {
-                if (!loading) handleSubmit();
-              }}
-              style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 44 }}
-            />
+            <View style={{ justifyContent: 'center' }}>
+              <TextInput
+                ref={passwordRef}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Contraseña"
+                placeholderTextColor="#6E6291"
+                accessibilityLabel="Contraseña"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete={authKind === 'login' ? 'current-password' : 'new-password'}
+                textContentType={authKind === 'login' ? 'password' : 'newPassword'}
+                secureTextEntry={!showPassword}
+                returnKeyType="go"
+                onSubmitEditing={() => {
+                  if (!loading) handleSubmit();
+                }}
+                style={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10, padding: 12, paddingRight: 48, fontSize: 14, minHeight: 44 }}
+              />
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                onPress={() => setShowPassword((v) => !v)}
+                hitSlop={8}
+                style={{ position: 'absolute', right: 6, width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}
+              >
+                {showPassword ? <EyeSlash size={20} color="#6E6291" /> : <Eye size={20} color="#6E6291" />}
+              </Press>
+            </View>
 
             <Press
               accessibilityRole="button"

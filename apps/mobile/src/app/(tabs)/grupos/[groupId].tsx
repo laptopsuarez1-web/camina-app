@@ -6,6 +6,7 @@ import { View, ScrollView, ActivityIndicator, Share, Image, KeyboardAvoidingView
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
@@ -63,6 +64,7 @@ export default function GroupDetailScreen() {
   const { data: history } = useGroupHistory(groupId);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
@@ -279,7 +281,26 @@ export default function GroupDetailScreen() {
           </View>
         </LinearGradient>
 
-        <Glass className="flex-row mx-5 mt-4 mb-3 rounded-2xl p-3.5">
+        <Glass className="flex-row items-center mx-5 mt-4 rounded-2xl p-3.5" style={{ gap: 12 }}>
+          <View className="flex-1">
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Código de invitación</Text>
+            <Text selectable className="text-[20px] font-extrabold tracking-widest text-text-light dark:text-text-dark">{data.group.invite_code}</Text>
+          </View>
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel="Copiar el código de invitación"
+            onPress={async () => {
+              await Clipboard.setStringAsync(data.group.invite_code);
+              setCodeCopied(true);
+              setTimeout(() => setCodeCopied(false), 2000);
+            }}
+            className="bg-aqua-deep rounded-full px-4 py-2"
+          >
+            <Text className="text-white text-xs font-semibold">{codeCopied ? '¡Copiado!' : 'Copiar'}</Text>
+          </Press>
+        </Glass>
+
+        <Glass className="flex-row mx-5 mt-3 mb-3 rounded-2xl p-3.5">
           <View className="flex-1">
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
