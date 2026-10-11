@@ -125,8 +125,8 @@ export default function PerfilPage() {
     );
   }
 
-  // El link de reseñas es obligatorio y tiene que ser de Google: el link de tu local en Google Maps
-  // (Compartir > Copiar link) o el de "Pedir reseñas" de Google Business.
+  // El link de reseñas es opcional, pero si lo ponen tiene que ser de Google: el link de tu local en
+  // Google Maps (Compartir > Copiar link) o el de "Pedir reseñas" de Google Business.
   function resenaValida(text: string) {
     try {
       const u = new URL(text.trim());
@@ -146,12 +146,8 @@ export default function PerfilPage() {
 
   async function handleSave() {
     if (!business) return;
-    if (!resenaValida(resenaUrl)) {
-      setResenaError(
-        resenaUrl.trim()
-          ? 'Ese link no es de Google. Pegá el link de tu local en Google Maps (Compartir > Copiar link).'
-          : 'Este dato es obligatorio: pegá el link de tu local en Google Maps para que tus clientes te dejen reseñas.'
-      );
+    if (resenaUrl.trim() && !resenaValida(resenaUrl)) {
+      setResenaError('Ese link no es de Google. Pegá el link de tu local en Google Maps (Compartir > Copiar link).');
       document.getElementById('campo-resenas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -476,7 +472,7 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
-          <Field label="Link de tu local en Google Maps (para reseñas) *" icon={<Globe size={13} color="#7C6A9C" />}>
+          <Field label="Link de tu local en Google Maps (para reseñas)" icon={<Globe size={13} color="#7C6A9C" />}>
             <input
               id="campo-resenas"
               value={resenaUrl}
@@ -489,7 +485,7 @@ export default function PerfilPage() {
             />
             {resenaError && <p className="text-warn text-[12px] mt-1.5">{resenaError}</p>}
             <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-              Obligatorio. Después de cada canje confirmado, Camina le ofrece al cliente dejar su reseña en tu local. En
+              Opcional. Si lo ponés, después de cada canje confirmado Camina le ofrece al cliente dejar su reseña en tu local. En
               Google Maps buscá tu local, tocá &ldquo;Compartir&rdquo;, copiá el link y pegalo acá. También sirve el
               link de &ldquo;Pedir reseñas&rdquo; de tu perfil de Google Business.
             </p>
