@@ -39,3 +39,20 @@ export function consumePendingBusiness(email: string): PendingBusiness | null {
     return null;
   }
 }
+
+// Los datos del alta también viajan dentro de la cuenta (user_metadata), sin el logo, para que
+// confirmar el correo desde otro navegador o desde el celular no pierda el comercio.
+export function pendingFromMetadata(email: string, meta: Record<string, unknown> | undefined): PendingBusiness | null {
+  const raw = meta?.pending_business as Partial<PendingBusiness> | undefined;
+  if (!raw || typeof raw.name !== 'string' || !raw.name.trim()) return null;
+  return {
+    email,
+    name: raw.name,
+    category: raw.category ?? 'Otro',
+    address: raw.address ?? '',
+    phone: raw.phone ?? '',
+    isVirtual: !!raw.isVirtual,
+    city: raw.city,
+    accountKind: raw.accountKind,
+  };
+}
