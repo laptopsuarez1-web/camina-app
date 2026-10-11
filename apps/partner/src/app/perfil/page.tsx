@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Clock, Phone, Instagram, Globe, Trash2 } from 'lucide-react';
+import { MapPin, Clock, Phone, Instagram, Facebook, Music2, Globe, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -26,6 +26,9 @@ export default function PerfilPage() {
   const [semana, setSemana] = useState<WeekHours>(emptyWeek());
   const [telefono, setTelefono] = useState('');
   const [instagram, setInstagram] = useState('');
+  const [facebook, setFacebook] = useState('');
+  const [tiktok, setTiktok] = useState('');
+  const [resenaError, setResenaError] = useState<string | null>(null);
   const [website, setWebsite] = useState('');
   const [resenaUrl, setResenaUrl] = useState('');
   const [esVirtual, setEsVirtual] = useState(false);
@@ -57,6 +60,8 @@ export default function PerfilPage() {
     setSemana(business.opening_hours ?? weekFromText(business.hours_text));
     setTelefono(business.phone ?? '');
     setInstagram(business.instagram ?? '');
+    setFacebook(business.facebook ?? '');
+    setTiktok(business.tiktok ?? '');
     setWebsite(business.website ?? '');
     setResenaUrl(business.google_review_url ?? '');
     setEsVirtual(business.is_virtual);
@@ -116,8 +121,37 @@ export default function PerfilPage() {
     );
   }
 
+  // El link de reseñas es obligatorio y tiene que ser de Google: el link de tu local en Google Maps
+  // (Compartir > Copiar link) o el de "Pedir reseñas" de Google Business.
+  function resenaValida(text: string) {
+    try {
+      const u = new URL(text.trim());
+      if (u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      return (
+        h === 'maps.app.goo.gl' ||
+        h === 'g.page' ||
+        h === 'g.co' ||
+        h === 'goo.gl' ||
+        /^(www\.|maps\.|search\.)?google\.[a-z.]+$/.test(h)
+      );
+    } catch {
+      return false;
+    }
+  }
+
   async function handleSave() {
     if (!business) return;
+    if (!resenaValida(resenaUrl)) {
+      setResenaError(
+        resenaUrl.trim()
+          ? 'Ese link no es de Google. Pegá el link de tu local en Google Maps (Compartir > Copiar link).'
+          : 'Este dato es obligatorio: pegá el link de tu local en Google Maps para que tus clientes te dejen reseñas.'
+      );
+      document.getElementById('campo-resenas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setResenaError(null);
     let punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
     if (!esVirtual && !punto && esLinkCorto(ubicacion)) {
       punto = await resolverLinkCorto(ubicacion);
@@ -139,6 +173,8 @@ export default function PerfilPage() {
         opening_hours: semana,
         phone: telefono.trim(),
         instagram: instagram.trim() || null,
+        facebook: facebook.trim() || null,
+        tiktok: tiktok.trim() || null,
         website: website.trim() || null,
         google_review_url: resenaUrl.trim() || null,
         is_virtual: esVirtual,
@@ -146,6 +182,13 @@ export default function PerfilPage() {
     let { error } = await supabase.from('businesses').update({ ...payload, city: ciudad }).eq('id', business.id);
     // Si la base todavía no tiene la columna de ciudad, se guarda igual el resto.
     if (error && /city/i.test(error.message)) ({ error } = await supabase.from('businesses').update(payload).eq('id', business.id));
+    // Si la base todavía no tiene las columnas de Facebook / TikTok, se guarda igual el resto.
+    if (error && /facebook|tiktok/i.test(error.message)) {
+      const { facebook: _f, tiktok: _t, ...sinRedes } = payload;
+      void _f;
+      void _t;
+      ({ error } = await supabase.from('businesses').update({ ...sinRedes, city: ciudad }).eq('id', business.id));
+    }
     setSaving(false);
     if (!error && session) {
       await refreshBusiness(session.user.id, session.user.email);
@@ -372,6 +415,22 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
+          <Field label="Facebook" icon={<Facebook size={13} color="#7C6A9C" />}>
+            <input
+              value={facebook}
+              onChange={(e) => setFacebook(e.target.value)}
+              placeholder="facebook.com/tu_comercio o tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="TikTok" icon={<Music2 size={13} color="#7C6A9C" />}>
+            <input
+              value={tiktok}
+              onChange={(e) => setTiktok(e.target.value)}
+              placeholder="@tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
           <Field label="Sitio web" icon={<Globe size={13} color="#7C6A9C" />}>
             <input
               value={website}
@@ -380,16 +439,22 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
-          <Field label="Link para reseñas en Google Maps" icon={<Globe size={13} color="#7C6A9C" />}>
+          <Field label="Link de tu local en Google Maps (para reseñas) *" icon={<Globe size={13} color="#7C6A9C" />}>
             <input
+              id="campo-resenas"
               value={resenaUrl}
-              onChange={(e) => setResenaUrl(e.target.value)}
-              placeholder="https://g.page/r/…/review"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              onChange={(e) => {
+                setResenaUrl(e.target.value);
+                setResenaError(null);
+              }}
+              placeholder="https://maps.app.goo.gl/…"
+              className={`w-full bg-white border rounded-[10px] px-3 py-2.5 text-[13.5px] ${resenaError ? 'border-warn' : 'border-line'}`}
             />
+            {resenaError && <p className="text-warn text-[12px] mt-1.5">{resenaError}</p>}
             <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-              Después de cada canje confirmado, Camina le ofrece al cliente dejar su reseña en tu local. En Google Maps
-              buscá tu local, tocá &ldquo;Compartir&rdquo; y pegá el link de &ldquo;Pedir reseñas&rdquo; acá.
+              Obligatorio. Después de cada canje confirmado, Camina le ofrece al cliente dejar su reseña en tu local. En
+              Google Maps buscá tu local, tocá &ldquo;Compartir&rdquo;, copiá el link y pegalo acá. También sirve el
+              link de &ldquo;Pedir reseñas&rdquo; de tu perfil de Google Business.
             </p>
           </Field>
 

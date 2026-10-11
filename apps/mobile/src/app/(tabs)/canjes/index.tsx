@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, AtSign, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, AtSign, FacebookIcon, TiktokIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -60,6 +60,14 @@ const TARIJA_REGION = {
 
 // Mismo criterio que redeem_benefit en supabase/migrations (el servidor igual
 // lo vuelve a validar; esto solo evita dejar apretar un botón que va a fallar).
+// Acepta un link completo o solo el usuario ("@fripaps" / "fripaps").
+function socialUrl(value: string, base: string) {
+  const v = value.trim();
+  if (/^https?:\/\//i.test(v)) return v;
+  if (/^(www\.)?(facebook|fb|tiktok)\./i.test(v)) return `https://${v}`;
+  return base + v.replace(/^@/, '');
+}
+
 function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number }) {
   const now = new Date();
   const dayBit = (now.getDay() + 6) % 7;
@@ -764,6 +772,26 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
                         {profileGroup.business.instagram.replace('@', '')}
                       </Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.facebook ? (
+                    <Pressable
+                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.facebook!, 'https://facebook.com/'))}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <FacebookIcon size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Facebook</Text>
+                    </Pressable>
+                  ) : null}
+                  {profileGroup.business.tiktok ? (
+                    <Pressable
+                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.tiktok!, 'https://tiktok.com/@'))}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <TiktokIcon size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">TikTok</Text>
                     </Pressable>
                   ) : null}
                 </View>
