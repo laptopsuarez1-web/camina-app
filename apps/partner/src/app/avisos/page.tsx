@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { mensajeError } from '@/lib/errors';
 
 interface Campaign {
   id: string;
@@ -59,7 +60,7 @@ export default function AvisosPage() {
     });
     setSending(false);
     if (error) {
-      setMsg({ ok: false, text: error.message });
+      setMsg({ ok: false, text: mensajeError(error) });
       return;
     }
     setTitle('');

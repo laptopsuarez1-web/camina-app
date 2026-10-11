@@ -4,35 +4,59 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound } from 'lucide-react';
+import { Home, Gift, Receipt, Store, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
+import { faltantesParaPublicar, listaEnCastellano } from '@/lib/readiness';
+import { avisarPorCorreo } from '@/lib/email';
+import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
+import type { BusinessPlan } from '@/lib/supabase';
 
-const NAV = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof Home;
+  // Planes que incluyen la sección; en los demás se ve con un candado.
+  planes?: BusinessPlan[];
+};
+
+// Menú corto: lo de todos los días arriba, el resto en "Más".
+const NAV_PRINCIPAL: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home },
-  { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/canjes', label: 'Canjes', icon: Receipt },
-  { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3 },
-  { href: '/avisos', label: 'Avisos cercanos', icon: BellRing },
-  { href: '/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
+  { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
-  { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
-  { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
-  { href: '/plan', label: 'Plan', icon: CreditCard },
 ];
 
-const PLAN_LABEL: Record<string, string> = {
-  primer_paso: 'Primer Paso',
-  paso_firme: 'Paso Firme',
-  paso_adelante: 'Paso Adelante',
-};
+const NAV_MAS: NavItem[] = [
+  { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3, planes: ['paso_firme', 'paso_adelante'] },
+  { href: '/avisos', label: 'Avisos cercanos', icon: BellRing, planes: ['paso_adelante'] },
+  { href: '/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
+  { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
+  { href: '/plan', label: 'Plan', icon: CreditCard },
+  { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
+];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { session, business, isAdmin, role, loading, refreshBusiness } = useBusinessAuth();
   const [resending, setResending] = useState(false);
+  const [beneficiosActivos, setBeneficiosActivos] = useState<number | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const enMas = NAV_MAS.some((i) => i.href === pathname);
+  const [masAbierto, setMasAbierto] = useState(enMas);
+
+  // Para el cartel de "te falta…" mientras el local no está publicado.
+  useEffect(() => {
+    if (!business || business.approved || role !== 'owner') return;
+    supabase
+      .from('benefits')
+      .select('id', { count: 'exact', head: true })
+      .eq('business_id', business.id)
+      .eq('active', true)
+      .then(({ count }) => setBeneficiosActivos(count ?? 0));
+  }, [business, role, pathname]);
 
   useEffect(() => {
     if (loading) return;
@@ -45,8 +69,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     } else if (!business && isAdmin) {
       router.replace('/admin');
-    } else if (business && role === 'owner' && business.account_kind !== 'events_only' && business.plan_onboarded === false) {
-      // Comercio nuevo: antes de ver el panel elige su plan (gratis o de pago), una sola vez.
+    } else if (
+      business &&
+      role === 'owner' &&
+      business.approved &&
+      business.account_kind !== 'events_only' &&
+      business.plan_onboarded === false
+    ) {
+      // Comercio recién aprobado: antes de seguir elige su plan (gratis o de pago), una sola vez.
+      // Mientras está en revisión usa el plan gratis y no se le pide pagar nada.
       router.replace('/elegir-plan');
     }
   }, [loading, session, business, isAdmin, role, pathname, router]);
@@ -68,6 +99,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const vence = vencimientoPlan(business);
+  const faltan = beneficiosActivos == null ? [] : faltantesParaPublicar(business, beneficiosActivos);
+
   const sidebar = (
     <>
       <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
@@ -79,34 +113,44 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {NAV.filter((item) =>
-          role === 'cashier'
-            ? item.href === '/canjes'
-            : business.account_kind !== 'events_only' || ['/eventos', '/perfil', '/guia', '/equipo'].includes(item.href)
-        ).map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
-                active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
-              }`}
+        {(role === 'cashier'
+          ? NAV_PRINCIPAL.filter((i) => i.href === '/canjes')
+          : business.account_kind === 'events_only'
+            ? [NAV_MAS[2], NAV_PRINCIPAL[3]]
+            : NAV_PRINCIPAL
+        ).map((item) => (
+          <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
+        ))}
+        {role === 'owner' && (
+          <>
+            <button
+              type="button"
+              onClick={() => setMasAbierto(!masAbierto)}
+              aria-expanded={masAbierto}
+              className="flex items-center justify-between px-3 pt-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9385B5]"
             >
-              <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
-              {item.label}
-            </Link>
-          );
-        })}
+              Más
+              <ChevronDown size={14} className={masAbierto ? 'rotate-180 transition-transform' : 'transition-transform'} />
+            </button>
+            {masAbierto &&
+              NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia'].includes(i.href)).map((item) => (
+                <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
+              ))}
+          </>
+        )}
       </nav>
 
       <div className="mt-auto pt-5">
         {role === 'owner' && (
-          <div className="bg-auth-bg-soft rounded-xl p-3 mb-2.5">
+          <Link href="/plan" className="block bg-auth-bg-soft rounded-xl p-3 mb-2.5">
             <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
-            <p className="text-mint text-[13px] font-semibold">{PLAN_LABEL[business.plan]}</p>
-          </div>
+            <p className="text-mint text-[13px] font-semibold">{PLAN_NOMBRE[business.plan]}</p>
+            {vence && (
+              <p className="text-auth-muted text-[10.5px] mt-0.5">
+                {vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} {fechaCorta(vence.fecha)}
+              </p>
+            )}
+          </Link>
         )}
         <a
           href={`https://wa.me/59162714286?text=${encodeURIComponent('Hola! Soy de ' + (business.name ?? 'un comercio') + ' y necesito ayuda con el panel de Camina.')}`}
@@ -144,7 +188,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             disabled={resending}
             onClick={async () => {
               setResending(true);
-              await supabase.from('businesses').update({ rejected_at: null, rejection_reason: null }).eq('id', business.id);
+              await reenviarARevision(business.id);
               if (session) await refreshBusiness(session.user.id, session.user.email);
               setResending(false);
             }}
@@ -157,22 +201,56 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       )}
       {!business.approved && role === 'owner' && !business.rejected_at && (
         <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
-          Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
-          {(!business.logo_url || !business.cover_url) ? (
+          <p className="font-bold mb-1">Tu comercio todavía no está publicado.</p>
+          {faltan.length > 0 ? (
             <>
-              {' '}Para publicarte necesitamos{' '}
-              <strong>
-                {[!business.logo_url && 'tu logo', !business.cover_url && 'una foto de portada'].filter(Boolean).join(' y ')}
-              </strong>
-              . <Link href="/perfil" className="underline font-semibold">Cargalas en Perfil</Link>.
+              <p className="mb-2">
+                Para que lo revisemos y aparezca en la app, te falta cargar{' '}
+                <strong>{listaEnCastellano(faltan.map((f) => f.texto))}</strong>.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {faltan.map((f) => (
+                  <Link
+                    key={f.id}
+                    href={f.href}
+                    className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold underline-offset-2 hover:underline"
+                  >
+                    Cargar {f.texto}
+                  </Link>
+                ))}
+              </div>
             </>
-          ) : (
-            <> Ya tenés logo y portada, así que solo falta que lo revisemos. Mientras tanto podés cargar tus beneficios.</>
+          ) : beneficiosActivos == null ? null : (
+            <p>Ya tenés todo lo necesario. El equipo de Camina lo está revisando y te avisamos por correo apenas esté publicado.</p>
           )}
         </div>
       )}
       {children}
     </ResponsiveFrame>
+  );
+}
+
+// El dueño corrigió lo que le pedimos: vuelve a la lista de pendientes y se avisa al admin por correo.
+export async function reenviarARevision(businessId: string) {
+  const { error } = await supabase.from('businesses').update({ rejected_at: null, rejection_reason: null }).eq('id', businessId);
+  if (!error) void avisarPorCorreo('resubmitted', businessId);
+  return error;
+}
+
+function NavLink({ item, active, plan }: { item: NavItem; active: boolean; plan: BusinessPlan }) {
+  const Icon = item.icon;
+  const bloqueado = item.planes && !item.planes.includes(plan);
+  return (
+    <Link
+      href={item.href}
+      className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
+        active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
+      }`}
+    >
+      <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
+      <span className="flex-1">{item.label}</span>
+      {bloqueado && <Lock size={12} color="#9385B5" aria-label="No incluido en tu plan" />}
+    </Link>
   );
 }
 

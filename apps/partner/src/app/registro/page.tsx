@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
+import { avisarPorCorreo } from '@/lib/email';
+import { mensajeError } from '@/lib/errors';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -35,6 +37,7 @@ export default function RegistroPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verClave, setVerClave] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -97,7 +100,7 @@ export default function RegistroPage() {
     });
     if (signUpError) {
       setLoading(false);
-      setError(signUpError.message);
+      setError(mensajeError(signUpError));
       return;
     }
 
@@ -140,9 +143,10 @@ export default function RegistroPage() {
       ({ data: created, error: businessError } = await supabase.from('businesses').insert(row).select('id').single());
     }
     if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
+    if (!businessError && created) void avisarPorCorreo('new_business', created.id);
     setLoading(false);
     if (businessError) {
-      setError(businessError.message);
+      setError(mensajeError(businessError));
       return;
     }
     router.replace('/inicio');
@@ -171,7 +175,7 @@ export default function RegistroPage() {
     setResending(true);
     const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
     setResending(false);
-    setError(resendError ? resendError.message : null);
+    setError(resendError ? mensajeError(resendError) : null);
   }
 
   if (awaitingConfirmation) {
@@ -387,7 +391,22 @@ export default function RegistroPage() {
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="tucomercio@email.com" className={input} />
               </Field>
               <Field label="Contraseña">
-                <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Mínimo 6 caracteres" className={input} />
+                <div className="relative">
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    type={verClave ? 'text' : 'password'}
+                    placeholder="Mínimo 6 caracteres"
+                    className={`${input} pr-16`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVerClave(!verClave)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-purple"
+                  >
+                    {verClave ? 'Ocultar' : 'Ver'}
+                  </button>
+                </div>
               </Field>
 
               {error && <p className="text-warn text-[12.5px]">{error}</p>}

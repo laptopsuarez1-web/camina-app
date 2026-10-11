@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase, type Promotion } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { mensajeError } from '@/lib/errors';
 
 const WHATSAPP = '59162714286';
 const STATUS: Record<Promotion['status'], { label: string; cls: string }> = {
@@ -75,7 +76,7 @@ export default function EventosPage() {
     });
     setSending(false);
     if (error) {
-      setMsg({ ok: false, text: error.message });
+      setMsg({ ok: false, text: mensajeError(error) });
       return;
     }
     const text = encodeURIComponent(
