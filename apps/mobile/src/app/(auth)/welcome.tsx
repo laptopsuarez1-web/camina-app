@@ -193,8 +193,9 @@ export default function WelcomeScreen() {
             Confirmá tu correo
           </Text>
           <Text style={{ color: colors.authMuted, marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
-            Te mandamos un link a {awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a
-            entrar acá.
+            {Platform.OS === 'web'
+              ? `Te mandamos un link a ${awaitingConfirmation}. Abrilo desde donde quieras para activar tu cuenta y dejá esta pestaña abierta: apenas se confirma, entrás solo.`
+              : `Te mandamos un link a ${awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a entrar acá.`}
           </Text>
           <Press
             accessibilityRole="button"
