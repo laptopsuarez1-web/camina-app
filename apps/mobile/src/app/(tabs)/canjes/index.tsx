@@ -932,6 +932,16 @@ export default function CanjesScreen() {
                     </Pressable>
                   </View>
                 ) : null}
+                {profileGroup.business.google_review_url ? (
+                  <Pressable
+                    onPress={() => Linking.openURL(profileGroup.business.google_review_url!)}
+                    className="rounded-2xl items-center justify-center flex-row mt-8"
+                    style={{ backgroundColor: '#FFF3D1', paddingVertical: 13, gap: 8 }}
+                  >
+                    <Star size={16} color="#C98A0B" weight="fill" />
+                    <Text style={{ fontWeight: '700', fontSize: 14, color: '#9A6A08' }}>Calificar en Google Maps</Text>
+                  </Pressable>
+                ) : null}
               </View>
             </ScrollView>
           </View>
