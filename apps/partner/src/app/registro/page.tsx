@@ -295,7 +295,7 @@ export default function RegistroPage() {
               </Field>
               {!esVirtual && kind === 'commerce' && (
                 <Field label="Dirección principal">
-                  <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle y número, ciudad" className={input} />
+                  <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Ej: Calle Bolívar 123" className={input} />
                 </Field>
               )}
               <div>

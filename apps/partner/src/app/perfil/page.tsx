@@ -63,12 +63,13 @@ export default function PerfilPage() {
     setUbicacion(business.lat != null && business.lng != null ? `${business.lat}, ${business.lng}` : '');
   }, [business]);
 
-  // Acepta "-21.53, -64.73" o un link largo de Google Maps (…@-21.53,-64.73… o …!3d-21.53!4d-64.73…).
+  // Acepta "-21.53, -64.73" o un link largo de Google Maps (…!3d-21.53!4d-64.73… o …@-21.53,-64.73…).
+  // !3d/!4d va primero: es el pin exacto del lugar; @ es solo el centro de la vista del mapa.
   function parseUbicacion(text: string): { lat: number; lng: number } | null {
     const t = text.trim();
     const m =
-      t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/) ||
       t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) ||
+      t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/) ||
       t.match(/[?&](?:q|ll|query)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/) ||
       t.match(/^(-?\d+\.\d+)\s*[,; ]\s*(-?\d+\.\d+)$/);
     if (!m) return null;
@@ -76,6 +77,26 @@ export default function PerfilPage() {
     const lng = parseFloat(m[2]);
     if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
     return { lat, lng };
+  }
+
+  // El link corto de "Compartir" (maps.app.goo.gl/…) no trae coordenadas: lo resuelve /api/mapa.
+  const esLinkCorto = (text: string) => /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(text.trim());
+
+  async function resolverLinkCorto(text: string): Promise<{ lat: number; lng: number } | null> {
+    setUbicacionMsg('Buscando el punto de ese link…');
+    try {
+      const res = await fetch(`/api/mapa?url=${encodeURIComponent(text.trim())}`);
+      if (res.ok) {
+        const p: { lat: number; lng: number } = await res.json();
+        setUbicacion(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
+        setUbicacionMsg('Listo: convertimos el link en el punto del mapa. Revisalo con "Ver ese punto en Google Maps".');
+        return p;
+      }
+    } catch {
+      // se avisa abajo
+    }
+    setUbicacionMsg('No pudimos leer ese link. Probá con las coordenadas: en Google Maps mantené apretado tu local y copiá los números de arriba.');
+    return null;
   }
 
   function usarMiUbicacion() {
@@ -96,9 +117,13 @@ export default function PerfilPage() {
 
   async function handleSave() {
     if (!business) return;
-    const punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
+    let punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
+    if (!esVirtual && !punto && esLinkCorto(ubicacion)) {
+      punto = await resolverLinkCorto(ubicacion);
+      if (!punto) return;
+    }
     if (!esVirtual && ubicacion.trim() && !punto) {
-      setUbicacionMsg('No entendimos esa ubicación. Pegá el link largo de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
+      setUbicacionMsg('No entendimos esa ubicación. Pegá el link de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
       return;
     }
     setSaving(true);
@@ -227,6 +252,7 @@ export default function PerfilPage() {
                 onChange={(e) => {
                   setUbicacion(e.target.value);
                   setUbicacionMsg(null);
+                  if (esLinkCorto(e.target.value)) resolverLinkCorto(e.target.value);
                 }}
                 placeholder="Pegá el link de Google Maps o las coordenadas"
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
