@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
+import { TimeSelect } from '@/components/TimeSelect';
 import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type WeekHours } from '@/lib/hours';
 
 function firstOpen(w: WeekHours) {
@@ -301,17 +302,15 @@ export default function PerfilPage() {
                     </label>
                     {d ? (
                       <>
-                        <input
-                          type="time"
+                        <TimeSelect
                           value={d.from}
-                          onChange={(e) => setSemana((w) => ({ ...w, [String(i)]: { from: e.target.value, to: d.to } }))}
+                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { from: v, to: d.to } }))}
                           className="border border-line rounded-[8px] px-2 py-1.5"
                         />
                         <span className="text-muted">a</span>
-                        <input
-                          type="time"
+                        <TimeSelect
                           value={d.to}
-                          onChange={(e) => setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: e.target.value } }))}
+                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: v } }))}
                           className="border border-line rounded-[8px] px-2 py-1.5"
                         />
                       </>

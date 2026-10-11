@@ -103,7 +103,7 @@ export default function CanjesPage() {
             <span className="text-[13.5px] font-semibold tracking-wide">{r.code}</span>
             <span className="text-[13px] text-muted">{new Date(r.created_at).toLocaleDateString('es-BO')}</span>
             <span className="text-[13px] text-muted">
-              {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
             </span>
             {r.status === 'confirmed' ? (
               <span className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-[#2E9E7C]">

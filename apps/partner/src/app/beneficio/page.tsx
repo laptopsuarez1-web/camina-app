@@ -6,6 +6,7 @@ import { supabase, type Benefit } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
+import { TimeSelect } from '@/components/TimeSelect';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
@@ -429,20 +430,20 @@ function BeneficioForm({
         <div className="flex gap-3.5 mb-3.5">
           <div className="flex-1">
             <Field label="Válido desde">
-              <input
-                type="time"
+              <TimeSelect
+                allowEmpty
                 value={validFrom}
-                onChange={(e) => setValidFrom(e.target.value)}
+                onChange={setValidFrom}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
             </Field>
           </div>
           <div className="flex-1">
             <Field label="Hasta">
-              <input
-                type="time"
+              <TimeSelect
+                allowEmpty
                 value={validTo}
-                onChange={(e) => setValidTo(e.target.value)}
+                onChange={setValidTo}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
             </Field>
