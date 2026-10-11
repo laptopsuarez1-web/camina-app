@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { mensajeError } from '@/lib/errors';
 
 interface Staff {
   id: string;
@@ -40,7 +41,7 @@ export default function EquipoPage() {
     const { error } = await supabase.rpc('add_staff', { p_business_id: business.id, p_email: email });
     setSaving(false);
     if (error) {
-      setMsg({ ok: false, text: error.message });
+      setMsg({ ok: false, text: mensajeError(error) });
       return;
     }
     setEmail('');

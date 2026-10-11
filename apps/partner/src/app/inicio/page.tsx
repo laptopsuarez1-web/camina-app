@@ -33,11 +33,11 @@ export default function InicioPage() {
 
     supabase
       .from('redemptions')
-      .select('id, code, status, created_at, confirmed_at')
+      .select('id, code, status, created_at, confirmed_at, benefit:benefits(name)')
       .eq('business_id', business.id)
       .order('created_at', { ascending: false })
       .limit(10)
-      .then(({ data }) => setRedemptions((data as Redemption[]) ?? []));
+      .then(({ data }) => setRedemptions((data as unknown as Redemption[]) ?? []));
 
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -83,7 +83,7 @@ export default function InicioPage() {
 
   return (
     <DashboardShell>
-      <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Así viene funcionando tu beneficio esta semana." />
+      <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Un resumen de cómo viene tu local en Camina." />
 
       {news.length > 0 && (
         <div className="bg-card border border-line rounded-2xl mb-5 overflow-hidden">
@@ -122,7 +122,9 @@ export default function InicioPage() {
                 <div className="w-[30px] h-[30px] rounded-full bg-aqua-light flex items-center justify-center">
                   <Ticket size={13} color="#4FC3A8" />
                 </div>
-                <span className="text-[13px] font-medium">Código {r.code}</span>
+                <span className="text-[13px] font-medium">
+                  {r.benefit?.name ?? 'Canje'} <span className="text-muted font-normal">· código {r.code}</span>
+                </span>
               </div>
               <span className="text-xs text-muted">
                 {new Date(r.created_at).toLocaleDateString('es-BO')} ·{' '}

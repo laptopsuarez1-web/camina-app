@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { mensajeError } from '@/lib/errors';
 
 // Página para cajeros: crean su cuenta con el correo con el que los invitó el comercio.
 export default function UnirmePage() {
@@ -19,7 +20,7 @@ export default function UnirmePage() {
     const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password });
     setLoading(false);
     if (err) {
-      setError(err.message);
+      setError(mensajeError(err));
       return;
     }
     if (data.session) {

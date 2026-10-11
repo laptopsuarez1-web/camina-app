@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import { mensajeError } from '@/lib/errors';
 
 export default function RecuperarPage() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ export default function RecuperarPage() {
     // Por seguridad no decimos si el email existe o no — siempre mostramos el
     // mismo mensaje, así nadie puede usar esto para adivinar qué cuentas existen.
     if (error) {
-      setError(error.message);
+      setError(mensajeError(error));
       return;
     }
     setSent(true);

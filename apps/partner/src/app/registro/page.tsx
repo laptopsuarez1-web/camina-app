@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
+import { mensajeError } from '@/lib/errors';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -97,7 +98,7 @@ export default function RegistroPage() {
     });
     if (signUpError) {
       setLoading(false);
-      setError(signUpError.message);
+      setError(mensajeError(signUpError));
       return;
     }
 
@@ -142,7 +143,7 @@ export default function RegistroPage() {
     if (!businessError && created && logo) await uploadLogoFromDataUrl(created.id, logo);
     setLoading(false);
     if (businessError) {
-      setError(businessError.message);
+      setError(mensajeError(businessError));
       return;
     }
     router.replace('/inicio');
@@ -171,7 +172,7 @@ export default function RegistroPage() {
     setResending(true);
     const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
     setResending(false);
-    setError(resendError ? resendError.message : null);
+    setError(resendError ? mensajeError(resendError) : null);
   }
 
   if (awaitingConfirmation) {

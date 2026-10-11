@@ -7,6 +7,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
+import { mensajeError } from '@/lib/errors';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
@@ -235,7 +236,7 @@ function BeneficioForm({
           });
 
     setSaving(false);
-    if (error) setError(error.message);
+    if (error) setError(mensajeError(error));
     else {
       setSaved(true);
       onDone();
