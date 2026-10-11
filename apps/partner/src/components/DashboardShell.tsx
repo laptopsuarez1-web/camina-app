@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -29,7 +29,8 @@ const PLAN_LABEL: Record<string, string> = {
 };
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { session, business, isAdmin, role, loading } = useBusinessAuth();
+  const { session, business, isAdmin, role, loading, refreshBusiness } = useBusinessAuth();
+  const [resending, setResending] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -129,7 +130,32 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ResponsiveFrame sidebar={sidebar}>
-      {!business.approved && role === 'owner' && (
+      {!business.approved && role === 'owner' && business.rejected_at && (
+        <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: '#FDEEE2', color: '#8A3A2E' }}>
+          <p className="font-bold mb-1">Revisamos tu comercio y todavía no lo podemos publicar.</p>
+          <p className="mb-2.5">
+            <strong>Motivo:</strong> {business.rejection_reason}
+          </p>
+          <p className="mb-2.5">
+            Corregilo desde <Link href="/perfil" className="underline font-semibold">Perfil</Link> y después tocá el botón
+            para que lo volvamos a revisar.
+          </p>
+          <button
+            disabled={resending}
+            onClick={async () => {
+              setResending(true);
+              await supabase.from('businesses').update({ rejected_at: null, rejection_reason: null }).eq('id', business.id);
+              if (session) await refreshBusiness(session.user.id, session.user.email);
+              setResending(false);
+            }}
+            className="rounded-[8px] px-3.5 py-2 text-[12.5px] font-bold disabled:opacity-50"
+            style={{ background: '#241748', color: '#7FEDC4' }}
+          >
+            {resending ? 'Enviando…' : 'Ya lo corregí, volver a enviar'}
+          </button>
+        </div>
+      )}
+      {!business.approved && role === 'owner' && !business.rejected_at && (
         <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
           Tu comercio todavía está en revisión — el equipo de Camina lo aprueba antes de que aparezca en la app.
           {(!business.logo_url || !business.cover_url) ? (

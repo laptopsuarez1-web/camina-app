@@ -126,7 +126,7 @@ export default function InicioPage() {
               </div>
               <span className="text-xs text-muted">
                 {new Date(r.created_at).toLocaleDateString('es-BO')} ·{' '}
-                {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
               </span>
             </div>
           ))}

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
+import { CATEGORIAS } from '@/lib/categories';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -18,7 +19,6 @@ const PREFIJOS = [
   ['+598', 'Uruguay'],
 ];
 
-const CATEGORIAS = ['Café', 'Gastronomía', 'Entretenimiento', 'Fitness', 'Belleza', 'Compras', 'Salud', 'Servicios', 'Otro'];
 
 export default function RegistroPage() {
   const [nombre, setNombre] = useState('');
@@ -75,7 +75,26 @@ export default function RegistroPage() {
     setLoading(true);
     setError(null);
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+    // Los datos del comercio viajan también dentro de la cuenta (sin el logo): así no se pierden
+    // si el correo se confirma desde otro navegador o desde el celular.
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          pending_business: {
+            name: nombre.trim(),
+            category: kind === 'events_only' ? 'Eventos' : categoria,
+            address: direccion.trim(),
+            phone: telefonoCompleto,
+            isVirtual: esVirtual || kind === 'events_only',
+            accountKind: kind,
+            city: ciudad,
+          },
+        },
+      },
+    });
     if (signUpError) {
       setLoading(false);
       setError(signUpError.message);
@@ -129,6 +148,25 @@ export default function RegistroPage() {
     router.replace('/inicio');
   }
 
+  // Mientras se espera la confirmación, se prueba entrar solo con los datos que ya puso:
+  // apenas confirma el correo (en esta u otra pestaña) pasa directo al panel, sin volver a escribir nada.
+  useEffect(() => {
+    if (!awaitingConfirmation) return;
+    let activo = true;
+    async function probar() {
+      const { data } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (activo && data.session) router.replace('/');
+    }
+    const timer = setInterval(probar, 12000);
+    const alVolver = () => document.visibilityState === 'visible' && probar();
+    document.addEventListener('visibilitychange', alVolver);
+    return () => {
+      activo = false;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', alVolver);
+    };
+  }, [awaitingConfirmation, email, password, router]);
+
   async function resendConfirmation() {
     setResending(true);
     const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
@@ -141,8 +179,8 @@ export default function RegistroPage() {
       <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
         <p className="text-white font-bold text-[22px] mb-2">Confirmá tu correo</p>
         <p className="text-auth-muted text-[13px] mb-7 max-w-[300px]">
-          Te mandamos un link a {email}. Abrilo para activar la cuenta y después iniciá sesión acá — tu
-          comercio se crea solo apenas entrás.
+          Te mandamos un link a {email}. Abrilo para activar la cuenta: apenas lo confirmes entrás solo al
+          panel, sin volver a escribir nada.
         </p>
         {error && <p className="text-warn text-[12.5px] mb-4">{error}</p>}
         <button
@@ -153,7 +191,7 @@ export default function RegistroPage() {
           {resending ? 'Reenviando…' : 'Reenviar correo'}
         </button>
         <Link href="/login" className="text-auth-muted text-[12.5px]">
-          Ya confirmé, ir a iniciar sesión
+          Ya confirmé, entrar con mi correo
         </Link>
       </div>
     );
@@ -295,7 +333,7 @@ export default function RegistroPage() {
               </Field>
               {!esVirtual && kind === 'commerce' && (
                 <Field label="Dirección principal">
-                  <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle y número, ciudad" className={input} />
+                  <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Ej: Calle Bolívar 123" className={input} />
                 </Field>
               )}
               <div>

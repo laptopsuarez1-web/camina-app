@@ -35,6 +35,9 @@ export interface Business {
   city?: string;
   phone: string | null;
   instagram: string | null;
+  facebook?: string | null;
+  photos?: string[] | null;
+  tiktok?: string | null;
   hours_text: string | null;
   opening_hours?: Record<string, { from: string; to: string } | null> | null;
   lat: number | null;
@@ -57,6 +60,7 @@ export interface Benefit {
   business_id: string;
   name: string;
   type: BenefitType;
+  description?: string | null;
   discount_detail: string | null;
   discount_percent: number | null;
   cost_points: number;
