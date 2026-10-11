@@ -11,8 +11,18 @@ const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
 ];
 
+// Datos públicos del proyecto Supabase (la clave anon va en el navegador igual). Si Vercel tiene las
+// variables cargadas, mandan esas; si no, el build usa estas para no cortarse.
+const SUPABASE_URL = "https://lcqqzufpkbdfitgtdjjk.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjcXF6dWZwa2JkZml0Z3RkamprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MTk1MjMsImV4cCI6MjEwNjA5NTUyM30.igGfflzJTGQGXaOccPOYYXqS20a536QC-27IIleC7mA";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY,
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
