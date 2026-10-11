@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase, type Business } from '@/lib/supabase';
 import { consumePendingBusiness, pendingFromMetadata } from '@/lib/pending-business';
 import { uploadLogoFromDataUrl } from '@/lib/logo';
+import { avisarPorCorreo } from '@/lib/email';
 
 // Evita crear el comercio dos veces si dos llamadas llegan juntas (sesión inicial + cambio de sesión).
 const creando = new Map<string, Promise<Business | null>>();
@@ -34,6 +35,7 @@ async function crearComercioPendiente(userId: string, email: string): Promise<Bu
   // Ya se creó: se borran los datos pendientes de la cuenta para no repetirlo.
   await supabase.auth.updateUser({ data: { pending_business: null } });
   if (pending.logoDataUrl) await uploadLogoFromDataUrl(created.id, pending.logoDataUrl);
+  void avisarPorCorreo('new_business', created.id);
   const { data: fresh } = await supabase.from('businesses').select('*').eq('id', created.id).single();
   return (fresh ?? created) as Business;
 }

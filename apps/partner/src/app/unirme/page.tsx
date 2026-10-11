@@ -7,11 +7,15 @@ import { mensajeError } from '@/lib/errors';
 
 // Página para cajeros: crean su cuenta con el correo con el que los invitó el comercio.
 export default function UnirmePage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() =>
+    typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('email') ?? '')
+  );
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  // El link del correo de invitación trae el correo ya escrito (arriba, en el estado inicial).
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
