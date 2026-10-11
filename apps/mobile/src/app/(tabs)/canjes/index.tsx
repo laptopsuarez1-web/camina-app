@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, WhatsApp, Globe, FacebookIcon, TiktokIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -64,6 +64,17 @@ function socialUrl(value: string, base: string) {
   if (/^https?:\/\//i.test(v)) return v;
   if (/^(www\.)?(facebook|fb|tiktok)\./i.test(v)) return `https://${v}`;
   return base + v.replace(/^@/, '');
+}
+
+// WhatsApp del comercio: el panel lo guarda como "+591 7 000 0000"; wa.me pide solo dígitos.
+function whatsappUrl(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  return `https://wa.me/${digits}`;
+}
+
+function websiteUrl(value: string) {
+  const v = value.trim();
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
 }
 
 function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number }) {
@@ -1024,34 +1035,6 @@ export default function CanjesScreen() {
                       </Text>
                     </Press>
                   ) : null}
-                  {profileGroup.business.phone ? (
-                    <Press
-                      accessibilityRole="link"
-                      accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
-                      onPress={() => Linking.openURL(`https://wa.me/${profileGroup.business.phone!.replace(/\D/g, '')}`)}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
-                    >
-                      <WhatsApp size={15} color="#1FA855" weight="fill" />
-                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
-                    </Press>
-                  ) : null}
-                  {profileGroup.business.website ? (
-                    <Press
-                      accessibilityRole="link"
-                      onPress={() => {
-                        const url = profileGroup.business.website!.trim();
-                        Linking.openURL(/^https?:\/\//.test(url) ? url : `https://${url}`);
-                      }}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
-                    >
-                      <Globe size={15} color={colors.purple} weight="bold" />
-                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>
-                        {profileGroup.business.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
-                      </Text>
-                    </Press>
-                  ) : null}
                   {profileGroup.business.facebook ? (
                     <Press
                       onPress={() => Linking.openURL(socialUrl(profileGroup.business.facebook!, 'https://facebook.com/'))}
@@ -1070,6 +1053,30 @@ export default function CanjesScreen() {
                     >
                       <TiktokIcon size={14} color={colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">TikTok</Text>
+                    </Press>
+                  ) : null}
+                  {profileGroup.business.phone && profileGroup.business.phone.replace(/\D/g, '').length >= 7 ? (
+                    <Press
+                      onPress={() => Linking.openURL(whatsappUrl(profileGroup.business.phone!))}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <WhatsappIcon size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
+                    </Press>
+                  ) : null}
+                  {profileGroup.business.website ? (
+                    <Press
+                      onPress={() => Linking.openURL(websiteUrl(profileGroup.business.website!))}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Abrir la página web de ${profileGroup.business.name}`}
+                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
+                      style={{ gap: 6 }}
+                    >
+                      <GlobeIcon size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Sitio web</Text>
                     </Press>
                   ) : null}
                 </View>

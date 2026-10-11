@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { MapPin, Clock, Phone, Instagram, Facebook, Music2, Globe, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
-import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { DashboardShell, TopBar, reenviarARevision } from '@/components/DashboardShell';
+import dynamic from 'next/dynamic';
+import { FichaPreviewModal } from '@/components/FichaPreview';
+import { mensajeError } from '@/lib/errors';
+
+const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.MapPicker), {
+  ssr: false,
+  loading: () => <div className="h-[260px] rounded-[10px] border border-line bg-white" />,
+});
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { GalleryUpload } from '@/components/GalleryUpload';
@@ -43,6 +51,8 @@ export default function PerfilPage() {
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [verFicha, setVerFicha] = useState(false);
+  const [guardarError, setGuardarError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -197,7 +207,12 @@ export default function PerfilPage() {
       ({ error } = await supabase.from('businesses').update({ ...sinRedes, city: ciudad }).eq('id', business.id));
     }
     setSaving(false);
-    if (!error && session) {
+    if (error) {
+      setGuardarError(mensajeError(error));
+      return;
+    }
+    setGuardarError(null);
+    if (session) {
       await refreshBusiness(session.user.id, session.user.email);
       setSaved(true);
     }
@@ -324,38 +339,35 @@ export default function PerfilPage() {
           )}
           {!esVirtual && (
             <Field label="Ubicación en el mapa" icon={<MapPin size={13} color="#7C6A9C" />}>
-              <input
-                value={ubicacion}
-                onChange={(e) => {
-                  setUbicacion(e.target.value);
+              <MapPicker
+                value={parseUbicacion(ubicacion)}
+                onChange={(p) => {
+                  setUbicacion(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
                   setUbicacionMsg(null);
-                  if (esLinkCorto(e.target.value)) resolverLinkCorto(e.target.value);
                 }}
-                placeholder="Pegá el link de Google Maps o las coordenadas"
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
               <div className="flex flex-wrap items-center gap-3 mt-2 text-[12px]">
                 <button type="button" onClick={usarMiUbicacion} className="text-purple font-semibold">
                   Usar mi ubicación actual (estando en el local)
                 </button>
-                {(() => {
-                  const p = parseUbicacion(ubicacion);
-                  return p ? (
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-muted underline"
-                    >
-                      Ver ese punto en Google Maps
-                    </a>
-                  ) : null;
-                })()}
               </div>
+              <details className="mt-2 text-[12px]">
+                <summary className="text-muted cursor-pointer">Prefiero pegar un link de Google Maps</summary>
+                <input
+                  value={ubicacion}
+                  onChange={(e) => {
+                    setUbicacion(e.target.value);
+                    setUbicacionMsg(null);
+                    if (esLinkCorto(e.target.value)) resolverLinkCorto(e.target.value);
+                  }}
+                  placeholder="Pegá el link de Google Maps o las coordenadas"
+                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] mt-1.5"
+                />
+              </details>
               <p className="text-[11.5px] text-muted mt-1.5 leading-4">
                 {ubicacion.trim()
-                  ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección.'
-                  : 'Sin ubicación tu local no aparece en el mapa. En Google Maps, mantené apretado el lugar de tu local y copiá los números que salen arriba.'}
+                  ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección. Podés arrastrar el pin para ajustarlo.'
+                  : 'Tocá el mapa en el lugar de tu local. Sin ubicación tu local no aparece en el mapa de la app.'}
               </p>
               {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
             </Field>
@@ -475,6 +487,11 @@ export default function PerfilPage() {
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             />
           </Field>
+          <details className="bg-white border border-line rounded-[12px] px-3.5 py-3" open={!!(instagram || facebook || tiktok || website || resenaUrl)}>
+            <summary className="cursor-pointer text-[13px] font-semibold">
+              Redes y reseñas <span className="text-muted font-normal">(opcional)</span>
+            </summary>
+            <div className="flex flex-col gap-3.5 mt-3.5">
           <Field label="Instagram" icon={<Instagram size={13} color="#7C6A9C" />}>
             <input
               value={instagram}
@@ -526,7 +543,11 @@ export default function PerfilPage() {
             </p>
           </Field>
 
+            </div>
+          </details>
+
           {saved && <p className="text-aqua text-[12.5px]">Guardado.</p>}
+          {guardarError && <p className="text-warn text-[12.5px]">{guardarError}</p>}
 
           <button
             onClick={handleSave}
@@ -536,6 +557,28 @@ export default function PerfilPage() {
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
+          {business && (
+            <button
+              type="button"
+              onClick={() => setVerFicha(true)}
+              className="rounded-[10px] py-3 font-semibold text-[13px] bg-white border border-line"
+            >
+              Ver cómo te ven en la app
+            </button>
+          )}
+          {business && !business.approved && business.rejected_at && (
+            <button
+              type="button"
+              onClick={async () => {
+                await reenviarARevision(business.id);
+                if (session) await refreshBusiness(session.user.id, session.user.email);
+              }}
+              className="rounded-[10px] py-3 font-semibold text-[13px]"
+              style={{ background: '#7FEDC4', color: '#12281F' }}
+            >
+              Ya lo corregí, volver a enviar
+            </button>
+          )}
 
           <div className="border-t border-line mt-4 pt-4">
             {confirmingDelete ? (
@@ -573,6 +616,7 @@ export default function PerfilPage() {
           </div>
         </div>
       </div>
+      {verFicha && business && <FichaPreviewModal business={business} onClose={() => setVerFicha(false)} />}
     </DashboardShell>
   );
 }

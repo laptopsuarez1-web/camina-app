@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase, type Business, type BusinessPlan } from '@/lib/supabase';
 import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
+import { FichaPreviewModal } from '@/components/FichaPreview';
+import { faltantesParaPublicar } from '@/lib/readiness';
+import { avisarPorCorreo } from '@/lib/email';
 
 const PLAN_LABEL: Record<BusinessPlan, string> = {
   primer_paso: 'Primer Paso',
@@ -30,11 +33,18 @@ export default function AdminPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [reviewMsg, setReviewMsg] = useState<string | null>(null);
+  const [activeBenefits, setActiveBenefits] = useState<Record<string, number>>({});
+  const [previewing, setPreviewing] = useState<Business | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setListLoading(true);
     const { data } = await supabase.from('businesses').select('*').order('created_at', { ascending: false });
     setBusinesses((data as Business[]) ?? []);
+    // Cuántos beneficios activos tiene cada local: sin ninguno no se puede aprobar (quedaría vacío).
+    const { data: bens } = await supabase.from('benefits').select('business_id').eq('active', true);
+    const counts: Record<string, number> = {};
+    for (const b of (bens as { business_id: string }[]) ?? []) counts[b.business_id] = (counts[b.business_id] ?? 0) + 1;
+    setActiveBenefits(counts);
     const { data: used } = await supabase.rpc('founder_slots_used');
     setFounderSlots(typeof used === 'number' ? used : null);
     const { data: alerts } = await supabase.rpc('pending_nearby_campaigns');
@@ -73,6 +83,8 @@ export default function AdminPage() {
     setSavingId(null);
     if (!error) {
       setBusinesses((prev) => prev.map((b) => (b.id === businessId ? { ...b, approved: true } : b)));
+      setPreviewing(null);
+      void avisarPorCorreo('approved', businessId);
     }
   }
 
@@ -91,6 +103,8 @@ export default function AdminPage() {
       setReviewMsg(error.message);
       return;
     }
+    setPreviewing(null);
+    void avisarPorCorreo('approved', businessId);
     loadBusinesses();
   }
 
@@ -114,6 +128,7 @@ export default function AdminPage() {
     }
     setRejectingId(null);
     setRejectReason('');
+    void avisarPorCorreo('rejected', businessId);
     loadBusinesses();
   }
 
@@ -178,6 +193,23 @@ export default function AdminPage() {
 
   return (
     <AdminShell>
+        {previewing && (
+          <FichaPreviewModal
+            business={previewing}
+            onClose={() => setPreviewing(null)}
+            footer={
+              faltantesParaPublicar(previewing, activeBenefits[previewing.id] ?? 0).length === 0 && !previewing.approved ? (
+                <button
+                  onClick={() => approveBusiness(previewing.id)}
+                  disabled={savingId === previewing.id}
+                  className="w-full bg-mint text-mint-dark rounded-[10px] py-3 text-[13.5px] font-bold"
+                >
+                  Se ve bien, aprobar
+                </button>
+              ) : undefined
+            }
+          />
+        )}
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
         <p className="text-muted text-[13.5px] mb-7">
           Aprobá un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
@@ -271,14 +303,31 @@ export default function AdminPage() {
                             <p className="text-muted text-[11.5px]">
                               {b.category} · {b.city ?? 'Tarija'} · {b.address || 'sin dirección'} · {new Date(b.created_at).toLocaleDateString('es-BO')}
                             </p>
-                            {(!b.logo_url || !b.cover_url) && (
+                            {b.phone && (
+                              <a
+                                href={`https://wa.me/${b.phone.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[11.5px] font-semibold underline"
+                                style={{ color: '#1f7d68' }}
+                              >
+                                WhatsApp {b.phone}
+                              </a>
+                            )}
+                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length > 0 && (
                               <p className="text-[11.5px] text-warn font-semibold mt-0.5">
-                                Faltan fotos: {[!b.logo_url && 'logo', !b.cover_url && 'portada'].filter(Boolean).join(' y ')}
+                                Le falta: {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).map((f) => f.texto).join(', ')}
                               </p>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            {b.logo_url && b.cover_url && (
+                          <div className="flex gap-2 flex-wrap">
+                            <button
+                              onClick={() => setPreviewing(b)}
+                              className="bg-white border border-line text-text rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                            >
+                              Ver ficha
+                            </button>
+                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length === 0 && (
                               <button
                                 onClick={() => approveBusiness(b.id)}
                                 disabled={savingId === b.id}
@@ -312,7 +361,7 @@ export default function AdminPage() {
                         {rejectingId === b.id && (
                           <div className="mt-2.5">
                             <label className="block text-[12px] font-semibold text-text mb-1">
-                              ¿Por qué lo rechazás? El dueño lo va a ver en su panel y lo puede corregir y volver a enviar.
+                              ¿Por qué lo rechazás? Le llega por correo y lo ve en su panel; lo corrige y lo vuelve a enviar.
                             </label>
                             <textarea
                               value={rejectReason}
@@ -362,14 +411,22 @@ export default function AdminPage() {
                               Motivo: {b.rejection_reason}
                             </p>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <button
-                              onClick={() => approveBusiness(b.id)}
-                              disabled={savingId === b.id}
-                              className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              onClick={() => setPreviewing(b)}
+                              className="bg-white border border-line text-text rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
                             >
-                              Aprobar igual
+                              Ver ficha
                             </button>
+                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length === 0 && (
+                              <button
+                                onClick={() => approveBusiness(b.id)}
+                                disabled={savingId === b.id}
+                                className="bg-mint text-mint-dark rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              >
+                                Aprobar igual
+                              </button>
+                            )}
                             <button
                               onClick={() => setDeletingId(deletingId === b.id ? null : b.id)}
                               className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"

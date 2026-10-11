@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { mensajeError } from '@/lib/errors';
 
 export default function ActualizarClavePage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function ActualizarClavePage() {
     const { data: updated, error } = await supabase.auth.updateUser({ password });
     if (error) {
       setLoading(false);
-      setError(error.message);
+      setError(mensajeError(error));
       return;
     }
 

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { mensajeError } from '@/lib/errors';
+import { avisarPorCorreo } from '@/lib/email';
 
 interface Staff {
   id: string;
@@ -40,11 +42,18 @@ export default function EquipoPage() {
     const { error } = await supabase.rpc('add_staff', { p_business_id: business.id, p_email: email });
     setSaving(false);
     if (error) {
-      setMsg({ ok: false, text: error.message });
+      setMsg({ ok: false, text: mensajeError(error) });
       return;
     }
+    const enviado = await avisarPorCorreo('staff_invite', business.id, email);
+    const invitado = email.trim();
     setEmail('');
-    setMsg({ ok: true, text: 'Listo. Ahora tu empleado tiene que crear su cuenta en caminaapp.com/unirme con ese mismo correo.' });
+    setMsg({
+      ok: true,
+      text: enviado
+        ? `Listo. Le mandamos un correo a ${invitado} con el link para crear su cuenta.`
+        : `Listo, pero no pudimos mandarle el correo. Pasale este link por WhatsApp: ${window.location.origin}/unirme?email=${encodeURIComponent(invitado)}`,
+    });
     load();
   }
 

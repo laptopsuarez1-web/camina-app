@@ -79,6 +79,9 @@ export interface Redemption {
   status: 'pending' | 'confirmed' | 'expired' | 'cancelled';
   created_at: string;
   confirmed_at: string | null;
+  benefit_id?: string | null;
+  // Nombre del premio, cuando la consulta lo trae con benefit:benefits(name).
+  benefit?: { name: string } | null;
 }
 
 export interface Reto {

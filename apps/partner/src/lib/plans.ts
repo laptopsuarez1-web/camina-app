@@ -61,3 +61,41 @@ export const PLANS: {
   },
 ];
 
+
+export const PLAN_NOMBRE: Record<BusinessPlan, string> = {
+  primer_paso: 'Primer Paso',
+  paso_firme: 'Paso Firme',
+  paso_adelante: 'Paso Adelante',
+};
+
+// Próxima fecha de pago de un plan pago: el mismo día de cada mes desde que empezó el plan.
+// Para los fundadores, la fecha en que terminan sus meses gratis.
+export function vencimientoPlan(b: {
+  plan: BusinessPlan;
+  plan_started_at: string;
+  founder?: boolean;
+  founder_until?: string | null;
+}): { fecha: Date; dias: number; gratis: boolean } | null {
+  if (b.plan === 'primer_paso') return null;
+  const ahora = new Date();
+  const dia = 24 * 3600 * 1000;
+  if (b.founder && b.founder_until && new Date(b.founder_until) > ahora) {
+    const fecha = new Date(b.founder_until);
+    return { fecha, dias: Math.ceil((fecha.getTime() - ahora.getTime()) / dia), gratis: true };
+  }
+  const inicio = new Date(b.plan_started_at);
+  if (isNaN(inicio.getTime())) return null;
+  const fecha = new Date(inicio);
+  let meses = 1;
+  fecha.setMonth(inicio.getMonth() + meses);
+  while (fecha <= ahora && meses < 600) {
+    meses++;
+    fecha.setTime(inicio.getTime());
+    fecha.setMonth(inicio.getMonth() + meses);
+  }
+  return { fecha, dias: Math.ceil((fecha.getTime() - ahora.getTime()) / dia), gratis: false };
+}
+
+export function fechaCorta(d: Date) {
+  return d.toLocaleDateString('es-BO', { day: 'numeric', month: 'long' });
+}
