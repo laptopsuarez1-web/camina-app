@@ -98,6 +98,7 @@ export interface Redemption {
   benefit_id: string;
   business_id: string;
   cost_points: number;
+  points_charged?: boolean;
   code: string;
   code_expires_at: string;
   status: RedemptionStatus;

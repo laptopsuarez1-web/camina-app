@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, WhatsApp, Globe, AtSign, FacebookIcon, TiktokIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, WhatsApp, Globe, FacebookIcon, TiktokIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -295,12 +295,16 @@ export default function CanjesScreen() {
     if (!activeId) return;
     const check = async () => {
       const { data } = await supabase.from('redemptions').select('status').eq('id', activeId).maybeSingle();
-      if (data?.status === 'confirmed') setConfirmedId(activeId);
+      if (data?.status === 'confirmed') {
+        setConfirmedId(activeId);
+        // Los Puntos se descuentan al confirmar el local: se actualiza el saldo y los movimientos.
+        for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions']) queryClient.invalidateQueries({ queryKey: [key] });
+      }
     };
     check();
     const t = setInterval(check, 4000);
     return () => clearInterval(t);
-  }, [activeId]);
+  }, [activeId, queryClient]);
 
   async function answerFollowup(extra: boolean) {
     if (!activeId) return;
@@ -436,6 +440,18 @@ export default function CanjesScreen() {
   const galleryPhotos = profileGroup
     ? ([profileGroup.business.cover_url, ...(profileGroup.business.photos ?? [])].filter(Boolean) as string[])
     : [];
+
+  // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
+  function confirmRedeem(benefit: BenefitWithBusiness) {
+    Alert.alert(
+      `¿Canjear ${benefit.name}?`,
+      `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando el local confirme el código.`,
+      [
+        { text: 'Todavía no', style: 'cancel' },
+        { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
+      ]
+    );
+  }
 
   async function handleRedeem(benefitId: string, benefit: BenefitWithBusiness) {
     try {
@@ -1111,7 +1127,7 @@ export default function CanjesScreen() {
                               <Press
                                 accessibilityRole="button"
                                 accessibilityState={{ busy: redeeming }}
-                                onPress={() => handleRedeem(b.id, b)}
+                                onPress={() => confirmRedeem(b)}
                                 haptic="light"
                                 disabled={!canRedeem || redeem.isPending}
                                 className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
@@ -1331,6 +1347,7 @@ export default function CanjesScreen() {
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
+                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-2 px-6 text-center">Tus Puntos se descuentan cuando el local lo confirma.</Text>
                   {/* Se lee dígito por dígito, para dictárselo al comercio. */}
                   <Text
                     accessibilityLabel={`Código ${(activeRedemption?.code ?? '').split('').join(' ')}`}
