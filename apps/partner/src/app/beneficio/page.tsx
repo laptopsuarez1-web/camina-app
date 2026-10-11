@@ -6,6 +6,7 @@ import { supabase, type Benefit } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
+import { TimeSelect } from '@/components/TimeSelect';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
@@ -172,6 +173,7 @@ function BeneficioForm({
   const [ilimitado, setIlimitado] = useState(!isFree && benefit != null && benefit.daily_quota == null);
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
+  const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva casi un día entero caminando).
@@ -216,6 +218,8 @@ function BeneficioForm({
       valid_to: validTo || null,
       valid_days_mask: diasMask,
       dine_in_only: dineInOnly,
+      // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
+      ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
     };
 
     const { error } = benefitId
@@ -279,6 +283,20 @@ function BeneficioForm({
             className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
           />
         </Field>
+
+        <div className="mt-4.5">
+          <Field label="Descripción del producto (opcional)">
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              rows={3}
+              maxLength={300}
+              placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas. Porción individual."
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+            <p className="text-[11.5px] text-muted mt-1.5 leading-4">Los clientes la ven en la app, debajo del nombre del premio.</p>
+          </Field>
+        </div>
 
         <label className="block text-[12.5px] font-semibold mb-1.5 mt-4.5">Tipo</label>
         <div className="flex gap-2 mb-4.5">
@@ -429,20 +447,20 @@ function BeneficioForm({
         <div className="flex gap-3.5 mb-3.5">
           <div className="flex-1">
             <Field label="Válido desde">
-              <input
-                type="time"
+              <TimeSelect
+                allowEmpty
                 value={validFrom}
-                onChange={(e) => setValidFrom(e.target.value)}
+                onChange={setValidFrom}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
             </Field>
           </div>
           <div className="flex-1">
             <Field label="Hasta">
-              <input
-                type="time"
+              <TimeSelect
+                allowEmpty
                 value={validTo}
-                onChange={(e) => setValidTo(e.target.value)}
+                onChange={setValidTo}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
             </Field>

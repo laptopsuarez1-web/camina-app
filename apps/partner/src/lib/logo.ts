@@ -47,3 +47,34 @@ export async function uploadLogoFromDataUrl(businessId: string, dataUrl: string)
     // se ignora
   }
 }
+
+// Achica una foto (lado máx. 1600 px, JPEG) para las fotos del local: se ven bien en la app y
+// la subida es liviana con datos móviles.
+export function fileToPhotoBlob(file: File, max = 1600): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error('canvas'));
+        return;
+      }
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('blob'))), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('imagen'));
+    };
+    img.src = url;
+  });
+}

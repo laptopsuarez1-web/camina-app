@@ -9,6 +9,8 @@ import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-nati
 import { ShieldCheck as ShieldCheck_ } from 'phosphor-react-native/src/icons/ShieldCheck';
 import { Target as Target_ } from 'phosphor-react-native/src/icons/Target';
 import { Bell as Bell_ } from 'phosphor-react-native/src/icons/Bell';
+import { FacebookLogo as FacebookLogo_ } from 'phosphor-react-native/src/icons/FacebookLogo';
+import { TiktokLogo as TiktokLogo_ } from 'phosphor-react-native/src/icons/TiktokLogo';
 import { Clock as Clock_ } from 'phosphor-react-native/src/icons/Clock';
 import { CaretDown as CaretDown } from 'phosphor-react-native/src/icons/CaretDown';
 import { CaretUp as CaretUp } from 'phosphor-react-native/src/icons/CaretUp';
@@ -101,6 +103,8 @@ export const MapPin = make(MapPin_);
 export const X = make(X_, 'bold');
 export const Gift = make(Gift_);
 export const AtSign = make(At, 'bold');
+export const FacebookIcon = make(FacebookLogo_);
+export const TiktokIcon = make(TiktokLogo_);
 export const Locate = make(Crosshair);
 export const Navigation = make(NavigationArrow);
 export const MapIcon = make(MapTrifold);
