@@ -1,5 +1,7 @@
 // Horario semanal: índice 0 = lunes ... 6 = domingo.
-export type DayHours = { from: string; to: string } | null;
+// Un día puede tener un solo tramo (de corrido) o dos (horario partido: mañana y tarde).
+// from2/to2 son opcionales: los horarios viejos, con un solo tramo, siguen funcionando igual.
+export type DayHours = { from: string; to: string; from2?: string; to2?: string } | null;
 export type WeekHours = Record<string, DayHours>;
 
 export const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -21,6 +23,11 @@ export function weekFromText(text: string | null): WeekHours {
   return w;
 }
 
+// "08:00–12:00 y 14:30–21:00" (o solo el primer tramo si abre de corrido).
+export function tramos(d: NonNullable<DayHours>): string {
+  return d.from2 && d.to2 ? `${d.from}–${d.to} y ${d.from2}–${d.to2}` : `${d.from}–${d.to}`;
+}
+
 // "Lun a Vie 09:00–19:00 · Sáb 09:00–13:00" — resumen corto que se guarda también como texto.
 export function summarizeWeek(week: WeekHours): string {
   const parts: string[] = [];
@@ -34,11 +41,11 @@ export function summarizeWeek(week: WeekHours): string {
     let j = i;
     while (j + 1 < 7) {
       const n = week[String(j + 1)];
-      if (n && n.from === d.from && n.to === d.to) j++;
+      if (n && tramos(n) === tramos(d)) j++;
       else break;
     }
     const days = j === i ? DAY_SHORT[i] : j === i + 1 ? `${DAY_SHORT[i]} y ${DAY_SHORT[j]}` : `${DAY_SHORT[i]} a ${DAY_SHORT[j]}`;
-    parts.push(`${days} ${d.from}–${d.to}`);
+    parts.push(`${days} ${tramos(d)}`);
     i = j + 1;
   }
   return parts.join(' · ');

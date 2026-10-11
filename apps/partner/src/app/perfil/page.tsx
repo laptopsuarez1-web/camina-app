@@ -18,7 +18,7 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { GalleryUpload } from '@/components/GalleryUpload';
 import { CATEGORIAS, opcionesCategoria } from '@/lib/categories';
-import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type WeekHours } from '@/lib/hours';
+import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type DayHours, type WeekHours } from '@/lib/hours';
 
 function firstOpen(w: WeekHours) {
   for (let i = 0; i < 7; i++) if (w[String(i)]) return i;
@@ -392,15 +392,50 @@ export default function PerfilPage() {
                       <>
                         <TimeSelect
                           value={d.from}
-                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { from: v, to: d.to } }))}
+                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, from: v } }))}
                           className="border border-line rounded-[8px] px-2 py-1.5"
                         />
                         <span className="text-muted">a</span>
                         <TimeSelect
                           value={d.to}
-                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: v } }))}
+                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, to: v } }))}
                           className="border border-line rounded-[8px] px-2 py-1.5"
                         />
+                        {d.from2 && d.to2 ? (
+                          <>
+                            <span className="text-muted">y</span>
+                            <TimeSelect
+                              value={d.from2}
+                              onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, from2: v } }))}
+                              className="border border-line rounded-[8px] px-2 py-1.5"
+                            />
+                            <span className="text-muted">a</span>
+                            <TimeSelect
+                              value={d.to2}
+                              onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, to2: v } }))}
+                              className="border border-line rounded-[8px] px-2 py-1.5"
+                            />
+                            <button
+                              type="button"
+                              className="text-[12px] text-muted underline"
+                              onClick={() =>
+                                setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: d.to } }))
+                              }
+                            >
+                              Quitar tramo
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="text-[12px] text-purple font-semibold"
+                            onClick={() =>
+                              setSemana((w) => ({ ...w, [String(i)]: { ...d, from2: '14:00', to2: '19:00' } }))
+                            }
+                          >
+                            + Horario partido
+                          </button>
+                        )}
                       </>
                     ) : (
                       <span className="text-muted text-[12.5px]">Cerrado</span>
@@ -413,7 +448,7 @@ export default function PerfilPage() {
                   type="button"
                   className="text-purple font-semibold"
                   onClick={() => {
-                    const base = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
+                    const base: DayHours = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
                     setSemana(() => {
                       const w: WeekHours = emptyWeek();
                       for (let i = 0; i < 5; i++) w[String(i)] = { ...base };
@@ -427,7 +462,7 @@ export default function PerfilPage() {
                   type="button"
                   className="text-purple font-semibold"
                   onClick={() => {
-                    const base = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
+                    const base: DayHours = semana[String(firstOpen(semana))] ?? { from: '09:00', to: '19:00' };
                     setSemana(() => {
                       const w: WeekHours = emptyWeek();
                       for (let i = 0; i < 7; i++) w[String(i)] = { ...base };
