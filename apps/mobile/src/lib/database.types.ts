@@ -113,6 +113,7 @@ export interface Group {
   name: string;
   created_by: string | null;
   challenge_target: number;
+  invite_code: string;
   created_at: string;
 }
 

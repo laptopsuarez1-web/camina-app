@@ -9,6 +9,7 @@ import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { Coffee, ChevronDown, Crown, IconBubble } from '@/components/icons';
+import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 
 const COIN = require('@/../assets/camina-coin.png');
@@ -130,7 +131,8 @@ export default function OnboardingScreen() {
 
   async function finish() {
     await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1');
-    router.replace('/(auth)/welcome');
+    // Si ya hay sesión (se abrió desde Perfil), vuelve a la app en vez de ir al login.
+    router.replace(useAuthStore.getState().session ? '/' : '/(auth)/welcome');
   }
 
   function next() {

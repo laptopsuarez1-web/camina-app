@@ -114,8 +114,8 @@ export default function GroupDetailScreen() {
   async function share() {
     if (!data) return;
     await Share.share({
-      message: `Unite a mi grupo "${data.group.name}" en Camina — caminemos y ganemos Puntos juntos.\n${groupInviteLink(data.group.id)}`,
-      url: groupInviteLink(data.group.id),
+      message: `Unite a mi grupo "${data.group.name}" en Camina — caminemos y ganemos Puntos juntos.\nCódigo: ${data.group.invite_code}\n${groupInviteLink(data.group.invite_code)}`,
+      url: groupInviteLink(data.group.invite_code),
     });
   }
 

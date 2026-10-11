@@ -12,6 +12,7 @@ export function referralLink(userId: string) {
   return `${INVITE_BASE}/r/${userId}`;
 }
 
-export function groupInviteLink(groupId: string) {
-  return `${INVITE_BASE}/join-group/${groupId}`;
+// El link lleva el código de invitación del grupo (no el id): sin el código nadie puede unirse.
+export function groupInviteLink(inviteCode: string) {
+  return `${INVITE_BASE}/join-group/${inviteCode}`;
 }
