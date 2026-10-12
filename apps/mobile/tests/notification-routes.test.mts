@@ -16,6 +16,8 @@ test('canjes, retos y sorteos siguen en su pantalla; la racha lleva a Inicio', (
   for (const t of ['redemption', 'redemption_expiring', 'nearby']) assert.equal(routeForNotification(t), '/(tabs)/canjes', t);
   for (const t of ['reto', 'promotion_win']) assert.equal(routeForNotification(t), '/(tabs)/eventos', t);
   for (const t of ['streak', 'streak_reminder']) assert.equal(routeForNotification(t), '/(tabs)', t);
+  // Historia de Instagram aprobada o rechazada: a Inicio, donde está "Tus canjes".
+  for (const t of ['story_approved', 'story_rejected']) assert.equal(routeForNotification(t), '/(tabs)', t);
 });
 
 test('un tipo desconocido o sin tipo abre la bandeja de Avisos (la fila queda solo para leer)', () => {

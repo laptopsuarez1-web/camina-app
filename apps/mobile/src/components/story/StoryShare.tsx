@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { View, Image, type ImageSourcePropType } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -5,13 +6,14 @@ import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { Instagram, Clock, CheckCircle2, X, Star, Camera } from '@/components/icons';
 import { colors } from '@/theme/tokens';
+import type { StoryState } from '@/lib/story';
 
 // Historias de Instagram por un canje: la persona sube una foto de lo que canjeó, etiqueta a Camina
 // y, cuando el equipo la ve, se le acreditan STORY_REWARD Puntos. La acreditación es manual (panel).
 export const STORY_REWARD = 5;
 export const CAMINA_INSTAGRAM = '@caminaapp';
 
-export type StoryState = 'available' | 'pending' | 'approved' | 'rejected';
+export type { StoryState };
 
 function Coin({ size = 16 }: { size?: number }) {
   return <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />;
@@ -136,8 +138,13 @@ export function StoryComposer({
   onPublish,
   onChangePhoto,
   topInset = 0,
+  shotRef,
+  busy,
 }: {
   photo: ImageSourcePropType;
+  // Vista que se captura como imagen (foto + sticker) para compartir y subir.
+  shotRef?: Ref<View>;
+  busy?: boolean;
   businessName: string;
   benefitName: string;
   onClose: () => void;
@@ -157,7 +164,7 @@ export function StoryComposer({
 
       <View className="flex-1 px-6 items-center">
         {/* Así se va a ver en Instagram: foto a pantalla completa y el sticker de Camina abajo. */}
-        <View style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
+        <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           <View style={{ position: 'absolute', left: 14, right: 14, bottom: 18, alignItems: 'flex-start', gap: 8 }}>
             <View className="flex-row items-center rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.94)', paddingVertical: 8, paddingLeft: 8, paddingRight: 12, gap: 8 }}>
@@ -178,7 +185,7 @@ export function StoryComposer({
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
           Publicala en tu historia y etiquetá a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
-        <Press accessibilityRole="button" onPress={onPublish} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: colors.aquaDeep }}>
+        <Press accessibilityRole="button" accessibilityState={{ busy: !!busy }} disabled={busy} onPress={onPublish} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: colors.aquaDeep, opacity: busy ? 0.7 : 1 }}>
           <Instagram size={18} color="#fff" weight="bold" />
           <Text className="text-white font-bold text-[15px]">Publicar en Instagram</Text>
         </Press>
@@ -196,8 +203,10 @@ export function StoryConfirmSheet({
   onChangeHandle,
   onConfirm,
   onLater,
+  busy,
 }: {
   handle: string;
+  busy?: boolean;
   onChangeHandle: (v: string) => void;
   onConfirm: () => void;
   onLater: () => void;
@@ -228,8 +237,8 @@ export function StoryConfirmSheet({
           placeholderTextColor={dark ? colors.dark.muted : colors.light.muted}
         />
       </View>
-      <Press accessibilityRole="button" onPress={onConfirm} disabled={!handle.trim()} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5" style={{ opacity: handle.trim() ? 1 : 0.5 }}>
-        <Text className="text-white font-bold text-[15px]">Sí, ya la subí</Text>
+      <Press accessibilityRole="button" accessibilityState={{ busy: !!busy, disabled: !handle.trim() }} onPress={onConfirm} disabled={!handle.trim() || busy} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5" style={{ opacity: handle.trim() && !busy ? 1 : 0.5 }}>
+        <Text className="text-white font-bold text-[15px]">{busy ? 'Enviando…' : 'Sí, ya la subí'}</Text>
       </Press>
       <Press accessibilityRole="button" onPress={onLater} className="py-2 items-center">
         <Text className="text-[13.5px] font-semibold text-muted-light dark:text-muted-dark">Todavía no</Text>

@@ -43,6 +43,7 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",
+        "CAMERA",
         "android.permission.health.READ_STEPS"
       ],
       "config": {
@@ -113,8 +114,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Camina usa tus fotos para poner tu foto de perfil.",
-          "cameraPermission": false,
+          "photosPermission": "Camina usa tus fotos para tu foto de perfil y para la historia de lo que canjeaste.",
+          "cameraPermission": "Camina usa la cámara para sacarle una foto a lo que canjeaste y subirla a tu historia.",
           "microphonePermission": false
         }
       ],

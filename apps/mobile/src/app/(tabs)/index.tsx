@@ -17,7 +17,9 @@ import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
 import { buzz } from '@/lib/haptics';
-import { useBenefits, useMyRedemptions } from '@/hooks/useBenefits';
+import { useBenefits, useMyRedemptions, useMyStoryShares } from '@/hooks/useBenefits';
+import { useStoryFlow } from '@/components/story/StoryFlow';
+import { storyStateFor } from '@/lib/story';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
@@ -94,6 +96,8 @@ export default function HomeScreen() {
   const pointsPulse = usePointsPulse(balance);
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: redemptions, isLoading: redemptionsLoading } = useMyRedemptions();
+  const { data: storyShares } = useMyStoryShares();
+  const story = useStoryFlow();
   const pos = useHomePosition();
   const { data: groups } = useGroups();
   const { data: streak } = useStreak();
@@ -552,9 +556,15 @@ export default function HomeScreen() {
 
         {(redemptions?.length ?? 0) > 0 && (
           <View style={{ marginTop: 28 }}>
-            <MyRedemptionsSection redemptions={redemptions as unknown as RedemptionRow[] | undefined} loading={redemptionsLoading} />
+            <MyRedemptionsSection
+              redemptions={redemptions as unknown as RedemptionRow[] | undefined}
+              loading={redemptionsLoading}
+              storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
+              onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje' })}
+            />
           </View>
         )}
+        {story.element}
 
       </View>
     </ScrollView>
