@@ -21,6 +21,7 @@ export interface Profile {
   birth_date?: string | null;
   nearby_alerts?: boolean;
   city?: string;
+  bio?: string | null;
   created_at: string;
 }
 
@@ -113,6 +114,7 @@ export interface Group {
   name: string;
   created_by: string | null;
   challenge_target: number;
+  invite_code: string;
   created_at: string;
 }
 

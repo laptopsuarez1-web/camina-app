@@ -3,14 +3,15 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Plus, Users, Trophy, IconBubble } from '@/components/icons';
+import { Plus, Users, Trophy, ChevronRight, IconBubble } from '@/components/icons';
 import { useMyGroupsWeek } from '@/hooks/useMyGroupsWeek';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
-import { useGlobalRanking, useCommunityAverage } from '@/hooks/useGlobalRanking';
+import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
+import { useGroupInvites, useGroupInviteActions } from '@/hooks/useFriends';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -19,8 +20,6 @@ import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { plural } from '@/lib/format';
-import { useGlobalRankingOpen } from '@/hooks/useUserCount';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 
@@ -30,54 +29,38 @@ export default function GruposScreen() {
   const { data: groups, isLoading, isError, refetch } = useGroups();
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
-  const [creating, setCreating] = useState(false);
-  const [name, setName] = useState('');
-  const params = useLocalSearchParams<{ view?: string }>();
-  const rankingOpen = useGlobalRankingOpen();
-  const [pickedView, setView] = useState<'mios' | 'ranking'>(params.view === 'ranking' ? 'ranking' : 'mios');
-  // Hasta que haya más de 1.000 usuarios no hay ranking global: solo se ven los grupos.
-  const view = rankingOpen ? pickedView : 'mios';
-  const { data: ranking, isLoading: rankingLoading } = useGlobalRanking();
-  const { data: average } = useCommunityAverage();
+  const [code, setCode] = useState('');
+  const { data: myRank } = useMyWeeklyRank();
+  const { data: invites } = useGroupInvites();
+  const { accept, decline } = useGroupInviteActions();
 
-  const createGroup = useMutation({
-    mutationFn: async (groupName: string) => {
-      if (!userId) throw new Error('Sin sesión');
-      const { data: group, error } = await supabase
-        .from('groups')
-        .insert({ name: groupName, created_by: userId })
-        .select()
-        .single();
-      if (error) throw error;
-      const { error: memberError } = await supabase
-        .from('group_members')
-        .insert({ group_id: group.id, user_id: userId });
-      if (memberError) throw memberError;
-      return group;
-    },
-    onSuccess: () => {
-      setCreating(false);
-      setName('');
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-    },
-    onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intentá de nuevo.')),
-  });
+  function answerInvite(groupId: string, yes: boolean) {
+    if (yes) {
+      accept.mutate(groupId, {
+        onSuccess: (id) => id && router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id } }),
+        onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intentá de nuevo.')),
+      });
+    } else {
+      decline.mutate(groupId, { onError: (e) => Alert.alert('No se pudo rechazar', friendlyServerError(e, 'Intentá de nuevo.')) });
+    }
+  }
 
   const joinGroup = useMutation({
-    mutationFn: async (groupId: string) => {
-      if (!userId) throw new Error('Sin sesión');
-      // upsert: un doble toque no debe devolver el error crudo de clave duplicada (23505).
-      const { error } = await supabase
-        .from('group_members')
-        .upsert({ group_id: groupId, user_id: userId }, { onConflict: 'group_id,user_id' });
+    mutationFn: async (rawCode: string) => {
+      const { data: groupId, error } = await supabase.rpc('join_group_with_code', { p_code: rawCode });
       if (error) throw error;
+      if (!groupId) throw new Error('Código inválido');
+      return groupId;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
-    onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intentá de nuevo.')),
+    onSuccess: (groupId) => {
+      setCode('');
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });
+    },
+    onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revisalo e intentá de nuevo.' : friendlyServerError(e, 'Intentá de nuevo.')),
   });
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
-  const other = (groups ?? []).filter((g) => !g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const { data: week } = useMyGroupsWeek(my, userId);
 
   return (
@@ -89,93 +72,49 @@ export default function GruposScreen() {
         Caminá, compartí y ganá en equipo
       </Text>
 
-      {rankingOpen && (
-      <Glass className="flex-row rounded-full p-1 mb-4">
+      <Glass className="rounded-3xl overflow-hidden mb-4">
         <Press
           accessibilityRole="button"
-          accessibilityState={{ selected: view === 'mios' }}
-          aria-pressed={view === 'mios'}
-          onPress={() => setView('mios')}
-          haptic="selection"
-          className="flex-1 py-2 rounded-full items-center"
-          style={{ backgroundColor: view === 'mios' ? colors.aquaDeep : 'transparent' }}
+          accessibilityLabel={`Ranking semanal: ${myRank ? `vas ${myRank.position}.º` : 'ver'}`}
+          onPress={() => router.push('/(tabs)/ranking')}
+          feedback="row"
+          className="flex-row items-center p-4"
+          style={{ gap: 12 }}
         >
-          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'mios' ? { color: '#fff' } : null) }}>
-            Mis grupos
-          </Text>
-        </Press>
-        <Press
-          accessibilityRole="button"
-          accessibilityState={{ selected: view === 'ranking' }}
-          aria-pressed={view === 'ranking'}
-          onPress={() => setView('ranking')}
-          haptic="selection"
-          className="flex-1 py-2 rounded-full items-center"
-          style={{ backgroundColor: view === 'ranking' ? colors.aquaDeep : 'transparent' }}
-        >
-          <Text className="text-muted-light dark:text-muted-dark text-[12.5px] font-semibold" style={{ ...(view === 'ranking' ? { color: '#fff' } : null) }}>
-            Ranking global
-          </Text>
+          <IconBubble icon={Trophy} tone="gold" size={38} />
+          <View className="flex-1">
+            <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ranking semanal</Text>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Global y entre amigos</Text>
+          </View>
+          <Text className="text-[13px] text-muted-light dark:text-muted-dark">{myRank ? `Vas ${myRank.position}.º` : 'Ver'}</Text>
+          <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
+
+      {(invites ?? []).length > 0 && (
+        <Glass className="rounded-3xl overflow-hidden mb-4" style={{ borderColor: dark ? 'rgba(245,198,69,0.45)' : '#F0D9A0', borderWidth: 1 }}>
+          <Text className="px-4 pt-3.5 pb-1 text-[13px] font-extrabold text-warn-deep dark:text-warn-soft">
+            {invites!.length === 1 ? 'Te invitaron a un grupo' : `Te invitaron a ${invites!.length} grupos`}
+          </Text>
+          {invites!.map((inv, i) => (
+            <View key={inv.group_id} className="flex-row items-center px-4 py-3 border-line-light dark:border-line-dark" style={{ gap: 10, borderTopWidth: i === 0 ? 0 : 1 }}>
+              <View className="flex-1">
+                <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{inv.group_name}</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+                  {inv.inviter_name ?? 'Un amigo'} · {inv.member_count} {inv.member_count === 1 ? 'miembro' : 'miembros'}
+                </Text>
+              </View>
+              <Press accessibilityRole="button" accessibilityLabel={`Unirme a ${inv.group_name}`} disabled={accept.isPending} onPress={() => answerInvite(inv.group_id, true)} className="bg-aqua-deep rounded-full px-3.5 py-2">
+                <Text className="text-white text-xs font-bold">Unirme</Text>
+              </Press>
+              <Press accessibilityRole="button" accessibilityLabel={`Rechazar la invitación a ${inv.group_name}`} disabled={decline.isPending} onPress={() => answerInvite(inv.group_id, false)} className="rounded-full px-3.5 py-2 border border-line-light dark:border-line-dark">
+                <Text className="text-muted-light dark:text-muted-dark text-xs font-bold">No</Text>
+              </Press>
+            </View>
+          ))}
+        </Glass>
       )}
 
-      {view === 'ranking' ? (
-        <>
-          {average != null && average > 0 && (
-            <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-4">
-              <Text className="text-[13px] text-text-light dark:text-text-dark">
-                La comunidad de Camina camina en promedio{' '}
-                <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text> por semana.
-              </Text>
-            </View>
-          )}
-          {rankingLoading && (
-            <SkeletonGroup style={{ gap: 8 }}>
-              {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
-            </SkeletonGroup>
-          )}
-          <View className="gap-2">
-            {(ranking ?? []).map((r: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }, i: number) => (
-              <Glass
-                key={r.user_id}
-                accessible
-                accessibilityLabel={`Puesto ${i + 1}: ${r.full_name || 'Caminante'}${r.user_id === userId ? ' (vos)' : ''}, ${Number(r.total_steps).toLocaleString('es-BO')} ${plural(Number(r.total_steps), 'paso', 'pasos')}`}
-                className="flex-row items-center gap-3 rounded-2xl p-3.5"
-              >
-                <View className="w-7 items-center">
-                  {i < 3 ? <Trophy size={16} color={[colors.warn, '#9C8FC2', '#B08D57'][i]} /> : (
-                    <Text className="text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
-                  )}
-                </View>
-                <AvatarImage
-                  uri={r.photo_url}
-                  style={{ width: 36, height: 36, borderRadius: 18 }}
-                  fallback={
-                    <View className="w-9 h-9 rounded-full bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center">
-                      <Text className="text-aqua-ink dark:text-aqua text-xs font-bold">{(r.full_name || 'C')[0]?.toUpperCase()}</Text>
-                    </View>
-                  }
-                />
-                <Text className="flex-1 text-[13.5px] text-text-light dark:text-text-dark" numberOfLines={1}>
-                  {r.user_id === userId ? `${r.full_name} (vos)` : r.full_name}
-                </Text>
-                <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
-                  <Text className="text-[12.5px] font-bold text-aqua-ink dark:text-aqua">
-                    {Number(r.total_steps).toLocaleString('es-BO')}
-                  </Text>
-                </View>
-              </Glass>
-            ))}
-            {!rankingLoading && (ranking ?? []).length === 0 && (
-              <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center py-6">
-                Todavía nadie caminó esta semana — sé el primero.
-              </Text>
-            )}
-          </View>
-        </>
-      ) : (
-        <>
       {isLoading && (
         <SkeletonGroup style={{ gap: 8 }}>
           {[0, 1].map((i) => <SkeletonRow key={i} chip={false} />)}
@@ -197,9 +136,9 @@ export default function GruposScreen() {
         <View className="mb-7">
           <EmptyState
             title="Todavía no estás en ningún grupo"
-            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate a uno de abajo."
+            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate con el código que te pase un amigo."
             actionLabel="Crear un grupo"
-            onAction={() => setCreating(true)}
+            onAction={() => router.push('/(tabs)/grupos/nuevo')}
           />
         </View>
       )}
@@ -289,64 +228,41 @@ export default function GruposScreen() {
         </>
       )}
 
-      {other.length > 0 && (
-        <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
-          Grupos para unirte
-        </Text>
-      )}
+      <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
+        ¿Te invitaron a un grupo?
+      </Text>
       <View className="gap-2.5">
-        {other.map((g) => (
-          <Glass
-            key={g.id}
-            className="flex-row items-center justify-between rounded-md p-4"
-          >
-            <View className="flex-row items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
-              <View className="w-9.5 h-9.5 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Users size={16} color={dark ? colors.purpleSoft : colors.purple} />
-              </View>
-              <View style={{ flexShrink: 1 }}>
-                <Text className="text-text-light dark:text-text-dark">{g.name}</Text>
-                <Text className="text-muted-light dark:text-muted-dark text-xs">
-                  {g.group_members.length} {g.group_members.length === 1 ? 'miembro' : 'miembros'}
-                </Text>
-              </View>
-            </View>
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel={`Unirme a ${g.name}`}
-              onPress={() => joinGroup.mutate(g.id)}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-              className="bg-aqua-deep rounded-full px-3.5 py-1.5"
-              style={{ flexShrink: 0, marginLeft: 8 }}
-            >
-              <Text className="text-white text-xs font-semibold">Unirme</Text>
-            </Press>
-          </Glass>
-        ))}
-        {creating && (
-          <Glass className="rounded-2xl p-4">
+        <Glass className="rounded-2xl p-4">
+          <Text className="text-muted-light dark:text-muted-dark text-xs mb-2.5">
+            Los grupos son privados: se entra con el código o el link que te pasa quien lo armó.
+          </Text>
+          <View className="flex-row items-center" style={{ gap: 8 }}>
             <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Nombre del grupo"
-              accessibilityLabel="Nombre del grupo"
-              autoFocus
-              className="border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 mb-2.5 text-text-light dark:text-text-dark"
+              value={code}
+              onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+              placeholder="Código de invitación"
+              accessibilityLabel="Código de invitación"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={8}
+              className="flex-1 border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 text-text-light dark:text-text-dark"
             />
             <Press
               accessibilityRole="button"
-              onPress={() => name.trim() && createGroup.mutate(name.trim())}
-              disabled={createGroup.isPending}
-              className="bg-aqua-deep rounded-sm py-3 items-center"
+              accessibilityLabel="Unirme con el código"
+              onPress={() => code.length >= 6 && joinGroup.mutate(code)}
+              disabled={joinGroup.isPending || code.length < 6}
+              className="bg-aqua-deep rounded-full px-4 py-2.5"
+              style={{ opacity: code.length < 6 ? 0.5 : 1 }}
             >
-              <Text className="text-white font-semibold">Crear</Text>
+              <Text className="text-white text-xs font-semibold">Unirme</Text>
             </Press>
-          </Glass>
-        )}
-        {!creating && my.length > 0 && (
+          </View>
+        </Glass>
+        {my.length > 0 && (
           <Press
             accessibilityRole="button"
-            onPress={() => setCreating(true)}
+            onPress={() => router.push('/(tabs)/grupos/nuevo')}
             className="flex-row items-center gap-3 rounded-2xl p-4"
             style={{ borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#C9B5EA' }}
           >
@@ -364,8 +280,6 @@ export default function GruposScreen() {
           </Press>
         )}
       </View>
-        </>
-      )}
       </ScrollView>
     </View>
   );

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, Share, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,7 +13,7 @@ import { celebrate } from '@/store/useCelebrationStore';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
-import { groupInviteLink } from '@/constants/sharing';
+import { GroupShareSheet } from '@/components/friends/GroupShareSheet';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration';
 import { colors } from '@/theme/tokens';
@@ -49,7 +49,7 @@ function GoalBar({ pct }: { pct: number }) {
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
   const { muted, accentText, accentIcon, warnText } = useThemeColors();
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { groupId, compartir } = useLocalSearchParams<{ groupId: string; compartir?: string }>();
   const userId = useAuthStore((s) => s.session?.user.id);
   const { data, isLoading, refetch } = useGroupDetail(groupId);
   const { data: notes } = useGroupNotes(groupId);
@@ -63,10 +63,19 @@ export default function GroupDetailScreen() {
   const { data: history } = useGroupHistory(groupId);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
   const groupName = data?.group.name;
+  // Recién creado: se abre solo la hoja para invitar (link, código o amigos), una vez.
+  const autoShared = useRef(false);
+  useEffect(() => {
+    if (compartir === '1' && data && !autoShared.current) {
+      autoShared.current = true;
+      setShareOpen(true);
+    }
+  }, [compartir, data]);
   const groupTotal = data ? data.members.reduce((a, m) => a + m.steps, 0) : 0;
   const groupTarget = data?.group.challenge_target ?? 0;
 
@@ -109,14 +118,6 @@ export default function GroupDetailScreen() {
     setEditingGoal(false);
     queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
     queryClient.invalidateQueries({ queryKey: ['groups'] });
-  }
-
-  async function share() {
-    if (!data) return;
-    await Share.share({
-      message: `Unite a mi grupo "${data.group.name}" en Camina — caminemos y ganemos Puntos juntos.\n${groupInviteLink(data.group.id)}`,
-      url: groupInviteLink(data.group.id),
-    });
   }
 
   function askReason(kind: 'message' | 'photo' | 'user', targetUser: string, messageId: string | null) {
@@ -242,7 +243,7 @@ export default function GroupDetailScreen() {
             <Text className="flex-1 text-center text-[17px] font-bold text-white px-3" numberOfLines={1}>
               {data.group.name}
             </Text>
-            <Press accessibilityRole="button" accessibilityLabel="Compartir invitación al grupo" onPress={share} hitSlop={10}>
+            <Press accessibilityRole="button" accessibilityLabel="Compartir invitación al grupo" onPress={() => setShareOpen(true)} hitSlop={10}>
               <IconBubble icon={Share2} tone="aqua" size={36} />
             </Press>
           </View>
@@ -279,7 +280,7 @@ export default function GroupDetailScreen() {
           </View>
         </LinearGradient>
 
-        <Glass className="flex-row mx-5 mt-4 mb-3 rounded-2xl p-3.5">
+        <Glass className="flex-row mx-5 mt-3 mb-3 rounded-2xl p-3.5">
           <View className="flex-1">
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
@@ -560,6 +561,7 @@ export default function GroupDetailScreen() {
         </Press>
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
+      <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} />
     </KeyboardAvoidingView>
   );
 }

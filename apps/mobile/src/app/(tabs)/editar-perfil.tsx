@@ -16,6 +16,7 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { BarrioPicker } from '@/components/BarrioPicker';
 import { usePlaces } from '@/hooks/usePlaces';
 import { emailRedirectUrl } from '@/lib/auth-links';
+import { BIO_MAX_LENGTH } from '@/constants/business-rules';
 import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -67,6 +68,7 @@ export default function EditarPerfilScreen() {
   const { data: places } = usePlaces();
   const b = profile?.birth_date;
   const [nameInput, setNameInput] = useState(profile?.full_name ?? '');
+  const [bioInput, setBioInput] = useState(profile?.bio ?? '');
   const [city, setCity] = useState(profile?.city ?? 'Tarija');
   const [zone, setZone] = useState<string | null>(profile?.zone ?? null);
   const [bYear, setBYear] = useState(b ? b.slice(0, 4) : '');
@@ -119,7 +121,9 @@ export default function EditarPerfilScreen() {
     setSaving(true);
     try {
       const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri, photoB64) : undefined;
-      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}) };
+      // La descripción se manda solo si cambió: así guardar el perfil sigue andando aunque la base todavía no tenga la columna (migración 0056).
+      const bioChanged = bioInput.trim() !== (profile.bio ?? '');
+      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}) };
       let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
       if (error && /birth_date|city/i.test(error.message)) {
         const { city: _city, ...rest } = update;
@@ -252,6 +256,22 @@ export default function EditarPerfilScreen() {
               accessibilityLabel="Nombre"
               className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-4"
             />
+
+            <View className="flex-row items-center justify-between mb-1">
+              <Text className="text-muted-light dark:text-muted-dark text-[12px]">Sobre mí (opcional)</Text>
+              <Text className="text-muted-light dark:text-muted-dark text-[12px]" style={{ fontVariant: ['tabular-nums'] }}>{bioInput.length}/{BIO_MAX_LENGTH}</Text>
+            </View>
+            <TextInput
+              value={bioInput}
+              onChangeText={(t) => setBioInput(t.replace(/\n/g, ' ').slice(0, BIO_MAX_LENGTH))}
+              maxLength={BIO_MAX_LENGTH}
+              placeholder="Camino los domingos al Prado"
+              placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
+              accessibilityLabel="Sobre mí, hasta 80 caracteres"
+              accessibilityHint="Lo ven tus amigos y quienes comparten un grupo con vos"
+              className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-1"
+            />
+            <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Lo ven tus amigos y quienes comparten un grupo con vos.</Text>
 
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1.5">Ciudad</Text>
             <View className="flex-row flex-wrap mb-2">
