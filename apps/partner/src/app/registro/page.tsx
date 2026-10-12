@@ -294,7 +294,7 @@ export default function RegistroPage() {
                   onClick={() => fileRef.current?.click()}
                   className="w-full flex items-center gap-3.5 text-left rounded-xl p-3.5 border-2 border-dashed border-line bg-bg"
                 >
-                  <div className="w-[60px] h-[60px] shrink-0 rounded-xl bg-white border border-line flex items-center justify-center overflow-hidden">
+                  <div className="w-[60px] h-[60px] shrink-0 rounded-full bg-white border border-line flex items-center justify-center overflow-hidden">
                     {logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={logo} alt="" className="w-full h-full object-cover" />

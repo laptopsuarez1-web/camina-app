@@ -10,18 +10,17 @@ import { plural } from '@/lib/format';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PENDING_GROUP_JOIN_KEY } from '@/constants/sharing';
 import { colors } from '@/theme/tokens';
-import type { Group } from '@/lib/database.types';
 import { friendlyServerError } from '@/lib/errors';
 
-// Entrada de camina://join-group/<groupId> — el link de "Compartir
-// invitación" de un grupo. Sin sesión, guarda el groupId y manda a loguearse
-// primero; con sesión, muestra el grupo y deja unirse con un toque.
+// Entrada de camina://join-group/<código> — el link de "Compartir invitación"
+// de un grupo (el parámetro es el código de invitación). Sin sesión, guarda el
+// código y manda a loguearse primero; con sesión, muestra el grupo y deja unirse con un toque.
 export default function JoinGroupScreen() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { groupId: code } = useLocalSearchParams<{ groupId: string }>();
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
   const userId = session?.user.id;
-  const [group, setGroup] = useState<Group | null>(null);
+  const [group, setGroup] = useState<{ id: string; name: string } | null>(null);
   const [memberCount, setMemberCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -29,35 +28,31 @@ export default function JoinGroupScreen() {
   useEffect(() => {
     // Con la app cerrada, la sesión todavía se está leyendo: esperar antes de decidir
     // (si no, una persona con sesión válida terminaba en el login).
-    if (!groupId || initializing) return;
+    if (!code || initializing) return;
     if (!session) {
-      AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, groupId).catch(() => {}).then(() => router.replace('/(auth)/welcome'));
+      AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, code).catch(() => {}).then(() => router.replace('/(auth)/welcome'));
       return;
     }
     (async () => {
-      const [{ data: g, error }, { data: count }] = await Promise.all([
-        supabase.from('groups').select('*').eq('id', groupId).single(),
-        supabase.rpc('group_member_count', { p_group_id: groupId }),
-      ]);
+      const { data, error } = await supabase.rpc('group_by_invite_code', { p_code: code });
+      const g = data?.[0];
       if (error || !g) {
-        Alert.alert('No encontramos ese grupo', 'El link puede haber vencido o el grupo ya no existe.');
+        Alert.alert('No encontramos ese grupo', 'El código puede estar mal escrito o el grupo ya no existe.');
         router.replace('/(tabs)/grupos');
         return;
       }
-      setGroup(g);
-      setMemberCount(count ?? 0);
+      setGroup({ id: g.id, name: g.name });
+      setMemberCount(g.member_count ?? 0);
       setLoading(false);
     })();
-  }, [groupId, session, initializing]);
+  }, [code, session, initializing]);
 
   async function join() {
-    if (!groupId || !userId) return;
+    if (!code || !userId) return;
     setJoining(true);
-    const { error } = await supabase
-      .from('group_members')
-      .upsert({ group_id: groupId, user_id: userId }, { onConflict: 'group_id,user_id' });
+    const { data: groupId, error } = await supabase.rpc('join_group_with_code', { p_code: code });
     setJoining(false);
-    if (error) {
+    if (error || !groupId) {
       Alert.alert('No se pudo unir al grupo', friendlyServerError(error, 'Intentá de nuevo.'));
       return;
     }
