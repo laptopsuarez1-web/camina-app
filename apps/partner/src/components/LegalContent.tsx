@@ -68,6 +68,62 @@ export function LegalContent() {
           {"Si autorizás el acceso a Apple Salud o Google Health Connect, Camina lee únicamente tu conteo de pasos (el total del día y, para descartar los pasos escritos a mano, los registros individuales de pasos) y nunca escribe ni comparte esa información con nadie más. No accede a otros datos de salud. Podés revocar el acceso en cualquier momento desde los ajustes de Salud de tu teléfono."}
         </p>
       </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Aviso de salud</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Camina te anima a caminar, pero no es un servicio médico ni da consejos de salud. Antes de aumentar tu actividad física, consultá con un profesional de la salud, sobre todo si tenés alguna condición médica. Caminás bajo tu propia responsabilidad y por tu cuenta y riesgo: no caminés distraído por la calle ni por lugares peligrosos, y respetá el tránsito. Camina no se hace responsable por lesiones o daños que te pasen mientras caminás, en la máxima medida que permita la ley."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Conteo de pasos y sincronización</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Tus pasos los cuentan Apple Salud, Google Health Connect o el sensor de tu teléfono, no Camina. Camina no se responsabiliza por errores, retrasos o diferencias en el conteo, por fallas del teléfono, del sistema operativo o de esos servicios, ni por Puntos que no se carguen por eso. Si ves un error comprobable, escribinos a caminaappbo@gmail.com y lo revisamos. Esto no limita los derechos que la ley te reconoce como consumidor."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Trampas y suspensiones</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Está prohibido simular pasos (agitar el teléfono, usar aparatos o apps que generen movimiento, alterar el sensor o la ubicación), crear varias cuentas, afectar la seguridad de la app o usarla para fines ilegales. Si detectamos irregularidades, podemos suspender la cuenta, anular Puntos y canjes pendientes, sacarte de desafíos y rankings, o cerrar la cuenta. Si creés que fue un error, escribinos a caminaappbo@gmail.com y revisamos cada caso."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Canjes</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Podés canjear una vez por comercio cada 14 días, y cada beneficio puede tener cupos diarios y horarios. Si el comercio confirmó el canje y no te entregó el premio, escribinos a caminaappbo@gmail.com y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Puntos y cambios de las reglas</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Los Puntos no tienen valor en dinero, no se compran, no se venden, no se transfieren y vencen a los 90 días. Podemos cambiar el valor de los Puntos, las reglas o los beneficios. Te avisamos dentro de la app antes de que el cambio empiece a regir, y los Puntos que ya tenés conservan su vencimiento original. Si seguís usando la app después del aviso, aceptás el cambio."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Menores de edad</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Camina es para personas de 13 años o más. Si sos menor de edad, usá la app con el conocimiento de tu madre, padre o tutor."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Datos y comercios</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para el canje (el código y el premio) y, si ganás un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Podés pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a caminaappbo@gmail.com."}
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="font-bold text-[15px] mb-2">Ley aplicable</h2>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Estos términos se rigen por las leyes de Bolivia."}
+        </p>
+      </section>
     </div>
   );
 }

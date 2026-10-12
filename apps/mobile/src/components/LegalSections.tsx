@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SUPPORT_EMAIL } from '@/constants/contact';
-import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
+import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
 export const LEGAL_UPDATED = 'octubre de 2026';
@@ -43,6 +43,38 @@ Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar p
   {
     title: 'Datos de salud',
     body: `Si autorizás el acceso a Apple Salud o Google Health Connect, Camina lee únicamente tu conteo de pasos (el total del día y, para descartar los pasos escritos a mano, los registros individuales de pasos) y nunca escribe ni comparte esa información con nadie más. No accede a otros datos de salud. Podés revocar el acceso en cualquier momento desde los ajustes de Salud de tu teléfono.`,
+  },
+  {
+    title: 'Aviso de salud',
+    body: `Camina te anima a caminar, pero no es un servicio médico ni da consejos de salud. Antes de aumentar tu actividad física, consultá con un profesional de la salud, sobre todo si tenés alguna condición médica. Caminás bajo tu propia responsabilidad y por tu cuenta y riesgo: no caminés distraído por la calle ni por lugares peligrosos, y respetá el tránsito. Camina no se hace responsable por lesiones o daños que te pasen mientras caminás, en la máxima medida que permita la ley.`,
+  },
+  {
+    title: 'Conteo de pasos y sincronización',
+    body: `Tus pasos los cuentan Apple Salud, Google Health Connect o el sensor de tu teléfono, no Camina. Camina no se responsabiliza por errores, retrasos o diferencias en el conteo, por fallas del teléfono, del sistema operativo o de esos servicios, ni por Puntos que no se carguen por eso. Si ves un error comprobable, escribinos a ${SUPPORT_EMAIL} y lo revisamos. Esto no limita los derechos que la ley te reconoce como consumidor.`,
+  },
+  {
+    title: 'Trampas y suspensiones',
+    body: `Está prohibido simular pasos (agitar el teléfono, usar aparatos o apps que generen movimiento, alterar el sensor o la ubicación), crear varias cuentas, afectar la seguridad de la app o usarla para fines ilegales. Si detectamos irregularidades, podemos suspender la cuenta, anular Puntos y canjes pendientes, sacarte de desafíos y rankings, o cerrar la cuenta. Si creés que fue un error, escribinos a ${SUPPORT_EMAIL} y revisamos cada caso.`,
+  },
+  {
+    title: 'Canjes',
+    body: `El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Podés canjear una vez por comercio cada ${BUSINESS_REDEMPTION_COOLDOWN_DAYS} días, y cada beneficio puede tener cupos diarios y horarios. Si el comercio confirmó el canje y no te entregó el premio, escribinos a ${SUPPORT_EMAIL} y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor.`,
+  },
+  {
+    title: 'Puntos y cambios de las reglas',
+    body: `Los Puntos no tienen valor en dinero, no se compran, no se venden, no se transfieren y vencen a los ${POINTS_TTL_DAYS} días. Podemos cambiar el valor de los Puntos, las reglas o los beneficios. Te avisamos dentro de la app antes de que el cambio empiece a regir, y los Puntos que ya tenés conservan su vencimiento original. Si seguís usando la app después del aviso, aceptás el cambio.`,
+  },
+  {
+    title: 'Menores de edad',
+    body: `Camina es para personas de 13 años o más. Si sos menor de edad, usá la app con el conocimiento de tu madre, padre o tutor.`,
+  },
+  {
+    title: 'Datos y comercios',
+    body: `Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para el canje (el código y el premio) y, si ganás un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Podés pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a ${SUPPORT_EMAIL}.`,
+  },
+  {
+    title: 'Ley aplicable',
+    body: `Estos términos se rigen por las leyes de Bolivia.`,
   },
 ];
 
