@@ -24,6 +24,7 @@ import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
+import { SocialRow, BusinessCard } from '@/components/SocialLinks';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -225,6 +226,8 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
+      <SocialRow />
+
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
           accessibilityRole="button"
@@ -306,6 +309,8 @@ export default function PerfilScreen() {
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cristal</Text>
         </View>
       </Glass>
+
+      <BusinessCard />
 
       <Glass className="rounded-2xl px-4 py-3 mb-3">
         <View className="flex-row items-center justify-between">
