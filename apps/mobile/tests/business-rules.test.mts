@@ -30,7 +30,7 @@ test('valores de las reglas de negocio', () => {
   assert.equal(R.REDEMPTION_CODE_TTL_MINUTES, 15);
   assert.equal(R.MIN_DAILY_GOAL, 1000);
   assert.equal(R.GOOD_DAILY_GOAL, 5000);
-  assert.equal(R.RANKING_MIN_USERS, 1000);
+  assert.equal(R.BIO_MAX_LENGTH, 80);
 });
 
 test('coherencia interna: la meta "muy buena" supera al mínimo y el tope diario no se alcanza sin 20.000 pasos', () => {
