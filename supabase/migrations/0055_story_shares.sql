@@ -6,8 +6,8 @@
 -- Una sola historia premiada por canje. Si se rechaza, se puede volver a mandar. Solo canjes confirmados en los
 -- últimos story_window_days() días.
 
-create or replace function story_reward_points() returns integer as $$ select 5 $$ language sql immutable;
-create or replace function story_window_days() returns integer as $$ select 7 $$ language sql immutable;
+create or replace function story_reward_points() returns integer as $$ select 5 $$ language sql immutable set search_path = public;
+create or replace function story_window_days() returns integer as $$ select 7 $$ language sql immutable set search_path = public;
 
 create table story_shares (
   id uuid primary key default gen_random_uuid(),
