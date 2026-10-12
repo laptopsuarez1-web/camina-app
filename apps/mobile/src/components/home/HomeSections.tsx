@@ -14,6 +14,7 @@ import { dayLabel, localDay, plural } from '@/lib/format';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
+import { StoryRewardButton, type StoryState } from '@/components/story/StoryShare';
 
 // ---------------------------------------------------------------------------------------------
 // Piezas comunes
@@ -221,7 +222,15 @@ function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; 
   return dark ? { bg: 'rgba(255,255,255,0.08)', fg: colors.dark.muted } : { bg: colors.light.purpleLight, fg: colors.light.muted };
 }
 
-export function MyRedemptionsSection({ redemptions, loading }: { redemptions: RedemptionRow[] | undefined; loading: boolean }) {
+export function MyRedemptionsSection({
+  redemptions, loading, storyFor, onStory,
+}: {
+  redemptions: RedemptionRow[] | undefined;
+  loading: boolean;
+  // Estado de la historia de Instagram de cada canje (null = no corresponde: no confirmado o muy viejo).
+  storyFor?: (r: RedemptionRow) => StoryState | null;
+  onStory?: (r: RedemptionRow) => void;
+}) {
   const dark = useColorScheme().colorScheme === 'dark';
   const list = (redemptions ?? []).slice(0, 3);
   if (loading && !redemptions) {
@@ -259,13 +268,14 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
             const c = statusColors(r.status, dark);
             // Día LOCAL del canje (no el de UTC); se recortan los decimales extra por si Hermes no los acepta.
             const when = dayLabel(localDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
+            const story = storyFor?.(r) ?? null;
             return (
+              <View key={r.id} className={i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}>
               <Press
-                key={r.id}
                 accessibilityRole="button"
                 accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
                 onPress={() => router.push('/(tabs)/canjes')}
-                className={`flex-row items-center p-3.5 ${i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}`}
+                className="flex-row items-center p-3.5"
                 style={{ gap: 12 }}
               >
                 <BusinessAvatar logoUrl={r.business?.logo_url} category={r.business?.category} size={42} />
@@ -279,6 +289,12 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
                   <Text style={{ color: c.fg, fontSize: 12, fontWeight: '700' }}>{STATUS_LABEL[r.status]}</Text>
                 </View>
               </Press>
+              {story ? (
+                <View style={{ paddingHorizontal: 14, paddingBottom: 14, marginTop: -4 }}>
+                  <StoryRewardButton state={story} onPress={() => onStory?.(r)} />
+                </View>
+              ) : null}
+              </View>
             );
           })}
         </Glass>
