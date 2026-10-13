@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar } from 'lucide-react';
+import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/admin', label: 'Comercios', icon: ShieldCheck },
   { href: '/admin/retos', label: 'Retos', icon: Trophy },
   { href: '/admin/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
+  { href: '/admin/historias', label: 'Historias', icon: Instagram },
   { href: '/admin/reportes', label: 'Reportes', icon: Flag },
   { href: '/admin/alertas', label: 'Alertas', icon: Radar },
   { href: '/admin/lugares', label: 'Ciudades y barrios', icon: MapPinned },
@@ -22,6 +23,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const { session, isAdmin, loading } = useBusinessAuth();
   const router = useRouter();
   const pathname = usePathname();
+  // Historias de Instagram por revisar: el contador avisa en el menú aunque estés en otra sección.
+  const [pendingStories, setPendingStories] = useState(0);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const load = () =>
+      supabase
+        .from('story_shares')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .then(({ count }) => setPendingStories(count ?? 0));
+    load();
+    const t = setInterval(load, 60_000);
+    window.addEventListener('camina:stories-changed', load);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener('camina:stories-changed', load);
+    };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (loading) return;
@@ -61,6 +81,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             >
               <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
               {item.label}
+              {item.href === '/admin/historias' && pendingStories > 0 && (
+                <span className="ml-auto rounded-full bg-warn text-white text-[11px] font-bold px-1.5 min-w-5 text-center">{pendingStories}</span>
+              )}
             </Link>
           );
         })}

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import type { Benefit, Business, Redemption } from '@/lib/database.types';
+import type { Benefit, Business, Redemption, StoryShare } from '@/lib/database.types';
 
 export type BenefitWithBusiness = Benefit & { business: Business };
 
@@ -99,6 +99,22 @@ export function useMyRedemptions() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+// Historias de Instagram que la persona ya mandó, por canje (para el botón de "Tus canjes").
+export function useMyStoryShares() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['story-shares', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('story_shares').select('id, redemption_id, status').eq('user_id', userId!);
+      if (error) throw error;
+      const byRedemption: Record<string, Pick<StoryShare, 'id' | 'status'>> = {};
+      for (const s of data ?? []) byRedemption[s.redemption_id] = { id: s.id, status: s.status };
+      return byRedemption;
     },
   });
 }
