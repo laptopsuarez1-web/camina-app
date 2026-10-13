@@ -18,7 +18,7 @@ const SECTIONS: { title: string; body: string }[] = [
     title: 'Política de privacidad',
     body: `Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tenés 13 años o más; nadie más la ve), foto de perfil (opcional), ciudad y barrio (opcionales), el token de notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google Health Connect: solo el total diario, no tu ubicación GPS histórica ni tu ruta. Los pasos de un día se guardan en nuestros servidores solo si abrís la app ese día; los de días en que no la abriste los lee tu teléfono desde Salud para mostrártelos en Actividad, pero no los guardamos.
 
-Ubicación: cuando la autorizás, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejás activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; podés apagarlo en Perfil y se borra.
+Ubicación: cuando la autorizás, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejás activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; podés apagar las notificaciones desde la configuración del teléfono.
 
 Tus pasos y tu nombre solo son visibles para otros usuarios si activás "Aparecer en el ranking" o dentro de un grupo al que te unís vos mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y un servicio de reporte de errores.
 
