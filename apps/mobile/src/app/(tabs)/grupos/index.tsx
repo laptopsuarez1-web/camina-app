@@ -32,6 +32,7 @@ export default function GruposScreen() {
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
+  const [code, setCode] = useState('');
   const params = useLocalSearchParams<{ view?: string }>();
   const rankingOpen = useGlobalRankingOpen();
   const [pickedView, setView] = useState<'mios' | 'ranking'>(params.view === 'ranking' ? 'ranking' : 'mios');
@@ -64,20 +65,21 @@ export default function GruposScreen() {
   });
 
   const joinGroup = useMutation({
-    mutationFn: async (groupId: string) => {
-      if (!userId) throw new Error('Sin sesión');
-      // upsert: un doble toque no debe devolver el error crudo de clave duplicada (23505).
-      const { error } = await supabase
-        .from('group_members')
-        .upsert({ group_id: groupId, user_id: userId }, { onConflict: 'group_id,user_id' });
+    mutationFn: async (rawCode: string) => {
+      const { data: groupId, error } = await supabase.rpc('join_group_with_code', { p_code: rawCode });
       if (error) throw error;
+      if (!groupId) throw new Error('Código inválido');
+      return groupId;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] }),
-    onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intentá de nuevo.')),
+    onSuccess: (groupId) => {
+      setCode('');
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });
+    },
+    onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revisalo e intentá de nuevo.' : friendlyServerError(e, 'Intentá de nuevo.')),
   });
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
-  const other = (groups ?? []).filter((g) => !g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const { data: week } = useMyGroupsWeek(my, userId);
 
   return (
@@ -197,7 +199,7 @@ export default function GruposScreen() {
         <View className="mb-7">
           <EmptyState
             title="Todavía no estás en ningún grupo"
-            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate a uno de abajo."
+            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con puntos. Creá uno o sumate con el código que te pase un amigo."
             actionLabel="Crear un grupo"
             onAction={() => setCreating(true)}
           />
@@ -289,40 +291,37 @@ export default function GruposScreen() {
         </>
       )}
 
-      {other.length > 0 && (
-        <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
-          Grupos para unirte
-        </Text>
-      )}
+      <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
+        ¿Te invitaron a un grupo?
+      </Text>
       <View className="gap-2.5">
-        {other.map((g) => (
-          <Glass
-            key={g.id}
-            className="flex-row items-center justify-between rounded-md p-4"
-          >
-            <View className="flex-row items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
-              <View className="w-9.5 h-9.5 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
-                <Users size={16} color={dark ? colors.purpleSoft : colors.purple} />
-              </View>
-              <View style={{ flexShrink: 1 }}>
-                <Text className="text-text-light dark:text-text-dark">{g.name}</Text>
-                <Text className="text-muted-light dark:text-muted-dark text-xs">
-                  {g.group_members.length} {g.group_members.length === 1 ? 'miembro' : 'miembros'}
-                </Text>
-              </View>
-            </View>
+        <Glass className="rounded-2xl p-4">
+          <Text className="text-muted-light dark:text-muted-dark text-xs mb-2.5">
+            Los grupos son privados: se entra con el código o el link que te pasa quien lo armó.
+          </Text>
+          <View className="flex-row items-center" style={{ gap: 8 }}>
+            <TextInput
+              value={code}
+              onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+              placeholder="Código de invitación"
+              accessibilityLabel="Código de invitación"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={8}
+              className="flex-1 border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 text-text-light dark:text-text-dark"
+            />
             <Press
               accessibilityRole="button"
-              accessibilityLabel={`Unirme a ${g.name}`}
-              onPress={() => joinGroup.mutate(g.id)}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-              className="bg-aqua-deep rounded-full px-3.5 py-1.5"
-              style={{ flexShrink: 0, marginLeft: 8 }}
+              accessibilityLabel="Unirme con el código"
+              onPress={() => code.length >= 6 && joinGroup.mutate(code)}
+              disabled={joinGroup.isPending || code.length < 6}
+              className="bg-aqua-deep rounded-full px-4 py-2.5"
+              style={{ opacity: code.length < 6 ? 0.5 : 1 }}
             >
               <Text className="text-white text-xs font-semibold">Unirme</Text>
             </Press>
-          </Glass>
-        ))}
+          </View>
+        </Glass>
         {creating && (
           <Glass className="rounded-2xl p-4">
             <TextInput
