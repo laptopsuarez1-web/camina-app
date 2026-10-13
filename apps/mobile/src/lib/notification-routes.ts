@@ -11,6 +11,11 @@ export function routeForNotification(type?: string): string {
     case 'points_expiring':
     case 'referral_credited':
       return '/(tabs)/puntos';
+    case 'friend_request':
+    case 'friend_accepted':
+      return '/(tabs)/amigos';
+    case 'group_invite':
+      return '/(tabs)/grupos';
     case 'group_challenge':
     case 'group_challenge_end':
     case 'group_week':

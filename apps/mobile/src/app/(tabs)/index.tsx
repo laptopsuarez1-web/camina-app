@@ -23,15 +23,14 @@ import { storyStateFor } from '@/lib/story';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreak } from '@/hooks/useStreak';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
-import { useGlobalRanking } from '@/hooks/useGlobalRanking';
-import { useGlobalRankingOpen } from '@/hooks/useUserCount';
-import { useMyGroupRanking } from '@/hooks/useGroupRanking';
+import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
+import { useFriends, useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
+import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -49,8 +48,8 @@ function greeting(name: string) {
 }
 
 function LinkRow({
-  icon, tone, title, value, onPress, last,
-}: { icon: (p: IconProps) => React.ReactElement; tone: 'aqua' | 'purple' | 'gold'; title: string; value: string; onPress: () => void; last?: boolean }) {
+  icon, tone, title, value, onPress, last, alert,
+}: { icon: (p: IconProps) => React.ReactElement; tone: 'aqua' | 'purple' | 'gold'; title: string; value: string; onPress: () => void; last?: boolean; alert?: boolean }) {
   const isDark = useColorScheme().colorScheme === 'dark';
   return (
     <Press
@@ -64,6 +63,7 @@ function LinkRow({
         <Text className="text-[13.5px] font-semibold text-text-light dark:text-text-dark">{title}</Text>
       </View>
       <View className="flex-row items-center gap-1.5">
+        {alert && <View accessible={false} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dangerFill }} />}
         <Text className="text-xs text-muted-light dark:text-muted-dark">{value}</Text>
         <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
       </View>
@@ -104,10 +104,9 @@ export default function HomeScreen() {
   useHomeMoments(streak);
   const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
-  const { data: globalRanking } = useGlobalRanking();
-  const rankingOpen = useGlobalRankingOpen();
-  const { data: groupRanking } = useMyGroupRanking();
-  const myGlobalPosition = (globalRanking ?? []).findIndex((r: { user_id: string }) => r.user_id === userId) + 1;
+  const { data: myRank } = useMyWeeklyRank();
+  const { data: friends } = useFriends();
+  const { data: friendRequests } = useFriendRequests();
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
   // Reintento del envío de pasos: valor que se reintenta, cuántas veces y el temporizador pendiente.
@@ -187,7 +186,6 @@ export default function HomeScreen() {
   const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
   // Los grupos de la persona: se puede estar en más de uno.
   const myGroups = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
-  const myGroup = myGroups[0];
   const groupsValue = myGroups.length === 0 ? 'Ninguno' : myGroups.length === 1 ? '1 activo' : `${myGroups.length} activos`;
 
   const goalDraft = parseInt(goalInput, 10) || 0;
@@ -507,23 +505,21 @@ export default function HomeScreen() {
             value={reto ? `${reto.met} de ${reto.target}` : 'Ver retos'}
             onPress={() => router.push('/(tabs)/eventos')}
           />
-          {rankingOpen ? (
-            <LinkRow
-              icon={Trophy}
-              tone="gold"
-              title="Ranking semanal"
-              value={profile?.ranking_visible === false ? 'Activalo en Perfil' : myGlobalPosition > 0 ? `Vas ${myGlobalPosition}.º` : 'Fuera del top 20'}
-              onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { view: 'ranking' } })}
-            />
-          ) : myGroup ? (
-            <LinkRow
-              icon={Trophy}
-              tone="gold"
-              title="Ranking de tu grupo"
-              value={groupRanking?.myPosition ? `Vas ${groupRanking.myPosition}.º` : 'Ver'}
-              onPress={() => router.push('/(tabs)/grupos')}
-            />
-          ) : null}
+          <LinkRow
+            icon={Trophy}
+            tone="gold"
+            title="Ranking semanal"
+            value={myRank ? `Vas ${myRank.position}.º` : 'Ver'}
+            onPress={() => router.push('/(tabs)/ranking')}
+          />
+          <LinkRow
+            icon={UserPlus}
+            tone="purple"
+            title="Amigos"
+            value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invitá'}
+            alert={(friendRequests ?? []).length > 0}
+            onPress={() => router.push('/(tabs)/amigos')}
+          />
           <LinkRow
             icon={Users}
             tone="purple"
