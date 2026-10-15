@@ -62,7 +62,7 @@ const TARIJA_REGION = {
 function socialUrl(value: string, base: string) {
   const v = value.trim();
   if (/^https?:\/\//i.test(v)) return v;
-  if (/^(www\.)?(facebook|fb|tiktok)\./i.test(v)) return `https://${v}`;
+  if (/^(www\.)?(facebook|fb|tiktok|instagram)\./i.test(v)) return `https://${v}`;
   return base + v.replace(/^@/, '');
 }
 
@@ -975,7 +975,7 @@ export default function CanjesScreen() {
                 <View
                   style={{
                     shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
-                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 999, padding: 2, backgroundColor: '#fff' } : {}),
                   }}
                 >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
@@ -1025,14 +1025,13 @@ export default function CanjesScreen() {
                   {profileGroup.business.instagram ? (
                     <Press
                       accessibilityRole="link"
-                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '').trim()}`)}
+                      accessibilityLabel={`Abrir el Instagram de ${profileGroup.business.name}`}
+                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.instagram!, 'https://instagram.com/'))}
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <Instagram size={15} color="#C13584" weight="bold" />
-                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
-                        {profileGroup.business.instagram.replace('@', '')}
-                      </Text>
+                      <Instagram size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Instagram</Text>
                     </Press>
                   ) : null}
                   {profileGroup.business.facebook ? (
