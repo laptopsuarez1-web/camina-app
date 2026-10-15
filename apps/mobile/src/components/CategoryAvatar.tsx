@@ -64,7 +64,7 @@ export function categoryStyle(category?: string | null): CategoryStyle {
   return (category && CATEGORY_STYLES[category]) || CATEGORY_STYLES.Otro;
 }
 
-// Logo del comercio si lo subió; si no, una burbuja de color con el ícono de su categoría.
+// Logo del comercio (redondo) si lo subió; si no, una burbuja de color con el ícono de su categoría.
 export function BusinessAvatar({
   logoUrl,
   category,
@@ -76,7 +76,14 @@ export function BusinessAvatar({
 }) {
   const radius = size * 0.28;
   if (logoUrl) {
-    return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: radius }} />;
+    // El logo va siempre en círculo, recortado al centro sin deformarse.
+    return (
+      <Image
+        source={{ uri: logoUrl }}
+        resizeMode="cover"
+        style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden', backgroundColor: '#fff' }}
+      />
+    );
   }
   const { icon: Icon, from, to } = categoryStyle(category);
   return (
