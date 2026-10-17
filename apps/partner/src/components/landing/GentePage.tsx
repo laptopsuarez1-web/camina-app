@@ -2,7 +2,7 @@ import Image from 'next/image';
 import './landing.css';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Locales, Galeria, Objetivos, EquipoRetos, Salud, DescargaGente, SoyComercio, CAP, WA_AVISAME } from './shared';
+import { Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Locales, Galeria, Objetivos, EquipoRetos, Salud, DescargaGente, SoyComercio, CAP, WA_AVISAME } from './shared';
 
 export default function GentePage() {
   return (
@@ -38,6 +38,7 @@ export default function GentePage() {
         <Salud />
         <EquipoRetos />
         <Galeria />
+        <Fidelidad para="gente" />
         <SoyComercio />
         <DescargaGente />
       </main>
