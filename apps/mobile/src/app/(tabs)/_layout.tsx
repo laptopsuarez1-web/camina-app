@@ -66,6 +66,11 @@ export default function TabsLayout() {
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="editar-perfil" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo-desafio" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="grupos/nuevo" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="grupos/agregar" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="ranking" options={{ href: null }} />
+      <Tabs.Screen name="amigos/index" options={{ href: null }} />
+      <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
     <CelebrationHost />
     </View>

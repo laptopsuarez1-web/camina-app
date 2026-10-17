@@ -1,17 +1,17 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, ScrollView, Image, Switch, Alert, Share, Linking, Platform, Modal } from 'react-native';
+import { View, ScrollView, Image, Switch, Alert, Linking, Platform, Modal } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, Gift, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
-import { referralLink } from '@/constants/sharing';
+import { useFriendRequests } from '@/hooks/useFriends';
 import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
@@ -20,6 +20,7 @@ import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -50,6 +51,7 @@ export default function PerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: balance } = usePointsBalance();
+  const { data: friendRequests } = useFriendRequests();
   const blocks = useBlocks();
   const glassAmount = useGlassStore((s) => s.amount);
   const setGlassAmount = useGlassStore((s) => s.setAmount);
@@ -150,14 +152,6 @@ export default function PerfilScreen() {
     if (!error) await useAuthStore.getState().refreshProfile();
   }
 
-  async function inviteFriends() {
-    if (!profile) return;
-    await Share.share({
-      message: `Te invito a Camina — caminá y ganá Puntos para canjear en comercios adheridos. Sumate con mi link:\n${referralLink(profile.id)}`,
-      url: referralLink(profile.id),
-    });
-  }
-
   async function handleLogout() {
     await unregisterPushToken();
     const { error } = await supabase.auth.signOut();
@@ -191,12 +185,15 @@ export default function PerfilScreen() {
             </Text>
           </View>
         </View>
+        {profile?.bio ? <Text className="text-text-light dark:text-text-dark text-[13.5px] mt-3" style={{ lineHeight: 19 }}>{profile.bio}</Text> : null}
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
         <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
           <Pencil size={14} color="#fff" />
           <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
         </Press>
       </Glass>
+
+      <AccountEmailCard />
 
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
@@ -216,12 +213,24 @@ export default function PerfilScreen() {
       </Glass>
 
       <Glass className="rounded-3xl overflow-hidden mb-3">
-        <Press accessibilityRole="button" onPress={inviteFriends} className="flex-row items-center p-4" style={{ gap: 14 }}>
-          <IconBubble icon={Gift} tone="aqua" size={46} />
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel={`Amigos${(friendRequests ?? []).length > 0 ? `, ${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : ''}`}
+          onPress={() => router.push('/(tabs)/amigos')}
+          className="flex-row items-center p-4"
+          style={{ gap: 14 }}
+        >
+          <IconBubble icon={UserPlus} tone="purple" size={46} />
           <View className="flex-1">
-            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Invitá amigos</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Ganá 5 Puntos cuando tu amigo empiece a caminar</Text>
+            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Amigos</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Mirá su ranking e invitá y ganá 5 Puntos</Text>
           </View>
+          {(friendRequests ?? []).length > 0 && (
+            <View className="rounded-full items-center justify-center" style={{ minWidth: 22, height: 22, paddingHorizontal: 6, backgroundColor: colors.dangerFill }}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{friendRequests!.length}</Text>
+            </View>
+          )}
+          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
 

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function ActualizarClavePage() {
   const router = useRouter();
@@ -67,11 +68,11 @@ export default function ActualizarClavePage() {
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="w-full max-w-[320px] flex flex-col gap-2.5">
-          <input
+          <PasswordInput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            type="password"
             placeholder="Contraseña nueva (mínimo 6 caracteres)"
+            autoComplete="new-password"
             required
             className="bg-white/95 text-text rounded-xl p-3.5"
           />

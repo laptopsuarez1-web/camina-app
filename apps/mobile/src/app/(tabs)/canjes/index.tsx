@@ -20,6 +20,8 @@ import {
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
+import { RedemptionFollowup } from '@/components/story/StoryShare';
+import { useStoryFlow } from '@/components/story/StoryFlow';
 import { BellButton } from '@/components/ui/BellButton';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -64,7 +66,7 @@ const TARIJA_REGION = {
 function socialUrl(value: string, base: string) {
   const v = value.trim();
   if (/^https?:\/\//i.test(v)) return v;
-  if (/^(www\.)?(facebook|fb|tiktok)\./i.test(v)) return `https://${v}`;
+  if (/^(www\.)?(facebook|fb|tiktok|instagram)\./i.test(v)) return `https://${v}`;
   return base + v.replace(/^@/, '');
 }
 
@@ -529,6 +531,16 @@ export default function CanjesScreen() {
 
   const reviewUrl = safeReviewUrl(activeBenefit?.business.google_review_url);
 
+  // Desde la confirmación del canje: se cierra la hoja del código y arranca la historia de Instagram.
+  const story = useStoryFlow();
+  function startStoryFromCode() {
+    if (!activeRedemption || !activeBenefit) return;
+    const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name };
+    setActiveRedemption(null);
+    setActiveBenefit(null);
+    story.start(target);
+  }
+
   const mm = String(Math.floor(remainingMs / 60000)).padStart(2, '0');
   const ss = String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0');
 
@@ -988,7 +1000,7 @@ export default function CanjesScreen() {
                 <View
                   style={{
                     shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
-                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 999, padding: 2, backgroundColor: '#fff' } : {}),
                   }}
                 >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
@@ -1038,14 +1050,13 @@ export default function CanjesScreen() {
                   {profileGroup.business.instagram ? (
                     <Press
                       accessibilityRole="link"
-                      onPress={() => Linking.openURL(`https://instagram.com/${profileGroup.business.instagram!.replace('@', '').trim()}`)}
+                      accessibilityLabel={`Abrir el Instagram de ${profileGroup.business.name}`}
+                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.instagram!, 'https://instagram.com/'))}
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <Instagram size={15} color="#C13584" weight="bold" />
-                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">
-                        {profileGroup.business.instagram.replace('@', '')}
-                      </Text>
+                      <Instagram size={14} color={colors.light.text} />
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Instagram</Text>
                     </Press>
                   ) : null}
                   {profileGroup.business.facebook ? (
@@ -1309,18 +1320,7 @@ export default function CanjesScreen() {
                   <Text className="text-xs text-muted-light dark:text-muted-dark">{activeBenefit?.name}</Text>
                 </View>
               </View>
-              {confirmed && reviewUrl ? (
-                <Press
-                  accessibilityRole="link"
-                  hitSlop={8}
-                  onPress={() => Linking.openURL(reviewUrl)}
-                  className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
-                  style={{ backgroundColor: '#FFF3D1' }}
-                >
-                  <Star size={12} color="#C98A0B" weight="fill" />
-                  <Text className="text-[12px] font-bold text-gold-ink">Calificar en Google Maps</Text>
-                </Press>
-              ) : !confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
+              {!confirmed && activeBenefit?.business.lat != null && activeBenefit?.business.lng != null ? (
                 <Press
                   accessibilityRole="link"
                   hitSlop={8}
@@ -1368,36 +1368,16 @@ export default function CanjesScreen() {
                     </Text>
                   ) : null}
                 </View>
-                {!answered ? (
-                  <>
-                    <Text className="text-[14px] font-bold text-text-light dark:text-text-dark mb-3">¿Compraste algo más?</Text>
-                    <View className="flex-row gap-2.5 w-full mb-2.5">
-                      <Press accessibilityRole="button" onPress={() => answerFollowup(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
-                        <Text className="text-white font-bold text-[14px]">Sí, compré algo</Text>
-                      </Press>
-                      <Press accessibilityRole="button" onPress={() => answerFollowup(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
-                        <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">Solo el beneficio</Text>
-                      </Press>
-                    </View>
-                  </>
-                ) : (
-                  <>
-                    <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-3 text-center">¡Gracias por contarnos!</Text>
-                    {reviewUrl ? (
-                      <Press
-                        accessibilityRole="link"
-                        onPress={() => Linking.openURL(reviewUrl)}
-                        className="w-full rounded-2xl py-3.5 items-center justify-center flex-row mb-2.5"
-                        style={{ backgroundColor: '#FFF3D1', gap: 8 }}
-                      >
-                        <Star size={16} color="#C98A0B" weight="fill" />
-                        <Text className="font-bold text-[14px] text-gold-ink">Calificar en Google Maps</Text>
-                      </Press>
-                    ) : null}
-                  </>
-                )}
-                <Press accessibilityRole="button" onPress={closeCode} className="w-full bg-aqua-deep rounded-2xl py-4 items-center mt-1">
-                  <Text className="text-white font-bold text-[15px]">Listo</Text>
+                <RedemptionFollowup
+                  businessName={activeBenefit?.business.name ?? 'el local'}
+                  answered={answered}
+                  hasReviewUrl={!!reviewUrl}
+                  onAnswer={answerFollowup}
+                  onReview={() => reviewUrl && Linking.openURL(reviewUrl)}
+                  onStory={startStoryFromCode}
+                />
+                <Press accessibilityRole="button" onPress={closeCode} className="w-full bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mt-2.5">
+                  <Text className="text-purple-ink dark:text-purple-soft font-bold text-[14px]">Listo</Text>
                 </Press>
               </View>
             ) : !expired ? (
@@ -1443,6 +1423,7 @@ export default function CanjesScreen() {
           </Glass>
         </View>
       </Modal>
+      {story.element}
     </View>
   );
 }

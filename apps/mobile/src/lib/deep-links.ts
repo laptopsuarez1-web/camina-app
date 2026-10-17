@@ -32,14 +32,10 @@ export async function consumePendingDeepLinks(): Promise<{ joinedGroupId: string
 
   let joinedGroupId: string | null = null;
   if (pendingGroup) {
-    const userId = (await supabase.auth.getUser()).data.user?.id;
-    if (userId) {
-      const { error } = await supabase
-        .from('group_members')
-        .upsert({ group_id: pendingGroup, user_id: userId }, { onConflict: 'group_id,user_id' });
-      if (!error) joinedGroupId = pendingGroup;
-      if (!error || isPermanentError(error)) await AsyncStorage.removeItem(PENDING_GROUP_JOIN_KEY);
-    }
+    const { data, error } = await supabase.rpc('join_group_with_code', { p_code: pendingGroup });
+    if (!error && data) joinedGroupId = data;
+    // Sin error pero sin grupo = el código no existe: se descarta igual.
+    if (!error || isPermanentError(error)) await AsyncStorage.removeItem(PENDING_GROUP_JOIN_KEY);
   }
 
   return { joinedGroupId };

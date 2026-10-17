@@ -11,12 +11,19 @@ export function routeForNotification(type?: string): string {
     case 'points_expiring':
     case 'referral_credited':
       return '/(tabs)/puntos';
+    case 'friend_request':
+    case 'friend_accepted':
+      return '/(tabs)/amigos';
+    case 'group_invite':
+      return '/(tabs)/grupos';
     case 'group_challenge':
     case 'group_challenge_end':
     case 'group_week':
       return '/(tabs)/grupos';
     case 'streak':
     case 'streak_reminder':
+    case 'story_approved':
+    case 'story_rejected':
       return '/(tabs)';
     default:
       return '/(tabs)/notificaciones';

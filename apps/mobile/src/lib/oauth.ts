@@ -11,14 +11,23 @@ WebBrowser.maybeCompleteAuthSession();
 
 export { Google };
 
-export const googleClientIds = {
+const rawGoogleClientIds = {
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 };
 
 export const googleOAuthConfigured =
-  !!googleClientIds.iosClientId || !!googleClientIds.androidClientId || !!googleClientIds.webClientId;
+  !!rawGoogleClientIds.iosClientId || !!rawGoogleClientIds.androidClientId || !!rawGoogleClientIds.webClientId;
+
+// useIdTokenAuthRequest tira un error al renderizar si falta el id de la plataforma actual; en la web sin
+// configurar eso dejaba la pantalla de login en blanco. Con un valor de relleno la pantalla abre igual, y
+// handleGoogle avisa que Google no está disponible (googleOAuthConfigured sigue en falso).
+export const googleClientIds = {
+  iosClientId: rawGoogleClientIds.iosClientId ?? 'sin-configurar',
+  androidClientId: rawGoogleClientIds.androidClientId ?? 'sin-configurar',
+  webClientId: rawGoogleClientIds.webClientId ?? 'sin-configurar',
+};
 
 export async function completeGoogleSignIn(idToken: string) {
   return supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });

@@ -1,12 +1,11 @@
-// Rankings y conteos (código REAL con dobles): hooks/useUserCount.ts, useGlobalRanking.ts, useGroupRanking.ts, useMyGroupsWeek.ts.
+// Rankings y conteos (código REAL con dobles): hooks/useGlobalRanking.ts, useGroupRanking.ts, useMyGroupsWeek.ts.
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { atTime } from './helpers/clock.mts';
 import { rq, resetRq } from './helpers/stubs/react-query.mts';
 import { setAuth } from './helpers/stubs/auth-store.mts';
 import { db, resetDb } from './helpers/stubs/supabase.mts';
-import { useUserCount, useGlobalRankingOpen } from '../src/hooks/useUserCount.ts';
-import { useGlobalRanking, useCommunityAverage } from '../src/hooks/useGlobalRanking.ts';
+import { useGlobalRanking, useCommunityAverage, useMyWeeklyRank } from '../src/hooks/useGlobalRanking.ts';
 import { useMyGroupRanking } from '../src/hooks/useGroupRanking.ts';
 import { useMyGroupsWeek } from '../src/hooks/useMyGroupsWeek.ts';
 
@@ -19,30 +18,7 @@ beforeEach(() => {
   setAuth(USER, { daily_goal: 6000 });
 });
 
-// ---------------------------------------------------------------- ranking global solo con más de 1.000 usuarios
-test('ranking global: se abre solo con MÁS de 1.000 usuarios (1.000 justos todavía no)', () => {
-  for (const [users, open] of [[0, false], [999, false], [1000, false], [1001, true], [25000, true]] as const) {
-    rq.queryResult = { data: users };
-    assert.equal(useGlobalRankingOpen(), open, `${users} usuarios`);
-  }
-});
-
-test('ranking global: mientras carga o sin dato queda cerrado', () => {
-  rq.queryResult = { data: undefined };
-  assert.equal(useGlobalRankingOpen(), false);
-});
-
-test('cantidad de usuarios: convierte a número, y si falla la consulta asume 0 (ranking cerrado)', async () => {
-  useUserCount();
-  assert.equal(rq.lastQuery.staleTime, 60 * 60 * 1000);
-  db.rpc.app_user_count = () => '1500'; // bigint llega como texto desde algunos clientes
-  assert.equal(await rq.lastQuery.queryFn(), 1500);
-  db.rpc.app_user_count = () => null;
-  assert.equal(await rq.lastQuery.queryFn(), 0);
-  db.rpc.app_user_count = () => ({ error: new Error('sin red') });
-  assert.equal(await rq.lastQuery.queryFn(), 0);
-});
-
+// ---------------------------------------------------------------- ranking global (abierto desde el primer usuario)
 test('ranking global: pide los 20 primeros; el promedio de la comunidad cae a 0 si no hay dato', async () => {
   db.rpc.global_weekly_ranking = () => [{ user_id: 'a', total_steps: 1 }];
   useGlobalRanking();
@@ -57,6 +33,17 @@ test('ranking global: pide los 20 primeros; el promedio de la comunidad cae a 0 
   assert.equal(await rq.lastQuery.queryFn(), 8123.5);
   db.rpc.community_weekly_average = () => null;
   assert.equal(await rq.lastQuery.queryFn(), 0);
+});
+
+test('mi puesto del ranking global: devuelve la fila, y null si no aparezco (ranking apagado o sin pasos)', async () => {
+  db.rpc.my_weekly_rank = () => [{ rank_position: '38', total_steps: '552' }];
+  useMyWeeklyRank();
+  assert.deepEqual(rq.lastQuery.queryKey, ['my-weekly-rank', USER]);
+  assert.deepEqual(await rq.lastQuery.queryFn(), { position: 38, steps: 552 });
+  db.rpc.my_weekly_rank = () => [];
+  assert.equal(await rq.lastQuery.queryFn(), null);
+  db.rpc.my_weekly_rank = () => ({ error: new Error('boom') });
+  await assert.rejects(() => rq.lastQuery.queryFn(), /boom/);
 });
 
 // ---------------------------------------------------------------- ranking del grupo propio
