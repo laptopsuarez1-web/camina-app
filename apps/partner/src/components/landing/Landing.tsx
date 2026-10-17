@@ -1,26 +1,22 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import './landing.css';
-import { PLANS, WHATSAPP_NUMBER } from '@/lib/plans';
+import Walker from './Walker';
+import Story from './Story';
+import MapMock from './MapMock';
+import { PLANS, WHATSAPP_NUMBER, whatsappLink } from '@/lib/plans';
 
 const WA_SUMAR = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola! Quiero sumar mi comercio a Camina.')}`;
 
-// Huellas que caminan hasta el código de canje: cada una con su posición y giro.
+// Huellas que caminan hacia el celular del hero.
 const HUELLAS = [
-  { x: 0, y: 4, rot: 96, lado: 'l' },
-  { x: 11, y: 30, rot: 84, lado: 'r' },
-  { x: 24, y: 18, rot: 96, lado: 'l' },
-  { x: 35, y: 44, rot: 84, lado: 'r' },
-  { x: 48, y: 32, rot: 96, lado: 'l' },
-  { x: 59, y: 58, rot: 84, lado: 'r' },
+  { x: 0, y: 88, rot: 40, lado: 'l' },
+  { x: 7, y: 72, rot: 28, lado: 'r' },
+  { x: 14, y: 64, rot: 40, lado: 'l' },
+  { x: 21, y: 48, rot: 28, lado: 'r' },
+  { x: 28, y: 40, rot: 40, lado: 'l' },
+  { x: 35, y: 24, rot: 28, lado: 'r' },
 ] as const;
-
-const PASOS = [
-  ['Caminás y sumás puntos', 'Cada 1.000 pasos son 1 punto, hasta 20 puntos por día. La app cuenta los pasos sola.'],
-  ['Elegís un premio en tu barrio', 'En el mapa ves los comercios con premios que podés canjear con tus puntos.'],
-  ['Te aparece un código de 6 dígitos', 'Lo mostrás en el local. Dura 15 minutos.'],
-  ['El comercio lo confirma', 'Lo escribe en su panel, toca confirmar y te entrega el premio.'],
-];
 
 const BENEFICIOS = [
   ['Aparecés en el mapa', 'La gente de tu zona te encuentra cuando elige dónde canjear.'],
@@ -34,6 +30,7 @@ const BENEFICIOS = [
 export default function Landing() {
   return (
     <div className="lp">
+      <Walker />
       <header className="lp-nav">
         <div className="wrap">
           <Link href="/" className="lp-brand" aria-label="Camina">
@@ -48,18 +45,17 @@ export default function Landing() {
         <section className="lp-hero">
           <div className="wrap">
             <div className="copy">
-            <h1>Tus próximos clientes ya están caminando.</h1>
-            <p className="sub">
-              Camina premia a las personas por caminar. Sus pasos se vuelven puntos y los gastan en los comercios de su barrio. Puede ser el tuyo.
-            </p>
-            <div className="lp-cta">
-              <a className="lp-btn mint" href={WA_SUMAR}>Sumá tu comercio</a>
-              <a className="lp-btn ghost" href="#planes">Ver planes</a>
+              <h1>Tus próximos clientes ya están caminando.</h1>
+              <p className="sub">
+                Camina premia a las personas por caminar. Sus pasos se vuelven puntos y los gastan en los comercios de su barrio. Puede ser el tuyo.
+              </p>
+              <div className="lp-cta">
+                <Link className="lp-btn mint" href="/registro">Sumá tu comercio gratis</Link>
+                <a className="lp-btn ghost" href="#planes">Ver planes</a>
+              </div>
+              <p className="soon">App para Android e iPhone, muy pronto en las tiendas.</p>
             </div>
-            <p className="soon">App para celulares Android e iPhone, muy pronto en las tiendas.</p>
-            </div>
-
-            <div className="trail" aria-hidden="true">
+            <div className="stage" aria-hidden="true">
               {HUELLAS.map((h, i) => (
                 <Image
                   key={i}
@@ -71,6 +67,7 @@ export default function Landing() {
                   style={{ left: `${h.x}%`, top: `${h.y}%`, ['--i' as string]: i, ['--rot' as string]: `${h.rot}deg` }}
                 />
               ))}
+              <div className="phone hero-phone"><Image src="/web/app-inicio.jpg" alt="" width={560} height={1212} priority /></div>
               <div className="ticket">
                 <small>Tu código de canje</small>
                 <b>482 917</b>
@@ -81,31 +78,74 @@ export default function Landing() {
         </section>
 
         <section className="lp-sec" id="como-funciona">
-          <div className="wrap split">
-            <div>
-              <h2>Así funciona Camina.</h2>
-              <p className="lead">Para quien camina es simple. Para tu comercio, todavía más.</p>
-              <div className="pasos">
-                {PASOS.map(([t, d]) => (
-                  <div className="paso" key={t}>
-                    <h3>{t}</h3>
-                    <p>{d}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="phones">
-              <div className="phone"><Image src="/web/app-inicio.jpg" alt="Pantalla de inicio de la app con los pasos del día" width={520} height={1125} /></div>
-              <div className="phone"><Image src="/web/app-canjes.jpg" alt="Pantalla de canjes con los comercios y sus premios" width={520} height={1125} /></div>
+          <div className="wrap">
+            <h2>Un día con Camina.</h2>
+            <p className="lead">De salir a caminar a canjear un premio en tu barrio, en cinco pasos.</p>
+            <Story />
+          </div>
+        </section>
+
+        <section className="lp-sec night" id="gente">
+          <div className="wrap">
+            <h2>Caminar te hace bien. Ahora también te premia.</h2>
+            <p className="lead">Camina no es solo canjear. Es ponerte en movimiento y no frenar.</p>
+            <div className="goals">
+              <article className="goal">
+                <div className="goal-txt">
+                  <h3>Salud</h3>
+                  <p>Una meta diaria de pasos que vos elegís y una racha que te empuja a no cortar. Ves tu semana en un gráfico y sabés cómo venís.</p>
+                </div>
+                <div className="phone"><Image src="/web/app-actividad.jpg" alt="Pantalla de actividad con los pasos de la semana y la meta" width={560} height={1065} /></div>
+              </article>
+              <article className="goal">
+                <div className="goal-txt">
+                  <h3>Motivación</h3>
+                  <p>Puntos por cada 1.000 pasos, retos y grupos para caminar con amigos. Es más fácil sostener el hábito cuando hay con quién.</p>
+                </div>
+                <div className="phone"><Image src="/web/app-grupos.jpg" alt="Pantalla de grupos con la meta semanal del equipo" width={560} height={1212} /></div>
+              </article>
+              <article className="goal">
+                <div className="goal-txt">
+                  <h3>Moverte por tu barrio</h3>
+                  <p>Tus pasos te llevan a conocer locales, probar cosas nuevas y sumarte a eventos de tu ciudad.</p>
+                </div>
+                <div className="phone"><Image src="/web/app-eventos.jpg" alt="Pantalla de eventos de la ciudad" width={560} height={1212} /></div>
+              </article>
             </div>
           </div>
         </section>
 
-        <section className="lp-sec night" id="comercios">
+        <section className="lp-sec" id="comercios">
           <div className="wrap">
-            <h2>Para tu comercio: visitas, no impresiones.</h2>
-            <p className="lead">Cada canje es una persona real parada en tu local, con ganas de conocerte.</p>
-            <ul className="ben">
+            <h2>Así se ve tu local en Camina.</h2>
+            <p className="lead">Te encuentran en el mapa, te eligen en Canjes y conocen tu local antes de llegar.</p>
+            <div className="showcase">
+              <figure>
+                <div className="phone"><MapMock /></div>
+                <figcaption><b>En el mapa</b>La gente de tu zona te ve cuando elige dónde ir. En Paso Adelante, con pin destacado.</figcaption>
+              </figure>
+              <figure>
+                <div className="phone"><Image src="/web/app-canjes.jpg" alt="Lista de canjes con un comercio y sus premios" width={560} height={1212} /></div>
+                <figcaption><b>En Canjes</b>Tu premio aparece con sus puntos y si está disponible ahora.</figcaption>
+              </figure>
+              <figure>
+                <div className="phone"><Image src="/web/app-ficha.jpg" alt="Ficha de un local con fotos, horario y premios" width={560} height={1212} /></div>
+                <figcaption><b>En tu ficha</b>Fotos, horarios, redes y tus premios. Vos la armás desde el panel.</figcaption>
+              </figure>
+            </div>
+
+            <div className="panel-row">
+              <div>
+                <h3>Y todo lo manejás desde tu panel.</h3>
+                <p>Cargás tu local y tus premios, confirmás los códigos desde el celular y mirás tus canjes. Sin instalar nada.</p>
+                <div className="lp-cta">
+                  <Link className="lp-btn dark" href="/registro">Crear mi cuenta gratis</Link>
+                </div>
+              </div>
+              <div className="laptop"><Image src="/web/panel.jpg" alt="Panel de comercios de Camina con el perfil del local" width={1100} height={1000} /></div>
+            </div>
+
+            <ul className="ben2">
               {BENEFICIOS.map(([t, d]) => (
                 <li key={t}><b>{t}</b><span>{d}</span></li>
               ))}
@@ -113,10 +153,10 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="lp-sec" id="planes">
+        <section className="lp-sec night" id="planes">
           <div className="wrap">
             <h2>Elegí tu plan.</h2>
-            <p className="lead">Empezás gratis. Si querés más, pagás por transferencia o QR y nos mandás el comprobante por WhatsApp.</p>
+            <p className="lead">Empezás gratis y te registrás vos mismo. Para los planes pagos nos escribís por WhatsApp y te activamos el plan.</p>
             <div className="planes">
               {PLANS.map((p) => (
                 <article key={p.id} className={`plan${p.featured ? ' feat' : ''}`}>
@@ -124,15 +164,18 @@ export default function Landing() {
                   <p className="price">{p.price}</p>
                   <p className="blurb">{p.blurb}</p>
                   <ul>{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
+                  {p.id === 'primer_paso' ? (
+                    <Link className="lp-btn dark plan-cta" href="/registro">Empezar gratis</Link>
+                  ) : (
+                    <a className="lp-btn mint plan-cta" href={whatsappLink(p.name, p.price)}>Elegir por WhatsApp</a>
+                  )}
                 </article>
               ))}
             </div>
             <div className="fund">
               <b>Programa fundador: 3 meses gratis de Paso Firme.</b>
-              <span>Es para los primeros 20 comercios que se suman.</span>
-            </div>
-            <div className="lp-cta">
-              <a className="lp-btn dark" href={WA_SUMAR}>Quiero sumar mi comercio</a>
+              <span>Es para los primeros 20 comercios que se suman. Escribinos por WhatsApp para pedirlo.</span>
+              <a className="lp-btn dark" href={WA_SUMAR}>Pedir mi cupo fundador</a>
             </div>
           </div>
         </section>
@@ -149,10 +192,10 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="lp-sec night" id="objetivos">
+        <section className="lp-sec" id="objetivos">
           <div className="wrap">
             <h2>Lo que queremos lograr.</h2>
-            <div className="obj">
+            <div className="obj light">
               <div>
                 <h3>Que Bolivia camine más</h3>
                 <p>Que moverse todos los días tenga un premio real y cerca de casa.</p>
@@ -165,6 +208,17 @@ export default function Landing() {
                 <h3>Una app en la que se pueda confiar</h3>
                 <p>Premios que se cumplen, códigos que se validan bien y reglas claras para las dos partes.</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-final">
+          <div className="wrap">
+            <h2>Sumá tu comercio hoy.</h2>
+            <p>Registrate gratis en el panel o escribinos por WhatsApp y te ayudamos.</p>
+            <div className="lp-cta">
+              <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
+              <a className="lp-btn ghost" href={WA_SUMAR}>Hablar por WhatsApp</a>
             </div>
           </div>
         </section>
