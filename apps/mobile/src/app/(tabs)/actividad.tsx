@@ -245,14 +245,6 @@ export default function ActividadScreen() {
           </SkeletonGroup>
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
-            {/* Línea punteada de la meta diaria */}
-            {goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
-                <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: 'rgba(127,237,196,0.16)', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
-                  <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
-                </View>
-              </View>
-            )}
             <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
               {chartDays.map((d, i) => {
                 const hit = d.steps >= goalFor(d.key);
@@ -303,6 +295,14 @@ export default function ActividadScreen() {
                 );
               })}
             </View>
+            {/* Línea punteada de la meta diaria: va después de las barras para quedar por encima de ellas */}
+            {goal <= chartMax && (
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
+                <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: '#2c1366', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
+                  <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
+                </View>
+              </View>
+            )}
           </View>
         )}
       </LinearGradient>
