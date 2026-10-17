@@ -51,6 +51,8 @@ export function useRedeemBenefit() {
       queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
       queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-card'] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-cards'] });
     },
   });
 }

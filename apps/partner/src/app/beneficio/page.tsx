@@ -176,9 +176,9 @@ function BeneficioForm({
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
   const [valorBs, setValorBs] = useState('');
-  // Guía, no regla: ~2 Puntos por Bs (con el tope de 20 Puntos ganados por
-  // día, algo de Bs 10 ya le lleva casi un día entero caminando).
-  const puntosSugeridos = valorBs.trim() ? Math.round(Number(valorBs) * 2) : null;
+  // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
+  // día, algo de Bs 10 ya le lleva más de un día caminando).
+  const puntosSugeridos = valorBs.trim() ? Math.ceil(Number(valorBs) * 2.5) : null;
   const [validFrom, setValidFrom] = useState(benefit?.valid_from?.slice(0, 5) ?? '');
   const [validTo, setValidTo] = useState(benefit?.valid_to?.slice(0, 5) ?? '');
   const [diasMask, setDiasMask] = useState(benefit?.valid_days_mask ?? 127);
@@ -386,8 +386,8 @@ function BeneficioForm({
             ¿No sabés cuántos Puntos poner?
           </p>
           <p className="text-[11.5px] mb-2.5" style={{ color: '#3A8C72' }}>
-            Como referencia, algo de <strong>Bs 10</strong> ronda los <strong>20 Puntos</strong> (con el
-            tope de 20 Puntos ganados por día, ya le lleva casi una jornada entera caminando). Metí el
+            Como referencia, 2,5 Puntos equivalen a Bs 1: algo de <strong>Bs 10</strong> ronda los <strong>25 Puntos</strong> (con el
+            tope de 20 Puntos ganados por día, ya le lleva más de una jornada caminando). Metí el
             valor de lo que estás regalando y te tiramos una sugerencia — es una guía, no una regla, vos
             ponés el número final.
           </p>
