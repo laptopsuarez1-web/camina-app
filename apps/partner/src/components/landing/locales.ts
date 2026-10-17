@@ -1,4 +1,5 @@
 // Datos reales de los primeros comercios (Tarija), tomados de la base de Camina el 2026-10-17.
+// Puntos ya con la regla de 2,5 puntos por Bs 1 (antes x1,25, redondeo hacia arriba).
 // La página es estática: si cambia un premio o sus puntos en el panel, hay que actualizar acá.
 export type Premio = { nombre: string; detalle: string; puntos: number };
 export type Local = {
@@ -20,9 +21,9 @@ export const LOCALES: Local[] = [
     logo: '/web/locales/bloom-logo.jpg',
     portada: '/web/locales/bloom-cover.jpg',
     premios: [
-      { nombre: 'Manicura o pedicura tradicional', detalle: '20 Bs de descuento', puntos: 40 },
-      { nombre: 'Diseño y perfilado de cejas', detalle: '25% de descuento', puntos: 20 },
-      { nombre: 'Retirado de gel / acrílico', detalle: 'Gratis', puntos: 40 },
+      { nombre: 'Manicura o pedicura tradicional', detalle: '20 Bs de descuento', puntos: 50 },
+      { nombre: 'Diseño y perfilado de cejas', detalle: '25% de descuento', puntos: 25 },
+      { nombre: 'Retirado de gel / acrílico', detalle: 'Gratis', puntos: 50 },
     ],
   },
   {
@@ -33,8 +34,8 @@ export const LOCALES: Local[] = [
     logo: '/web/locales/coco-logo.jpg',
     portada: '/web/locales/coco-cover.jpg',
     premios: [
-      { nombre: 'Corte de cabello', detalle: '20% de descuento', puntos: 20 },
-      { nombre: 'Lavado de cabello', detalle: 'Gratis', puntos: 20 },
+      { nombre: 'Corte de cabello', detalle: '20% de descuento', puntos: 25 },
+      { nombre: 'Lavado de cabello', detalle: 'Gratis', puntos: 25 },
     ],
   },
   {
@@ -45,8 +46,8 @@ export const LOCALES: Local[] = [
     logo: '/web/locales/fripaps-logo.jpg',
     portada: '/web/locales/fripaps-cover.jpg',
     premios: [
-      { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 20 },
-      { nombre: 'Panchito', detalle: 'Gratis', puntos: 30 },
+      { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 25 },
+      { nombre: 'Panchito', detalle: 'Gratis', puntos: 38 },
     ],
   },
 ];

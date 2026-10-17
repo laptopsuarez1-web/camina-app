@@ -125,6 +125,9 @@ export function Reglas() {
         <InView className="reparto">
           <b>Un local distinto cada vez.</b> Podés volver a canjear en el mismo local pasados 7 días: así descubrís lugares nuevos y todos los comercios tienen su oportunidad.
         </InView>
+        <InView className="reparto">
+          <b>2,5 puntos equivalen a Bs 1.</b> Por ejemplo, en Camina hoy: un corte de cabello en Coco Barber con 20% de descuento cuesta 25 puntos, y un panchito gratis en Fripap&apos;s cuesta 38 puntos.
+        </InView>
       </div>
     </section>
   );
