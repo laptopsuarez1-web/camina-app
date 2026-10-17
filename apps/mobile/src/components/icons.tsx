@@ -62,6 +62,9 @@ import { Wrench as Wrench_ } from 'phosphor-react-native/src/icons/Wrench';
 import { Storefront as Storefront_ } from 'phosphor-react-native/src/icons/Storefront';
 import { SquaresFour as SquaresFour_ } from 'phosphor-react-native/src/icons/SquaresFour';
 import { DeviceMobile as DeviceMobile_ } from 'phosphor-react-native/src/icons/DeviceMobile';
+import { EnvelopeSimple as EnvelopeSimple_ } from 'phosphor-react-native/src/icons/EnvelopeSimple';
+import { GoogleLogo as GoogleLogo_ } from 'phosphor-react-native/src/icons/GoogleLogo';
+import { AppleLogo as AppleLogo_ } from 'phosphor-react-native/src/icons/AppleLogo';
 
 export type IconProps = {
   size?: number;
@@ -146,6 +149,9 @@ export const Wrench = make(Wrench_);
 export const Storefront = make(Storefront_);
 export const SquaresFour = make(SquaresFour_);
 export const DeviceMobile = make(DeviceMobile_);
+export const Mail = make(EnvelopeSimple_);
+export const GoogleIcon = make(GoogleLogo_);
+export const AppleIcon = make(AppleLogo_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
 

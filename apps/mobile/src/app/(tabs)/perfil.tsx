@@ -20,6 +20,7 @@ import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -197,6 +198,8 @@ export default function PerfilScreen() {
           <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
         </Press>
       </Glass>
+
+      <AccountEmailCard />
 
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
