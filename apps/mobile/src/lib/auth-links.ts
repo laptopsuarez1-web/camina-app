@@ -10,7 +10,10 @@ let listening = false;
 async function tryExchange(url: string | null) {
   if (!url || !url.includes('code=')) return;
   try {
-    await supabase.auth.exchangeCodeForSession(url);
+    // exchangeCodeForSession pide el "code" suelto, no la URL entera.
+    const code = new URL(url).searchParams.get('code');
+    if (!code) return;
+    await supabase.auth.exchangeCodeForSession(code);
   } catch {
     // link vencido o ya usado — el usuario simplemente vuelve a intentar
   }
