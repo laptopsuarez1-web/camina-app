@@ -1,4 +1,5 @@
 import '@/theme/global.css';
+import '@/lib/web-alert';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
