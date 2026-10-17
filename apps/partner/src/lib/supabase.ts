@@ -80,6 +80,8 @@ export interface Redemption {
   created_at: string;
   confirmed_at: string | null;
   benefit_id?: string | null;
+  // El canje salió gratis por la tarjeta de fidelidad.
+  loyalty_free?: boolean;
   // Nombre del premio, cuando la consulta lo trae con benefit:benefits(name).
   benefit?: { name: string } | null;
 }

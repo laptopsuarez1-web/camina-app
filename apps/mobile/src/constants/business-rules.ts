@@ -4,8 +4,9 @@
 export const POINTS_PER_STEP_UNIT = 1000; // 1 Punto cada 1000 pasos
 export const DAILY_POINTS_CAP = 20; // tope de Puntos ganados por día
 export const POINTS_TTL_DAYS = 90; // vigencia de un lote de Puntos
-export const BUSINESS_REDEMPTION_COOLDOWN_DAYS = 14; // cooldown por comercio
+export const BUSINESS_REDEMPTION_COOLDOWN_DAYS = 7; // cooldown por comercio
 export const REDEMPTION_CODE_TTL_MINUTES = 15; // vigencia del código de canje
+export const LOYALTY_STAMPS_GOAL = 5; // sellos de la tarjeta de fidelidad de un local (el valor real lo manda la base)
 
 // Solo para mostrar Km/Calorías estimados en Actividad — no hay wearable que
 // mida esto de verdad, es una aproximación estándar de la industria fitness.
