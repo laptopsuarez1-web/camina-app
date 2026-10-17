@@ -67,6 +67,7 @@ function useMovimientos() {
         if (reason === 'referral') return 'Invitación';
         if (reason === 'redemption') return amount < 0 ? 'Canje' : 'Devolución';
         if (note?.startsWith('Reto:')) return 'Reto';
+        if (note?.startsWith('Historia en Instagram')) return 'Historia';
         return 'Desafío de grupo';
       };
       const ledgerRows = (ledger ?? []).map((l) => ({

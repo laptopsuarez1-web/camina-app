@@ -17,6 +17,8 @@ export function routeForNotification(type?: string): string {
       return '/(tabs)/grupos';
     case 'streak':
     case 'streak_reminder':
+    case 'story_approved':
+    case 'story_rejected':
       return '/(tabs)';
     default:
       return '/(tabs)/notificaciones';

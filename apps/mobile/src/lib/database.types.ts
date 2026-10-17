@@ -24,6 +24,21 @@ export interface Profile {
   created_at: string;
 }
 
+export type StoryShareStatus = 'pending' | 'approved' | 'rejected';
+
+export interface StoryShare {
+  id: string;
+  redemption_id: string;
+  user_id: string;
+  business_id: string;
+  photo_path: string;
+  instagram_handle: string;
+  status: StoryShareStatus;
+  created_at: string;
+  decided_at: string | null;
+  decided_by: string | null;
+}
+
 export interface Business {
   id: string;
   owner_user_id: string | null;
@@ -201,6 +216,7 @@ export type Database = {
       steps_daily: Table<StepsDaily, Partial<StepsDaily>>;
       points_ledger: Table<PointsLedgerEntry, Partial<PointsLedgerEntry>, Partial<PointsLedgerEntry>>;
       redemptions: Table<Redemption, Partial<Redemption>, Partial<Redemption>>;
+      story_shares: Table<StoryShare, Partial<StoryShare>, Partial<StoryShare>>;
       groups: Table<Group, Partial<Group>>;
       group_members: Table<GroupMember, Partial<GroupMember>, Partial<GroupMember>>;
       group_notes: Table<GroupNote, Partial<GroupNote>, Partial<GroupNote>>;
@@ -233,6 +249,7 @@ export type Database = {
         Returns: Redemption;
       };
       cancel_expired_redemption: { Args: { p_redemption_id: string }; Returns: Redemption };
+      submit_story_share: { Args: { p_redemption_id: string; p_photo_path: string; p_instagram: string }; Returns: StoryShare };
       capture_referral: { Args: { p_referrer_id: string }; Returns: void };
       group_member_count: { Args: { p_group_id: string }; Returns: number };
       group_members_steps: {
