@@ -10,6 +10,7 @@ import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
 import { avisarPorCorreo } from '@/lib/email';
 import { mensajeError } from '@/lib/errors';
+import PasswordInput from '@/components/PasswordInput';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -37,7 +38,6 @@ export default function RegistroPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [verClave, setVerClave] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -391,22 +391,14 @@ export default function RegistroPage() {
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="tucomercio@email.com" className={input} />
               </Field>
               <Field label="Contraseña">
-                <div className="relative">
-                  <input
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type={verClave ? 'text' : 'password'}
-                    placeholder="Mínimo 6 caracteres"
-                    className={`${input} pr-16`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setVerClave(!verClave)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-purple"
-                  >
-                    {verClave ? 'Ocultar' : 'Ver'}
-                  </button>
-                </div>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
+                  className={input}
+                  iconClassName="text-purple"
+                />
               </Field>
 
               {error && <p className="text-warn text-[12.5px]">{error}</p>}

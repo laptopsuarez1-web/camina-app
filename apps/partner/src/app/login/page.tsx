@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
+import PasswordInput from '@/components/PasswordInput';
 
 const SOPORTE_WHATSAPP = `https://wa.me/59162714286?text=${encodeURIComponent('Hola! Tengo una consulta sobre el panel de comercios de Camina.')}`;
 
@@ -61,11 +62,11 @@ export default function LoginPage() {
           required
           className="bg-white/95 text-text rounded-xl p-3.5"
         />
-        <input
+        <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          type="password"
           placeholder="Contraseña"
+          autoComplete="current-password"
           required
           className="bg-white/95 text-text rounded-xl p-3.5"
         />
