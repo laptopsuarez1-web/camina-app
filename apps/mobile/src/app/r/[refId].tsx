@@ -6,9 +6,11 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { PENDING_REFERRAL_KEY } from '@/constants/sharing';
 import { colors } from '@/theme/tokens';
 
-// Entrada de camina://r/<userId> — el link de "invitá amigos" de Perfil.
-// Solo aplica a instalaciones nuevas: si ya hay sesión no se puede sumar un
-// referido retroactivo, así que simplemente entra a la app.
+// Entrada de camina://r/<userId> — el link de "Invitar amigos".
+// Instalación nueva: se guarda el referido y, al registrarse, le llega una solicitud de amistad a quien invitó.
+// Ya con cuenta: no hay referido retroactivo, pero se abre la ficha de esa persona para agregarla como amiga.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function ReferralLinkScreen() {
   const { refId } = useLocalSearchParams<{ refId: string }>();
   const session = useAuthStore((s) => s.session);
@@ -24,6 +26,9 @@ export default function ReferralLinkScreen() {
       if (!session && refId) {
         await AsyncStorage.setItem(PENDING_REFERRAL_KEY, refId).catch(() => {});
         router.replace('/(auth)/welcome');
+      } else if (session && refId && UUID.test(refId) && refId !== session.user.id) {
+        // Ya tiene cuenta: abre la ficha de quien lo invitó para mandarle la solicitud de amistad.
+        router.replace({ pathname: '/(tabs)/amigos/[userId]', params: { userId: refId } });
       } else {
         router.replace(session ? '/(tabs)' : '/(auth)/welcome');
       }

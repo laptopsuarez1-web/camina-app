@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
-import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, Instagram, IconBubble } from '@/components/icons';
+import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, Instagram, UserPlus, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { DarkHeader } from '@/components/ui/DarkHeader';
@@ -30,6 +30,10 @@ function bubbleFor(type?: string) {
     case 'story_rejected':
     case 'story_review':
       return <IconBubble icon={Instagram} tone="purple" size={38} />;
+    case 'friend_request':
+    case 'friend_accepted':
+    case 'group_invite':
+      return <IconBubble icon={UserPlus} tone="purple" size={38} />;
     default:
       return <IconBubble icon={Bell} tone="aqua" size={38} />;
   }

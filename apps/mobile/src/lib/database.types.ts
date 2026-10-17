@@ -21,6 +21,7 @@ export interface Profile {
   birth_date?: string | null;
   nearby_alerts?: boolean;
   city?: string;
+  bio?: string | null;
   created_at: string;
 }
 

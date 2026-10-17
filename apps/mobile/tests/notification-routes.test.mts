@@ -20,6 +20,11 @@ test('canjes, retos y sorteos siguen en su pantalla; la racha lleva a Inicio', (
   for (const t of ['story_approved', 'story_rejected']) assert.equal(routeForNotification(t), '/(tabs)', t);
 });
 
+test('solicitudes y aceptaciones de amistad llevan a Amigos; la invitación a un grupo, a Grupos', () => {
+  for (const t of ['friend_request', 'friend_accepted']) assert.equal(routeForNotification(t), '/(tabs)/amigos', t);
+  assert.equal(routeForNotification('group_invite'), '/(tabs)/grupos');
+});
+
 test('un tipo desconocido o sin tipo abre la bandeja de Avisos (la fila queda solo para leer)', () => {
   assert.equal(routeForNotification('algo_nuevo'), '/(tabs)/notificaciones');
   assert.equal(routeForNotification(undefined), '/(tabs)/notificaciones');
