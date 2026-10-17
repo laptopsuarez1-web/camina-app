@@ -116,6 +116,7 @@ export interface Redemption {
   cost_points: number;
   points_charged?: boolean;
   loyalty_free?: boolean;
+  new_place_bonus?: number;
   code: string;
   code_expires_at: string;
   status: RedemptionStatus;

@@ -550,7 +550,7 @@ export function AppsSimilares() {
         </div>
         <p className="lead">
           Es un dato de otra app, sin metodología publicada, y no es una promesa de resultados de Camina. Lo que sí podemos decirte es qué cambia entre planes:
-          con Primer Paso tenés un solo premio 100% gratis; con Paso Firme y Paso Adelante podés combinar regalos y descuentos y dar cupones sin límite, para que
+          con Primer Paso tenés un premio 100% gratis y, con él, un descuento; con Paso Firme y Paso Adelante podés combinar regalos y descuentos y dar cupones sin límite, para que
           el premio sea la puerta y la compra extra quede de tu lado.
         </p>
       </div>
@@ -601,15 +601,28 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
           </div>
           <div className="fid-body">
             <h3>{local.nombre}</h3>
-            <small>Tarjeta de fidelidad</small>
-            <div className="fid-row">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <span key={n} className={n <= 3 ? 'on' : ''}>
-                  <Image src="/web/camina-foot.png" alt="" width={20} height={36} />
+            <div className="fid-real">
+              <div className="fid-head">
+                <b>Tu tarjeta de fidelidad</b>
+                <span className="fid-pill">3 de 5</span>
+              </div>
+              <div className="fid-row">
+                {[1, 2, 3, 4, 5].map((n) =>
+                  n <= 3 ? (
+                    <Image key={n} className="coin" src="/web/camina-coin.png" alt="" width={72} height={72} />
+                  ) : (
+                    <span key={n} className="empty">{n}</span>
+                  ),
+                )}
+                <span className="gift" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="#8F6307" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="8" width="18" height="4" rx="1" />
+                    <path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 1 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 1 1 0 5" />
+                  </svg>
                 </span>
-              ))}
+              </div>
+              <p>Te faltan 2 canjes para tu premio: Panchito gratis.</p>
             </div>
-            <p>3 de 5 canjes · te faltan 2 para el premio de fidelidad</p>
           </div>
         </InView>
       </div>

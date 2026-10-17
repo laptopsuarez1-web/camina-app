@@ -1,23 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Modal, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, Flame, IconBubble, ChevronUp, ChevronDown } from '@/components/icons';
+import { Activity, IconBubble, ChevronUp, ChevronDown } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreak } from '@/hooks/useStreak';
+import { StreakCard } from '@/components/activity/StreakCard';
+import { celebrate } from '@/store/useCelebrationStore';
 import { useCommunityAverage } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { dayLabel } from '@/lib/format';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
-import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL } from '@/constants/business-rules';
+import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL, STREAK_BONUS_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { GrowIn } from '@/components/ui/GrowIn';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
@@ -68,6 +70,21 @@ export default function ActividadScreen() {
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
   const { data: streak } = useStreak();
+  const queryClient = useQueryClient();
+  const claimTried = useRef(false);
+
+  // Cada 7 días seguidos, +5 Puntos: el servidor cobra los bloques completos una sola vez (idempotente).
+  // Si todavía no está la función en la base, el error se ignora y la tarjeta funciona igual.
+  useEffect(() => {
+    if (claimTried.current || streak === undefined || streak < STREAK_BONUS_DAYS) return;
+    claimTried.current = true;
+    supabase.rpc('claim_streak_bonus').then(({ data, error }) => {
+      const pts = Number(data ?? 0);
+      if (error || !pts) return;
+      celebrate({ kind: 'sheet', title: '¡7 días seguidos!', body: 'Cumpliste tu meta una semana entera.', points: pts, cta: 'Seguir caminando' });
+      for (const key of ['points-balance', 'points-ledger']) queryClient.invalidateQueries({ queryKey: [key] });
+    });
+  }, [streak, queryClient]);
   const { data: communityAverage } = useCommunityAverage();
   const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
@@ -328,15 +345,7 @@ export default function ActividadScreen() {
         </Glass>
       )}
 
-      {(streak ?? 0) > 0 && (
-        <Glass className="flex-row items-center gap-2.5 rounded-2xl px-3.5 py-3 mb-3">
-          <IconBubble icon={Flame} tone="orange" size={38} />
-          <View className="flex-1">
-            <Text className="text-[13.5px] font-bold" style={{ color: isDark ? '#FFB27A' : colors.warnDeep }}>¡Vas en racha!</Text>
-            <Text className="text-[12px]" style={{ color: isDark ? '#FFB27A' : colors.warnDeep }}>{streak} {streak === 1 ? 'día seguido' : 'días seguidos'}</Text>
-          </View>
-        </Glass>
-      )}
+      <StreakCard streak={streak ?? 0} isDark={isDark} />
 
       <Text accessibilityRole="header" className="mt-4 mb-3 text-text-light dark:text-text-dark" style={typo.section}>Hoy</Text>
       <Glass className="rounded-3xl p-4 mb-3">

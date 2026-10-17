@@ -53,7 +53,7 @@ begin
   select * into c from my_loyalty_cards(bz);
   perform tt.t_eq('5 canjes confirmados: 5 sellos', c.stamps, 5);
   perform tt.t_eq('la tarjeta está lista', c.ready, true);
-  perform tt.t_eq('se cobraron los 5 canjes (500 - 5 × 20)', user_points_balance(u), 400);
+  perform tt.t_eq('se cobraron los 5 canjes (500 - 5 × 20 + 5 de bono por local nuevo)', user_points_balance(u), 405);
 
   -- ===== Premio gratis: 0 Puntos, la tarjeta vuelve a cero =====
   update redemptions set created_at = created_at - interval '8 days' where user_id = u;
@@ -68,7 +68,7 @@ begin
   perform tt.t_eq('mientras está pendiente la tarjeta ya volvió a cero', (select stamps from my_loyalty_cards(bz)), 0);
   perform tt.t_as(owner); r2 := confirm_redemption_code(bz, red.code);
   perform tt.t_as(u);
-  perform tt.t_eq('confirmar el canje gratis no mueve Puntos', user_points_balance(u), 400);
+  perform tt.t_eq('confirmar el canje gratis no mueve Puntos', user_points_balance(u), 405);
   select count(*) into n from points_ledger where user_id = u and amount = 0;
   perform tt.t_eq('y no deja un asiento en 0', n, 0);
   perform tt.t_eq('el canje gratis no cuenta como sello', (select stamps from my_loyalty_cards(bz)), 0);

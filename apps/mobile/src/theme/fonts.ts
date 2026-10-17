@@ -14,7 +14,12 @@ export const FONT_FILES = {
   PlusJakartaSans_600SemiBold: require('@/../assets/fonts/PlusJakartaSans_600SemiBold.ttf'),
   PlusJakartaSans_700Bold: require('@/../assets/fonts/PlusJakartaSans_700Bold.ttf'),
   PlusJakartaSans_800ExtraBold: require('@/../assets/fonts/PlusJakartaSans_800ExtraBold.ttf'),
+  // Solo para el nombre CAMINA de Inicio (Montserrat Black, SIL OFL, ver assets/fonts/OFL-Montserrat.txt).
+  Montserrat_900Black: require('@/../assets/fonts/Montserrat_900Black.ttf'),
 } as const;
+
+// Familia del nombre CAMINA: en iPhone y Android es la del archivo; en web (previews) se registra aparte con peso 900.
+export const WORDMARK_FAMILY = Platform.OS === 'web' ? 'CaminaWordmark' : 'Montserrat_900Black';
 
 let ready = false;
 export function setBrandFontsReady(value: boolean) {
@@ -48,9 +53,10 @@ function useWebFonts(): [boolean, Error | null] {
   const [state, setState] = useState<[boolean, Error | null]>([false, null]);
   useEffect(() => {
     let alive = true;
-    Promise.all(
-      WEB_WEIGHTS.map(([weight, mod]) => new FontFace(WEB_FAMILY, `url(${Asset.fromModule(mod).uri})`, { weight: String(weight) }).load()),
-    )
+    Promise.all([
+      ...WEB_WEIGHTS.map(([weight, mod]) => new FontFace(WEB_FAMILY, `url(${Asset.fromModule(mod).uri})`, { weight: String(weight) }).load()),
+      new FontFace(WORDMARK_FAMILY, `url(${Asset.fromModule(FONT_FILES.Montserrat_900Black).uri})`, { weight: '900' }).load(),
+    ])
       .then((faces) => {
         faces.forEach((f) => document.fonts.add(f));
         if (alive) setState([true, null]);
