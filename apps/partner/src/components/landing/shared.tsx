@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { PLANS, WHATSAPP_NUMBER, whatsappLink, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
+import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
