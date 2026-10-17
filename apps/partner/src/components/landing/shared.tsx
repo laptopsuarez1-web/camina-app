@@ -125,9 +125,6 @@ export function Reglas() {
         <InView className="reparto">
           <b>Un local distinto cada vez.</b> Podés volver a canjear en el mismo local pasados 7 días: así descubrís lugares nuevos y todos los comercios tienen su oportunidad.
         </InView>
-        <InView className="reparto">
-          <b>2,5 puntos equivalen a Bs 1.</b> Por ejemplo, en Camina hoy: un corte de cabello en Coco Barber con 20% de descuento cuesta 25 puntos, y un panchito gratis en Fripap&apos;s cuesta 38 puntos.
-        </InView>
       </div>
     </section>
   );
@@ -323,6 +320,8 @@ const BENEFICIOS = [
   ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargás en tu ficha.'],
   ['Historias que te muestran', 'Quien canjea puede subir una historia de Instagram con el sticker de Camina y gana 5 Puntos extra cuando el equipo de Camina la aprueba.'],
   ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, tu pin en el mapa y, si querés, eventos y sorteos que promocionan tu local dentro de la app.'],
+  ['Tu ficha completa', 'Fotos de tu local, horarios, dirección y tus redes (Instagram, Facebook, TikTok y WhatsApp) en un solo lugar.'],
+  ['Tus días y horarios', 'Cada premio puede valer solo ciertos días y horas, por ejemplo de 16:00 a 23:00, o solo consumiendo en el local.'],
   ['Empezás gratis', 'El plan Primer Paso no tiene costo fijo. Cambiás de plan cuando quieras.'],
 ];
 
@@ -560,28 +559,86 @@ export function AppsSimilares() {
 }
 
 export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
+  const local = LOCALES.find((l) => l.id === 'fripaps')!;
   const texto =
     para === 'gente'
-      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjeá 5 veces en un mismo local, con 7 días de espera entre canjes, y ganás ese premio. Tus tarjetas aparecen cuando entrás a verlas, sin tapar el resto de la app.'
-      : 'Elegís el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local, con 7 días de espera entre canje y canje, y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjeá 5 veces en el mismo local y ganás ese premio. Tus tarjetas aparecen cuando entrás a verlas, sin tapar el resto de la app.'
+      : 'Elegís el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+  const pasos =
+    para === 'gente'
+      ? [
+          ['Canjeá en tu local favorito', 'Cada canje confirmado suma un sello a tu tarjeta de ese local.'],
+          ['Pasan 7 días entre canjes', 'Así probás otros lugares y todos los comercios tienen su oportunidad.'],
+          ['Al llegar a 5, ganás el premio', 'El premio de fidelidad lo elige cada local.'],
+        ]
+      : [
+          ['Activás la tarjeta', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
+          ['Elegís tu premio de fidelidad', 'El que quieras darle a tus clientes más constantes.'],
+          ['Tus clientes vuelven', 'Cada canje confirmado suma un sello; con 5 se llevan el premio.'],
+        ];
   return (
     <section className="lp-sec night" id="fidelidad">
       <div className="wrap fid">
         <div>
           <Kinetic text="Tarjeta de fidelidad." />
           <p className="lead">{texto}</p>
+          <ol className="fid-steps">
+            {pasos.map(([t, d], i) => (
+              <li key={t}>
+                <span>{i + 1}</span>
+                <div>
+                  <b>{t}</b>
+                  {d}
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
         <InView className="fid-card">
-          <b>Ejemplo ilustrativo</b>
-          <div className="fid-row">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={n <= 3 ? 'on' : ''}>
-                <Image src="/web/camina-foot.png" alt="" width={20} height={36} />
-              </span>
-            ))}
+          <div className="fid-cover">
+            <Image src={local.portada} alt={`Foto de ${local.nombre}`} fill sizes="420px" />
+            <Image className="fid-logo" src={local.logo} alt="" width={64} height={64} />
           </div>
-          <small>3 de 5 canjes · premio de fidelidad del local</small>
+          <div className="fid-body">
+            <h3>{local.nombre}</h3>
+            <small>Tarjeta de fidelidad</small>
+            <div className="fid-row">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={n <= 3 ? 'on' : ''}>
+                  <Image src="/web/camina-foot.png" alt="" width={20} height={36} />
+                </span>
+              ))}
+            </div>
+            <p>3 de 5 canjes · te faltan 2 para el premio de fidelidad</p>
+          </div>
         </InView>
+      </div>
+    </section>
+  );
+}
+
+const EXTRAS_GENTE = [
+  ['Invitá amigos y ganá 5 puntos', 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.'],
+  ['Historias que suman', 'Subí una historia de tu canje a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.'],
+  ['Favoritos y locales disponibles ahora', 'Guardá tus locales favoritos y filtrá los que tienen premios disponibles en este momento.'],
+  ['Tu racha y tu calendario', 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y tu meta diaria, que vos elegís.'],
+  ['Tu ubicación, solo cuando la necesitás', 'La usamos en el momento para mostrarte locales cerca y no la guardamos. Tampoco vendemos tus datos.'],
+  ['Premios reales, cerca tuyo', 'Cada canje lo confirma el local con un código de 6 números, en persona, en tu barrio.'],
+];
+
+export function MasParaGente() {
+  return (
+    <section className="lp-sec night" id="mas">
+      <div className="wrap">
+        <Kinetic text="Y hay más para vos." />
+        <ul className="ben">
+          {EXTRAS_GENTE.map(([t, d], i) => (
+            <InView as="li" key={t} delay={(i % 2) * 100}>
+              <b>{t}</b>
+              <span>{d}</span>
+            </InView>
+          ))}
+        </ul>
       </div>
     </section>
   );
