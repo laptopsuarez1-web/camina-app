@@ -14,6 +14,7 @@ import { dayLabel, localDay, plural } from '@/lib/format';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
+import { StoryRewardButton, type StoryState } from '@/components/story/StoryShare';
 
 // ---------------------------------------------------------------------------------------------
 // Piezas comunes
@@ -207,6 +208,7 @@ export type RedemptionRow = {
   status: 'pending' | 'confirmed' | 'expired' | 'cancelled';
   cost_points: number;
   created_at: string;
+  confirmed_at?: string | null;
   benefit: { name: string } | null;
   business: { name: string; logo_url: string | null; category: string } | null;
 };
@@ -221,7 +223,15 @@ function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; 
   return dark ? { bg: 'rgba(255,255,255,0.08)', fg: colors.dark.muted } : { bg: colors.light.purpleLight, fg: colors.light.muted };
 }
 
-export function MyRedemptionsSection({ redemptions, loading }: { redemptions: RedemptionRow[] | undefined; loading: boolean }) {
+export function MyRedemptionsSection({
+  redemptions, loading, storyFor, onStory,
+}: {
+  redemptions: RedemptionRow[] | undefined;
+  loading: boolean;
+  // Estado de la historia de Instagram de cada canje (null = no corresponde: no confirmado o muy viejo).
+  storyFor?: (r: RedemptionRow) => StoryState | null;
+  onStory?: (r: RedemptionRow) => void;
+}) {
   const dark = useColorScheme().colorScheme === 'dark';
   const list = (redemptions ?? []).slice(0, 3);
   if (loading && !redemptions) {
@@ -259,26 +269,33 @@ export function MyRedemptionsSection({ redemptions, loading }: { redemptions: Re
             const c = statusColors(r.status, dark);
             // Día LOCAL del canje (no el de UTC); se recortan los decimales extra por si Hermes no los acepta.
             const when = dayLabel(localDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
+            const story = storyFor?.(r) ?? null;
             return (
-              <Press
-                key={r.id}
-                accessibilityRole="button"
-                accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
-                onPress={() => router.push('/(tabs)/canjes')}
-                className={`flex-row items-center p-3.5 ${i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}`}
-                style={{ gap: 12 }}
-              >
-                <BusinessAvatar logoUrl={r.business?.logo_url} category={r.business?.category} size={42} />
-                <View className="flex-1 min-w-0">
-                  <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{r.benefit?.name ?? 'Premio'}</Text>
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
-                    {r.business?.name ?? 'Comercio'} · {when}
-                  </Text>
-                </View>
-                <View className="rounded-full" style={{ backgroundColor: c.bg, paddingHorizontal: 10, paddingVertical: 4 }}>
-                  <Text style={{ color: c.fg, fontSize: 12, fontWeight: '700' }}>{STATUS_LABEL[r.status]}</Text>
-                </View>
-              </Press>
+              <View key={r.id} className={i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}>
+                <Press
+                  accessibilityRole="button"
+                  accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
+                  onPress={() => router.push('/(tabs)/canjes')}
+                  className="flex-row items-center p-3.5"
+                  style={{ gap: 12 }}
+                >
+                  <BusinessAvatar logoUrl={r.business?.logo_url} category={r.business?.category} size={42} />
+                  <View className="flex-1 min-w-0">
+                    <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{r.benefit?.name ?? 'Premio'}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+                      {r.business?.name ?? 'Comercio'} · {when}
+                    </Text>
+                  </View>
+                  <View className="rounded-full" style={{ backgroundColor: c.bg, paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ color: c.fg, fontSize: 12, fontWeight: '700' }}>{STATUS_LABEL[r.status]}</Text>
+                  </View>
+                </Press>
+                {story ? (
+                  <View style={{ paddingHorizontal: 14, paddingBottom: 14, marginTop: -4 }}>
+                    <StoryRewardButton state={story} onPress={() => onStory?.(r)} />
+                  </View>
+                ) : null}
+              </View>
             );
           })}
         </Glass>
