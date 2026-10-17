@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SUPPORT_EMAIL } from '@/constants/contact';
-import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
+import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
 export const LEGAL_UPDATED = 'octubre de 2026';
@@ -58,7 +58,7 @@ Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar p
   },
   {
     title: 'Canjes',
-    body: `El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Podés canjear una vez por comercio cada ${BUSINESS_REDEMPTION_COOLDOWN_DAYS} días, y cada beneficio puede tener cupos diarios y horarios. Si el comercio confirmó el canje y no te entregó el premio, escribinos a ${SUPPORT_EMAIL} y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor.`,
+    body: `El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Podés canjear una vez por comercio cada ${BUSINESS_REDEMPTION_COOLDOWN_DAYS} días, y cada beneficio puede tener cupos diarios y horarios. Los comercios con plan de pago pueden tener una tarjeta de fidelidad: cada canje confirmado en ese comercio suma un sello y, al completar los ${LOYALTY_STAMPS_GOAL} sellos, el siguiente canje del premio de fidelidad que el comercio eligió es gratis (no se descuentan Puntos) y la tarjeta vuelve a empezar. Si el comercio confirmó el canje y no te entregó el premio, escribinos a ${SUPPORT_EMAIL} y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor.`,
   },
   {
     title: 'Puntos y cambios de las reglas',

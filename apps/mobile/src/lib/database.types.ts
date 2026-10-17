@@ -92,6 +92,22 @@ export interface PointsLedgerEntry {
   expires_at: string | null;
 }
 
+// Tarjeta de fidelidad de una persona en un local (RPC my_loyalty_cards).
+export interface LoyaltyCard {
+  business_id: string;
+  business_name: string;
+  logo_url: string | null;
+  benefit_id: string;
+  benefit_name: string;
+  benefit_cost: number;
+  stamps: number;
+  goal: number;
+  ready: boolean;
+  last_redeemed_at: string | null;
+  next_allowed_at: string | null;
+  history: string[];
+}
+
 export interface Redemption {
   id: string;
   user_id: string;
@@ -99,6 +115,7 @@ export interface Redemption {
   business_id: string;
   cost_points: number;
   points_charged?: boolean;
+  loyalty_free?: boolean;
   code: string;
   code_expires_at: string;
   status: RedemptionStatus;
@@ -207,6 +224,7 @@ export type Database = {
         Returns: number;
       };
       redeem_benefit: { Args: { p_benefit_id: string }; Returns: Redemption };
+      my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };
       confirm_redemption_code: {
         Args: { p_business_id: string; p_code: string };
