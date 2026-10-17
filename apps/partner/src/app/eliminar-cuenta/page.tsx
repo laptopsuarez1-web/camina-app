@@ -31,7 +31,7 @@ export default function EliminarCuentaPage() {
           <a className="text-aqua font-semibold" href={`mailto:${SUPPORT_EMAIL}?subject=Eliminar%20mi%20cuenta%20de%20Camina`}>
             {SUPPORT_EMAIL}
           </a>{' '}
-          desde el correo con el que te registraste, con el asunto &quot;Eliminar mi cuenta&quot;. Borramos tu cuenta y te avisamos por el mismo correo.
+          desde el correo con el que te registraste, con el asunto &quot;Eliminar mi cuenta&quot;. Borramos tu cuenta en un plazo máximo de 7 días y te avisamos por el mismo correo.
         </p>
       </section>
 
@@ -39,7 +39,8 @@ export default function EliminarCuentaPage() {
         <h2 className="font-bold text-[15px] mb-2">Qué se borra</h2>
         <p className="text-[13.5px] leading-6 text-muted">
           Tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y los datos de notificaciones de tu teléfono. Se conservan, sin tu foto,
-          los resultados semanales de grupo ya cerrados. Más detalle en{' '}
+          los resultados semanales de grupo ya cerrados. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas
+          en un máximo de 30 días. Más detalle en{' '}
           <Link href="/terminos" className="text-aqua font-semibold">
             Términos y Privacidad
           </Link>
