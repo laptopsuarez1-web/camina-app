@@ -25,7 +25,7 @@ export function LegalContent() {
           {"Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tenés 13 años o más; nadie más la ve), foto de perfil (opcional), ciudad y barrio (opcionales), el token de notificaciones de tu teléfono y los pasos diarios que registrás desde Apple Salud o Google Health Connect: solo el total diario, no tu ubicación GPS histórica ni tu ruta. Los pasos de un día se guardan en nuestros servidores solo si abrís la app ese día; los de días en que no la abriste los lee tu teléfono desde Salud para mostrártelos en Actividad, pero no los guardamos."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Ubicación: cuando la autorizás, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejás activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; podés apagarlo en Perfil y se borra."}
+          {"Ubicación: cuando la autorizás, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejás activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; para dejar de recibirlos, apagá las notificaciones de Camina desde la configuración del teléfono. Esa zona se borra cuando eliminás tu cuenta."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
           {"Tus pasos y tu nombre solo son visibles para otros usuarios si activás \"Aparecer en el ranking\" o dentro de un grupo al que te unís vos mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y un servicio de reporte de errores."}
@@ -37,7 +37,7 @@ export function LegalContent() {
           {"Los mensajes de grupo se borran automáticamente cada semana; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Podés reportar y bloquear a otras personas dentro de la app."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no podés entrar a la app, escribinos a caminaappbo@gmail.com y la eliminamos."}
+          {"Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no podés entrar a la app, escribinos a caminaappbo@gmail.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}
         </p>
       </section>
 
