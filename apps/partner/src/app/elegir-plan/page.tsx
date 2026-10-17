@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { supabase, type BusinessPlan } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
-import { PLANS, PAYMENT_QR, WHATSAPP_NUMBER } from '@/lib/plans';
+import { PLANS, PAYMENT_QR, LANZAMIENTO, LANZAMIENTO_NOTA, fundadorLink } from '@/lib/plans';
 import { PaymentModal } from '@/components/PaymentModal';
 
 // Pantalla que ve un comercio nuevo antes de entrar al panel: elige empezar gratis o un plan de pago.
@@ -88,6 +88,11 @@ export default function ElegirPlanPage() {
                 )}
                 <p className="text-[17px] font-bold mb-0.5">{p.name}</p>
                 <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#7FEDC4' : '#291C47' }}>{p.price}</p>
+                {!free && (
+                  <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : '#8B6A12' }}>
+                    {LANZAMIENTO}. {LANZAMIENTO_NOTA}
+                  </p>
+                )}
                 <p className="text-[12.5px] mb-4 leading-relaxed" style={{ color: p.featured ? '#C4B8E8' : '#7C6A9C' }}>{p.blurb}</p>
                 <div className="pt-3.5 mb-4.5 flex-1" style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : '#E1D2F5'}` }}>
                   {p.features.map((f) => (
@@ -113,21 +118,33 @@ export default function ElegirPlanPage() {
           })}
         </div>
 
+        <div
+          className="rounded-[18px] p-5 mb-5 flex flex-col md:flex-row md:items-center gap-3"
+          style={{ background: '#fff', border: '1.5px dashed #E0B43A' }}
+        >
+          <div className="flex-1">
+            <p className="text-[15px] font-bold" style={{ color: '#291C47' }}>Cupo fundador: 3 meses gratis de Paso Firme</p>
+            <p className="text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
+              Para los primeros 20 comercios. Escribinos por WhatsApp y te habilitamos en la app y en el panel. Mientras tanto ya podés crear tu perfil.
+            </p>
+          </div>
+          <a
+            href={fundadorLink(business.name)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => finish()}
+            className="text-center py-2.5 px-5 rounded-[10px] font-semibold text-[13px]"
+            style={{ background: '#E0B43A', color: '#241748' }}
+          >
+            Pedir cupo fundador por WhatsApp
+          </a>
+        </div>
+
         {error && <p className="text-[13px] mb-3" style={{ color: '#c0392b' }}>{error}</p>}
 
         <p className="text-muted text-[12.5px] leading-relaxed max-w-[640px]">
           Los planes de pago se activan cuando confirmamos tu transferencia (te pedimos el comprobante por WhatsApp). Mientras tanto
-          podés usar el panel. ¿Sos de los primeros 20 comercios? Tenés 3 meses gratis de Paso Firme:{' '}
-          <a
-            className="underline font-semibold"
-            style={{ color: '#1f7d68' }}
-            target="_blank"
-            rel="noopener noreferrer"
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola! Soy de los primeros comercios de Camina y quiero mis 3 meses gratis de Paso Firme.')}`}
-          >
-            pedilos por WhatsApp
-          </a>
-          .
+          podés usar el panel.
         </p>
       </div>
     </div>

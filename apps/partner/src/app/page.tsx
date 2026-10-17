@@ -1,25 +1,17 @@
-'use client';
+import type { Metadata } from 'next';
+import GentePage from '@/components/landing/GentePage';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useBusinessAuth } from '@/hooks/useBusinessAuth';
+export const metadata: Metadata = {
+  title: 'Camina — Caminá, sumá puntos y canjealos en tu barrio',
+  description: 'Camina cuenta tus pasos y los convierte en puntos para canjear en comercios locales de Bolivia.',
+  openGraph: {
+    title: 'Camina — Caminá, sumá puntos y canjealos en tu barrio',
+    description: 'La app que premia a las personas por caminar.',
+    locale: 'es_BO',
+    type: 'website',
+  },
+};
 
 export default function RootPage() {
-  const { session, business, isAdmin, loading } = useBusinessAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return;
-    if (!session) {
-      router.replace('/login');
-    } else if (business) {
-      router.replace(business.account_kind === 'events_only' ? '/eventos' : '/inicio');
-    } else if (isAdmin) {
-      router.replace('/admin');
-    } else {
-      router.replace('/inicio');
-    }
-  }, [loading, session, business, isAdmin, router]);
-
-  return null;
+  return <GentePage />;
 }

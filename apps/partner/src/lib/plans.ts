@@ -12,6 +12,15 @@ export function whatsappLink(planName: string, amount: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
+export const LANZAMIENTO = 'Precio de lanzamiento';
+export const LANZAMIENTO_NOTA = 'Después costará más.';
+
+export function fundadorLink(nombreComercio?: string) {
+  const quien = nombreComercio ? `Soy ${nombreComercio} y quiero` : 'Quiero';
+  const text = `Hola! ${quien} pedir mi cupo fundador de Camina (3 meses gratis de Paso Firme). Ya creé mi perfil, ¿me habilitan?`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
+
 export const PLANS: {
   id: BusinessPlan;
   name: string;
@@ -57,6 +66,7 @@ export const PLANS: {
       'Primero en tu categoría',
       'Notificaciones push a usuarios cerca',
       'Difusión de tu local en las redes de Camina',
+      'Elegible para videos publicitarios con una agencia de marketing para promocionar tu local y Camina',
     ],
   },
 ];
