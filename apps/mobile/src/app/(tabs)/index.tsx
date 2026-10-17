@@ -33,6 +33,8 @@ import { Flame, ChevronRight, Users, Trophy, Target, Activity, Check, IconBubble
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
+import { CoinFlight, coinFlightPath, type CoinFlightPath } from '@/components/home/CoinFlight';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y "Tope de hoy" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -141,6 +143,36 @@ export default function HomeScreen() {
   // Celebraciones suaves (solo cuando ocurren estando en pantalla, nunca al abrir la app):
   // - cada Punto nuevo: el chip "+N Puntos" late;
   // - al llegar a la meta del día: dos ondas verdes salen del aro y aparece "Meta cumplida".
+  // Moneda que viaja: cada Punto nuevo sale del chip "+N Puntos" del aro, cruza la pantalla y entra en la moneda del saldo de arriba.
+  // Al llegar, el saldo late y sale un aro. Con "reducir movimiento" no vuela (queda el latido del chip).
+  const rootRef = useRef<View>(null);
+  const chipRef = useRef<View>(null);
+  const pillRef = useRef<View>(null);
+  const reduceMotion = useRef(false);
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((v) => { reduceMotion.current = v; }).catch(() => {});
+  }, []);
+  const [pillBump] = useState(() => new Animated.Value(0));
+  const [flight, setFlight] = useState<CoinFlightPath | null>(null);
+  const flying = useRef(false);
+  function launchCoin() {
+    if (reduceMotion.current || flying.current) return;
+    const root = rootRef.current, chip = chipRef.current, pill = pillRef.current;
+    if (!root || !chip || !pill) return;
+    flying.current = true;
+    root.measureInWindow((ox, oy) => {
+      chip.measureInWindow((cx, cy, cw, ch) => {
+        pill.measureInWindow((px, py, pw, ph) => {
+          if (!pw || !cw) { flying.current = false; return; }
+          // Desde el centro del chip hasta el centro de la moneda del saldo (pl-1.5 = 6 px y moneda de 18 px).
+          const x0 = cx + cw / 2 - ox, y0 = cy + ch / 2 - oy;
+          const x1 = px + 6 + 9 - ox, y1 = py + ph / 2 - oy;
+          setFlight(coinFlightPath(x0, y0, x1, y1));
+        });
+      });
+    });
+  }
+  const bumpScale = pillBump.interpolate({ inputRange: [0, 0.22, 1], outputRange: [1, 1.14, 1] });
   const chipPop = useRef(new Animated.Value(0)).current;
   const wave1 = useRef(new Animated.Value(0)).current;
   const wave2 = useRef(new Animated.Value(0)).current;
@@ -154,6 +186,7 @@ export default function HomeScreen() {
     if (before === null || steps <= before) return;
     if (Math.floor(steps / POINTS_PER_STEP_UNIT) > Math.floor(before / POINTS_PER_STEP_UNIT) && pointsToday <= DAILY_POINTS_CAP) {
       buzz.light();
+      if (Math.floor(before / POINTS_PER_STEP_UNIT) < DAILY_POINTS_CAP) launchCoin();
       chipPop.setValue(0);
       Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     }
@@ -179,6 +212,7 @@ export default function HomeScreen() {
     transform: [{ scale: w.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.22] }) }],
   });
   const chipScale = chipPop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 1.22, 1] });
+
   const stepsText = steps.toLocaleString('es-BO');
   const stepsFontSize = stepsText.length <= 5 ? 46 : 36;
   // Los grupos de la persona: se puede estar en más de uno.
@@ -219,6 +253,7 @@ export default function HomeScreen() {
   }
 
   return (
+    <View ref={rootRef} className="flex-1">
     <ScrollView
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
@@ -233,7 +268,7 @@ export default function HomeScreen() {
         <View style={{ paddingTop: Platform.OS === 'android' ? topInset + 28 : Math.max(topInset, 24) + 14 }}>
         <View className="px-5" style={{ position: 'relative' }}>
           <View className="flex-row justify-between items-center" style={{ height: 32 }}>
-            <Animated.View style={{ transform: [{ scale: pointsPulse.scale }] }}>
+            <Animated.View ref={pillRef} style={{ transform: [{ scale: pointsPulse.scale }, { scale: bumpScale }] }}>
             <Press
               accessibilityRole="button"
               accessibilityLabel={balanceError && balance === undefined ? 'Puntos, ver detalle' : `${balance ?? 0} Puntos, ver detalle`}
@@ -245,21 +280,19 @@ export default function HomeScreen() {
               <PointsCounter shown={balanceError && balance === undefined ? null : pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
             </Press>
             </Animated.View>
-            {/* Nombre centrado entre los Puntos y la campana: letras anchas y brillo suave, sin contorno. */}
+            {/* Nombre centrado entre los Puntos y la campana: letras gruesas (Montserrat Black), sin brillo. */}
             <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
               <Text
                 allowFontScaling={false}
                 style={{
                   color: colors.mint,
-                  lineHeight: 20,
+                  lineHeight: 28,
                   includeFontPadding: false,
-                  fontSize: 17,
-                  fontWeight: '900',
-                  letterSpacing: 4.5,
-                  paddingLeft: 4.5,
-                  textShadowColor: 'rgba(127,237,196,0.55)',
-                  textShadowOffset: { width: 0, height: 0 },
-                  textShadowRadius: 14,
+                  fontSize: 23,
+                  // Montserrat Black: grueso y pegado para que se lea de un vistazo; sin brillo ni letras muy separadas.
+                  ...(brandFontsReady() ? { fontFamily: WORDMARK_FAMILY, fontWeight: 'normal' as const } : { fontWeight: '900' as const }),
+                  letterSpacing: 1,
+                  paddingLeft: 1,
                 }}
               >
                 CAMINA
@@ -326,6 +359,7 @@ export default function HomeScreen() {
               </Text>
               <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <Animated.View
+                ref={chipRef}
                 style={{
                   flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8, paddingLeft: 6, paddingRight: 12, paddingVertical: 4,
                   borderRadius: 999, backgroundColor: 'rgba(44,255,174,0.15)', transform: [{ scale: chipScale }],
@@ -558,5 +592,7 @@ export default function HomeScreen() {
 
       </View>
     </ScrollView>
+    {flight && <CoinFlight path={flight} bump={pillBump} onDone={() => { flying.current = false; setFlight(null); }} />}
+    </View>
   );
 }
