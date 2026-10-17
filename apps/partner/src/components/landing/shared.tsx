@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { PLANS, WHATSAPP_NUMBER, whatsappLink } from '@/lib/plans';
+import { PLANS, WHATSAPP_NUMBER, whatsappLink, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
@@ -17,6 +17,9 @@ export const CAP = {
   coco: '/web/cap/ficha-coco.jpg',
   grupos: '/web/cap/grupos.jpg',
   actividad: '/web/cap/actividad.jpg',
+  gruposActivo: '/web/cap/grupos-activo.jpg',
+  eventos: '/web/cap/eventos.jpg',
+  retos: '/web/cap/retos.jpg',
 };
 
 export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
@@ -276,8 +279,8 @@ export function DescargaGente() {
 
 export function PasosComercio() {
   const pasos = [
-    ['Te registrás en el panel', 'Es gratis. Cargás tu local, tu logo, tus fotos y tu primer premio.'],
-    ['Elegís tu plan o hablás con nosotros', 'Al terminar de registrarte elegís cómo empezar. Si tenés dudas, escribinos por WhatsApp antes de decidir.'],
+    ['Creás tu perfil en el panel', 'Es gratis con cualquier plan. Cargás tu local, tu logo, tus fotos y tu primer premio.'],
+    ['Elegís tu plan al terminar', 'Empezás gratis, o elegís Paso Firme o Paso Adelante y pagás con el QR. Si sos de los primeros 20, pedís tu cupo fundador por WhatsApp y te habilitamos.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
     ['Aparecés en el mapa', 'La gente de tu zona te encuentra y canjea. Vos confirmás cada código desde el celular.'],
   ];
@@ -356,26 +359,25 @@ export function Planes() {
     <section className="lp-sec" id="planes">
       <div className="wrap">
         <Kinetic text="Los planes." />
-        <p className="lead">Te registrás gratis y elegís tu plan al terminar. Para pasar a un plan pago, o si tenés dudas, hablamos por WhatsApp.</p>
+        <p className="lead">Te registrás y creás tu perfil con cualquier plan. Al terminar elegís el plan (con QR si es pago). ¿Dudas? Escribinos por WhatsApp.</p>
         <div className="planes">
           {PLANS.map((p, i) => (
             <InView as="article" key={p.id} className={`plan${p.featured ? ' feat' : ''}`} delay={i * 120}>
               <h3>{p.name}</h3>
               <p className="price">{p.price}</p>
+              {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}. {LANZAMIENTO_NOTA}</p>}
               <p className="blurb">{p.blurb}</p>
               <ul>{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
-              {p.id === 'primer_paso' ? (
-                <Link className="lp-btn dark plan-cta" href="/registro">Registrarme gratis</Link>
-              ) : (
-                <a className="lp-btn mint plan-cta" href={whatsappLink(p.name, p.price)}>Hablar por WhatsApp</a>
-              )}
+              <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href="/registro">
+                {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme y elegir este plan'}
+              </Link>
             </InView>
           ))}
         </div>
         <div className="fund">
-          <b>Programa fundador: 3 meses gratis de Paso Firme.</b>
-          <span>Para los primeros 20 comercios que se suman. Pedilo por WhatsApp.</span>
-          <a className="lp-btn dark" href={WA('Hola! Quiero pedir mi cupo del programa fundador de Camina.')}>Pedir mi cupo</a>
+          <b>Cupo fundador: 3 meses gratis de Paso Firme.</b>
+          <span>Para los primeros 20 comercios. Creás tu perfil en el panel con cualquier plan, nos escribís por WhatsApp y te habilitamos en la app y en el panel.</span>
+          <a className="lp-btn dark" href={WA('Hola! Quiero pedir mi cupo fundador de Camina.')}>Pedir mi cupo fundador</a>
         </div>
       </div>
     </section>
@@ -406,6 +408,90 @@ export function SoyComercio() {
         <div className="lp-cta">
           <Link className="lp-btn dark" href="/comercios">Ver cómo sumarme</Link>
           <Link className="lp-btn line" href="/registro">Registrar mi comercio</Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+type Bloque = { t: string; d: string; img: string; alt: string; tag?: string };
+
+function Bloques({ items }: { items: Bloque[] }) {
+  return (
+    <div className="goals">
+      {items.map((b, i) => (
+        <InView as="article" className="goal" key={b.t}>
+          <div className="goal-txt">
+            <h3>{b.t}</h3>
+            <p>{b.d}</p>
+            {b.tag && <span className="ej">{b.tag}</span>}
+          </div>
+          <Parallax speed={i % 2 ? 0.05 : 0.09} className="goal-ph">
+            <div className="phone"><Image src={b.img} alt={b.alt} width={780} height={1688} sizes="270px" /></div>
+          </Parallax>
+        </InView>
+      ))}
+    </div>
+  );
+}
+
+export function EquipoRetos() {
+  return (
+    <section className="lp-sec night" id="equipo">
+      <div className="wrap">
+        <Kinetic text="Caminá en equipo, sumá en grande." />
+        <Bloques
+          items={[
+            {
+              t: 'Grupos',
+              d: 'Creá un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
+              img: CAP.gruposActivo,
+              alt: 'Pantalla de un grupo con ranking de pasos',
+              tag: 'Ejemplo ilustrativo con datos de prueba',
+            },
+            {
+              t: 'Retos Camina',
+              d: 'Retos que te empujan a moverte más y suman puntos extra: invitar amigos, completar metas de pasos y más.',
+              img: CAP.retos,
+              alt: 'Pantalla de los retos de Camina',
+            },
+            {
+              t: 'Eventos y sorteos',
+              d: 'Locales y Camina publican eventos y sorteos dentro de la app. Caminá, cumplí el requisito y participá.',
+              img: CAP.eventos,
+              alt: 'Pantalla de eventos y sorteos',
+              tag: 'Ejemplo ilustrativo con datos de prueba',
+            },
+          ]}
+        />
+      </div>
+    </section>
+  );
+}
+
+export function PublicidadComercio() {
+  return (
+    <section className="lp-sec night" id="publicidad">
+      <div className="wrap">
+        <Kinetic text="Promocioná tu local en eventos y sorteos." />
+        <p className="lead">
+          Además de los premios por canje, podés publicar un evento o un sorteo dentro de la app. Cada publicación dura hasta 2 semanas y cuesta Bs 200
+          (Bs 400 si solo querés publicidad, sin canjes). Lo revisamos y se publica cuando confirmamos el pago por WhatsApp.
+        </p>
+        <Bloques
+          items={[
+            {
+              t: 'Tu local, frente a quienes caminan',
+              d: 'Tu evento o sorteo aparece en la app de Camina. Podés pedir un requisito de pasos para participar y así atraer gente que ya sale a caminar.',
+              img: CAP.eventos,
+              alt: 'Pantalla de eventos y sorteos de la app',
+              tag: 'Ejemplo ilustrativo con datos de prueba',
+            },
+          ]}
+        />
+        <div className="lp-cta">
+          <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
+          <a className="lp-btn ghost" href={WA('Hola! Quiero promocionar mi local con un evento o sorteo en Camina.')}>Consultar por WhatsApp</a>
         </div>
       </div>
     </section>

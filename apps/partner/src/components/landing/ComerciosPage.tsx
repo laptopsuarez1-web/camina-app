@@ -3,7 +3,7 @@ import Link from 'next/link';
 import './landing.css';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, Planes, CierreComercio, CAP, WA_COMERCIO } from './shared';
+import { Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, Planes, CierreComercio, CAP, WA_COMERCIO } from './shared';
 
 export default function ComerciosPage() {
   return (
@@ -37,6 +37,7 @@ export default function ComerciosPage() {
         <BeneficiosComercio />
         <PasosComercio />
         <PanelComercio />
+        <PublicidadComercio />
         <Planes />
         <CierreComercio />
       </main>

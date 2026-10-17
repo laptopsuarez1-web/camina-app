@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { type BusinessPlan } from '@/lib/supabase';
-import { PLANS, PAYMENT_QR, WHATSAPP_NUMBER } from '@/lib/plans';
+import { PLANS, PAYMENT_QR, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { PaymentModal } from '@/components/PaymentModal';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -94,6 +94,11 @@ export default function PlanPage() {
               <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#7FEDC4' : '#291C47' }}>
                 {p.price}
               </p>
+              {p.id !== 'primer_paso' && (
+                <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : '#8B6A12' }}>
+                  {LANZAMIENTO}. {LANZAMIENTO_NOTA}
+                </p>
+              )}
               <p
                 className="text-[12.5px] mb-4 leading-relaxed"
                 style={{ color: p.featured ? '#C4B8E8' : '#7C6A9C' }}
