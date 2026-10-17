@@ -19,6 +19,8 @@ export const CAP = {
   actividad: '/web/cap/actividad.jpg',
   gruposActivo: '/web/cap/grupos-activo.jpg',
   eventos: '/web/cap/eventos.jpg',
+  canjeResena: '/web/cap/canje-resena.jpg',
+  historia: '/web/cap/historia.jpg',
   retos: '/web/cap/retos.jpg',
 };
 
@@ -120,6 +122,9 @@ export function Reglas() {
             <span>minutos dura tu código</span>
           </InView>
         </div>
+        <InView className="reparto">
+          <b>Un local distinto cada vez.</b> Podés volver a canjear en el mismo local pasados 7 días: así descubrís lugares nuevos y todos los comercios tienen su oportunidad.
+        </InView>
       </div>
     </section>
   );
@@ -207,7 +212,7 @@ export function Objetivos() {
     },
     {
       t: 'Moverte por tu barrio',
-      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Salís a caminar y volvés con un premio. Y en los locales con tarjeta de fidelidad, cada 5 canjes el siguiente premio sale gratis.',
+      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Salís a caminar y volvés con un premio.',
       img: CAP.canjes,
       alt: 'Pantalla de canjes con comercios',
     },
@@ -311,8 +316,10 @@ const BENEFICIOS = [
   ['Vos elegís el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
   ['Vos ponés el cupo', 'Definís cuántos cupones das por día, o ilimitados.'],
   ['Se valida en segundos', 'El cliente muestra un código de 6 números y lo confirmás desde el celular.'],
-  ['Una vez cada 7 días', 'Cada persona canjea en tu local como máximo cada 7 días, así el beneficio alcanza para más gente.'],
-  ['Tarjeta de fidelidad', 'En Paso Firme y Paso Adelante, tus clientes juntan 5 canjes en tu local y el siguiente premio que elijas sale gratis. Hace que vuelvan.'],
+  ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 7 días. Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
+  ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargás en tu ficha.'],
+  ['Historias que te muestran', 'Quien canjea puede subir una historia de Instagram con el sticker de Camina y gana 5 Puntos extra cuando el equipo de Camina la aprueba.'],
+  ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, tu pin en el mapa y, si querés, eventos y sorteos que promocionan tu local dentro de la app.'],
   ['Empezás gratis', 'El plan Primer Paso no tiene costo fijo. Cambiás de plan cuando quieras.'],
 ];
 
@@ -417,9 +424,9 @@ export function SoyComercio() {
 
 type Bloque = { t: string; d: string; img: string; alt: string; tag?: string };
 
-function Bloques({ items }: { items: Bloque[] }) {
+function Bloques({ items, dark = true }: { items: Bloque[]; dark?: boolean }) {
   return (
-    <div className="goals">
+    <div className={`goals${dark ? '' : ' light'}`}>
       {items.map((b, i) => (
         <InView as="article" className="goal" key={b.t}>
           <div className="goal-txt">
@@ -494,6 +501,84 @@ export function PublicidadComercio() {
           <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
           <a className="lp-btn ghost" href={WA('Hola! Quiero promocionar mi local con un evento o sorteo en Camina.')}>Consultar por WhatsApp</a>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function CanjeResena() {
+  return (
+    <section className="lp-sec" id="resenas">
+      <div className="wrap">
+        <Kinetic text="Después del canje, tu local sigue sumando." />
+        <Bloques
+          dark={false}
+          items={[
+            {
+              t: 'Reseñas en Google Maps',
+              d: 'Cuando confirmás un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargás vos en tu perfil.',
+              img: CAP.canjeResena,
+              alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps',
+            },
+            {
+              t: 'Historias en Instagram',
+              d: 'La persona arma una historia con el sticker de Camina y la sube a Instagram. Si el equipo de Camina la aprueba, gana 5 Puntos. Vos te mostrás en las redes de quienes te visitan.',
+              img: CAP.historia,
+              alt: 'Pantalla de la app para subir una historia después de un canje',
+            },
+          ]}
+        />
+      </div>
+    </section>
+  );
+}
+
+export function AppsSimilares() {
+  return (
+    <section className="lp-sec alt" id="apps-similares">
+      <div className="wrap">
+        <Kinetic text="Qué pasa en apps similares." />
+        <div className="stat-big">
+          <b>5 de cada 10</b>
+          <span>
+            canjes traen una compra extra en el local, según{' '}
+            <a href="https://www.pasito.app/comercios" target="_blank" rel="noopener noreferrer">Pasito</a>, una app argentina que también cambia pasos por premios
+            (<a href="https://www.lanacion.com.ar/tecnologia/la-aplicacion-argentina-pasito-supero-el-millon-de-usuarios-en-cuatro-meses-nid16102026/" target="_blank" rel="noopener noreferrer">La Nación, 16/10/2026</a>).
+          </span>
+        </div>
+        <p className="lead">
+          Es un dato de otra app, sin metodología publicada, y no es una promesa de resultados de Camina. Lo que sí podemos decirte es qué cambia entre planes:
+          con Primer Paso tenés un solo premio 100% gratis; con Paso Firme y Paso Adelante podés combinar regalos y descuentos y dar cupones sin límite, para que
+          el premio sea la puerta y la compra extra quede de tu lado.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
+  const texto =
+    para === 'gente'
+      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjeá 5 veces en un mismo local, con 7 días de espera entre canjes, y ganás ese premio. Tus tarjetas aparecen cuando entrás a verlas, sin tapar el resto de la app.'
+      : 'Elegís el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local, con 7 días de espera entre canje y canje, y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+  return (
+    <section className="lp-sec night" id="fidelidad">
+      <div className="wrap fid">
+        <div>
+          <Kinetic text="Tarjeta de fidelidad." />
+          <p className="lead">{texto}</p>
+        </div>
+        <InView className="fid-card">
+          <b>Ejemplo ilustrativo</b>
+          <div className="fid-row">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <span key={n} className={n <= 3 ? 'on' : ''}>
+                <Image src="/web/camina-foot.png" alt="" width={20} height={36} />
+              </span>
+            ))}
+          </div>
+          <small>3 de 5 canjes · premio de fidelidad del local</small>
+        </InView>
       </div>
     </section>
   );

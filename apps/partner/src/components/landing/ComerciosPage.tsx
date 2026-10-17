@@ -3,7 +3,7 @@ import Link from 'next/link';
 import './landing.css';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, Planes, CierreComercio, CAP, WA_COMERCIO } from './shared';
+import { Fidelidad, Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, CanjeResena, AppsSimilares, Planes, CierreComercio, CAP, WA_COMERCIO } from './shared';
 
 export default function ComerciosPage() {
   return (
@@ -35,9 +35,12 @@ export default function ComerciosPage() {
         <Mapa titulo="Así te encuentran." texto="Una persona camina por tu barrio, ve tu local en el mapa y llega a canjear. Este es el mapa real de Tarija con locales que ya están en Camina." />
         <Locales />
         <BeneficiosComercio />
+        <CanjeResena />
+        <Fidelidad para="comercios" />
         <PasosComercio />
         <PanelComercio />
         <PublicidadComercio />
+        <AppsSimilares />
         <Planes />
         <CierreComercio />
       </main>
