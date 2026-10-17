@@ -6,8 +6,9 @@ import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Share2, Users, Trophy, Flame, Activity, Gift, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, Users, Trophy, Flame, Activity, Gift, IconBubble } from '@/components/icons';
 import { useStreak } from '@/hooks/useStreak';
+import { useLoyaltyCards } from '@/hooks/useLoyalty';
 import { useRetos } from '@/hooks/useRetos';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -93,6 +94,8 @@ export default function PuntosScreen() {
   const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
   const { data: streak } = useStreak();
   const { data: retos } = useRetos();
+  const { data: tarjetas } = useLoyaltyCards();
+  const tarjetasListas = (tarjetas ?? []).filter((c) => c.ready).length;
   const retosListos = (retos ?? []).filter((r) => r.claimable).length;
   const [copied, setCopied] = useState(false);
 
@@ -170,6 +173,26 @@ export default function PuntosScreen() {
           </View>
         </Press>
       </View>
+
+      {tarjetas && tarjetas.length > 0 ? (
+        <Press
+          accessibilityRole="button"
+          onPress={() => router.push('/(tabs)/tarjetas')}
+          className="mx-5 mt-3 flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-2xl p-3.5"
+          style={tarjetasListas > 0 ? { borderWidth: 2, borderColor: '#E2B33C' } : undefined}
+        >
+          <IconBubble icon={Gift} tone="gold" size={40} />
+          <View className="flex-1">
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Ver mis tarjetas</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+              {tarjetasListas > 0
+                ? `${tarjetasListas} ${plural(tarjetasListas, 'premio te espera', 'premios te esperan')}`
+                : `${tarjetas.length} ${plural(tarjetas.length, 'local', 'locales')}`}
+            </Text>
+          </View>
+          <ChevronRight size={18} color={colors.light.muted} />
+        </Press>
+      ) : null}
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
         <View className="flex-row items-center gap-3 mb-2">

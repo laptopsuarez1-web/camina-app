@@ -72,11 +72,11 @@ test('canjear: los rechazos del servidor llegan tal cual (saldo, cooldown, cupo,
   }
 });
 
-test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes y cupos', () => {
+test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes, cupos y tarjetas', () => {
   useRedeemBenefit();
   rq.lastMutation.onSuccess();
   assert.deepEqual(rq.invalidated.map((i: any) => i.queryKey[0]).sort(),
-    ['benefits-remaining-today', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
+    ['benefits-remaining-today', 'loyalty-card', 'loyalty-cards', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
 });
 
 test('regenerar código: llama a regenerate_redemption_code con el id del canje', async () => {

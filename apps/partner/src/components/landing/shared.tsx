@@ -207,7 +207,7 @@ export function Objetivos() {
     },
     {
       t: 'Moverte por tu barrio',
-      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Salís a caminar y volvés con un premio.',
+      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Salís a caminar y volvés con un premio. Y en los locales con tarjeta de fidelidad, cada 5 canjes el siguiente premio sale gratis.',
       img: CAP.canjes,
       alt: 'Pantalla de canjes con comercios',
     },
@@ -311,7 +311,8 @@ const BENEFICIOS = [
   ['Vos elegís el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
   ['Vos ponés el cupo', 'Definís cuántos cupones das por día, o ilimitados.'],
   ['Se valida en segundos', 'El cliente muestra un código de 6 números y lo confirmás desde el celular.'],
-  ['Una vez cada 14 días', 'Cada persona canjea en tu local como máximo cada 14 días, así el beneficio alcanza para más gente.'],
+  ['Una vez cada 7 días', 'Cada persona canjea en tu local como máximo cada 7 días, así el beneficio alcanza para más gente.'],
+  ['Tarjeta de fidelidad', 'En Paso Firme y Paso Adelante, tus clientes juntan 5 canjes en tu local y el siguiente premio que elijas sale gratis. Hace que vuelvan.'],
   ['Empezás gratis', 'El plan Primer Paso no tiene costo fijo. Cambiás de plan cuando quieras.'],
 ];
 

@@ -18,7 +18,7 @@ export default function CanjesPage() {
     if (!business) return;
     const { data } = await supabase
       .from('redemptions')
-      .select('id, code, status, created_at, confirmed_at, benefit_id, benefit:benefits(name)')
+      .select('id, code, status, created_at, confirmed_at, benefit_id, loyalty_free, benefit:benefits(name)')
       .eq('business_id', business.id)
       .order('created_at', { ascending: false })
       .limit(30);
@@ -48,6 +48,7 @@ export default function CanjesPage() {
     }
     // Se muestra qué premio corresponde a este código, para no entregar otro por error.
     const benefitId = (data as { benefit_id?: string } | null)?.benefit_id;
+    const conTarjeta = !!(data as { loyalty_free?: boolean } | null)?.loyalty_free;
     let premio: string | undefined;
     if (benefitId) {
       const { data: b } = await supabase.from('benefits').select('name').eq('id', benefitId).maybeSingle();
@@ -56,7 +57,9 @@ export default function CanjesPage() {
     setChecking(false);
     setResult({
       ok: true,
-      msg: premio ? `Código ${clean} válido. Entregá:` : `Código ${clean} válido. Entregá el beneficio.`,
+      msg: conTarjeta
+        ? `Código ${clean} válido. Canje con tarjeta de fidelidad: este premio va gratis. Entregá:`
+        : premio ? `Código ${clean} válido. Entregá:` : `Código ${clean} válido. Entregá el beneficio.`,
       premio,
     });
     setCodeInput('');
@@ -120,7 +123,10 @@ export default function CanjesPage() {
             className={`grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3.5 items-center ${i < redemptions.length - 1 ? 'border-b border-line' : ''}`}
           >
             <span className="text-[13.5px] font-semibold tracking-wide">{r.code}</span>
-            <span className="text-[13px] truncate pr-2">{r.benefit?.name ?? '—'}</span>
+            <span className="text-[13px] truncate pr-2">
+              {r.benefit?.name ?? '—'}
+              {r.loyalty_free && <span className="ml-1.5 text-[10.5px] font-bold rounded-full px-2 py-0.5" style={{ background: '#FFF4D6', color: '#8F6307' }}>Premio de tarjeta</span>}
+            </span>
             <span className="text-[12.5px] text-muted leading-tight">
               {new Date(r.created_at).toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}
               <br />

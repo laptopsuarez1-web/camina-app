@@ -38,6 +38,8 @@ import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
+import { useLoyaltyCard } from '@/hooks/useLoyalty';
+import { LoyaltyCardView } from '@/components/LoyaltyCardView';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { friendlyError, friendlyServerError } from '@/lib/errors';
@@ -217,7 +219,7 @@ function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: 
   );
 }
 
-function CoinPrice({ cost, dim }: { cost: number; dim?: boolean }) {
+function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boolean }) {
   return (
     <View
       className="flex-row items-center rounded-full"
@@ -225,6 +227,7 @@ function CoinPrice({ cost, dim }: { cost: number; dim?: boolean }) {
     >
       <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
       <Text style={{ color: dim ? colors.light.muted : '#fff', fontSize: 13, fontWeight: '700' }}>{cost}</Text>
+      {was != null ? <Text style={{ color: dim ? colors.light.muted : '#D9F3EC', fontSize: 11.5, textDecorationLine: 'line-through' }}>{was}</Text> : null}
     </View>
   );
 }
@@ -295,6 +298,7 @@ export default function CanjesScreen() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
+  const { data: activeLoyalty } = useLoyaltyCard(activeBenefit?.business.id);
 
   // Seguimiento del canje: cuando el comercio confirma el código, se pregunta si compró algo más.
   const activeId = activeRedemption?.id ?? null;
@@ -310,6 +314,7 @@ export default function CanjesScreen() {
         setConfirmedId(activeId);
         // Los Puntos se descuentan al confirmar el local: se actualiza el saldo y los movimientos.
         for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions']) queryClient.invalidateQueries({ queryKey: [key] });
+        for (const key of ['loyalty-card', 'loyalty-cards']) queryClient.invalidateQueries({ queryKey: [key] });
       }
     };
     check();
@@ -446,6 +451,7 @@ export default function CanjesScreen() {
     const list = (benefits ?? []).filter((b) => b.business.id === profileBusinessId);
     return list.length ? { business: list[0].business, benefits: list } : null;
   }, [benefits, profileBusinessId]);
+  const { data: loyalty } = useLoyaltyCard(profileGroup?.business.id);
 
   // Portada primero y después las demás fotos del local.
   const galleryPhotos = profileGroup
@@ -454,9 +460,12 @@ export default function CanjesScreen() {
 
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
+    const free = loyalty?.benefit_id === benefit.id && loyalty.ready;
     Alert.alert(
       `¿Canjear ${benefit.name}?`,
-      `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando el local confirme el código.`,
+      free
+        ? `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Es el premio de tu tarjeta: no se te descuentan Puntos.`
+        : `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando el local confirme el código.`,
       [
         { text: 'Todavía no', style: 'cancel' },
         { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
@@ -1081,6 +1090,12 @@ export default function CanjesScreen() {
                   ) : null}
                 </View>
 
+                {loyalty ? (
+                  <View className="mt-6">
+                    <LoyaltyCardView card={loyalty} />
+                  </View>
+                ) : null}
+
                 {(['gratis', 'descuento'] as const).map((type) => {
                   const list = profileGroup.benefits.filter((b) => b.type === type);
                   if (list.length === 0) return null;
@@ -1095,7 +1110,11 @@ export default function CanjesScreen() {
                           const unlimited = b.daily_quota == null;
                           const remaining = b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
                           const outOfStock = !unlimited && remaining <= 0;
-                          const canAfford = (balance ?? 0) >= b.cost_points;
+                          // Con la tarjeta completa, el premio de fidelidad sale gratis (0 Puntos).
+                          const isLoyaltyPrize = loyalty?.benefit_id === b.id;
+                          const freeByCard = isLoyaltyPrize && loyalty!.ready;
+                          const cost = freeByCard ? 0 : b.cost_points;
+                          const canAfford = (balance ?? 0) >= cost;
                           const canRedeem = canAfford && available && !outOfStock;
                           const redeeming = redeem.isPending && redeem.variables === b.id;
                           const note = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : 'Te faltan Puntos') : null;
@@ -1115,6 +1134,9 @@ export default function CanjesScreen() {
                                 )}
                                 <View className="flex-1">
                                   <Text className="text-[16px] font-bold text-text-light dark:text-text-dark" numberOfLines={2}>{b.name}</Text>
+                                  {isLoyaltyPrize ? (
+                                    <Text className="text-[11.5px] font-bold mt-0.5" style={{ color: '#8F6307' }}>Premio de tu tarjeta</Text>
+                                  ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
                                     {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
@@ -1124,7 +1146,7 @@ export default function CanjesScreen() {
                                     </Text>
                                   ) : null}
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
-                                    <CoinPrice cost={b.cost_points} dim={!canRedeem} />
+                                    <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
                                       <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} hoy</Text>
                                     ) : null}
@@ -1317,6 +1339,15 @@ export default function CanjesScreen() {
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                     {activeBenefit?.business.name} ya te entregó tu beneficio.
                   </Text>
+                  {activeLoyalty ? (
+                    <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
+                      {activeLoyalty.stamps === 0
+                        ? 'Usaste el premio de tu tarjeta: empieza de nuevo.'
+                        : activeLoyalty.ready
+                          ? '¡Tarjeta completa! Tu próximo premio sale gratis.'
+                          : `Sumaste un sello: ${activeLoyalty.stamps} de ${activeLoyalty.goal}.`}
+                    </Text>
+                  ) : null}
                 </View>
                 {!answered ? (
                   <>

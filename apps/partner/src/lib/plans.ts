@@ -51,6 +51,7 @@ export const PLANS: {
       'Podés combinar regalo y descuento',
       'Cupones ilimitados',
       'Varios beneficios a la vez',
+      'Tarjeta de fidelidad: al 5.º canje, el siguiente premio sale gratis',
       'Estadísticas básicas',
     ],
     featured: true,

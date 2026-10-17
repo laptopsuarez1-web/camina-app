@@ -16,7 +16,7 @@ const sql = (file: string) => fs.readFileSync(path.join(MIGRATIONS, file), 'utf8
 const allSql = () => fs.readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql')).sort().map(sql);
 /** Valor de una función SQL de una sola línea `select N;` (la última definición gana). */
 function sqlConstant(fn: string): number {
-  const re = new RegExp(`function ${fn}\\(\\)[^$]*\\$\\$\\s*select\\s+(\\d+);`, 'g');
+  const re = new RegExp(`function ${fn}\\(\\)[^$]*\\$\\w*\\$\\s*select\\s+(\\d+)\\s*;?`, 'g');
   const found = [...allSql().join('\n').matchAll(re)];
   assert.ok(found.length > 0, `no encontré ${fn}() en las migraciones`);
   return Number(found[found.length - 1][1]);
@@ -26,7 +26,7 @@ test('valores de las reglas de negocio', () => {
   assert.equal(R.POINTS_PER_STEP_UNIT, 1000);
   assert.equal(R.DAILY_POINTS_CAP, 20);
   assert.equal(R.POINTS_TTL_DAYS, 90);
-  assert.equal(R.BUSINESS_REDEMPTION_COOLDOWN_DAYS, 14);
+  assert.equal(R.BUSINESS_REDEMPTION_COOLDOWN_DAYS, 7);
   assert.equal(R.REDEMPTION_CODE_TTL_MINUTES, 15);
   assert.equal(R.MIN_DAILY_GOAL, 1000);
   assert.equal(R.GOOD_DAILY_GOAL, 5000);
@@ -45,6 +45,7 @@ test('contrato con SQL: vigencia de Puntos, tope diario, cooldown y vencimiento 
   assert.equal(sqlConstant('daily_points_cap'), R.DAILY_POINTS_CAP);
   assert.equal(sqlConstant('business_redemption_cooldown_days'), R.BUSINESS_REDEMPTION_COOLDOWN_DAYS);
   assert.equal(sqlConstant('redemption_code_ttl_minutes'), R.REDEMPTION_CODE_TTL_MINUTES);
+  assert.equal(sqlConstant('loyalty_goal'), R.LOYALTY_STAMPS_GOAL);
 });
 
 test('contrato con SQL: 1 Punto cada POINTS_PER_STEP_UNIT pasos (última versión de earn_points_from_steps)', () => {
