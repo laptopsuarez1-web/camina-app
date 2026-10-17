@@ -51,6 +51,7 @@ export default function BeneficioPage() {
       <BeneficioForm
         businessId={business!.id}
         isFree={isFree}
+        otherBenefits={benefits.filter((b) => b.id !== editingId)}
         benefit={editingId === 'new' ? null : (benefits.find((b) => b.id === editingId) ?? null)}
         onDone={() => {
           setEditingId(null);
@@ -61,7 +62,11 @@ export default function BeneficioPage() {
     );
   }
 
-  const atFreeLimit = isFree && benefits.length >= 1;
+  // Plan gratis: primero 1 premio gratis; con un gratis activo se habilita 1 descuento (máx. 2 premios).
+  const activeBenefits = benefits.filter((b) => b.active);
+  const hasGratis = activeBenefits.some((b) => b.type === 'gratis');
+  const hasDescuento = activeBenefits.some((b) => b.type === 'descuento');
+  const atFreeLimit = isFree && hasGratis && hasDescuento;
 
   return (
     <DashboardShell>
@@ -71,8 +76,11 @@ export default function BeneficioPage() {
         <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
           <Star size={15} color="#8B4FD1" />
           <p className="text-[12.5px] text-[#4A3D68]">
-            Con el plan Primer Paso podés tener un solo beneficio, 100% gratis. Pasá a Paso Firme o Paso
-            Adelante para combinar varios beneficios y cupones ilimitados.
+            {hasGratis
+              ? hasDescuento
+                ? '🔓 Ya tenés tu premio gratis y tu descuento. Pasá a Paso Firme o Paso Adelante para sumar más premios y cupones ilimitados.'
+                : '🔓 Ya podés crear un descuento. Con Primer Paso tenés 1 premio gratis y 1 descuento.'
+              : '🔒 Creá un premio gratis para poder agregar un descuento. Con Primer Paso tenés 1 premio gratis y 1 descuento.'}
           </p>
         </div>
       )}
@@ -80,7 +88,7 @@ export default function BeneficioPage() {
       <button
         onClick={() => !atFreeLimit && setEditingId('new')}
         disabled={atFreeLimit}
-        title={atFreeLimit ? 'Con el plan Primer Paso solo podés tener un beneficio activo' : ''}
+        title={atFreeLimit ? 'Con el plan Primer Paso tenés 1 premio gratis y 1 descuento' : ''}
         className="flex items-center gap-2 rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-4.5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: '#241748', color: '#7FEDC4' }}
       >
@@ -151,18 +159,26 @@ export default function BeneficioPage() {
 function BeneficioForm({
   businessId,
   isFree,
+  otherBenefits,
   benefit,
   onDone,
   onCancel,
 }: {
   businessId: string;
   isFree: boolean;
+  otherBenefits: Benefit[];
   benefit: Benefit | null;
   onDone: () => void;
   onCancel: () => void;
 }) {
   const [nombre, setNombre] = useState(benefit?.name ?? '');
-  const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? 'gratis');
+  // Plan gratis: el descuento se habilita recién cuando hay un premio gratis activo, y es uno solo.
+  const otherActive = otherBenefits.filter((b) => b.active);
+  const freeHasGratis = otherActive.some((b) => b.type === 'gratis');
+  const freeHasDescuento = otherActive.some((b) => b.type === 'descuento');
+  const descuentoLocked = isFree && (!freeHasGratis || freeHasDescuento);
+  const gratisLocked = isFree && freeHasGratis;
+  const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
   const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>(
     benefit?.discount_percent != null ? 'porcentaje' : 'texto'
   );
@@ -260,7 +276,9 @@ function BeneficioForm({
         <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
           <Star size={15} color="#8B4FD1" />
           <p className="text-[12.5px] text-[#4A3D68]">
-            Con el plan Primer Paso, tu beneficio tiene que ser 100% gratis — sin descuentos.
+            {freeHasGratis
+              ? '🔓 Ya tenés un premio gratis: este puede ser tu descuento.'
+              : '🔒 Creá primero un premio gratis: así se habilita el descuento.'}
           </p>
         </div>
       )}
@@ -302,32 +320,34 @@ function BeneficioForm({
         <label className="block text-[12.5px] font-semibold mb-1.5 mt-4.5">Tipo</label>
         <div className="flex gap-2 mb-4.5">
           <button
-            onClick={() => setTipo('gratis')}
-            className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold"
+            disabled={gratisLocked}
+            onClick={() => !gratisLocked && setTipo('gratis')}
+            title={gratisLocked ? 'Ya tenés un premio gratis: este puede ser un descuento' : ''}
+            className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
             style={{
               borderColor: tipo === 'gratis' ? '#4FC3A8' : '#E1D2F5',
               background: tipo === 'gratis' ? '#E3F5F0' : '#fff',
-              color: tipo === 'gratis' ? '#4FC3A8' : '#7C6A9C',
+              color: gratisLocked ? '#C7BEDB' : tipo === 'gratis' ? '#4FC3A8' : '#7C6A9C',
             }}
           >
             Gratis
           </button>
           <button
-            disabled={isFree}
-            onClick={() => !isFree && setTipo('descuento')}
-            title={isFree ? 'Disponible desde el plan Paso Firme' : ''}
+            disabled={descuentoLocked}
+            onClick={() => !descuentoLocked && setTipo('descuento')}
+            title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tenés un solo descuento' : 'Creá primero un premio gratis') : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
             style={{
               borderColor: tipo === 'descuento' ? '#8B4FD1' : '#E1D2F5',
               background: tipo === 'descuento' ? '#F1EBFA' : '#fff',
-              color: isFree ? '#C7BEDB' : tipo === 'descuento' ? '#8B4FD1' : '#7C6A9C',
+              color: descuentoLocked ? '#C7BEDB' : tipo === 'descuento' ? '#8B4FD1' : '#7C6A9C',
             }}
           >
             Descuento
           </button>
         </div>
 
-        {tipo === 'descuento' && !isFree && (
+        {tipo === 'descuento' && (
           <div className="mb-4.5">
             <div className="flex gap-2 mb-2.5">
               <button

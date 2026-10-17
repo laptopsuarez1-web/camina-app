@@ -36,7 +36,7 @@ export const PLANS: {
     blurb: 'Empezá a recibir clientes sin costo fijo.',
     features: [
       'Aparecés en el mapa y tu categoría',
-      '1 solo beneficio activo, 100% gratis',
+      '1 premio gratis y, con él, 1 descuento',
       'Mínimo 3 cupones por día',
       'Sin estadísticas',
     ],

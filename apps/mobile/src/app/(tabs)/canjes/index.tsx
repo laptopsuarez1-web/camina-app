@@ -38,7 +38,7 @@ import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
-import { useLoyaltyCard } from '@/hooks/useLoyalty';
+import { useLoyaltyCard, useNewPlaceBonus } from '@/hooks/useLoyalty';
 import { LoyaltyCardView } from '@/components/LoyaltyCardView';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -299,6 +299,7 @@ export default function CanjesScreen() {
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
   const { data: activeLoyalty } = useLoyaltyCard(activeBenefit?.business.id);
+  const [bonusById, setBonusById] = useState<Record<string, number>>({});
 
   // Seguimiento del canje: cuando el comercio confirma el código, se pregunta si compró algo más.
   const activeId = activeRedemption?.id ?? null;
@@ -309,9 +310,11 @@ export default function CanjesScreen() {
   useEffect(() => {
     if (!activeId) return;
     const check = async () => {
-      const { data } = await supabase.from('redemptions').select('status').eq('id', activeId).maybeSingle();
+      const { data } = await supabase.from('redemptions').select('status, new_place_bonus').eq('id', activeId).maybeSingle();
       if (data?.status === 'confirmed') {
         setConfirmedId(activeId);
+        if (data.new_place_bonus) setBonusById((m) => ({ ...m, [activeId]: data.new_place_bonus as number }));
+        queryClient.invalidateQueries({ queryKey: ['new-place-bonus'] });
         // Los Puntos se descuentan al confirmar el local: se actualiza el saldo y los movimientos.
         for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions']) queryClient.invalidateQueries({ queryKey: [key] });
         for (const key of ['loyalty-card', 'loyalty-cards']) queryClient.invalidateQueries({ queryKey: [key] });
@@ -452,6 +455,7 @@ export default function CanjesScreen() {
     return list.length ? { business: list[0].business, benefits: list } : null;
   }, [benefits, profileBusinessId]);
   const { data: loyalty } = useLoyaltyCard(profileGroup?.business.id);
+  const { data: newPlaceBonus } = useNewPlaceBonus(profileGroup?.business.id);
 
   // Portada primero y después las demás fotos del local.
   const galleryPhotos = profileGroup
@@ -1090,6 +1094,16 @@ export default function CanjesScreen() {
                   ) : null}
                 </View>
 
+                {newPlaceBonus ? (
+                  <View className="mt-6 flex-row items-center rounded-2xl px-3.5 py-3 bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 10 }}>
+                    <Text style={{ fontSize: 20 }}>🎁</Text>
+                    <View className="flex-1">
+                      <Text className="text-aqua-ink dark:text-aqua font-extrabold text-[13.5px]">Primera vez acá: +{newPlaceBonus} Puntos</Text>
+                      <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-0.5">Se suman cuando el local confirme tu primer canje.</Text>
+                    </View>
+                  </View>
+                ) : null}
+
                 {loyalty ? (
                   <View className="mt-6">
                     <LoyaltyCardView card={loyalty} />
@@ -1339,6 +1353,11 @@ export default function CanjesScreen() {
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                     {activeBenefit?.business.name} ya te entregó tu beneficio.
                   </Text>
+                  {activeId && bonusById[activeId] ? (
+                    <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
+                      {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                    </Text>
+                  ) : null}
                   {activeLoyalty ? (
                     <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
                       {activeLoyalty.stamps === 0
