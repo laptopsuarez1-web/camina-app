@@ -29,3 +29,7 @@ test('un tipo desconocido o sin tipo abre la bandeja de Avisos (la fila queda so
   assert.equal(routeForNotification('algo_nuevo'), '/(tabs)/notificaciones');
   assert.equal(routeForNotification(undefined), '/(tabs)/notificaciones');
 });
+
+test('el aviso del Wrapped del mes lleva a Actividad', () => {
+  assert.equal(routeForNotification('wrapped'), '/(tabs)/actividad');
+});

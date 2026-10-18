@@ -14,6 +14,7 @@ import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, 
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { GroupShareSheet } from '@/components/friends/GroupShareSheet';
+import { GroupShareImageSheet } from '@/components/share/GroupShareImageSheet';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration';
 import { colors } from '@/theme/tokens';
@@ -65,6 +66,7 @@ export default function GroupDetailScreen() {
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [rankShareOpen, setRankShareOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
@@ -295,6 +297,17 @@ export default function GroupDetailScreen() {
             </Text>
           </View>
         </Glass>
+
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel="Compartir el ranking del grupo como imagen"
+          onPress={() => setRankShareOpen(true)}
+          className="mx-5 mb-3 flex-row items-center justify-center rounded-2xl"
+          style={{ gap: 9, paddingVertical: 13, backgroundColor: colors.aquaDeep }}
+        >
+          <Share2 size={17} color="#fff" weight="bold" />
+          <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
+        </Press>
 
         <Glass className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
           <View className="flex-row items-center justify-between mb-2">
@@ -565,6 +578,7 @@ export default function GroupDetailScreen() {
         </Press>
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
+      <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
       <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} />
     </KeyboardAvoidingView>
   );

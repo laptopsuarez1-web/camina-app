@@ -248,8 +248,6 @@ export default function EditarPerfilScreen() {
             <Text className="text-[12.5px] font-semibold mt-2 text-purple-ink dark:text-purple-soft">Cambiar foto</Text>
           </Press>
 
-          <AccountEmailCard />
-
           <Glass className="rounded-3xl p-4 mb-4">
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
             <TextInput
@@ -368,6 +366,8 @@ export default function EditarPerfilScreen() {
               )}
             </Glass>
           )}
+
+          <AccountEmailCard />
 
           <Press accessibilityRole="button" onPress={confirmDelete} disabled={deleting} className="flex-row items-center justify-center gap-2 py-4">
             {deleting ? (

@@ -6,14 +6,14 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, IconBubble, ChevronUp, ChevronDown } from '@/components/icons';
+import { Activity, IconBubble, ChevronUp, ChevronDown, ChevronRight, Share2, Sparkle } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreak } from '@/hooks/useStreak';
 import { StreakCard } from '@/components/activity/StreakCard';
 import { celebrate } from '@/store/useCelebrationStore';
-import { useCommunityAverage } from '@/hooks/useGlobalRanking';
+import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -27,6 +27,11 @@ import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { ResumenShareSheet } from '@/components/share/ResumenShareSheet';
+import { WrappedViewer } from '@/components/share/WrappedViewer';
+import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
+import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
+import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
 
@@ -86,6 +91,16 @@ export default function ActividadScreen() {
     });
   }, [streak, queryClient]);
   const { data: communityAverage } = useCommunityAverage();
+  const { data: myRank } = useMyWeeklyRank();
+  const [shareOpen, setShareOpen] = useState(false);
+  const [wrappedOpen, setWrappedOpen] = useState(false);
+  // Los primeros días del mes se ofrece el Wrapped del mes que terminó (solo si hubo pasos).
+  const wrappedStart = useMemo(() => wrappedMonthStart(), []);
+  const { data: wrapped } = useWrapped(wrappedStart);
+  const firstName = profile?.full_name?.trim().split(/\s+/)[0] || null;
+  useEffect(() => {
+    scheduleWrappedReminder();
+  }, []);
   const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
 
@@ -210,6 +225,26 @@ export default function ActividadScreen() {
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
 
+      {wrapped && wrappedStart ? (
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel={`Ver tu ${wrappedMonthName(wrappedStart.getMonth())} en Camina`}
+          onPress={() => setWrappedOpen(true)}
+          className="mb-3"
+        >
+          <LinearGradient colors={['#3a2668', '#5B31A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ width: 44, height: 44, borderRadius: 15, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkle size={22} color={colors.mintDark} weight="fill" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white font-extrabold text-[15.5px]">Tu {wrappedMonthName(wrappedStart.getMonth())} en Camina</Text>
+              <Text className="text-[12.5px]" style={{ color: '#D9CCF5' }}>Mirá tu resumen del mes y compartilo.</Text>
+            </View>
+            <ChevronRight size={16} color="#fff" />
+          </LinearGradient>
+        </Press>
+      ) : null}
+
       <LinearGradient
         colors={[colors.authBgSoft, colors.authBg]}
         start={{ x: 0.15, y: 0 }}
@@ -323,6 +358,17 @@ export default function ActividadScreen() {
           </View>
         )}
       </LinearGradient>
+
+      <Press
+        accessibilityRole="button"
+        accessibilityLabel="Compartir mi progreso como imagen"
+        onPress={() => setShareOpen(true)}
+        className="flex-row items-center justify-center rounded-2xl mb-3"
+        style={{ gap: 9, paddingVertical: 14, backgroundColor: colors.aquaDeep }}
+      >
+        <Share2 size={18} color="#fff" weight="bold" />
+        <Text className="text-white font-bold text-[14.5px]">Compartir mi progreso</Text>
+      </Press>
 
       {/* Con la comunidad en 0 o sin diferencia no hay nada que comparar: no se muestra "supera por 0 pasos". */}
       {dailyDiffVsCommunity !== null && dailyDiffVsCommunity !== 0 && Number(communityAverage) > 0 && (
@@ -453,6 +499,17 @@ export default function ActividadScreen() {
           />
         )}
       </View>
+      <ResumenShareSheet
+        visible={shareOpen}
+        onClose={() => setShareOpen(false)}
+        byDay={byDay}
+        goalFor={goalFor}
+        openedDays={openedDays}
+        streak={streak ?? 0}
+        weeklyRank={myRank?.position ?? null}
+        firstName={firstName}
+      />
+      <WrappedViewer visible={wrappedOpen} onClose={() => setWrappedOpen(false)} data={wrapped} firstName={firstName} />
       <Modal visible={selected != null} transparent animationType="fade" onRequestClose={() => setSelected(null)}>
         <View className="flex-1 items-center justify-center px-8" style={{ backgroundColor: 'rgba(20,12,36,0.55)' }}>
           {/* El fondo que cierra el detalle es hermano de la tarjeta (no su padre): así el lector de pantalla llega al contenido y al botón Cerrar. */}
