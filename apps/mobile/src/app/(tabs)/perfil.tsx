@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
-import { View, ScrollView, Image, Switch, Alert, Linking, Platform, Modal } from 'react-native';
+import { View, ScrollView, Switch, Alert, Linking, Platform, Modal } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
@@ -24,6 +24,7 @@ import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
+import { Coin } from '@/components/ui/Coin';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -200,7 +201,7 @@ export default function PerfilScreen() {
           className="flex-row items-center p-4"
           style={{ gap: 12 }}
         >
-          <Image source={require('@/../assets/camina-coin.png')} style={{ width: 34, height: 34, borderRadius: 17 }} />
+          <Coin size={34} />
           <View className="flex-1">
             <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} {plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
             <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>

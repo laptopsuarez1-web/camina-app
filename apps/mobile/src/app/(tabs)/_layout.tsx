@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View, Platform } from 'react-native';
-import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { Home, ChartBar, Users, Calendar, ShoppingBag, type IconProps } from '@/components/icons';
+import { View } from 'react-native';
+import { TabGlyph, type TabKind } from '@/components/ui/TabGlyph';
 import { useAuthStore } from '@/store/useAuthStore';
 import { registerForPushNotificationsAsync, useNotificationTaps } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
@@ -11,15 +10,18 @@ import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 
-// Ícono de la barra: en iOS el símbolo del sistema (SF Symbols), como las apps de Apple;
-// en Android y web, el mismo dibujo en Phosphor relleno.
-function tabIcon(Icon: (p: IconProps) => React.ReactElement, symbol: SFSymbol) {
-  return function TabIcon({ color, focused }: { color: import('react-native').ColorValue; focused: boolean }) {
-    const fallback = <Icon size={25} color={color} weight={focused ? 'fill' : 'regular'} />;
-    if (Platform.OS !== 'ios') return fallback;
-    return <SymbolView name={symbol} size={24} tintColor={color} type="monochrome" fallback={fallback} />;
+// Íconos de la barra: el mismo dibujo en todos los teléfonos, y cada uno hace un gesto corto al tocarlo (ver TabGlyph).
+// Son componentes fijos (no se crean en cada render) para que la animación no se reinicie.
+function glyph(kind: TabKind) {
+  return function TabIcon({ color, focused, tick }: { color: import('react-native').ColorValue; focused: boolean; tick?: number }) {
+    return <TabGlyph kind={kind} color={color as string} focused={focused} tick={tick} />;
   };
 }
+const HomeIcon = glyph('home');
+const ActivityIcon = glyph('activity');
+const GroupsIcon = glyph('groups');
+const EventsIcon = glyph('events');
+const CanjesIcon = glyph('canjes');
 
 export default function TabsLayout() {
   const { session, initializing } = useAuthStore();
@@ -52,11 +54,11 @@ export default function TabsLayout() {
         headerShown: false,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: tabIcon(Home, 'house.fill') }} />
-      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: tabIcon(ChartBar, 'chart.bar.fill') }} />
-      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: tabIcon(Users, 'person.3.fill') }} />
-      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: tabIcon(Calendar, 'calendar') }} />
-      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: tabIcon(ShoppingBag, 'bag.fill') }} />
+      <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: HomeIcon }} />
+      <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: ActivityIcon }} />
+      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: GroupsIcon }} />
+      <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: EventsIcon }} />
+      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: CanjesIcon }} />
       {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
           grupos/[groupId] es la pantalla de detalle de un grupo, no un tab propio.
           Sin declararlos acá, Expo Router los agrega solo al tab bar (bug real

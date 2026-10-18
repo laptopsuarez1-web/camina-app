@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +23,7 @@ import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
+import { Coin } from '@/components/ui/Coin';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -237,7 +238,7 @@ export default function GroupDetailScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
-        <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
+        <LinearGradient colors={colors.headerGradient} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -378,7 +379,7 @@ export default function GroupDetailScreen() {
               </View>
               {pot > 0 && (
                 <View className="flex-row items-center rounded-full px-2.5 py-1" style={{ gap: 5, backgroundColor: 'rgba(79,195,168,0.18)' }}>
-                  <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 15, height: 15, borderRadius: 7.5 }} />
+                  <Coin size={15} />
                   <Text className="text-[12.5px] font-extrabold text-mint-dark dark:text-mint">{pot}</Text>
                 </View>
               )}
@@ -409,7 +410,7 @@ export default function GroupDetailScreen() {
                 <Text className="text-mint-dark font-bold text-[13.5px]">Sumarme{active.stake > 0 ? ' · ponés' : ''}</Text>
                 {active.stake > 0 && (
                   <>
-                    <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 16, height: 16, borderRadius: 8 }} />
+                    <Coin size={16} />
                     <Text className="text-mint-dark font-extrabold text-[13.5px]">{active.stake}</Text>
                   </>
                 )}

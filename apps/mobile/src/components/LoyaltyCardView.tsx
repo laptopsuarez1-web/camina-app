@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Gift } from '@/components/icons';
 import { Glass } from '@/components/ui/Glass';
+import { Coin } from '@/components/ui/Coin';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { GOLD } from '@/components/ui/Featured';
@@ -21,7 +22,7 @@ export function Stamps({ card, size = 36 }: { card: LoyaltyCard; size?: number }
     <View className="flex-row items-center" style={{ gap: 7 }}>
       {Array.from({ length: card.goal }, (_, i) =>
         i < card.stamps ? (
-          <Image key={i} accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />
+          <Coin key={i} size={size} />
         ) : (
           <View
             key={i}

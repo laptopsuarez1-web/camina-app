@@ -41,7 +41,7 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
       </View>
       <View className="items-end">
         <Text style={{ fontSize: 15, fontWeight: '800', color: accentText, fontVariant: ['tabular-nums'] }}>{r.steps.toLocaleString('es-BO')}</Text>
-        <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(r.steps, 'paso', 'pasos')}</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark">{plural(r.steps, 'paso', 'pasos')}</Text>
       </View>
     </Press>
   );

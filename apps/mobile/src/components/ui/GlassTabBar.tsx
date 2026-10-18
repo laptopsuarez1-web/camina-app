@@ -18,7 +18,7 @@ import { barFill, blurWeb, glassOn } from '@/components/ui/glassMath';
 // En iOS 26 usa el vidrio líquido del sistema; en iOS anterior, desenfoque; en Android y web, un relleno translúcido.
 type TabBarProps = {
   state: { index: number; routes: { key: string; name: string; params?: object }[] };
-  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarItemStyle?: unknown; tabBarStyle?: { display?: string }; tabBarIcon?: (p: { focused: boolean; color: string; size: number }) => React.ReactNode } }>;
+  descriptors: Record<string, { options: { title?: string; href?: string | null; tabBarItemStyle?: unknown; tabBarStyle?: { display?: string }; tabBarIcon?: (p: { focused: boolean; color: string; size: number; tick?: number }) => React.ReactNode } }>;
   navigation: {
     emit: (e: { type: string; target: string; canPreventDefault?: boolean }) => { defaultPrevented: boolean };
     navigate: (name: string, params?: object) => void;
@@ -70,6 +70,8 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const dark = colorScheme === 'dark';
   const amount = useGlassStore((s) => s.amount);
   const insets = useSafeAreaInsets();
+  // Cuántas veces se tocó cada pestaña: el ícono reacciona en cada toque (también si ya estaba activa).
+  const [taps, setTaps] = useState<Record<string, number>>({});
 
   // Algunas pantallas (crear desafío, chat del grupo) ocultan la barra para ir a pantalla completa.
   if (descriptors[state.routes[state.index]?.key]?.options.tabBarStyle?.display === 'none') return null;
@@ -115,6 +117,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             accessibilityState={{ selected: focused }}
             aria-selected={focused}
             onPress={() => {
+              setTaps((t) => ({ ...t, [route.key]: (t[route.key] ?? 0) + 1 }));
               const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
               if (!focused && !event.defaultPrevented) {
                 buzz.selection();
@@ -133,7 +136,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
             })}
           >
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
-              {Icon ? Icon({ focused, color, size: 25 }) : null}
+              {Icon ? <Icon focused={focused} color={color} size={26} tick={taps[route.key] ?? 0} /> : null}
             </View>
             <Text numberOfLines={1} maxFontSizeMultiplier={1.1} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
               {title}

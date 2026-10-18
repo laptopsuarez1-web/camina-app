@@ -42,9 +42,9 @@ export function LegalContent() {
       </section>
 
       <section className="mb-8">
-        <h2 className="font-bold text-[15px] mb-2">Desafíos de grupo y puntos en juego</h2>
+        <h2 className="font-bold text-[15px] mb-2">Desafíos de grupo y Puntos en juego</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Dentro de un grupo podés crear un desafío y elegir cuántos de tus propios puntos poner en juego (hasta 50). Los puntos de Camina solo se ganan caminando: no se compran ni se venden. Los puntos de todos los que se suman forman un pozo que se reparte en partes iguales entre quienes cumplan la meta diaria en al menos el 80% de los días del desafío; si nadie cumple, cada persona recupera los suyos. Camina no se queda con ninguna parte del pozo. Los resultados se calculan automáticamente con los pasos registrados en la app y Camina puede anular un resultado si detecta trampa, como pasos falsos o varias cuentas de una misma persona."}
+          {"Dentro de un grupo podés crear un desafío y elegir cuántos de tus propios Puntos poner en juego (hasta 50). Los Puntos de Camina solo se ganan caminando: no se compran ni se venden. Los Puntos de todos los que se suman forman un pozo que se reparte en partes iguales entre quienes cumplan la meta diaria en al menos el 80% de los días del desafío; si nadie cumple, cada persona recupera los suyos. Camina no se queda con ninguna parte del pozo. Los resultados se calculan automáticamente con los pasos registrados en la app y Camina puede anular un resultado si detecta trampa, como pasos falsos o varias cuentas de una misma persona."}
         </p>
       </section>
 

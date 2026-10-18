@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, ScrollView, Share, Image, AccessibilityInfo, Platform } from 'react-native';
+import { View, ScrollView, Share, AccessibilityInfo, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -22,6 +22,7 @@ import { DarkHeader } from '@/components/ui/DarkHeader';
 import { CoinHalo } from '@/components/ui/CoinHalo';
 import { typo } from '@/theme/type';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { Coin } from '@/components/ui/Coin';
 
 function useMovimientos() {
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -126,7 +127,7 @@ export default function PuntosScreen() {
 
         <View className="flex-row items-center gap-3">
           <CoinHalo size={58}>
-            <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 58, height: 58, borderRadius: 29 }} />
+            <Coin size={58} />
           </CoinHalo>
           <View>
             {balanceError && balance === undefined ? (
@@ -231,7 +232,7 @@ export default function PuntosScreen() {
               )}
             </View>
             <View className="flex-row items-center rounded-full" style={{ gap: 5, backgroundColor: m.amount < 0 ? '#E8836F' : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 11 }}>
-              <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+              <Coin size={20} />
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{m.amount > 0 ? '+' : '−'}{Math.abs(m.amount)}</Text>
             </View>
           </Glass>
@@ -247,7 +248,7 @@ export default function PuntosScreen() {
         {!isLoading && !isError && (movimientos ?? []).length === 0 && (
           <EmptyState
             illustration="puntos"
-            title="Tus puntos van a aparecer acá"
+            title="Tus Puntos van a aparecer acá"
             text="Cada 1.000 pasos que camines sumás un punto, siempre que abras la app ese día. También ganás por retos, invitando amigos y desafíos de grupo."
           />
         )}

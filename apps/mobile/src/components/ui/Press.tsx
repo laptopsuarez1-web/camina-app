@@ -1,7 +1,8 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, type PressableProps, type PressableStateCallbackType, type StyleProp, type View, type ViewStyle } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { buzz } from '@/lib/haptics';
+import { PressTickContext } from '@/components/ui/ReactiveIcon';
 
 // Reemplazo de Pressable con respuesta al toque en menos de 100 ms:
 // - 'scale' (por defecto): la tarjeta o botón se achica a 0,97 y se oscurece un poco. En Android solo se oscurece (convención de la plataforma).
@@ -17,9 +18,11 @@ function fillsScreen(style: StyleProp<ViewStyle>, className?: string) {
   return !!className && /(^|\s)(absolute|inset-0)(\s|$)/.test(className);
 }
 
-export const Press = forwardRef<View, Props>(function Press({ style, feedback, haptic, onPress, onPressIn, onPressOut, className, ...rest }, ref) {
+export const Press = forwardRef<View, Props>(function Press({ style, feedback, haptic, onPress, onPressIn, onPressOut, className, children, ...rest }, ref) {
   const dark = useColorScheme().colorScheme === 'dark';
   const [pressed, setPressed] = useState(false);
+  // Cuenta los toques: los íconos de adentro (IconBubble) lo leen para reaccionar.
+  const [taps, setTaps] = useState(0);
   const isFn = typeof style === 'function';
   const mode: PressFeedback = feedback ?? (!isFn && fillsScreen(style, className) ? 'none' : 'scale');
 
@@ -37,10 +40,14 @@ export const Press = forwardRef<View, Props>(function Press({ style, feedback, h
       ref={ref}
       className={className}
       onPress={haptic ? (e) => { buzz[haptic](); onPress?.(e); } : onPress}
-      onPressIn={(e) => { setPressed(true); onPressIn?.(e); }}
+      onPressIn={(e) => { setPressed(true); setTaps((n) => n + 1); onPressIn?.(e); }}
       onPressOut={(e) => { setPressed(false); onPressOut?.(e); }}
       style={isFn ? (state) => [(style as (s: PressableStateCallbackType) => StyleProp<ViewStyle>)(state), extra] : [style as StyleProp<ViewStyle>, extra]}
       {...rest}
-    />
+    >
+      {typeof children === 'function'
+        ? (state: PressableStateCallbackType) => <PressTickContext.Provider value={taps}>{(children as (s: PressableStateCallbackType) => ReactNode)(state)}</PressTickContext.Provider>
+        : <PressTickContext.Provider value={taps}>{children as ReactNode}</PressTickContext.Provider>}
+    </Pressable>
   );
 });

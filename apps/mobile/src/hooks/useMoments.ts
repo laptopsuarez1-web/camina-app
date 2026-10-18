@@ -74,7 +74,7 @@ export function useHomeMoments(streak: number | undefined) {
         for (const r of fresh) {
           const ref = r.referred as unknown as { full_name?: string } | { full_name?: string }[] | null;
           const name = (Array.isArray(ref) ? ref[0]?.full_name : ref?.full_name)?.trim().split(/\s+/)[0];
-          celebrate({ kind: 'toast', icon: 'gift', title: `¡${name || 'Tu amigo'} se sumó!`, body: 'Sumaste 5 puntos por invitarlo.' });
+          celebrate({ kind: 'toast', icon: 'gift', title: `¡${name || 'Tu amigo'} se sumó!`, body: 'Sumaste 5 Puntos por invitarlo.' });
         }
       } catch {
         // si no se puede leer, simplemente no se avisa

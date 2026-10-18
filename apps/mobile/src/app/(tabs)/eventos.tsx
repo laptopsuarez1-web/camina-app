@@ -1,4 +1,4 @@
-import { View, ScrollView, Image, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, Check, IconBubble } from '@/components/icons';
@@ -15,6 +15,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
+import { Coin } from '@/components/ui/Coin';
 
 export default function EventosScreen() {
   const tabSpace = useTabBarSpace();
@@ -41,7 +42,7 @@ export default function EventosScreen() {
       const points = await claim.mutateAsync(reto.id);
       celebrate({ kind: 'sheet', title: '¡Reto cumplido!', body: reto.title, points: Number(points) || reto.reward_points });
     } catch (e) {
-      Alert.alert('No pudimos darte los puntos', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos darte los Puntos', friendlyServerError(e, 'Intentá de nuevo.'));
     }
   }
 
@@ -199,7 +200,7 @@ function RetoCard({
           </Text>
         </View>
         <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
-          <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 13, height: 13, borderRadius: 6.5 }} />
+          <Coin size={13} />
           <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reward}</Text>
         </View>
       </View>

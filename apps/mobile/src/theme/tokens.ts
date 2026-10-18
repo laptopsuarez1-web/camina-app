@@ -46,6 +46,8 @@ export const colors = {
   authBgSoft: '#2F1E5C',
   authMuted: '#C4B8E8',
   mint: '#7FEDC4',
+  // Degradé oscuro de las cabeceras (Inicio, Grupos, onboarding, bienvenida): una sola materia para todas.
+  headerGradient: ['#3a2668', '#1c1030', '#120a1e'] as const,
   mintDark: '#12281F',
   // Texto e íconos sobre un chip mint (4,8:1).
   mintInk: '#156650',
