@@ -16,7 +16,7 @@ export function useStreak() {
     enabled: !!userId,
     queryFn: async () => {
       const since = new Date();
-      since.setDate(since.getDate() - 60);
+      since.setDate(since.getDate() - 400);
       const { data, error } = await supabase
         .from('steps_daily')
         .select('day, steps, goal')

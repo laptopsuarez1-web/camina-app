@@ -26,42 +26,42 @@ test('referido pendiente: lo captura en el servidor y borra la marca', async () 
   assert.equal(dump()[PENDING_REFERRAL_KEY], undefined);
 });
 
-test('grupo pendiente: se anota a la persona y devuelve el grupo al que navegar', async () => {
-  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
+test('grupo pendiente: entra con el código y devuelve el grupo al que navegar', async () => {
+  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'COD123');
+  db.rpc.join_group_with_code = () => 'g-1';
   const res = await consumePendingDeepLinks();
   assert.deepEqual(res, { joinedGroupId: 'g-1' });
-  assert.deepEqual(db.writes, [{ table: 'group_members', op: 'upsert', row: { group_id: 'g-1', user_id: 'me' }, opts: { onConflict: 'group_id,user_id' } }]);
+  assert.deepEqual(db.rpcLog, [{ name: 'join_group_with_code', args: { p_code: 'COD123' } }]);
   assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined);
 });
 
-test('grupo pendiente con error pasajero al anotarse: no navega y la marca queda para reintentar', async () => {
-  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
-  db.errors['group_members:write'] = { message: 'Failed to fetch' };
+test('grupo pendiente con error pasajero al entrar: no navega y la marca queda para reintentar', async () => {
+  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'COD123');
+  db.rpc.join_group_with_code = () => ({ error: { message: 'Failed to fetch' } });
   assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: null });
-  assert.equal(dump()[PENDING_GROUP_JOIN_KEY], 'g-1');
+  assert.equal(dump()[PENDING_GROUP_JOIN_KEY], 'COD123');
 });
 
-test('grupo pendiente con error permanente (grupo borrado o id inválido): no navega y la marca se descarta', async () => {
+test('grupo pendiente con error permanente o código que no existe: no navega y la marca se descarta', async () => {
   for (const code of ['23503', '22P02']) {
     resetStorage();
-    await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
-    db.errors['group_members:write'] = { message: 'no existe', code };
+    await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'COD123');
+    db.rpc.join_group_with_code = () => ({ error: { message: 'no existe', code } });
     assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: null });
     assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined, code);
   }
-});
-
-test('grupo pendiente sin usuario logueado: no se anota y no navega', async () => {
-  db.user = null;
-  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-1');
+  resetStorage();
+  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'NOEXISTE');
+  db.rpc.join_group_with_code = () => null;
   assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: null });
-  assert.equal(db.writes.length, 0);
+  assert.equal(dump()[PENDING_GROUP_JOIN_KEY], undefined);
 });
 
 test('las dos invitaciones juntas se aplican', async () => {
   await AsyncStorage.setItem(PENDING_REFERRAL_KEY, 'ref-user');
-  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'g-9');
+  await AsyncStorage.setItem(PENDING_GROUP_JOIN_KEY, 'COD9');
   db.rpc.capture_referral = () => null;
+  db.rpc.join_group_with_code = () => 'g-9';
   assert.deepEqual(await consumePendingDeepLinks(), { joinedGroupId: 'g-9' });
   assert.deepEqual(dump(), {});
 });

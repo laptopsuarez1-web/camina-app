@@ -163,16 +163,16 @@ test('un error de la base se propaga (la pantalla muestra su estado de error)', 
 });
 
 test('el filtro de fecha usa el día local: desde las 20:00 en La Paz sigue pidiendo desde el día correcto', async () => {
-  // 02:30 UTC del 3/10 = 22:30 del 2/10 en La Paz. Hace 60 días (local) es el 3/8.
+  // 02:30 UTC del 3/10 = 22:30 del 2/10 en La Paz. Hace 400 días (local) es el 28/8/2025.
   await atTime('2026-10-03T02:30:00Z', LA_PAZ, async () => {
     seed([]);
     await streak();
     const gte = db.log[0].filters.find((f) => f[0] === 'gte')![2];
-    assert.equal(gte, '2026-08-03');
+    assert.equal(gte, '2025-08-28');
   });
 });
 
-test('BUG conocido: una racha de más de ~60 días se muestra recortada', { todo: 'hooks/useStreak.ts:17-18 mira solo los últimos 60 días; con 100 días seguidos devuelve 61' }, async () => {
+test('una racha de más de 60 días no se recorta', async () => {
   await atTime(AHORA, LA_PAZ, async () => {
     seed(Array.from({ length: 100 }, (_, i) => ({ day: dayKey(-i), steps: 7000, goal: 6000 })));
     assert.equal(await streak(), 100);

@@ -4,6 +4,7 @@ import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 import { usePlaces } from '@/hooks/usePlaces';
+import { BarrioPicker } from '@/components/BarrioPicker';
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   const dark = useColorScheme().colorScheme === 'dark';
@@ -27,7 +28,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-// Ciudad y barrio se eligen de una lista (nada de texto libre), así quedan siempre bien escritos.
+// Ciudad de una lista corta; el barrio se busca escribiendo (salen solo las coincidencias) o con la ubicación, así queda siempre bien escrito.
 export function PlacePicker({
   city,
   zone,
@@ -50,14 +51,9 @@ export function PlacePicker({
         ))}
       </View>
       {zones.length > 0 && (
-        <>
-          <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-1 mb-1.5">Barrio</Text>
-          <View className="flex-row flex-wrap">
-            {zones.map((z) => (
-              <Chip key={z.id} label={z.name} selected={z.name === zone} onPress={() => onChange(city, z.name === zone ? null : z.name)} />
-            ))}
-          </View>
-        </>
+        <View className="mt-1">
+          <BarrioPicker city={city} zone={zone} onChange={(z) => onChange(city, z)} />
+        </View>
       )}
     </View>
   );
