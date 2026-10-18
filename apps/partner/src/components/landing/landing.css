@@ -275,3 +275,11 @@
 .fid-steps li{display:grid;grid-template-columns:36px 1fr;gap:12px;color:#cfc3f0}
 .fid-steps li span{width:32px;height:32px;border-radius:50%;background:var(--mint);color:var(--mint-d);display:grid;place-items:center;font-weight:800}
 .fid-steps b{display:block;color:#fff;font-size:17px}
+
+/* Interruptor claro/oscuro de las capturas de la app */
+.cap-toggle { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(124, 66, 190, 0.3); background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.cap-toggle:hover { background: rgba(124, 66, 190, 0.08); }
+.cap-d { display: none; }
+:root[data-cap='dark'] .cap-l { display: none; }
+:root[data-cap='dark'] .cap-d { display: block; }
+@media (max-width: 640px) { .cap-toggle span:last-child { display: none; } }

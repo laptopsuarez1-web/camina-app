@@ -1,9 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import './landing.css';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Fidelidad, Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, CanjeResena, AppsSimilares, Planes, CierreComercio, CAP, WA_COMERCIO } from './shared';
+import { Fidelidad, Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, CanjeResena, AppsSimilares, Planes, CierreComercio, CAP, Shot, WA_COMERCIO } from './shared';
 
 export default function ComerciosPage() {
   return (
@@ -25,7 +24,7 @@ export default function ComerciosPage() {
             </div>
             <div className="stage">
               <Parallax speed={0.06}>
-                <div className="phone hero-phone"><Image src={CAP.canjes} alt="Pantalla de canjes con comercios y premios" width={780} height={1688} priority sizes="280px" /></div>
+                <div className="phone hero-phone"><Shot src={CAP.canjes} alt="Pantalla de canjes con comercios y premios" width={780} height={1688} priority sizes="280px" /></div>
               </Parallax>
               <FloatCards />
             </div>

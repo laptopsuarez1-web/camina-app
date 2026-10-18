@@ -1,8 +1,7 @@
-import Image from 'next/image';
 import './landing.css';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Locales, Galeria, Objetivos, EquipoRetos, Salud, DescargaGente, SoyComercio, CAP, WA_AVISAME } from './shared';
+import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Locales, Galeria, Objetivos, EquipoRetos, Salud, DescargaGente, SoyComercio, CAP, Shot, WA_AVISAME } from './shared';
 
 export default function GentePage() {
   return (
@@ -24,7 +23,7 @@ export default function GentePage() {
             </div>
             <div className="stage">
               <Parallax speed={0.06}>
-                <div className="phone hero-phone"><Image src={CAP.inicio} alt="Pantalla de inicio de Camina" width={780} height={1688} priority sizes="280px" /></div>
+                <div className="phone hero-phone"><Shot src={CAP.inicio} alt="Pantalla de inicio de Camina" width={780} height={1688} priority sizes="280px" /></div>
               </Parallax>
               <FloatCards />
             </div>

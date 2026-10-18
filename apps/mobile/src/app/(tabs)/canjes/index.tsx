@@ -1000,7 +1000,7 @@ export default function CanjesScreen() {
                 <View
                   style={{
                     shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
-                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 999, padding: 2, backgroundColor: '#fff' } : {}),
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
                   }}
                 >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}

@@ -175,8 +175,7 @@ export default function PuntosScreen() {
         </Press>
       </View>
 
-      {tarjetas && tarjetas.length > 0 ? (
-        <Press
+      <Press
           accessibilityRole="button"
           onPress={() => router.push('/(tabs)/tarjetas')}
           className="mx-5 mt-3 flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-2xl p-3.5"
@@ -184,16 +183,17 @@ export default function PuntosScreen() {
         >
           <IconBubble icon={Gift} tone="gold" size={40} />
           <View className="flex-1">
-            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Ver mis tarjetas</Text>
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
             <Text className="text-[12px] text-muted-light dark:text-muted-dark">
               {tarjetasListas > 0
                 ? `${tarjetasListas} ${plural(tarjetasListas, 'premio te espera', 'premios te esperan')}`
-                : `${tarjetas.length} ${plural(tarjetas.length, 'local', 'locales')}`}
+                : tarjetas && tarjetas.length > 0
+                  ? `${tarjetas.length} ${plural(tarjetas.length, 'local', 'locales')}`
+                  : 'Sumá sellos en cada local y ganá su premio'}
             </Text>
           </View>
           <ChevronRight size={18} color={colors.light.muted} />
         </Press>
-      ) : null}
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
         <View className="flex-row items-center gap-3 mb-2">
