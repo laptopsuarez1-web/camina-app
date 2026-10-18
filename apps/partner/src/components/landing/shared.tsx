@@ -4,7 +4,6 @@ import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/pla
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
-import CapToggle from './CapToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
@@ -25,21 +24,18 @@ export const CAP = {
   retos: '/web/cap/retos.jpg',
 };
 
-// Capturas con versión en modo oscuro (se muestran con el interruptor de la barra).
-const CAP_DARK: Record<string, string> = {
-  [CAP.canjes]: '/web/cap/canjes-dark.jpg',
+// "Así se ve Camina" muestra la app solo en modo oscuro.
+const CAP_DARK = {
+  inicio: '/web/cap/inicio-dark.jpg',
+  canjes: '/web/cap/canjes-dark.jpg',
+  fripaps: '/web/cap/ficha-fripaps-dark.jpg',
+  grupos: '/web/cap/grupos-dark.jpg',
+  actividad: '/web/cap/actividad-dark.jpg',
 };
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
-export function Shot({ src, ...rest }: ShotProps) {
-  const dark = CAP_DARK[src];
-  if (!dark) return <Image src={src} {...rest} />;
-  return (
-    <>
-      <Image className="cap-l" src={src} {...rest} />
-      <Image className="cap-d" src={dark} {...rest} />
-    </>
-  );
+export function Shot(props: ShotProps) {
+  return <Image {...props} />;
 }
 
 export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
@@ -54,7 +50,6 @@ export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
           <Link href="/" aria-current={activo === 'gente' ? 'page' : undefined}>Para vos</Link>
           <Link href="/comercios" aria-current={activo === 'comercios' ? 'page' : undefined}>Para comercios</Link>
         </nav>
-        <CapToggle />
         <Link href="/login" className="lp-login">Ingresar al panel</Link>
       </div>
     </header>
@@ -195,11 +190,11 @@ export function Locales() {
 
 export function Galeria() {
   const pant = [
-    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP.inicio],
-    ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
-    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
-    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP.grupos],
-    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
+    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP_DARK.inicio],
+    ['Canjear', 'Buscá comercios y mirá sus premios.', CAP_DARK.canjes],
+    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP_DARK.fripaps],
+    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP_DARK.grupos],
+    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP_DARK.actividad],
   ] as const;
   return (
     <section className="lp-sec alt" id="app">
@@ -212,6 +207,7 @@ export function Galeria() {
           </figure>
         ))}
       </div>
+      <p className="wrap gal-nota">Pasos, puntos y grupos son datos de ejemplo. Los locales y sus premios son reales.</p>
     </section>
   );
 }
