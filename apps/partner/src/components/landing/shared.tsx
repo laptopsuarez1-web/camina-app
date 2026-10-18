@@ -4,7 +4,7 @@ import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/pla
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
-import CapToggle from './CapToggle';
+import ModoToggle from './ModoToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
@@ -25,21 +25,18 @@ export const CAP = {
   retos: '/web/cap/retos.jpg',
 };
 
-// Capturas con versión en modo oscuro (se muestran con el interruptor de la barra).
+// "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
 const CAP_DARK: Record<string, string> = {
+  [CAP.inicio]: '/web/cap/inicio-dark.jpg',
   [CAP.canjes]: '/web/cap/canjes-dark.jpg',
+  [CAP.fripaps]: '/web/cap/ficha-fripaps-dark.jpg',
+  [CAP.grupos]: '/web/cap/grupos-dark.jpg',
+  [CAP.actividad]: '/web/cap/actividad-dark.jpg',
 };
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
-export function Shot({ src, ...rest }: ShotProps) {
-  const dark = CAP_DARK[src];
-  if (!dark) return <Image src={src} {...rest} />;
-  return (
-    <>
-      <Image className="cap-l" src={src} {...rest} />
-      <Image className="cap-d" src={dark} {...rest} />
-    </>
-  );
+export function Shot(props: ShotProps) {
+  return <Image {...props} />;
 }
 
 export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
@@ -54,7 +51,6 @@ export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
           <Link href="/" aria-current={activo === 'gente' ? 'page' : undefined}>Para vos</Link>
           <Link href="/comercios" aria-current={activo === 'comercios' ? 'page' : undefined}>Para comercios</Link>
         </nav>
-        <CapToggle />
         <Link href="/login" className="lp-login">Ingresar al panel</Link>
       </div>
     </header>
@@ -202,16 +198,20 @@ export function Galeria() {
     ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
   ] as const;
   return (
-    <section className="lp-sec alt" id="app">
-      <div className="wrap"><Kinetic text="Así se ve Camina." /></div>
+    <section className="lp-sec alt" id="app" data-modo="oscuro">
+      <div className="wrap"><Kinetic text="Así se ve Camina." /><ModoToggle /></div>
       <div className="gal" tabIndex={0} aria-label="Pantallas de la app">
         {pant.map(([t, d, src]) => (
           <figure key={t}>
-            <div className="phone"><Shot src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" /></div>
+            <div className="phone">
+              <Image className="cap-l" src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src]} alt="" width={780} height={1688} sizes="260px" />
+            </div>
             <figcaption><b>{t}</b>{d}</figcaption>
           </figure>
         ))}
       </div>
+      <p className="wrap gal-nota">Pasos, puntos y grupos son datos de ejemplo. Los locales y sus premios son reales.</p>
     </section>
   );
 }
