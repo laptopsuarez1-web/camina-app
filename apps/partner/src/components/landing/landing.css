@@ -278,3 +278,9 @@
 
 /* Interruptor claro/oscuro de las capturas de la app */
 .gal-nota{margin-top:6px;font-size:13px;color:var(--muted)}
+#app .gal .cap-l{display:none}
+#app[data-modo='claro'] .gal .cap-l{display:block}
+#app[data-modo='claro'] .gal .cap-d{display:none}
+.modo-toggle{display:inline-flex;margin-top:18px;padding:4px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.modo-toggle button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:700;padding:8px 18px;border-radius:999px;cursor:pointer;min-height:40px}
+.modo-toggle button[aria-pressed='true']{background:var(--violet);color:var(--mint)}

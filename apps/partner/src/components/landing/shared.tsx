@@ -4,6 +4,7 @@ import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/pla
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
+import ModoToggle from './ModoToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
@@ -24,13 +25,13 @@ export const CAP = {
   retos: '/web/cap/retos.jpg',
 };
 
-// "Así se ve Camina" muestra la app solo en modo oscuro.
-const CAP_DARK = {
-  inicio: '/web/cap/inicio-dark.jpg',
-  canjes: '/web/cap/canjes-dark.jpg',
-  fripaps: '/web/cap/ficha-fripaps-dark.jpg',
-  grupos: '/web/cap/grupos-dark.jpg',
-  actividad: '/web/cap/actividad-dark.jpg',
+// "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
+const CAP_DARK: Record<string, string> = {
+  [CAP.inicio]: '/web/cap/inicio-dark.jpg',
+  [CAP.canjes]: '/web/cap/canjes-dark.jpg',
+  [CAP.fripaps]: '/web/cap/ficha-fripaps-dark.jpg',
+  [CAP.grupos]: '/web/cap/grupos-dark.jpg',
+  [CAP.actividad]: '/web/cap/actividad-dark.jpg',
 };
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
@@ -190,19 +191,22 @@ export function Locales() {
 
 export function Galeria() {
   const pant = [
-    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP_DARK.inicio],
-    ['Canjear', 'Buscá comercios y mirá sus premios.', CAP_DARK.canjes],
-    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP_DARK.fripaps],
-    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP_DARK.grupos],
-    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP_DARK.actividad],
+    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP.inicio],
+    ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
+    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
+    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP.grupos],
+    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
   ] as const;
   return (
-    <section className="lp-sec alt" id="app">
-      <div className="wrap"><Kinetic text="Así se ve Camina." /></div>
+    <section className="lp-sec alt" id="app" data-modo="oscuro">
+      <div className="wrap"><Kinetic text="Así se ve Camina." /><ModoToggle /></div>
       <div className="gal" tabIndex={0} aria-label="Pantallas de la app">
         {pant.map(([t, d, src]) => (
           <figure key={t}>
-            <div className="phone"><Shot src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" /></div>
+            <div className="phone">
+              <Image className="cap-l" src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src]} alt="" width={780} height={1688} sizes="260px" />
+            </div>
             <figcaption><b>{t}</b>{d}</figcaption>
           </figure>
         ))}
