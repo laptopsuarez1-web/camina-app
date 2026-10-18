@@ -79,9 +79,9 @@ export function BusinessAvatar({
   featured?: boolean;
 }) {
   if (featured) {
+    // Aro dorado pegado al logo, sin relleno blanco; el tamaño total no cambia.
     const border = Math.max(2, Math.round(size * 0.035));
-    const pad = 2;
-    const inner = size - 2 * (border + pad);
+    const inner = size - 2 * border;
     return (
       <View
         style={{
@@ -89,9 +89,8 @@ export function BusinessAvatar({
           height: size,
           borderWidth: border,
           borderColor: GOLD,
-          borderRadius: inner * 0.28 + pad + border,
-          padding: pad,
-          backgroundColor: '#fff',
+          borderRadius: size * 0.28,
+          overflow: 'hidden',
           shadowColor: GOLD,
           shadowOpacity: 0.3,
           shadowRadius: 6,
