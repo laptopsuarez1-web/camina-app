@@ -6,10 +6,8 @@ import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Share2, Users, Trophy, Flame, Activity, Gift, IconBubble } from '@/components/icons';
-import { useStreak } from '@/hooks/useStreak';
+import { ChevronLeft, ChevronRight, Share2, Users, Trophy, Activity, Gift, IconBubble } from '@/components/icons';
 import { useLoyaltyCards } from '@/hooks/useLoyalty';
-import { useRetos } from '@/hooks/useRetos';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks/usePoints';
@@ -93,11 +91,8 @@ export default function PuntosScreen() {
   const { data: earnedToday } = usePointsToday();
   const { data: expiring } = usePointsExpiringSoon();
   const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
-  const { data: streak } = useStreak();
-  const { data: retos } = useRetos();
   const { data: tarjetas } = useLoyaltyCards();
   const tarjetasListas = (tarjetas ?? []).filter((c) => c.ready).length;
-  const retosListos = (retos ?? []).filter((r) => r.claimable).length;
   const [copied, setCopied] = useState(false);
 
   const link = useMemo(() => (profile ? referralLink(profile.id) : ''), [profile]);
@@ -153,27 +148,6 @@ export default function PuntosScreen() {
           </Text>
         )}
       </DarkHeader>
-
-      <View className="flex-row gap-3 mx-5 mt-4">
-        <Glass className="flex-1 flex-row items-center gap-2.5 rounded-2xl p-3">
-          <IconBubble icon={Flame} tone="orange" size={34} />
-          <View>
-            <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{streak ?? 0}</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{streak === 1 ? 'día' : 'días'} de racha</Text>
-          </View>
-        </Glass>
-        <Press
-          accessibilityRole="button"
-          onPress={() => router.push('/(tabs)/eventos')}
-          className="flex-1 flex-row items-center gap-2.5 bg-card-light dark:bg-card-dark rounded-2xl p-3"
-        >
-          <IconBubble icon={Trophy} tone="gold" size={34} />
-          <View>
-            <Text className="font-extrabold text-[15px] text-text-light dark:text-text-dark">{retosListos}</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">{retosListos === 1 ? 'reto listo' : 'retos listos'}</Text>
-          </View>
-        </Press>
-      </View>
 
       <Press
           accessibilityRole="button"

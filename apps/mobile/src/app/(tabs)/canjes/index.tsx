@@ -1000,7 +1000,7 @@ export default function CanjesScreen() {
                 <View
                   style={{
                     shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
-                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 30, padding: 2, backgroundColor: '#fff' } : {}),
+                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 28.5, padding: 2, backgroundColor: '#fff' } : {}),
                   }}
                 >
                   {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
@@ -1055,7 +1055,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <Instagram size={14} color={colors.light.text} />
+                      <Instagram size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Instagram</Text>
                     </Press>
                   ) : null}
@@ -1065,7 +1065,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <FacebookIcon size={14} color={colors.light.text} />
+                      <FacebookIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Facebook</Text>
                     </Press>
                   ) : null}
@@ -1075,7 +1075,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <TiktokIcon size={14} color={colors.light.text} />
+                      <TiktokIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">TikTok</Text>
                     </Press>
                   ) : null}
@@ -1087,7 +1087,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <WhatsappIcon size={14} color={colors.light.text} />
+                      <WhatsappIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
                     </Press>
                   ) : null}
@@ -1099,7 +1099,7 @@ export default function CanjesScreen() {
                       className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
                       style={{ gap: 6 }}
                     >
-                      <GlobeIcon size={14} color={colors.light.text} />
+                      <GlobeIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Sitio web</Text>
                     </Press>
                   ) : null}
