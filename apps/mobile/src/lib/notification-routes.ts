@@ -20,6 +20,8 @@ export function routeForNotification(type?: string): string {
     case 'group_challenge_end':
     case 'group_week':
       return '/(tabs)/grupos';
+    case 'wrapped':
+      return '/(tabs)/actividad';
     case 'streak':
     case 'streak_reminder':
     case 'story_approved':
