@@ -4,6 +4,7 @@ import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/pla
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
+import CapToggle from './CapToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
@@ -24,6 +25,23 @@ export const CAP = {
   retos: '/web/cap/retos.jpg',
 };
 
+// Capturas con versión en modo oscuro (se muestran con el interruptor de la barra).
+const CAP_DARK: Record<string, string> = {
+  [CAP.canjes]: '/web/cap/canjes-dark.jpg',
+};
+
+type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
+export function Shot({ src, ...rest }: ShotProps) {
+  const dark = CAP_DARK[src];
+  if (!dark) return <Image src={src} {...rest} />;
+  return (
+    <>
+      <Image className="cap-l" src={src} {...rest} />
+      <Image className="cap-d" src={dark} {...rest} />
+    </>
+  );
+}
+
 export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
   return (
     <header className="lp-nav">
@@ -36,6 +54,7 @@ export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
           <Link href="/" aria-current={activo === 'gente' ? 'page' : undefined}>Para vos</Link>
           <Link href="/comercios" aria-current={activo === 'comercios' ? 'page' : undefined}>Para comercios</Link>
         </nav>
+        <CapToggle />
         <Link href="/login" className="lp-login">Ingresar al panel</Link>
       </div>
     </header>
@@ -188,7 +207,7 @@ export function Galeria() {
       <div className="gal" tabIndex={0} aria-label="Pantallas de la app">
         {pant.map(([t, d, src]) => (
           <figure key={t}>
-            <div className="phone"><Image src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" /></div>
+            <div className="phone"><Shot src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" /></div>
             <figcaption><b>{t}</b>{d}</figcaption>
           </figure>
         ))}
@@ -230,7 +249,7 @@ export function Objetivos() {
                 <p>{b.d}</p>
               </div>
               <Parallax speed={i % 2 ? 0.05 : 0.09} className="goal-ph">
-                <div className="phone"><Image src={b.img} alt={b.alt} width={780} height={1688} sizes="270px" /></div>
+                <div className="phone"><Shot src={b.img} alt={b.alt} width={780} height={1688} sizes="270px" /></div>
               </Parallax>
             </InView>
           ))}
@@ -439,7 +458,7 @@ function Bloques({ items, dark = true }: { items: Bloque[]; dark?: boolean }) {
             {b.tag && <span className="ej">{b.tag}</span>}
           </div>
           <Parallax speed={i % 2 ? 0.05 : 0.09} className="goal-ph">
-            <div className="phone"><Image src={b.img} alt={b.alt} width={780} height={1688} sizes="270px" /></div>
+            <div className="phone"><Shot src={b.img} alt={b.alt} width={780} height={1688} sizes="270px" /></div>
           </Parallax>
         </InView>
       ))}
