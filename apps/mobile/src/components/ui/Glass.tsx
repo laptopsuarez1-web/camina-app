@@ -24,6 +24,12 @@ function radiusFrom(className?: string): number {
 // en web, backdrop-filter; en Android (sin desenfoque) queda solo el relleno translúcido.
 const LIQUID = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
+// En web, un hijo sin posición (un <input>, una ficha) se pinta DEBAJO de las capas absolutas del vidrio aunque vengan antes en el DOM:
+// con el vidrio en Sólido el relleno es opaco y tapaba los campos de texto; con vidrio, los dejaba lavados. Las capas van detrás (zIndex -1)
+// dentro de un contexto de apilado propio (isolation) para que no se vayan detrás de la pantalla.
+const BEHIND: ViewStyle | null = Platform.OS === 'web' ? ({ zIndex: -1 } as ViewStyle) : null;
+const ISOLATE = Platform.OS === 'web' ? ({ isolation: 'isolate' } as unknown as ViewStyle) : null;
+
 // Borde de luz direccional: [arriba, izquierda, derecha, abajo].
 const EDGE_LIGHT: ViewStyle = {
   borderTopColor: 'rgba(255,255,255,0.95)', borderLeftColor: 'rgba(255,255,255,0.8)',
@@ -72,6 +78,7 @@ export function Glass({
           shadowRadius: 18,
           shadowOffset: { width: 0, height: 8 },
         },
+        ISOLATE,
         on && Platform.OS === 'web' && ({ backdropFilter: blurWeb(amount), WebkitBackdropFilter: blurWeb(amount), boxShadow: dark ? '0 1px 2px rgba(0,0,0,0.25), 0 10px 28px rgba(0,0,0,0.30)' : '0 1px 2px rgba(41,28,71,0.08), 0 10px 28px rgba(91,49,163,0.13)' } as ViewStyle),
         style,
         // En Android la sombra (elevation) se ve a través del vidrio y dibuja rectángulos: nunca se usa.
@@ -104,7 +111,7 @@ export function Glass({
             start={{ x: 0, y: 0 }}
             end={{ x: 0.35, y: 1 }}
             pointerEvents="none"
-            style={[StyleSheet.absoluteFill, innerShape]}
+            style={[StyleSheet.absoluteFill, innerShape, BEHIND]}
           />
         </>
       )}
@@ -115,7 +122,7 @@ export function Glass({
           start={{ x: 0, y: 0 }}
           end={{ x: 0.55, y: 0.5 }}
           pointerEvents="none"
-          style={[StyleSheet.absoluteFill, innerShape]}
+          style={[StyleSheet.absoluteFill, innerShape, BEHIND]}
         />
       )}
       {children}

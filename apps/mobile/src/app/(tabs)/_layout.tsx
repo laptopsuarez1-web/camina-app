@@ -39,6 +39,8 @@ export default function TabsLayout() {
   return (
     <View style={{ flex: 1 }}>
     <Tabs
+      // Volver atrás regresa a la pantalla anterior (Permisos → Perfil → …), no siempre al Inicio.
+      backBehavior="history"
       screenLayout={({ children }) => (
         <View style={{ flex: 1 }}>
           <AmbientBackground />
