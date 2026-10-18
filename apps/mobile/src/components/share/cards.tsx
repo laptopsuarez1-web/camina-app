@@ -52,7 +52,7 @@ export function CardFrame({
         </View>
       ) : null}
       {/* Zona segura de Instagram: arriba y abajo queda libre lo que tapan la barra y la caja de respuesta. */}
-      <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 56 : 14, paddingHorizontal: story ? 22 : 18 }}>
+      <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 50 : 14, paddingHorizontal: story ? 22 : 18 }}>
         {progress ? (
           <View style={{ position: 'absolute', top: 30, left: 22, right: 22, flexDirection: 'row', gap: 4 }}>
             {Array.from({ length: progress.total }, (_, i) => (
@@ -78,19 +78,26 @@ export function CardFrame({
 
 // ---------- Piezas ----------
 
-function Tile({ p, label, value, unit, style }: { p: Pal; label: string; value: string; unit?: string; style?: ViewStyle }) {
+// Tamaño de fuente para que un número grande entre en `maxW` px (sin depender de adjustsFontSizeToFit, que no se banca en todos lados).
+// Los dígitos en negrita miden ~0,58 em y el punto de miles ~0,3 em.
+function fitSize(text: string, base: number, maxW: number) {
+  const em = [...text].reduce((a, c) => a + (/\d/.test(c) ? 0.58 : 0.32), 0);
+  return Math.min(base, Math.floor(maxW / em));
+}
+
+function Tile({ p, label, value, unit, style, stack, small }: { p: Pal; label: string; value: string; unit?: string; style?: ViewStyle; stack?: boolean; small?: boolean }) {
   return (
-    <View style={[{ flex: 1, backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 16, paddingVertical: 9, paddingHorizontal: 11 }, style]}>
+    <View style={[{ flex: 1, backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 16, paddingVertical: 7, paddingHorizontal: small ? 9 : 11 }, style]}>
       <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }} numberOfLines={1}>{label}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 1 }}>
-        <Text style={{ fontSize: 20, fontWeight: '800', color: p.ink, letterSpacing: -0.4 }} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-        {unit ? <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }}>{unit}</Text> : null}
+      <View style={stack ? { marginTop: 1 } : { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 1 }}>
+        <Text style={{ fontSize: small ? 17 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.4 }} numberOfLines={1}>{value}</Text>
+        {unit ? <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }} numberOfLines={1}>{unit}</Text> : null}
       </View>
     </View>
   );
 }
 
-function TileGrid({ p, tiles }: { p: Pal; tiles: { label: string; value: string; unit?: string }[] }) {
+function TileGrid({ p, tiles }: { p: Pal; tiles: { label: string; value: string; unit?: string; stack?: boolean }[] }) {
   const rows: (typeof tiles)[] = [];
   for (let i = 0; i < tiles.length; i += 2) rows.push(tiles.slice(i, i + 2));
   return (
@@ -222,7 +229,7 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   const label = week ? `Mi semana · ${rangeLabel(stats.rangeStart, stats.rangeEnd)}` : `Mi mes · ${rangeLabel(stats.rangeStart, stats.rangeEnd)}`;
   const tiles = [
     { label: 'Promedio por día', value: fmtInt(stats.avgPerDay), unit: 'pasos' },
-    { label: 'Día más activo', value: stats.best ? (week ? weekdayName(stats.best.key) : shortDay(stats.best.key)) : '–', unit: stats.best ? `${fmtInt(stats.best.steps)} pasos` : undefined },
+    { label: 'Día más activo', value: stats.best ? (week ? weekdayName(stats.best.key) : shortDay(stats.best.key)) : '–', unit: stats.best ? `${fmtInt(stats.best.steps)} pasos` : undefined, stack: true },
     { label: 'Racha', value: String(streak), unit: streak === 1 ? 'día seguido' : 'días seguidos' },
     { label: 'Meta cumplida', value: `${stats.daysMet} de ${stats.days}`, unit: 'días' },
     weeklyRank
@@ -230,16 +237,21 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
       : { label: 'Distancia', value: fmtKm(stats.km), unit: 'km' },
     { label: 'Calorías*', value: `≈ ${fmtInt(stats.kcal)}`, unit: 'kcal' },
   ];
-  const squareTiles = [tiles[0], tiles[1], tiles[3]];
+  const squareTiles = [
+    { label: 'Promedio/día', value: fmtInt(stats.avgPerDay), unit: 'pasos' },
+    { label: 'Más activo', value: stats.best ? shortDay(stats.best.key) : '–', unit: stats.best ? `${fmtInt(stats.best.steps)} pasos` : undefined },
+    { label: 'Meta cumplida', value: `${stats.daysMet} de ${stats.days}`, unit: 'días' },
+  ];
+  const bigSize = fitSize(fmtInt(stats.steps), story ? 50 : 40, CARD_W - (story ? 44 : 36));
 
   return (
     <CardFrame theme={theme} format={format} label={label}>
       <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted }}>{name ? `${week ? 'La semana' : 'El mes'} de ${name}` : week ? 'Mi semana' : 'Mi mes'}</Text>
-      <Text style={{ fontSize: story ? 58 : 40, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>{fmtInt(stats.steps)}</Text>
+      <Text style={{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.12), flexShrink: 0, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1}>{fmtInt(stats.steps)}</Text>
       <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>{week ? 'pasos esta semana' : 'pasos este mes'}</Text>
       {story ? <Trend p={p} pct={stats.trendPct} what={week ? 'la anterior' : 'el mes pasado'} /> : null}
-      <View style={{ marginTop: story ? 18 : 8, marginBottom: story ? 16 : 8 }}>
-        <Bars p={p} stats={stats} height={story ? 120 : 62} goal={goal} showLabels={week} />
+      <View style={{ marginTop: story ? 12 : 8, marginBottom: story ? 10 : 8 }}>
+        <Bars p={p} stats={stats} height={story ? 84 : 62} goal={goal} showLabels={week} />
       </View>
       {story ? (
         <>
@@ -248,7 +260,7 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
         </>
       ) : (
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          {squareTiles.map((t) => <Tile key={t.label} p={p} {...t} />)}
+          {squareTiles.map((t) => <Tile key={t.label} p={p} {...t} stack small />)}
         </View>
       )}
     </CardFrame>
@@ -274,7 +286,7 @@ function Medal({ p, label, rank, steps, isMe, big }: { p: Pal; label: string; ra
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
-      <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: 4 }} numberOfLines={1}>{isMe ? 'Vos' : label}</Text>
+      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: 4 }} numberOfLines={1}>{isMe ? 'Vos' : label}</Text> : <View style={{ height: 4 }} />}
       <View style={{ width: '88%', marginTop: 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: big ? 14 : 9 }}>
         <Text style={{ fontSize: big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>
@@ -295,7 +307,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   return (
     <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
       <Text style={{ fontSize: 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
-      <Text style={{ fontSize: story ? 28 : 22, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={2} adjustsFontSizeToFit>{data.groupName}</Text>
+      <Text style={{ fontSize: story ? 28 : 22, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={2}>{data.groupName}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 14 : 6, gap: 8 }}>
         {podium.map((m) => {
           const rank = members.findIndex((x) => x.id === m.id) + 1;
@@ -357,7 +369,7 @@ export type WrappedData = {
 export const wrappedSlideCount = (d: WrappedData) => (d.rank ? 6 : 5);
 
 function BigNumber({ p, value, size = 64 }: { p: Pal; value: string; size?: number }) {
-  return <Text style={{ fontSize: size, fontWeight: '800', color: p.ink, letterSpacing: -2 }} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>;
+  return <Text style={{ fontSize: fitSize(value, size, CARD_W - 44), fontWeight: '800', color: p.ink, letterSpacing: -2, lineHeight: Math.round(fitSize(value, size, CARD_W - 44) * 1.12) }} numberOfLines={1}>{value}</Text>;
 }
 function Kicker({ p, children }: { p: Pal; children: ReactNode }) {
   return <Text style={{ fontSize: 14, fontWeight: '700', color: p.muted, marginBottom: 6 }}>{children}</Text>;
