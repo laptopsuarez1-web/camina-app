@@ -13,7 +13,9 @@ export function useBenefits() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('benefits')
-        .select('*, business:businesses(*)')
+        // Hay dos relaciones entre benefits y businesses (benefits.business_id y businesses.loyalty_benefit_id):
+        // sin indicar cuál, PostgREST responde 300 (ambiguo) y Canjes no carga.
+        .select('*, business:businesses!benefits_business_id_fkey(*)')
         .eq('active', true);
       if (error) throw error;
       return (data as unknown as BenefitWithBusiness[]).filter((b) => (b.business?.city ?? 'Tarija') === city);

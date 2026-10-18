@@ -125,12 +125,11 @@
 
 /* locales reales */
 .locs{display:grid;gap:20px;margin-top:40px}
-.loc{background:#fff;border:1.5px solid var(--line);border-radius:28px;overflow:hidden;padding-bottom:22px}
-.loc-cover{position:relative;aspect-ratio:16/9;margin-bottom:44px}
-.loc-cover>img:first-child{width:100%;height:100%;object-fit:cover;display:block}
-.loc-logo{position:absolute;left:20px;bottom:-38px;width:76px;height:76px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 8px 20px rgba(36,23,72,.25);background:#fff}
-.loc h3{padding:0 22px;font-size:26px}
-.loc-cat{padding:4px 22px 0;color:var(--muted);font-size:14px}
+.loc{background:#fff;border:1.5px solid var(--line);border-radius:24px;overflow:hidden;padding:18px 0 14px}
+.loc-head{display:flex;align-items:center;gap:14px;padding:0 22px}
+.loc-logo{flex:none;width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--line);background:#fff}
+.loc h3{font-size:20px;margin:0}
+.loc-cat{margin:2px 0 0;color:var(--muted);font-size:13px}
 .loc ul{margin:16px 22px 0;display:grid;gap:0}
 .loc li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1.5px solid var(--line);align-items:center}
 .loc li span{font-weight:700}

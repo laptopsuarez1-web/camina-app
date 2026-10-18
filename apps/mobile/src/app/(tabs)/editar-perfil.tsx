@@ -20,6 +20,7 @@ import { BIO_MAX_LENGTH } from '@/constants/business-rules';
 import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { AccountEmailCard } from '@/components/AccountEmailCard';
 
 const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
   Café: Coffee,
@@ -246,6 +247,8 @@ export default function EditarPerfilScreen() {
             </View>
             <Text className="text-[12.5px] font-semibold mt-2 text-purple-ink dark:text-purple-soft">Cambiar foto</Text>
           </Press>
+
+          <AccountEmailCard />
 
           <Glass className="rounded-3xl p-4 mb-4">
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>

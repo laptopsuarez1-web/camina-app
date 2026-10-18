@@ -6,7 +6,7 @@ import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck, Gift } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -20,7 +20,6 @@ import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -193,8 +192,6 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
-      <AccountEmailCard />
-
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
           accessibilityRole="button"
@@ -230,6 +227,17 @@ export default function PerfilScreen() {
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{friendRequests!.length}</Text>
             </View>
           )}
+          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+        </Press>
+      </Glass>
+
+      <Glass className="rounded-3xl overflow-hidden mb-3">
+        <Press accessibilityRole="button" accessibilityLabel="Tarjetas de fidelidad" onPress={() => router.push('/(tabs)/tarjetas')} className="flex-row items-center p-4" style={{ gap: 14 }}>
+          <IconBubble icon={Gift} tone="gold" size={46} />
+          <View className="flex-1">
+            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Sumá sellos en cada local y ganá su premio</Text>
+          </View>
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
@@ -286,16 +294,16 @@ export default function PerfilScreen() {
           onPress={locationAction}
           last
         />
+        <View className="flex-row items-center justify-between p-3.5 border-t border-line-light dark:border-line-dark" style={{ gap: 12 }}>
+          <View className="flex-1">
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Que otros vean tu nombre y tus pasos en el ranking.</Text>
+          </View>
+          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
+        </View>
           </Glass>
         </View>
       </Modal>
-
-      <Glass className="rounded-md overflow-hidden mb-3">
-        <View className="flex-row items-center justify-between p-3.5">
-          <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
-          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
-        </View>
-      </Glass>
 
       <Glass className="rounded-3xl p-4 mb-3">
         <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark mb-2">Personalización</Text>
