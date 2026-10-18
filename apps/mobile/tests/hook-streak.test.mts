@@ -172,7 +172,7 @@ test('el filtro de fecha usa el día local: desde las 20:00 en La Paz sigue pidi
   });
 });
 
-test('BUG conocido: una racha de más de ~60 días se muestra recortada', { todo: 'hooks/useStreak.ts:17-18 mira solo los últimos 60 días; con 100 días seguidos devuelve 61' }, async () => {
+test('una racha de más de 60 días no se recorta', async () => {
   await atTime(AHORA, LA_PAZ, async () => {
     seed(Array.from({ length: 100 }, (_, i) => ({ day: dayKey(-i), steps: 7000, goal: 6000 })));
     assert.equal(await streak(), 100);
