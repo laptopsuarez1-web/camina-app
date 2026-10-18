@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, Rect } from 'react-native-svg';
+import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
-import { Crown, Flame, Footprints, Trophy } from '@/components/icons';
+import { Crown, Flame, Trophy } from '@/components/icons';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, type ShareStats } from '@/lib/share-stats';
 
@@ -24,6 +24,7 @@ const PAL = {
     tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)',
     bar: '#4FC3A8', barBest: '#1F7A66', barOff: '#D4C8EC', goal: 'rgba(41,28,71,0.35)',
     track: 'rgba(91,49,163,0.12)', mark: '#8B4FD1', flame: '#E0782A', gold: '#B77A0B',
+    logo: '#5B6B99', logoOpacity: 0.15, onBar: '#FFFFFF',
   },
   dark: {
     bg: ['#2A1B52', '#1B1236', '#120C1F'] as const,
@@ -31,6 +32,7 @@ const PAL = {
     tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)',
     bar: '#7FEDC4', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
+    logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
   },
 } as const;
 export type Pal = (typeof PAL)['light'] | (typeof PAL)['dark'];
@@ -46,11 +48,14 @@ export function CardFrame({
   return (
     <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden', backgroundColor: p.bg[1] }}>
       <LinearGradient colors={[...p.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
-      {story ? (
-        <View style={{ position: 'absolute', right: -52, bottom: 70, opacity: 0.07 }}>
-          <Footprints size={280} color={p.mark} weight="fill" />
-        </View>
-      ) : null}
+      {/* El logo de Camina grande y apagado de fondo, cortado por el borde. */}
+      <Image
+        source={require('@/../assets/logo-mint.png')}
+        accessible={false}
+        style={story
+          ? { position: 'absolute', left: 112, top: 268, width: 340, height: 340, tintColor: p.logo, opacity: p.logoOpacity }
+          : { position: 'absolute', left: 170, top: 100, width: 250, height: 250, tintColor: p.logo, opacity: p.logoOpacity }}
+      />
       {/* Zona segura de Instagram: arriba y abajo queda libre lo que tapan la barra y la caja de respuesta. */}
       <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 50 : 14, paddingHorizontal: story ? 22 : 18 }}>
         {progress ? (
@@ -112,10 +117,10 @@ function TileGrid({ p, tiles }: { p: Pal; tiles: { label: string; value: string;
   );
 }
 
-function Trend({ p, pct, what }: { p: Pal; pct: number | null; what: string }) {
+function Trend({ p, pct, what, inline }: { p: Pal; pct: number | null; what: string; inline?: boolean }) {
   if (pct === null || pct === 0) return null;
   return (
-    <View style={{ alignSelf: 'flex-start', backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 9, paddingVertical: 3, marginTop: 6 }}>
+    <View style={{ alignSelf: 'flex-start', backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 9, paddingVertical: 3, marginTop: inline ? 0 : 6 }}>
       <Text style={{ fontSize: 10.5, fontWeight: '700', color: p.accent }}>{pct > 0 ? '↑' : '↓'} {Math.abs(pct)} % {pct > 0 ? 'más' : 'menos'} que {what}</Text>
     </View>
   );
@@ -145,6 +150,41 @@ function Bars({ p, stats, height, goal, showLabels }: { p: Pal; stats: ShareStat
           ))}
         </View>
       ) : null}
+    </View>
+  );
+}
+
+// Calendario del mes: un círculo por día, con tilde si se cumplió la meta (el día más activo, más oscuro).
+function CalendarDots({ p, stats, cell, pitch, width }: { p: Pal; stats: ShareStats; cell: number; pitch: number; width: number }) {
+  const [y, m, d] = stats.rangeStart.split('-').map(Number);
+  const off = (new Date(y, m - 1, d).getDay() + 6) % 7;
+  const colW = width / 7;
+  const rows = Math.ceil((off + stats.bars.length) / 7);
+  const r = cell / 2;
+  return (
+    <View>
+      <View style={{ flexDirection: 'row', marginBottom: 4 }}>
+        {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((l) => (
+          <Text key={l} style={{ width: colW, textAlign: 'center', fontSize: 10, fontWeight: '700', color: p.muted }}>{l}</Text>
+        ))}
+      </View>
+      <Svg width={width} height={rows * pitch}>
+        {stats.bars.map((b, i) => {
+          const pos = off + i;
+          const cx = (pos % 7) * colW + colW / 2;
+          const cy = Math.floor(pos / 7) * pitch + pitch / 2;
+          if (!b.met) return <Circle key={b.key} cx={cx} cy={cy} r={r - 0.75} stroke={p.barOff} strokeWidth={1.5} fill="none" />;
+          return (
+            <React.Fragment key={b.key}>
+              <Circle cx={cx} cy={cy} r={r} fill={b.isBest ? p.barBest : p.bar} />
+              <Polyline
+                points={`${cx - r * 0.42},${cy + r * 0.04} ${cx - r * 0.1},${cy + r * 0.38} ${cx + r * 0.46},${cy - r * 0.32}`}
+                stroke={p.onBar} strokeWidth={Math.max(1.4, cell * 0.12)} strokeLinecap="round" strokeLinejoin="round" fill="none"
+              />
+            </React.Fragment>
+          );
+        })}
+      </Svg>
     </View>
   );
 }
@@ -248,14 +288,28 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
     <CardFrame theme={theme} format={format} label={label}>
       <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted }}>{name ? `${week ? 'La semana' : 'El mes'} de ${name}` : week ? 'Mi semana' : 'Mi mes'}</Text>
       <Text style={{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.12), flexShrink: 0, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1}>{fmtInt(stats.steps)}</Text>
-      <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>{week ? 'pasos esta semana' : 'pasos este mes'}</Text>
-      {story ? <Trend p={p} pct={stats.trendPct} what={week ? 'la anterior' : 'el mes pasado'} /> : null}
-      <View style={{ marginTop: story ? 12 : 8, marginBottom: story ? 10 : 8 }}>
-        <Bars p={p} stats={stats} height={story ? 84 : 62} goal={goal} showLabels={week} />
+      {week ? (
+        <>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>pasos esta semana</Text>
+          {story ? <Trend p={p} pct={stats.trendPct} what="la anterior" /> : null}
+        </>
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>pasos este mes</Text>
+          {story ? <Trend p={p} pct={stats.trendPct} what="el mes pasado" inline /> : null}
+        </View>
+      )}
+      <View style={{ marginTop: story ? 12 : 8, marginBottom: story ? 10 : 6 }}>
+        {week ? (
+          <Bars p={p} stats={stats} height={story ? 84 : 62} goal={goal} showLabels />
+        ) : (
+          <CalendarDots p={p} stats={stats} cell={story ? 20 : 13} pitch={story ? 25 : 15} width={CARD_W - (story ? 44 : 36)} />
+        )}
       </View>
       {story ? (
         <>
-          <TileGrid p={p} tiles={tiles} />
+          {/* En el mes el calendario ya cuenta la racha, así que van solo cuatro cuadros. */}
+          <TileGrid p={p} tiles={week ? tiles : [tiles[0], tiles[1], tiles[3], tiles[5]]} />
           <Note p={p} />
         </>
       ) : (
