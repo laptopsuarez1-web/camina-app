@@ -165,7 +165,7 @@ export function NearbyRow({
               key={p.business.id}
               accessibilityRole="button"
               accessibilityLabel={`${p.business.name}, ${p.business.category}${featured ? ', destacado' : ''}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}, desde ${p.minCost} ${plural(p.minCost, 'Punto', 'Puntos')}`}
-              onPress={() => router.push('/(tabs)/canjes')}
+              onPress={() => router.push(`/(tabs)/canjes?negocio=${p.business.id}`)}
               style={{ width: 268 }}
             >
               <Glass
@@ -173,7 +173,7 @@ export function NearbyRow({
                 style={[{ flex: 1, padding: 18 }, featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : null]}
               >
                 <View className="flex-row items-center" style={{ gap: 10 }}>
-                  <BusinessAvatar logoUrl={p.business.logo_url} category={p.business.category} size={62} />
+                  <BusinessAvatar logoUrl={p.business.logo_url} category={p.business.category} size={62} featured={featured} />
                   <View className="flex-1 min-w-0">
                     <View className="flex-row items-center" style={{ gap: 5 }}>
                       <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{p.business.name}</Text>
@@ -210,7 +210,7 @@ export type RedemptionRow = {
   created_at: string;
   confirmed_at?: string | null;
   benefit: { name: string } | null;
-  business: { name: string; logo_url: string | null; category: string } | null;
+  business: { id?: string; name: string; logo_url: string | null; category: string; plan?: string | null } | null;
 };
 
 const STATUS_LABEL: Record<RedemptionRow['status'], string> = {
@@ -275,11 +275,11 @@ export function MyRedemptionsSection({
                 <Press
                   accessibilityRole="button"
                   accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
-                  onPress={() => router.push('/(tabs)/canjes')}
+                  onPress={() => router.push(r.business?.id ? `/(tabs)/canjes?negocio=${r.business.id}` : '/(tabs)/canjes')}
                   className="flex-row items-center p-3.5"
                   style={{ gap: 12 }}
                 >
-                  <BusinessAvatar logoUrl={r.business?.logo_url} category={r.business?.category} size={42} />
+                  <BusinessAvatar logoUrl={r.business?.logo_url} category={r.business?.category} size={42} featured={!!r.business && isFeatured(r.business)} />
                   <View className="flex-1 min-w-0">
                     <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{r.benefit?.name ?? 'Premio'}</Text>
                     <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
