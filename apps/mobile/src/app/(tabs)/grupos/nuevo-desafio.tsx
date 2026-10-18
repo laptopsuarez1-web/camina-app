@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Alert, ActivityIndicator, Image, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Alert, ActivityIndicator, Share, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,6 +15,7 @@ import { Glass } from '@/components/ui/Glass';
 import type { ChallengeRule } from '@/hooks/useChallenges';
 import { friendlyServerError } from '@/lib/errors';
 import { localDay } from '@/lib/format';
+import { Coin } from '@/components/ui/Coin';
 
 const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Activity; tone: 'aqua' | 'gold' | 'orange' }[] = [
   { key: 'steps', title: 'Más pasos', desc: 'Gana quien suma más pasos', icon: Activity, tone: 'aqua' },
@@ -183,19 +184,19 @@ export default function NuevoDesafioScreen() {
 
             <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark mt-5">Puntos en juego</Text>
             <View className="flex-row items-center mt-0.5 mb-3" style={{ gap: 6 }}>
-              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cada persona pone de sus propios puntos · tenés</Text>
-              <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cada persona pone de sus propios Puntos · tenés</Text>
+              <Coin size={14} />
               <Text className="text-[12px] font-bold text-text-light dark:text-text-dark">{balance ?? 0}</Text>
             </View>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
               {STAKES.map((v) => (
                 <Press key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} aria-pressed={stake === v} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
-                  {v > 0 && <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />}
+                  {v > 0 && <Coin size={14} />}
                   <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(stake === v ? { color: '#fff' } : null) }}>{v}</Text>
                 </Press>
               ))}
             </View>
-            {insufficient && <Text className="text-[12px] mt-2" style={{ color: dangerText }}>No te alcanzan los puntos para poner {stake}.</Text>}
+            {insufficient && <Text className="text-[12px] mt-2" style={{ color: dangerText }}>No te alcanzan los Puntos para poner {stake}.</Text>}
             <Glass className="rounded-2xl p-3.5 mt-4">
               <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">Cómo se reparte</Text>
               <Text className="text-[12px] leading-[17px] text-muted-light dark:text-muted-dark mt-1">

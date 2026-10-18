@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, ScrollView, Image } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -15,6 +15,7 @@ import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
 import { StoryRewardButton, type StoryState } from '@/components/story/StoryShare';
+import { Coin } from '@/components/ui/Coin';
 
 // ---------------------------------------------------------------------------------------------
 // Piezas comunes
@@ -38,7 +39,7 @@ export function SectionHeader({
 function CoinPill({ value, prefix }: { value: number; prefix?: string }) {
   return (
     <View className="flex-row items-center bg-aqua-deep rounded-full self-start" style={{ gap: 4, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}>
-      <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 18, height: 18, borderRadius: 9 }} />
+      <Coin size={18} />
       <Text className="text-white text-[12px] font-bold">{prefix ? `${prefix} ` : ''}{value}</Text>
     </View>
   );

@@ -47,6 +47,7 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { friendlyError, friendlyServerError } from '@/lib/errors';
 import { plural } from '@/lib/format';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { Coin } from '@/components/ui/Coin';
 
 type BusinessT = BenefitWithBusiness['business'];
 
@@ -194,7 +195,7 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
             justifyContent: 'center',
           }}
         >
-          <Image source={require('@/../assets/camina-coin-gold.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
+          <Coin size={22} gold />
         </View>
       )}
     </View>
@@ -227,9 +228,9 @@ function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boole
       className="flex-row items-center rounded-full"
       style={{ gap: 5, backgroundColor: dim ? colors.light.line : colors.aquaDeep, paddingVertical: 3, paddingLeft: 3, paddingRight: 10 }}
     >
-      <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+      <Coin size={20} />
       <Text style={{ color: dim ? colors.light.muted : '#fff', fontSize: 13, fontWeight: '700' }}>{cost}</Text>
-      {was != null ? <Text style={{ color: dim ? colors.light.muted : '#D9F3EC', fontSize: 11.5, textDecorationLine: 'line-through' }}>{was}</Text> : null}
+      {was != null ? <Text style={{ color: dim ? colors.light.muted : '#D9F3EC', fontSize: 12, textDecorationLine: 'line-through' }}>{was}</Text> : null}
     </View>
   );
 }
@@ -268,7 +269,7 @@ function SuccessMark() {
 
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
-  const { muted } = useThemeColors();
+  const { muted, favorite } = useThemeColors();
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading, isError, refetch } = useBenefits();
@@ -599,7 +600,7 @@ export default function CanjesScreen() {
               className="flex-row items-center bg-card-light rounded-full pl-1.5 pr-3"
               style={{ height: 32, gap: 6 }}
             >
-              <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+              <Coin size={20} />
               <Text style={{ fontWeight: '700', fontSize: 15, color: colors.light.text }}>{balanceText}</Text>
             </Press>
             <View className="flex-row items-center" style={{ gap: 10 }}>
@@ -821,7 +822,7 @@ export default function CanjesScreen() {
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
                   <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
-                    <Heart size={20} color={favorites.isFavorite(g.business.id) ? '#E5484D' : muted} fill={favorites.isFavorite(g.business.id) ? '#E5484D' : 'none'} />
+                    <Heart size={20} color={favorites.isFavorite(g.business.id) ? favorite : muted} fill={favorites.isFavorite(g.business.id) ? favorite : 'none'} />
                   </Press>
                   <ChevronRight size={18} color={muted} />
                 </View>
@@ -837,7 +838,7 @@ export default function CanjesScreen() {
                     className="flex-row items-center bg-aqua-deep rounded-full"
                     style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
                   >
-                    <Image source={require('@/../assets/camina-coin.png')} style={{ width: 20, height: 20, borderRadius: 10 }} />
+                    <Coin size={20} />
                     <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
                     <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
                   </View>
@@ -849,7 +850,7 @@ export default function CanjesScreen() {
           {!isLoading && !isError && groups.length === 0 && (
             <EmptyState
               title="No encontramos comercios acá"
-              text="Probá con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, seguí juntando puntos."
+              text="Probá con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, seguí juntando Puntos."
             />
           )}
         </View>
@@ -930,7 +931,7 @@ export default function CanjesScreen() {
                     <MapPin size={15} color={colors.purple} />
                     <View style={{ flex: 1 }}>
                       <Text numberOfLines={1} style={{ fontWeight: '700', fontSize: 13, color: colors.light.text }}>{b.name}</Text>
-                      <Text numberOfLines={1} style={{ fontSize: 11.5, color: colors.light.muted }}>{b.category}</Text>
+                      <Text numberOfLines={1} style={{ fontSize: 12, color: colors.light.muted }}>{b.category}</Text>
                     </View>
                   </Press>
                 ))}
@@ -1013,7 +1014,7 @@ export default function CanjesScreen() {
                     {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
                   </View>
                   <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
-                    <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : muted} fill={favorites.isFavorite(profileGroup.business.id) ? '#E5484D' : 'none'} />
+                    <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? favorite : muted} fill={favorites.isFavorite(profileGroup.business.id) ? favorite : 'none'} />
                   </Press>
                 </View>
 
@@ -1160,7 +1161,7 @@ export default function CanjesScreen() {
                                 <View className="flex-1">
                                   <Text className="text-[16px] font-bold text-text-light dark:text-text-dark" numberOfLines={2}>{b.name}</Text>
                                   {isLoyaltyPrize ? (
-                                    <Text className="text-[11.5px] font-bold mt-0.5" style={{ color: '#8F6307' }}>Premio de tu tarjeta</Text>
+                                    <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>Premio de tu tarjeta</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
                                     {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
@@ -1384,7 +1385,7 @@ export default function CanjesScreen() {
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
-                  <Text className="text-[11px] text-muted-light dark:text-muted-dark mb-2 px-6 text-center">Tus Puntos se descuentan cuando el local lo confirma.</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-2 px-6 text-center">Tus Puntos se descuentan cuando el local lo confirma.</Text>
                   {/* Se lee dígito por dígito, para dictárselo al comercio. */}
                   <Text
                     accessibilityLabel={`Código ${(activeRedemption?.code ?? '').split('').join(' ')}`}

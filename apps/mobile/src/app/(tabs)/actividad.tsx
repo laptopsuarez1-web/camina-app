@@ -413,11 +413,11 @@ export default function ActividadScreen() {
           {([['met', 'Meta cumplida'], ['miss', 'No cumpliste'], ['idle', 'No abriste la app']] as const).map(([k, label]) => (
             <View key={k} className="flex-row items-center" style={{ gap: 5 }}>
               <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: CAL_BG[k] }} />
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{label}</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">{label}</Text>
             </View>
           ))}
         </View>
-        <Text className="text-[11.5px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
       </Glass>
 
       <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>Toda tu actividad</Text>
