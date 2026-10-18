@@ -8,6 +8,7 @@ import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { mensajeError } from '@/lib/errors';
+import { FRANJAS_COMUNES, DIAS_ENTRE_SEMANA_MASK, franjaFloja } from '@/lib/horasMuertas';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
@@ -203,6 +204,31 @@ function BeneficioForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Canjes confirmados por hora (últimos 60 días), para sugerir la franja más floja. Solo planes
+  // con estadísticas, igual que la página de Estadísticas.
+  const [sugerida, setSugerida] = useState<ReturnType<typeof franjaFloja>>(null);
+  useEffect(() => {
+    if (isFree) return;
+    const since = new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString();
+    supabase
+      .from('redemptions')
+      .select('created_at, confirmed_at')
+      .eq('business_id', businessId)
+      .eq('status', 'confirmed')
+      .gte('created_at', since)
+      .then(({ data }) => {
+        const byHour = new Array(24).fill(0) as number[];
+        for (const r of (data as { created_at: string; confirmed_at: string | null }[] | null) ?? []) {
+          byHour[new Date(r.confirmed_at ?? r.created_at).getHours()] += 1;
+        }
+        setSugerida(franjaFloja(byHour));
+      });
+  }, [businessId, isFree]);
+  function aplicarFranja(from: string, to: string, soloEntreSemana = false) {
+    setValidFrom(from);
+    setValidTo(to);
+    if (soloEntreSemana) setDiasMask(DIAS_ENTRE_SEMANA_MASK);
+  }
   // El upload de foto necesita una carpeta — para un beneficio nuevo todavía
   // no hay id, así que usamos la del comercio hasta el primer guardado.
   const [benefitId, setBenefitId] = useState<string | null>(benefit?.id ?? null);
@@ -463,6 +489,71 @@ function BeneficioForm({
             <span className="text-[13px]">Cupones ilimitados — sin tope diario</span>
           </label>
         )}
+
+        <div className="bg-purple-light rounded-xl p-3.5 mb-3.5">
+          <p className="text-[12.5px] font-semibold mb-1" style={{ color: '#4A3D68' }}>
+            ⏰ Horas muertas: llená tu local cuando está vacío
+          </p>
+          <p className="text-[11.5px] mb-2.5 leading-4" style={{ color: '#4A3D68' }}>
+            Son las horas en que casi no entra nadie. Si el premio vale justo ahí, la gente camina hasta tu local cuando más
+            lo necesitás, y en las horas de mucho movimiento no regalás de más. Elegí una franja o armá la tuya abajo.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {FRANJAS_COMUNES.map((f) => {
+              const on = validFrom === f.from && validTo === f.to;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  title={f.hint}
+                  onClick={() => aplicarFranja(f.from, f.to)}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
+                  style={{
+                    background: on ? '#8B4FD1' : '#fff',
+                    color: on ? '#fff' : '#7C6A9C',
+                    borderColor: on ? '#8B4FD1' : '#E1D2F5',
+                  }}
+                >
+                  {f.label} · {f.from}–{f.to}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              title="Lunes a jueves, los días más flojos"
+              onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
+              className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
+              style={{
+                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#fff',
+                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : '#7C6A9C',
+                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#E1D2F5',
+              }}
+            >
+              Solo lunes a jueves
+            </button>
+          </div>
+          {sugerida ? (
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <p className="text-[11.5px]" style={{ color: '#4A3D68' }}>
+                Según tus canjes, de <strong>{sugerida.from} a {sugerida.to}</strong> es cuando menos te visitan.
+              </p>
+              <button
+                type="button"
+                onClick={() => aplicarFranja(sugerida.from, sugerida.to)}
+                className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                style={{ background: '#4FC3A8', color: '#fff' }}
+              >
+                Usar {sugerida.from}–{sugerida.to}
+              </button>
+            </div>
+          ) : (
+            <p className="text-[11px] mt-2" style={{ color: '#7C6A9C' }}>
+              {isFree
+                ? 'Con Paso Firme, Camina te sugiere tus horas más flojas según tus canjes.'
+                : 'Cuando tengas más canjes, acá te vamos a sugerir tus horas más flojas.'}
+            </p>
+          )}
+        </div>
 
         <label className="block text-[12.5px] font-semibold mb-1.5">Condiciones (opcional)</label>
         <div className="flex gap-3.5 mb-3.5">
