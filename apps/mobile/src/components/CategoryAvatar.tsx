@@ -1,5 +1,6 @@
 import { Image, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GOLD } from '@/components/ui/Featured';
 import {
   Coffee,
   Food,
@@ -65,16 +66,42 @@ export function categoryStyle(category?: string | null): CategoryStyle {
 }
 
 // Logo del comercio si lo subió; si no, una burbuja de color con el ícono de su categoría.
-// Cuadrado con esquinas redondeadas.
+// Cuadrado con esquinas redondeadas. Los destacados llevan un aro dorado (el tamaño total no cambia).
 export function BusinessAvatar({
   logoUrl,
   category,
   size,
+  featured,
 }: {
   logoUrl?: string | null;
   category?: string | null;
   size: number;
+  featured?: boolean;
 }) {
+  if (featured) {
+    const border = Math.max(2, Math.round(size * 0.035));
+    const pad = 2;
+    const inner = size - 2 * (border + pad);
+    return (
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderWidth: border,
+          borderColor: GOLD,
+          borderRadius: inner * 0.28 + pad + border,
+          padding: pad,
+          backgroundColor: '#fff',
+          shadowColor: GOLD,
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <BusinessAvatar logoUrl={logoUrl} category={category} size={inner} />
+      </View>
+    );
+  }
   const radius = size * 0.28;
   if (logoUrl) {
     return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: radius }} />;

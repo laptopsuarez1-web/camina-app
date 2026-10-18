@@ -6,7 +6,7 @@ import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Anim
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
@@ -152,8 +152,8 @@ function useCountdown(expiresAt: string | null) {
   return remainingMs;
 }
 
-function businessIcon(_name: string, size: number, logoUrl?: string | null, category?: string | null) {
-  return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} />;
+function businessIcon(_name: string, size: number, logoUrl?: string | null, category?: string | null, featured?: boolean) {
+  return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} featured={featured} />;
 }
 
 function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
@@ -296,6 +296,13 @@ export default function CanjesScreen() {
   const [mapSearch, setMapSearch] = useState('');
   const fullMapRef = useRef<MapView>(null);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
+  // Desde Inicio: /canjes?negocio=<id> abre directo la ficha de ese local.
+  const { negocio } = useLocalSearchParams<{ negocio?: string }>();
+  useEffect(() => {
+    if (!negocio) return;
+    setProfileBusinessId(negocio);
+    router.setParams({ negocio: undefined });
+  }, [negocio]);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
@@ -801,7 +808,7 @@ export default function CanjesScreen() {
                 />
               ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
-                {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category)}
+                {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, isFeatured(g.business))}
                 <View className="flex-1">
                   <View className="flex-row items-center" style={{ gap: 6 }}>
                     <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
@@ -997,14 +1004,7 @@ export default function CanjesScreen() {
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
-                <View
-                  style={{
-                    shadowColor: isFeatured(profileGroup.business) ? GOLD : '#000', shadowOpacity: isFeatured(profileGroup.business) ? 0.35 : 0.15, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, alignSelf: 'flex-start',
-                    ...(isFeatured(profileGroup.business) ? { borderWidth: 3, borderColor: GOLD, borderRadius: 28.5, padding: 2, backgroundColor: '#fff' } : {}),
-                  }}
-                >
-                  {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category)}
-                </View>
+                {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
                 <View className="flex-row items-center justify-between mt-3">
                   <View className="flex-1 flex-row items-center" style={{ gap: 8 }}>
                     <Text className="text-[24px] font-extrabold text-text-light dark:text-text-dark shrink" style={{ letterSpacing: -0.5 }}>
