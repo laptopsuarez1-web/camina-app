@@ -30,9 +30,9 @@ const PARTS: Record<TabKind, Part[]> = {
     },
   ],
   activity: [
-    { origin: '50% 100%', anim: { delay: 0, dur: 520, at: [0, 0.55, 1], scaleY: [0.22, 1.14, 1] }, draw: ({ stroke, fill }) => <Rect x={4.5} y={17} width={6} height={11} rx={2} stroke={stroke} fill={fill} /> },
-    { origin: '50% 100%', anim: { delay: 70, dur: 520, at: [0, 0.55, 1], scaleY: [0.22, 1.14, 1] }, draw: ({ stroke, fill }) => <Rect x={13} y={9.5} width={6} height={18.5} rx={2} stroke={stroke} fill={fill} /> },
-    { origin: '50% 100%', anim: { delay: 140, dur: 520, at: [0, 0.55, 1], scaleY: [0.22, 1.14, 1] }, draw: ({ stroke, fill }) => <Rect x={21.5} y={4} width={6} height={24} rx={2} stroke={stroke} fill={fill} /> },
+    { origin: '50% 100%', anim: { delay: 0, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={3} y={14} width={7.5} height={14} rx={2.2} stroke={stroke} fill={fill} /> },
+    { origin: '50% 100%', anim: { delay: 70, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={12.25} y={8} width={7.5} height={20} rx={2.2} stroke={stroke} fill={fill} /> },
+    { origin: '50% 100%', anim: { delay: 140, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={21.5} y={3} width={7.5} height={25} rx={2.2} stroke={stroke} fill={fill} /> },
   ],
   groups: [
     { origin: '50% 50%', draw: ({ stroke }) => <Path d="M8.5 27.5a7.5 7.5 0 0 1 15 0M2.5 25a5 5 0 0 1 5-4.2M29.5 25a5 5 0 0 0-5-4.2" stroke={stroke} /> },
@@ -86,11 +86,10 @@ function Layer({ part, size, t, colors, reduced }: { part: Part; size: number; t
   const style = useAnimatedStyle(() => {
     if (!a || reduced) return {};
     const q = partProgress(t.value, a.delay, a.dur);
-    const done = t.value <= 0;
-    const y = a.y && !done ? sample(a.at, a.y, q) * k : 0;
-    const sy = a.scaleY && !done ? sample(a.at, a.scaleY, q) : 1;
-    const r = a.rotate && !done ? sample(a.at, a.rotate, q) : 0;
-    const o = a.opacity && !done ? sample(a.at, a.opacity, q) : 1;
+    const y = a.y ? sample(a.at, a.y, q) * k : 0;
+    const sy = a.scaleY ? sample(a.at, a.scaleY, q) : 1;
+    const r = a.rotate ? sample(a.at, a.rotate, q) : 0;
+    const o = a.opacity ? sample(a.at, a.opacity, q) : 1;
     return { opacity: o, transform: [{ translateY: y }, { scaleY: sy }, { rotate: `${r}deg` }] };
   });
   return (
@@ -105,16 +104,15 @@ function Layer({ part, size, t, colors, reduced }: { part: Part; size: number; t
 // `tick` sube cada vez que se toca la pestaña (también si ya estaba activa); además se anima al pasar a activa por otro camino.
 export function TabGlyph({ kind, color, focused, tick = 0, size = 26 }: { kind: TabKind; color: string; focused: boolean; tick?: number; size?: number }) {
   const reduced = useReducedMotion();
-  const t = useSharedValue(0);
+  // Empieza en el final (reposo): si la animación no corre, el ícono se ve normal.
+  const t = useSharedValue(TOTAL_MS);
   const first = useRef(true);
 
   useEffect(() => {
     if (first.current) { first.current = false; return; }
     if (reduced) return;
-    t.value = 1;
-    t.value = withTiming(TOTAL_MS, { duration: TOTAL_MS, easing: Easing.linear }, (done) => {
-      if (done) t.value = 0;
-    });
+    t.value = 0;
+    t.value = withTiming(TOTAL_MS, { duration: TOTAL_MS, easing: Easing.linear });
   }, [tick, focused, reduced, t]);
 
   const colors = { stroke: color, fill: focused ? withAlpha(color, 0.22) : 'none', ink: color };
