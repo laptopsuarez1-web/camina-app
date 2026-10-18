@@ -58,7 +58,7 @@ export function AccountEmailCard() {
   if (linked) {
     const Logo = linked === 'apple' ? AppleIcon : GoogleIcon;
     return (
-      <Glass className="rounded-3xl p-4 mb-3">
+      <Glass className="rounded-3xl p-4 mb-4">
         <View className="flex-row items-center gap-3">
           <IconBubble icon={Logo} tone="aqua" size={38} />
           <View className="flex-1">
@@ -75,7 +75,7 @@ export function AccountEmailCard() {
   }
 
   return (
-    <Glass className="rounded-3xl p-4 mb-3">
+    <Glass className="rounded-3xl p-4 mb-4">
       <View className="flex-row items-center gap-3">
         <IconBubble icon={Mail} tone="aqua" size={38} />
         <View className="flex-1">

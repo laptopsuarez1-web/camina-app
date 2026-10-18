@@ -151,12 +151,13 @@ export function Locales() {
         <div className="locs">
           {LOCALES.map((l, k) => (
             <InView as="article" className="loc" key={l.id} delay={k * 120}>
-              <div className="loc-cover">
-                <Image src={l.portada} alt="" width={640} height={360} />
-                <Image className="loc-logo" src={l.logo} alt={`Logo de ${l.nombre}`} width={72} height={72} />
+              <div className="loc-head">
+                <Image className="loc-logo" src={l.logo} alt={`Logo de ${l.nombre}`} width={56} height={56} />
+                <div>
+                  <h3>{l.nombre}</h3>
+                  <p className="loc-cat">{l.categoria}</p>
+                </div>
               </div>
-              <h3>{l.nombre}</h3>
-              <p className="loc-cat">{l.categoria} · {l.direccion}</p>
               <ul>
                 {l.premios.map((p) => (
                   <li key={p.nombre}>
