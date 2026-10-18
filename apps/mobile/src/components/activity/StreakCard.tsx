@@ -90,12 +90,12 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
                   }}
                 />
                 {last ? (
-                  <Text className="text-[11px] font-extrabold" style={{ color: i < filled ? '#fff' : ink }}>{`+${STREAK_BONUS_POINTS}`}</Text>
+                  <Text className="text-[12px] font-extrabold" style={{ color: i < filled ? '#fff' : ink }}>{`+${STREAK_BONUS_POINTS}`}</Text>
                 ) : (
                   <Flame size={14} color={i < filled ? '#fff' : isDark ? '#6F6590' : '#C7BEDB'} />
                 )}
               </View>
-              <Text className="text-[10px] mt-1 text-muted-light dark:text-muted-dark">{i + 1}</Text>
+              <Text className="text-[12px] mt-1 text-muted-light dark:text-muted-dark">{i + 1}</Text>
             </View>
           );
         })}

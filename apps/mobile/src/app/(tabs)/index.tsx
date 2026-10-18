@@ -36,6 +36,7 @@ import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
 import { CoinFlight, coinFlightPath, type CoinFlightPath } from '@/components/home/CoinFlight';
+import { Coin } from '@/components/ui/Coin';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y "Tope de hoy" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -262,7 +263,7 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.mint} colors={[colors.aqua]} progressBackgroundColor={colors.authBgSoft} />}
     >
       <LinearGradient
-        colors={['#3a2668', '#1c1030', '#120a1e']}
+        colors={colors.headerGradient}
         start={{ x: 0.15, y: -0.1 }}
         end={{ x: 0.8, y: 1 }}
         style={{ borderRadius: 0, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingBottom: 22, overflow: 'hidden' }}
@@ -367,7 +368,7 @@ export default function HomeScreen() {
                   borderRadius: 999, backgroundColor: 'rgba(44,255,174,0.15)', transform: [{ scale: chipScale }],
                 }}
               >
-                <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 14, height: 14, borderRadius: 7 }} />
+                <Coin size={14} />
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} {plural(pointsToday, 'Punto', 'Puntos')}</Text>
               </Animated.View>
               {pointsToday >= DAILY_POINTS_CAP && (
@@ -420,7 +421,7 @@ export default function HomeScreen() {
                 }}
               />
               <Press accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
-                <Text className="text-mint-dark font-bold text-[12px]">OK</Text>
+                <Text className="text-mint-dark font-bold text-[12px]">Listo</Text>
               </Press>
             </View>
           ) : (
@@ -436,8 +437,8 @@ export default function HomeScreen() {
               style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <View className="flex-row items-center" style={{ gap: 4 }}>
-                <Text style={{ color: '#B3A6D6', fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
-                <Pencil size={14} color="#B3A6D6" />
+                <Text style={{ color: colors.authMuted, fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
+                <Pencil size={14} color={colors.authMuted} />
               </View>
             </Press>
           )}
@@ -519,7 +520,7 @@ export default function HomeScreen() {
             className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
             style={{ gap: 10, backgroundColor: isDark ? 'rgba(245,198,69,0.14)' : '#FFF3D1', borderWidth: 1, borderColor: isDark ? 'rgba(245,198,69,0.35)' : '#F3D9A0' }}
           >
-            <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: 22, height: 22, borderRadius: 11 }} />
+            <Coin size={22} />
             <View className="flex-1">
               <Text className="text-[13px] font-bold" style={{ color: isDark ? '#F5D77A' : '#7A5206' }}>
                 {expiringMsg}

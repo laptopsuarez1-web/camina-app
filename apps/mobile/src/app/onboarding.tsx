@@ -23,7 +23,7 @@ function RingArt() {
     <View style={{ width: 240, height: 240, alignItems: 'center', justifyContent: 'center' }}>
       <ProgressRing size={220} strokeWidth={20} progress={0.78} trackColor="rgba(255,255,255,0.1)" progressColor={colors.mint}>
         <Text style={{ color: '#fff', fontSize: 42, fontWeight: '800', letterSpacing: -1 }}>6.230</Text>
-        <Text style={{ color: '#D5CBF0', fontSize: 14 }}>pasos hoy</Text>
+        <Text style={{ color: colors.authMuted, fontSize: 14 }}>pasos hoy</Text>
       </ProgressRing>
       <Coin size={44} style={{ position: 'absolute', right: 0, top: 14 }} />
       <Coin size={30} style={{ position: 'absolute', left: 6, bottom: 34 }} />
@@ -36,7 +36,7 @@ function PointsArt() {
   return (
     <View style={{ alignItems: 'center', gap: 14 }}>
       <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>
-        {POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} <Text style={{ color: '#D5CBF0', fontSize: 17, fontWeight: '500' }}>pasos</Text>
+        {POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} <Text style={{ color: colors.authMuted, fontSize: 17, fontWeight: '500' }}>pasos</Text>
       </Text>
       <View importantForAccessibility="no" accessibilityElementsHidden><ChevronDown size={28} color={colors.mint} /></View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -143,11 +143,11 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ flex: 1, paddingTop: 52, paddingBottom: 28 }}>
+    <LinearGradient colors={colors.headerGradient} style={{ flex: 1, paddingTop: 52, paddingBottom: 28 }}>
       <View style={{ alignItems: 'flex-end', paddingHorizontal: 16, height: 44 }}>
         {!last && (
           <Press onPress={() => finish()} accessibilityRole="button" hitSlop={10} style={{ paddingHorizontal: 10, paddingVertical: 10 }}>
-            <Text style={{ color: '#E4DCF7', fontSize: 15, fontWeight: '600' }}>Saltar</Text>
+            <Text style={{ color: colors.authMuted, fontSize: 15, fontWeight: '600' }}>Saltar</Text>
           </Press>
         )}
       </View>
@@ -178,7 +178,7 @@ export default function OnboardingScreen() {
                 <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 27, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
                   {slide.title}
                 </Text>
-                <Text style={{ color: '#D5CBF0', fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
+                <Text style={{ color: colors.authMuted, fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
               </View>
             </ScrollView>
           );

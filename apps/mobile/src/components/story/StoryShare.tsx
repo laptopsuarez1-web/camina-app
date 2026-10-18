@@ -4,6 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
+import { Coin } from '@/components/ui/Coin';
 import { Instagram, Clock, CheckCircle2, X, Star, Camera } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
@@ -15,10 +16,6 @@ export const CAMINA_INSTAGRAM = '@caminaapp';
 
 export type { StoryState };
 
-function Coin({ size = 16 }: { size?: number }) {
-  return <Image accessible={false} source={require('@/../assets/camina-coin.png')} style={{ width: size, height: size, borderRadius: size / 2 }} />;
-}
-
 // Botón debajo de cada canje confirmado (Inicio > Tus canjes), y su estado después de subir la historia.
 export function StoryRewardButton({ state, onPress }: { state: StoryState; onPress?: () => void }) {
   const dark = useColorScheme().colorScheme === 'dark';
@@ -26,7 +23,7 @@ export function StoryRewardButton({ state, onPress }: { state: StoryState; onPre
     return (
       <View style={{ gap: 6 }}>
         {state === 'rejected' ? (
-          <Text className="text-[11.5px] text-center text-warn-deep dark:text-warn-soft">No encontramos tu historia. Podés volver a subirla.</Text>
+          <Text className="text-[12px] text-center text-warn-deep dark:text-warn-soft">No encontramos tu historia. Podés volver a subirla.</Text>
         ) : null}
         <Press
           accessibilityRole="button"
@@ -171,7 +168,7 @@ export function StoryComposer({
               <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 30, height: 30, borderRadius: 15 }} />
               <View>
                 <Text style={{ color: '#291C47', fontWeight: '800', fontSize: 13 }}>{benefitName}</Text>
-                <Text style={{ color: '#655483', fontWeight: '600', fontSize: 11 }}>en {businessName} · con Camina</Text>
+                <Text style={{ color: '#655483', fontWeight: '600', fontSize: 12 }}>en {businessName} · con Camina</Text>
               </View>
             </View>
             <View className="rounded-lg" style={{ backgroundColor: '#fff', paddingVertical: 4, paddingHorizontal: 9 }}>

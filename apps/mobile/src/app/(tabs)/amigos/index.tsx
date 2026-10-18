@@ -99,7 +99,7 @@ export default function AmigosScreen() {
                 </View>
                 <View className="items-end">
                   <Text className="text-aqua-ink dark:text-mint" style={{ fontSize: 15, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{f.week_steps.toLocaleString('es-BO')}</Text>
-                  <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">esta semana</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">esta semana</Text>
                 </View>
                 <ChevronRight size={14} color={muted} />
               </Press>

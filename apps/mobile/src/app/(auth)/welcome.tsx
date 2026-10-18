@@ -232,7 +232,7 @@ export default function WelcomeScreen() {
             )}
           </Press>
           <Press accessibilityRole="button" onPress={() => setAwaitingConfirmation(null)} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ color: '#B3A6D6', fontSize: 12 }}>Volver</Text>
+            <Text style={{ color: colors.authMuted, fontSize: 12 }}>Volver</Text>
           </Press>
         </ScrollView>
       </View>
@@ -243,7 +243,7 @@ export default function WelcomeScreen() {
   const appleBusy = oauthLoading && oauthProvider === 'apple';
 
   return (
-    <LinearGradient colors={['#3a2668', '#1c1030', '#120a1e']} style={{ flex: 1 }}>
+    <LinearGradient colors={colors.headerGradient} style={{ flex: 1 }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
@@ -307,7 +307,7 @@ export default function WelcomeScreen() {
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 }}>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
-              <Text style={{ color: '#B3A6D6', fontSize: 12 }}>o</Text>
+              <Text style={{ color: colors.authMuted, fontSize: 12 }}>o</Text>
               <View style={{ flex: 1, height: 1, backgroundColor: colors.authBgSoft }} />
             </View>
 
@@ -375,20 +375,20 @@ export default function WelcomeScreen() {
 
             {authKind === 'login' && (
               <Press accessibilityRole="button" onPress={handleForgotPassword} disabled={recovering} style={{ minHeight: 44, justifyContent: 'center' }}>
-                <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
+                <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center' }}>
                   {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
                 </Text>
               </Press>
             )}
 
             <Press accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}>
-              <Text style={{ color: '#B3A6D6', fontSize: 11.5, textAlign: 'center', lineHeight: 16 }}>
+              <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center', lineHeight: 16 }}>
                 Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
               </Text>
             </Press>
 
             <Press accessibilityRole="button" onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ minHeight: 44, justifyContent: 'center' }}>
-              <Text style={{ color: '#B3A6D6', fontSize: 12, textAlign: 'center' }}>
+              <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center' }}>
                 {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
               </Text>
             </Press>

@@ -1,6 +1,8 @@
 import type { ComponentType } from 'react';
 import { View, Platform, type ColorValue, type ViewStyle } from 'react-native';
 import { useColorScheme } from 'nativewind';
+import { ReactiveIcon, usePressTick } from '@/components/ui/ReactiveIcon';
+import type { IconMotion } from '@/lib/motion';
 import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-native';
 
 // Íconos de la app: Phosphor en estilo duotono (dos tonos). Se exportan con los mismos nombres y
@@ -183,6 +185,12 @@ const GLYPH: Record<Tone, [string, string]> = {
   gold: ['#A57009', '#F5C645'],
 };
 
+// Gesto de cada ícono al tocar la fila o tarjeta donde está: la llama respira, el trofeo y el regalo se sacuden, la campana suena,
+// la meta pega un golpe; el resto hace un saltito. (Se busca por identidad: los íconos de arriba son constantes del módulo.)
+const MOTIONS = new Map<unknown, IconMotion>([
+  [Flame, 'flick'], [Trophy, 'wobble'], [Gift, 'wobble'], [Crown, 'wobble'], [Bell, 'ring'], [Target, 'thud'],
+]);
+
 export function IconBubble({
   icon: Icon,
   tone = 'aqua',
@@ -192,6 +200,8 @@ export function IconBubble({
   tone?: Tone;
   size?: number;
 }) {
+  const tick = usePressTick();
+  const motion = MOTIONS.get(Icon) ?? 'pop';
   const dark = useColorScheme().colorScheme === 'dark';
   const [lightColor, darkColor] = GLYPH[tone];
   const color = dark ? darkColor : lightColor;
@@ -218,7 +228,9 @@ export function IconBubble({
         Platform.OS === 'web' && ({ backdropFilter: 'blur(14px) saturate(170%)', WebkitBackdropFilter: 'blur(14px) saturate(170%)' } as ViewStyle),
       ]}
     >
-      <Icon size={size * 0.54} color={color} weight="fill" />
+      <ReactiveIcon motion={motion} tick={tick} idle={Icon === Flame}>
+        <Icon size={size * 0.54} color={color} weight="fill" />
+      </ReactiveIcon>
     </View>
   );
 }

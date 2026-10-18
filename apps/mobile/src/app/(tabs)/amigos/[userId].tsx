@@ -126,7 +126,7 @@ export default function FriendProfileScreen() {
               <PersonAvatar name={card?.full_name ?? ''} photoUrl={card?.photo_url} size={84} />
             </View>
             <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" numberOfLines={2}>{card?.full_name ?? ' '}</Text>
-            {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: '#DCD3F5', lineHeight: 19, maxWidth: 300 }}>{card.bio}</Text> : null}
+            {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: colors.authMuted, lineHeight: 19, maxWidth: 300 }}>{card.bio}</Text> : null}
           </View>
         </DarkHeader>
 
@@ -198,15 +198,15 @@ export default function FriendProfileScreen() {
                   {cells.map((c) => (
                     <View key={c.key} accessible accessibilityLabel={`${c.label} ${c.key.slice(8)}: ${c.steps.toLocaleString('es-BO')} pasos, ${STATE_TEXT[c.state]}`} className="items-center" style={{ gap: 6, flex: 1 }}>
                       <DayDot cell={c} size={38} />
-                      <Text className="text-[11px] font-bold text-muted-light dark:text-muted-dark">{c.label}</Text>
-                      <Text className="text-[11px] text-muted-light dark:text-muted-dark" style={{ fontVariant: ['tabular-nums'] }}>{c.state === 'none' && c.steps === 0 ? '·' : compactSteps(c.steps)}</Text>
+                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">{c.label}</Text>
+                      <Text className="text-[12px] text-muted-light dark:text-muted-dark" style={{ fontVariant: ['tabular-nums'] }}>{c.state === 'none' && c.steps === 0 ? '·' : compactSteps(c.steps)}</Text>
                     </View>
                   ))}
                 </View>
               ) : (
                 <View style={{ gap: 8 }}>
                   <View className="flex-row justify-between">
-                    {WEEK_LABELS.map((l) => <Text key={l} className="flex-1 text-center text-[11px] font-bold text-muted-light dark:text-muted-dark">{l}</Text>)}
+                    {WEEK_LABELS.map((l) => <Text key={l} className="flex-1 text-center text-[12px] font-bold text-muted-light dark:text-muted-dark">{l}</Text>)}
                   </View>
                   {Array.from({ length: 5 }, (_, w) => (
                     <View key={w} className="flex-row justify-between">

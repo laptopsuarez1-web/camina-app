@@ -13,6 +13,8 @@ export function useThemeColors() {
     purpleText: dark ? colors.purpleSoft : colors.purpleInk,
     warnText: dark ? colors.warnSoft : colors.warnDeep,
     dangerText: dark ? colors.dangerSoft : colors.dangerInk,
+    // Corazón de favoritos: el rojo de peligro de la marca, en su variante de cada tema.
+    favorite: dark ? colors.dangerSoft : colors.dangerFill,
     // Ícono verde suelto sobre la superficie del tema.
     accentIcon: dark ? colors.mint : colors.aquaIcon,
   };
