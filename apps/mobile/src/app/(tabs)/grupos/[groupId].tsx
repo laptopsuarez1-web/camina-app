@@ -460,10 +460,13 @@ export default function GroupDetailScreen() {
                   {m.steps.toLocaleString('es-BO')}
                 </Text>
               </View>
-              {m.id !== userId && (
+              {m.id !== userId ? (
                 <Press accessibilityRole="button" accessibilityLabel={`Opciones de ${m.name}`} onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
                   <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
                 </Press>
+              ) : (
+                // Mismo ancho que el menú de las otras filas para que los puntos queden alineados.
+                <View className="pl-1" style={{ width: 17 }} />
               )}
             </View>
           ))}

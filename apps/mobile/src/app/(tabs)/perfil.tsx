@@ -6,7 +6,7 @@ import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck, Gift } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -227,17 +227,6 @@ export default function PerfilScreen() {
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{friendRequests!.length}</Text>
             </View>
           )}
-          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
-        </Press>
-      </Glass>
-
-      <Glass className="rounded-3xl overflow-hidden mb-3">
-        <Press accessibilityRole="button" accessibilityLabel="Tarjetas de fidelidad" onPress={() => router.push('/(tabs)/tarjetas')} className="flex-row items-center p-4" style={{ gap: 14 }}>
-          <IconBubble icon={Gift} tone="gold" size={46} />
-          <View className="flex-1">
-            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Sumá sellos en cada local y ganá su premio</Text>
-          </View>
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>

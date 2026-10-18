@@ -65,7 +65,7 @@ export function categoryStyle(category?: string | null): CategoryStyle {
 }
 
 // Logo del comercio si lo subió; si no, una burbuja de color con el ícono de su categoría.
-// Siempre redondo, igual que en el panel de comercios: así un logo cuadrado no se ve distinto a uno circular.
+// Cuadrado con esquinas redondeadas.
 export function BusinessAvatar({
   logoUrl,
   category,
@@ -75,7 +75,7 @@ export function BusinessAvatar({
   category?: string | null;
   size: number;
 }) {
-  const radius = size / 2;
+  const radius = size * 0.28;
   if (logoUrl) {
     return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: radius }} />;
   }
