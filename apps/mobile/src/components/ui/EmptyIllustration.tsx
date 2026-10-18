@@ -4,6 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 
 // Ilustraciones de los estados vacíos (180 x 128): un caminito de huellas que llega a algo.
+// Las huellas se dibujan en vectores (planta + talón, izquierda y derecha alternadas) para que nunca salgan recortadas.
 // Eventos: un calendario con un espacio punteado para el primer evento. Avisos: una campana tranquila con luna y estrellitas.
 // Puntos: la moneda Camina al final del caminito. Todo en la paleta de la app; sin desenfoque (el halo es un degradé radial).
 export type Illustration = 'eventos' | 'avisos' | 'puntos';
@@ -16,13 +17,44 @@ function Sparkle({ x, y, s = 1, fill }: { x: number; y: number; s?: number; fill
   return <Path d={SPARKLE} fill={fill} transform={`translate(${x} ${y}) scale(${s})`} />;
 }
 
-function Foot({ left, top, rot, opacity }: { left: number; top: number; rot: number; opacity: number }) {
+// Una huella de zapatilla en 20 x 43: planta del pie y talón separados. `side` la espeja para el pie izquierdo.
+const SOLE = 'M10 0 C16 0 20 5.5 20 13 C20 19 17.5 21 16.5 24 C16 25.6 14.6 26.4 13 26.4 L7 26.4 C5.4 26.4 4 25.6 3.5 24 C2.5 21 0 19 0 13 C0 5.5 4 0 10 0 Z';
+
+type Step = { x: number; y: number; rot: number; opacity: number; side: 1 | -1 };
+
+// Camino de `count` huellas de `from` a `to`, alternando pie derecho e izquierdo a los lados de la línea y
+// subiendo de opacidad hacia el destino. La punta de cada huella mira hacia donde se camina.
+function trail(from: [number, number], to: [number, number], count: number): Step[] {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const len = Math.hypot(dx, dy);
+  const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
+  const nx = -dy / len;
+  const ny = dx / len;
+  return Array.from({ length: count }, (_, i) => {
+    const t = count === 1 ? 1 : i / (count - 1);
+    const side: 1 | -1 = i % 2 === 0 ? 1 : -1;
+    return {
+      x: from[0] + dx * t + nx * 7 * side,
+      y: from[1] + dy * t + ny * 7 * side,
+      rot,
+      opacity: 0.32 + 0.6 * t,
+      side,
+    };
+  });
+}
+
+function Footprints({ steps, fill }: { steps: Step[]; fill: string }) {
+  const k = 0.78;
   return (
-    <Image
-      source={require('@/../assets/camina-foot.png')}
-      accessible={false}
-      style={{ position: 'absolute', left, top, width: 13, height: 24, opacity, transform: [{ rotate: `${rot}deg` }] }}
-    />
+    <G>
+      {steps.map((st, i) => (
+        <G key={i} opacity={st.opacity} transform={`translate(${st.x} ${st.y}) rotate(${st.rot}) scale(${st.side * k} ${k}) translate(-10 -22)`}>
+          <Path d={SOLE} fill={fill} />
+          <Ellipse cx={10} cy={35.5} rx={6.4} ry={7} fill={fill} />
+        </G>
+      ))}
+    </G>
   );
 }
 
@@ -30,6 +62,7 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
   const dark = useColorScheme().colorScheme === 'dark';
   const floor = dark ? 'rgba(0,0,0,0.42)' : 'rgba(91,49,163,0.13)';
   const haloColor = kind === 'puntos' ? colors.mint : '#A672E8';
+  const feet = dark ? colors.mint : colors.aquaDeep;
   const spark = dark ? '#FFFFFF' : colors.purple;
 
   return (
@@ -75,6 +108,9 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
           </G>
         )}
 
+        {kind === 'eventos' && <Footprints steps={trail([16, 104], [44, 72], 3)} fill={feet} />}
+        {kind === 'puntos' && <Footprints steps={trail([18, 106], [84, 56], 4)} fill={feet} />}
+
         {kind === 'puntos' && (
           <G>
             <Circle cx={134} cy={46} r={34} fill="none" stroke={colors.mint} strokeOpacity={dark ? 0.55 : 0.7} strokeWidth={3} />
@@ -84,18 +120,7 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
       </Svg>
 
       {kind === 'puntos' && (
-        <>
-          <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ position: 'absolute', left: 104, top: 16, width: 60, height: 60, borderRadius: 30 }} />
-          <Foot left={14} top={68} rot={-58} opacity={0.35} />
-          <Foot left={34} top={54} rot={-40} opacity={0.55} />
-          <Foot left={58} top={38} rot={-26} opacity={0.8} />
-        </>
-      )}
-      {kind === 'eventos' && (
-        <>
-          <Foot left={20} top={78} rot={-60} opacity={0.5} />
-          <Foot left={40} top={62} rot={-40} opacity={0.85} />
-        </>
+        <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ position: 'absolute', left: 104, top: 16, width: 60, height: 60, borderRadius: 30 }} />
       )}
     </View>
   );
