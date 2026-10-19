@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown } from 'lucide-react';
+import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -37,6 +37,7 @@ const NAV_MAS: NavItem[] = [
   { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
   { href: '/plan', label: 'Plan', icon: CreditCard },
   { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
+  { href: '/cuenta', label: 'Mi cuenta', icon: UserCog },
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -134,7 +135,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <ChevronDown size={14} className={masAbierto ? 'rotate-180 transition-transform' : 'transition-transform'} />
             </button>
             {masAbierto &&
-              NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia'].includes(i.href)).map((item) => (
+              NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia', '/cuenta'].includes(i.href)).map((item) => (
                 <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
               ))}
           </>
