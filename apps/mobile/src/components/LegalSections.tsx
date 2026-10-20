@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SUPPORT_EMAIL } from '@/constants/contact';
-import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL } from '@/constants/business-rules';
+import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
 export const LEGAL_UPDATED = 'octubre de 2026';
@@ -12,7 +12,7 @@ const miles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'Términos de uso',
-    body: `Camina te da Puntos por caminar (1 Punto cada ${miles(POINTS_PER_STEP_UNIT)} pasos, hasta ${DAILY_POINTS_CAP} Puntos por día) para canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los ${POINTS_TTL_DAYS} días de haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Al canjear o poner Puntos en juego se usan primero los que vencen antes. Los códigos de canje vencen a los ${REDEMPTION_CODE_TTL_MINUTES} minutos de generados. Camina es para personas de 13 años o más. Los Puntos de tus pasos se cargan solo si abrís la app ese día; los pasos de días en que no la abriste se ven en Actividad pero no suman Puntos, ni cuentan para tu meta, tu racha ni los rankings. Los pasos ingresados a mano en Salud o Health Connect no suman Puntos. Nos reservamos el derecho de suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los comercios adheridos son responsables de sus propios beneficios, stock y condiciones; Camina actúa como intermediario y no garantiza disponibilidad continua de ningún beneficio.`,
+    body: `Camina te da Puntos por caminar (1 Punto cada ${miles(POINTS_PER_STEP_UNIT)} pasos, hasta ${DAILY_POINTS_CAP} Puntos por día) para canjear beneficios en comercios adheridos de Bolivia. Los Puntos vencen a los ${POINTS_TTL_DAYS} días de haberse ganado y no tienen valor monetario ni son transferibles ni reembolsables. Al canjear o poner Puntos en juego se usan primero los que vencen antes. Los códigos de canje vencen a los ${REDEMPTION_CODE_TTL_MINUTES} minutos de generados (los de premios online, a los ${ONLINE_CODE_TTL_DAYS} días). Camina es para personas de 13 años o más. Los Puntos de tus pasos se cargan solo si abrís la app ese día; los pasos de días en que no la abriste se ven en Actividad pero no suman Puntos, ni cuentan para tu meta, tu racha ni los rankings. Los pasos ingresados a mano en Salud o Health Connect no suman Puntos. Nos reservamos el derecho de suspender cuentas que intenten manipular el conteo de pasos, los Puntos o los canjes. Los comercios adheridos son responsables de sus propios beneficios, stock y condiciones; Camina actúa como intermediario y no garantiza disponibilidad continua de ningún beneficio.`,
   },
   {
     title: 'Política de privacidad',

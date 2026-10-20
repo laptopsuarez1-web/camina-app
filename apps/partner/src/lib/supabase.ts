@@ -71,7 +71,13 @@ export interface Benefit {
   valid_from: string | null;
   valid_to: string | null;
   valid_days_mask: number;
+  // Premio online (migración 0060): se cobra por WhatsApp / redes / web; cupos totales, código de 7 días.
+  online?: boolean;
+  online_channel?: OnlineChannel | null;
+  online_quota?: number | null;
 }
+
+export type OnlineChannel = 'whatsapp' | 'instagram' | 'facebook' | 'tiktok' | 'web';
 
 export interface Redemption {
   id: string;
