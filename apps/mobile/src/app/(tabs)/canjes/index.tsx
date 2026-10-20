@@ -157,67 +157,121 @@ function businessIcon(_name: string, size: number, logoUrl?: string | null, cate
   return <BusinessAvatar logoUrl={logoUrl} category={category} size={size} featured={featured} />;
 }
 
-function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
-  const size = featured ? 48 : 40;
-  const box = size + 22; // espacio de sobra para que nada se corte al convertir el pin en imagen
+// Pin tipo gota (como Pasito): cabeza redonda con borde blanco, logo adentro y una punta abajo.
+// El borde de los destacados es dorado; el resto va en blanco. `onSettled` avisa cuando el logo cargó (o falló).
+const PIN_PAD = 8; // margen para que la sombra no se corte al convertir el pin en imagen
+const PIN_TIP = 9;
+function pinSize(featured?: boolean) {
+  const head = featured ? 50 : 42;
+  return { head, w: head + PIN_PAD * 2, h: head + PIN_TIP + PIN_PAD * 2 };
+}
+
+function MapMarker({ name, logoUrl, featured, onSettled }: { name: string; logoUrl?: string | null; featured?: boolean; onSettled?: () => void }) {
+  const { head, w, h } = pinSize(featured);
+  const [failed, setFailed] = useState(false);
+  const border = featured ? 4 : 3;
+  const ring = featured ? GOLD : '#fff';
+  const showLogo = !!logoUrl && !failed;
+  const initial = (name.trim()[0] ?? '·').toUpperCase();
+  useEffect(() => {
+    if (!showLogo) onSettled?.();
+  }, [showLogo, onSettled]);
   return (
-    <View style={{ width: box, height: box, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: w, height: h, alignItems: 'center', paddingTop: PIN_PAD }}>
       <View
         style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: '#fff',
-          borderWidth: featured ? 3.5 : 2.5,
-          borderColor: featured ? GOLD : colors.aqua,
+          width: head,
+          height: head,
+          borderRadius: head / 2,
+          backgroundColor: ring,
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
+          elevation: 6,
+          shadowColor: '#000',
+          shadowOpacity: 0.4,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
         }}
       >
-        {logoUrl ? (
-          <Image source={{ uri: logoUrl }} style={{ width: size - 8, height: size - 8, borderRadius: (size - 8) / 2 }} />
-        ) : (
-          <Text style={{ color: featured ? GOLD : colors.aqua, fontWeight: '800', fontSize: 16 }}>{name[0]}</Text>
-        )}
-      </View>
-      {featured && (
         <View
           style={{
-            position: 'absolute',
-            top: 2,
-            right: 2,
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: '#fff',
+            width: head - border * 2,
+            height: head - border * 2,
+            borderRadius: (head - border * 2) / 2,
+            backgroundColor: showLogo ? '#fff' : colors.aquaDeep,
             alignItems: 'center',
             justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
-          <Coin size={22} gold />
+          {showLogo ? (
+            <Image
+              source={{ uri: logoUrl! }}
+              resizeMode="cover"
+              onLoadEnd={onSettled}
+              onError={() => setFailed(true)}
+              style={{ width: head - border * 2, height: head - border * 2 }}
+            />
+          ) : (
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: featured ? 20 : 17 }}>{initial}</Text>
+          )}
+        </View>
+      </View>
+      {/* Punta: triángulo del mismo color del borde, pegado a la cabeza */}
+      <View
+        style={{
+          marginTop: -2,
+          width: 0,
+          height: 0,
+          borderLeftWidth: 7,
+          borderRightWidth: 7,
+          borderTopWidth: PIN_TIP,
+          borderLeftColor: 'transparent',
+          borderRightColor: 'transparent',
+          borderTopColor: ring,
+        }}
+      />
+      {featured && (
+        <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 7 }}>
+          <Coin size={20} gold />
         </View>
       )}
     </View>
   );
 }
 
-// Los pines de Android se "fotografían" una vez: hay que dejar que carguen las
-// imágenes antes de congelarlos, si no salen cortados o vacíos.
+// Los pines de Android se "fotografían" una vez: hay que esperar a que cargue el logo antes de congelarlos,
+// si no salen vacíos (círculo blanco). Se congela al cargar la imagen, con un tope por si la red es lenta.
 function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const featured = isFeatured(business);
+  const { w, h } = pinSize(featured);
   useEffect(() => {
-    const t = setTimeout(() => setTracking(false), 2500);
-    return () => clearTimeout(t);
+    const cap = setTimeout(() => setTracking(false), 10000);
+    return () => {
+      clearTimeout(cap);
+      if (settle.current) clearTimeout(settle.current);
+    };
   }, []);
+  // Un respiro después de cargar para que el logo alcance a pintarse antes de la foto.
+  const onSettled = useMemo(
+    () => () => {
+      if (settle.current) clearTimeout(settle.current);
+      settle.current = setTimeout(() => setTracking(false), 400);
+    },
+    [],
+  );
   return (
     <Marker
       coordinate={{ latitude: business.lat!, longitude: business.lng! }}
-      tracksViewChanges={tracking}
-      anchor={{ x: 0.5, y: 0.5 }}
+      tracksViewChanges={Platform.OS === 'android' ? tracking : false}
+      anchor={{ x: 0.5, y: (h - PIN_PAD) / h }}
       onPress={onPress}
     >
-      <MapMarker name={business.name} logoUrl={business.logo_url} featured={isFeatured(business)} />
+      <View style={{ width: w, height: h }}>
+        <MapMarker name={business.name} logoUrl={business.logo_url} featured={featured} onSettled={onSettled} />
+      </View>
     </Marker>
   );
 }
