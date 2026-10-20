@@ -35,7 +35,7 @@ function hexToRgb(hex: string): [number, number, number] {
 // Espacio que tiene que dejar abajo cada pantalla con barra, porque la barra flota encima del contenido.
 export function useTabBarSpace() {
   const insets = useSafeAreaInsets();
-  return BAR_HEIGHT + Math.max(insets.bottom, 12) + 24;
+  return BAR_HEIGHT + (Platform.OS === 'android' ? insets.bottom + 12 : Math.max(insets.bottom, 12)) + 24;
 }
 
 const liquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
@@ -132,13 +132,14 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 1,
+              paddingHorizontal: 2,
               transform: [{ scale: pressed ? 0.94 : 1 }],
             })}
           >
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
               {Icon ? <Icon focused={focused} color={color} size={26} tick={taps[route.key] ?? 0} /> : null}
             </View>
-            <Text numberOfLines={1} maxFontSizeMultiplier={1.1} style={{ fontSize: 12, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} maxFontSizeMultiplier={1.1} style={{ fontSize: 11.5, color: labelColor, fontWeight: focused ? '700' : '500', letterSpacing: -0.1 }}>
               {title}
             </Text>
           </Pressable>
@@ -148,12 +149,13 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   );
 
   const [vr, vg, vb] = hexToRgb(paletteFor(dark).base[2]);
-  const bottomPad = Math.max(insets.bottom - 6, 12);
+  // En Android el botón/gestos del sistema ocupan insets.bottom: la barra va por encima con aire, sin restarle nada.
+  const bottomPad = Platform.OS === 'android' ? insets.bottom + 12 : Math.max(insets.bottom - 6, 12);
 
   return (
     <View
       pointerEvents="box-none"
-      style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 18, paddingBottom: bottomPad }}
+      style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: Platform.OS === 'android' ? 12 : 18, paddingBottom: bottomPad }}
     >
       {/* Velo inferior: el contenido se desvanece antes de llegar a la barra y no se ven textos "fantasma" detrás de las etiquetas. */}
       <LinearGradient
