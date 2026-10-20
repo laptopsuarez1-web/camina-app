@@ -12,7 +12,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 const NAV = [
   { href: '/admin', label: 'Comercios', icon: ShieldCheck },
   { href: '/admin/retos', label: 'Retos', icon: Trophy },
-  { href: '/admin/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
+  { href: '/admin/eventos', label: 'Desafíos y eventos', icon: PartyPopper },
   { href: '/admin/historias', label: 'Historias', icon: Instagram },
   { href: '/admin/reportes', label: 'Reportes', icon: Flag },
   { href: '/admin/alertas', label: 'Alertas', icon: Radar },

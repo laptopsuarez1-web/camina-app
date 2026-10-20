@@ -33,7 +33,7 @@ const NAV_PRINCIPAL: NavItem[] = [
 const NAV_MAS: NavItem[] = [
   { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing, planes: ['paso_adelante'] },
-  { href: '/eventos', label: 'Eventos y sorteos', icon: PartyPopper },
+  { href: '/eventos', label: 'Desafíos y eventos', icon: PartyPopper },
   { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
   { href: '/plan', label: 'Plan', icon: CreditCard },
   { href: '/guia', label: 'Guía y reglas', icon: BookOpen },

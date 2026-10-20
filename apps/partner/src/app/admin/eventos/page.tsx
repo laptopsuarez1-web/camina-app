@@ -49,9 +49,9 @@ export default function AdminEventosPage() {
 
   return (
     <AdminShell>
-      <h1 className="text-[22px] font-bold text-text mb-1">Eventos y sorteos</h1>
+      <h1 className="text-[22px] font-bold text-text mb-1">Desafíos y eventos</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Aprobá las publicaciones cuando confirmes el pago (Bs 200 comercios, Bs 400 solo publicidad). Cuando termina la
+        Aprobá las publicaciones cuando confirmes el pago (Bs 200 comercios con local, Bs 400 solo publicidad). Cuando termina la
         vigencia, sorteá: se eligen al azar entre quienes se anotaron y cumplieron la condición.
       </p>
       {msg && <p className="text-warn text-[12.5px] mb-3">{msg}</p>}
@@ -64,16 +64,20 @@ export default function AdminEventosPage() {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <p className="font-semibold text-[14px]">
-                    {r.kind === 'sorteo' ? '🎁' : '🎟️'} {r.title}
+                    {r.kind === 'evento' ? '🎟️ Evento' : r.kind === 'publicidad' ? '📣 Publicidad' : r.kind === 'desafio' ? '🏁 Desafío' : '🎁 Sorteo'} · {r.title}
                   </p>
                   <p className="text-muted text-[12px]">
                     {r.business?.name} · {r.business?.account_kind === 'events_only' ? 'solo publicidad' : 'comercio'} · Bs {r.price_bs} · {r.status}
                   </p>
                   <p className="text-muted text-[12px]">
-                    {new Date(r.starts_at).toLocaleDateString('es-BO')} → {new Date(r.ends_at).toLocaleDateString('es-BO')} · {r.entries} anotados
-                    {r.req_steps ? ` · ${r.req_steps.toLocaleString('es-BO')} pasos x ${r.req_days} días` : ''} · {r.winners_count} ganadores
+                    {new Date(r.starts_at).toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'short' })} → {new Date(r.ends_at).toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'short' })} · {r.entries} anotados
+                    {r.goal_steps ? ` · ${r.goal_steps.toLocaleString('es-BO')} pasos ${r.goal_mode === 'daily' ? `x ${r.goal_days} días` : 'en total'}` : r.req_steps ? ` · ${r.req_steps.toLocaleString('es-BO')} pasos x ${r.req_days} días` : ''} · {r.winners_count} ganadores
                   </p>
                   {r.prize && <p className="text-[12.5px] mt-1">Premio: {r.prize}</p>}
+                  {r.bg_image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.bg_image_url} alt="Foto de fondo" className="mt-2 h-16 w-28 rounded-lg object-cover" />
+                  )}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   {r.status === 'pending' && (
@@ -86,7 +90,7 @@ export default function AdminEventosPage() {
                       </button>
                     </>
                   )}
-                  {r.status === 'approved' && ended && (
+                  {r.status === 'approved' && ended && r.kind !== 'publicidad' && r.kind !== 'evento' && (
                     <button onClick={() => draw(r.id)} className="rounded-lg px-3.5 py-1.5 text-[12px] font-bold" style={{ background: '#241748', color: '#7FEDC4' }}>
                       Sortear
                     </button>

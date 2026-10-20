@@ -127,7 +127,7 @@ export interface BusinessNotification {
 export interface Promotion {
   id: string;
   business_id: string;
-  kind: 'evento' | 'sorteo';
+  kind: 'evento' | 'sorteo' | 'desafio' | 'publicidad';
   title: string;
   description: string;
   prize: string | null;
@@ -136,6 +136,12 @@ export interface Promotion {
   ends_at: string;
   req_steps: number | null;
   req_days: number | null;
+  goal_mode: 'daily' | 'total' | null;
+  goal_steps: number | null;
+  goal_days: number | null;
+  bg_color: string | null;
+  bg_image_url: string | null;
+  cta_url: string | null;
   price_bs: number;
   status: 'pending' | 'approved' | 'rejected' | 'finished';
   created_at: string;
