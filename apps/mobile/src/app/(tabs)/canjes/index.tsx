@@ -158,7 +158,7 @@ function businessIcon(_name: string, size: number, logoUrl?: string | null, cate
 }
 
 // Pin tipo gota (como Pasito): cabeza redonda con borde blanco, logo adentro y una punta abajo.
-// El borde de los destacados es dorado; el resto va en blanco. `onSettled` avisa cuando el logo cargó (o falló).
+// El borde de los destacados es dorado; el resto va en blanco. Sin logo (o si falla) muestra la inicial.
 const PIN_PAD = 8; // margen para que la sombra no se corte al convertir el pin en imagen
 const PIN_TIP = 9;
 function pinSize(featured?: boolean) {
@@ -166,16 +166,13 @@ function pinSize(featured?: boolean) {
   return { head, w: head + PIN_PAD * 2, h: head + PIN_TIP + PIN_PAD * 2 };
 }
 
-function MapMarker({ name, logoUrl, featured, onSettled }: { name: string; logoUrl?: string | null; featured?: boolean; onSettled?: () => void }) {
+function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
   const { head, w, h } = pinSize(featured);
   const [failed, setFailed] = useState(false);
   const border = featured ? 4 : 3;
   const ring = featured ? GOLD : '#fff';
   const showLogo = !!logoUrl && !failed;
   const initial = (name.trim()[0] ?? '·').toUpperCase();
-  useEffect(() => {
-    if (!showLogo) onSettled?.();
-  }, [showLogo, onSettled]);
   return (
     <View style={{ width: w, height: h, alignItems: 'center', paddingTop: PIN_PAD }}>
       <View
@@ -208,7 +205,6 @@ function MapMarker({ name, logoUrl, featured, onSettled }: { name: string; logoU
             <Image
               source={{ uri: logoUrl! }}
               resizeMode="cover"
-              onLoadEnd={onSettled}
               onError={() => setFailed(true)}
               style={{ width: head - border * 2, height: head - border * 2 }}
             />
@@ -240,28 +236,39 @@ function MapMarker({ name, logoUrl, featured, onSettled }: { name: string; logoU
   );
 }
 
-// Los pines de Android se "fotografían" una vez: hay que esperar a que cargue el logo antes de congelarlos,
-// si no salen vacíos (círculo blanco). Se congela al cargar la imagen, con un tope por si la red es lenta.
+// Los pines de Android se "fotografían" una vez, así que el logo tiene que estar en caché ANTES de dibujarlos:
+// se precarga y el marcador recién se monta cuando el logo está listo (o falló / pasó el tope y sale con la inicial).
+// Ya montado se deja actualizar un momento más para que alcance a pintarse y después se congela (rinde mejor con muchos pines).
+const LOGO_WAIT_MS = 7000;
+function useLogoReady(logoUrl?: string | null) {
+  const [state, setState] = useState<'wait' | 'ok' | 'none'>('wait');
+  useEffect(() => {
+    if (!logoUrl) return;
+    let alive = true;
+    const cap = setTimeout(() => alive && setState('none'), LOGO_WAIT_MS);
+    Image.prefetch(logoUrl)
+      .then((ok) => alive && setState(ok === false ? 'none' : 'ok'))
+      .catch(() => alive && setState('none'));
+    return () => {
+      alive = false;
+      clearTimeout(cap);
+    };
+  }, [logoUrl]);
+  return logoUrl ? state : 'none';
+}
+
 function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
-  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const featured = isFeatured(business);
   const { w, h } = pinSize(featured);
+  const logo = useLogoReady(business.logo_url);
   useEffect(() => {
-    const cap = setTimeout(() => setTracking(false), 10000);
-    return () => {
-      clearTimeout(cap);
-      if (settle.current) clearTimeout(settle.current);
-    };
-  }, []);
-  // Un respiro después de cargar para que el logo alcance a pintarse antes de la foto.
-  const onSettled = useMemo(
-    () => () => {
-      if (settle.current) clearTimeout(settle.current);
-      settle.current = setTimeout(() => setTracking(false), 400);
-    },
-    [],
-  );
+    if (logo === 'wait') return;
+    // Cuando el pin ya tiene su contenido final, se congela tras un respiro (con tope de seguridad).
+    const t = setTimeout(() => setTracking(false), logo === 'ok' ? 1500 : 600);
+    return () => clearTimeout(t);
+  }, [logo]);
+  if (logo === 'wait') return null;
   return (
     <Marker
       coordinate={{ latitude: business.lat!, longitude: business.lng! }}
@@ -270,7 +277,7 @@ function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: 
       onPress={onPress}
     >
       <View style={{ width: w, height: h }}>
-        <MapMarker name={business.name} logoUrl={business.logo_url} featured={featured} onSettled={onSettled} />
+        <MapMarker name={business.name} logoUrl={logo === 'ok' ? business.logo_url : null} featured={featured} />
       </View>
     </Marker>
   );
@@ -1280,7 +1287,7 @@ export default function CanjesScreen() {
                         rotateEnabled={false}
                         toolbarEnabled={false}
                       >
-                        <Marker coordinate={{ latitude: profileGroup.business.lat, longitude: profileGroup.business.lng }} />
+                        <BusinessMarker business={profileGroup.business} />
                       </MapView>
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
