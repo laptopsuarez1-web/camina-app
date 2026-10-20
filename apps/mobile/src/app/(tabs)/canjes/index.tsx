@@ -8,11 +8,14 @@ import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
+import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
+  useOnlineRedeemed,
+  useMyRedemptions,
   useRedeemBenefit,
   useRegenerateCode,
   useCancelExpiredRedemption,
@@ -31,9 +34,9 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
-import type { Redemption } from '@/lib/database.types';
+import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
-import { REDEMPTION_CODE_TTL_MINUTES } from '@/constants/business-rules';
+import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
@@ -80,6 +83,32 @@ function whatsappUrl(phone: string) {
 function websiteUrl(value: string) {
   const v = value.trim();
   return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+}
+
+// Premios online (migración 0060): se cobran por WhatsApp / redes / web, sin horario y sin ir al local.
+const ONLINE_CHANNEL_LABEL: Record<OnlineChannel, string> = {
+  whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', web: 'su página web',
+};
+
+// Mensaje listo para pegar (o que ya llega escrito en WhatsApp) con el código de este canje.
+function onlineMessage(benefitName: string, code: string) {
+  return `Hola, vengo de Camina 👋 Quiero canjear mi premio *${benefitName}*. Mi código es *${code}*.`;
+}
+
+// Link del canal que eligió el local, con el mensaje ya escrito cuando el canal lo permite (solo WhatsApp).
+function onlineContact(business: BusinessT, channel: OnlineChannel | null | undefined, message: string): { url: string; prefilled: boolean } | null {
+  if (channel === 'whatsapp' && business.phone) return { url: `${whatsappUrl(business.phone)}?text=${encodeURIComponent(message)}`, prefilled: true };
+  if (channel === 'instagram' && business.instagram) return { url: socialUrl(business.instagram, 'https://instagram.com/'), prefilled: false };
+  if (channel === 'facebook' && business.facebook) return { url: socialUrl(business.facebook, 'https://facebook.com/'), prefilled: false };
+  if (channel === 'tiktok' && business.tiktok) return { url: socialUrl(business.tiktok, 'https://tiktok.com/@'), prefilled: false };
+  if (channel === 'web' && business.website) return { url: websiteUrl(business.website), prefilled: false };
+  return null;
+}
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function dayMonth(iso: string) {
+  const d = new Date(iso.replace(/(\.\d{3})\d+/, '$1'));
+  return `${d.getDate()} de ${MESES[d.getMonth()]}`;
 }
 
 function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number }) {
@@ -335,6 +364,18 @@ export default function CanjesScreen() {
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading, isError, refetch } = useBenefits();
   const { data: remainingToday } = useBenefitsRemainingToday();
+  const { data: onlineRedeemed } = useOnlineRedeemed();
+  const { data: myRedemptions } = useMyRedemptions();
+  const [copiedKey, setCopiedKey] = useState<'code' | 'msg' | null>(null);
+  async function copyText(text: string, key: 'code' | 'msg') {
+    try {
+      await Clipboard.setStringAsync(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
+    } catch {
+      Alert.alert('No pudimos copiar', 'Intentá de nuevo.');
+    }
+  }
   const { data: balance, isError: balanceError } = usePointsBalance();
   // Si el saldo no pudo cargarse se muestra "—": un 0 parecería real.
   const balanceText = balanceError && balance === undefined ? '—' : String(balance ?? 0);
@@ -536,6 +577,31 @@ export default function CanjesScreen() {
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
     const free = loyalty?.benefit_id === benefit.id && loyalty.ready;
+    if (benefit.online && benefit.online_channel === 'web') {
+      Alert.alert(
+        `¿Canjear ${benefit.name}?`,
+        `Te damos un cupón de ${benefit.business.name} para pegar en el campo cupón al pagar en su página. ` +
+          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan ahora.`),
+        [
+          { text: 'Todavía no', style: 'cancel' },
+          { text: 'Obtener cupón', onPress: () => handleRedeem(benefit.id, benefit) },
+        ]
+      );
+      return;
+    }
+    if (benefit.online) {
+      const via = benefit.online_channel ? ONLINE_CHANNEL_LABEL[benefit.online_channel] : 'sus redes';
+      Alert.alert(
+        `¿Canjear ${benefit.name}?`,
+        `Te damos un código que dura ${ONLINE_CODE_TTL_DAYS} días y un mensaje listo para mandarle a ${benefit.business.name} por ${via}. ` +
+          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando la tienda confirme el código.`),
+        [
+          { text: 'Todavía no', style: 'cancel' },
+          { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
+        ]
+      );
+      return;
+    }
     Alert.alert(
       `¿Canjear ${benefit.name}?`,
       free
@@ -1194,17 +1260,33 @@ export default function CanjesScreen() {
                       <View style={{ gap: 12 }}>
                         {list.map((b) => {
                           const available = isBenefitAvailableNow(b);
-                          const unlimited = b.daily_quota == null;
-                          const remaining = b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0));
+                          // Online: los cupos son totales (no por día). Sin dato todavía, se deja canjear y el servidor valida.
+                          const isWeb = !!b.online && b.online_channel === 'web';
+                          const onlineInfo = onlineRedeemed?.get(b.id);
+                          const unlimited = isWeb ? onlineInfo?.codesLeft == null : b.online ? b.online_quota == null : b.daily_quota == null;
+                          const remaining = isWeb
+                            ? (onlineInfo?.codesLeft ?? Infinity)
+                            : b.online
+                              ? (b.online_quota == null ? Infinity : Math.max(0, b.online_quota - (onlineInfo?.redeemed ?? 0)))
+                              : (b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)));
+                          // Si ya canjeó este premio online y el código sigue vigente, el botón vuelve a mostrar el código.
+                          // Con cupón propio de la tienda el canje sale confirmado y el cupón se puede volver a ver durante la espera de 7 días.
+                          const myPending = b.online
+                            ? (myRedemptions ?? []).find((r) => {
+                                if (r.benefit_id !== b.id) return false;
+                                if (isWeb) return r.status === 'confirmed' && Date.now() - new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1')).getTime() < BUSINESS_REDEMPTION_COOLDOWN_DAYS * 86_400_000;
+                                return r.status === 'pending' && new Date(r.code_expires_at.replace(/(\.\d{3})\d+/, '$1')).getTime() > Date.now();
+                              })
+                            : undefined;
                           const outOfStock = !unlimited && remaining <= 0;
                           // Con la tarjeta completa, el premio de fidelidad sale gratis (0 Puntos).
                           const isLoyaltyPrize = loyalty?.benefit_id === b.id;
                           const freeByCard = isLoyaltyPrize && loyalty!.ready;
                           const cost = freeByCard ? 0 : b.cost_points;
                           const canAfford = (balance ?? 0) >= cost;
-                          const canRedeem = canAfford && available && !outOfStock;
+                          const canRedeem = !!myPending || (canAfford && available && !outOfStock);
                           const redeeming = redeem.isPending && redeem.variables === b.id;
-                          const note = !available ? 'Fuera de horario' : outOfStock ? 'Sin cupones hoy' : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : 'Te faltan Puntos') : null;
+                          const note = myPending ? null : !available ? 'Fuera de horario' : outOfStock ? (b.online ? 'Sin cupos' : 'Sin cupones hoy') : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : 'Te faltan Puntos') : null;
                           return (
                             <Glass
                               key={b.id}
@@ -1227,6 +1309,11 @@ export default function CanjesScreen() {
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
                                     {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
+                                  {b.online ? (
+                                    <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">
+                                      Online · por {b.online_channel ? ONLINE_CHANNEL_LABEL[b.online_channel] : 'redes'}
+                                    </Text>
+                                  ) : null}
                                   {b.description ? (
                                     <Text className="text-[12.5px] leading-[17px] text-muted-light dark:text-muted-dark mt-1" numberOfLines={3}>
                                       {b.description}
@@ -1235,7 +1322,7 @@ export default function CanjesScreen() {
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} hoy</Text>
+                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : 'hoy'}</Text>
                                     ) : null}
                                   </View>
                                 </View>
@@ -1243,7 +1330,17 @@ export default function CanjesScreen() {
                               <Press
                                 accessibilityRole="button"
                                 accessibilityState={{ busy: redeeming }}
-                                onPress={() => confirmRedeem(b)}
+                                onPress={() => {
+                                  if (myPending) {
+                                    setProfileBusinessId(null);
+                                    setTimeout(() => {
+                                      setActiveBenefit(b);
+                                      setActiveRedemption(myPending as unknown as Redemption);
+                                    }, 350);
+                                    return;
+                                  }
+                                  confirmRedeem(b);
+                                }}
                                 haptic="light"
                                 disabled={!canRedeem || redeem.isPending}
                                 className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
@@ -1251,7 +1348,7 @@ export default function CanjesScreen() {
                               >
                                 {redeeming && <ActivityIndicator size="small" color="#fff" />}
                                 <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
-                                  {redeeming ? 'Canjeando…' : note ?? 'Canjear'}
+                                  {redeeming ? 'Canjeando…' : myPending ? (isWeb ? 'Ver mi cupón' : 'Ver mi código') : note ?? 'Canjear'}
                                 </Text>
                               </Press>
                             </Glass>
@@ -1407,7 +1504,40 @@ export default function CanjesScreen() {
               </View>
             )}
 
-            {confirmed ? (
+            {activeBenefit?.online && activeBenefit.online_channel === 'web' && activeRedemption ? (
+              <>
+                <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 px-4 items-center mb-4">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-2 text-center">
+                    Tu cupón de {activeBenefit.business.name}
+                  </Text>
+                  <Text
+                    accessibilityLabel={`Cupón ${activeRedemption.code}`}
+                    selectable
+                    className="text-[28px] font-extrabold tracking-[3px] text-purple text-center"
+                  >
+                    {activeRedemption.code}
+                  </Text>
+                  <Press accessibilityRole="button" hitSlop={8} onPress={() => copyText(activeRedemption.code, 'code')} className="mt-2.5 px-3 py-1.5">
+                    <Text className="text-[13px] font-bold text-purple-ink dark:text-purple-soft">{copiedKey === 'code' ? '¡Cupón copiado!' : 'Copiar cupón'}</Text>
+                  </Press>
+                </View>
+                <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark mb-3">
+                  Abrí la tienda, armá tu pedido y pegá este cupón en el campo cupón antes de pagar. Ya se descontaron tus Puntos.
+                </Text>
+                {activeBenefit.business.website ? (
+                  <Press
+                    accessibilityRole="button"
+                    onPress={() => Linking.openURL(websiteUrl(activeBenefit.business.website!)).catch(() => Alert.alert('No pudimos abrir la tienda', 'Copiá el cupón y entrá a su página.'))}
+                    className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5"
+                  >
+                    <Text className="text-white font-bold text-[15px]">Ir a la tienda</Text>
+                  </Press>
+                ) : null}
+                <Press accessibilityRole="button" onPress={closeCode} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">
+                  <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">Listo</Text>
+                </Press>
+              </>
+            ) : confirmed ? (
               <View className="items-center">
                 <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                   <SuccessMark />
@@ -1442,6 +1572,59 @@ export default function CanjesScreen() {
                   <Text className="text-purple-ink dark:text-purple-soft font-bold text-[14px]">Listo</Text>
                 </Press>
               </View>
+            ) : activeBenefit?.online && !expired && activeRedemption ? (
+              <>
+                <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 px-4 items-center mb-4">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-2 text-center">
+                    Tu código para {activeBenefit.business.name}
+                  </Text>
+                  <Text
+                    accessibilityLabel={`Código ${activeRedemption.code.split('').join(' ')}`}
+                    className="text-[34px] font-extrabold tracking-[8px] text-purple"
+                  >
+                    {activeRedemption.code.slice(0, 3)} {activeRedemption.code.slice(3)}
+                  </Text>
+                  <Press accessibilityRole="button" hitSlop={8} onPress={() => copyText(activeRedemption.code, 'code')} className="mt-2.5 px-3 py-1.5">
+                    <Text className="text-[13px] font-bold text-purple-ink dark:text-purple-soft">{copiedKey === 'code' ? '¡Código copiado!' : 'Copiar código'}</Text>
+                  </Press>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2 text-center">
+                    Vale hasta el {dayMonth(activeRedemption.code_expires_at)}. Tus Puntos se descuentan cuando la tienda lo confirma.
+                  </Text>
+                </View>
+                {(() => {
+                  const message = onlineMessage(activeBenefit.name, activeRedemption.code);
+                  const contact = onlineContact(activeBenefit.business, activeBenefit.online_channel, message);
+                  const via = activeBenefit.online_channel ? ONLINE_CHANNEL_LABEL[activeBenefit.online_channel] : 'sus redes';
+                  return (
+                    <>
+                      <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark mb-3">
+                        Mandale este código a la tienda por {via} y coordinen el pago y la entrega. Ellos lo confirman cuando lo reciban.
+                      </Text>
+                      <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-3">
+                        <Text className="text-[12.5px] leading-[18px] text-purple-ink dark:text-purple-soft">{message.replace(/\*/g, '')}</Text>
+                      </View>
+                      {contact ? (
+                        <Press
+                          accessibilityRole="button"
+                          onPress={async () => {
+                            // Solo WhatsApp acepta el texto ya escrito; en las redes se copia el mensaje para pegarlo en el chat.
+                            if (!contact.prefilled) await copyText(message, 'msg');
+                            Linking.openURL(contact.url).catch(() => Alert.alert('No pudimos abrir el enlace', 'Copiá el mensaje y escribile a la tienda.'));
+                          }}
+                          className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5"
+                        >
+                          <Text className="text-white font-bold text-[15px]">
+                            {contact.prefilled ? 'Escribir por WhatsApp' : `Copiar mensaje y abrir ${via}`}
+                          </Text>
+                        </Press>
+                      ) : null}
+                      <Press accessibilityRole="button" onPress={() => copyText(message, 'msg')} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">
+                        <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">{copiedKey === 'msg' ? '¡Mensaje copiado!' : 'Copiar mensaje'}</Text>
+                      </Press>
+                    </>
+                  );
+                })()}
+              </>
             ) : !expired ? (
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
@@ -1469,7 +1652,9 @@ export default function CanjesScreen() {
               <>
                 <View className="bg-warn-light rounded-3xl py-6 items-center mb-4">
                   <Text accessibilityLiveRegion="polite" className="text-warn-deep font-bold text-base">Código vencido</Text>
-                  <Text className="text-[#8A5A2E] text-xs mt-1">No llegaste a mostrarlo a tiempo.</Text>
+                  <Text className="text-[#8A5A2E] text-xs mt-1">
+                    {activeBenefit?.online ? 'La tienda no llegó a confirmarlo a tiempo.' : 'No llegaste a mostrarlo a tiempo.'}
+                  </Text>
                 </View>
                 <Press accessibilityRole="button" onPress={handleCancelExpired} disabled={cancelExpired.isPending} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
                   <Text className="text-white font-bold text-[15px]">Cancelar y recuperar Puntos</Text>

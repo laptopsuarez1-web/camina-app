@@ -71,6 +71,8 @@ export interface Business {
   created_at: string;
 }
 
+export type OnlineChannel = 'whatsapp' | 'instagram' | 'facebook' | 'tiktok' | 'web';
+
 export interface Benefit {
   id: string;
   business_id: string;
@@ -87,6 +89,10 @@ export interface Benefit {
   valid_from: string | null;
   valid_to: string | null;
   valid_days_mask: number;
+  // Premio online (migración 0060): se cobra por WhatsApp / redes / web, con cupos totales y código de 7 días.
+  online?: boolean;
+  online_channel?: OnlineChannel | null;
+  online_quota?: number | null;
   created_at: string;
 }
 
@@ -243,6 +249,7 @@ export type Database = {
         Returns: number;
       };
       redeem_benefit: { Args: { p_benefit_id: string }; Returns: Redemption };
+      benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number; codes_left: number | null }[] };
       my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };
       confirm_redemption_code: {

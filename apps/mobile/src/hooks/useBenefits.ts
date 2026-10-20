@@ -39,6 +39,22 @@ export function useBenefitsRemainingToday() {
   });
 }
 
+// Cupos de los premios online: canjes ya usados y, si la tienda carga sus propios cupones (canal web), cuántos le quedan.
+export type OnlineCupos = { redeemed: number; codesLeft: number | null };
+export function useOnlineRedeemed() {
+  return useQuery({
+    queryKey: ['benefits-online-redeemed'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('benefits_online_redeemed');
+      if (error) throw error;
+      const map = new Map<string, OnlineCupos>();
+      for (const row of data ?? []) map.set(row.benefit_id, { redeemed: row.redeemed, codesLeft: row.codes_left ?? null });
+      return map;
+    },
+    staleTime: 60_000,
+  });
+}
+
 export function useRedeemBenefit() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -53,6 +69,7 @@ export function useRedeemBenefit() {
       queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
       queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
+      queryClient.invalidateQueries({ queryKey: ['benefits-online-redeemed'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty-card'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty-cards'] });
     },
