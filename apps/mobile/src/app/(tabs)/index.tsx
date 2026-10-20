@@ -31,6 +31,7 @@ import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
+import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -530,7 +531,9 @@ export default function HomeScreen() {
             <ChevronRight size={16} color={isDark ? '#E0BC63' : '#9A6A08'} />
           </Press>
         ) : null}
+        <HomeAdBanner />
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
+        <HomePromoSections />
 
         <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
           <LinkRow
@@ -538,7 +541,7 @@ export default function HomeScreen() {
             tone="aqua"
             title="Retos"
             value={reto ? `${reto.met} de ${reto.target}` : 'Ver retos'}
-            onPress={() => router.push('/(tabs)/eventos')}
+            onPress={() => router.push({ pathname: '/(tabs)/eventos', params: { tab: 'desafios' } })}
           />
           <LinkRow
             icon={Trophy}

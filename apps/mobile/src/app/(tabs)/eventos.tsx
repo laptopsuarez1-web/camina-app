@@ -1,7 +1,9 @@
-import { View, ScrollView, Alert, ActivityIndicator, AccessibilityInfo, Platform } from 'react-native';
+import { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Calendar, Users, Flame, CheckCircle2, Gift, Trophy, Check, IconBubble } from '@/components/icons';
+import { Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -10,28 +12,34 @@ import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
-import { colors } from '@/theme/tokens';
-import { useThemeColors } from '@/theme/useThemeColors';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
-import { Coin } from '@/components/ui/Coin';
+import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/promos/PromoCards';
 
 export default function EventosScreen() {
   const tabSpace = useTabBarSpace();
-  const t = useThemeColors();
   const { data: retos } = useRetos();
   const claim = useClaimReto();
   const { data: promos, isLoading: promosLoading, isError: promosError, refetch: refetchPromos } = usePromotions();
   const join = useJoinPromotion();
-  const hasPromos = (promos ?? []).length > 0;
+  const params = useLocalSearchParams<{ tab?: string }>();
+  // Viene de Inicio con ?tab=...; si la persona toca una pestaña, manda su elección.
+  const [picked, setPicked] = useState<{ from: string | undefined; tab: 'eventos' | 'desafios' } | null>(null);
+  const tab = picked && picked.from === params.tab ? picked.tab : params.tab === 'desafios' ? 'desafios' : 'eventos';
+  const setTab = (t: 'eventos' | 'desafios') => setPicked({ from: params.tab, tab: t });
+  const [open, setOpen] = useState<PromotionItem | null>(null);
+  const { width } = useWindowDimensions();
+  const cardSize = Math.min(width - 40, 380);
+  const events = (promos ?? []).filter((p) => p.kind === 'evento');
+  const challenges = (promos ?? []).filter((p) => p.kind === 'desafio' || p.kind === 'sorteo');
 
   async function handleJoin(p: PromotionItem) {
     try {
       await join.mutateAsync(p.id);
       // iOS ignora accessibilityLiveRegion: se anuncia a mano que ya quedó anotado.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Ya estás anotado');
-      Alert.alert('¡Listo!', p.kind === 'sorteo' ? 'Ya estás anotado. Cumplí la meta y participás del sorteo.' : 'Ya estás anotado en el evento.');
+      Alert.alert('¡Listo!', p.kind === 'evento' ? 'Ya estás anotado en el evento.' : 'Ya sos parte del desafío. Tus pasos cuentan desde ahora.');
     } catch (e) {
       Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intentá de nuevo.'));
     }
@@ -50,58 +58,41 @@ export default function EventosScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle>Eventos</ScreenTitle>
+      <ScreenTitle>{tab === 'eventos' ? 'Eventos' : 'Desafíos'}</ScreenTitle>
+      <View accessibilityRole="tablist" className="flex-row rounded-full p-1 mb-4 bg-purple-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
+        {(['eventos', 'desafios'] as const).map((k) => {
+          const on = tab === k;
+          return (
+            <Press
+              key={k}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              haptic="selection"
+              feedback="none"
+              onPress={() => setTab(k)}
+              className={`flex-1 rounded-full items-center py-2.5 ${on ? 'bg-purple-deep' : ''}`}
+            >
+              <Text style={{ fontSize: 14.5, fontWeight: '800', color: on ? '#fff' : undefined }} className={on ? '' : 'text-purple-ink dark:text-purple-soft'}>
+                {k === 'eventos' ? 'Eventos' : 'Desafíos'}
+              </Text>
+            </Press>
+          );
+        })}
+      </View>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
-        Viví experiencias únicas con tus marcas favoritas
+        {tab === 'eventos' ? 'Viví experiencias únicas con tus marcas favoritas' : 'Sumate, caminá y ganá premios de tus marcas favoritas'}
       </Text>
-      {hasPromos && (
-        <View className="gap-3 mb-7">
-          {(promos ?? []).map((p) => (
-            <Glass key={p.id} className="rounded-3xl p-4">
-              <View className="flex-row items-start" style={{ gap: 12 }}>
-                <IconBubble icon={p.won ? Trophy : p.kind === 'sorteo' ? Gift : Calendar} tone={p.won ? 'gold' : p.kind === 'sorteo' ? 'orange' : 'purple'} size={42} />
-                <View className="flex-1">
-                  <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-0.5">
-                    {p.business?.name ?? 'Comercio'} · {p.kind === 'sorteo' ? 'Sorteo' : 'Evento'}
-                  </Text>
-                  <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">{p.title}</Text>
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1 leading-relaxed">{p.description}</Text>
-                  {p.prize ? (
-                    <View accessible accessibilityLabel={`Premio: ${p.prize}`} className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
-                      <Gift size={14} color={t.purpleText} />
-                      <Text importantForAccessibility="no" className="text-[12.5px] font-semibold text-text-light dark:text-text-dark shrink">{p.prize}</Text>
-                    </View>
-                  ) : null}
-                  {p.req_steps ? (
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
-                      Para participar: {p.req_steps.toLocaleString('es-BO')} pasos por día durante {p.req_days} días.
-                    </Text>
-                  ) : null}
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">
-                    Hasta el {new Date(p.ends_at).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' })}
-                  </Text>
-                </View>
-              </View>
-              {p.won ? (
-                <View className="rounded-2xl py-3 items-center mt-3" style={{ backgroundColor: '#FFF3D1' }}>
-                  <Text style={{ color: colors.goldInk, fontWeight: '800', fontSize: 13 }}>¡Ganaste! Te vamos a contactar</Text>
-                </View>
-              ) : p.joined ? (
-                <View className="rounded-2xl py-3 items-center mt-3 bg-mint/15">
-                  <View accessible accessibilityLiveRegion="polite" accessibilityLabel="Ya estás anotado" className="flex-row items-center" style={{ gap: 5 }}>
-                    <Check size={14} color={t.accentText} />
-                    <Text importantForAccessibility="no" className="text-mint-dark dark:text-mint font-bold text-[13px]">Ya estás anotado</Text>
-                  </View>
-                </View>
-              ) : (
-                <Press accessibilityRole="button" onPress={() => handleJoin(p)} disabled={join.isPending} className="bg-mint rounded-2xl py-3 items-center mt-3">
-                  <Text className="text-mint-dark font-bold text-[13.5px]">{p.kind === 'sorteo' ? 'Participar del sorteo' : 'Anotarme'}</Text>
-                </Press>
-              )}
-            </Glass>
-          ))}
+      {tab === 'eventos' && (
+        <View className="gap-4 mb-7 items-center">
+          {events.map((p) => <EventCard key={p.id} p={p} size={cardSize} onPress={() => setOpen(p)} />)}
         </View>
       )}
+      {tab === 'desafios' && challenges.length > 0 && (
+        <View className="gap-4 mb-7">
+          {challenges.map((p) => <ChallengeCard key={p.id} p={p} onPress={() => setOpen(p)} />)}
+        </View>
+      )}
+      <PromoSheet p={open ? (promos ?? []).find((x) => x.id === open.id) ?? open : null} onClose={() => setOpen(null)} onJoin={handleJoin} joining={join.isPending} />
 
       {promosError && !promos && (
         <View className="mb-8">
@@ -113,17 +104,18 @@ export default function EventosScreen() {
           />
         </View>
       )}
-      {!promosLoading && !promosError && !hasPromos && (
+      {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 : challenges.length === 0) && (
         <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
           <EmptyIllustration kind="eventos" />
           <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
-            Todavía no hay eventos
+            {tab === 'eventos' ? 'Todavía no hay eventos' : 'Todavía no hay desafíos de comercios'}
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
             Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
           </Text>
         </Glass>
       )}
+      {tab === 'desafios' && (<>
       <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
         Cumplí metas caminando y ganá Puntos extra.
@@ -134,15 +126,16 @@ export default function EventosScreen() {
       )}
       <View className="gap-3">
         {(retos ?? []).map((reto) => (
-          <RetoCard
+          <RetoCamina
             key={reto.id}
+            tone={reto.kind === 'referrals' ? 'violeta' : reto.kind === 'steps_streak' ? 'coral' : 'menta'}
             icon={
               reto.kind === 'referrals' ? (
-                <IconBubble icon={Users} tone="purple" size={40} />
+                <IconBubble icon={Users} tone="purple" size={42} />
               ) : reto.kind === 'steps_streak' ? (
-                <IconBubble icon={Flame} tone="orange" size={40} />
+                <IconBubble icon={Flame} tone="orange" size={42} />
               ) : (
-                <IconBubble icon={CheckCircle2} tone="aqua" size={40} />
+                <IconBubble icon={CheckCircle2} tone="aqua" size={42} />
               )
             }
             title={reto.title}
@@ -158,69 +151,9 @@ export default function EventosScreen() {
           />
         ))}
       </View>
+      </>)}
 
       </ScrollView>
     </View>
-  );
-}
-
-function RetoCard({
-  icon,
-  title,
-  description,
-  reward,
-  pct,
-  met,
-  target,
-  claimable,
-  claimed,
-  claiming,
-  onClaim,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  reward: number;
-  pct: number;
-  met: number;
-  target: number;
-  claimable: boolean;
-  claimed: boolean;
-  claiming: boolean;
-  onClaim: () => void;
-}) {
-  return (
-    <Glass className="rounded-3xl p-4">
-      <View className="flex-row items-start gap-3 mb-3">
-        {icon}
-        <View className="flex-1">
-          <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">{title}</Text>
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 leading-relaxed">
-            {description}
-          </Text>
-        </View>
-        <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
-          <Coin size={13} />
-          <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reward}</Text>
-        </View>
-      </View>
-      <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-1.5">
-        <View className="h-full bg-aqua rounded-full" style={{ width: `${pct}%` }} />
-      </View>
-      <View className="flex-row items-center justify-between">
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-          {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
-        </Text>
-        {claimable && (
-          <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} className="bg-mint rounded-full px-4 py-1.5">
-            {claiming ? (
-              <ActivityIndicator size="small" color="#1E8F6F" />
-            ) : (
-              <Text className="text-mint-dark text-[12px] font-bold">Reclamar +{reward}</Text>
-            )}
-          </Press>
-        )}
-      </View>
-    </Glass>
   );
 }
