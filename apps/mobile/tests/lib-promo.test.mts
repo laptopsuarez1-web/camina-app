@@ -39,4 +39,6 @@ test('participantes y color de fondo con valor desconocido', () => {
   assert.equal(participantsLabel(30), '+30 se sumaron');
   assert.equal(promoBgKey('rosa'), 'violeta');
   assert.equal(promoBgKey('menta'), 'menta');
+  assert.equal(promoBgKey('aurora'), 'aurora');
+  assert.equal(promoBgKey('clasico'), 'clasico');
 });

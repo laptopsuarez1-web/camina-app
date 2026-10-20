@@ -27,7 +27,7 @@ function usePromoSheet() {
   return { promos, sheet: <PromoSheet p={open} onClose={() => setOpenId(null)} onJoin={onJoin} joining={join.isPending} />, setOpenId };
 }
 
-// Publicidad de comercios arriba de Inicio: fija (no se cierra mientras esté vigente), chica y con link directo.
+// Anuncios de marcas arriba de Inicio: fijos (no se cierran mientras estén vigentes) y con link directo.
 export function HomeAdBanner() {
   const { promos } = usePromos();
   const ads = promos.filter((p) => p.kind === 'publicidad' && p.cta_url).slice(0, 2);

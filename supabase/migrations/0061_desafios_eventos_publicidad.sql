@@ -1,7 +1,8 @@
 -- Desafíos, eventos y publicidad de comercios (extiende promotions, 0025).
 --   * kind: evento | sorteo (viejo) | desafio | publicidad
 --   * meta: pasos por día o pasos en total (goal_mode / goal_steps / goal_days)
---   * fondo de la tarjeta: color de Camina o foto (bg_color / bg_image_url, la app la oscurece sola)
+--   * fondo de la tarjeta: color de Camina, foto/banner (la app la oscurece sola) o el logo del comercio sobre el color (bg_color / bg_image_url / bg_logo)
+--   * la publicidad es para marcas con sitio web: va con link obligatorio, foto/banner de fondo y no dice "publicidad" en la app
 --   * los pasos de un desafío cuentan desde el día en que la persona toca "Participar"
 --   * paquetes: Bs 400 cuenta solo publicidad (banner, evento o desafío); comercio con local +Bs 200, solo evento o desafío
 -- No cambia nada de lo que ya existe: request_promotion (0025) sigue funcionando igual.
@@ -25,7 +26,8 @@ alter table promotions add constraint promotions_window_chk check (ends_at > sta
 alter table promotions add column if not exists goal_mode text check (goal_mode in ('daily', 'total'));
 alter table promotions add column if not exists goal_steps integer check (goal_steps is null or goal_steps between 1000 and 1000000);
 alter table promotions add column if not exists goal_days integer check (goal_days is null or goal_days between 1 and 30);
-alter table promotions add column if not exists bg_color text check (bg_color is null or bg_color in ('violeta', 'menta', 'dorado', 'noche', 'coral'));
+alter table promotions add column if not exists bg_color text check (bg_color is null or bg_color in ('violeta', 'menta', 'dorado', 'noche', 'coral', 'aurora', 'clasico'));
+alter table promotions add column if not exists bg_logo boolean not null default false;
 alter table promotions add column if not exists bg_image_url text check (bg_image_url is null or char_length(bg_image_url) <= 500);
 alter table promotions add column if not exists cta_url text check (cta_url is null or char_length(cta_url) <= 300);
 alter table promotions drop constraint if exists promotions_goal_chk;
@@ -71,7 +73,7 @@ create or replace function request_promotion_v2(
   p_business_id uuid, p_kind text, p_title text, p_description text, p_prize text,
   p_starts_at timestamptz, p_ends_at timestamptz,
   p_goal_mode text, p_goal_steps integer, p_goal_days integer, p_winners integer,
-  p_bg_color text, p_bg_image_url text, p_cta_url text
+  p_bg_color text, p_bg_image_url text, p_cta_url text, p_bg_logo boolean default false
 ) returns promotions as $$
 declare
   b businesses;
@@ -122,21 +124,21 @@ begin
   end if;
   insert into promotions (
     business_id, kind, title, description, prize, winners_count, starts_at, ends_at,
-    goal_mode, goal_steps, goal_days, bg_color, bg_image_url, cta_url, price_bs
+    goal_mode, goal_steps, goal_days, bg_color, bg_image_url, bg_logo, cta_url, price_bs
   ) values (
     p_business_id, p_kind, btrim(p_title), btrim(p_description), nullif(btrim(coalesce(p_prize, '')), ''),
     least(greatest(coalesce(p_winners, 1), 1), 10), p_starts_at, p_ends_at,
     case when p_kind = 'desafio' then p_goal_mode end,
     case when p_kind = 'desafio' then p_goal_steps end,
     case when p_kind = 'desafio' and p_goal_mode = 'daily' then p_goal_days end,
-    coalesce(p_bg_color, 'violeta'), nullif(btrim(coalesce(p_bg_image_url, '')), ''),
+    coalesce(p_bg_color, 'violeta'), nullif(btrim(coalesce(p_bg_image_url, '')), ''), coalesce(p_bg_logo, false),
     nullif(btrim(coalesce(p_cta_url, '')), ''), promotion_price(b.account_kind)
   ) returning * into r;
   return r;
 end;
 $$ language plpgsql security definer set search_path = public;
-revoke execute on function request_promotion_v2(uuid, text, text, text, text, timestamptz, timestamptz, text, integer, integer, integer, text, text, text) from public, anon;
-grant execute on function request_promotion_v2(uuid, text, text, text, text, timestamptz, timestamptz, text, integer, integer, integer, text, text, text) to authenticated;
+revoke execute on function request_promotion_v2(uuid, text, text, text, text, timestamptz, timestamptz, text, integer, integer, integer, text, text, text, boolean) from public, anon;
+grant execute on function request_promotion_v2(uuid, text, text, text, text, timestamptz, timestamptz, text, integer, integer, integer, text, text, text, boolean) to authenticated;
 
 -- Participar: la publicidad no se "participa"; a un evento se puede anotar antes de que empiece; el momento de anotarse
 -- queda guardado (joined_at) y es desde donde cuentan los pasos de un desafío.

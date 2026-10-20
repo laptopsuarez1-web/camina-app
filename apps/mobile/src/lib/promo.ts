@@ -2,7 +2,7 @@
 import { plural } from '@/lib/format';
 
 export type PromoKind = 'evento' | 'sorteo' | 'desafio' | 'publicidad';
-export type PromoBg = 'violeta' | 'menta' | 'dorado' | 'noche' | 'coral';
+export type PromoBg = 'violeta' | 'menta' | 'dorado' | 'noche' | 'coral' | 'aurora' | 'clasico';
 
 export interface PromoGoal {
   goal_mode: 'daily' | 'total' | null;
@@ -20,6 +20,9 @@ export const PROMO_BG: Record<PromoBg, readonly [string, string]> = {
   dorado: ['#5F4004', '#8F6307'],
   noche: ['#241748', '#3a2668'],
   coral: ['#9E2F3A', '#BF3F3F'],
+  // Fondos clásicos de Camina: aurora (violeta a menta) y el degradé oscuro de las cabeceras de la app.
+  aurora: ['#3a2668', '#1F7A66'],
+  clasico: ['#3a2668', '#120a1e'],
 };
 
 export function promoBgKey(v: string | null | undefined): PromoBg {

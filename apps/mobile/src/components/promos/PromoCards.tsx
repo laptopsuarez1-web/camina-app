@@ -13,19 +13,25 @@ import { PROMO_BG, promoBgKey, type PromoBg, timeLeftLabel, dateRangeLabel, boli
 
 const WHITE_SOFT = 'rgba(255,255,255,0.92)';
 
-// Fondo de la tarjeta: color de Camina o foto. La foto se oscurece sola para que el texto blanco se lea siempre.
-function PromoBackground({ p, children, style }: { p: PromotionItem; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+// Fondo de la tarjeta: color de Camina, foto/banner o el logo del comercio sobre el color.
+// La foto se oscurece sola (`soft` la oscurece menos, para banners donde la imagen es protagonista).
+function PromoBackground({ p, children, style, soft }: { p: PromotionItem; children: ReactNode; style?: StyleProp<ViewStyle>; soft?: boolean }) {
   const [from, to] = PROMO_BG[promoBgKey(p.bg_color)];
   return (
     <View style={[{ overflow: 'hidden', backgroundColor: from }, style]}>
       {p.bg_image_url ? (
         <>
           <Image accessible={false} source={{ uri: p.bg_image_url }} contentFit="cover" style={StyleSheet.absoluteFill} />
-          <LinearGradient colors={['rgba(20,10,40,0.55)', 'rgba(20,10,40,0.82)']} style={StyleSheet.absoluteFill} />
+          <LinearGradient colors={soft ? ['rgba(20,10,40,0.15)', 'rgba(20,10,40,0.78)'] : ['rgba(20,10,40,0.55)', 'rgba(20,10,40,0.82)']} style={StyleSheet.absoluteFill} />
         </>
       ) : (
         <LinearGradient colors={[from, to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
       )}
+      {!p.bg_image_url && p.bg_logo && p.business?.logo_url ? (
+        <View pointerEvents="none" style={{ position: 'absolute', right: -24, bottom: -24, width: 170, height: 170, borderRadius: 85, overflow: 'hidden', opacity: 0.22 }}>
+          <Image accessible={false} source={{ uri: p.business.logo_url }} contentFit="cover" style={{ width: 170, height: 170 }} />
+        </View>
+      ) : null}
       {children}
     </View>
   );
@@ -120,25 +126,32 @@ function openLink(url: string | null) {
   if (url && /^https:\/\//.test(url)) Linking.openURL(url).catch(() => {});
 }
 
-// Publicidad: franja chica y fija arriba de Inicio. Al tocarla va directo al link que eligió el comercio
-// (WhatsApp, Instagram, web...). Siempre dice que es publicidad.
+// Anuncio de una marca (con sitio web) arriba de Inicio: fijo, con foto/banner de fondo. Al tocarlo va directo
+// al link que eligió la marca. No lleva ninguna etiqueta que lo nombre como publicidad.
 export function AdBanner({ p }: { p: PromotionItem }) {
   return (
     <Press
       accessibilityRole="link"
-      accessibilityLabel={`Publicidad. ${p.title}, de ${p.business?.name ?? 'un comercio'}`}
-      accessibilityHint="Abre el link del anunciante"
+      accessibilityLabel={`${p.title}, de ${p.business?.name ?? 'una marca'}`}
+      accessibilityHint="Abre el link de la marca"
       onPress={() => openLink(p.cta_url)}
     >
-      <PromoBackground p={p} style={{ borderRadius: 20, paddingHorizontal: 12, paddingVertical: 10 }}>
-        <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-center" style={{ gap: 10 }}>
-          <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={40} />
-          <View className="flex-1">
-            <Text numberOfLines={1} style={{ color: '#7FEDC4', fontSize: 11.5, fontWeight: '800', letterSpacing: 0.4 }}>PUBLICIDAD · {(p.business?.name ?? '').toUpperCase()}</Text>
-            <Text numberOfLines={1} style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>{p.title}</Text>
-            <Text numberOfLines={1} style={{ color: WHITE_SOFT, fontSize: 12.5 }}>{p.description}</Text>
+      <PromoBackground p={p} soft style={{ borderRadius: 24, minHeight: 132, padding: 14, justifyContent: 'flex-end' }}>
+        <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <View className="flex-row items-center" style={{ gap: 8, marginBottom: 6 }}>
+            <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={30} />
+            <Text numberOfLines={1} style={{ color: '#fff', fontSize: 13, fontWeight: '700', flex: 1 }}>{p.business?.name ?? 'Marca'}</Text>
           </View>
-          <ChevronRight size={18} color="#fff" />
+          <View className="flex-row items-end justify-between" style={{ gap: 10 }}>
+            <View className="flex-1">
+              <Text numberOfLines={2} style={{ color: '#fff', fontSize: 19, lineHeight: 23, fontWeight: '800' }}>{p.title}</Text>
+              {p.description ? <Text numberOfLines={1} style={{ color: WHITE_SOFT, fontSize: 13, marginTop: 2 }}>{p.description}</Text> : null}
+            </View>
+            <View className="flex-row items-center" style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingLeft: 14, paddingRight: 8, paddingVertical: 8, gap: 2 }}>
+              <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Ver más</Text>
+              <ChevronRight size={16} color="#2A1A00" />
+            </View>
+          </View>
         </View>
       </PromoBackground>
     </Press>

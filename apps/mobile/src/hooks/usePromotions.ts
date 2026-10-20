@@ -18,6 +18,7 @@ export interface PromotionItem {
   goal_days: number | null;
   bg_color: string | null;
   bg_image_url: string | null;
+  bg_logo: boolean;
   cta_url: string | null;
   participants: number;
   business: { name: string; logo_url: string | null; category: string } | null;
@@ -36,7 +37,7 @@ export function usePromotions() {
       const [{ data, error }, { data: entries }, { data: wins }, { data: counts }] = await Promise.all([
         supabase
           .from('promotions')
-          .select('id, kind, title, description, prize, winners_count, starts_at, ends_at, req_steps, req_days, goal_mode, goal_steps, goal_days, bg_color, bg_image_url, cta_url, status, business:businesses(name, logo_url, category)')
+          .select('id, kind, title, description, prize, winners_count, starts_at, ends_at, req_steps, req_days, goal_mode, goal_steps, goal_days, bg_color, bg_image_url, bg_logo, cta_url, status, business:businesses(name, logo_url, category)')
           .in('status', ['approved', 'finished'])
           .gte('ends_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString())
           .order('ends_at'),

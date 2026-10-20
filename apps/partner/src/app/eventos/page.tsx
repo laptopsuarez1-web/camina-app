@@ -9,7 +9,7 @@ import { ImageUpload } from '@/components/ImageUpload';
 
 const WHATSAPP = '59162714286';
 type Kind = 'evento' | 'desafio' | 'publicidad';
-const KIND_LABEL: Record<Promotion['kind'], string> = { evento: 'Evento', desafio: 'Desafío', publicidad: 'Publicidad', sorteo: 'Sorteo' };
+const KIND_LABEL: Record<Promotion['kind'], string> = { evento: 'Evento', desafio: 'Desafío', publicidad: 'Banner', sorteo: 'Sorteo' };
 // Colores de Camina para el fondo de la tarjeta (los mismos de la app).
 const BG: Record<string, [string, string]> = {
   violeta: ['#5B31A3', '#8B4FD1'],
@@ -17,6 +17,8 @@ const BG: Record<string, [string, string]> = {
   dorado: ['#5F4004', '#8F6307'],
   noche: ['#241748', '#3a2668'],
   coral: ['#9E2F3A', '#BF3F3F'],
+  aurora: ['#3a2668', '#1F7A66'],
+  clasico: ['#3a2668', '#120a1e'],
 };
 const STATUS: Record<Promotion['status'], { label: string; cls: string }> = {
   pending: { label: 'En revisión', cls: 'text-warn bg-warn-light' },
@@ -47,7 +49,7 @@ export default function EventosPage() {
   const [winnersCount, setWinnersCount] = useState(3);
   const [bgColor, setBgColor] = useState('violeta');
   const [bgImage, setBgImage] = useState<string | null>(null);
-  const [bgMode, setBgMode] = useState<'color' | 'foto'>('color');
+  const [bgMode, setBgMode] = useState<'color' | 'foto' | 'logo'>('color');
   const [ctaUrl, setCtaUrl] = useState('');
   const [photoId] = useState(() => Math.random().toString(36).slice(2, 10));
   const [sending, setSending] = useState(false);
@@ -93,6 +95,7 @@ export default function EventosPage() {
       p_winners: winnersCount,
       p_bg_color: bgColor,
       p_bg_image_url: bgMode === 'foto' ? bgImage : null,
+      p_bg_logo: bgMode === 'logo',
       p_cta_url: kind === 'publicidad' && ctaUrl.trim() ? ctaUrl.trim() : null,
     });
     setSending(false);
@@ -101,7 +104,7 @@ export default function EventosPage() {
       return;
     }
     const text = encodeURIComponent(
-      `Hola! Soy ${business.name} y quiero publicar ${kind === 'desafio' ? 'un desafío' : kind === 'evento' ? 'un evento' : 'una publicidad'} en Camina: "${title}" (Bs ${price}). Te mando el comprobante de la transferencia.`
+      `Hola! Soy ${business.name} y quiero publicar ${kind === 'desafio' ? 'un desafío' : kind === 'evento' ? 'un evento' : 'un banner'} en Camina: "${title}" (Bs ${price}). Te mando el comprobante de la transferencia.`
     );
     setMsg({
       ok: true,
@@ -124,13 +127,13 @@ export default function EventosPage() {
   const needsPhoto = bgMode === 'foto' && !bgImage;
   const badLink = kind === 'publicidad' && !/^https:\/\/\S+$/.test(ctaUrl.trim());
   const kinds: { k: Kind; label: string; hint: string }[] = [
-    ...(isAd ? [{ k: 'publicidad' as Kind, label: 'Publicidad', hint: 'Franja fija en Inicio, con link' }] : []),
+    ...(isAd ? [{ k: 'publicidad' as Kind, label: 'Banner', hint: 'Fijo en Inicio, va a tu link' }] : []),
     { k: 'evento', label: 'Evento', hint: 'Tarjeta con fecha y hora' },
     { k: 'desafio', label: 'Desafío', hint: 'Meta de pasos y premios' },
   ];
   const [c1, c2] = BG[bgColor] ?? BG.violeta;
   const previewBg = bgMode === 'foto' && bgImage
-    ? { backgroundImage: `linear-gradient(rgba(20,10,40,.55), rgba(20,10,40,.82)), url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    ? { backgroundImage: `linear-gradient(${kind === 'publicidad' ? 'rgba(20,10,40,.15), rgba(20,10,40,.78)' : 'rgba(20,10,40,.55), rgba(20,10,40,.82)'}), url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { backgroundImage: `linear-gradient(135deg, ${c1}, ${c2})` };
   const label = 'block text-[12px] font-bold uppercase tracking-wide text-[#5B4A7A] mb-1.5';
   const section = 'bg-card border border-line rounded-2xl p-5 flex flex-col gap-3.5';
@@ -173,7 +176,7 @@ export default function EventosPage() {
               <label>
                 <span className={label}>Link al que lleva</span>
                 <input value={ctaUrl} maxLength={300} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://wa.me/591…  ·  https://instagram.com/…  ·  tu página" className={field} />
-                <span className="block text-muted text-[12px] mt-1">Al tocar la publicidad, la persona va directo acá. Puede ser WhatsApp, Instagram, Facebook, TikTok o una página web; no hace falta que sea un local.</span>
+                <span className="block text-muted text-[12px] mt-1">Al tocar el banner, la persona va directo acá. Puede ser WhatsApp, Instagram, Facebook, TikTok o una página web; no hace falta que sea un local.</span>
               </label>
             )}
           </div>
@@ -234,25 +237,30 @@ export default function EventosPage() {
 
           <div className={section}>
             <span className={label}>Fondo de la tarjeta</span>
-            <div className="grid grid-cols-2 gap-2.5">
-              {([['color', 'Color'], ['foto', 'Foto']] as const).map(([m, l]) => (
+            <div className="grid grid-cols-3 gap-2.5">
+              {([['color', 'Color de Camina'], ['foto', kind === 'publicidad' ? 'Imagen / banner' : 'Foto'], ['logo', 'Tu logo']] as const).map(([m, l]) => (
                 <button key={m} type="button" onClick={() => setBgMode(m)} className="rounded-xl py-2.5 font-semibold text-[13.5px] border-2" style={seg(bgMode === m)}>{l}</button>
               ))}
             </div>
-            {bgMode === 'color' ? (
-              <div className="flex gap-3">
-                {Object.entries(BG).map(([k, [a]]) => (
-                  <button key={k} type="button" aria-label={`Color ${k}`} onClick={() => setBgColor(k)} className="w-10 h-10 rounded-full border-4" style={{ background: a, borderColor: bgColor === k ? '#1f9d75' : '#fff', boxShadow: '0 0 0 1px #e6e3ee' }} />
+            {bgMode !== 'foto' ? (
+              <div className="flex gap-3 flex-wrap items-center">
+                {bgMode === 'logo' && <p className="text-muted text-[12px] w-full">Tu logo (el de tu ficha) aparece grande y suave sobre el color que elijas.</p>}
+                {Object.entries(BG).map(([k, [a, b]]) => (
+                  <button key={k} type="button" aria-label={`Fondo ${k}`} onClick={() => setBgColor(k)} className="w-10 h-10 rounded-full border-4" style={{ background: `linear-gradient(135deg, ${a}, ${b})`, borderColor: bgColor === k ? '#1f9d75' : '#fff', boxShadow: '0 0 0 1px #e6e3ee' }} />
                 ))}
               </div>
             ) : business ? (
               <>
                 <ImageUpload bucket="business-logos" path={`${business.id}/promo-${photoId}`} value={bgImage} onUploaded={setBgImage} label="Foto de fondo" shape="wide" />
-                <p className="text-muted text-[12px]">Camina la oscurece sola para que el texto se lea bien.</p>
+                <p className="text-muted text-[12px]">{kind === 'publicidad' ? 'Subí tu banner o una foto de tu marca (mejor horizontal). ' : ''}Camina la oscurece un poco para que el texto se lea bien.</p>
               </>
             ) : null}
-            <div className="rounded-3xl p-4 text-white" style={previewBg} aria-label="Vista previa">
-              <p className="text-[12px] font-bold opacity-90">{kind === 'publicidad' ? `PRESENTADO POR ${(business?.name ?? '').toUpperCase()}` : KIND_LABEL[kind]}</p>
+            <div className="rounded-3xl p-4 text-white relative overflow-hidden" style={{ ...previewBg, minHeight: kind === 'publicidad' ? 132 : undefined }} aria-label="Vista previa">
+              {bgMode === 'logo' && business?.logo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={business.logo_url} alt="" className="absolute -right-6 -bottom-6 w-[170px] h-[170px] rounded-full object-cover opacity-20" />
+              )}
+              <p className="text-[12px] font-bold opacity-90">{kind === 'publicidad' ? (business?.name ?? '') : KIND_LABEL[kind]}</p>
               <p className="text-[19px] font-extrabold leading-tight">{title || 'Tu título acá'}</p>
               {kind === 'desafio' && (
                 <p className="mt-1"><span className="text-[34px] font-extrabold" style={{ color: '#7FEDC4' }}>{goalSteps.toLocaleString('es-BO')}</span> <span className="text-[13px] font-bold">{goalMode === 'daily' ? `pasos por día, durante ${goalDays} días` : 'pasos en total'}</span></p>
