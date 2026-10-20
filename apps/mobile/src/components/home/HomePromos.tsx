@@ -6,11 +6,13 @@ import { AdBanner, ChallengeCard, EventCard, PromoSheet } from '@/components/pro
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
 import { friendlyServerError } from '@/lib/errors';
 
-// Publicidades que la persona cerró en esta sesión (no vuelven hasta abrir la app de nuevo).
-const closedAds = new Set<string>();
+function usePromos() {
+  const { data: promos } = usePromotions();
+  return { promos: promos ?? [] };
+}
 
 function usePromoSheet() {
-  const { data: promos } = usePromotions();
+  const { promos } = usePromos();
   const join = useJoinPromotion();
   const [openId, setOpenId] = useState<string | null>(null);
   async function onJoin(p: PromotionItem) {
@@ -22,19 +24,17 @@ function usePromoSheet() {
     }
   }
   const open = (promos ?? []).find((p) => p.id === openId) ?? null;
-  return { promos: promos ?? [], sheet: <PromoSheet p={open} onClose={() => setOpenId(null)} onJoin={onJoin} joining={join.isPending} />, setOpenId };
+  return { promos, sheet: <PromoSheet p={open} onClose={() => setOpenId(null)} onJoin={onJoin} joining={join.isPending} />, setOpenId };
 }
 
-// Publicidad de un comercio arriba de Inicio (una sola, la que termina primero).
+// Publicidad de comercios arriba de Inicio: fija (no se cierra mientras esté vigente), chica y con link directo.
 export function HomeAdBanner() {
-  const { promos, sheet, setOpenId } = usePromoSheet();
-  const [, force] = useState(0);
-  const ad = promos.find((p) => p.kind === 'publicidad' && !closedAds.has(p.id));
-  if (!ad) return null;
+  const { promos } = usePromos();
+  const ads = promos.filter((p) => p.kind === 'publicidad' && p.cta_url).slice(0, 2);
+  if (ads.length === 0) return null;
   return (
-    <View className="px-5 mt-4 mb-3">
-      <AdBanner p={ad} onPress={() => setOpenId(ad.id)} onClose={() => { closedAds.add(ad.id); force((n) => n + 1); }} />
-      {sheet}
+    <View className="px-5 mt-4 mb-4" style={{ gap: 8 }}>
+      {ads.map((ad) => <AdBanner key={ad.id} p={ad} />)}
     </View>
   );
 }

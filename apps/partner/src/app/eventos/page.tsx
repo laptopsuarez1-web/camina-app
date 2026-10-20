@@ -122,8 +122,9 @@ export default function EventosPage() {
   const spanDays = Math.ceil((new Date(ends).getTime() - new Date(starts).getTime()) / 86400000) + 1;
   const badGoal = kind === 'desafio' && (goalSteps < 1000 || (goalMode === 'daily' && (goalSteps > 60000 || goalDays < 1 || goalDays > spanDays)));
   const needsPhoto = bgMode === 'foto' && !bgImage;
+  const badLink = kind === 'publicidad' && !/^https:\/\/\S+$/.test(ctaUrl.trim());
   const kinds: { k: Kind; label: string; hint: string }[] = [
-    ...(isAd ? [{ k: 'publicidad' as Kind, label: 'Publicidad', hint: 'Banner arriba de Inicio' }] : []),
+    ...(isAd ? [{ k: 'publicidad' as Kind, label: 'Publicidad', hint: 'Franja fija en Inicio, con link' }] : []),
     { k: 'evento', label: 'Evento', hint: 'Tarjeta con fecha y hora' },
     { k: 'desafio', label: 'Desafío', hint: 'Meta de pasos y premios' },
   ];
@@ -170,8 +171,9 @@ export default function EventosPage() {
             </label>
             {kind === 'publicidad' && (
               <label>
-                <span className={label}>Link (opcional)</span>
-                <input value={ctaUrl} maxLength={300} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://… (tu tienda, Instagram o WhatsApp)" className={field} />
+                <span className={label}>Link al que lleva</span>
+                <input value={ctaUrl} maxLength={300} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://wa.me/591…  ·  https://instagram.com/…  ·  tu página" className={field} />
+                <span className="block text-muted text-[12px] mt-1">Al tocar la publicidad, la persona va directo acá. Puede ser WhatsApp, Instagram, Facebook, TikTok o una página web; no hace falta que sea un local.</span>
               </label>
             )}
           </div>
@@ -259,10 +261,11 @@ export default function EventosPage() {
             </div>
           </div>
 
+          {badLink && ctaUrl.trim() !== '' && <p className="text-warn text-[12.5px]">El link tiene que empezar con https://</p>}
           {msg && <p className={`text-[12.5px] ${msg.ok ? 'text-mint-dark' : 'text-warn'}`}>{msg.text}</p>}
           <button
             onClick={submit}
-            disabled={sending || badDates || badGoal || needsPhoto || title.trim().length < 3 || description.trim().length < 5}
+            disabled={sending || badDates || badGoal || needsPhoto || badLink || title.trim().length < 3 || description.trim().length < 5}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
             style={{ background: '#241748', color: '#7FEDC4' }}
           >

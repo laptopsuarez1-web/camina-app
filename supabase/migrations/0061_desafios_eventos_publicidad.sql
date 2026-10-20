@@ -113,6 +113,13 @@ begin
   if p_bg_image_url is not null and p_bg_image_url !~ '^https://' then
     raise exception 'La foto de fondo no es válida.';
   end if;
+  -- La publicidad lleva directo al link que elija el comercio (WhatsApp, Instagram, web...: no hace falta que sea un local).
+  if p_kind = 'publicidad' and (p_cta_url is null or btrim(p_cta_url) !~ '^https://') then
+    raise exception 'Poné el link al que lleva la publicidad (empieza con https://).';
+  end if;
+  if p_kind <> 'publicidad' and p_cta_url is not null then
+    raise exception 'Solo la publicidad lleva link.';
+  end if;
   insert into promotions (
     business_id, kind, title, description, prize, winners_count, starts_at, ends_at,
     goal_mode, goal_steps, goal_days, bg_color, bg_image_url, cta_url, price_bs

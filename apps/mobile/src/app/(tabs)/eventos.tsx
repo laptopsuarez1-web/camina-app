@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { View, ScrollView, Alert, ActivityIndicator, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
+import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
@@ -15,8 +15,7 @@ import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
-import { Coin } from '@/components/ui/Coin';
-import { ChallengeCard, EventCard, PromoSheet } from '@/components/promos/PromoCards';
+import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/promos/PromoCards';
 
 export default function EventosScreen() {
   const tabSpace = useTabBarSpace();
@@ -127,15 +126,16 @@ export default function EventosScreen() {
       )}
       <View className="gap-3">
         {(retos ?? []).map((reto) => (
-          <RetoCard
+          <RetoCamina
             key={reto.id}
+            tone={reto.kind === 'referrals' ? 'violeta' : reto.kind === 'steps_streak' ? 'coral' : 'menta'}
             icon={
               reto.kind === 'referrals' ? (
-                <IconBubble icon={Users} tone="purple" size={40} />
+                <IconBubble icon={Users} tone="purple" size={42} />
               ) : reto.kind === 'steps_streak' ? (
-                <IconBubble icon={Flame} tone="orange" size={40} />
+                <IconBubble icon={Flame} tone="orange" size={42} />
               ) : (
-                <IconBubble icon={CheckCircle2} tone="aqua" size={40} />
+                <IconBubble icon={CheckCircle2} tone="aqua" size={42} />
               )
             }
             title={reto.title}
@@ -155,66 +155,5 @@ export default function EventosScreen() {
 
       </ScrollView>
     </View>
-  );
-}
-
-function RetoCard({
-  icon,
-  title,
-  description,
-  reward,
-  pct,
-  met,
-  target,
-  claimable,
-  claimed,
-  claiming,
-  onClaim,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  reward: number;
-  pct: number;
-  met: number;
-  target: number;
-  claimable: boolean;
-  claimed: boolean;
-  claiming: boolean;
-  onClaim: () => void;
-}) {
-  return (
-    <Glass className="rounded-3xl p-4">
-      <View className="flex-row items-start gap-3 mb-3">
-        {icon}
-        <View className="flex-1">
-          <Text className="font-bold text-[14px] text-text-light dark:text-text-dark">{title}</Text>
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 leading-relaxed">
-            {description}
-          </Text>
-        </View>
-        <View className="flex-row items-center gap-1 bg-mint/15 px-2.5 py-1 rounded-full">
-          <Coin size={13} />
-          <Text className="text-mint-dark dark:text-mint text-[12px] font-bold">+{reward}</Text>
-        </View>
-      </View>
-      <View className="h-1.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden mb-1.5">
-        <View className="h-full bg-aqua rounded-full" style={{ width: `${pct}%` }} />
-      </View>
-      <View className="flex-row items-center justify-between">
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-          {claimed ? 'Ya lo cobraste' : `${met} de ${target}`}
-        </Text>
-        {claimable && (
-          <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} className="bg-mint rounded-full px-4 py-1.5">
-            {claiming ? (
-              <ActivityIndicator size="small" color="#1E8F6F" />
-            ) : (
-              <Text className="text-mint-dark text-[12px] font-bold">Reclamar +{reward}</Text>
-            )}
-          </Press>
-        )}
-      </View>
-    </Glass>
   );
 }

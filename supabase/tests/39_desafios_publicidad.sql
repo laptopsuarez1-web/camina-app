@@ -27,6 +27,8 @@ begin
   perform tt.t_raises('foto de fondo debe ser https', format('select request_promotion_v2(%L,''evento'',''Evento'',''Descripcion'',null,now()+interval ''1 day'',now()+interval ''3 days'',null,null,null,1,null,''javascript:x'',null)', b_loc), 'foto de fondo');
 
   perform tt.t_as(ow_pub);
+  perform tt.t_raises('publicidad sin link se rechaza', format('select request_promotion_v2(%L,''publicidad'',''Banner'',''Mi tienda'',null,now()+interval ''1 hour'',now()+interval ''5 days'',null,null,null,1,''dorado'',null,null)', b_pub), 'link');
+  perform tt.t_raises('el link debe ser https', format('select request_promotion_v2(%L,''publicidad'',''Banner'',''Mi tienda'',null,now()+interval ''1 hour'',now()+interval ''5 days'',null,null,null,1,''dorado'',null,''javascript:x'')', b_pub), 'link');
   p := request_promotion_v2(b_pub, 'publicidad', 'Banner', 'Mi tienda online', null, now() + interval '1 hour', now() + interval '20 days', null, null, null, 1, 'dorado', null, 'https://ejemplo.com');
   perform tt.t_eq('solo publicidad: cuesta Bs 400', p.price_bs, 400);
 

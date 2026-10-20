@@ -3,12 +3,13 @@ import { View, Modal, ScrollView, Linking, StyleSheet, ActivityIndicator, type S
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
+import { Coin } from '@/components/ui/Coin';
 import { Press } from '@/components/ui/Press';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
-import { Check, Users, Gift, Calendar, Footprints, X } from '@/components/icons';
+import { Check, Users, Gift, Calendar, Footprints, ChevronRight } from '@/components/icons';
 import type { PromotionItem } from '@/hooks/usePromotions';
 import { usePromotionProgress } from '@/hooks/usePromotions';
-import { PROMO_BG, promoBgKey, timeLeftLabel, dateRangeLabel, boliviaDate, boliviaTime, goalParts, participantsLabel, fmtSteps } from '@/lib/promo';
+import { PROMO_BG, promoBgKey, type PromoBg, timeLeftLabel, dateRangeLabel, boliviaDate, boliviaTime, goalParts, participantsLabel, fmtSteps } from '@/lib/promo';
 
 const WHITE_SOFT = 'rgba(255,255,255,0.92)';
 
@@ -98,9 +99,9 @@ export function EventCard({ p, onPress, size }: { p: PromotionItem; onPress: () 
       <PromoBackground p={p} style={{ width: size, height: size, borderRadius: 28, padding: 16, justifyContent: 'space-between' }}>
         <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-start justify-between">
           <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={46} />
-          <View style={{ backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
-            <Text style={{ color: '#241748', fontSize: 24, lineHeight: 27, fontWeight: '800' }}>{d.day}</Text>
-            <Text style={{ color: '#5B4A7A', fontSize: 12.5, fontWeight: '700' }}>{months[d.month]}</Text>
+          <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
+            <Text style={{ color: '#fff', fontSize: 24, lineHeight: 27, fontWeight: '800' }}>{d.day}</Text>
+            <Text style={{ color: '#fff', fontSize: 12.5, fontWeight: '700' }}>{months[d.month]}</Text>
           </View>
         </View>
         <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
@@ -115,46 +116,33 @@ export function EventCard({ p, onPress, size }: { p: PromotionItem; onPress: () 
   );
 }
 
-// Publicidad: franja grande arriba de Inicio, siempre marcada como publicidad y con botón para cerrarla.
-export function AdBanner({ p, onPress, onClose }: { p: PromotionItem; onPress: () => void; onClose: () => void }) {
-  return (
-    <View>
-      <PromoBackground p={p} style={{ borderRadius: 28, padding: 16 }}>
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar publicidad"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          onPress={onClose}
-          style={{ position: 'absolute', top: 10, right: 10, zIndex: 2, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.3)', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <X size={14} color="#fff" />
-        </Press>
-        <Press accessibilityRole="button" accessibilityLabel={`Publicidad. ${p.title}, de ${p.business?.name ?? 'un comercio'}`} onPress={onPress}>
-          <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <View style={{ alignSelf: 'flex-start', backgroundColor: '#7FEDC4', borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4 }}>
-              <Text style={{ color: '#12281F', fontSize: 12, fontWeight: '800' }}>PRESENTADO POR {(p.business?.name ?? 'UN COMERCIO').toUpperCase()}</Text>
-            </View>
-            <Text numberOfLines={3} style={{ color: '#fff', fontSize: 23, lineHeight: 28, fontWeight: '800', marginTop: 12, paddingRight: 24 }}>{p.title}</Text>
-            <Text numberOfLines={2} style={{ color: WHITE_SOFT, fontSize: 14, marginTop: 4 }}>{p.description}</Text>
-            <View className="flex-row items-center justify-between" style={{ marginTop: 14, gap: 10 }}>
-              <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
-                <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={36} />
-                <Text numberOfLines={1} style={{ color: '#fff', fontSize: 13, fontWeight: '600', flexShrink: 1 }}>{timeLeftLabel(p.starts_at, p.ends_at)}</Text>
-              </View>
-              <View style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 10 }}>
-                <Text style={{ color: '#2A1A00', fontSize: 14, fontWeight: '800' }}>Ver más</Text>
-              </View>
-            </View>
-          </View>
-        </Press>
-      </PromoBackground>
-      <Text className="text-muted-light dark:text-muted-dark text-right mt-1.5 mr-1" style={{ fontSize: 12 }}>Publicidad · de un comercio de Camina</Text>
-    </View>
-  );
-}
-
 function openLink(url: string | null) {
   if (url && /^https:\/\//.test(url)) Linking.openURL(url).catch(() => {});
+}
+
+// Publicidad: franja chica y fija arriba de Inicio. Al tocarla va directo al link que eligió el comercio
+// (WhatsApp, Instagram, web...). Siempre dice que es publicidad.
+export function AdBanner({ p }: { p: PromotionItem }) {
+  return (
+    <Press
+      accessibilityRole="link"
+      accessibilityLabel={`Publicidad. ${p.title}, de ${p.business?.name ?? 'un comercio'}`}
+      accessibilityHint="Abre el link del anunciante"
+      onPress={() => openLink(p.cta_url)}
+    >
+      <PromoBackground p={p} style={{ borderRadius: 20, paddingHorizontal: 12, paddingVertical: 10 }}>
+        <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-center" style={{ gap: 10 }}>
+          <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={40} />
+          <View className="flex-1">
+            <Text numberOfLines={1} style={{ color: '#7FEDC4', fontSize: 11.5, fontWeight: '800', letterSpacing: 0.4 }}>PUBLICIDAD · {(p.business?.name ?? '').toUpperCase()}</Text>
+            <Text numberOfLines={1} style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>{p.title}</Text>
+            <Text numberOfLines={1} style={{ color: WHITE_SOFT, fontSize: 12.5 }}>{p.description}</Text>
+          </View>
+          <ChevronRight size={18} color="#fff" />
+        </View>
+      </PromoBackground>
+    </Press>
+  );
 }
 
 // Ficha con el detalle: cómo funciona, premio, mi avance y el botón de participar.
@@ -256,5 +244,45 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
         </Press>
       </Press>
     </Modal>
+  );
+}
+
+// Reto Camina (automático, sin "Participar"): misma familia visual que los desafíos, con el avance bien grande.
+export function RetoCamina({
+  icon, title, description, reward, pct, met, target, claimable, claimed, claiming, onClaim, tone,
+}: {
+  icon: ReactNode; title: string; description: string; reward: number; pct: number; met: number; target: number;
+  claimable: boolean; claimed: boolean; claiming: boolean; onClaim: () => void; tone: PromoBg;
+}) {
+  const [from, to] = PROMO_BG[tone];
+  return (
+    <View style={{ borderRadius: 24, overflow: 'hidden', backgroundColor: from, padding: 16 }}>
+      <LinearGradient colors={[from, to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <View className="flex-row items-start" style={{ gap: 12 }}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 3 }}>{icon}</View>
+        <View className="flex-1">
+          <Text style={{ color: '#fff', fontSize: 16.5, fontWeight: '800', lineHeight: 21 }}>{title}</Text>
+          <Text style={{ color: WHITE_SOFT, fontSize: 13, lineHeight: 18, marginTop: 2 }}>{description}</Text>
+        </View>
+        <View className="flex-row items-center" style={{ gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
+          <Coin size={14} />
+          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>+{reward}</Text>
+        </View>
+      </View>
+      <View className="flex-row items-end justify-between" style={{ marginTop: 12 }}>
+        <View className="flex-row items-end" style={{ gap: 6 }}>
+          <Text style={{ color: '#7FEDC4', fontSize: 34, lineHeight: 38, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{claimed ? '✓' : met}</Text>
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 4 }}>{claimed ? 'Ya lo cobraste' : `de ${target}`}</Text>
+        </View>
+        {claimable ? (
+          <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 9 }}>
+            {claiming ? <ActivityIndicator size="small" color="#2A1A00" /> : <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Reclamar +{reward}</Text>}
+          </Press>
+        ) : null}
+      </View>
+      <View style={{ height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 10 }}>
+        <View style={{ width: `${claimed ? 100 : pct}%`, height: '100%', backgroundColor: '#7FEDC4', borderRadius: 4 }} />
+      </View>
+    </View>
   );
 }
