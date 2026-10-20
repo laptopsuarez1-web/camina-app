@@ -1,26 +1,33 @@
-// Fondo de la app (Perlado): casi blanco con reflejos de nácar; en oscuro, grafito con los mismos reflejos apagados.
-// Es un degradé de base más "luces" radiales muy suaves (no manchas):
-// el vidrio de las tarjetas necesita color que varíe de un punto a otro para que se note el desenfoque.
-// glows: x, y y r van de 0 a 1 sobre la pantalla (r es el radio); c es el color y a la opacidad en el centro.
+// Fondo de la app (Olas): casi blanco perlado con tres olas suaves al pie, menta, lila y verde de la marca.
+// En oscuro, grafito con las mismas olas apagadas. Las olas son formas planas (sin luces radiales): el vidrio de las
+// tarjetas y de la barra las desenfoca al pasar por encima, y arriba el fondo queda limpio.
+// Las curvas van en un lienzo de 390x844 anclado abajo; "c" es el color y "a" la opacidad arriba/abajo de cada ola.
 
-export type Glow = { x: number; y: number; r: number; c: string; a: number };
+export type Wave = { d: string; c: string; a: readonly [number, number] };
 export type BackgroundPalette = {
   base: readonly [string, string, ...string[]];
   end?: { x: number; y: number };
-  glows: Glow[];
+  waves: Wave[];
   /** Lila con el que se tiñe el vidrio de las tarjetas en modo claro (R, G, B). */
   tint?: readonly [number, number, number];
 };
 
+/** Lienzo en el que están dibujadas las olas. */
+export const WAVES_VIEWBOX = { w: 390, h: 844 } as const;
+
+const WAVE_PATHS = [
+  'M0 600C70 565 140 640 225 610S340 560 390 585V844H0Z',
+  'M0 670C85 632 160 712 250 682S352 642 390 662V844H0Z',
+  'M0 740C100 710 170 780 265 752S355 722 390 738V844H0Z',
+] as const;
+
 const LIGHT: BackgroundPalette = {
-  base: ['#FCFBFF', '#F6F2FB', '#F1EDF8'],
-  end: { x: 0.6, y: 1 },
-  glows: [
-    { x: 0.1, y: 0.1, r: 0.6, c: '#FFD3EA', a: 0.75 },
-    { x: 0.95, y: 0.25, r: 0.55, c: '#CFF3E5', a: 0.8 },
-    { x: 0.15, y: 0.62, r: 0.55, c: '#D2E4FF', a: 0.85 },
-    { x: 0.9, y: 0.82, r: 0.6, c: '#E4D6FF', a: 0.85 },
-    { x: 0.5, y: 0.45, r: 0.4, c: '#FFE8D0', a: 0.5 },
+  base: ['#FCFBFF', '#F8F6FC', '#F5F3FB'],
+  end: { x: 0, y: 1 },
+  waves: [
+    { d: WAVE_PATHS[0], c: '#7FDCBF', a: [0.14, 0.06] },
+    { d: WAVE_PATHS[1], c: '#A98BE8', a: [0.14, 0.06] },
+    { d: WAVE_PATHS[2], c: '#4FC3A8', a: [0.14, 0.08] },
   ],
   tint: [215, 205, 245],
 };
@@ -28,11 +35,10 @@ const LIGHT: BackgroundPalette = {
 const DARK: BackgroundPalette = {
   base: ['#15141B', '#1A1822', '#201C2B'],
   end: { x: 0.6, y: 1 },
-  glows: [
-    { x: 0.1, y: 0.1, r: 0.6, c: '#8A4B78', a: 0.3 },
-    { x: 0.95, y: 0.25, r: 0.55, c: '#2F7A6E', a: 0.3 },
-    { x: 0.15, y: 0.62, r: 0.55, c: '#3B57A0', a: 0.3 },
-    { x: 0.9, y: 0.82, r: 0.6, c: '#6A4BB0', a: 0.34 },
+  waves: [
+    { d: WAVE_PATHS[0], c: '#2F7A6E', a: [0.32, 0.10] },
+    { d: WAVE_PATHS[1], c: '#6A4BB0', a: [0.34, 0.10] },
+    { d: WAVE_PATHS[2], c: '#2F7A6E', a: [0.36, 0.14] },
   ],
 };
 

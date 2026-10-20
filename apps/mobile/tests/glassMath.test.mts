@@ -126,7 +126,7 @@ test('barFill: la opacidad nunca sube al aumentar el cristal, en las tres plataf
   }
 });
 
-test('paletas de fondo: base con 2 colores o más, luces dentro de la pantalla y colores válidos', () => {
+test('paletas de fondo: base con 2 colores o más, olas con trazo y opacidades válidos y colores válidos', () => {
   const hex = /^#[0-9A-Fa-f]{6}$/;
   for (const dark of [false, true]) {
     const p = paletteFor(dark);
@@ -135,11 +135,11 @@ test('paletas de fondo: base con 2 colores o más, luces dentro de la pantalla y
     if (p.end) {
       assert.ok(p.end.x >= 0 && p.end.x <= 1 && p.end.y >= 0 && p.end.y <= 1);
     }
-    assert.ok(p.glows.length > 0);
-    for (const g of p.glows) {
-      assert.match(g.c, hex);
-      for (const k of ['x', 'y', 'r', 'a'] as const) assert.ok(g[k] >= 0 && g[k] <= 1, `${k}=${g[k]}`);
-      assert.ok(g.r > 0);
+    assert.ok(p.waves.length > 0);
+    for (const w of p.waves) {
+      assert.match(w.c, hex);
+      assert.match(w.d, /^M[\d\sCSQTLHVZ.,-]+Z$/);
+      for (const a of w.a) assert.ok(a >= 0 && a <= 1, `a=${a}`);
     }
   }
 });

@@ -1,11 +1,11 @@
 import { useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient as SvgGradient, Stop, Path } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
-import { paletteFor } from '@/components/ui/backgrounds';
+import { paletteFor, WAVES_VIEWBOX } from '@/components/ui/backgrounds';
 
-// Fondo de toda la app: degradé de base y, encima, luces radiales muy suaves (Perlado).
+// Fondo de toda la app: degradé de base casi blanco y, anclado abajo, tres olas suaves (Olas).
 export function AmbientBackground() {
   const dark = useColorScheme().colorScheme === 'dark';
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -13,17 +13,17 @@ export function AmbientBackground() {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <LinearGradient colors={p.base} start={{ x: 0, y: 0 }} end={p.end ?? { x: 0.8, y: 1 }} style={StyleSheet.absoluteFill} />
-      <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" viewBox={`0 0 ${WAVES_VIEWBOX.w} ${WAVES_VIEWBOX.h}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill}>
         <Defs>
-          {p.glows.map((g, i) => (
-            <RadialGradient key={i} id={`${uid}g${i}`} cx={g.x} cy={g.y} r={g.r} fx={g.x} fy={g.y}>
-              <Stop offset="0" stopColor={g.c} stopOpacity={g.a} />
-              <Stop offset="1" stopColor={g.c} stopOpacity={0} />
-            </RadialGradient>
+          {p.waves.map((w, i) => (
+            <SvgGradient key={i} id={`${uid}w${i}`} x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={w.c} stopOpacity={w.a[0]} />
+              <Stop offset="1" stopColor={w.c} stopOpacity={w.a[1]} />
+            </SvgGradient>
           ))}
         </Defs>
-        {p.glows.map((g, i) => (
-          <Rect key={i} x="0" y="0" width="100" height="100" fill={`url(#${uid}g${i})`} />
+        {p.waves.map((w, i) => (
+          <Path key={i} d={w.d} fill={`url(#${uid}w${i})`} />
         ))}
       </Svg>
     </View>
