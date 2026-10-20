@@ -5,7 +5,7 @@ import { rq, resetRq } from './helpers/stubs/react-query.mts';
 import { setAuth } from './helpers/stubs/auth-store.mts';
 import { db, resetDb } from './helpers/stubs/supabase.mts';
 import {
-  useBenefits, useBenefitsRemainingToday, useRedeemBenefit, useRegenerateCode, useCancelExpiredRedemption, useMyRedemptions,
+  useBenefits, useBenefitsRemainingToday, useRedeemBenefit, useRegenerateCode, useCancelExpiredRedemption, useMyRedemptions, useOnlineRedeemed,
 } from '../src/hooks/useBenefits.ts';
 import { useRedeemCounts } from '../src/hooks/useRedeemCounts.ts';
 
@@ -72,11 +72,22 @@ test('canjear: los rechazos del servidor llegan tal cual (saldo, cooldown, cupo,
   }
 });
 
-test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes, cupos y tarjetas', () => {
+test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes, cupos (por día y online) y tarjetas', () => {
   useRedeemBenefit();
   rq.lastMutation.onSuccess();
   assert.deepEqual(rq.invalidated.map((i: any) => i.queryKey[0]).sort(),
-    ['benefits-remaining-today', 'loyalty-card', 'loyalty-cards', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
+    ['benefits-online-redeemed', 'benefits-remaining-today', 'loyalty-card', 'loyalty-cards', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
+});
+
+test('cupos de premios online: mapa premio → canjes ya usados', async () => {
+  db.rpc.benefits_online_redeemed = () => [{ benefit_id: 'b1', redeemed: 2 }, { benefit_id: 'b2', redeemed: 0 }];
+  useOnlineRedeemed();
+  assert.equal(rq.lastQuery.queryKey[0], 'benefits-online-redeemed');
+  const map = await rq.lastQuery.queryFn();
+  assert.equal(map.get('b1'), 2);
+  assert.equal(map.get('b2'), 0);
+  db.rpc.benefits_online_redeemed = () => ({ error: new Error('sin red') });
+  await assert.rejects(() => rq.lastQuery.queryFn(), /sin red/);
 });
 
 test('regenerar código: llama a regenerate_redemption_code con el id del canje', async () => {
