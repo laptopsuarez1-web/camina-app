@@ -79,13 +79,13 @@ test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes, cu
     ['benefits-online-redeemed', 'benefits-remaining-today', 'loyalty-card', 'loyalty-cards', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
 });
 
-test('cupos de premios online: mapa premio → canjes ya usados', async () => {
-  db.rpc.benefits_online_redeemed = () => [{ benefit_id: 'b1', redeemed: 2 }, { benefit_id: 'b2', redeemed: 0 }];
+test('cupos de premios online: mapa premio → canjes usados y cupones propios que quedan', async () => {
+  db.rpc.benefits_online_redeemed = () => [{ benefit_id: 'b1', redeemed: 2, codes_left: null }, { benefit_id: 'b2', redeemed: 4, codes_left: 3 }];
   useOnlineRedeemed();
   assert.equal(rq.lastQuery.queryKey[0], 'benefits-online-redeemed');
   const map = await rq.lastQuery.queryFn();
-  assert.equal(map.get('b1'), 2);
-  assert.equal(map.get('b2'), 0);
+  assert.deepEqual(map.get('b1'), { redeemed: 2, codesLeft: null });
+  assert.deepEqual(map.get('b2'), { redeemed: 4, codesLeft: 3 });
   db.rpc.benefits_online_redeemed = () => ({ error: new Error('sin red') });
   await assert.rejects(() => rq.lastQuery.queryFn(), /sin red/);
 });

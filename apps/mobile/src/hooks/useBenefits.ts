@@ -39,15 +39,16 @@ export function useBenefitsRemainingToday() {
   });
 }
 
-// Cupos ya usados de los premios online (cupos totales, no por día).
+// Cupos de los premios online: canjes ya usados y, si la tienda carga sus propios cupones (canal web), cuántos le quedan.
+export type OnlineCupos = { redeemed: number; codesLeft: number | null };
 export function useOnlineRedeemed() {
   return useQuery({
     queryKey: ['benefits-online-redeemed'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('benefits_online_redeemed');
       if (error) throw error;
-      const map = new Map<string, number>();
-      for (const row of data ?? []) map.set(row.benefit_id, row.redeemed);
+      const map = new Map<string, OnlineCupos>();
+      for (const row of data ?? []) map.set(row.benefit_id, { redeemed: row.redeemed, codesLeft: row.codes_left ?? null });
       return map;
     },
     staleTime: 60_000,

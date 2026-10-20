@@ -132,7 +132,7 @@ export default function BeneficioPage() {
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
-                  ? `Online por ${CANALES_ONLINE.find((c) => c.id === b.online_channel)?.label ?? 'redes'} · ${b.online_quota == null ? 'cupos ilimitados' : `${b.online_quota} cupos en total`}`
+                  ? `Online por ${CANALES_ONLINE.find((c) => c.id === b.online_channel)?.label ?? 'redes'} · ${b.online_channel === 'web' ? 'con tus cupones' : b.online_quota == null ? 'cupos ilimitados' : `${b.online_quota} cupos en total`}`
                   : b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}
               </p>
               <div className="flex gap-3 mt-2.5">
@@ -221,7 +221,22 @@ function BeneficioForm({
   );
   const [onlineQuota, setOnlineQuota] = useState(benefit?.online_quota != null ? String(benefit.online_quota) : '5');
   const canalOk = !online || (onlineChannel !== '' && (CANALES_ONLINE.find((c) => c.id === onlineChannel)?.tiene(business) ?? false));
-  const cuposOnlineOk = !online || Number(onlineQuota) >= 1;
+  // Canal web: la tienda carga sus propios cupones (uno por línea); cada canje entrega uno distinto.
+  const esWeb = online && onlineChannel === 'web';
+  const [codigosTexto, setCodigosTexto] = useState('');
+  const [codigosLibres, setCodigosLibres] = useState(0);
+  const [codigosEntregados, setCodigosEntregados] = useState(0);
+  const codigosNuevos = Array.from(new Set(codigosTexto.split(/[\n,;]+/).map((c) => c.trim()).filter((c) => c.length >= 2 && c.length <= 60)));
+  const cuposOnlineOk = !online || (esWeb ? codigosLibres + codigosNuevos.length >= 1 : Number(onlineQuota) >= 1);
+  async function cargarConteoCodigos(id: string) {
+    const { data } = await supabase.from('benefit_codes').select('redemption_id').eq('benefit_id', id);
+    const rows = (data as { redemption_id: string | null }[] | null) ?? [];
+    setCodigosLibres(rows.filter((r) => r.redemption_id == null).length);
+    setCodigosEntregados(rows.filter((r) => r.redemption_id != null).length);
+  }
+  useEffect(() => {
+    if (benefit?.id) cargarConteoCodigos(benefit.id);
+  }, [benefit?.id]);
   const [active, setActive] = useState(benefit?.active ?? true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -276,22 +291,24 @@ function BeneficioForm({
           : null,
       discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
       cost_points: Number(costo) || 0,
-      // Online: los cupos son totales (online_quota); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
+      // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
       active,
       image_url: imageUrl,
-      valid_from: online ? null : validFrom || null,
-      valid_to: online ? null : validTo || null,
-      valid_days_mask: online ? 127 : diasMask,
+      valid_from: validFrom || null,
+      valid_to: validTo || null,
+      valid_days_mask: diasMask,
       dine_in_only: online ? false : dineInOnly,
       online,
       online_channel: online ? onlineChannel || null : null,
-      online_quota: online ? Number(onlineQuota) || null : null,
+      // Con cupones propios (web) los cupos son los cupones cargados.
+      online_quota: online && onlineChannel !== 'web' ? Number(onlineQuota) || null : null,
       // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
       ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
     };
 
-    const { error } = benefitId
+    let savedId = benefitId;
+    let { error } = benefitId
       ? await supabase.from('benefits').update(payload).eq('id', benefitId)
       : await supabase
           .from('benefits')
@@ -299,9 +316,24 @@ function BeneficioForm({
           .select()
           .single()
           .then(async (res) => {
-            if (res.data) setBenefitId((res.data as Benefit).id);
+            if (res.data) {
+              savedId = (res.data as Benefit).id;
+              setBenefitId(savedId);
+            }
             return res;
           });
+
+    // Cupones propios de la tienda (canal web): se suman a los que ya había; los repetidos se ignoran.
+    if (!error && esWeb && savedId && codigosNuevos.length > 0) {
+      const res = await supabase
+        .from('benefit_codes')
+        .upsert(codigosNuevos.map((code) => ({ benefit_id: savedId, code })), { onConflict: 'benefit_id,code', ignoreDuplicates: true });
+      if (res.error) error = res.error;
+      else {
+        await cargarConteoCodigos(savedId);
+        setCodigosTexto('');
+      }
+    }
 
     setSaving(false);
     if (error) setError(mensajeError(error));
@@ -493,8 +525,9 @@ function BeneficioForm({
             <span>
               <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Premio online (sin ir al local)</span>
               <span className="block text-[11.5px] leading-4 mt-0.5" style={{ color: '#3A8C72' }}>
-                La persona canjea en la app y recibe un código propio. Se lo manda a tu tienda por el canal que elijas y vos lo
-                confirmás en Canjes cuando quieras: el código le dura 7 días. Sirve aunque no tengas local ni página web.
+                La persona canjea en la app y no hace falta que vaya al local. Por WhatsApp o redes recibe un código propio que le
+                manda a tu tienda y vos lo confirmás en Canjes cuando quieras (le dura 7 días). Si tenés página web, cargás tus
+                propios cupones y ella los pega al pagar. Los días y horarios de abajo se respetan igual.
               </span>
             </span>
           </label>
@@ -529,18 +562,46 @@ function BeneficioForm({
                   Elegí un canal. Si no ves el tuyo, cargalo primero en <a href="/perfil" className="underline">Perfil</a>.
                 </p>
               )}
-              <div className="mt-3 max-w-[220px]">
-                <Field label="Cupos en total">
-                  <input
-                    value={onlineQuota}
-                    onChange={(e) => setOnlineQuota(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-                  />
-                </Field>
-              </div>
-              <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-                Cuando se usan todos, el premio queda agotado. Si cancelás o vence un canje, ese cupo se libera.
-              </p>
+              {esWeb ? (
+                <div className="mt-3">
+                  <Field label="Tus cupones de la página (uno por línea)">
+                    <textarea
+                      value={codigosTexto}
+                      onChange={(e) => setCodigosTexto(e.target.value)}
+                      rows={5}
+                      placeholder={'AMIGO15\nCAMINA15\nCAMINA16'}
+                      className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] font-mono"
+                    />
+                  </Field>
+                  <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+                    Creá estos cupones en tu página (con el descuento de este premio) y pegalos acá. Cada persona que canjea recibe uno
+                    distinto y lo pega en el campo cupón al pagar: los cupos son los cupones que cargues. Los Puntos se descuentan
+                    al canjear, así que no hay nada que confirmar en Camina.
+                  </p>
+                  <p className="text-[12px] font-semibold mt-2" style={{ color: '#2E9E7C' }}>
+                    {codigosLibres} sin usar · {codigosEntregados} entregados
+                    {codigosNuevos.length > 0 ? ` · se van a sumar ${codigosNuevos.length} al guardar` : ''}
+                  </p>
+                  {codigosLibres + codigosNuevos.length === 0 && (
+                    <p className="text-warn text-[12px] mt-1">Cargá al menos un cupón para guardar.</p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="mt-3 max-w-[220px]">
+                    <Field label="Cupos en total">
+                      <input
+                        value={onlineQuota}
+                        onChange={(e) => setOnlineQuota(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                      />
+                    </Field>
+                  </div>
+                  <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+                    Poné los que quieras. Cuando se usan todos, el premio queda agotado. Si cancelás o vence un canje, ese cupo se libera.
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -574,8 +635,6 @@ function BeneficioForm({
           </label>
         )}
 
-        {!online && (
-          <>
         <div className="bg-purple-light rounded-xl p-3.5 mb-3.5">
           <p className="text-[12.5px] font-semibold mb-1" style={{ color: '#4A3D68' }}>
             ⏰ Horas muertas: llená tu local cuando está vacío
@@ -690,12 +749,11 @@ function BeneficioForm({
           })}
         </div>
 
-        <label className="flex items-center gap-2 mb-5 cursor-pointer">
-          <input type="checkbox" checked={dineInOnly} onChange={(e) => setDineInOnly(e.target.checked)} />
-          <span className="text-[13px]">Solo para consumir en el local</span>
-        </label>
-
-          </>
+        {!online && (
+          <label className="flex items-center gap-2 mb-5 cursor-pointer">
+            <input type="checkbox" checked={dineInOnly} onChange={(e) => setDineInOnly(e.target.checked)} />
+            <span className="text-[13px]">Solo para consumir en el local</span>
+          </label>
         )}
 
         <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-5">

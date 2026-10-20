@@ -249,7 +249,7 @@ export type Database = {
         Returns: number;
       };
       redeem_benefit: { Args: { p_benefit_id: string }; Returns: Redemption };
-      benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number }[] };
+      benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number; codes_left: number | null }[] };
       my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };
       confirm_redemption_code: {

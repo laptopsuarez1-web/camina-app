@@ -36,7 +36,7 @@ import { shareCoarseLocation } from '@/lib/coarse-location';
 import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
 import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
-import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS } from '@/constants/business-rules';
+import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
@@ -111,8 +111,7 @@ function dayMonth(iso: string) {
   return `${d.getDate()} de ${MESES[d.getMonth()]}`;
 }
 
-function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number; online?: boolean }) {
-  if (b.online) return true;
+function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number }) {
   const now = new Date();
   const dayBit = (now.getDay() + 6) % 7;
   if (!(b.valid_days_mask & (1 << dayBit))) return false;
@@ -578,6 +577,18 @@ export default function CanjesScreen() {
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
     const free = loyalty?.benefit_id === benefit.id && loyalty.ready;
+    if (benefit.online && benefit.online_channel === 'web') {
+      Alert.alert(
+        `¿Canjear ${benefit.name}?`,
+        `Te damos un cupón de ${benefit.business.name} para pegar en el campo cupón al pagar en su página. ` +
+          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan ahora.`),
+        [
+          { text: 'Todavía no', style: 'cancel' },
+          { text: 'Obtener cupón', onPress: () => handleRedeem(benefit.id, benefit) },
+        ]
+      );
+      return;
+    }
     if (benefit.online) {
       const via = benefit.online_channel ? ONLINE_CHANNEL_LABEL[benefit.online_channel] : 'sus redes';
       Alert.alert(
@@ -1250,13 +1261,22 @@ export default function CanjesScreen() {
                         {list.map((b) => {
                           const available = isBenefitAvailableNow(b);
                           // Online: los cupos son totales (no por día). Sin dato todavía, se deja canjear y el servidor valida.
-                          const unlimited = b.online ? b.online_quota == null : b.daily_quota == null;
-                          const remaining = b.online
-                            ? (b.online_quota == null ? Infinity : Math.max(0, b.online_quota - (onlineRedeemed?.get(b.id) ?? 0)))
-                            : (b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)));
+                          const isWeb = !!b.online && b.online_channel === 'web';
+                          const onlineInfo = onlineRedeemed?.get(b.id);
+                          const unlimited = isWeb ? onlineInfo?.codesLeft == null : b.online ? b.online_quota == null : b.daily_quota == null;
+                          const remaining = isWeb
+                            ? (onlineInfo?.codesLeft ?? Infinity)
+                            : b.online
+                              ? (b.online_quota == null ? Infinity : Math.max(0, b.online_quota - (onlineInfo?.redeemed ?? 0)))
+                              : (b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)));
                           // Si ya canjeó este premio online y el código sigue vigente, el botón vuelve a mostrar el código.
+                          // Con cupón propio de la tienda el canje sale confirmado y el cupón se puede volver a ver durante la espera de 7 días.
                           const myPending = b.online
-                            ? (myRedemptions ?? []).find((r) => r.benefit_id === b.id && r.status === 'pending' && new Date(r.code_expires_at.replace(/(\.\d{3})\d+/, '$1')).getTime() > Date.now())
+                            ? (myRedemptions ?? []).find((r) => {
+                                if (r.benefit_id !== b.id) return false;
+                                if (isWeb) return r.status === 'confirmed' && Date.now() - new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1')).getTime() < BUSINESS_REDEMPTION_COOLDOWN_DAYS * 86_400_000;
+                                return r.status === 'pending' && new Date(r.code_expires_at.replace(/(\.\d{3})\d+/, '$1')).getTime() > Date.now();
+                              })
                             : undefined;
                           const outOfStock = !unlimited && remaining <= 0;
                           // Con la tarjeta completa, el premio de fidelidad sale gratis (0 Puntos).
@@ -1328,7 +1348,7 @@ export default function CanjesScreen() {
                               >
                                 {redeeming && <ActivityIndicator size="small" color="#fff" />}
                                 <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
-                                  {redeeming ? 'Canjeando…' : myPending ? 'Ver mi código' : note ?? 'Canjear'}
+                                  {redeeming ? 'Canjeando…' : myPending ? (isWeb ? 'Ver mi cupón' : 'Ver mi código') : note ?? 'Canjear'}
                                 </Text>
                               </Press>
                             </Glass>
@@ -1484,7 +1504,40 @@ export default function CanjesScreen() {
               </View>
             )}
 
-            {confirmed ? (
+            {activeBenefit?.online && activeBenefit.online_channel === 'web' && activeRedemption ? (
+              <>
+                <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 px-4 items-center mb-4">
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-2 text-center">
+                    Tu cupón de {activeBenefit.business.name}
+                  </Text>
+                  <Text
+                    accessibilityLabel={`Cupón ${activeRedemption.code}`}
+                    selectable
+                    className="text-[28px] font-extrabold tracking-[3px] text-purple text-center"
+                  >
+                    {activeRedemption.code}
+                  </Text>
+                  <Press accessibilityRole="button" hitSlop={8} onPress={() => copyText(activeRedemption.code, 'code')} className="mt-2.5 px-3 py-1.5">
+                    <Text className="text-[13px] font-bold text-purple-ink dark:text-purple-soft">{copiedKey === 'code' ? '¡Cupón copiado!' : 'Copiar cupón'}</Text>
+                  </Press>
+                </View>
+                <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark mb-3">
+                  Abrí la tienda, armá tu pedido y pegá este cupón en el campo cupón antes de pagar. Ya se descontaron tus Puntos.
+                </Text>
+                {activeBenefit.business.website ? (
+                  <Press
+                    accessibilityRole="button"
+                    onPress={() => Linking.openURL(websiteUrl(activeBenefit.business.website!)).catch(() => Alert.alert('No pudimos abrir la tienda', 'Copiá el cupón y entrá a su página.'))}
+                    className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5"
+                  >
+                    <Text className="text-white font-bold text-[15px]">Ir a la tienda</Text>
+                  </Press>
+                ) : null}
+                <Press accessibilityRole="button" onPress={closeCode} className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mb-2.5">
+                  <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">Listo</Text>
+                </Press>
+              </>
+            ) : confirmed ? (
               <View className="items-center">
                 <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                   <SuccessMark />
