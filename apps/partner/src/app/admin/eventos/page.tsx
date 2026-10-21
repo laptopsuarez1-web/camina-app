@@ -74,6 +74,16 @@ export default function AdminEventosPage() {
                     {r.goal_steps ? ` · ${r.goal_steps.toLocaleString('es-BO')} pasos ${r.goal_mode === 'daily' ? `x ${r.goal_days} días` : 'en total'}` : r.req_steps ? ` · ${r.req_steps.toLocaleString('es-BO')} pasos x ${r.req_days} días` : ''} · {r.winners_count} ganadores
                   </p>
                   {r.prize && <p className="text-[12.5px] mt-1">Premio: {r.prize}</p>}
+                  {(r.place_name || r.place_address) && <p className="text-[12.5px] mt-1">📍 {[r.place_name, r.place_address].filter(Boolean).join(' · ')}{r.place_url ? ` · ${r.place_url}` : ''}</p>}
+                  {(r.ticket_price || r.ticket_url) && <p className="text-[12.5px] mt-1 break-all">🎟️ {r.ticket_price ?? 'Entradas'}{r.ticket_url ? ` · ${r.ticket_url}` : ''}</p>}
+                  {(r.photos?.length ?? 0) > 0 && (
+                    <div className="mt-2 flex gap-1.5 flex-wrap">
+                      {r.photos!.map((u) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={u} src={u} alt="Foto" className="h-16 w-16 rounded-lg object-cover" />
+                      ))}
+                    </div>
+                  )}
                   {r.bg_image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={r.bg_image_url} alt="Foto de fondo" className="mt-2 h-16 w-28 rounded-lg object-cover" />

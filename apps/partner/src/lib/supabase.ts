@@ -142,6 +142,12 @@ export interface Promotion {
   bg_color: string | null;
   bg_image_url: string | null;
   cta_url: string | null;
+  photos: string[] | null;
+  place_name: string | null;
+  place_address: string | null;
+  place_url: string | null;
+  ticket_price: string | null;
+  ticket_url: string | null;
   price_bs: number;
   status: 'pending' | 'approved' | 'rejected' | 'finished';
   created_at: string;

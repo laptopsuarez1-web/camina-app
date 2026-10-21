@@ -13,10 +13,16 @@ export function GalleryUpload({
   businessId,
   photos,
   onChange,
+  label = 'Más fotos del local',
+  prefix = 'galeria',
+  hint,
 }: {
   businessId: string;
   photos: string[];
   onChange: (photos: string[]) => void | Promise<void>;
+  label?: string;
+  prefix?: string;
+  hint?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -29,7 +35,7 @@ export function GalleryUpload({
     for (const file of Array.from(files).slice(0, MAX_FOTOS - photos.length)) {
       try {
         const blob = await fileToPhotoBlob(file);
-        const path = `${businessId}/galeria-${Date.now()}-${nuevas.length}.jpg`;
+        const path = `${businessId}/${prefix}-${Date.now()}-${nuevas.length}.jpg`;
         const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
         if (upErr) throw upErr;
         nuevas.push(`${supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}`);
@@ -52,7 +58,7 @@ export function GalleryUpload({
 
   return (
     <div>
-      <span className="block text-[12.5px] font-semibold mb-1.5">Más fotos del local</span>
+      <span className="block text-[12.5px] font-semibold mb-1.5">{label}</span>
       <div className="flex flex-wrap gap-2.5">
         {photos.map((url) => (
           <div key={url} className="relative w-24 h-24 rounded-xl overflow-hidden border border-line">
@@ -92,7 +98,7 @@ export function GalleryUpload({
         }}
       />
       <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-        Hasta {MAX_FOTOS} fotos: el local, el ambiente, tus productos. Los clientes las ven tocando la portada en la app.
+        {hint ?? `Hasta ${MAX_FOTOS} fotos: el local, el ambiente, tus productos. Los clientes las ven tocando la portada en la app.`}
       </p>
       {error && <p className="text-warn text-[11.5px] mt-1">{error}</p>}
     </div>

@@ -6,6 +6,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
 import { ImageUpload } from '@/components/ImageUpload';
+import { GalleryUpload } from '@/components/GalleryUpload';
 
 const WHATSAPP = '59162714286';
 type Kind = 'evento' | 'desafio' | 'publicidad';
@@ -51,6 +52,13 @@ export default function EventosPage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [bgMode, setBgMode] = useState<'color' | 'foto' | 'logo'>('color');
   const [ctaUrl, setCtaUrl] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [placeName, setPlaceName] = useState('');
+  const [placeAddress, setPlaceAddress] = useState('');
+  const [placeUrl, setPlaceUrl] = useState('');
+  const [ticketPrice, setTicketPrice] = useState('');
+  const [ticketMode, setTicketMode] = useState<'none' | 'whatsapp' | 'link'>('none');
+  const [ticketContact, setTicketContact] = useState('');
   const [photoId] = useState(() => Math.random().toString(36).slice(2, 10));
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -81,7 +89,7 @@ export default function EventosPage() {
     if (!business) return;
     setSending(true);
     setMsg(null);
-    const { error } = await supabase.rpc('request_promotion_v2', {
+    const { error } = await supabase.rpc('request_promotion_v3', {
       p_business_id: business.id,
       p_kind: kind,
       p_title: title,
@@ -97,6 +105,12 @@ export default function EventosPage() {
       p_bg_image_url: bgMode === 'foto' ? bgImage : null,
       p_bg_logo: bgMode === 'logo',
       p_cta_url: kind === 'publicidad' && ctaUrl.trim() ? ctaUrl.trim() : null,
+      p_photos: kind === 'publicidad' ? [] : photos,
+      p_place_name: kind === 'publicidad' ? null : placeName,
+      p_place_address: kind === 'publicidad' ? null : placeAddress,
+      p_place_url: kind === 'publicidad' ? null : placeUrl,
+      p_ticket_price: kind === 'evento' ? ticketPrice : null,
+      p_ticket_url: kind === 'evento' ? ticketLink : null,
     });
     setSending(false);
     if (error) {
@@ -114,6 +128,7 @@ export default function EventosPage() {
     setDescription('');
     setPrize('');
     setBgImage(null);
+    setPhotos([]);
     load();
     window.open(`https://wa.me/${WHATSAPP}?text=${text}`, '_blank', 'noopener');
   }
@@ -124,6 +139,12 @@ export default function EventosPage() {
   const badDates = new Date(ends) > maxEnd || new Date(ends) <= new Date(starts);
   const spanDays = Math.ceil((new Date(ends).getTime() - new Date(starts).getTime()) / 86400000) + 1;
   const badGoal = kind === 'desafio' && (goalSteps < 1000 || (goalMode === 'daily' && (goalSteps > 60000 || goalDays < 1 || goalDays > spanDays)));
+  const digits = ticketContact.replace(/\D/g, '');
+  const ticketLink = kind !== 'evento' || ticketMode === 'none' ? null
+    : ticketMode === 'whatsapp' ? (digits.length >= 8 ? `https://wa.me/${digits.length === 8 ? '591' + digits : digits}?text=${encodeURIComponent(`Hola! Quiero entradas para ${title || 'el evento'}`)}` : '')
+    : ticketContact.trim();
+  const badTicket = kind === 'evento' && ticketMode !== 'none' && !/^https:\/\/\S+$/.test(ticketLink ?? '');
+  const badPlaceUrl = placeUrl.trim() !== '' && !/^https:\/\/\S+$/.test(placeUrl.trim());
   const needsPhoto = bgMode === 'foto' && !bgImage;
   const badLink = kind === 'publicidad' && !/^https:\/\/\S+$/.test(ctaUrl.trim());
   const kinds: { k: Kind; label: string; hint: string }[] = [
@@ -133,7 +154,7 @@ export default function EventosPage() {
   ];
   const [c1, c2] = BG[bgColor] ?? BG.violeta;
   const previewBg = bgMode === 'foto' && bgImage
-    ? { backgroundImage: `linear-gradient(${kind === 'publicidad' ? 'rgba(20,10,40,.15), rgba(20,10,40,.78)' : 'rgba(20,10,40,.55), rgba(20,10,40,.82)'}), url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    ? { backgroundImage: `linear-gradient(${kind === 'publicidad' ? 'rgba(20,10,40,.15), rgba(20,10,40,.78)' : 'rgba(20,10,40,.28), rgba(20,10,40,.82)'}), url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { backgroundImage: `linear-gradient(135deg, ${c1}, ${c2})` };
   const label = 'block text-[12px] font-bold uppercase tracking-wide text-[#5B4A7A] mb-1.5';
   const section = 'bg-card border border-line rounded-2xl p-5 flex flex-col gap-3.5';
@@ -196,6 +217,47 @@ export default function EventosPage() {
             <p className="text-muted text-[12px]">Máximo {maxDays} días. {kind === 'evento' ? 'La hora de “Desde” es la hora del evento.' : ''}</p>
             {badDates && <p className="text-warn text-[12.5px]">Debe terminar después de empezar y durar como máximo {maxDays} días.</p>}
           </div>
+
+          {kind !== 'publicidad' && (
+            <div className={section}>
+              <span className={label}>Dónde queda</span>
+              <input value={placeName} maxLength={80} onChange={(e) => setPlaceName(e.target.value)} placeholder="Nombre del lugar. Ej: Café Sol" className={field} aria-label="Nombre del lugar" />
+              <input value={placeAddress} maxLength={160} onChange={(e) => setPlaceAddress(e.target.value)} placeholder="Dirección. Ej: Av. 6 de Agosto 123, zona Sopocachi" className={field} aria-label="Dirección" />
+              <input value={placeUrl} maxLength={300} onChange={(e) => setPlaceUrl(e.target.value)} placeholder="Link de Google Maps (opcional)" className={field} aria-label="Link de Google Maps" />
+              <p className="text-muted text-[12px]">Si ponés el link, la app muestra el botón “Cómo llegar”. En Google Maps tocá Compartir y copiá el link.</p>
+              {badPlaceUrl && <p className="text-warn text-[12.5px]">El link tiene que empezar con https://</p>}
+            </div>
+          )}
+
+          {kind !== 'publicidad' && business && (
+            <div className={section}>
+              <GalleryUpload
+                businessId={business.id}
+                photos={photos}
+                onChange={setPhotos}
+                label={kind === 'evento' ? 'Fotos del evento' : 'Fotos del desafío'}
+                prefix={`promo-${photoId}`}
+                hint="Hasta 8 fotos. Al abrir la publicación en la app se ven completas, una al lado de otra."
+              />
+            </div>
+          )}
+
+          {kind === 'evento' && (
+            <div className={section}>
+              <span className={label}>Entradas (opcional)</span>
+              <input value={ticketPrice} maxLength={40} onChange={(e) => setTicketPrice(e.target.value)} placeholder="Precio. Ej: Bs 30 · Entrada libre" className={field} aria-label="Precio de la entrada" />
+              <div className="grid grid-cols-3 gap-2.5">
+                {([['none', 'Sin contacto'], ['whatsapp', 'WhatsApp'], ['link', 'Otro link']] as const).map(([m, l]) => (
+                  <button key={m} type="button" onClick={() => setTicketMode(m)} className="rounded-xl py-2.5 font-semibold text-[13px] border-2" style={seg(ticketMode === m)}>{l}</button>
+                ))}
+              </div>
+              {ticketMode !== 'none' && (
+                <input value={ticketContact} maxLength={300} onChange={(e) => setTicketContact(e.target.value)} placeholder={ticketMode === 'whatsapp' ? 'Tu número. Ej: 70000000' : 'https://… (web, Instagram, Facebook, TikTok)'} className={field} aria-label="Contacto para entradas" />
+              )}
+              <p className="text-muted text-[12px]">{ticketMode === 'none' ? 'Si no ponés contacto, la gente solo ve el precio y se anota.' : 'En la app aparece el botón “Consultar o comprar” que lleva directo ahí.'}</p>
+              {badTicket && <p className="text-warn text-[12.5px]">{ticketMode === 'whatsapp' ? 'Poné un número válido.' : 'El link tiene que empezar con https://'}</p>}
+            </div>
+          )}
 
           {kind === 'desafio' && (
             <div className={section}>
@@ -273,7 +335,7 @@ export default function EventosPage() {
           {msg && <p className={`text-[12.5px] ${msg.ok ? 'text-mint-dark' : 'text-warn'}`}>{msg.text}</p>}
           <button
             onClick={submit}
-            disabled={sending || badDates || badGoal || needsPhoto || badLink || title.trim().length < 3 || description.trim().length < 5}
+            disabled={sending || badDates || badGoal || needsPhoto || badLink || badTicket || badPlaceUrl || title.trim().length < 3 || description.trim().length < 5}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
             style={{ background: '#241748', color: '#7FEDC4' }}
           >

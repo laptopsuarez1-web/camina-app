@@ -1,12 +1,12 @@
 import { type ReactNode } from 'react';
-import { View, Modal, ScrollView, Linking, StyleSheet, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
+import { View, Modal, ScrollView, Linking, useWindowDimensions, StyleSheet, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Coin } from '@/components/ui/Coin';
 import { Press } from '@/components/ui/Press';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
-import { Check, Users, Gift, Calendar, Footprints, ChevronRight } from '@/components/icons';
+import { Check, Users, Gift, Calendar, Footprints, ChevronRight, MapPin, Ticket } from '@/components/icons';
 import type { PromotionItem } from '@/hooks/usePromotions';
 import { usePromotionProgress } from '@/hooks/usePromotions';
 import { PROMO_BG, promoBgKey, type PromoBg, timeLeftLabel, dateRangeLabel, boliviaDate, boliviaTime, goalParts, participantsLabel, fmtSteps } from '@/lib/promo';
@@ -15,14 +15,18 @@ const WHITE_SOFT = 'rgba(255,255,255,0.92)';
 
 // Fondo de la tarjeta: color de Camina, foto/banner o el logo del comercio sobre el color.
 // La foto se oscurece sola (`soft` la oscurece menos, para banners donde la imagen es protagonista).
-function PromoBackground({ p, children, style, soft }: { p: PromotionItem; children: ReactNode; style?: StyleProp<ViewStyle>; soft?: boolean }) {
+function PromoBackground({ p, children, style, soft, clear }: { p: PromotionItem; children: ReactNode; style?: StyleProp<ViewStyle>; soft?: boolean; clear?: boolean }) {
   const [from, to] = PROMO_BG[promoBgKey(p.bg_color)];
   return (
     <View style={[{ overflow: 'hidden', backgroundColor: from }, style]}>
       {p.bg_image_url ? (
         <>
           <Image accessible={false} source={{ uri: p.bg_image_url }} contentFit="cover" style={StyleSheet.absoluteFill} />
-          <LinearGradient colors={soft ? ['rgba(20,10,40,0.15)', 'rgba(20,10,40,0.78)'] : ['rgba(20,10,40,0.55)', 'rgba(20,10,40,0.82)']} style={StyleSheet.absoluteFill} />
+          <LinearGradient
+            colors={clear ? ['rgba(20,10,40,0)', 'rgba(20,10,40,0)', 'rgba(20,10,40,0.82)'] : soft ? ['rgba(20,10,40,0.15)', 'rgba(20,10,40,0.78)'] : ['rgba(20,10,40,0.28)', 'rgba(20,10,40,0.82)']}
+            locations={clear ? [0, 0.5, 1] : undefined}
+            style={StyleSheet.absoluteFill}
+          />
         </>
       ) : (
         <LinearGradient colors={[from, to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -102,7 +106,7 @@ export function EventCard({ p, onPress, size }: { p: PromotionItem; onPress: () 
       onPress={onPress}
       style={{ width: size }}
     >
-      <PromoBackground p={p} style={{ width: size, height: size, borderRadius: 28, padding: 16, justifyContent: 'space-between' }}>
+      <PromoBackground p={p} clear style={{ width: size, height: size, borderRadius: 28, padding: 16, justifyContent: 'space-between' }}>
         <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-start justify-between">
           <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={46} />
           <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, alignItems: 'center' }}>
@@ -159,8 +163,24 @@ export function AdBanner({ p }: { p: PromotionItem }) {
 }
 
 // Ficha con el detalle: cómo funciona, premio, mi avance y el botón de participar.
+// Fotos completas (sin recortar ni oscurecer) del evento o desafío: la de fondo y las que sumó el comercio.
+function PhotoCarousel({ urls, width }: { urls: string[]; width: number }) {
+  if (urls.length === 0) return null;
+  return (
+    <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={{ borderRadius: 24, marginBottom: 14 }}>
+      {urls.map((u) => (
+        <View key={u} style={{ width, height: 240, backgroundColor: '#120a1e', borderRadius: 24, overflow: 'hidden' }}>
+          <Image accessibilityLabel="Foto" source={{ uri: u }} contentFit="contain" style={{ width, height: 240 }} />
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
 export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem | null; onClose: () => void; onJoin: (p: PromotionItem) => void; joining: boolean }) {
   const goal = p ? goalParts(p) : null;
+  const { width: screenW } = useWindowDimensions();
+  const photoUrls = p ? [...(p.bg_image_url ? [p.bg_image_url] : []), ...(p.photos ?? [])] : [];
   const isChallenge = p?.kind === 'desafio' || p?.kind === 'sorteo';
   const { data: progress } = usePromotionProgress(p?.id, !!p && isChallenge && p.joined);
   const target = p ? (p.goal_mode === 'total' ? p.goal_steps ?? 0 : p.goal_mode === 'daily' ? p.goal_days ?? 0 : p.req_days ?? 0) : 0;
@@ -188,7 +208,8 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-3" />
           {p ? (
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}>
-              <PromoBackground p={p} style={{ borderRadius: 24, padding: 16 }}>
+              <PhotoCarousel urls={photoUrls} width={screenW - 40} />
+              <PromoBackground p={photoUrls.length > 0 ? { ...p, bg_image_url: null } : p} style={{ borderRadius: 24, padding: 16 }}>
                 <View className="flex-row items-center" style={{ gap: 12 }}>
                   <BusinessAvatar logoUrl={p.business?.logo_url} category={p.business?.category} size={46} />
                   <View className="flex-1">
@@ -204,6 +225,27 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                 ) : null}
               </PromoBackground>
               <Text className="text-text-light dark:text-text-dark mt-4 leading-5" style={{ fontSize: 14.5 }}>{p.description}</Text>
+              {p.place_name || p.place_address ? (
+                <Press accessibilityRole="link" accessibilityLabel="Cómo llegar" disabled={!p.place_url} onPress={() => openLink(p.place_url)} className="flex-row items-center mt-4" style={{ gap: 10 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(139,79,209,0.14)' }}><MapPin size={18} color="#5B31A3" /></View>
+                  <View className="flex-1">
+                    <Text className="text-text-light dark:text-text-dark" style={{ fontSize: 14.5, fontWeight: '800' }}>{p.place_name ?? p.place_address}</Text>
+                    {p.place_name && p.place_address ? <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 13 }}>{p.place_address}</Text> : null}
+                  </View>
+                  {p.place_url ? <Text style={{ color: '#5B31A3', fontWeight: '800', fontSize: 13 }}>Cómo llegar</Text> : null}
+                </Press>
+              ) : null}
+              {p.kind === 'evento' && (p.ticket_price || p.ticket_url) ? (
+                <View className="flex-row items-center mt-3" style={{ gap: 10 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(139,79,209,0.14)' }}><Ticket size={18} color="#5B31A3" /></View>
+                  <Text className="flex-1 text-text-light dark:text-text-dark" style={{ fontSize: 14.5, fontWeight: '800' }}>{p.ticket_price ? `Entrada: ${p.ticket_price}` : 'Entradas'}</Text>
+                  {p.ticket_url ? (
+                    <Press accessibilityRole="link" onPress={() => openLink(p.ticket_url)} className="bg-purple-deep rounded-full px-4 py-2">
+                      <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Consultar o comprar</Text>
+                    </Press>
+                  ) : null}
+                </View>
+              ) : null}
               {steps.length > 0 ? (
                 <>
                   <Text accessibilityRole="header" className="text-text-light dark:text-text-dark mt-5 mb-2" style={{ fontSize: 16, fontWeight: '800' }}>Cómo funciona</Text>
