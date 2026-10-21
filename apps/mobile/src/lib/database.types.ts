@@ -279,6 +279,8 @@ export type Database = {
       };
       join_promotion: { Args: { p_id: string }; Returns: void };
       promotion_counts: { Args: Record<string, never>; Returns: { promotion_id: string; participants: number }[] };
+      promotion_ticket_counts: { Args: Record<string, never>; Returns: { promotion_id: string; taken: number }[] };
+      redeem_event_ticket: { Args: { p_id: string }; Returns: unknown };
       my_promotion_progress: { Args: { p_id: string }; Returns: { steps_total: number; days_met: number }[] };
       join_group_challenge: { Args: { p_challenge: string }; Returns: void };
       challenge_progress: { Args: { p_challenge: string }; Returns: unknown };
