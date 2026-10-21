@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -38,11 +38,8 @@ export default function TerminosScreen() {
       if (error) throw error;
       await useAuthStore.getState().refreshProfile();
       const { joinedGroupId } = await consumePendingDeepLinks();
-      if (Platform.OS === 'android') {
-        router.replace({ pathname: '/(auth)/salud', params: joinedGroupId ? { group: joinedGroupId } : {} });
-        return;
-      }
-      router.replace(joinedGroupId ? { pathname: '/(tabs)/grupos/[groupId]', params: { groupId: joinedGroupId } } : '/(tabs)');
+      // Primera vez: elegir la meta de pasos (de ahí sigue a Health Connect en Android o a la app).
+      router.replace({ pathname: '/(auth)/meta', params: joinedGroupId ? { group: joinedGroupId } : {} });
     } catch (e) {
       Alert.alert('Algo salió mal', friendlyError(e, 'Intentá de nuevo.'));
     } finally {

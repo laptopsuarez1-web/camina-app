@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import { MIN_DAILY_GOAL } from '@/constants/business-rules';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 import { computeShareStats, dayKey, longestRun, monthName, splitMonthPoints } from '@/lib/share-stats';
 import type { WrappedData } from '@/components/share/cards';
 
@@ -28,7 +28,7 @@ function addDays(key: string, n: number) {
 // el Wrapped sigue sin la lámina del puesto.
 export function useWrapped(first: Date | null) {
   const userId = useAuthStore((s) => s.session?.user.id);
-  const goal = useAuthStore((s) => Math.max(s.profile?.daily_goal ?? 6000, MIN_DAILY_GOAL));
+  const goal = useAuthStore((s) => Math.max(s.profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL));
   const monthKey = first ? dayKey(first) : null;
 
   return useQuery({

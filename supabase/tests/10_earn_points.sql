@@ -35,11 +35,11 @@ begin
   bal := earn_points_from_steps(u, today, 5000);
   perform tt.t_eq('la función devuelve el saldo', bal, 5);
 
-  -- Si el dispositivo manda menos pasos que antes, no se quitan Puntos (y los pasos guardados bajan).
+  -- Si el dispositivo manda menos pasos que antes, no se quitan Puntos y los pasos guardados se quedan en el mayor (0063).
   bal := earn_points_from_steps(u, today, 2000);
   perform tt.t_eq('menos pasos que antes: los Puntos ya ganados no se quitan', bal, 5);
   select steps into st from steps_daily where user_id = u and day = today;
-  perform tt.t_eq('menos pasos que antes: los pasos guardados bajan (caracterización)', st, 2000);
+  perform tt.t_eq('menos pasos que antes: los pasos guardados no bajan', st, 5000);
 
   -- Pasos negativos: se toman como 0, sin error.
   u := tt.mk_user(); perform tt.t_as(u); perform tt.seed_steps(u, today, 0);

@@ -358,7 +358,7 @@ export default function EventosPage() {
             <div className="rounded-3xl p-4 text-white relative overflow-hidden" style={{ ...previewBg, minHeight: kind === 'publicidad' ? 132 : undefined }} aria-label="Vista previa">
               {bgMode === 'logo' && business?.logo_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={business.logo_url} alt="" className="absolute -right-6 -bottom-6 w-[170px] h-[170px] rounded-full object-cover opacity-20" />
+                <img src={business.logo_url} alt="" className="absolute -right-6 -bottom-6 w-[170px] h-[170px] rounded-[48px] object-cover opacity-20" />
               )}
               <p className="text-[12px] font-bold opacity-90">{kind === 'publicidad' ? (business?.name ?? '') : KIND_LABEL[kind]}</p>
               <p className="text-[19px] font-extrabold leading-tight">{title || 'Tu título acá'}</p>
