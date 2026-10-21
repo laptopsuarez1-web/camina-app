@@ -34,7 +34,7 @@ function PromoBackground({ p, children, style, soft, clear }: { p: PromotionItem
         <LinearGradient colors={[from, to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
       )}
       {!p.bg_image_url && p.bg_logo && p.business?.logo_url ? (
-        <View pointerEvents="none" style={{ position: 'absolute', right: -24, bottom: -24, width: 170, height: 170, borderRadius: 85, overflow: 'hidden', opacity: 0.22 }}>
+        <View pointerEvents="none" style={{ position: 'absolute', right: -24, bottom: -24, width: 170, height: 170, borderRadius: 48, overflow: 'hidden', opacity: 0.22 }}>
           <Image accessible={false} source={{ uri: p.business.logo_url }} contentFit="cover" style={{ width: 170, height: 170 }} />
         </View>
       ) : null}

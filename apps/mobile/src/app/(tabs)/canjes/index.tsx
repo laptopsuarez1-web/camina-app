@@ -195,7 +195,7 @@ function pinSize(featured?: boolean) {
   return { head, w: head + PIN_PAD * 2, h: head + PIN_TIP + PIN_PAD * 2 };
 }
 
-function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string | null; featured?: boolean }) {
+function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string; logoUrl?: string | null; featured?: boolean; onLoaded?: () => void }) {
   const { head, w, h } = pinSize(featured);
   const [failed, setFailed] = useState(false);
   const border = featured ? 4 : 3;
@@ -208,7 +208,7 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
         style={{
           width: head,
           height: head,
-          borderRadius: head / 2,
+          borderRadius: head * 0.28,
           backgroundColor: ring,
           alignItems: 'center',
           justifyContent: 'center',
@@ -223,7 +223,7 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
           style={{
             width: head - border * 2,
             height: head - border * 2,
-            borderRadius: (head - border * 2) / 2,
+            borderRadius: (head - border * 2) * 0.28,
             backgroundColor: showLogo ? '#fff' : colors.aquaDeep,
             alignItems: 'center',
             justifyContent: 'center',
@@ -234,6 +234,9 @@ function MapMarker({ name, logoUrl, featured }: { name: string; logoUrl?: string
             <Image
               source={{ uri: logoUrl! }}
               resizeMode="cover"
+              // Sin fundido: en Android el pin se "fotografía" y un fundido de 300 ms lo capturaba con el logo todavía invisible (círculo blanco).
+              fadeDuration={0}
+              onLoad={onLoaded}
               onError={() => setFailed(true)}
               style={{ width: head - border * 2, height: head - border * 2 }}
             />
@@ -288,15 +291,17 @@ function useLogoReady(logoUrl?: string | null) {
 
 function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
+  const [painted, setPainted] = useState(false);
   const featured = isFeatured(business);
   const { w, h } = pinSize(featured);
   const logo = useLogoReady(business.logo_url);
   useEffect(() => {
     if (logo === 'wait') return;
-    // Cuando el pin ya tiene su contenido final, se congela tras un respiro (con tope de seguridad).
-    const t = setTimeout(() => setTracking(false), logo === 'ok' ? 1500 : 600);
+    // El pin se congela recién cuando el logo avisó que ya se pintó (más un respiro); sin logo, enseguida.
+    // Tope de seguridad: si el aviso no llega, se congela igual a los 12 s para no dejar el mapa trabajando de más.
+    const t = setTimeout(() => setTracking(false), logo === 'ok' ? (painted ? 700 : 12000) : 600);
     return () => clearTimeout(t);
-  }, [logo]);
+  }, [logo, painted]);
   if (logo === 'wait') return null;
   return (
     <Marker
@@ -306,7 +311,7 @@ function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: 
       onPress={onPress}
     >
       <View style={{ width: w, height: h }}>
-        <MapMarker name={business.name} logoUrl={logo === 'ok' ? business.logo_url : null} featured={featured} />
+        <MapMarker name={business.name} logoUrl={logo === 'ok' ? business.logo_url : null} featured={featured} onLoaded={() => setPainted(true)} />
       </View>
     </Marker>
   );

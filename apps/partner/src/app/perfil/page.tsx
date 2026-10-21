@@ -257,7 +257,7 @@ export default function PerfilPage() {
                   value={business.logo_url}
                   onUploaded={(url) => handlePhotoUploaded('logo_url', url)}
                   label="Logo"
-                  shape="circle"
+                  shape="square"
                 />
                 <div className="flex-1 min-w-0">
                   <ImageUpload

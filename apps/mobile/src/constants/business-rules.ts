@@ -22,6 +22,8 @@ export const TEAM_CHALLENGE_WEEKLY_STEPS_PER_MEMBER = 42_000;
 
 // Meta diaria de pasos: mínimo permitido, y desde cuánto se considera una meta "muy buena".
 export const MIN_DAILY_GOAL = 1000;
+// Meta con la que arranca una cuenta nueva (la misma que el default de profiles.daily_goal, 0063).
+export const DEFAULT_DAILY_GOAL = 5000;
 export const GOOD_DAILY_GOAL = 5000;
 
 // "Sobre mí" del perfil: largo máximo (el servidor lo exige igual, profiles_bio_len en la migración 0056).

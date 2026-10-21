@@ -72,6 +72,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   // Cuántas veces se tocó cada pestaña: el ícono reacciona en cada toque (también si ya estaba activa).
   const [taps, setTaps] = useState<Record<string, number>>({});
+  const [rowW, setRowW] = useState(0);
 
   // Algunas pantallas (crear desafío, chat del grupo) ocultan la barra para ir a pantalla completa.
   if (descriptors[state.routes[state.index]?.key]?.options.tabBarStyle?.display === 'none') return null;
@@ -86,6 +87,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
       return options.href !== null && itemStyle?.display !== 'none';
     });
 
+  const itemW = rowW > 0 && visible.length > 0 ? (rowW - 8) / visible.length : 0;
   const solid = !glassOn(amount);
   const capsule: ViewStyle = {
     minHeight: BAR_HEIGHT,
@@ -98,7 +100,11 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   const fill = barFill(amount, dark, Platform.OS === 'android' ? 'android' : Platform.OS === 'web' ? 'web' : 'ios', paletteFor(dark).tint);
 
   const items = (
-    <View accessibilityRole="tablist" style={{ flexDirection: 'row', alignItems: 'center', padding: 4 }}>
+    <View
+      accessibilityRole="tablist"
+      onLayout={(e) => setRowW(e.nativeEvent.layout.width)}
+      style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch', width: '100%', padding: 4 }}
+    >
       <ActivePill position={Math.max(0, visible.findIndex(({ index }) => index === state.index))} count={visible.length} dark={dark} />
       {visible.map(({ route, index }, position) => {
         const { options } = descriptors[route.key];
@@ -125,16 +131,19 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
               }
             }}
             onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-            style={({ pressed }) => ({
+            // Estilo fijo (objeto, no función): NativeWind envuelve Pressable y en Android descartaba el estilo en forma de
+            // función, así que las pestañas perdían flex: 1 y quedaban todas amontonadas a la izquierda. El ancho también va
+            // explícito (ancho medido de la barra / cantidad de pestañas) para que el reparto sea parejo en cualquier teléfono.
+            style={{
               flex: 1,
+              width: itemW || undefined,
               minHeight: BAR_HEIGHT - 8,
               borderRadius: (BAR_HEIGHT - 8) / 2,
               alignItems: 'center',
               justifyContent: 'center',
               gap: 1,
               paddingHorizontal: 2,
-              transform: [{ scale: pressed ? 0.94 : 1 }],
-            })}
+            }}
           >
             <View style={{ height: 28, alignItems: 'center', justifyContent: 'center' }}>
               {Icon ? <Icon focused={focused} color={color} size={26} tick={taps[route.key] ?? 0} /> : null}
@@ -160,8 +169,8 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
       {/* Velo inferior: el contenido se desvanece antes de llegar a la barra y no se ven textos "fantasma" detrás de las etiquetas. */}
       <LinearGradient
         pointerEvents="none"
-        colors={[`rgba(${vr},${vg},${vb},0)`, `rgba(${vr},${vg},${vb},0.94)`]}
-        locations={[0, 0.55]}
+        colors={[`rgba(${vr},${vg},${vb},0)`, `rgba(${vr},${vg},${vb},0.94)`, `rgba(${vr},${vg},${vb},1)`]}
+        locations={[0, 0.55, 1]}
         style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: BAR_HEIGHT + bottomPad + 56 }}
       />
       <View

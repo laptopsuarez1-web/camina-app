@@ -19,7 +19,7 @@ import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { dayLabel } from '@/lib/format';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
-import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL, STREAK_BONUS_DAYS } from '@/constants/business-rules';
+import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_BONUS_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { GrowIn } from '@/components/ui/GrowIn';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
@@ -101,7 +101,7 @@ export default function ActividadScreen() {
   useEffect(() => {
     scheduleWrappedReminder();
   }, []);
-  const goal = Math.max(profile?.daily_goal ?? 6000, MIN_DAILY_GOAL);
+  const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
 
   const byDay = useMemo(() => {
