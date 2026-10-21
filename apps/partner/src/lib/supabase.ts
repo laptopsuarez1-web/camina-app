@@ -148,6 +148,8 @@ export interface Promotion {
   place_url: string | null;
   ticket_price: string | null;
   ticket_url: string | null;
+  ticket_points: number | null;
+  ticket_quota: number | null;
   price_bs: number;
   status: 'pending' | 'approved' | 'rejected' | 'finished';
   created_at: string;

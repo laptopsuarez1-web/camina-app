@@ -37,6 +37,7 @@ export default function EventosPage() {
   const { business } = useBusinessAuth();
   const [list, setList] = useState<Promotion[]>([]);
   const [winners, setWinners] = useState<Record<string, string[]>>({});
+  const [holders, setHolders] = useState<Record<string, string[]>>({});
   const isAd = business?.account_kind === 'events_only';
   const [kind, setKind] = useState<Kind>('desafio');
   const [title, setTitle] = useState('');
@@ -57,7 +58,11 @@ export default function EventosPage() {
   const [placeAddress, setPlaceAddress] = useState('');
   const [placeUrl, setPlaceUrl] = useState('');
   const [ticketPrice, setTicketPrice] = useState('');
-  const [ticketMode, setTicketMode] = useState<'none' | 'whatsapp' | 'link'>('none');
+  const [ticketMode, setTicketMode] = useState<'whatsapp' | 'link'>('whatsapp');
+  const [usePoints, setUsePoints] = useState(false);
+  const [usePaid, setUsePaid] = useState(false);
+  const [ticketPoints, setTicketPoints] = useState(30);
+  const [ticketQuota, setTicketQuota] = useState(20);
   const [ticketContact, setTicketContact] = useState('');
   const [photoId] = useState(() => Math.random().toString(36).slice(2, 10));
   const [sending, setSending] = useState(false);
@@ -79,6 +84,12 @@ export default function EventosPage() {
       entries[r.id] = ((w as { full_name: string }[]) ?? []).map((x) => x.full_name);
     }
     setWinners(entries);
+    const h: Record<string, string[]> = {};
+    for (const r of rows.filter((x) => x.kind === 'evento' && x.ticket_points != null && x.status !== 'pending' && x.status !== 'rejected')) {
+      const { data: t } = await supabase.rpc('promotion_ticket_holders', { p_id: r.id });
+      h[r.id] = ((t as { full_name: string }[]) ?? []).map((x) => x.full_name);
+    }
+    setHolders(h);
   }, [business]);
 
   useEffect(() => {
@@ -109,8 +120,10 @@ export default function EventosPage() {
       p_place_name: kind === 'publicidad' ? null : placeName,
       p_place_address: kind === 'publicidad' ? null : placeAddress,
       p_place_url: kind === 'publicidad' ? null : placeUrl,
-      p_ticket_price: kind === 'evento' ? ticketPrice : null,
-      p_ticket_url: kind === 'evento' ? ticketLink : null,
+      p_ticket_price: kind === 'evento' && usePaid ? ticketPrice : null,
+      p_ticket_url: kind === 'evento' && ticketLink ? ticketLink : null,
+      p_ticket_points: kind === 'evento' && usePoints ? ticketPoints : null,
+      p_ticket_quota: kind === 'evento' && usePoints ? ticketQuota : null,
     });
     setSending(false);
     if (error) {
@@ -140,10 +153,14 @@ export default function EventosPage() {
   const spanDays = Math.ceil((new Date(ends).getTime() - new Date(starts).getTime()) / 86400000) + 1;
   const badGoal = kind === 'desafio' && (goalSteps < 1000 || (goalMode === 'daily' && (goalSteps > 60000 || goalDays < 1 || goalDays > spanDays)));
   const digits = ticketContact.replace(/\D/g, '');
-  const ticketLink = kind !== 'evento' || ticketMode === 'none' ? null
-    : ticketMode === 'whatsapp' ? (digits.length >= 8 ? `https://wa.me/${digits.length === 8 ? '591' + digits : digits}?text=${encodeURIComponent(`Hola! Quiero entradas para ${title || 'el evento'}`)}` : '')
+  const ticketLink = kind !== 'evento' || ticketContact.trim() === '' ? ''
+    : ticketMode === 'whatsapp' ? (digits.length >= 8 ? `https://wa.me/${digits.length === 8 ? '591' + digits : digits}?text=${encodeURIComponent(`Hola! Te escribo por el evento ${title || ''}`.trim())}` : '-')
     : ticketContact.trim();
-  const badTicket = kind === 'evento' && ticketMode !== 'none' && !/^https:\/\/\S+$/.test(ticketLink ?? '');
+  const badTicket = kind === 'evento' && (
+    (ticketContact.trim() !== '' && !/^https:\/\/\S+$/.test(ticketLink)) ||
+    (usePaid && (ticketPrice.trim() === '' || ticketLink === '')) ||
+    (usePoints && (ticketPoints < 1 || ticketQuota < 1))
+  );
   const badPlaceUrl = placeUrl.trim() !== '' && !/^https:\/\/\S+$/.test(placeUrl.trim());
   const needsPhoto = bgMode === 'foto' && !bgImage;
   const badLink = kind === 'publicidad' && !/^https:\/\/\S+$/.test(ctaUrl.trim());
@@ -244,18 +261,39 @@ export default function EventosPage() {
 
           {kind === 'evento' && (
             <div className={section}>
-              <span className={label}>Entradas (opcional)</span>
-              <input value={ticketPrice} maxLength={40} onChange={(e) => setTicketPrice(e.target.value)} placeholder="Precio. Ej: Bs 30 · Entrada libre" className={field} aria-label="Precio de la entrada" />
-              <div className="grid grid-cols-3 gap-2.5">
-                {([['none', 'Sin contacto'], ['whatsapp', 'WhatsApp'], ['link', 'Otro link']] as const).map(([m, l]) => (
-                  <button key={m} type="button" onClick={() => setTicketMode(m)} className="rounded-xl py-2.5 font-semibold text-[13px] border-2" style={seg(ticketMode === m)}>{l}</button>
-                ))}
-              </div>
-              {ticketMode !== 'none' && (
-                <input value={ticketContact} maxLength={300} onChange={(e) => setTicketContact(e.target.value)} placeholder={ticketMode === 'whatsapp' ? 'Tu número. Ej: 70000000' : 'https://… (web, Instagram, Facebook, TikTok)'} className={field} aria-label="Contacto para entradas" />
+              <span className={label}>Entradas</span>
+              <p className="text-muted text-[12px] -mt-2">Si el evento es libre, no marques nada: en la app aparece “Anotarme”. Podés marcar las dos opciones a la vez.</p>
+              <label className="flex items-center gap-2 text-[13.5px] font-semibold">
+                <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} /> Se canjean con Puntos de Camina
+              </label>
+              {usePoints && (
+                <div className="flex gap-3 items-center flex-wrap text-[13px] pl-6">
+                  <input type="number" min={1} max={5000} value={ticketPoints} onChange={(e) => setTicketPoints(Number(e.target.value))} className={`${field} !w-[90px]`} aria-label="Puntos por entrada" />
+                  Puntos por entrada, hay
+                  <input type="number" min={1} max={5000} value={ticketQuota} onChange={(e) => setTicketQuota(Number(e.target.value))} className={`${field} !w-[90px]`} aria-label="Cantidad de entradas" />
+                  entradas
+                </div>
               )}
-              <p className="text-muted text-[12px]">{ticketMode === 'none' ? 'Si no ponés contacto, la gente solo ve el precio y se anota.' : 'En la app aparece el botón “Consultar o comprar” que lleva directo ahí.'}</p>
-              {badTicket && <p className="text-warn text-[12.5px]">{ticketMode === 'whatsapp' ? 'Poné un número válido.' : 'El link tiene que empezar con https://'}</p>}
+              <label className="flex items-center gap-2 text-[13.5px] font-semibold">
+                <input type="checkbox" checked={usePaid} onChange={(e) => setUsePaid(e.target.checked)} /> Se compran con plata
+              </label>
+              {usePaid && (
+                <div className="pl-6">
+                  <input value={ticketPrice} maxLength={40} onChange={(e) => setTicketPrice(e.target.value)} placeholder="Desde cuánto. Ej: Bs 30" className={field} aria-label="Precio de la entrada" />
+                  <p className="text-muted text-[12px] mt-1">En la app dice “Comprar desde {ticketPrice || 'Bs 30'}”. Si se agotan las de Puntos, también sale este botón.</p>
+                </div>
+              )}
+              <div>
+                <span className="block text-[12.5px] font-semibold mb-1.5">Contacto del organizador {usePaid ? '' : '(opcional)'}</span>
+                <div className="grid grid-cols-2 gap-2.5 mb-2">
+                  {([['whatsapp', 'WhatsApp'], ['link', 'Otro link']] as const).map(([m, l]) => (
+                    <button key={m} type="button" onClick={() => setTicketMode(m)} className="rounded-xl py-2 font-semibold text-[13px] border-2" style={seg(ticketMode === m)}>{l}</button>
+                  ))}
+                </div>
+                <input value={ticketContact} maxLength={300} onChange={(e) => setTicketContact(e.target.value)} placeholder={ticketMode === 'whatsapp' ? 'Tu número. Ej: 70000000' : 'https://… (web, Instagram, Facebook, TikTok)'} className={field} aria-label="Contacto para entradas" />
+                <p className="text-muted text-[12px] mt-1">{usePaid ? 'A donde va la persona para comprar.' : usePoints ? 'Quien canjea puede hablarte por acá.' : 'Si lo dejás vacío, la gente toca “Anotarme”. Si lo ponés, en la app aparece un botón para contactarte.'}</p>
+              </div>
+              {badTicket && <p className="text-warn text-[12.5px]">Revisá las entradas: con plata hace falta precio y contacto; el link empieza con https:// o un número válido.</p>}
             </div>
           )}
 
@@ -358,6 +396,12 @@ export default function EventosPage() {
                   {r.prize ? ` · ${r.prize}` : ''}
                   {r.goal_steps ? ` · ${r.goal_steps.toLocaleString('es-BO')} pasos${r.goal_mode === 'daily' ? ` x ${r.goal_days} días` : ' en total'}` : ''}
                 </p>
+                {r.kind === 'evento' && (r.ticket_points != null || r.ticket_price) && (
+                  <p className="text-[12.5px] mt-1.5">
+                    🎟️ {r.ticket_points != null ? `${r.ticket_points} Puntos · cupo ${r.ticket_quota}` : ''}{r.ticket_points != null && r.ticket_price ? ' · ' : ''}{r.ticket_price ? `desde ${r.ticket_price}` : ''}
+                    {holders[r.id]?.length ? <> · <strong>Entradas canjeadas:</strong> {holders[r.id].join(', ')}</> : r.ticket_points != null ? ' · todavía nadie canjeó' : ''}
+                  </p>
+                )}
                 {r.status === 'finished' && winners[r.id] && (
                   <p className="text-[12.5px] mt-1.5">
                     <strong>Ganadores:</strong> {winners[r.id].length ? winners[r.id].join(', ') : 'nadie cumplió la condición'}

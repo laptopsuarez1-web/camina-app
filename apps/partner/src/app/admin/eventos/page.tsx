@@ -75,6 +75,7 @@ export default function AdminEventosPage() {
                   </p>
                   {r.prize && <p className="text-[12.5px] mt-1">Premio: {r.prize}</p>}
                   {(r.place_name || r.place_address) && <p className="text-[12.5px] mt-1">📍 {[r.place_name, r.place_address].filter(Boolean).join(' · ')}{r.place_url ? ` · ${r.place_url}` : ''}</p>}
+                  {r.ticket_points != null && <p className="text-[12.5px] mt-1">🎟️ Con Puntos: {r.ticket_points} Puntos · cupo {r.ticket_quota}</p>}
                   {(r.ticket_price || r.ticket_url) && <p className="text-[12.5px] mt-1 break-all">🎟️ {r.ticket_price ?? 'Entradas'}{r.ticket_url ? ` · ${r.ticket_url}` : ''}</p>}
                   {(r.photos?.length ?? 0) > 0 && (
                     <div className="mt-2 flex gap-1.5 flex-wrap">

@@ -26,6 +26,10 @@ export interface PromotionItem {
   place_url: string | null;
   ticket_price: string | null;
   ticket_url: string | null;
+  ticket_points: number | null;
+  ticket_quota: number | null;
+  tickets_taken: number;
+  has_ticket: boolean;
   participants: number;
   business: { name: string; logo_url: string | null; category: string } | null;
   joined: boolean;
@@ -40,16 +44,18 @@ export function usePromotions() {
     enabled: !!userId,
     queryFn: async (): Promise<PromotionItem[]> => {
       const nowISO = new Date().toISOString();
-      const [{ data, error }, { data: entries }, { data: wins }, { data: counts }] = await Promise.all([
+      const [{ data, error }, { data: entries }, { data: wins }, { data: counts }, { data: taken }, { data: myTickets }] = await Promise.all([
         supabase
           .from('promotions')
-          .select('id, kind, title, description, prize, winners_count, starts_at, ends_at, req_steps, req_days, goal_mode, goal_steps, goal_days, bg_color, bg_image_url, bg_logo, cta_url, photos, place_name, place_address, place_url, ticket_price, ticket_url, status, business:businesses(name, logo_url, category)')
+          .select('id, kind, title, description, prize, winners_count, starts_at, ends_at, req_steps, req_days, goal_mode, goal_steps, goal_days, bg_color, bg_image_url, bg_logo, cta_url, photos, place_name, place_address, place_url, ticket_price, ticket_url, ticket_points, ticket_quota, status, business:businesses(name, logo_url, category)')
           .in('status', ['approved', 'finished'])
           .gte('ends_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString())
           .order('ends_at'),
         supabase.from('promotion_entries').select('promotion_id').eq('user_id', userId!),
         supabase.from('promotion_winners').select('promotion_id').eq('user_id', userId!),
         supabase.rpc('promotion_counts'),
+        supabase.rpc('promotion_ticket_counts'),
+        supabase.from('promotion_tickets').select('promotion_id').eq('user_id', userId!),
       ]);
       // La consulta principal propaga el error (así la pantalla puede ofrecer "Reintentar");
       // las de entries y wins siguen tolerantes: si fallan, solo falta el "anotado" y el "ganaste".
@@ -57,9 +63,11 @@ export function usePromotions() {
       const joined = new Set((entries ?? []).map((e: { promotion_id: string }) => e.promotion_id));
       const won = new Set((wins ?? []).map((e: { promotion_id: string }) => e.promotion_id));
       const people = new Map<string, number>((counts ?? []).map((c: { promotion_id: string; participants: number }) => [c.promotion_id, c.participants] as [string, number]));
-      return ((data ?? []) as unknown as (Omit<PromotionItem, 'participants'> & { status: string })[])
+      const takenBy = new Map<string, number>((taken ?? []).map((c: { promotion_id: string; taken: number }) => [c.promotion_id, c.taken] as [string, number]));
+      const mine = new Set((myTickets ?? []).map((e: { promotion_id: string }) => e.promotion_id));
+      return ((data ?? []) as unknown as (Omit<PromotionItem, 'participants' | 'tickets_taken' | 'has_ticket'> & { status: string })[])
         .filter((p) => p.status === 'approved' ? p.ends_at >= nowISO && (p.kind === 'evento' || p.starts_at <= nowISO) : won.has(p.id))
-        .map((p) => ({ ...p, participants: people.get(p.id) ?? 0, joined: joined.has(p.id), won: won.has(p.id) }));
+        .map((p) => ({ ...p, participants: people.get(p.id) ?? 0, tickets_taken: takenBy.get(p.id) ?? 0, has_ticket: mine.has(p.id), joined: joined.has(p.id), won: won.has(p.id) }));
     },
   });
 }
@@ -89,6 +97,23 @@ export function usePromotionProgress(id: string | undefined, enabled: boolean) {
       if (error) throw error;
       const row = (data as { steps_total: number; days_met: number }[] | null)?.[0];
       return { steps: row?.steps_total ?? 0, days: row?.days_met ?? 0 };
+    },
+  });
+}
+
+// Canjear una entrada con Puntos: se descuentan al instante y queda anotado.
+export function useRedeemTicket() {
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('redeem_event_ticket', { p_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promotions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['points-ledger', userId] });
     },
   });
 }
