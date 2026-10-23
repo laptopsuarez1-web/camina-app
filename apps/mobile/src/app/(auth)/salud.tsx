@@ -1,10 +1,9 @@
-import { View, Linking, ScrollView } from 'react-native';
+import { View, Linking, ScrollView, Image } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { colors } from '@/theme/tokens';
-import { Footprints, IconBubble } from '@/components/icons';
 
 const HEALTH_CONNECT = 'com.google.android.apps.healthdata';
 const GOOGLE_FIT = 'com.google.android.apps.fitness';
@@ -32,7 +31,7 @@ export default function SaludScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg }}>
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 32 }}>
-        <View style={{ marginBottom: 14 }}><IconBubble icon={Footprints} tone="aqua" size={56} /></View>
+        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 60, height: 60, marginBottom: 14 }} />
         <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activá el conteo de pasos</Text>
         <Text style={{ color: colors.authMuted, fontSize: 14, lineHeight: 21, marginBottom: 24 }}>
           Para que Camina sume tus pasos de forma segura, se leen desde Health Connect. Son tres pasos y lo hacés una sola vez.
