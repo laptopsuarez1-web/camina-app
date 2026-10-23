@@ -227,27 +227,12 @@
   .lp .flow h3{align-self:start}
 }
 
-/* ===== cierre con la marca ===== */
-.final-grid{display:grid;gap:44px;align-items:center}
-@media (min-width:900px){.final-grid{grid-template-columns:1.25fr .75fr}}
-.lp .marca-final{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:30px 24px 32px;border-radius:32px;
-  background:radial-gradient(320px circle at 50% 30%,rgba(127,237,196,.18),rgba(127,237,196,0) 70%),var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
-  border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow);max-width:420px;width:100%;justify-self:center}
-.lp .marca-trail{position:static;width:100%;max-width:300px;height:auto;filter:drop-shadow(0 0 8px rgba(127,237,196,.35))}
-.lp .marca-icono{width:128px;height:128px;border-radius:30px;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 20px 50px -10px rgba(0,0,0,.6),0 0 60px -6px rgba(127,237,196,.5)}
-.lp .marca-nombre{width:150px;height:auto;margin-top:4px}
-.lp .marca-final b{color:var(--ink);font-size:17px;font-weight:700}
+/* ===== cierre con la marca: solo el logo ===== */
+.final-grid{display:grid;gap:36px;align-items:center}
+@media (min-width:900px){.final-grid{grid-template-columns:1.3fr .7fr}}
+.lp .marca-final{display:grid;place-items:center;justify-self:center}
+.lp .marca-logo{width:clamp(150px,22vw,250px);height:auto;filter:drop-shadow(0 0 40px rgba(127,237,196,.35))}
 @media (max-width:899px){.lp .marca-final{order:-1}}
-.lp .flow,.lp .ben{margin-top:34px}
-.lp .rm-card u{white-space:nowrap}
-@media (max-width:899px){
-  .lp .marca-final{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:12px 16px;padding:20px;max-width:none}
-  .lp .marca-trail{order:3;flex-basis:100%;max-width:240px}
-  .lp .marca-icono{width:76px;height:76px;border-radius:20px}
-  .lp .marca-final>div{display:contents}
-  .lp .marca-nombre{width:120px;margin:0}
-  .lp .marca-final b{flex-basis:100%;font-size:15px}
-}
 
 /* ===== grupo de ejemplo ===== */
 #grupo-ejemplo .gal .cap-l{display:none}

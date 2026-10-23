@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Trail from './Trail';
 import Link from 'next/link';
 import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
@@ -331,14 +330,11 @@ export function Salud() {
   );
 }
 
-// Cierre con la marca: el ícono de la app y las huellas caminando hacia él, como en el dorso de la tarjeta.
-function MarcaFinal({ frase }: { frase: string }) {
+// Cierre con la marca: solo el logo de Camina.
+function MarcaFinal() {
   return (
     <InView className="marca-final">
-      <Trail className="marca-trail" n={8} />
-      <Image className="marca-icono" src="/web/app-icon.png" alt="Ícono de la app Camina" width={180} height={180} />
-      <Image className="marca-nombre" src="/marca/nombre-camina-transparente.png" alt="" width={1600} height={500} />
-      <b>{frase}</b>
+      <Image className="marca-logo" src="/marca/logo-solo-transparente.png" alt="Logo de Camina" width={1024} height={1024} sizes="260px" />
     </InView>
   );
 }
@@ -359,7 +355,7 @@ export function DescargaGente() {
             <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
           </div>
         </div>
-        <MarcaFinal frase="Cada paso cuenta." />
+        <MarcaFinal />
       </div>
     </section>
   );
@@ -490,7 +486,7 @@ export function CierreComercio() {
             <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
           </div>
         </div>
-        <MarcaFinal frase="Tus clientes llegan caminando." />
+        <MarcaFinal />
       </div>
     </section>
   );
