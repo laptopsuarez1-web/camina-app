@@ -23,6 +23,13 @@ export const CAP = {
   canjeResena: '/web/cap/canje-resena.jpg',
   historia: '/web/cap/historia.jpg',
   retos: '/web/cap/retos.jpg',
+  inicioNuevo: '/web/cap/inicio-nuevo.jpg',
+  metaNueva: '/web/cap/meta-nueva.jpg',
+  desafiosNuevo: '/web/cap/desafios-nuevo.jpg',
+  eventosNuevo: '/web/cap/eventos-nuevo.jpg',
+  fichaDesafio: '/web/cap/ficha-desafio.jpg',
+  fichaEvento: '/web/cap/ficha-evento.jpg',
+  retosNuevo: '/web/cap/retos-nuevo.jpg',
 };
 
 // "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
@@ -77,22 +84,57 @@ export function Footer() {
   );
 }
 
-// Tarjetas flotantes con premios reales (logo, premio y puntos).
-export function FloatCards() {
+// Tarjetas flotantes de vidrio con lo que hace la app (reglas reales: 1.000 pasos = 1 punto, 5 puntos por invitar).
+const ICO = {
+  pasos: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16c0-3 2-5 4-5s3 2 3 4-1 4-3 4-4-1-4-3Z" /><path d="M13 9c0-3 2-6 4-6s3 2 3 4-1 4-3 4-4-1-4-2Z" /></svg>,
+  racha: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z" /></svg>,
+  amigos: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M16 5a3 3 0 0 1 0 6M18 14c2 .7 3 2.7 3 5" /></svg>,
+  regalo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 1 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 1 1 0 5" /></svg>,
+  vidrio: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 4 3.4 7 8 8 4.6-1 8-4 8-8V7l-8-4Z" /></svg>,
+  grupo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3" /><circle cx="5.5" cy="10" r="2.3" /><circle cx="18.5" cy="10" r="2.3" /><path d="M7 20c0-3 2.2-5 5-5s5 2 5 5M1.5 19c0-2 1.5-3.5 3.5-3.5M22.5 19c0-2-1.5-3.5-3.5-3.5" /></svg>,
+  grafico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6" /></svg>,
+  camara: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3" /><circle cx="12" cy="13.5" r="3.5" /><path d="M8.5 7 10 4h4l1.5 3" /></svg>,
+  calendario: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>,
+  meta: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.2" /></svg>,
+  ubicacion: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>,
+};
+
+export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
+  if (para === 'comercios') {
+    const real = [
+      { l: LOCALES[2], p: LOCALES[2].premios[0], cls: 'fc1' },
+      { l: LOCALES[1], p: LOCALES[1].premios[0], cls: 'fc2' },
+      { l: LOCALES[0], p: LOCALES[0].premios[1], cls: 'fc3' },
+    ];
+    return (
+      <>
+        {real.map(({ l, p, cls }) => (
+          <div className={`fcard ${cls}`} key={cls}>
+            <Image src={l.logo} alt="" width={44} height={44} />
+            <div>
+              <b>{l.nombre}</b>
+              <span>{p.nombre}</span>
+              <em>{p.detalle} · {p.puntos} puntos</em>
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
   const items = [
-    { l: LOCALES[2], p: LOCALES[2].premios[0], cls: 'fc1' },
-    { l: LOCALES[1], p: LOCALES[1].premios[0], cls: 'fc2' },
-    { l: LOCALES[0], p: LOCALES[0].premios[1], cls: 'fc3' },
+    { cls: 'fc1', ico: ICO.pasos, t: '6.000 pasos hoy', d: 'Cada 1.000 pasos suman', e: '+6 puntos' },
+    { cls: 'fc2', ico: ICO.racha, t: 'Tu racha', d: 'Días seguidos con tu meta cumplida', e: '7 días' },
+    { cls: 'fc3', ico: ICO.amigos, t: 'Invitá a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
   ];
   return (
     <>
-      {items.map(({ l, p, cls }) => (
+      {items.map(({ cls, ico, t, d, e }) => (
         <div className={`fcard ${cls}`} key={cls}>
-          <Image src={l.logo} alt="" width={44} height={44} />
+          <span className="fc-ico">{ico}</span>
           <div>
-            <b>{l.nombre}</b>
-            <span>{p.nombre}</span>
-            <em>{p.detalle} · {p.puntos} puntos</em>
+            <b>{t}</b>
+            <span>{d}</span>
+            <em>{e}</em>
           </div>
         </div>
       ))}
@@ -100,15 +142,16 @@ export function FloatCards() {
   );
 }
 
-// Cinta con los premios reales que ya están en la app.
-export function Cinta() {
-  const items = LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`));
-  const fila = [...items, ...items];
+// Cinta con lo que tiene la app.
+const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que elegís', 'Racha y calendario', 'Grupos y ranking', 'Retos Camina', 'Desafíos y eventos', 'Compartí tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitás'];
+export function Cinta({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
+  const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`)) : CINTA;
+  const fila = [...base, ...base];
   return (
-    <div className="cinta" aria-label="Premios que ya están en Camina">
+    <div className="cinta" aria-label={para === 'comercios' ? 'Premios que ya están en Camina' : 'Lo que tiene Camina'}>
       <div className="cinta-in">
         {fila.map((t, i) => (
-          <span key={i} aria-hidden={i >= items.length}>{t}</span>
+          <span key={i} aria-hidden={i >= base.length}>{t}</span>
         ))}
       </div>
     </div>
@@ -192,6 +235,8 @@ export function Locales() {
 export function Galeria() {
   const pant = [
     ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP.inicio],
+    ['Desafíos', 'Sumate a desafíos con premios y mirá cómo funcionan.', CAP.desafiosNuevo],
+    ['Eventos', 'Experiencias con tus marcas favoritas, con fecha y lugar.', CAP.eventosNuevo],
     ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
     ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP.grupos],
@@ -205,7 +250,7 @@ export function Galeria() {
           <figure key={t}>
             <div className="phone">
               <Image className="cap-l" src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" />
-              <Image className="cap-d" src={CAP_DARK[src]} alt="" width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src] ?? src} alt="" width={780} height={1688} sizes="260px" />
             </div>
             <figcaption><b>{t}</b>{d}</figcaption>
           </figure>
@@ -651,13 +696,19 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   );
 }
 
-const EXTRAS_GENTE = [
-  ['Invitá amigos y ganá 5 puntos', 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.'],
-  ['Historias que suman', 'Subí una historia de tu canje a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.'],
-  ['Favoritos y locales disponibles ahora', 'Guardá tus locales favoritos y filtrá los que tienen premios disponibles en este momento.'],
-  ['Tu racha y tu calendario', 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y tu meta diaria, que vos elegís.'],
-  ['Tu ubicación, solo cuando la necesitás', 'La usamos en el momento para mostrarte locales cerca y no la guardamos. Tampoco vendemos tus datos.'],
-  ['Premios reales, cerca tuyo', 'Cada canje lo confirma el local con un código de 6 números, en persona, en tu barrio.'],
+type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean };
+const TILES: Tile[] = [
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'meta', span: 's3', shot: CAP.retosNuevo, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.metaNueva, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
+  { t: 'Invitá amigos', d: 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
+  { t: 'Historias que suman', d: 'Subí una historia a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
+  { t: 'Compartí tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
+  { t: 'Tu racha y tu calendario', d: 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
+  { t: 'Grupos y ranking', d: 'Caminá en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
+  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Elegís el modo de la app y cuánto vidrio querés ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
+  { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafiosNuevo, alt: 'Pantalla de Desafíos', row2: true },
+  { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3' },
+  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, el local te confirma el canje con un código de 6 números.', ico: 'regalo', span: 's3' },
 ];
 
 export function MasParaGente() {
@@ -665,14 +716,23 @@ export function MasParaGente() {
     <section className="lp-sec night" id="mas">
       <div className="wrap">
         <Kinetic text="Y hay más para vos." />
-        <ul className="ben">
-          {EXTRAS_GENTE.map(([t, d], i) => (
-            <InView as="li" key={t} delay={(i % 2) * 100}>
-              <b>{t}</b>
-              <span>{d}</span>
+        <p className="lead">Lo que Camina te da cada día, además de los puntos.</p>
+        <ul className="bento">
+          {TILES.map((x, i) => (
+            <InView as="li" key={x.t} delay={(i % 3) * 90} className={`gl ${x.span}${x.shot ? ' has-shot' : ''}${x.row2 ? ' row2' : ''}`}>
+              <div className="gl-txt">
+                <span className="gl-ico">{ICO[x.ico]}</span>
+                <h3>{x.t}</h3>
+                <p>{x.d}</p>
+                {x.pts && <span className="gl-pts">{x.pts}</span>}
+              </div>
+              {x.shot && (
+                <div className="peek"><Image src={x.shot} alt={x.alt ?? ''} width={780} height={1688} sizes="260px" /></div>
+              )}
             </InView>
           ))}
         </ul>
+        <p className="bento-nota">Las capturas usan datos de ejemplo.</p>
       </div>
     </section>
   );
