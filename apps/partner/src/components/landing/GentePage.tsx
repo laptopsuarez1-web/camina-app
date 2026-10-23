@@ -3,7 +3,7 @@ import './glass.css';
 import GlassFx from './GlassFx';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, EquipoRetos, Salud, DescargaGente, SoyComercio, CAP, Shot, WA_AVISAME } from './shared';
+import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, EquipoRetos, GrupoEjemplo, Salud, DescargaGente, SoyComercio, CAP, Shot, WA_AVISAME } from './shared';
 
 export default function GentePage() {
   return (
@@ -40,6 +40,7 @@ export default function GentePage() {
         <Objetivos />
         <Salud />
         <EquipoRetos />
+        <GrupoEjemplo />
         <Galeria />
         <Fidelidad para="gente" />
         <MasParaGente />

@@ -189,3 +189,73 @@
 .gl.fill{justify-content:center}
 .gl.fill h3{font-size:26px}
 .gl.fill p{font-size:17px}
+
+/* ===== huellas como en la tarjeta ===== */
+.lp .hero-trail{inset:auto 0 22px 0;height:74px;opacity:1;-webkit-mask-image:none;mask-image:none;filter:drop-shadow(0 0 8px rgba(127,237,196,.35))}
+
+/* ===== mapa: nombres de los locales en una cápsula oscura, siempre legibles ===== */
+.lp .rm-pin b{background:rgba(24,10,56,.86);color:#fff;border:1px solid rgba(127,237,196,.55);font-size:12px;padding:3px 10px;box-shadow:0 6px 16px rgba(10,4,26,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.lp .rm-pin.gold b{border-color:rgba(247,207,85,.75)}
+@media (max-width:640px){
+  /* Bloom y Coco están casi en la misma esquina: en celular el nombre de Bloom va arriba y el de Coco abajo */
+  .lp .rm-pin.side{flex-direction:column;gap:3px}
+  .lp .rm-pin.side.l{flex-direction:column-reverse;transform:translate(calc(-100% + 2px),-100%) scale(.4);transform-origin:100% 100%}
+  .lp .rm-pin.side.l.on{transform:translate(calc(-100% + 2px),-100%) scale(1)}
+  .lp .rm-pin.side.r{transform:translate(-2px,-30%) scale(.4);transform-origin:0 0}
+  .lp .rm-pin.side.r.on{transform:translate(-2px,-30%) scale(1)}
+  .lp .rm-pin b{font-size:11px;padding:2px 8px}
+}
+
+/* ===== beneficios: tarjetas con aire y un tilde, nada pegado al borde ===== */
+.lp .ben{gap:14px}
+.lp .ben li,.lp .ben li:last-child,.lp .ben li:nth-last-child(2){position:relative;padding:20px 22px 20px 64px;border-radius:22px;align-content:start}
+.lp .ben li::before{content:'';position:absolute;left:20px;top:21px;width:28px;height:28px;border-radius:50%;background:rgba(127,237,196,.16) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237FEDC4' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat;border:1px solid rgba(127,237,196,.45)}
+.lp .ben b{font-size:18px;line-height:1.25;color:var(--ink)}
+.lp .ben span{color:var(--muted);line-height:1.5}
+@media (min-width:900px){.lp .ben{column-gap:16px}}
+
+/* ===== cómo sumás tu comercio: número en su lugar y tarjetas con aire ===== */
+.lp .flow{border-top:0;gap:14px}
+.lp .flow li{grid-template-columns:44px 1fr;gap:6px 16px;padding:22px 22px;align-items:start}
+.lp .flow .num{grid-row:span 2;align-self:start;width:44px;height:44px;font-size:18px;margin:0}
+.lp .flow h3{font-size:20px;line-height:1.25;align-self:center}
+.lp .flow p{line-height:1.5}
+@media (min-width:900px){
+  .lp .flow{grid-template-columns:repeat(4,1fr);gap:16px}
+  .lp .flow li{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;padding:26px 24px}
+  .lp .flow .num{grid-row:auto;margin-bottom:10px}
+  .lp .flow h3{align-self:start}
+}
+
+/* ===== cierre con la marca ===== */
+.final-grid{display:grid;gap:44px;align-items:center}
+@media (min-width:900px){.final-grid{grid-template-columns:1.25fr .75fr}}
+.lp .marca-final{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:30px 24px 32px;border-radius:32px;
+  background:radial-gradient(320px circle at 50% 30%,rgba(127,237,196,.18),rgba(127,237,196,0) 70%),var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+  border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow);max-width:420px;width:100%;justify-self:center}
+.lp .marca-trail{position:static;width:100%;max-width:300px;height:auto;filter:drop-shadow(0 0 8px rgba(127,237,196,.35))}
+.lp .marca-icono{width:128px;height:128px;border-radius:30px;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 20px 50px -10px rgba(0,0,0,.6),0 0 60px -6px rgba(127,237,196,.5)}
+.lp .marca-nombre{width:150px;height:auto;margin-top:4px}
+.lp .marca-final b{color:var(--ink);font-size:17px;font-weight:700}
+@media (max-width:899px){.lp .marca-final{order:-1}}
+.lp .flow,.lp .ben{margin-top:34px}
+.lp .rm-card u{white-space:nowrap}
+@media (max-width:899px){
+  .lp .marca-final{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:12px 16px;padding:20px;max-width:none}
+  .lp .marca-trail{order:3;flex-basis:100%;max-width:240px}
+  .lp .marca-icono{width:76px;height:76px;border-radius:20px}
+  .lp .marca-final>div{display:contents}
+  .lp .marca-nombre{width:120px;margin:0}
+  .lp .marca-final b{flex-basis:100%;font-size:15px}
+}
+
+/* ===== grupo de ejemplo ===== */
+#grupo-ejemplo .gal .cap-l{display:none}
+#grupo-ejemplo[data-modo='claro'] .gal .cap-l{display:block}
+#grupo-ejemplo[data-modo='claro'] .gal .cap-d{display:none}
+#grupo-ejemplo .modo-toggle{margin-top:22px}
+.grupo-datos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:26px}
+@media (min-width:900px){.grupo-datos{grid-template-columns:repeat(4,1fr)}}
+.lp .grupo-datos span{display:flex;flex-direction:column;gap:2px;padding:16px 18px;border-radius:20px;color:var(--muted);font-size:13.5px;
+  background:var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow)}
+.lp .grupo-datos b{font-size:26px;line-height:1.1;font-weight:800;background:linear-gradient(180deg,#fff,var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}

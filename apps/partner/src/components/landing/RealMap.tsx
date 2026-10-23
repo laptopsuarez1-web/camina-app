@@ -39,7 +39,7 @@ function huellas(step = 34, lado = 9) {
     out.push({
       x: x0 + dx * f + nx * off,
       y: y0 + dy * f + ny * off,
-      ang: (Math.atan2(dy, dx) * 180) / Math.PI + 90, // la imagen de la huella apunta hacia arriba
+      ang: (Math.atan2(dy, dx) * 180) / Math.PI + 90, // las huellas (las del logo) apuntan hacia arriba
       der,
       t: s / total,
     });
@@ -104,12 +104,12 @@ export default function RealMap() {
             {pasos.map((h, i) => (
               <image
                 key={i}
-                href="/web/camina-foot.png"
-                width={15}
+                href={h.der ? '/web/pie-R-mint.png' : '/web/pie-L-mint.png'}
+                width={h.der ? 14.2 : 12.9}
                 height={27}
-                x={-7.5}
+                x={h.der ? -7.1 : -6.45}
                 y={-13.5}
-                transform={`translate(${h.x} ${h.y}) rotate(${h.ang})${h.der ? ' scale(-1 1)' : ''}`}
+                transform={`translate(${h.x} ${h.y}) rotate(${h.ang})`}
                 opacity={h.t <= walk ? 0.95 : 0}
                 style={{ transition: 'opacity .25s' }}
               />

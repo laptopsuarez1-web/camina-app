@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Trail from './Trail';
 import Link from 'next/link';
 import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
@@ -25,11 +26,19 @@ export const CAP = {
   meta: '/web/cap/meta.jpg',
   canjeResena: '/web/cap/canje-resena.jpg',
   historia: '/web/cap/historia.jpg',
+  grupo: '/web/cap/grupo.jpg',
+  grupoReto: '/web/cap/grupo-reto.jpg',
+  grupoRanking: '/web/cap/grupo-ranking.jpg',
+  grupoChat: '/web/cap/grupo-chat.jpg',
+  amigos: '/web/cap/amigos.jpg',
+  rankingAmigos: '/web/cap/ranking-amigos.jpg',
+  amigoPerfil: '/web/cap/amigo-perfil.jpg',
+  amigoAgregar: '/web/cap/amigo-agregar.jpg',
 };
 
 // "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
 const CAP_DARK: Record<string, string> = Object.fromEntries(
-  [CAP.inicio, CAP.canjes, CAP.fripaps, CAP.grupos, CAP.actividad, CAP.eventos, CAP.desafios, CAP.retos, CAP.meta].map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
+  [CAP.inicio, CAP.canjes, CAP.fripaps, CAP.grupos, CAP.actividad, CAP.eventos, CAP.desafios, CAP.retos, CAP.meta, CAP.grupo, CAP.grupoReto, CAP.grupoRanking, CAP.grupoChat, CAP.amigos, CAP.rankingAmigos, CAP.amigoPerfil, CAP.amigoAgregar].map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
 );
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
@@ -228,6 +237,7 @@ export function Galeria() {
     ['Tu día en un vistazo', 'Tus pasos de hoy, tus puntos y tu racha.', CAP.inicio],
     ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
     ['Grupos', 'Caminá en equipo con tus amigos.', CAP.grupos],
+    ['Tu grupo', 'Podio, meta compartida y desafíos.', CAP.grupo],
     ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
     ['Desafíos', 'Sumate a desafíos con premios.', CAP.desafios],
     ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
@@ -249,7 +259,7 @@ export function Galeria() {
           </figure>
         ))}
       </div>
-      <p className="wrap gal-nota">Los pasos y puntos son de ejemplo. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
+      <p className="wrap gal-nota">Los pasos y puntos son de ejemplo, igual que el grupo y sus integrantes. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
     </section>
   );
 }
@@ -321,20 +331,35 @@ export function Salud() {
   );
 }
 
+// Cierre con la marca: el ícono de la app y las huellas caminando hacia él, como en el dorso de la tarjeta.
+function MarcaFinal({ frase }: { frase: string }) {
+  return (
+    <InView className="marca-final">
+      <Trail className="marca-trail" n={8} />
+      <Image className="marca-icono" src="/web/app-icon.png" alt="Ícono de la app Camina" width={180} height={180} />
+      <Image className="marca-nombre" src="/marca/nombre-camina-transparente.png" alt="" width={1600} height={500} />
+      <b>{frase}</b>
+    </InView>
+  );
+}
+
 export function DescargaGente() {
   return (
     <section className="lp-final" id="descargar">
-      <div className="wrap">
-        <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
-        <p>Camina está por llegar a Google Play y App Store. Escribinos y te avisamos apenas esté lista.</p>
-        <div className="stores">
-          <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
-          <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+      <div className="wrap final-grid">
+        <div>
+          <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
+          <p>Camina está por llegar a Google Play y App Store. Escribinos y te avisamos apenas esté lista.</p>
+          <div className="stores">
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+          </div>
+          <div className="lp-cta">
+            <a className="lp-btn mint" href={WA_AVISAME}>Avisame cuando salga</a>
+            <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
+          </div>
         </div>
-        <div className="lp-cta">
-          <a className="lp-btn mint" href={WA_AVISAME}>Avisame cuando salga</a>
-          <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
-        </div>
+        <MarcaFinal frase="Cada paso cuenta." />
       </div>
     </section>
   );
@@ -456,13 +481,16 @@ export function Planes() {
 export function CierreComercio() {
   return (
     <section className="lp-final">
-      <div className="wrap">
-        <Kinetic text="Sumá tu comercio hoy." />
-        <p>Registrate en el panel o escribinos por WhatsApp si querés hablar antes.</p>
-        <div className="lp-cta">
-          <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
-          <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
+      <div className="wrap final-grid">
+        <div>
+          <Kinetic text="Sumá tu comercio hoy." />
+          <p>Registrate en el panel o escribinos por WhatsApp si querés hablar antes.</p>
+          <div className="lp-cta">
+            <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
+            <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
+          </div>
         </div>
+        <MarcaFinal frase="Tus clientes llegan caminando." />
       </div>
     </section>
   );
@@ -515,7 +543,8 @@ export function EquipoRetos() {
               t: 'Grupos',
               d: 'Creá un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
               img: CAP.grupos,
-              alt: 'Pantalla de Grupos con el ranking semanal y la opción de crear un grupo',
+              alt: 'Pantalla de Grupos con un grupo de ejemplo y su meta de la semana',
+              tag: 'Grupo de ejemplo',
             },
             {
               t: 'Retos Camina',
@@ -533,6 +562,52 @@ export function EquipoRetos() {
           ]}
         />
       </div>
+    </section>
+  );
+}
+
+// Un grupo de ejemplo ("Caminantes del Centro", personas inventadas) recorrido pantalla por pantalla.
+const GRUPO_PANT = [
+  ['El podio de la semana', 'Se arma solo con los pasos de cada uno desde el lunes. La corona es para quien más caminó.', CAP.grupo],
+  ['Meta del grupo y desafío', 'Una meta semanal que suman entre todos y desafíos con Puntos en juego: eligen la regla, la meta diaria y cuánto pone cada uno.', CAP.grupoReto],
+  ['Ranking y semanas anteriores', 'Todos los integrantes ordenados por pasos y quién ganó cada semana.', CAP.grupoRanking],
+  ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada lunes.', CAP.grupoChat],
+  ['Tus amigos', 'Las solicitudes nuevas y los pasos de la semana de cada amigo.', CAP.amigos],
+  ['Ranking entre amigos', 'Además del ranking global, uno solo con tus amigos.', CAP.rankingAmigos],
+  ['El perfil de un amigo', 'Su racha, su promedio, su meta y cómo viene su semana.', CAP.amigoPerfil],
+  ['Agregar un amigo', 'Le mandás la solicitud y, cuando acepta, ven los pasos del otro.', CAP.amigoAgregar],
+] as const;
+
+export function GrupoEjemplo() {
+  return (
+    <section className="lp-sec" id="grupo-ejemplo" data-modo="oscuro">
+      <div className="wrap">
+        <Kinetic text="Así se vive un grupo." />
+        <p className="lead">
+          Un grupo de ejemplo, «Caminantes del Centro», para que veas cómo funciona: podio, meta compartida, un desafío con Puntos en juego, ranking, chat y amigos.
+        </p>
+        <div className="grupo-datos">
+          <span><b>6</b> integrantes</span>
+          <span><b>183.400</b> pasos esta semana</span>
+          <span><b>92%</b> de la meta del grupo</span>
+          <span><b>50</b> Puntos en el pozo del desafío</span>
+        </div>
+        <ModoToggle target="grupo-ejemplo" />
+      </div>
+      <div className="gal" tabIndex={0} aria-label="Pantallas del grupo de ejemplo">
+        {GRUPO_PANT.map(([t, d, src]) => (
+          <figure key={t}>
+            <div className="phone">
+              <Image className="cap-l" src={src} alt={`Pantalla de ejemplo: ${t}`} width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src] ?? src} alt="" width={780} height={1688} sizes="260px" />
+            </div>
+            <figcaption><b>{t}</b>{d}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="wrap gal-nota">
+        Grupo de ejemplo: las personas, los pasos y los mensajes son inventados. En el desafío, quienes cumplen la meta diaria en al menos el 80% de los días se reparten el pozo en partes iguales; si nadie la cumple, cada uno recupera sus Puntos.
+      </p>
     </section>
   );
 }
