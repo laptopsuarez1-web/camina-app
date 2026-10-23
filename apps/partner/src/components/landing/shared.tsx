@@ -20,26 +20,17 @@ export const CAP = {
   actividad: '/web/cap/actividad.jpg',
   gruposActivo: '/web/cap/grupos-activo.jpg',
   eventos: '/web/cap/eventos.jpg',
+  desafios: '/web/cap/desafios.jpg',
+  retos: '/web/cap/retos.jpg',
+  meta: '/web/cap/meta.jpg',
   canjeResena: '/web/cap/canje-resena.jpg',
   historia: '/web/cap/historia.jpg',
-  retos: '/web/cap/retos.jpg',
-  inicioNuevo: '/web/cap/inicio-nuevo.jpg',
-  metaNueva: '/web/cap/meta-nueva.jpg',
-  desafiosNuevo: '/web/cap/desafios-nuevo.jpg',
-  eventosNuevo: '/web/cap/eventos-nuevo.jpg',
-  fichaDesafio: '/web/cap/ficha-desafio.jpg',
-  fichaEvento: '/web/cap/ficha-evento.jpg',
-  retosNuevo: '/web/cap/retos-nuevo.jpg',
 };
 
 // "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
-const CAP_DARK: Record<string, string> = {
-  [CAP.inicio]: '/web/cap/inicio-dark.jpg',
-  [CAP.canjes]: '/web/cap/canjes-dark.jpg',
-  [CAP.fripaps]: '/web/cap/ficha-fripaps-dark.jpg',
-  [CAP.grupos]: '/web/cap/grupos-dark.jpg',
-  [CAP.actividad]: '/web/cap/actividad-dark.jpg',
-};
+const CAP_DARK: Record<string, string> = Object.fromEntries(
+  [CAP.inicio, CAP.canjes, CAP.fripaps, CAP.grupos, CAP.actividad, CAP.eventos, CAP.desafios, CAP.retos, CAP.meta].map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
+);
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
 export function Shot(props: ShotProps) {
@@ -122,8 +113,8 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
     );
   }
   const items = [
-    { cls: 'fc1', ico: ICO.pasos, t: '6.000 pasos hoy', d: 'Cada 1.000 pasos suman', e: '+6 puntos' },
-    { cls: 'fc2', ico: ICO.racha, t: 'Tu racha', d: 'Días seguidos con tu meta cumplida', e: '7 días' },
+    { cls: 'fc1', ico: ICO.pasos, t: 'Cada 1.000 pasos', d: 'Se vuelven puntos', e: '1 punto' },
+    { cls: 'fc2', ico: ICO.racha, t: 'Cada día', d: 'Tope diario de puntos', e: 'hasta 20 puntos' },
     { cls: 'fc3', ico: ICO.amigos, t: 'Invitá a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
   ];
   return (
@@ -234,13 +225,15 @@ export function Locales() {
 
 export function Galeria() {
   const pant = [
-    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP.inicio],
-    ['Desafíos', 'Sumate a desafíos con premios y mirá cómo funcionan.', CAP.desafiosNuevo],
-    ['Eventos', 'Experiencias con tus marcas favoritas, con fecha y lugar.', CAP.eventosNuevo],
+    ['Tu día en un vistazo', 'Tus pasos de hoy, tus puntos y tu racha.', CAP.inicio],
+    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
+    ['Grupos', 'Caminá en equipo con tus amigos.', CAP.grupos],
+    ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
+    ['Desafíos', 'Sumate a desafíos con premios.', CAP.desafios],
+    ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
     ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
-    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP.grupos],
-    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
+    ['Tu meta de pasos', 'Elegís cuántos pasos por día.', CAP.meta],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
@@ -256,7 +249,7 @@ export function Galeria() {
           </figure>
         ))}
       </div>
-      <p className="wrap gal-nota">Pasos, puntos y grupos son datos de ejemplo. Los locales y sus premios son reales.</p>
+      <p className="wrap gal-nota">Los pasos y puntos son de ejemplo. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
     </section>
   );
 }
@@ -521,9 +514,8 @@ export function EquipoRetos() {
             {
               t: 'Grupos',
               d: 'Creá un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
-              img: CAP.gruposActivo,
-              alt: 'Pantalla de un grupo con ranking de pasos',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              img: CAP.grupos,
+              alt: 'Pantalla de Grupos con el ranking semanal y la opción de crear un grupo',
             },
             {
               t: 'Retos Camina',
@@ -535,8 +527,8 @@ export function EquipoRetos() {
               t: 'Eventos y sorteos',
               d: 'Locales y Camina publican eventos y sorteos dentro de la app. Caminá, cumplí el requisito y participá.',
               img: CAP.eventos,
-              alt: 'Pantalla de eventos y sorteos',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              alt: 'Pantalla de eventos de ejemplo',
+              tag: 'Ejemplo de lo que puede haber',
             },
           ]}
         />
@@ -560,8 +552,8 @@ export function PublicidadComercio() {
               t: 'Tu local, frente a quienes caminan',
               d: 'Tu evento o sorteo aparece en la app de Camina. Podés pedir un requisito de pasos para participar y así atraer gente que ya sale a caminar.',
               img: CAP.eventos,
-              alt: 'Pantalla de eventos y sorteos de la app',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              alt: 'Pantalla de eventos de ejemplo de la app',
+              tag: 'Ejemplo de lo que puede haber',
             },
           ]}
         />
@@ -696,19 +688,19 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   );
 }
 
-type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean };
+type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
-  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'meta', span: 's3', shot: CAP.retosNuevo, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
-  { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.metaNueva, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'meta', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
   { t: 'Invitá amigos', d: 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
   { t: 'Historias que suman', d: 'Subí una historia a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
   { t: 'Compartí tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
   { t: 'Tu racha y tu calendario', d: 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
   { t: 'Grupos y ranking', d: 'Caminá en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
   { t: 'Claro, oscuro y cristal a tu gusto', d: 'Elegís el modo de la app y cuánto vidrio querés ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
-  { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafiosNuevo, alt: 'Pantalla de Desafíos', row2: true },
-  { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3' },
-  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, el local te confirma el canje con un código de 6 números.', ico: 'regalo', span: 's3' },
+  { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
+  { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
+  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, el local te confirma el canje con un código de 6 números.', ico: 'regalo', span: 's3', fill: true },
 ];
 
 export function MasParaGente() {
@@ -719,7 +711,7 @@ export function MasParaGente() {
         <p className="lead">Lo que Camina te da cada día, además de los puntos.</p>
         <ul className="bento">
           {TILES.map((x, i) => (
-            <InView as="li" key={x.t} delay={(i % 3) * 90} className={`gl ${x.span}${x.shot ? ' has-shot' : ''}${x.row2 ? ' row2' : ''}`}>
+            <InView as="li" key={x.t} delay={(i % 3) * 90} className={`gl ${x.span}${x.shot ? ' has-shot' : ''}${x.row2 ? ' row2' : ''}${x.fill ? ' fill' : ''}`}>
               <div className="gl-txt">
                 <span className="gl-ico">{ICO[x.ico]}</span>
                 <h3>{x.t}</h3>
@@ -732,7 +724,7 @@ export function MasParaGente() {
             </InView>
           ))}
         </ul>
-        <p className="bento-nota">Las capturas usan datos de ejemplo.</p>
+        <p className="bento-nota">Los pasos, los puntos, los eventos y los desafíos de las capturas son ejemplos de lo que puede haber.</p>
       </div>
     </section>
   );

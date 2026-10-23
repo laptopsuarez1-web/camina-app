@@ -1,11 +1,13 @@
 // Camino de huellas que se repite: pie izquierdo y derecho alternados, apuntando hacia donde se camina,
 // siguiendo una curva suave. Solo CSS (animación escalonada), sin JavaScript en el navegador.
-type Props = { n?: number; className?: string };
+type Props = { n?: number; className?: string; flat?: boolean };
 
-export default function Trail({ n = 12, className = '' }: Props) {
+export default function Trail({ n = 12, className = '', flat = false }: Props) {
   // curva: x avanza de 0 a 100, y ondula; viewBox 1000 x 400
   const pts: { x: number; y: number; ang: number; der: boolean }[] = [];
-  const f = (t: number) => ({ x: 60 + t * 880, y: 300 - t * 170 + Math.sin(t * Math.PI * 1.5) * 38 });
+  const f = flat
+    ? (t: number) => ({ x: 40 + t * 1520, y: 86 + Math.sin(t * Math.PI * 2.5) * 16 })
+    : (t: number) => ({ x: 60 + t * 880, y: 300 - t * 170 + Math.sin(t * Math.PI * 1.5) * 38 });
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1);
     const a = f(t);
@@ -24,7 +26,7 @@ export default function Trail({ n = 12, className = '' }: Props) {
     });
   }
   return (
-    <svg className={`trail ${className}`} viewBox="0 0 1000 400" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+    <svg className={`trail ${className}`} viewBox={flat ? '0 0 1600 170' : '0 0 1000 400'} aria-hidden="true" preserveAspectRatio={flat ? 'xMidYMid slice' : 'xMidYMid meet'}>
       {pts.map((p, i) => (
         <g key={i} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.ang.toFixed(1)})${p.der ? ' scale(-1 1)' : ''}`}>
           <image

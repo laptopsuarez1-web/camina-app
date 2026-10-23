@@ -13,7 +13,7 @@ export default function GentePage() {
       <Nav activo="gente" />
       <main>
         <section className="lp-hero">
-          <Trail className="hero-trail" n={13} />
+          <Trail className="hero-trail" n={22} flat />
           <div className="wrap hero-grid">
             <div className="copy">
               <Kinetic as="h1" text="Caminá, sumá puntos y canjealos en tu barrio." />
@@ -28,7 +28,7 @@ export default function GentePage() {
             <div className="stage">
               <Parallax speed={0.06}>
                 <span className="hero-glow" aria-hidden="true" />
-                <div className="phone hero-phone"><Shot src={CAP.inicioNuevo} alt="Pantalla de inicio de Camina" width={780} height={1688} priority sizes="280px" /></div>
+                <div className="phone hero-phone"><Shot src={CAP.inicio} alt="Pantalla de inicio de Camina" width={780} height={1688} priority sizes="280px" /></div>
               </Parallax>
               <FloatCards />
             </div>

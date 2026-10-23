@@ -160,3 +160,32 @@
 .bento-nota{margin-top:26px}
 .lp-sec .wrap>.lead{margin-bottom:0}
 @media (max-width:640px){.lp .lp-nav{position:absolute}}
+
+/* huellas del inicio: una fila pareja pegada al borde de abajo, que se desvanece a los costados y no pasa por detrás de los textos */
+.lp .hero-trail{inset:auto 0 18px 0;height:96px;opacity:.7;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);filter:drop-shadow(0 0 10px rgba(127,237,196,.45))}
+.lp .lp-hero{padding-bottom:140px}
+
+/* tarjetas del héroe: chicas, pegadas a los bordes del celular y sin tapar el aro ni los textos */
+.lp .fcard{max-width:196px;padding:10px 14px 10px 10px;font-size:12.5px}
+.lp .fcard b{font-size:13.5px}
+.fc-ico{width:38px;height:38px;border-radius:12px}
+.lp .fc1{left:-4%;top:6%}
+.lp .fc2{right:-8%;top:48%}
+.lp .fc3{left:-2%;top:80%}
+@media (max-width:640px){
+  .lp .fcard{display:none}
+  .lp .lp-hero{padding-top:160px}
+  .stage{height:500px}
+}
+
+/* las tarjetas quedan al costado del celular: solo le rozan el borde */
+@media (min-width:641px){
+  .lp .fcard{max-width:178px}
+  .lp .fc1{left:auto;right:calc(50% + 122px);top:12%}
+  .lp .fc2{right:auto;left:calc(50% + 122px);top:44%}
+  .lp .fc3{left:auto;right:calc(50% + 122px);top:74%}
+}
+@media (min-width:641px){.lp .fcard{width:190px;max-width:190px}}
+.gl.fill{justify-content:center}
+.gl.fill h3{font-size:26px}
+.gl.fill p{font-size:17px}
