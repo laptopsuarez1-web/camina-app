@@ -31,9 +31,6 @@
           }
         ]
       },
-      "config": {
-        "googleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
-      },
       "usesAppleSignIn": true
     },
     "android": {
@@ -115,6 +112,12 @@
           "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
           "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
           "background": false
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "iosGoogleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
         }
       ],
       "react-native-health-connect",
