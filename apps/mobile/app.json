@@ -22,7 +22,14 @@
         "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
         "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
         "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.326158603986-6shm71vlt0a7qt6rp7mi25pc2dg3chga"
+            ]
+          }
+        ]
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
