@@ -11,10 +11,10 @@
 }
 
 /* manchas de color que se mueven despacio detrás de todo */
-.lp::before,.lp::after{content:'';position:fixed;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(70px);will-change:transform}
+.lp::before,.lp::after{content:'';position:fixed;z-index:-1;pointer-events:none;border-radius:50%}
 .lp::before{width:70vmax;height:70vmax;left:-25vmax;top:-20vmax;background:radial-gradient(closest-side,rgba(139,79,209,.7),rgba(139,79,209,0));animation:deriva-a 26s ease-in-out infinite alternate}
 .lp::after{width:62vmax;height:62vmax;right:-22vmax;top:25vh;background:radial-gradient(closest-side,rgba(127,237,196,.38),rgba(106,168,255,.18) 55%,rgba(127,237,196,0));animation:deriva-b 32s ease-in-out infinite alternate}
-.lp .aurora-3{position:fixed;z-index:-1;pointer-events:none;width:50vmax;height:50vmax;left:10vw;bottom:-28vmax;border-radius:50%;filter:blur(80px);background:radial-gradient(closest-side,rgba(255,143,184,.34),rgba(255,143,184,0));animation:deriva-c 38s ease-in-out infinite alternate}
+.lp .aurora-3{position:fixed;z-index:-1;pointer-events:none;width:50vmax;height:50vmax;left:10vw;bottom:-28vmax;border-radius:50%;background:radial-gradient(closest-side,rgba(255,143,184,.34),rgba(255,143,184,0));animation:deriva-c 38s ease-in-out infinite alternate}
 @keyframes deriva-a{to{transform:translate(18vmax,14vmax) scale(1.15)}}
 @keyframes deriva-b{to{transform:translate(-16vmax,-10vmax) scale(.9)}}
 @keyframes deriva-c{to{transform:translate(20vw,-14vmax) scale(1.2)}}
@@ -194,7 +194,7 @@
 .lp .hero-trail{inset:auto 0 22px 0;height:74px;opacity:1;-webkit-mask-image:none;mask-image:none;filter:drop-shadow(0 0 8px rgba(127,237,196,.35))}
 
 /* ===== mapa: nombres de los locales en una cápsula oscura, siempre legibles ===== */
-.lp .rm-pin b{background:rgba(24,10,56,.86);color:#fff;border:1px solid rgba(127,237,196,.55);font-size:12px;padding:3px 10px;box-shadow:0 6px 16px rgba(10,4,26,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.lp .rm-pin b{background:rgba(24,10,56,.86);color:#fff;border:1px solid rgba(127,237,196,.55);font-size:12px;padding:3px 10px;box-shadow:0 6px 16px rgba(10,4,26,.45);}
 .lp .rm-pin.gold b{border-color:rgba(247,207,85,.75)}
 @media (max-width:640px){
   /* Bloom y Coco están casi en la misma esquina: en celular el nombre de Bloom va arriba y el de Coco abajo */
@@ -244,3 +244,15 @@
 .lp .grupo-datos span{display:flex;flex-direction:column;gap:2px;padding:16px 18px;border-radius:20px;color:var(--muted);font-size:13.5px;
   background:var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow)}
 .lp .grupo-datos b{font-size:26px;line-height:1.1;font-weight:800;background:linear-gradient(180deg,#fff,var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ícono con el logo original de Camina (reemplaza a las huellas dibujadas a mano) */
+.fc-ico .ico-logo,.gl .gl-ico .ico-logo{width:30px;height:30px;object-fit:contain}
+.fc-ico .ico-logo{width:26px;height:26px}
+/* fondo oscuro de respaldo: en iPhone, con tantos vidrios, Safari a veces suelta el fondo y se ve claro */
+html,body{background:#0f0722}
+
+/* las manchas ya son degradados suaves: sin filtro de desenfoque (en iPhone gasta tanta memoria que Safari soltaba el fondo en el mapa) */
+@media (hover:none){
+  .hero-glow{filter:none}
+  .lp .rm-map{-webkit-backdrop-filter:none;backdrop-filter:none}
+}

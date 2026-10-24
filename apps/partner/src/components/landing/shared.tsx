@@ -8,7 +8,7 @@ import ModoToggle from './ModoToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
-export const WA_AVISAME = WA('Hola! Quiero que me avisen cuando Camina esté disponible en la tienda de mi celular.');
+export const EMAIL_AVISAME = `mailto:caminaappbo@gmail.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
 
 export const CAP = {
   inicio: '/web/cap/inicio.jpg',
@@ -85,7 +85,8 @@ export function Footer() {
 
 // Tarjetas flotantes de vidrio con lo que hace la app (reglas reales: 1.000 pasos = 1 punto, 5 puntos por invitar).
 const ICO = {
-  pasos: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16c0-3 2-5 4-5s3 2 3 4-1 4-3 4-4-1-4-3Z" /><path d="M13 9c0-3 2-6 4-6s3 2 3 4-1 4-3 4-4-1-4-2Z" /></svg>,
+  pasos: <Image className="ico-logo" src="/marca/logo-solo-transparente.png" alt="" width={64} height={64} />,
+  trofeo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" /><path d="M8 6H4.5v1.5A3.5 3.5 0 0 0 8 11" /><path d="M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11" /><path d="M12 13v4" /><path d="M8.5 20h7" /><path d="M10 17h4v3h-4z" /></svg>,
   racha: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z" /></svg>,
   amigos: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M16 5a3 3 0 0 1 0 6M18 14c2 .7 3 2.7 3 5" /></svg>,
   regalo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 1 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 1 1 0 5" /></svg>,
@@ -345,13 +346,13 @@ export function DescargaGente() {
       <div className="wrap final-grid">
         <div>
           <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
-          <p>Camina está por llegar a Google Play y App Store. Escribinos y te avisamos apenas esté lista.</p>
+          <p>Camina está por llegar a Google Play y App Store. Escribinos por correo y te avisamos apenas esté lista.</p>
           <div className="stores">
             <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
           </div>
           <div className="lp-cta">
-            <a className="lp-btn mint" href={WA_AVISAME}>Avisame cuando salga</a>
+            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avisame cuando salga</a>
             <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
           </div>
         </div>
@@ -761,7 +762,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
 
 type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
-  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'meta', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
   { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
   { t: 'Invitá amigos', d: 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
   { t: 'Historias que suman', d: 'Subí una historia a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },

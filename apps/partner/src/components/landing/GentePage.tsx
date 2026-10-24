@@ -3,7 +3,7 @@ import './glass.css';
 import GlassFx from './GlassFx';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, EquipoRetos, GrupoEjemplo, Salud, DescargaGente, SoyComercio, CAP, Shot, WA_AVISAME } from './shared';
+import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, EquipoRetos, GrupoEjemplo, Salud, DescargaGente, SoyComercio, CAP, Shot, EMAIL_AVISAME } from './shared';
 
 export default function GentePage() {
   return (
@@ -21,7 +21,7 @@ export default function GentePage() {
                 Camina cuenta tus pasos y los convierte en puntos para canjear en los comercios de tu ciudad. Salir a caminar nunca tuvo tanto premio.
               </p>
               <div className="lp-cta">
-                <a className="lp-btn mint" href={WA_AVISAME}>Avisame cuando salga</a>
+                <a className="lp-btn mint" href={EMAIL_AVISAME}>Avisame cuando salga</a>
                 <a className="lp-btn ghost" href="#mapa">Ver cómo funciona</a>
               </div>
             </div>
