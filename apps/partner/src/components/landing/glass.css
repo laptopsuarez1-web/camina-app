@@ -1,0 +1,258 @@
+/* Capa de cristal de la web: se carga después de landing.css y lo pisa.
+   Fondo oscuro con manchas de color (para que el vidrio tenga algo que desenfocar) y paneles translúcidos con borde de luz. */
+.lp{
+  --ink:#f5f1ff; --muted:#bfb3e0; --line:rgba(255,255,255,.14); --paper:#0f0722;
+  --rose:#ff8fb8; --sky:#6aa8ff;
+  --g-fill:linear-gradient(145deg,rgba(255,255,255,.17) 0%,rgba(255,255,255,.06) 42%,rgba(255,255,255,.035) 100%);
+  --g-blur:blur(24px) saturate(1.7);
+  --g-edge:rgba(255,255,255,.2);
+  --g-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 1px 0 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.3),0 28px 60px -18px rgba(5,0,25,.75);
+  position:relative;isolation:isolate;background:var(--paper);color:var(--ink);
+}
+
+/* manchas de color que se mueven despacio detrás de todo */
+.lp::before,.lp::after{content:'';position:fixed;z-index:-1;pointer-events:none;border-radius:50%}
+.lp::before{width:70vmax;height:70vmax;left:-25vmax;top:-20vmax;background:radial-gradient(closest-side,rgba(139,79,209,.7),rgba(139,79,209,0));animation:deriva-a 26s ease-in-out infinite alternate}
+.lp::after{width:62vmax;height:62vmax;right:-22vmax;top:25vh;background:radial-gradient(closest-side,rgba(127,237,196,.38),rgba(106,168,255,.18) 55%,rgba(127,237,196,0));animation:deriva-b 32s ease-in-out infinite alternate}
+.lp .aurora-3{position:fixed;z-index:-1;pointer-events:none;width:50vmax;height:50vmax;left:10vw;bottom:-28vmax;border-radius:50%;background:radial-gradient(closest-side,rgba(255,143,184,.34),rgba(255,143,184,0));animation:deriva-c 38s ease-in-out infinite alternate}
+@keyframes deriva-a{to{transform:translate(18vmax,14vmax) scale(1.15)}}
+@keyframes deriva-b{to{transform:translate(-16vmax,-10vmax) scale(.9)}}
+@keyframes deriva-c{to{transform:translate(20vw,-14vmax) scale(1.2)}}
+
+/* secciones transparentes: se ve el fondo con color a través del vidrio */
+.lp-sec,.lp-sec.alt,.lp-sec.night{background:transparent;color:var(--ink)}
+.lp-sec.alt{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border-block:1px solid rgba(255,255,255,.07)}
+.lp-sec .lead,.lp-sec.night .lead,.goals.light .goal p{color:var(--muted)}
+.goals.light .goal h3{color:var(--mint)}
+.lp-hero{background:transparent}
+.lp-final{background:transparent}
+.lp-foot{background:rgba(10,4,26,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.1)}
+
+/* ===== el vidrio ===== */
+.lp .loc,.lp .fact,.lp .fact:first-child,.lp .plan,.lp .plan.feat,.lp .flow li,.lp .fid-card,.lp .fcard,.lp .rm-card,.lp .fund,.lp .ben li,
+.lp .stat,.lp .gl,.lp .modo-toggle,.lp .store,.lp .stat-big,.lp .fid-real{
+  --mx:50%;--my:-30%;
+  background:radial-gradient(260px circle at var(--mx) var(--my),rgba(255,255,255,.2),rgba(255,255,255,0) 62%),var(--g-fill);
+  -webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+  border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);border-left-color:rgba(255,255,255,.28);
+  box-shadow:var(--g-shadow);color:var(--ink);
+  transition:opacity .7s ease var(--d,0ms),transform .8s cubic-bezier(.2,.8,.2,1) var(--d,0ms),translate .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease,border-color .4s ease;
+}
+@media (hover:hover){
+  .lp .loc:hover,.lp .fact:hover,.lp .plan:hover,.lp .flow li:hover,.lp .fid-card:hover,.lp .ben li:hover,.lp .stat:hover,.lp .gl:hover,.lp .rm-card:hover{
+    translate:0 -7px;border-color:rgba(127,237,196,.45);
+    box-shadow:var(--g-shadow),0 0 0 1px rgba(127,237,196,.12),0 30px 70px -20px rgba(127,237,196,.28);
+  }
+}
+.lp .fact:first-child,.lp .plan.feat{background:radial-gradient(260px circle at var(--mx) var(--my),rgba(255,255,255,.22),rgba(255,255,255,0) 62%),linear-gradient(145deg,rgba(139,79,209,.42),rgba(127,237,196,.1))}
+.lp .fund{background:radial-gradient(260px circle at var(--mx) var(--my),rgba(255,255,255,.3),rgba(255,255,255,0) 62%),linear-gradient(145deg,rgba(127,237,196,.32),rgba(127,237,196,.1));color:#eafff6}
+.lp .fund b{color:#fff}
+.lp .stat{padding:20px 22px;border-radius:24px}
+.lp .stat b{background:linear-gradient(180deg,#fff,var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lp .stat span{color:var(--muted)}
+.lp .stat em,.lp .fact b,.lp .fact:first-child b{color:var(--mint)}
+.lp .stat-big{padding:28px;border-radius:28px}
+.lp .stat-big b{color:var(--mint)}
+.lp .stat-big span{color:var(--ink)}
+.lp .reparto{color:var(--ink)}.lp .reparto b{color:var(--mint)}
+.lp .fact p,.lp .fact:first-child p,.lp .plan .blurb,.lp .plan.feat .blurb,.lp .loc-cat,.lp .loc li small,.lp .flow p{color:var(--muted)}
+.lp .fact a{color:var(--mint)}
+.lp .loc,.lp .fact,.lp .plan,.lp .flow li{border-radius:28px}
+.lp .loc li,.lp .plan li,.lp .plan.feat li,.lp .flow{border-color:rgba(255,255,255,.12)}
+.lp .loc li b{background:rgba(127,237,196,.16);color:var(--mint);border:1px solid rgba(127,237,196,.35)}
+.lp .loc-logo{border-color:rgba(255,255,255,.35)}
+.lp .flow .num{background:rgba(127,237,196,.16);color:var(--mint);border:1px solid rgba(127,237,196,.4)}
+.lp .plan .launch{color:#f0cf6a}
+.lp .fid-card{color:var(--ink)}
+.lp .fid-real{border-radius:22px}
+.lp .fid-pill{background:rgba(127,237,196,.16);color:var(--mint)}
+.lp .fid-row .empty{border-color:rgba(255,255,255,.3);color:var(--muted)}
+.lp .fid-body small{color:var(--muted)}
+.lp .rm-card{color:var(--ink)}.lp .rm-card span{color:var(--muted)}.lp .rm-card u{color:var(--mint)}
+.lp .rm-map{border-color:rgba(255,255,255,.3);box-shadow:var(--g-shadow)}
+.lp .ej{color:var(--ink)}
+.lp .modo-toggle{padding:4px;border-radius:999px}
+.lp .modo-toggle button{color:var(--ink)}
+.lp .modo-toggle button[aria-pressed='true']{background:rgba(127,237,196,.2);color:var(--mint);box-shadow:inset 0 0 0 1px rgba(127,237,196,.45)}
+.lp .store{border-style:solid;color:var(--ink)}
+.lp .store small{color:var(--muted)}
+.lp .gal-nota{color:var(--muted)}
+.lp .gal figcaption{color:var(--muted)}.lp .gal figcaption b{color:var(--ink)}
+
+/* botones de vidrio */
+.lp .lp-btn.mint{background:linear-gradient(180deg,#a8f7d9,var(--mint));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 10px 30px -8px rgba(127,237,196,.55)}
+.lp .lp-btn.ghost,.lp .lp-btn.line,.lp .lp-btn.dark{color:#fff;background:var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.lp .lp-btn.ghost:hover,.lp .lp-btn.line:hover,.lp .lp-btn.dark:hover{background:linear-gradient(145deg,rgba(255,255,255,.26),rgba(255,255,255,.1))}
+.lp .plan.feat .lp-btn.mint{background:linear-gradient(180deg,#a8f7d9,var(--mint))}
+
+/* barra: cápsula de vidrio flotante */
+.lp .lp-nav{position:fixed;top:10px;left:0;right:0}
+.lp .lp-nav .wrap{max-width:1060px;padding:0 10px 0 18px;height:58px;border-radius:999px;background:var(--g-fill),rgba(18,8,42,.45);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow);width:calc(100% - 24px)}
+.lp .lp-links a[aria-current=page]{background:rgba(127,237,196,.16);color:var(--mint);box-shadow:inset 0 0 0 1px rgba(127,237,196,.35)}
+.lp .lp-login{background:rgba(255,255,255,.08)}
+@media (max-width:640px){
+  .lp .lp-nav .wrap{height:auto;padding:10px 12px;border-radius:26px;flex-wrap:wrap}
+}
+
+/* celulares con marco de vidrio */
+.lp .phone{border:1px solid rgba(255,255,255,.4);border-top-color:rgba(255,255,255,.7);padding:7px;border-radius:40px;
+  background:linear-gradient(160deg,rgba(255,255,255,.3),rgba(255,255,255,.06) 55%,rgba(255,255,255,.14));
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 40px 80px -20px rgba(0,0,0,.7),0 0 70px -10px rgba(139,79,209,.55)}
+.lp .phone img{border-radius:32px}
+.lp .goal .phone,.lp .goals.light .phone{border-color:rgba(255,255,255,.4);background:linear-gradient(160deg,rgba(255,255,255,.3),rgba(255,255,255,.06) 55%,rgba(255,255,255,.14))}
+.lp .phone::after{content:'';position:absolute;inset:7px;border-radius:32px;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,0) 28%);mix-blend-mode:screen}
+
+/* héroe */
+.stage{perspective:1100px}
+.hero-phone{transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg));transition:transform .25s ease-out;transform-style:preserve-3d}
+.lp .fcard{padding:12px 16px 12px 12px;border-radius:22px;color:var(--ink)}
+.lp .fcard span{color:var(--muted)}
+.lp .fcard em{color:var(--mint)}
+.fc-ico{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(127,237,196,.16);border:1px solid rgba(127,237,196,.4);color:var(--mint)}
+.fc-ico svg{width:24px;height:24px}
+.hero-glow{position:absolute;left:50%;top:46%;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;background:radial-gradient(closest-side,rgba(127,237,196,.38),rgba(139,79,209,.25) 55%,transparent);filter:blur(30px);animation:late-glow 7s ease-in-out infinite alternate;pointer-events:none}
+@keyframes late-glow{to{transform:scale(1.15);opacity:.75}}
+
+/* cinta de vidrio */
+.cinta{background:var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);color:var(--ink);border-block:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.cinta span::after{background:var(--mint)}
+
+/* lo que ofrece Camina: mosaico de vidrio */
+.bento{display:grid;gap:16px;margin-top:40px;grid-template-columns:1fr}
+.gl{position:relative;border-radius:30px;padding:26px;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+.gl h3{font-size:22px;letter-spacing:-.015em}
+.gl p{color:var(--muted);max-width:40ch}
+.gl .gl-ico{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;margin-bottom:6px;background:rgba(127,237,196,.14);border:1px solid rgba(127,237,196,.4);color:var(--mint);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.gl .gl-ico svg{width:24px;height:24px}
+.gl-pts{margin-top:6px;align-self:flex-start;font-size:13px;font-weight:800;color:var(--mint);background:rgba(127,237,196,.14);border:1px solid rgba(127,237,196,.38);border-radius:999px;padding:3px 12px}
+.gl.has-shot{padding-bottom:0;min-height:430px}
+.gl .peek{margin:18px auto 0;width:min(78%,250px);border-radius:30px 30px 0 0;overflow:hidden;border:1px solid rgba(255,255,255,.4);border-bottom:0;padding:6px 6px 0;background:linear-gradient(160deg,rgba(255,255,255,.3),rgba(255,255,255,.06));box-shadow:0 -10px 50px -10px rgba(139,79,209,.6);transition:transform .5s cubic-bezier(.2,.8,.2,1);margin-top:auto}
+.gl .peek img{display:block;width:100%;height:auto;border-radius:24px 24px 0 0}
+.gl.has-shot .gl-txt{display:flex;flex-direction:column;gap:8px}
+@media (hover:hover){.gl:hover .peek{transform:translateY(-14px)}}
+@media (min-width:700px){.bento{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1000px){
+  .bento{grid-template-columns:repeat(6,1fr);grid-auto-flow:dense}
+  .gl.s2{grid-column:span 2}.gl.s3{grid-column:span 3}.gl.s4{grid-column:span 4}
+  .gl.has-shot{min-height:480px}
+  .gl.row2{grid-row:span 2}
+}
+.bento-nota{margin-top:22px;font-size:13px;color:var(--muted)}
+.fonda{margin-top:14px}
+
+@media (prefers-reduced-motion:reduce){
+  .lp::before,.lp::after,.lp .aurora-3,.hero-glow{animation:none}
+  .hero-phone{transition:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .lp{--g-fill:linear-gradient(145deg,rgba(60,38,110,.95),rgba(36,23,72,.95));--g-blur:none}
+}
+
+/* tarjetas del héroe: más tinte para que se lea el texto aunque pasen por encima del celular */
+.lp .fcard{background:radial-gradient(260px circle at var(--mx) var(--my),rgba(255,255,255,.2),rgba(255,255,255,0) 62%),var(--g-fill),rgba(22,10,50,.72);max-width:250px}
+.lp .fc1{left:-2%;top:12%}
+.lp .fc2{right:-4%;top:46%}
+.lp .fc3{left:0;top:76%}
+@media (max-width:520px){.lp .fcard{max-width:210px;font-size:12px}.lp .fc1{left:0}.lp .fc2{right:0}}
+.bento{margin-top:32px}
+.lp-sec .lead+.bento{margin-top:32px}
+.bento-nota{margin-top:26px}
+.lp-sec .wrap>.lead{margin-bottom:0}
+@media (max-width:640px){.lp .lp-nav{position:absolute}}
+
+/* huellas del inicio: una fila pareja pegada al borde de abajo, que se desvanece a los costados y no pasa por detrás de los textos */
+.lp .hero-trail{inset:auto 0 18px 0;height:96px;opacity:.7;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);filter:drop-shadow(0 0 10px rgba(127,237,196,.45))}
+.lp .lp-hero{padding-bottom:140px}
+
+/* tarjetas del héroe: chicas, pegadas a los bordes del celular y sin tapar el aro ni los textos */
+.lp .fcard{max-width:196px;padding:10px 14px 10px 10px;font-size:12.5px}
+.lp .fcard b{font-size:13.5px}
+.fc-ico{width:38px;height:38px;border-radius:12px}
+.lp .fc1{left:-4%;top:6%}
+.lp .fc2{right:-8%;top:48%}
+.lp .fc3{left:-2%;top:80%}
+@media (max-width:640px){
+  .lp .fcard{display:none}
+  .lp .lp-hero{padding-top:160px}
+  .stage{height:500px}
+}
+
+/* las tarjetas quedan al costado del celular: solo le rozan el borde */
+@media (min-width:641px){
+  .lp .fcard{max-width:178px}
+  .lp .fc1{left:auto;right:calc(50% + 122px);top:12%}
+  .lp .fc2{right:auto;left:calc(50% + 122px);top:44%}
+  .lp .fc3{left:auto;right:calc(50% + 122px);top:74%}
+}
+@media (min-width:641px){.lp .fcard{width:190px;max-width:190px}}
+.gl.fill{justify-content:center}
+.gl.fill h3{font-size:26px}
+.gl.fill p{font-size:17px}
+
+/* ===== huellas como en la tarjeta ===== */
+.lp .hero-trail{inset:auto 0 22px 0;height:74px;opacity:1;-webkit-mask-image:none;mask-image:none;filter:drop-shadow(0 0 8px rgba(127,237,196,.35))}
+
+/* ===== mapa: nombres de los locales en una cápsula oscura, siempre legibles ===== */
+.lp .rm-pin b{background:rgba(24,10,56,.86);color:#fff;border:1px solid rgba(127,237,196,.55);font-size:12px;padding:3px 10px;box-shadow:0 6px 16px rgba(10,4,26,.45);}
+.lp .rm-pin.gold b{border-color:rgba(247,207,85,.75)}
+@media (max-width:640px){
+  /* Bloom y Coco están casi en la misma esquina: en celular el nombre de Bloom va arriba y el de Coco abajo */
+  .lp .rm-pin.side{flex-direction:column;gap:3px}
+  .lp .rm-pin.side.l{flex-direction:column-reverse;transform:translate(calc(-100% + 2px),-100%) scale(.4);transform-origin:100% 100%}
+  .lp .rm-pin.side.l.on{transform:translate(calc(-100% + 2px),-100%) scale(1)}
+  .lp .rm-pin.side.r{transform:translate(-2px,-30%) scale(.4);transform-origin:0 0}
+  .lp .rm-pin.side.r.on{transform:translate(-2px,-30%) scale(1)}
+  .lp .rm-pin b{font-size:11px;padding:2px 8px}
+}
+
+/* ===== beneficios: tarjetas con aire y un tilde, nada pegado al borde ===== */
+.lp .ben{gap:14px}
+.lp .ben li,.lp .ben li:last-child,.lp .ben li:nth-last-child(2){position:relative;padding:20px 22px 20px 64px;border-radius:22px;align-content:start}
+.lp .ben li::before{content:'';position:absolute;left:20px;top:21px;width:28px;height:28px;border-radius:50%;background:rgba(127,237,196,.16) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237FEDC4' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat;border:1px solid rgba(127,237,196,.45)}
+.lp .ben b{font-size:18px;line-height:1.25;color:var(--ink)}
+.lp .ben span{color:var(--muted);line-height:1.5}
+@media (min-width:900px){.lp .ben{column-gap:16px}}
+
+/* ===== cómo sumás tu comercio: número en su lugar y tarjetas con aire ===== */
+.lp .flow{border-top:0;gap:14px}
+.lp .flow li{grid-template-columns:44px 1fr;gap:6px 16px;padding:22px 22px;align-items:start}
+.lp .flow .num{grid-row:span 2;align-self:start;width:44px;height:44px;font-size:18px;margin:0}
+.lp .flow h3{font-size:20px;line-height:1.25;align-self:center}
+.lp .flow p{line-height:1.5}
+@media (min-width:900px){
+  .lp .flow{grid-template-columns:repeat(4,1fr);gap:16px}
+  .lp .flow li{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;padding:26px 24px}
+  .lp .flow .num{grid-row:auto;margin-bottom:10px}
+  .lp .flow h3{align-self:start}
+}
+
+/* ===== cierre con la marca: solo el logo ===== */
+.final-grid{display:grid;gap:36px;align-items:center}
+@media (min-width:900px){.final-grid{grid-template-columns:1.3fr .7fr}}
+.lp .marca-final{display:grid;place-items:center;justify-self:center}
+.lp .marca-logo{width:clamp(150px,22vw,250px);height:auto;filter:drop-shadow(0 0 40px rgba(127,237,196,.35))}
+@media (max-width:899px){.lp .marca-final{order:-1}}
+
+/* ===== grupo de ejemplo ===== */
+#grupo-ejemplo .gal .cap-l{display:none}
+#grupo-ejemplo[data-modo='claro'] .gal .cap-l{display:block}
+#grupo-ejemplo[data-modo='claro'] .gal .cap-d{display:none}
+#grupo-ejemplo .modo-toggle{margin-top:22px}
+.grupo-datos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:26px}
+@media (min-width:900px){.grupo-datos{grid-template-columns:repeat(4,1fr)}}
+.lp .grupo-datos span{display:flex;flex-direction:column;gap:2px;padding:16px 18px;border-radius:20px;color:var(--muted);font-size:13.5px;
+  background:var(--g-fill);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-edge);border-top-color:rgba(255,255,255,.4);box-shadow:var(--g-shadow)}
+.lp .grupo-datos b{font-size:26px;line-height:1.1;font-weight:800;background:linear-gradient(180deg,#fff,var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ícono con el logo original de Camina (reemplaza a las huellas dibujadas a mano) */
+.fc-ico .ico-logo,.gl .gl-ico .ico-logo{width:30px;height:30px;object-fit:contain}
+.fc-ico .ico-logo{width:26px;height:26px}
+/* fondo oscuro de respaldo: en iPhone, con tantos vidrios, Safari a veces suelta el fondo y se ve claro */
+html,body{background:#0f0722}
+
+/* las manchas ya son degradados suaves: sin filtro de desenfoque (en iPhone gasta tanta memoria que Safari soltaba el fondo en el mapa) */
+@media (hover:none){
+  .hero-glow{filter:none}
+  .lp .rm-map{-webkit-backdrop-filter:none;backdrop-filter:none}
+}

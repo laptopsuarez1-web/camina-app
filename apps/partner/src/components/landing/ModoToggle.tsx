@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
 
-// Alterna las capturas de "Así se ve Camina" entre modo oscuro (por defecto) y claro.
-export default function ModoToggle() {
+// Alterna las capturas de una galería (la sección con id `target`) entre modo oscuro (por defecto) y claro.
+export default function ModoToggle({ target = 'app' }: { target?: string }) {
   const [claro, setClaro] = useState(false);
 
   function cambiar(valor: boolean) {
     setClaro(valor);
-    document.getElementById('app')?.setAttribute('data-modo', valor ? 'claro' : 'oscuro');
+    document.getElementById(target)?.setAttribute('data-modo', valor ? 'claro' : 'oscuro');
   }
 
   return (

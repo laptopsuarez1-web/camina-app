@@ -1,11 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { View, Linking, Platform } from 'react-native';
+import { View, Linking, Platform, Image } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { colors } from '@/theme/tokens';
-import { Footprints } from '@/components/icons';
 
 // Compara versiones "1.2.3" → -1 / 0 / 1.
 function compareVersions(a: string, b: string) {
@@ -46,7 +45,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.authBg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-      <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 12 }}><Footprints size={44} color={colors.mint} weight="fill" /></View>
+      <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 56, height: 56, marginBottom: 12 }} />
       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
         ¡Hay una versión nueva de Camina!
       </Text>

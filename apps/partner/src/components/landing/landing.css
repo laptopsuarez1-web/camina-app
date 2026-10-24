@@ -40,13 +40,13 @@
 .kin.in .kw>span{transform:none}
 .iv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0ms)}
 .iv.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){.kw>span,.iv{transform:none!important;opacity:1!important;transition:none!important}.step,.fcard,.cinta-in{animation:none!important}.step{opacity:.9!important}}
+@media (prefers-reduced-motion:reduce){.kw>span,.iv{transform:none!important;opacity:1!important;transition:none!important}.step,.fcard,.cinta-in{animation:none!important}.step{opacity:var(--o,.9)!important}}
 
 /* hero */
 .lp-hero{position:relative;background:radial-gradient(120% 80% at 80% 0%, #3b2577 0%, var(--violet) 55%, #1b1038 100%);color:#fff;padding:130px 0 70px;overflow:hidden}
 .hero-trail{position:absolute;inset:auto 0 0 0;width:100%;height:60%;opacity:.28;z-index:0;pointer-events:none}
-.step{opacity:0;animation:pisada 9s ease-in-out infinite;animation-delay:calc(var(--i)*.55s)}
-@keyframes pisada{0%{opacity:0}6%{opacity:.95}58%{opacity:.95}72%,100%{opacity:0}}
+.step{opacity:0;animation:pisada 7s ease-in-out infinite;animation-delay:calc(var(--i)*.2s)}
+@keyframes pisada{0%{opacity:0}7%{opacity:var(--o,.9)}72%{opacity:var(--o,.9)}86%,100%{opacity:0}}
 .hero-grid{position:relative;display:grid;gap:36px}
 .lp-hero h1{font-size:clamp(40px,9vw,66px);max-width:12ch}
 .lp-hero .sub{margin-top:22px;max-width:46ch;font-size:clamp(17px,2.4vw,20px);color:#d9cff5}

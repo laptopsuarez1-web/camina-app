@@ -8,7 +8,7 @@ import ModoToggle from './ModoToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
-export const WA_AVISAME = WA('Hola! Quiero que me avisen cuando Camina esté disponible en la tienda de mi celular.');
+export const EMAIL_AVISAME = `mailto:caminaappbo@gmail.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
 
 export const CAP = {
   inicio: '/web/cap/inicio.jpg',
@@ -20,19 +20,25 @@ export const CAP = {
   actividad: '/web/cap/actividad.jpg',
   gruposActivo: '/web/cap/grupos-activo.jpg',
   eventos: '/web/cap/eventos.jpg',
+  desafios: '/web/cap/desafios.jpg',
+  retos: '/web/cap/retos.jpg',
+  meta: '/web/cap/meta.jpg',
   canjeResena: '/web/cap/canje-resena.jpg',
   historia: '/web/cap/historia.jpg',
-  retos: '/web/cap/retos.jpg',
+  grupo: '/web/cap/grupo.jpg',
+  grupoReto: '/web/cap/grupo-reto.jpg',
+  grupoRanking: '/web/cap/grupo-ranking.jpg',
+  grupoChat: '/web/cap/grupo-chat.jpg',
+  amigos: '/web/cap/amigos.jpg',
+  rankingAmigos: '/web/cap/ranking-amigos.jpg',
+  amigoPerfil: '/web/cap/amigo-perfil.jpg',
+  amigoAgregar: '/web/cap/amigo-agregar.jpg',
 };
 
 // "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
-const CAP_DARK: Record<string, string> = {
-  [CAP.inicio]: '/web/cap/inicio-dark.jpg',
-  [CAP.canjes]: '/web/cap/canjes-dark.jpg',
-  [CAP.fripaps]: '/web/cap/ficha-fripaps-dark.jpg',
-  [CAP.grupos]: '/web/cap/grupos-dark.jpg',
-  [CAP.actividad]: '/web/cap/actividad-dark.jpg',
-};
+const CAP_DARK: Record<string, string> = Object.fromEntries(
+  [CAP.inicio, CAP.canjes, CAP.fripaps, CAP.grupos, CAP.actividad, CAP.eventos, CAP.desafios, CAP.retos, CAP.meta, CAP.grupo, CAP.grupoReto, CAP.grupoRanking, CAP.grupoChat, CAP.amigos, CAP.rankingAmigos, CAP.amigoPerfil, CAP.amigoAgregar].map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
+);
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
 export function Shot(props: ShotProps) {
@@ -77,22 +83,58 @@ export function Footer() {
   );
 }
 
-// Tarjetas flotantes con premios reales (logo, premio y puntos).
-export function FloatCards() {
+// Tarjetas flotantes de vidrio con lo que hace la app (reglas reales: 1.000 pasos = 1 punto, 5 puntos por invitar).
+const ICO = {
+  pasos: <Image className="ico-logo" src="/marca/logo-solo-transparente.png" alt="" width={64} height={64} />,
+  trofeo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" /><path d="M8 6H4.5v1.5A3.5 3.5 0 0 0 8 11" /><path d="M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11" /><path d="M12 13v4" /><path d="M8.5 20h7" /><path d="M10 17h4v3h-4z" /></svg>,
+  racha: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9Z" /></svg>,
+  amigos: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M16 5a3 3 0 0 1 0 6M18 14c2 .7 3 2.7 3 5" /></svg>,
+  regalo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v9H5v-9M7.5 8a2.5 2.5 0 1 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 1 1 0 5" /></svg>,
+  vidrio: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 4 3.4 7 8 8 4.6-1 8-4 8-8V7l-8-4Z" /></svg>,
+  grupo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3" /><circle cx="5.5" cy="10" r="2.3" /><circle cx="18.5" cy="10" r="2.3" /><path d="M7 20c0-3 2.2-5 5-5s5 2 5 5M1.5 19c0-2 1.5-3.5 3.5-3.5M22.5 19c0-2-1.5-3.5-3.5-3.5" /></svg>,
+  grafico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6" /></svg>,
+  camara: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3" /><circle cx="12" cy="13.5" r="3.5" /><path d="M8.5 7 10 4h4l1.5 3" /></svg>,
+  calendario: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>,
+  meta: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.2" /></svg>,
+  ubicacion: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>,
+};
+
+export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
+  if (para === 'comercios') {
+    const real = [
+      { l: LOCALES[2], p: LOCALES[2].premios[0], cls: 'fc1' },
+      { l: LOCALES[1], p: LOCALES[1].premios[0], cls: 'fc2' },
+      { l: LOCALES[0], p: LOCALES[0].premios[1], cls: 'fc3' },
+    ];
+    return (
+      <>
+        {real.map(({ l, p, cls }) => (
+          <div className={`fcard ${cls}`} key={cls}>
+            <Image src={l.logo} alt="" width={44} height={44} />
+            <div>
+              <b>{l.nombre}</b>
+              <span>{p.nombre}</span>
+              <em>{p.detalle} · {p.puntos} puntos</em>
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
   const items = [
-    { l: LOCALES[2], p: LOCALES[2].premios[0], cls: 'fc1' },
-    { l: LOCALES[1], p: LOCALES[1].premios[0], cls: 'fc2' },
-    { l: LOCALES[0], p: LOCALES[0].premios[1], cls: 'fc3' },
+    { cls: 'fc1', ico: ICO.pasos, t: 'Cada 1.000 pasos', d: 'Se vuelven puntos', e: '1 punto' },
+    { cls: 'fc2', ico: ICO.racha, t: 'Cada día', d: 'Tope diario de puntos', e: 'hasta 20 puntos' },
+    { cls: 'fc3', ico: ICO.amigos, t: 'Invitá a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
   ];
   return (
     <>
-      {items.map(({ l, p, cls }) => (
+      {items.map(({ cls, ico, t, d, e }) => (
         <div className={`fcard ${cls}`} key={cls}>
-          <Image src={l.logo} alt="" width={44} height={44} />
+          <span className="fc-ico">{ico}</span>
           <div>
-            <b>{l.nombre}</b>
-            <span>{p.nombre}</span>
-            <em>{p.detalle} · {p.puntos} puntos</em>
+            <b>{t}</b>
+            <span>{d}</span>
+            <em>{e}</em>
           </div>
         </div>
       ))}
@@ -100,15 +142,16 @@ export function FloatCards() {
   );
 }
 
-// Cinta con los premios reales que ya están en la app.
-export function Cinta() {
-  const items = LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`));
-  const fila = [...items, ...items];
+// Cinta con lo que tiene la app.
+const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que elegís', 'Racha y calendario', 'Grupos y ranking', 'Retos Camina', 'Desafíos y eventos', 'Compartí tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitás'];
+export function Cinta({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
+  const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`)) : CINTA;
+  const fila = [...base, ...base];
   return (
-    <div className="cinta" aria-label="Premios que ya están en Camina">
+    <div className="cinta" aria-label={para === 'comercios' ? 'Premios que ya están en Camina' : 'Lo que tiene Camina'}>
       <div className="cinta-in">
         {fila.map((t, i) => (
-          <span key={i} aria-hidden={i >= items.length}>{t}</span>
+          <span key={i} aria-hidden={i >= base.length}>{t}</span>
         ))}
       </div>
     </div>
@@ -191,11 +234,16 @@ export function Locales() {
 
 export function Galeria() {
   const pant = [
-    ['Tu día en un vistazo', 'Pasos, puntos y los locales cerca tuyo.', CAP.inicio],
+    ['Tu día en un vistazo', 'Tus pasos de hoy, tus puntos y tu racha.', CAP.inicio],
+    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
+    ['Grupos', 'Caminá en equipo con tus amigos.', CAP.grupos],
+    ['Tu grupo', 'Podio, meta compartida y desafíos.', CAP.grupo],
+    ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
+    ['Desafíos', 'Sumate a desafíos con premios.', CAP.desafios],
+    ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
     ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
-    ['Grupos', 'Caminá en equipo y sumá con tus amigos.', CAP.grupos],
-    ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
+    ['Tu meta de pasos', 'Elegís cuántos pasos por día.', CAP.meta],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
@@ -205,13 +253,13 @@ export function Galeria() {
           <figure key={t}>
             <div className="phone">
               <Image className="cap-l" src={src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" />
-              <Image className="cap-d" src={CAP_DARK[src]} alt="" width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src] ?? src} alt="" width={780} height={1688} sizes="260px" />
             </div>
             <figcaption><b>{t}</b>{d}</figcaption>
           </figure>
         ))}
       </div>
-      <p className="wrap gal-nota">Pasos, puntos y grupos son datos de ejemplo. Los locales y sus premios son reales.</p>
+      <p className="wrap gal-nota">Los pasos y puntos son de ejemplo, igual que el grupo y sus integrantes. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
     </section>
   );
 }
@@ -283,20 +331,32 @@ export function Salud() {
   );
 }
 
+// Cierre con la marca: solo el logo de Camina.
+function MarcaFinal() {
+  return (
+    <InView className="marca-final">
+      <Image className="marca-logo" src="/marca/logo-solo-transparente.png" alt="Logo de Camina" width={1024} height={1024} sizes="260px" />
+    </InView>
+  );
+}
+
 export function DescargaGente() {
   return (
     <section className="lp-final" id="descargar">
-      <div className="wrap">
-        <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
-        <p>Camina está por llegar a Google Play y App Store. Escribinos y te avisamos apenas esté lista.</p>
-        <div className="stores">
-          <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
-          <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+      <div className="wrap final-grid">
+        <div>
+          <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
+          <p>Camina está por llegar a Google Play y App Store. Escribinos por correo y te avisamos apenas esté lista.</p>
+          <div className="stores">
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+          </div>
+          <div className="lp-cta">
+            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avisame cuando salga</a>
+            <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
+          </div>
         </div>
-        <div className="lp-cta">
-          <a className="lp-btn mint" href={WA_AVISAME}>Avisame cuando salga</a>
-          <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
-        </div>
+        <MarcaFinal />
       </div>
     </section>
   );
@@ -418,13 +478,16 @@ export function Planes() {
 export function CierreComercio() {
   return (
     <section className="lp-final">
-      <div className="wrap">
-        <Kinetic text="Sumá tu comercio hoy." />
-        <p>Registrate en el panel o escribinos por WhatsApp si querés hablar antes.</p>
-        <div className="lp-cta">
-          <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
-          <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
+      <div className="wrap final-grid">
+        <div>
+          <Kinetic text="Sumá tu comercio hoy." />
+          <p>Registrate en el panel o escribinos por WhatsApp si querés hablar antes.</p>
+          <div className="lp-cta">
+            <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
+            <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
+          </div>
         </div>
+        <MarcaFinal />
       </div>
     </section>
   );
@@ -476,9 +539,9 @@ export function EquipoRetos() {
             {
               t: 'Grupos',
               d: 'Creá un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
-              img: CAP.gruposActivo,
-              alt: 'Pantalla de un grupo con ranking de pasos',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              img: CAP.grupos,
+              alt: 'Pantalla de Grupos con un grupo de ejemplo y su meta de la semana',
+              tag: 'Grupo de ejemplo',
             },
             {
               t: 'Retos Camina',
@@ -490,12 +553,58 @@ export function EquipoRetos() {
               t: 'Eventos y sorteos',
               d: 'Locales y Camina publican eventos y sorteos dentro de la app. Caminá, cumplí el requisito y participá.',
               img: CAP.eventos,
-              alt: 'Pantalla de eventos y sorteos',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              alt: 'Pantalla de eventos de ejemplo',
+              tag: 'Ejemplo de lo que puede haber',
             },
           ]}
         />
       </div>
+    </section>
+  );
+}
+
+// Un grupo de ejemplo ("Caminantes del Centro", personas inventadas) recorrido pantalla por pantalla.
+const GRUPO_PANT = [
+  ['El podio de la semana', 'Se arma solo con los pasos de cada uno desde el lunes. La corona es para quien más caminó.', CAP.grupo],
+  ['Meta del grupo y desafío', 'Una meta semanal que suman entre todos y desafíos con Puntos en juego: eligen la regla, la meta diaria y cuánto pone cada uno.', CAP.grupoReto],
+  ['Ranking y semanas anteriores', 'Todos los integrantes ordenados por pasos y quién ganó cada semana.', CAP.grupoRanking],
+  ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada lunes.', CAP.grupoChat],
+  ['Tus amigos', 'Las solicitudes nuevas y los pasos de la semana de cada amigo.', CAP.amigos],
+  ['Ranking entre amigos', 'Además del ranking global, uno solo con tus amigos.', CAP.rankingAmigos],
+  ['El perfil de un amigo', 'Su racha, su promedio, su meta y cómo viene su semana.', CAP.amigoPerfil],
+  ['Agregar un amigo', 'Le mandás la solicitud y, cuando acepta, ven los pasos del otro.', CAP.amigoAgregar],
+] as const;
+
+export function GrupoEjemplo() {
+  return (
+    <section className="lp-sec" id="grupo-ejemplo" data-modo="oscuro">
+      <div className="wrap">
+        <Kinetic text="Así se vive un grupo." />
+        <p className="lead">
+          Un grupo de ejemplo, «Caminantes del Centro», para que veas cómo funciona: podio, meta compartida, un desafío con Puntos en juego, ranking, chat y amigos.
+        </p>
+        <div className="grupo-datos">
+          <span><b>6</b> integrantes</span>
+          <span><b>183.400</b> pasos esta semana</span>
+          <span><b>92%</b> de la meta del grupo</span>
+          <span><b>50</b> Puntos en el pozo del desafío</span>
+        </div>
+        <ModoToggle target="grupo-ejemplo" />
+      </div>
+      <div className="gal" tabIndex={0} aria-label="Pantallas del grupo de ejemplo">
+        {GRUPO_PANT.map(([t, d, src]) => (
+          <figure key={t}>
+            <div className="phone">
+              <Image className="cap-l" src={src} alt={`Pantalla de ejemplo: ${t}`} width={780} height={1688} sizes="260px" />
+              <Image className="cap-d" src={CAP_DARK[src] ?? src} alt="" width={780} height={1688} sizes="260px" />
+            </div>
+            <figcaption><b>{t}</b>{d}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="wrap gal-nota">
+        Grupo de ejemplo: las personas, los pasos y los mensajes son inventados. En el desafío, quienes cumplen la meta diaria en al menos el 80% de los días se reparten el pozo en partes iguales; si nadie la cumple, cada uno recupera sus Puntos.
+      </p>
     </section>
   );
 }
@@ -515,8 +624,8 @@ export function PublicidadComercio() {
               t: 'Tu local, frente a quienes caminan',
               d: 'Tu evento o sorteo aparece en la app de Camina. Podés pedir un requisito de pasos para participar y así atraer gente que ya sale a caminar.',
               img: CAP.eventos,
-              alt: 'Pantalla de eventos y sorteos de la app',
-              tag: 'Ejemplo ilustrativo con datos de prueba',
+              alt: 'Pantalla de eventos de ejemplo de la app',
+              tag: 'Ejemplo de lo que puede haber',
             },
           ]}
         />
@@ -651,13 +760,19 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   );
 }
 
-const EXTRAS_GENTE = [
-  ['Invitá amigos y ganá 5 puntos', 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.'],
-  ['Historias que suman', 'Subí una historia de tu canje a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.'],
-  ['Favoritos y locales disponibles ahora', 'Guardá tus locales favoritos y filtrá los que tienen premios disponibles en este momento.'],
-  ['Tu racha y tu calendario', 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y tu meta diaria, que vos elegís.'],
-  ['Tu ubicación, solo cuando la necesitás', 'La usamos en el momento para mostrarte locales cerca y no la guardamos. Tampoco vendemos tus datos.'],
-  ['Premios reales, cerca tuyo', 'Cada canje lo confirma el local con un código de 6 números, en persona, en tu barrio.'],
+type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
+const TILES: Tile[] = [
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
+  { t: 'Invitá amigos', d: 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
+  { t: 'Historias que suman', d: 'Subí una historia a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
+  { t: 'Compartí tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
+  { t: 'Tu racha y tu calendario', d: 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
+  { t: 'Grupos y ranking', d: 'Caminá en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
+  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Elegís el modo de la app y cuánto vidrio querés ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
+  { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
+  { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
+  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, el local te confirma el canje con un código de 6 números.', ico: 'regalo', span: 's3', fill: true },
 ];
 
 export function MasParaGente() {
@@ -665,14 +780,23 @@ export function MasParaGente() {
     <section className="lp-sec night" id="mas">
       <div className="wrap">
         <Kinetic text="Y hay más para vos." />
-        <ul className="ben">
-          {EXTRAS_GENTE.map(([t, d], i) => (
-            <InView as="li" key={t} delay={(i % 2) * 100}>
-              <b>{t}</b>
-              <span>{d}</span>
+        <p className="lead">Lo que Camina te da cada día, además de los puntos.</p>
+        <ul className="bento">
+          {TILES.map((x, i) => (
+            <InView as="li" key={x.t} delay={(i % 3) * 90} className={`gl ${x.span}${x.shot ? ' has-shot' : ''}${x.row2 ? ' row2' : ''}${x.fill ? ' fill' : ''}`}>
+              <div className="gl-txt">
+                <span className="gl-ico">{ICO[x.ico]}</span>
+                <h3>{x.t}</h3>
+                <p>{x.d}</p>
+                {x.pts && <span className="gl-pts">{x.pts}</span>}
+              </div>
+              {x.shot && (
+                <div className="peek"><Image src={x.shot} alt={x.alt ?? ''} width={780} height={1688} sizes="260px" /></div>
+              )}
             </InView>
           ))}
         </ul>
+        <p className="bento-nota">Los pasos, los puntos, los eventos y los desafíos de las capturas son ejemplos de lo que puede haber.</p>
       </div>
     </section>
   );
