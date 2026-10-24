@@ -83,8 +83,9 @@ test('onboarding: 4 pantallas, y los números del texto salen de las constantes'
     assert.ok(s.title.length > 0 && s.desc.length > 0);
   }
   const puntos = ONBOARDING[1].desc;
-  assert.ok(puntos.includes(`${R.POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} pasos ganás 1 Punto`), puntos);
+  assert.ok(puntos.includes(`${R.POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} pasos ganas 1 Punto`), puntos);
   assert.ok(puntos.includes(`duran ${R.POINTS_TTL_DAYS} días`), puntos);
+  assert.ok(puntos.includes(`hasta ${R.DAILY_POINTS_CAP} por día`), puntos);
 });
 
 test('onboarding: sin textos que ya se descartaron ("faltan N pasos", "Promedio por día", "Premios que te copan")', () => {
