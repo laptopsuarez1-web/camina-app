@@ -273,20 +273,22 @@ export default function WelcomeScreen() {
           </Text>
 
           <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel="Continuar con Google"
-              accessibilityState={{ busy: googleBusy }}
-              onPress={handleGoogle}
-              disabled={oauthLoading}
-              style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
-            >
-              {googleBusy ? (
-                <ActivityIndicator color="#1a1a1a" />
-              ) : (
-                <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
-              )}
-            </Press>
+            {googleOAuthConfigured && (
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel="Continuar con Google"
+                accessibilityState={{ busy: googleBusy }}
+                onPress={handleGoogle}
+                disabled={oauthLoading}
+                style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
+              >
+                {googleBusy ? (
+                  <ActivityIndicator color="#1a1a1a" />
+                ) : (
+                  <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
+                )}
+              </Press>
+            )}
 
             {appleAvailable && (
               <Press

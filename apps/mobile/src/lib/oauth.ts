@@ -17,8 +17,15 @@ const rawGoogleClientIds = {
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 };
 
-export const googleOAuthConfigured =
-  !!rawGoogleClientIds.iosClientId || !!rawGoogleClientIds.androidClientId || !!rawGoogleClientIds.webClientId;
+// Cada plataforma usa su propio Client ID: con solo el de Android cargado, en iPhone Google abría su página
+// con un id inválido. Por eso se mira el de la plataforma actual y, si falta, el botón no se muestra.
+const platformGoogleClientId = Platform.select({
+  ios: rawGoogleClientIds.iosClientId,
+  android: rawGoogleClientIds.androidClientId,
+  default: rawGoogleClientIds.webClientId,
+});
+
+export const googleOAuthConfigured = !!platformGoogleClientId;
 
 // useIdTokenAuthRequest tira un error al renderizar si falta el id de la plataforma actual; en la web sin
 // configurar eso dejaba la pantalla de login en blanco. Con un valor de relleno la pantalla abre igual, y
