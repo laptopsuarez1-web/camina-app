@@ -441,7 +441,7 @@ export default function CanjesScreen() {
   const confirmed = !!activeId && confirmedId === activeId;
   const answered = !!activeId && answeredId === activeId;
   // El final del canje va de a una pantalla: confirmado, compra extra, reseña y historia.
-  type Paso = 'ok' | 'mas' | 'resena' | 'historia';
+  type Paso = 'ok' | 'resena' | 'historia';
   const [pasoDe, setPasoDe] = useState<{ id: string | null; paso: Paso }>({ id: null, paso: 'ok' });
   const paso: Paso = pasoDe.id === activeId ? pasoDe.paso : 'ok';
   const setPaso = (p: Paso) => setPasoDe({ id: activeId, paso: p });
@@ -1589,22 +1589,23 @@ export default function CanjesScreen() {
                   </View>
                 ) : null}
                 {paso === 'ok' ? (
-                  <Press
-                    accessibilityRole="button"
-                    onPress={() => setPaso(answered ? (reviewUrl ? 'resena' : 'historia') : 'mas')}
-                    className="w-full bg-aqua-deep rounded-2xl py-3.5 items-center"
-                  >
-                    <Text className="text-white font-bold text-[14px]">Continuar</Text>
-                  </Press>
-                ) : null}
-                {paso === 'mas' ? (
-                  <FollowupQuestion
-                    businessName={activeBenefit?.business.name ?? 'el local'}
-                    onAnswer={(extra) => {
-                      answerFollowup(extra);
-                      setPaso(reviewUrl ? 'resena' : 'historia');
-                    }}
-                  />
+                  answered ? (
+                    <Press
+                      accessibilityRole="button"
+                      onPress={() => setPaso(reviewUrl ? 'resena' : 'historia')}
+                      className="w-full bg-aqua-deep rounded-2xl py-3.5 items-center"
+                    >
+                      <Text className="text-white font-bold text-[14px]">Continuar</Text>
+                    </Press>
+                  ) : (
+                    <FollowupQuestion
+                      businessName={activeBenefit?.business.name ?? 'el local'}
+                      onAnswer={(extra) => {
+                        answerFollowup(extra);
+                        setPaso(reviewUrl ? 'resena' : 'historia');
+                      }}
+                    />
+                  )
                 ) : null}
                 {paso === 'resena' ? (
                   <ReviewStep
