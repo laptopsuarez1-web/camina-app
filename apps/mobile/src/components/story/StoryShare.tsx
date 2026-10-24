@@ -27,15 +27,15 @@ export function StoryRewardButton({ state, onPress }: { state: StoryState; onPre
         ) : null}
         <Press
           accessibilityRole="button"
-          accessibilityLabel={`Subí una historia y ganá ${STORY_REWARD} Puntos`}
+          accessibilityLabel={`Subir historia y ganar ${STORY_REWARD} Puntos`}
           onPress={onPress}
-          className="bg-aqua-deep rounded-2xl flex-row items-center justify-center"
-          style={{ gap: 7, paddingVertical: 11 }}
+          className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-xl flex-row items-center justify-center"
+          style={{ gap: 6, paddingVertical: 8 }}
         >
-          <Instagram size={16} color="#fff" weight="bold" />
-          <Text className="text-white font-bold text-[13.5px]">Subí tu historia y ganá</Text>
-          <Coin size={17} />
-          <Text className="text-white font-extrabold text-[13.5px]">{STORY_REWARD}</Text>
+          <Instagram size={14} color={dark ? colors.mint : colors.aquaInk} weight="bold" />
+          <Text className="text-aqua-ink dark:text-mint font-bold text-[12.5px]">Subir historia y ganá</Text>
+          <Coin size={15} />
+          <Text className="text-aqua-ink dark:text-mint font-extrabold text-[12.5px]">{STORY_REWARD}</Text>
         </Press>
       </View>
     );
@@ -61,67 +61,65 @@ export function StoryRewardButton({ state, onPress }: { state: StoryState; onPre
   );
 }
 
-// Pasos del final de un canje confirmado: compra extra, reseña opcional en Google Maps e invitación a la historia.
-export function RedemptionFollowup({
-  businessName,
-  answered,
-  hasReviewUrl,
-  onAnswer,
-  onReview,
-  onStory,
-}: {
-  businessName: string;
-  answered: boolean;
-  hasReviewUrl: boolean;
-  onAnswer: (extra: boolean) => void;
-  onReview: () => void;
-  onStory: () => void;
-}) {
-  if (!answered) {
-    return (
-      <View className="w-full items-center">
-        <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mb-1 text-center">¿Canjeaste algo más en el local?</Text>
-        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3 text-center">Nos ayuda a mostrarle a {businessName} lo que Camina le suma.</Text>
-        <View className="flex-row gap-2.5 w-full mb-2.5">
-          <Press accessibilityRole="button" onPress={() => onAnswer(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
-            <Text className="text-white font-bold text-[14px]">Sí, algo más</Text>
-          </Press>
-          <Press accessibilityRole="button" onPress={() => onAnswer(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
-            <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">No, solo esto</Text>
-          </Press>
-        </View>
-      </View>
-    );
-  }
+// Pasos del final de un canje confirmado, uno por pantalla: compra extra, reseña opcional en Google Maps e invitación a la historia.
+export function FollowupQuestion({ businessName, onAnswer }: { businessName: string; onAnswer: (extra: boolean) => void }) {
   return (
-    <View className="w-full" style={{ gap: 10 }}>
-      {hasReviewUrl ? (
-        <View className="rounded-2xl px-4 py-3.5" style={{ backgroundColor: '#FFF3D1' }}>
-          <View className="flex-row items-center mb-1" style={{ gap: 6 }}>
-            <Star size={15} color="#C98A0B" weight="fill" />
-            <Text className="text-[14px] font-bold" style={{ color: '#5E4205' }}>¿Dejarías una reseña en Google Maps?</Text>
-          </View>
-          <Text className="text-[12px] mb-3" style={{ color: '#6B4C08' }}>Es opcional. A {businessName} le ayuda mucho.</Text>
-          <Press accessibilityRole="link" onPress={onReview} className="rounded-xl py-2.5 items-center" style={{ backgroundColor: '#8F6307' }}>
-            <Text className="text-white font-bold text-[13.5px]">Dejar reseña</Text>
-          </Press>
+    <View className="w-full items-center">
+      <Text className="text-[16px] font-bold text-text-light dark:text-text-dark mb-1 text-center">¿Canjeaste algo más en el local?</Text>
+      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 text-center">Nos ayuda a mostrarle a {businessName} lo que Camina le suma.</Text>
+      <View className="flex-row gap-2.5 w-full">
+        <Press accessibilityRole="button" onPress={() => onAnswer(true)} className="flex-1 bg-aqua-deep rounded-2xl py-3.5 items-center">
+          <Text className="text-white font-bold text-[14px]">Sí, algo más</Text>
+        </Press>
+        <Press accessibilityRole="button" onPress={() => onAnswer(false)} className="flex-1 bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center">
+          <Text className="text-purple-ink dark:text-purple-soft font-semibold text-[14px]">No, solo esto</Text>
+        </Press>
+      </View>
+    </View>
+  );
+}
+
+export function ReviewStep({ businessName, onReview, onSkip }: { businessName: string; onReview: () => void; onSkip: () => void }) {
+  return (
+    <View className="w-full">
+      <View className="rounded-3xl px-5 py-5 items-center" style={{ backgroundColor: '#FFF3D1' }}>
+        <View className="items-center justify-center rounded-full mb-2.5" style={{ width: 46, height: 46, backgroundColor: '#FFE08A' }}>
+          <Star size={24} color="#C98A0B" weight="fill" />
         </View>
-      ) : null}
-      <Glass className="rounded-2xl" style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-        <View className="flex-row items-center mb-1" style={{ gap: 6 }}>
-          <Instagram size={16} color={colors.purple} weight="bold" />
-          <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Subí una historia y ganá</Text>
-          <Coin size={16} />
-          <Text className="text-[14px] font-extrabold text-text-light dark:text-text-dark">{STORY_REWARD}</Text>
+        <Text className="text-[16px] font-bold text-center" style={{ color: '#5E4205' }}>¿Dejarías una reseña en Google Maps?</Text>
+        <Text className="text-[12.5px] text-center mt-1 mb-4" style={{ color: '#6B4C08' }}>Es opcional. A {businessName} le ayuda mucho.</Text>
+        <Press accessibilityRole="link" onPress={onReview} className="w-full rounded-2xl py-3 items-center" style={{ backgroundColor: '#8F6307' }}>
+          <Text className="text-white font-bold text-[14px]">Dejar reseña</Text>
+        </Press>
+      </View>
+      <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
+        <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
+      </Press>
+    </View>
+  );
+}
+
+export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: () => void }) {
+  return (
+    <View className="w-full">
+      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 20, alignItems: 'center' }}>
+        <View className="flex-row items-center mb-1.5" style={{ gap: 6 }}>
+          <Instagram size={18} color={colors.purple} weight="bold" />
+          <Text className="text-[16px] font-bold text-text-light dark:text-text-dark">Subí una historia y ganá</Text>
+          <Coin size={18} />
+          <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{STORY_REWARD}</Text>
         </View>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-3" style={{ lineHeight: 17 }}>
+        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center mb-4" style={{ lineHeight: 18 }}>
           Sacale una foto a lo que canjeaste, subila a tu historia y etiquetá a {CAMINA_INSTAGRAM}.
         </Text>
-        <Press accessibilityRole="button" onPress={onStory} className="bg-aqua-deep rounded-xl py-2.5 flex-row items-center justify-center" style={{ gap: 7 }}>
+        <Press accessibilityRole="button" onPress={onStory} className="w-full bg-aqua-deep rounded-2xl py-3 flex-row items-center justify-center" style={{ gap: 7 }}>
           <Camera size={16} color="#fff" weight="bold" />
-          <Text className="text-white font-bold text-[13.5px]">Sacar o elegir foto</Text>
+          <Text className="text-white font-bold text-[14px]">Sacar o elegir foto</Text>
         </Press>
       </Glass>
+      <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
+        <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
+      </Press>
     </View>
   );
 }
