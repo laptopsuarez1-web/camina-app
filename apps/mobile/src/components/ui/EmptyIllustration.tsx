@@ -4,7 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { colors } from '@/theme/tokens';
 
 // Ilustraciones de los estados vacíos (180 x 128): un caminito de huellas que llega a algo.
-// Las huellas se dibujan en vectores (planta + talón, izquierda y derecha alternadas) para que nunca salgan recortadas.
+// Las huellas son las del logo (PNG), izquierda y derecha alternadas, una encima de otra en orden de paso.
 // Eventos: un calendario con un espacio punteado para el primer evento. Avisos: una campana tranquila con luna y estrellitas.
 // Puntos: la moneda Camina al final del caminito. Todo en la paleta de la app; sin desenfoque (el halo es un degradé radial).
 export type Illustration = 'eventos' | 'avisos' | 'puntos';
@@ -16,9 +16,6 @@ const SPARKLE = 'M0 -6 C0.8 -1.5 1.5 -0.8 6 0 C1.5 0.8 0.8 1.5 0 6 C-0.8 1.5 -1.
 function Sparkle({ x, y, s = 1, fill }: { x: number; y: number; s?: number; fill: string }) {
   return <Path d={SPARKLE} fill={fill} transform={`translate(${x} ${y}) scale(${s})`} />;
 }
-
-// Una huella de zapatilla en 20 x 43: planta del pie y talón separados. `side` la espeja para el pie izquierdo.
-const SOLE = 'M10 0 C16 0 20 5.5 20 13 C20 19 17.5 21 16.5 24 C16 25.6 14.6 26.4 13 26.4 L7 26.4 C5.4 26.4 4 25.6 3.5 24 C2.5 21 0 19 0 13 C0 5.5 4 0 10 0 Z';
 
 type Step = { x: number; y: number; rot: number; opacity: number; side: 1 | -1 };
 
@@ -44,17 +41,30 @@ function trail(from: [number, number], to: [number, number], count: number): Ste
   });
 }
 
-function Footprints({ steps, fill }: { steps: Step[]; fill: string }) {
-  const k = 0.78;
+// Las huellas son las del logo de Camina (el pie derecho lleva el corazón), en PNG para que sean idénticas a la marca.
+const PIES = {
+  mint: { izq: require('@/../assets/pie-izq-mint.png'), der: require('@/../assets/pie-der-mint.png') },
+  aqua: { izq: require('@/../assets/pie-izq-aqua.png'), der: require('@/../assets/pie-der-aqua.png') },
+};
+const PIE_ALTO = 30;
+const PIE_ANCHO = { izq: (PIE_ALTO * 80) / 168, der: (PIE_ALTO * 86) / 163 };
+
+function Footprints({ steps, tono }: { steps: Step[]; tono: 'mint' | 'aqua' }) {
   return (
-    <G>
-      {steps.map((st, i) => (
-        <G key={i} opacity={st.opacity} transform={`translate(${st.x} ${st.y}) rotate(${st.rot}) scale(${st.side * k} ${k}) translate(-10 -22)`}>
-          <Path d={SOLE} fill={fill} />
-          <Ellipse cx={10} cy={35.5} rx={6.4} ry={7} fill={fill} />
-        </G>
-      ))}
-    </G>
+    <>
+      {steps.map((st, i) => {
+        const lado = st.side === 1 ? 'der' : 'izq';
+        const w = PIE_ANCHO[lado];
+        return (
+          <Image
+            key={i}
+            source={PIES[tono][lado]}
+            accessible={false}
+            style={{ position: 'absolute', left: st.x - w / 2, top: st.y - PIE_ALTO / 2, width: w, height: PIE_ALTO, opacity: st.opacity, transform: [{ rotate: `${st.rot}deg` }] }}
+          />
+        );
+      })}
+    </>
   );
 }
 
@@ -62,7 +72,7 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
   const dark = useColorScheme().colorScheme === 'dark';
   const floor = dark ? 'rgba(0,0,0,0.42)' : 'rgba(91,49,163,0.13)';
   const haloColor = kind === 'puntos' ? colors.mint : '#A672E8';
-  const feet = dark ? colors.mint : colors.aquaDeep;
+  const tono = dark ? 'mint' : 'aqua';
   const spark = dark ? '#FFFFFF' : colors.purple;
 
   return (
@@ -108,9 +118,6 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
           </G>
         )}
 
-        {kind === 'eventos' && <Footprints steps={trail([16, 104], [44, 72], 3)} fill={feet} />}
-        {kind === 'puntos' && <Footprints steps={trail([18, 106], [84, 56], 4)} fill={feet} />}
-
         {kind === 'puntos' && (
           <G>
             <Circle cx={134} cy={46} r={34} fill="none" stroke={colors.mint} strokeOpacity={dark ? 0.55 : 0.7} strokeWidth={3} />
@@ -118,6 +125,9 @@ export function EmptyIllustration({ kind }: { kind: Illustration }) {
           </G>
         )}
       </Svg>
+
+      {kind === 'eventos' && <Footprints steps={trail([20, 100], [48, 70], 3)} tono={tono} />}
+      {kind === 'puntos' && <Footprints steps={trail([20, 102], [84, 56], 4)} tono={tono} />}
 
       {kind === 'puntos' && (
         <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ position: 'absolute', left: 104, top: 16, width: 60, height: 60, borderRadius: 30 }} />

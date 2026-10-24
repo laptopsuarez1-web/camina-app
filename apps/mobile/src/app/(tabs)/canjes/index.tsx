@@ -3,6 +3,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Animated, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, Check, IconBubble } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star } from '@/components/icons';
 import {
   useBenefits,
   useBenefitsRemainingToday,
@@ -23,7 +24,7 @@ import {
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
-import { RedemptionFollowup } from '@/components/story/StoryShare';
+import { FollowupQuestion, ReviewStep, StoryStep } from '@/components/story/StoryShare';
 import { useStoryFlow } from '@/components/story/StoryFlow';
 import { BellButton } from '@/components/ui/BellButton';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -330,7 +331,8 @@ function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boole
   );
 }
 
-// Marca de éxito animada: la burbuja entra con un rebote y el anillo se expande una vez.
+// Marca de éxito animada: un sello redondo con degradé, tilde blanco y chispas; entra con un rebote y el anillo se expande una vez.
+const CHISPA = 'M0 -6 C0.8 -1.5 1.5 -0.8 6 0 C1.5 0.8 0.8 1.5 0 6 C-0.8 1.5 -1.5 0.8 -6 0 C-1.5 -0.8 -0.8 -1.5 0 -6 Z';
 function SuccessMark() {
   const [scale] = useState(() => new Animated.Value(0.4));
   const [ring] = useState(() => new Animated.Value(0));
@@ -341,13 +343,13 @@ function SuccessMark() {
     ]).start();
   }, [scale, ring]);
   return (
-    <View style={{ width: 84, height: 84, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: 120, height: 104, alignItems: 'center', justifyContent: 'center' }}>
       <Animated.View
         style={{
           position: 'absolute',
-          width: 84,
-          height: 84,
-          borderRadius: 42,
+          width: 92,
+          height: 92,
+          borderRadius: 46,
           borderWidth: 3,
           borderColor: colors.aqua,
           opacity: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0] }),
@@ -355,12 +357,26 @@ function SuccessMark() {
         }}
       />
       <Animated.View style={{ transform: [{ scale }] }}>
-        <IconBubble icon={Check} tone="aqua" size={62} />
+        <Svg width={120} height={104} viewBox="0 0 120 104">
+          <Defs>
+            <LinearGradient id="sello" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#5FE3B8" />
+              <Stop offset="1" stopColor="#1F9C7E" />
+            </LinearGradient>
+          </Defs>
+          <Circle cx={60} cy={52} r={44} fill={colors.mint} fillOpacity={0.28} />
+          <Circle cx={60} cy={52} r={34} fill="url(#sello)" />
+          <Circle cx={60} cy={52} r={34} fill="none" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={2.5} />
+          <Path d="M46 53 L56 63 L75 42" fill="none" stroke="#FFFFFF" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" />
+          <Path d={CHISPA} fill={colors.mint} transform="translate(104 20) scale(1.3)" />
+          <Path d={CHISPA} fill="#A672E8" transform="translate(14 28) scale(0.9)" />
+          <Path d={CHISPA} fill={colors.mint} transform="translate(100 88) scale(0.7)" />
+          <Circle cx={18} cy={78} r={3} fill="#A672E8" fillOpacity={0.7} />
+        </Svg>
       </Animated.View>
     </View>
   );
 }
-
 
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -424,6 +440,11 @@ export default function CanjesScreen() {
   const [answeredId, setAnsweredId] = useState<string | null>(null);
   const confirmed = !!activeId && confirmedId === activeId;
   const answered = !!activeId && answeredId === activeId;
+  // El final del canje va de a una pantalla: confirmado, compra extra, reseña y historia.
+  type Paso = 'ok' | 'resena' | 'historia';
+  const [pasoDe, setPasoDe] = useState<{ id: string | null; paso: Paso }>({ id: null, paso: 'ok' });
+  const paso: Paso = pasoDe.id === activeId ? pasoDe.paso : 'ok';
+  const setPaso = (p: Paso) => setPasoDe({ id: activeId, paso: p });
   useEffect(() => {
     if (!activeId) return;
     const check = async () => {
@@ -1544,38 +1565,59 @@ export default function CanjesScreen() {
               </>
             ) : confirmed ? (
               <View className="items-center">
-                <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
-                  <SuccessMark />
-                  <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
-                  <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
-                    {activeBenefit?.business.name} ya te entregó tu beneficio.
-                  </Text>
-                  {activeId && bonusById[activeId] ? (
-                    <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
-                      {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                {paso === 'ok' ? (
+                  <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
+                    <SuccessMark />
+                    <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
+                    <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
+                      {activeBenefit?.business.name} ya te entregó tu beneficio.
                     </Text>
-                  ) : null}
-                  {activeLoyalty ? (
-                    <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
-                      {activeLoyalty.stamps === 0
-                        ? 'Usaste el premio de tu tarjeta: empieza de nuevo.'
-                        : activeLoyalty.ready
-                          ? '¡Tarjeta completa! Tu próximo premio sale gratis.'
-                          : `Sumaste un sello: ${activeLoyalty.stamps} de ${activeLoyalty.goal}.`}
-                    </Text>
-                  ) : null}
-                </View>
-                <RedemptionFollowup
-                  businessName={activeBenefit?.business.name ?? 'el local'}
-                  answered={answered}
-                  hasReviewUrl={!!reviewUrl}
-                  onAnswer={answerFollowup}
-                  onReview={() => reviewUrl && Linking.openURL(reviewUrl)}
-                  onStory={startStoryFromCode}
-                />
-                <Press accessibilityRole="button" onPress={closeCode} className="w-full bg-purple-light-light dark:bg-purple-light-dark rounded-2xl py-3.5 items-center mt-2.5">
-                  <Text className="text-purple-ink dark:text-purple-soft font-bold text-[14px]">Listo</Text>
-                </Press>
+                    {activeId && bonusById[activeId] ? (
+                      <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
+                        {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                      </Text>
+                    ) : null}
+                    {activeLoyalty ? (
+                      <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
+                        {activeLoyalty.stamps === 0
+                          ? 'Usaste el premio de tu tarjeta: empieza de nuevo.'
+                          : activeLoyalty.ready
+                            ? '¡Tarjeta completa! Tu próximo premio sale gratis.'
+                            : `Sumaste un sello: ${activeLoyalty.stamps} de ${activeLoyalty.goal}.`}
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
+                {paso === 'ok' ? (
+                  answered ? (
+                    <Press
+                      accessibilityRole="button"
+                      onPress={() => setPaso(reviewUrl ? 'resena' : 'historia')}
+                      className="w-full bg-aqua-deep rounded-2xl py-3.5 items-center"
+                    >
+                      <Text className="text-white font-bold text-[14px]">Continuar</Text>
+                    </Press>
+                  ) : (
+                    <FollowupQuestion
+                      businessName={activeBenefit?.business.name ?? 'el local'}
+                      onAnswer={(extra) => {
+                        answerFollowup(extra);
+                        setPaso(reviewUrl ? 'resena' : 'historia');
+                      }}
+                    />
+                  )
+                ) : null}
+                {paso === 'resena' ? (
+                  <ReviewStep
+                    businessName={activeBenefit?.business.name ?? 'el local'}
+                    onReview={() => {
+                      if (reviewUrl) Linking.openURL(reviewUrl);
+                      setPaso('historia');
+                    }}
+                    onSkip={() => setPaso('historia')}
+                  />
+                ) : null}
+                {paso === 'historia' ? <StoryStep onStory={startStoryFromCode} onSkip={closeCode} /> : null}
               </View>
             ) : activeBenefit?.online && !expired && activeRedemption ? (
               <>
