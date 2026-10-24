@@ -6,8 +6,10 @@ import { useColorScheme } from 'nativewind';
 import { paletteFor, WAVES_VIEWBOX } from '@/components/ui/backgrounds';
 
 // Fondo de toda la app: degradé de base casi blanco y, anclado abajo, tres olas suaves (Olas).
-export function AmbientBackground() {
-  const dark = useColorScheme().colorScheme === 'dark';
+// `dark` fija el modo (el onboarding va siempre en claro); sin él sigue el modo de la app.
+export function AmbientBackground({ dark: forced }: { dark?: boolean } = {}) {
+  const scheme = useColorScheme().colorScheme === 'dark';
+  const dark = forced ?? scheme;
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const p = paletteFor(dark);
   return (

@@ -2,110 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { LinearGradient } from 'expo-linear-gradient';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
-import { ProgressRing } from '@/components/ui/ProgressRing';
-import { Coffee, ChevronDown, Crown, IconBubble } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 
-const COIN = require('@/../assets/camina-coin.png');
-
-function Coin({ size, style }: { size: number; style?: object }) {
-  return <Image source={COIN} accessible={false} importantForAccessibility="no" style={[{ width: size, height: size, borderRadius: size / 2 }, style]} />;
-}
-
-// 1. El aro de Inicio llenándose, con monedas alrededor.
-function RingArt() {
-  return (
-    <View style={{ width: 240, height: 240, alignItems: 'center', justifyContent: 'center' }}>
-      <ProgressRing size={220} strokeWidth={20} progress={0.78} trackColor="rgba(255,255,255,0.1)" progressColor={colors.mint}>
-        <Text style={{ color: '#fff', fontSize: 42, fontWeight: '800', letterSpacing: -1 }}>6.230</Text>
-        <Text style={{ color: colors.authMuted, fontSize: 14 }}>pasos hoy</Text>
-      </ProgressRing>
-      <Coin size={44} style={{ position: 'absolute', right: 0, top: 14 }} />
-      <Coin size={30} style={{ position: 'absolute', left: 6, bottom: 34 }} />
-    </View>
-  );
-}
-
-// 2. La regla de los Puntos, con los números de business-rules.
-function PointsArt() {
-  return (
-    <View style={{ alignItems: 'center', gap: 14 }}>
-      <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>
-        {POINTS_PER_STEP_UNIT.toLocaleString('es-BO')} <Text style={{ color: colors.authMuted, fontSize: 17, fontWeight: '500' }}>pasos</Text>
-      </Text>
-      <View importantForAccessibility="no" accessibilityElementsHidden><ChevronDown size={28} color={colors.mint} /></View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Coin size={64} />
-        <Text style={{ color: '#fff', fontSize: 32, fontWeight: '800' }}>1 Punto</Text>
-      </View>
-      <View style={{ marginTop: 6, borderRadius: 99, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: 'rgba(127,237,196,0.14)', borderWidth: 1, borderColor: 'rgba(127,237,196,0.3)' }}>
-        <Text style={{ color: colors.mint, fontWeight: '800', fontSize: 14 }}>Hasta {DAILY_POINTS_CAP} Puntos por día</Text>
-      </View>
-    </View>
-  );
-}
-
-// 3. Una tarjeta de premio como las de Canjes (ejemplo ilustrativo).
-function RewardArt() {
-  return (
-    <View
-      style={{
-        width: '100%', maxWidth: 320, borderRadius: 22, padding: 16, gap: 12, transform: [{ rotate: '-3deg' }],
-        backgroundColor: 'rgba(255,255,255,0.92)', borderWidth: 1, borderColor: colors.light.line,
-      }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconBubble icon={Coffee} tone="aqua" size={44} />
-        <View>
-          <Text style={{ color: colors.light.text, fontWeight: '800', fontSize: 17 }}>Café Origen</Text>
-          <Text style={{ color: colors.light.muted, fontSize: 13 }}>Café · a 300 m</Text>
-        </View>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, borderTopWidth: 1, borderTopColor: colors.light.line, paddingTop: 12 }}>
-        <Text style={{ flex: 1, color: colors.light.text, fontSize: 14 }}>Café americano gratis</Text>
-        <Coin size={20} />
-        <Text style={{ color: colors.light.text, fontWeight: '800', fontSize: 15 }}>20</Text>
-        <View style={{ backgroundColor: colors.aquaDeep, borderRadius: 99, paddingVertical: 7, paddingHorizontal: 14 }}>
-          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Canjear</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// 4. El podio del detalle de grupo.
-function GroupArt() {
-  const step = (letter: string, place: number, height: number, avatar: number, bg: string, first?: boolean) => (
-    <View style={{ alignItems: 'center', gap: 6 }}>
-      {first ? <View importantForAccessibility="no" accessibilityElementsHidden><Crown size={22} color={colors.warn} weight="fill" /></View> : null}
-      <View style={{ width: avatar, height: avatar, borderRadius: avatar / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: avatar * 0.4 }}>{letter}</Text>
-      </View>
-      <View
-        style={{
-          width: first ? 78 : 66, height, borderTopLeftRadius: 14, borderTopRightRadius: 14, alignItems: 'center', paddingTop: 8,
-          backgroundColor: first ? 'rgba(127,237,196,0.35)' : 'rgba(255,255,255,0.12)',
-        }}
-      >
-        <Text style={{ color: '#fff', fontWeight: '800', fontSize: first ? 28 : 24 }}>{place}</Text>
-      </View>
-    </View>
-  );
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }} accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      {step('A', 2, 76, 48, colors.mint)}
-      {step('L', 1, 112, 56, colors.mint, true)}
-      {step('C', 3, 56, 48, '#C6A2F5')}
-    </View>
-  );
-}
-
-const ART = { ring: RingArt, points: PointsArt, reward: RewardArt, group: GroupArt } as const;
+// Cada ilustración es un teléfono con una captura real de la app (Inicio, Tus Puntos, Canjes y un grupo)
+// más un recorte agrandado de lo importante. Los locales y premios son los reales de la base.
+// Para regenerarlas: camina/boceto-onboarding/fuente en la carpeta del proyecto.
+const ART = {
+  ring: require('@/../assets/onboarding/ring.webp'),
+  points: require('@/../assets/onboarding/points.webp'),
+  reward: require('@/../assets/onboarding/reward.webp'),
+  group: require('@/../assets/onboarding/group.webp'),
+} as const;
 
 export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
@@ -143,11 +54,13 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <LinearGradient colors={colors.headerGradient} style={{ flex: 1, paddingTop: 52, paddingBottom: 28 }}>
-      <View style={{ alignItems: 'flex-end', paddingHorizontal: 16, height: 44 }}>
+    <View style={{ flex: 1, backgroundColor: '#FCFBFF', paddingTop: 52, paddingBottom: 28 }}>
+      <AmbientBackground dark={false} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 16, height: 44 }}>
+        <Image source={require('@/../assets/icon.png')} accessibilityLabel="Camina" style={{ width: 40, height: 40, borderRadius: 20 }} />
         {!last && (
           <Press onPress={() => finish()} accessibilityRole="button" hitSlop={10} style={{ paddingHorizontal: 10, paddingVertical: 10 }}>
-            <Text style={{ color: colors.authMuted, fontSize: 15, fontWeight: '600' }}>Saltar</Text>
+            <Text style={{ color: colors.light.muted, fontSize: 15, fontWeight: '600' }}>Saltar</Text>
           </Press>
         )}
       </View>
@@ -161,44 +74,41 @@ export default function OnboardingScreen() {
         onLayout={(e) => setPageHeight(e.nativeEvent.layout.height)}
         style={{ flex: 1 }}
       >
-        {ONBOARDING.map((slide, i) => {
-          const Art = ART[slide.art];
-          return (
-            // Vertical con flexGrow: con letra normal se ve igual que antes; con texto grande el contenido crece y se desplaza.
-            <ScrollView
-              key={slide.art}
-              style={{ width, height: pageHeight || undefined }}
-              contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, alignItems: 'center' }}
-              showsVerticalScrollIndicator={false}
-            >
-              <Animated.View style={{ flexGrow: 1, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, opacity: i === step ? fade : 1 }}>
-                <Art />
-              </Animated.View>
-              <View style={{ maxWidth: 330, alignItems: 'center', paddingBottom: 8 }}>
-                <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 27, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
-                  {slide.title}
-                </Text>
-                <Text style={{ color: colors.authMuted, fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
-              </View>
-            </ScrollView>
-          );
-        })}
+        {ONBOARDING.map((slide, i) => (
+          // Vertical con flexGrow: con letra normal entra todo; con texto grande el contenido crece y se desplaza.
+          <ScrollView
+            key={slide.art}
+            style={{ width, height: pageHeight || undefined }}
+            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, alignItems: 'center' }}
+            showsVerticalScrollIndicator={false}
+          >
+            <Animated.View style={{ flex: 1, minHeight: 260, alignSelf: 'stretch', marginHorizontal: -28, opacity: i === step ? fade : 1 }}>
+              <Image source={ART[slide.art]} accessible={false} resizeMode="contain" style={{ flex: 1, width: '100%' }} />
+            </Animated.View>
+            <View style={{ maxWidth: 340, alignItems: 'center', paddingTop: 8, paddingBottom: 8 }}>
+              <Text accessibilityRole="header" style={{ color: colors.light.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.3, textAlign: 'center', marginBottom: 10 }}>
+                {slide.title}
+              </Text>
+              <Text style={{ color: colors.light.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
+            </View>
+          </ScrollView>
+        ))}
       </ScrollView>
 
-      <View style={{ paddingHorizontal: 28, paddingTop: 22 }}>
+      <View style={{ paddingHorizontal: 28, paddingTop: 18 }}>
         <View
           style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 20 }}
           accessible
           accessibilityLabel={`Pantalla ${step + 1} de ${ONBOARDING.length}`}
         >
           {ONBOARDING.map((_, i) => (
-            <View key={i} style={{ height: 7, borderRadius: 99, width: i === step ? 24 : 7, backgroundColor: i === step ? colors.mint : 'rgba(255,255,255,0.25)' }} />
+            <View key={i} style={{ height: 7, borderRadius: 99, width: i === step ? 24 : 7, backgroundColor: i === step ? colors.aquaDeep : 'rgba(41,28,71,0.16)' }} />
           ))}
         </View>
         <Press onPress={next} accessibilityRole="button" className="bg-mint rounded-2xl items-center" style={{ paddingVertical: 16 }}>
-          <Text className="text-mint-dark font-extrabold text-[16px]">Continuar</Text>
+          <Text className="text-mint-dark font-extrabold text-[16px]">{last ? 'Empezar' : 'Continuar'}</Text>
         </Press>
       </View>
-    </LinearGradient>
+    </View>
   );
 }

@@ -45,7 +45,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.authBg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-      <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 56, height: 56, marginBottom: 12 }} />
+      <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 56, height: 56, borderRadius: 28, marginBottom: 12 }} />
       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 10 }}>
         ¡Hay una versión nueva de Camina!
       </Text>

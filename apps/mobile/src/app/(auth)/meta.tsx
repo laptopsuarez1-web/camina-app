@@ -74,7 +74,7 @@ export default function MetaScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg, paddingHorizontal: 24, paddingTop: 72, paddingBottom: 32 }}>
-      <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 60, height: 60, marginBottom: 14 }} />
+      <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 14 }} />
       <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 26, fontWeight: '800', marginBottom: 8 }}>¿Cuántos pasos querés hacer por día?</Text>
       <View style={{ alignSelf: 'flex-start', backgroundColor: 'rgba(127,237,196,0.16)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, marginBottom: 6 }}>
         <Text style={{ color: colors.mint, fontSize: 13.5, fontWeight: '700' }}>Te recomendamos 5.000 pasos por día</Text>
