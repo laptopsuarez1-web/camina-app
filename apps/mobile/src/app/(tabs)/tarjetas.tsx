@@ -21,7 +21,7 @@ export default function TarjetasScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   return (
-    <ScrollView
+    <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
       refreshControl={

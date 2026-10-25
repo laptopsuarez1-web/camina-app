@@ -222,7 +222,7 @@ export default function ActividadScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
 
       {wrapped && wrappedStart ? (

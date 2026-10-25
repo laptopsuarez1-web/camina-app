@@ -104,7 +104,7 @@ export default function FriendProfileScreen() {
 
   return (
     <View className="flex-1">
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
         <DarkHeader style={{ paddingBottom: 56 }}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>

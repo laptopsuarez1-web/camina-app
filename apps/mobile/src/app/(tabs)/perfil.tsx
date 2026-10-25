@@ -166,7 +166,7 @@ export default function PerfilScreen() {
   const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
 
   return (
-    <ScrollView className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle marginBottom={16}>Perfil</ScreenTitle>
 
       <Glass className="rounded-3xl p-4 mb-3">

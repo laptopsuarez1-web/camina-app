@@ -242,7 +242,7 @@ export default function GroupDetailScreen() {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
+      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
         <LinearGradient colors={colors.headerGradient} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>

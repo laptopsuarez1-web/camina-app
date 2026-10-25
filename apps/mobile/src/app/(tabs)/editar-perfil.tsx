@@ -221,7 +221,7 @@ export default function EditarPerfilScreen() {
 
   return (
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="bg-auth-bg pt-14 pb-5 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
           <View className="flex-row items-center gap-3">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

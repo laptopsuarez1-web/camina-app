@@ -236,7 +236,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
         <Press accessible={false} feedback="none" className="bg-card-light dark:bg-card-dark rounded-t-[28px] pt-3" style={{ maxHeight: '88%' }} onPress={() => {}}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-3" />
           {p ? (
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}>
               <PhotoCarousel urls={photoUrls} width={screenW - 40} />
               <PromoBackground p={photoUrls.length > 0 ? { ...p, bg_image_url: null } : p} style={{ borderRadius: 24, padding: 16 }}>
                 <View className="flex-row items-center" style={{ gap: 12 }}>

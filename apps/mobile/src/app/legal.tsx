@@ -18,7 +18,7 @@ export default function LegalScreen() {
           <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Términos y privacidad</Text>
         </View>
       </View>
-      <ScrollView className="flex-1" contentContainerClassName="px-6 pt-5 pb-12">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="px-6 pt-5 pb-12">
         <LegalSections />
         <Press accessibilityRole="link" onPress={() => Linking.openURL(PRIVACY_URL)} className="py-3 items-center">
           <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">Ver en el navegador</Text>
