@@ -69,7 +69,9 @@ export function FichaPreview({ business, benefits }: { business: Business; benef
         )}
 
         <p className="text-[15px] font-bold mt-5 mb-2.5">Premios disponibles</p>
-        {activos.length === 0 && <p className="text-[12.5px] text-warn">Todavía no hay ningún beneficio activo.</p>}
+        {activos.length === 0 && (
+          <p className="text-[12.5px] text-muted">Todavía no hay beneficios activos. Se puede aprobar igual: aparece en Canjes y en el mapa cuando cargue el primero.</p>
+        )}
         <div className="flex flex-col gap-2">
           {activos.map((b) => (
             <div key={b.id} className="bg-white border border-line rounded-2xl p-2.5 flex gap-2.5 items-center">

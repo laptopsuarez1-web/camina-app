@@ -8,7 +8,7 @@ import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellR
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
-import { faltantesParaPublicar, listaEnCastellano } from '@/lib/readiness';
+import { faltantesParaPublicar, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
 import type { BusinessPlan } from '@/lib/supabase';
@@ -102,7 +102,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   const vence = vencimientoPlan(business);
-  const faltan = beneficiosActivos == null ? [] : faltantesParaPublicar(business, beneficiosActivos);
+  const faltan = faltantesParaPublicar(business);
 
   const sidebar = (
     <>
@@ -223,7 +223,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </div>
             </>
           ) : beneficiosActivos == null ? null : (
-            <p>Ya tenés todo lo necesario. El equipo de Camina lo está revisando y te avisamos por correo apenas esté publicado.</p>
+            <>
+              <p>Ya tenés todo lo necesario. El equipo de Camina lo está revisando y te avisamos por correo apenas esté publicado.</p>
+              {sugerenciaBeneficio(business, beneficiosActivos) && (
+                <p className="mt-1.5">
+                  Cuando cargues tu primer{' '}
+                  <Link href="/beneficio" className="font-semibold underline">
+                    beneficio
+                  </Link>
+                  , tu local va a aparecer también en Canjes y en el mapa.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}

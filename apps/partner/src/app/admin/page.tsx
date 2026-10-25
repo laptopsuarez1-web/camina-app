@@ -6,7 +6,7 @@ import { supabase, type Business, type BusinessPlan } from '@/lib/supabase';
 import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { FichaPreviewModal } from '@/components/FichaPreview';
-import { faltantesParaPublicar } from '@/lib/readiness';
+import { faltantesParaPublicar, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 
 const PLAN_LABEL: Record<BusinessPlan, string> = {
@@ -198,7 +198,7 @@ export default function AdminPage() {
             business={previewing}
             onClose={() => setPreviewing(null)}
             footer={
-              faltantesParaPublicar(previewing, activeBenefits[previewing.id] ?? 0).length === 0 && !previewing.approved ? (
+              faltantesParaPublicar(previewing).length === 0 && !previewing.approved ? (
                 <button
                   onClick={() => approveBusiness(previewing.id)}
                   disabled={savingId === previewing.id}
@@ -314,10 +314,13 @@ export default function AdminPage() {
                                 WhatsApp {b.phone}
                               </a>
                             )}
-                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length > 0 && (
+                            {faltantesParaPublicar(b).length > 0 && (
                               <p className="text-[11.5px] text-warn font-semibold mt-0.5">
-                                Le falta: {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).map((f) => f.texto).join(', ')}
+                                Le falta: {faltantesParaPublicar(b).map((f) => f.texto).join(', ')}
                               </p>
+                            )}
+                            {sugerenciaBeneficio(b, activeBenefits[b.id] ?? 0) && (
+                              <p className="text-[11.5px] text-muted mt-0.5">Sin beneficios activos todavía (se puede aprobar igual)</p>
                             )}
                           </div>
                           <div className="flex gap-2 flex-wrap">
@@ -327,7 +330,7 @@ export default function AdminPage() {
                             >
                               Ver ficha
                             </button>
-                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length === 0 && (
+                            {faltantesParaPublicar(b).length === 0 && (
                               <button
                                 onClick={() => approveBusiness(b.id)}
                                 disabled={savingId === b.id}
@@ -418,7 +421,7 @@ export default function AdminPage() {
                             >
                               Ver ficha
                             </button>
-                            {faltantesParaPublicar(b, activeBenefits[b.id] ?? 0).length === 0 && (
+                            {faltantesParaPublicar(b).length === 0 && (
                               <button
                                 onClick={() => approveBusiness(b.id)}
                                 disabled={savingId === b.id}
