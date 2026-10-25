@@ -5,6 +5,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,7 @@ import { useTodaySteps } from '@/hooks/usePedometer';
 import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
+import { useSyncYesterday } from '@/hooks/useSyncYesterday';
 import { buzz } from '@/lib/haptics';
 import { useBenefits, useMyRedemptions, useMyStoryShares } from '@/hooks/useBenefits';
 import { useStoryFlow } from '@/components/story/StoryFlow';
@@ -41,6 +43,11 @@ import { Coin } from '@/components/ui/Coin';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y "Tope de hoy" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
+
+function localDayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function greeting(name: string) {
   const h = new Date().getHours();
@@ -112,6 +119,7 @@ export default function HomeScreen() {
   const { data: friends } = useFriends();
   const { data: friendRequests } = useFriendRequests();
   const syncSteps = useSyncSteps();
+  useSyncYesterday(live);
   const lastSynced = useRef(0);
   // Reintento del envío de pasos: valor que se reintenta, cuántas veces y el temporizador pendiente.
   const retryFor = useRef({ steps: 0, tries: 0 });
@@ -145,7 +153,7 @@ export default function HomeScreen() {
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
-  // Celebraciones suaves (solo cuando ocurren estando en pantalla, nunca al abrir la app):
+  // Celebraciones suaves (una sola vez por Punto nuevo y por meta del día):
   // - cada Punto nuevo: el chip "+N Puntos" late;
   // - al llegar a la meta del día: dos ondas verdes salen del aro y aparece "Meta cumplida".
   // Moneda que viaja: cada Punto nuevo sale del chip "+N Puntos" del aro, cruza la pantalla y entra en la moneda del saldo de arriba.
@@ -182,20 +190,37 @@ export default function HomeScreen() {
   const wave1 = useRef(new Animated.Value(0)).current;
   const wave2 = useRef(new Animated.Value(0)).current;
   const goalIn = useRef(new Animated.Value(goalMet ? 1 : 0)).current;
-  const prevSteps = useRef<number | null>(null);
+  // Lo que ya se celebró hoy (Puntos del día y meta) queda guardado en el teléfono: cada Punto nuevo y la meta se
+  // celebran una sola vez, aunque se haya ganado con la app cerrada, y no se repiten cada vez que se vuelve a entrar.
   const celebrating = useRef(false);
+  const seen = useRef<{ day: string; points: number; goal: boolean } | null>(null);
+  const [seenReady, setSeenReady] = useState(false);
   useEffect(() => {
-    if (!live) return;
-    const before = prevSteps.current;
-    prevSteps.current = steps;
-    if (before === null || steps <= before) return;
-    if (Math.floor(steps / POINTS_PER_STEP_UNIT) > Math.floor(before / POINTS_PER_STEP_UNIT) && pointsToday <= DAILY_POINTS_CAP) {
+    if (!userId) return;
+    let cancelled = false;
+    setSeenReady(false);
+    AsyncStorage.getItem(`camina_home_seen_${userId}`)
+      .then((raw) => { seen.current = raw ? JSON.parse(raw) : null; })
+      .catch(() => { seen.current = null; })
+      .finally(() => { if (!cancelled) setSeenReady(true); });
+    return () => { cancelled = true; };
+  }, [userId]);
+  useEffect(() => {
+    if (!live || !seenReady || !userId) return;
+    const day = localDayKey();
+    const before = seen.current?.day === day ? seen.current : { day, points: 0, goal: false };
+    const newPoint = pointsToday > before.points;
+    const newGoal = goalMet && !before.goal;
+    if (!newPoint && !newGoal) return;
+    seen.current = { day, points: Math.max(before.points, pointsToday), goal: before.goal || goalMet };
+    AsyncStorage.setItem(`camina_home_seen_${userId}`, JSON.stringify(seen.current)).catch(() => {});
+    if (newPoint) {
       buzz.light();
-      if (Math.floor(before / POINTS_PER_STEP_UNIT) < DAILY_POINTS_CAP) launchCoin();
+      launchCoin();
       chipPop.setValue(0);
       Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     }
-    if (before < goal && steps >= goal) {
+    if (newGoal) {
       [wave1, wave2].forEach((w) => w.setValue(0));
       celebrating.current = true;
       buzz.success();
@@ -210,7 +235,7 @@ export default function HomeScreen() {
       ], { stopTogether: false }).start(() => { celebrating.current = false; });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [steps, live]);
+  }, [pointsToday, goalMet, live, seenReady, userId]);
   useEffect(() => { if (goalMet && !celebrating.current) goalIn.setValue(1); }, [goalMet, goalIn]);
   const waveStyle = (w: Animated.Value) => ({
     opacity: w.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 0.65, 0] }),
