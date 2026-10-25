@@ -503,6 +503,7 @@ export default function CanjesScreen() {
   // panel que se cierra (solo existe en iOS); en Android alcanza con esperar la animación.
   const afterMapClose = useRef<(() => void) | null>(null);
   const afterProfileClose = useRef<(() => void) | null>(null);
+  const afterCodeClose = useRef<(() => void) | null>(null);
   // isOpen: si el panel ya estaba cerrado (por ejemplo, se cerró mientras se generaba el código) no habrá onDismiss.
   function runAfterClose(slot: { current: (() => void) | null }, isOpen: boolean, next: () => void) {
     if (!isOpen) next();
@@ -864,9 +865,10 @@ export default function CanjesScreen() {
   function startStoryFromCode() {
     if (!activeRedemption || !activeBenefit) return;
     const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name };
+    // La hoja para elegir la foto es otro panel: se abre cuando el del código terminó de cerrarse.
+    runAfterClose(afterCodeClose, true, () => story.start(target));
     setActiveRedemption(null);
     setActiveBenefit(null);
-    story.start(target);
   }
 
   const mm = String(Math.floor(remainingMs / 60000)).padStart(2, '0');
@@ -1672,7 +1674,7 @@ export default function CanjesScreen() {
       </Modal>
 
       {/* Código de canje */}
-      <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode}>
+      <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode} onDismiss={() => flushAfterClose(afterCodeClose)}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <Glass className="rounded-t-[32px] px-6 pt-3 pb-10">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
