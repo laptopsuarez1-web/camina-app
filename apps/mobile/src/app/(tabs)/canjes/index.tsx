@@ -14,6 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star } from '@/components/icons';
 import {
   useBenefits,
+  useApprovedBusinesses,
   useBenefitsRemainingToday,
   useOnlineRedeemed,
   useMyRedemptions,
@@ -457,6 +458,12 @@ export default function CanjesScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: benefits, isLoading, isError, refetch } = useBenefits();
+  // Locales aprobados que todavía no cargaron ningún premio: igual salen en la lista y en el mapa.
+  const { data: approvedBusinesses } = useApprovedBusinesses();
+  const sinPremios = useMemo(() => {
+    const conPremios = new Set((benefits ?? []).map((b) => b.business.id));
+    return (approvedBusinesses ?? []).filter((b) => !conPremios.has(b.id)) as BusinessT[];
+  }, [benefits, approvedBusinesses]);
   const { data: remainingToday } = useBenefitsRemainingToday();
   const { data: onlineRedeemed } = useOnlineRedeemed();
   const { data: myRedemptions } = useMyRedemptions();
@@ -489,6 +496,15 @@ export default function CanjesScreen() {
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [mapOpen, setMapOpen] = useState(false);
+  const [fullMapReady, setFullMapReady] = useState(false);
+  // Cerrado el mapa completo, se vuelve a esperar a que el panel termine de abrirse la próxima vez.
+  if (!mapOpen && fullMapReady) setFullMapReady(false);
+  // Respaldo por si onShow no llega.
+  useEffect(() => {
+    if (!mapOpen) return;
+    const t = setTimeout(() => setFullMapReady(true), 700);
+    return () => clearTimeout(t);
+  }, [mapOpen]);
   const topInset = useSafeAreaInsets().top;
   const [mapSearch, setMapSearch] = useState('');
   const fullMapRef = useRef<MapView>(null);
@@ -645,8 +661,11 @@ export default function CanjesScreen() {
     for (const b of benefits ?? []) {
       if (b.business.lat != null && b.business.lng != null) map.set(b.business.id, b.business);
     }
+    for (const b of sinPremios) {
+      if (b.lat != null && b.lng != null) map.set(b.id, b);
+    }
     return [...map.values()];
-  }, [benefits]);
+  }, [benefits, sinPremios]);
 
   // "Disponibles ahora": en el mapa solo quedan los comercios con algún premio canjeable en este momento.
   const mapBusinesses = useMemo(() => {
@@ -714,9 +733,9 @@ export default function CanjesScreen() {
   }
 
   const categories = useMemo(() => {
-    const set = new Set((benefits ?? []).map((b) => b.business.category));
+    const set = new Set([...(benefits ?? []).map((b) => b.business.category), ...sinPremios.map((b) => b.category)]);
     return ['Todos', ...set];
-  }, [benefits]);
+  }, [benefits, sinPremios]);
 
   const groups = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -726,6 +745,11 @@ export default function CanjesScreen() {
       if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category).toLowerCase().includes(q)) continue;
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
       map.get(b.business.id)!.benefits.push(b);
+    }
+    for (const b of sinPremios) {
+      if (category !== 'Todos' && b.category !== category) continue;
+      if (q && !(b.name + ' ' + b.category).toLowerCase().includes(q)) continue;
+      map.set(b.id, { business: b, benefits: [] });
     }
     let list = [...map.values()].map((g) => ({
       ...g,
@@ -745,13 +769,15 @@ export default function CanjesScreen() {
         a.business.name.localeCompare(b.business.name)
     );
     return list;
-  }, [benefits, category, search, onlyOpen, onlyFavs, favIds, hasGps, mapRegion]);
+  }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, favIds, hasGps, mapRegion]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
     const list = (benefits ?? []).filter((b) => b.business.id === profileBusinessId);
-    return list.length ? { business: list[0].business, benefits: list } : null;
-  }, [benefits, profileBusinessId]);
+    if (list.length) return { business: list[0].business, benefits: list };
+    const sola = sinPremios.find((b) => b.id === profileBusinessId);
+    return sola ? { business: sola, benefits: [] as BenefitWithBusiness[] } : null;
+  }, [benefits, sinPremios, profileBusinessId]);
   const profileOpenRef = useRef(false);
   useEffect(() => {
     profileOpenRef.current = !!profileGroup;
@@ -1162,7 +1188,7 @@ export default function CanjesScreen() {
                     </View>
                   ) : null}
                   <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-ink dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
-                    {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
+                    {g.benefits.length === 0 ? 'Todavía sin premios' : g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
                     {g.distance != null && g.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
                 </View>
@@ -1175,6 +1201,7 @@ export default function CanjesScreen() {
               </View>
 
               {/* Cada premio en una pastilla con su precio adentro: el canje se hace en la ficha. */}
+              {g.benefits.length > 0 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3" contentContainerStyle={{ gap: 8 }}>
                 {g.benefits.map((b) => (
                   <View
@@ -1190,6 +1217,7 @@ export default function CanjesScreen() {
                   </View>
                 ))}
               </ScrollView>
+              )}
             </Press>
           ))}
 
@@ -1203,9 +1231,22 @@ export default function CanjesScreen() {
       </ScrollView>
 
       {/* Mapa completo */}
-      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)} onDismiss={() => flushAfterClose(afterMapClose)}>
+      <Modal
+        visible={mapOpen}
+        animationType="slide"
+        onRequestClose={() => setMapOpen(false)}
+        onShow={() => setFullMapReady(true)}
+        onDismiss={() => flushAfterClose(afterMapClose)}
+      >
         <View style={{ flex: 1, backgroundColor: '#1d1b2e' }}>
-          {mapRegion && (
+          {/* El mapa de Google se crea recién cuando el panel terminó de abrirse: creado durante la animación,
+              en iPhone a veces quedaba sin responder a los gestos (no se podía mover ni hacer zoom). */}
+          {mapRegion && !fullMapReady ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando el mapa" />
+            </View>
+          ) : null}
+          {mapRegion && fullMapReady && (
             <MapView
               ref={fullMapRef}
               provider={PROVIDER_GOOGLE}
@@ -1318,7 +1359,11 @@ export default function CanjesScreen() {
       </Modal>
 
       {/* Ficha del comercio */}
-      <Modal visible={!!profileGroup} animationType="slide" onRequestClose={closeProfile} onDismiss={() => flushAfterClose(afterProfileClose)}>
+      <Modal
+        visible={!!profileGroup}
+        animationType="slide"
+        onRequestClose={() => (galleryOpen ? setGalleryOpen(false) : closeProfile())}
+        onDismiss={() => flushAfterClose(afterProfileClose)}>
         {profileGroup && (
           <View className="flex-1 bg-bg-light dark:bg-bg-dark">
             <ScrollView contentContainerClassName="pb-12" showsVerticalScrollIndicator={false}>
@@ -1473,6 +1518,12 @@ export default function CanjesScreen() {
                   <View className="mt-6">
                     <LoyaltyCardView card={loyalty} />
                   </View>
+                ) : null}
+
+                {profileGroup.benefits.length === 0 ? (
+                  <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
+                    Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver acá.
+                  </Text>
                 ) : null}
 
                 {(['gratis', 'descuento'] as const).map((type) => {
@@ -1642,9 +1693,10 @@ export default function CanjesScreen() {
                 ) : null}
               </View>
             </ScrollView>
-          {/* Fotos del local: va dentro de la ficha porque en iPhone un panel solo puede abrirse encima del que está a la vista. */}
-          <Modal visible={galleryOpen && galleryPhotos.length > 0} animationType="fade" onRequestClose={() => setGalleryOpen(false)}>
-            <View style={{ flex: 1, backgroundColor: '#0B0B10' }}>
+          {/* Fotos del local: una capa dentro de la ficha, NO otro panel (Modal). En iPhone, un panel abierto encima
+              de otro y cerrado junto con él dejaba la pantalla sin responder y el mapa, al abrirlo después, no se movía. */}
+          {galleryOpen && galleryPhotos.length > 0 ? (
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, elevation: 10, backgroundColor: '#0B0B10' }}>
               <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
                 <Press
                   onPress={() => setGalleryOpen(false)}
@@ -1688,7 +1740,7 @@ export default function CanjesScreen() {
                 </ScrollView>
               )}
             </View>
-          </Modal>
+          ) : null}
           </View>
         )}
       </Modal>

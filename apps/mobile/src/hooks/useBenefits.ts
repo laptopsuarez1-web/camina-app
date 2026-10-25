@@ -23,6 +23,21 @@ export function useBenefits() {
   });
 }
 
+// Comercios aprobados de la ciudad (la base solo muestra los aprobados). Canjes los usa para que un local
+// aparezca en la lista y en el mapa aunque todavía no tenga ningún beneficio activo.
+export function useApprovedBusinesses() {
+  const city = useAuthStore((s) => s.profile?.city ?? 'Tarija');
+  return useQuery({
+    queryKey: ['approved-businesses', city],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('businesses').select('*').eq('approved', true);
+      if (error) throw error;
+      return (data as unknown as Business[]).filter((b) => (b.city ?? 'Tarija') === city);
+    },
+    staleTime: 60_000,
+  });
+}
+
 // Cupones ya usados hoy por beneficio — para mostrar "Quedan X hoy" sin
 // exponerle a cada usuario el historial de canjes de los demás.
 export function useBenefitsRemainingToday() {
