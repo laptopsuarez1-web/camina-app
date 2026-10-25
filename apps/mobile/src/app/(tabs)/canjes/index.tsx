@@ -357,6 +357,9 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
   return out;
 }
 
+// Ancho del borde de la tarjeta del comercio: 2 en dorado para los destacados, 1 para el resto.
+const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
+
 function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT; coordinate?: LatLng; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
   const [painted, setPainted] = useState(false);
@@ -894,7 +897,9 @@ export default function CanjesScreen() {
       >
         {/* Tarjeta de mapa: vista previa que abre el mapa completo */}
         <View style={{ height: 250, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', backgroundColor: '#1d1b2e' }}>
-          {mapRegion ? (
+          {/* Un solo mapa de Google vivo a la vez: en iPhone, un mapa tapado por un panel (mapa completo, ficha, fotos)
+              sigue dibujando detrás y, con dos o tres a la vez, el mapa a la vista se traba. Tapado, se desmonta. */}
+          {mapRegion && (mapOpen || profileGroup) ? null : mapRegion ? (
             <MapView
               key={`${mapRegion.latitude.toFixed(4)},${mapRegion.longitude.toFixed(4)}`}
               provider={PROVIDER_GOOGLE}
@@ -1127,7 +1132,19 @@ export default function CanjesScreen() {
                   source={{ uri: g.business.cover_url }}
                   accessibilityIgnoresInvertColors
                   resizeMode="cover"
-                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}
+                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
+                />
+              ) : null}
+              {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
+                  el borde se repite por encima de todo, del mismo ancho y color. */}
+              {g.business.cover_url ? (
+                <View
+                  pointerEvents="none"
+                  className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
+                  style={{
+                    position: 'absolute', zIndex: 1, top: -cardBorder(g.business), left: -cardBorder(g.business), right: -cardBorder(g.business), bottom: -cardBorder(g.business),
+                    borderRadius: 24, borderWidth: cardBorder(g.business), ...(isFeatured(g.business) ? { borderColor: GOLD } : {}),
+                  }}
                 />
               ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
@@ -1576,6 +1593,8 @@ export default function CanjesScreen() {
                       style={{ height: 170, borderRadius: 22, overflow: 'hidden', backgroundColor: '#1d1b2e' }}
                       accessibilityLabel="Abrir la ubicación en el mapa"
                     >
+                      {/* Con las fotos abiertas encima, este mapa se desmonta (ver la vista previa del mapa). */}
+                      {galleryOpen ? null : (
                       <MapView
                         key={profileGroup.business.id}
                         provider={PROVIDER_GOOGLE}
@@ -1595,6 +1614,7 @@ export default function CanjesScreen() {
                       >
                         <BusinessMarker business={profileGroup.business} />
                       </MapView>
+                      )}
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
                     {profileGroup.business.address ? (
