@@ -205,7 +205,7 @@ export function Locales() {
     <section className="lp-sec" id="locales">
       <div className="wrap">
         <Kinetic text="Ya están en Camina." />
-        <p className="lead">Los primeros comercios de Tarija, con los premios que hoy podés canjear.</p>
+        <p className="lead">Los primeros comercios de Tarija. Algunos ya tienen premios para canjear.</p>
         <div className="locs">
           {LOCALES.map((l, k) => (
             <InView as="article" className="loc" key={l.id} delay={k * 120}>
@@ -216,14 +216,18 @@ export function Locales() {
                   <p className="loc-cat">{l.categoria}</p>
                 </div>
               </div>
-              <ul>
-                {l.premios.map((p) => (
-                  <li key={p.nombre}>
-                    <span>{p.nombre}<small>{p.detalle}</small></span>
-                    <b>{p.puntos} puntos</b>
-                  </li>
-                ))}
-              </ul>
+              {l.premios.length > 0 ? (
+                <ul>
+                  {l.premios.map((p) => (
+                    <li key={p.nombre}>
+                      <span>{p.nombre}<small>{p.detalle}</small></span>
+                      <b>{p.puntos} puntos</b>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="loc-dir">{l.direccion}</p>
+              )}
             </InView>
           ))}
         </div>
