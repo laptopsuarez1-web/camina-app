@@ -6,17 +6,15 @@ import {
   isHealthDataAvailable,
   requestAuthorization as requestHealthKitAuthorization,
   queryStatisticsForQuantity,
-  queryQuantitySamples,
 } from '@kingstinct/react-native-healthkit';
 import {
   getSdkStatus,
   initialize as initializeHealthConnect,
   requestPermission as requestHealthConnectPermission,
-  aggregateRecord,
   aggregateGroupByPeriod,
-  readRecords,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
+import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
 // escriben ahí, no solo el sensor del teléfono) y Health Connect en Android
@@ -25,14 +23,9 @@ import {
 // no hay sensor de respaldo: sin Health Connect no se cuentan pasos.
 const POLL_MS = 15_000;
 const STEPS_CACHE_KEY = 'camina_steps_cache_v1';
-const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
-// Health Connect: RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY
-const HC_MANUAL_ENTRY = 3;
 
 function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+  return startOfDay(new Date());
 }
 
 // ---------- HealthKit (iOS) ----------
@@ -47,17 +40,8 @@ function useHealthKitSteps(enabled: boolean) {
 
     async function readToday() {
       try {
-        const filter = { date: { startDate: startOfToday(), endDate: new Date() } };
-        const stats = await queryStatisticsForQuantity(STEP_COUNT_IDENTIFIER, ['cumulativeSum'], {
-          filter,
-          unit: 'count',
-        });
-        // Antifraude: los pasos cargados a mano en Salud (HKWasUserEntered) no suman.
-        const samples = await queryQuantitySamples(STEP_COUNT_IDENTIFIER, { filter, unit: 'count', limit: 0 });
-        const manual = samples
-          .filter((s) => s.metadata?.HKWasUserEntered === true)
-          .reduce((acc, s) => acc + s.quantity, 0);
-        if (!cancelled) setSteps(Math.max(0, Math.round((stats.sumQuantity?.quantity ?? 0) - manual)));
+        const value = await readHealthKitSteps(startOfToday(), new Date());
+        if (!cancelled) setSteps(value);
       } catch {
         if (!cancelled) setSteps(null);
       }
@@ -105,23 +89,8 @@ function useHealthConnectSteps(enabled: boolean) {
 
     async function readToday() {
       try {
-        const timeRangeFilter = {
-          operator: 'between' as const,
-          startTime: startOfToday().toISOString(),
-          endTime: new Date().toISOString(),
-        };
-        const result = await aggregateRecord({ recordType: 'Steps', timeRangeFilter });
-        // Antifraude: los pasos cargados a mano en Health Connect no suman.
-        let manual = 0;
-        let pageToken: string | undefined;
-        do {
-          const page = await readRecords('Steps', { timeRangeFilter, pageSize: 500, pageToken });
-          for (const r of page.records) {
-            if (r.metadata?.recordingMethod === HC_MANUAL_ENTRY) manual += r.count;
-          }
-          pageToken = page.pageToken;
-        } while (pageToken);
-        if (!cancelled) setSteps(Math.max(0, (result.COUNT_TOTAL ?? 0) - manual));
+        const value = await readHealthConnectSteps(startOfToday(), new Date());
+        if (!cancelled) setSteps(value);
       } catch {
         if (!cancelled) setSteps(null);
       }
