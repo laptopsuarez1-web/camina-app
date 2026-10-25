@@ -7,7 +7,7 @@ export default async function ReferralPage({ params }: { params: Promise<{ id: s
       path="r"
       id={id}
       title="Te invitaron a Camina"
-      text="Caminá, ganá Puntos y canjealos por beneficios en comercios de tu ciudad."
+      text="Camina, gana Puntos y canjéalos por beneficios en comercios de tu ciudad."
     />
   );
 }

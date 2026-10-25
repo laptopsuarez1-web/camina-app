@@ -7,7 +7,7 @@ export default async function JoinGroupPage({ params }: { params: Promise<{ id: 
       path="join-group"
       id={id}
       title="Te invitaron a un grupo"
-      text="Sumate al grupo en Camina y caminen juntos para ganar Puntos."
+      text="Únete al grupo en Camina y caminen juntos para ganar Puntos."
     />
   );
 }

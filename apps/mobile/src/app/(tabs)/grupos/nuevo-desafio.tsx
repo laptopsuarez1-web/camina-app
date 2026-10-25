@@ -4,6 +4,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { useGroupDetail } from '@/hooks/useGroupDetail';
 import { ChevronLeft, Trophy, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -34,6 +35,8 @@ function addDays(d: Date, n: number) {
 export default function NuevoDesafioScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const queryClient = useQueryClient();
+  // El link de invitación lleva el código del grupo, no su id.
+  const inviteCode = useGroupDetail(groupId).data?.group.invite_code;
   const { data: balance } = usePointsBalance();
   const { muted, accentIcon, dangerText } = useThemeColors();
   const [step, setStep] = useState(1);
@@ -87,7 +90,13 @@ export default function NuevoDesafioScreen() {
         <View className="absolute left-5 right-5" style={{ bottom: 50 }}>
           <Press
             accessibilityRole="button"
-            onPress={() => Share.share({ message: `Súmate a mi desafío "${name.trim()}" en Camina.\n${groupInviteLink(groupId!)}` })}
+            onPress={() =>
+              Share.share({
+                message: inviteCode
+                  ? `Súmate a mi desafío "${name.trim()}" en Camina.\nCódigo del grupo: ${inviteCode}\n${groupInviteLink(inviteCode)}`
+                  : `Súmate a mi desafío "${name.trim()}" en Camina.`,
+              })
+            }
             className="bg-mint rounded-2xl py-4 items-center mb-3"
           >
             <Text className="text-mint-dark font-bold text-[15px]">Compartir link</Text>
