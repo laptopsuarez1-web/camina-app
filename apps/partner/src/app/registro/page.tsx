@@ -55,10 +55,11 @@ export default function RegistroPage() {
       });
   }, []);
 
-  const datosOk = Boolean(nombre.trim() && (esVirtual || kind === 'events_only' || direccion.trim()) && telefono.trim().length >= 6);
+  const datosOk = Boolean(nombre.trim() && (esVirtual || kind === 'events_only' || direccion.trim()) && (telefono.trim() === '' || telefono.replace(/\D/g, '').length >= 6));
   const cuentaOk = Boolean(email.trim() && password.length >= 6);
   const valido = datosOk && cuentaOk;
-  const telefonoCompleto = `${prefijo} ${telefono.trim()}`;
+  // El teléfono es opcional: si no lo cargan, se guarda vacío (null en la base).
+  const telefonoCompleto = telefono.trim() ? `${prefijo} ${telefono.trim()}` : '';
 
   async function pickLogo(file: File) {
     try {
@@ -129,7 +130,7 @@ export default function RegistroPage() {
       name: nombre.trim(),
       category: kind === 'events_only' ? 'Eventos' : categoria,
       address: esVirtual || kind === 'events_only' ? null : direccion.trim(),
-      phone: telefonoCompleto,
+      phone: telefonoCompleto || null,
       is_virtual: esVirtual || kind === 'events_only',
       plan: 'primer_paso',
     };
@@ -341,7 +342,9 @@ export default function RegistroPage() {
                 </Field>
               )}
               <div>
-                <span className="block text-[12.5px] font-semibold mb-1.5">Teléfono / WhatsApp</span>
+                <span className="block text-[12.5px] font-semibold mb-1.5">
+                  Teléfono / WhatsApp <span className="text-muted font-normal">(opcional)</span>
+                </span>
                 <div className="flex gap-2">
                   <select value={prefijo} onChange={(e) => setPrefijo(e.target.value)} className={`${input} !w-[150px] shrink-0`}>
                     {PREFIJOS.map(([p, n]) => (

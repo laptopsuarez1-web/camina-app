@@ -19,7 +19,7 @@ async function crearComercioPendiente(userId: string, email: string): Promise<Bu
     name: pending.name,
     category: pending.category,
     address: pending.isVirtual ? null : pending.address,
-    phone: pending.phone,
+    phone: pending.phone?.trim() || null,
     is_virtual: pending.isVirtual,
     plan: 'primer_paso',
   };
