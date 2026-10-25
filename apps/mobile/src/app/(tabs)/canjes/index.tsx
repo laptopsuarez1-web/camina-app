@@ -1251,6 +1251,9 @@ export default function CanjesScreen() {
               ref={fullMapRef}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
+              // Distinto del valor por defecto a propósito: obliga a iPhone a volver a activar los toques si esta vista
+              // de mapa viene reciclada de un mapa que los tenía apagados (ver "Cómo llegar" en la ficha).
+              pointerEvents={Platform.OS === 'ios' ? 'box-none' : undefined}
               initialRegion={mapRegion}
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
@@ -1650,7 +1653,6 @@ export default function CanjesScreen() {
                         key={profileGroup.business.id}
                         provider={PROVIDER_GOOGLE}
                         style={{ flex: 1 }}
-                        pointerEvents="none"
                         initialRegion={{
                           latitude: profileGroup.business.lat,
                           longitude: profileGroup.business.lng,
@@ -1666,6 +1668,10 @@ export default function CanjesScreen() {
                         <BusinessMarker business={profileGroup.business} />
                       </MapView>
                       )}
+                      {/* El toque lo toma esta capa y no pointerEvents="none" en el mapa: en iPhone el mapa de Google se recicla
+                          (la próxima pantalla con mapa reusa la misma vista) y react-native-maps no le devuelve los toques al
+                          reciclarla, así que el mapa completo quedaba sin poder moverse después de pasar por una ficha. */}
+                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
                     {profileGroup.business.address ? (
