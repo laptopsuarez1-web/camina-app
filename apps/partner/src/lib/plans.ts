@@ -17,7 +17,7 @@ export const LANZAMIENTO_NOTA = 'Después costará más.';
 
 export function fundadorLink(nombreComercio?: string) {
   const quien = nombreComercio ? `Soy ${nombreComercio} y quiero` : 'Quiero';
-  const text = `Hola! ${quien} pedir mi cupo fundador de Camina (3 meses gratis de Paso Firme). Ya creé mi perfil, ¿me habilitan?`;
+  const text = `Hola! ${quien} pedir mi cupo fundador de Camina (3 meses gratis de Paso Firme desde que salga la app). Ya creé mi perfil, ¿me habilitan?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
@@ -81,14 +81,16 @@ export const PLAN_NOMBRE: Record<BusinessPlan, string> = {
 };
 
 // Próxima fecha de pago de un plan pago: el mismo día de cada mes desde que empezó el plan.
-// Para los fundadores, la fecha en que terminan sus meses gratis.
+// Para los fundadores, la fecha en que terminan sus meses gratis (null mientras la app no haya salido).
 export function vencimientoPlan(b: {
   plan: BusinessPlan;
   plan_started_at: string;
   founder?: boolean;
   founder_until?: string | null;
-}): { fecha: Date; dias: number; gratis: boolean } | null {
+}): { fecha: Date | null; dias: number; gratis: boolean } | null {
   if (b.plan === 'primer_paso') return null;
+  // Fundador sin fecha: los 3 meses gratis empiezan cuando salga la app.
+  if (b.founder && !b.founder_until) return { fecha: null, dias: 0, gratis: true };
   const ahora = new Date();
   const dia = 24 * 3600 * 1000;
   if (b.founder && b.founder_until && new Date(b.founder_until) > ahora) {

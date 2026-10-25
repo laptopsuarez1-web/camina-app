@@ -25,6 +25,8 @@ export default function AdminPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [founderSlots, setFounderSlots] = useState<number | null>(null);
   const [founderError, setFounderError] = useState<string | null>(null);
+  const [launchAt, setLaunchAt] = useState<string | null>(null);
+  const [launchInput, setLaunchInput] = useState('');
   const [pendingAlerts, setPendingAlerts] = useState<
     { id: string; business_name: string; title: string; body: string; radius_km: number; estimated: number }[]
   >([]);
@@ -47,6 +49,8 @@ export default function AdminPage() {
     setActiveBenefits(counts);
     const { data: used } = await supabase.rpc('founder_slots_used');
     setFounderSlots(typeof used === 'number' ? used : null);
+    const { data: launch } = await supabase.from('app_launch').select('launch_at').maybeSingle();
+    setLaunchAt((launch as { launch_at: string | null } | null)?.launch_at ?? null);
     const { data: alerts } = await supabase.rpc('pending_nearby_campaigns');
     setPendingAlerts((alerts as typeof pendingAlerts) ?? []);
     setListLoading(false);
@@ -62,6 +66,18 @@ export default function AdminPage() {
       return;
     }
     if (approve) setAlertMsg(`Aviso enviado a ${data} personas.`);
+    loadBusinesses();
+  }
+
+  async function saveLaunch(clear: boolean) {
+    setFounderError(null);
+    if (!clear && !launchInput) return;
+    const { error } = await supabase.rpc('set_launch_date', { p_launch_at: clear ? null : new Date(`${launchInput}T00:00:00-04:00`).toISOString() });
+    if (error) {
+      setFounderError(error.message);
+      return;
+    }
+    setLaunchInput('');
     loadBusinesses();
   }
 
@@ -219,7 +235,15 @@ export default function AdminPage() {
         <div className="bg-card border border-line rounded-2xl px-4 py-3 mb-5 flex items-center justify-between">
           <div>
             <p className="font-bold text-[13.5px] text-text">Programa fundador</p>
-            <p className="text-muted text-[12px]">Los primeros 20 comercios tienen 3 meses gratis de Paso Firme.</p>
+            <p className="text-muted text-[12px]">Los primeros 20 comercios tienen 3 meses gratis de Paso Firme, contados desde que salga la app.</p>
+            <p className="text-muted text-[12px] mt-1">
+              Lanzamiento: <b>{launchAt ? new Date(launchAt).toLocaleDateString('es-BO') : 'sin fecha (los cupos empiezan cuando salga la app)'}</b>
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <input type="date" value={launchInput} onChange={(e) => setLaunchInput(e.target.value)} className="border border-line rounded-[8px] px-2 py-1 text-[12px]" />
+              <button onClick={() => saveLaunch(false)} disabled={!launchInput} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C] disabled:opacity-50">Fijar fecha</button>
+              {launchAt && <button onClick={() => saveLaunch(true)} className="text-[11.5px] text-muted underline">Quitar</button>}
+            </div>
           </div>
           <p className="text-[18px] font-extrabold text-text">{founderSlots ?? '—'}/20 <span className="text-muted text-[12px] font-medium">cupos usados</span></p>
         </div>
@@ -525,7 +549,7 @@ export default function AdminPage() {
                     <td className="px-4 py-3">
                       {b.founder ? (
                         <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
-                          Hasta {b.founder_until ? new Date(b.founder_until).toLocaleDateString('es-BO') : '—'}
+                          {b.founder_until ? `Hasta ${new Date(b.founder_until).toLocaleDateString('es-BO')}` : 'Empieza al lanzar'}
                         </span>
                       ) : (
                         <button

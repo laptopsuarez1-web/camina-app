@@ -123,7 +123,7 @@ export default function ElegirPlanPage() {
           style={{ background: '#fff', border: '1.5px dashed #E0B43A' }}
         >
           <div className="flex-1">
-            <p className="text-[15px] font-bold" style={{ color: '#291C47' }}>Cupo fundador: 3 meses gratis de Paso Firme</p>
+            <p className="text-[15px] font-bold" style={{ color: '#291C47' }}>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app</p>
             <p className="text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
               Para los primeros 20 comercios. Escribinos por WhatsApp y te habilitamos en la app y en el panel. Mientras tanto ya podés crear tu perfil.
             </p>

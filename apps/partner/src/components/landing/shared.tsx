@@ -470,7 +470,7 @@ export function Planes() {
           ))}
         </div>
         <div className="fund">
-          <b>Cupo fundador: 3 meses gratis de Paso Firme.</b>
+          <b>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app.</b>
           <span>Para los primeros 20 comercios. Creás tu perfil en el panel con cualquier plan, nos escribís por WhatsApp y te habilitamos en la app y en el panel.</span>
           <a className="lp-btn dark" href={WA('Hola! Quiero pedir mi cupo fundador de Camina.')}>Pedir mi cupo fundador</a>
         </div>
