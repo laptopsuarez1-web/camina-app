@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ANDROID_INSTALL_URL, IOS_INSTALL_URL, SUPPORT_EMAIL } from '@/lib/app-links';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Los grupos se invitan con su código (8 letras y números, por ejemplo 82EUTHNX), no con un id largo.
@@ -13,15 +14,24 @@ export function OpenInApp({ path, id, title, text }: { path: string; id: string;
   const isGroup = path === 'join-group';
   const valid = isGroup ? GROUP_CODE.test(id) : UUID.test(id);
   const deep = `camina://${path}/${id}`;
+  const [os, setOs] = useState<'ios' | 'android' | 'other'>('other');
 
   useEffect(() => {
-    if (valid && /android|iphone|ipad/i.test(navigator.userAgent)) {
+    const ua = navigator.userAgent;
+    const detected = /iphone|ipad|ipod/i.test(ua) ? 'ios' : /android/i.test(ua) ? 'android' : 'other';
+    setOs(detected);
+    // En Android el sistema abre la app solo si está instalada. En iPhone no se redirige solo: sin la app,
+    // Safari muestra un error de "dirección no válida" y la persona se queda sin saber qué hacer.
+    if (valid && detected === 'android') {
       const t = setTimeout(() => {
         window.location.href = deep;
       }, 400);
       return () => clearTimeout(t);
     }
   }, [valid, deep]);
+
+  const installUrl = os === 'android' ? ANDROID_INSTALL_URL : os === 'ios' ? IOS_INSTALL_URL : '';
+  const btn = 'rounded-xl py-3.5 px-8 font-bold text-[15px] block w-full max-w-[300px]';
 
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
@@ -33,19 +43,36 @@ export function OpenInApp({ path, id, title, text }: { path: string; id: string;
       </p>
       {valid && (
         <>
-          <a href={deep} className="bg-mint text-mint-dark rounded-xl py-3.5 px-8 font-bold text-[15px] mb-4">
-            Abrir en Camina
-          </a>
           {isGroup && (
-            <div className="mb-5">
-              <p className="text-auth-muted text-[12.5px] mb-1.5">Si no se abre, en Camina ve a Grupos, escribe este código y toca Unirme:</p>
-              <p className="text-white font-extrabold text-[26px] tracking-[0.18em] select-all">{id.toUpperCase()}</p>
+            <div className="mb-6">
+              <p className="text-auth-muted text-[12.5px] mb-1.5">Código del grupo</p>
+              <p className="text-white font-extrabold text-[28px] tracking-[0.18em] select-all">{id.toUpperCase()}</p>
             </div>
           )}
-          <p className="text-auth-muted text-[12.5px] max-w-[300px] leading-[18px]">
-            ¿Todavía no tienes la app? Pídele a quien te invitó el link de prueba o espera el lanzamiento en las tiendas.
-            Después vuelve a tocar este link.
-          </p>
+          <a href={deep} className={`${btn} bg-mint text-mint-dark mb-3`}>
+            Ya tengo Camina: abrir
+          </a>
+          <div className="mt-3 max-w-[320px]">
+            <p className="text-white font-semibold text-[14px] mb-1">¿Todavía no tienes la app?</p>
+            {installUrl ? (
+              <a href={installUrl} className={`${btn} bg-white/10 text-white border border-white/20 mx-auto mt-2`}>
+                {os === 'ios' ? 'Descargar para iPhone' : 'Descargar para Android'}
+              </a>
+            ) : (
+              <p className="text-auth-muted text-[12.5px] leading-[18px]">
+                Camina está en prueba. Escríbenos a{' '}
+                <a href={`mailto:${SUPPORT_EMAIL}?subject=Quiero probar Camina`} className="underline text-white">
+                  {SUPPORT_EMAIL}
+                </a>{' '}
+                y te mandamos el link para instalarla. Después vuelve a tocar este link.
+              </p>
+            )}
+            {isGroup && (
+              <p className="text-auth-muted text-[12.5px] leading-[18px] mt-4">
+                Con la app instalada, ve a Grupos, escribe el código y toca Unirme.
+              </p>
+            )}
+          </div>
         </>
       )}
     </div>
