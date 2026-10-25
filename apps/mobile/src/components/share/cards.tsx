@@ -332,17 +332,19 @@ export type GroupCardData = {
   total: number;
 };
 
-function Medal({ p, label, rank, steps, isMe, big }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean }) {
-  const d = big ? 54 : 44;
+// compact: en la cuadrada el podio va más bajo para que la meta del grupo y el @caminaapp no queden encimados.
+function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
+  const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
+  const crown = compact ? 15 : 18;
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      {rank === 1 ? <Crown size={18} color={p.gold} weight="fill" /> : <View style={{ height: 18 }} />}
+      {rank === 1 ? <Crown size={crown} color={p.gold} weight="fill" /> : <View style={{ height: crown }} />}
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
+        <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
-      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: 4 }} numberOfLines={1}>{isMe ? 'Tú' : label}</Text> : <View style={{ height: 4 }} />}
-      <View style={{ width: '88%', marginTop: 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: big ? 14 : 9 }}>
-        <Text style={{ fontSize: big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
+      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: compact ? 3 : 4 }} numberOfLines={1}>{isMe ? 'Tú' : label}</Text> : <View style={{ height: 4 }} />}
+      <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
+        <Text style={{ fontSize: compact ? (big ? 22 : 18) : big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>
       </View>
     </View>
@@ -361,11 +363,11 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   return (
     <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
       <Text style={{ fontSize: 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
-      <Text style={{ fontSize: story ? 28 : 22, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={2}>{data.groupName}</Text>
+      <Text style={{ fontSize: story ? 28 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 14 : 6, gap: 8 }}>
         {podium.map((m) => {
           const rank = members.findIndex((x) => x.id === m.id) + 1;
-          return <Medal key={m.id} p={p} label={m.label} rank={rank} steps={m.steps} isMe={m.isMe} big={rank === 1} />;
+          return <Medal key={m.id} p={p} label={m.label} rank={rank} steps={m.steps} isMe={m.isMe} big={rank === 1} compact={!story} />;
         })}
       </View>
       {rest.length ? (
@@ -385,7 +387,8 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
       ) : null}
       <View style={{ flex: 1 }} />
-      <View style={{ backgroundColor: p.tile, borderColor: pct >= 1 ? p.accent : p.tileLine, borderWidth: pct >= 1 ? 1.5 : 1, borderRadius: 16, padding: 11 }}>
+      {/* Aire fijo arriba (podio) y abajo (@caminaapp) para que la caja nunca quede pegada. */}
+      <View style={{ marginTop: 10, marginBottom: story ? 0 : 6, backgroundColor: p.tile, borderColor: pct >= 1 ? p.accent : p.tileLine, borderWidth: pct >= 1 ? 1.5 : 1, borderRadius: 16, padding: story ? 11 : 9 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
           <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink }}>Meta del grupo</Text>
           <Text style={{ fontSize: 11, fontWeight: '800', color: p.accent }}>{pct >= 1 ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>

@@ -894,7 +894,9 @@ export default function CanjesScreen() {
       >
         {/* Tarjeta de mapa: vista previa que abre el mapa completo */}
         <View style={{ height: 250, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', backgroundColor: '#1d1b2e' }}>
-          {mapRegion ? (
+          {/* Un solo mapa de Google vivo a la vez: en iPhone, un mapa tapado por un panel (mapa completo, ficha, fotos)
+              sigue dibujando detrás y, con dos o tres a la vez, el mapa a la vista se traba. Tapado, se desmonta. */}
+          {mapRegion && (mapOpen || profileGroup) ? null : mapRegion ? (
             <MapView
               key={`${mapRegion.latitude.toFixed(4)},${mapRegion.longitude.toFixed(4)}`}
               provider={PROVIDER_GOOGLE}
@@ -1576,6 +1578,8 @@ export default function CanjesScreen() {
                       style={{ height: 170, borderRadius: 22, overflow: 'hidden', backgroundColor: '#1d1b2e' }}
                       accessibilityLabel="Abrir la ubicación en el mapa"
                     >
+                      {/* Con las fotos abiertas encima, este mapa se desmonta (ver la vista previa del mapa). */}
+                      {galleryOpen ? null : (
                       <MapView
                         key={profileGroup.business.id}
                         provider={PROVIDER_GOOGLE}
@@ -1595,6 +1599,7 @@ export default function CanjesScreen() {
                       >
                         <BusinessMarker business={profileGroup.business} />
                       </MapView>
+                      )}
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
                     {profileGroup.business.address ? (
