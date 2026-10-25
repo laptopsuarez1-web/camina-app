@@ -553,6 +553,36 @@ export default function CanjesScreen() {
     return () => clearInterval(t);
   }, [activeId, queryClient]);
 
+  const [watching, setWatching] = useState<{ redemption: Redemption; benefit: BenefitWithBusiness } | null>(null);
+  // En iPhone no se pueden abrir dos paneles a la vez: se reabre recién cuando no hay otro a la vista.
+  const otherPanelOpen = useRef(false);
+  useEffect(() => {
+    otherPanelOpen.current = !!activeRedemption || mapOpen || !!profileBusinessId || galleryOpen;
+  }, [activeRedemption, mapOpen, profileBusinessId, galleryOpen]);
+  useEffect(() => {
+    if (!watching) return;
+    const { redemption, benefit } = watching;
+    // Se deja de mirar cuando el código vence (más el margen de 1 hora en que el local todavía puede confirmarlo).
+    const until = new Date(redemption.code_expires_at).getTime() + 60 * 60_000;
+    let confirmedNow = false;
+    const check = async () => {
+      if (Date.now() > until) return setWatching(null);
+      if (!confirmedNow) {
+        const { data } = await supabase.from('redemptions').select('status').eq('id', redemption.id).maybeSingle();
+        if (data && data.status !== 'pending' && data.status !== 'confirmed') return setWatching(null);
+        confirmedNow = data?.status === 'confirmed';
+      }
+      if (confirmedNow && !otherPanelOpen.current) {
+        setWatching(null);
+        setActiveBenefit(benefit);
+        setActiveRedemption(redemption);
+      }
+    };
+    check();
+    const t = setInterval(check, 4000);
+    return () => clearInterval(t);
+  }, [watching]);
+
   async function answerFollowup(extra: boolean) {
     if (!activeId) return;
     setAnsweredId(activeId);
@@ -816,6 +846,9 @@ export default function CanjesScreen() {
 
   function closeCode() {
     if (confirmed) askForReviewOnce();
+    // "Ya lo mostré" cierra antes de que el local confirme: se sigue mirando ese canje y, cuando el local lo
+    // confirma, se vuelve a abrir en "Canje confirmado" (compra extra, reseña en Google y historia).
+    else if (activeRedemption && activeBenefit && !expired) setWatching({ redemption: activeRedemption, benefit: activeBenefit });
     setActiveRedemption(null);
     setActiveBenefit(null);
   }
