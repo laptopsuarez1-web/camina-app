@@ -176,7 +176,10 @@ function safeReviewUrl(raw?: string | null): string | null {
   if (!url || /\s/.test(url)) return null;
   const host = url.match(/^https:\/\/([a-z0-9.-]+)(?::\d+)?(?:[/?#]|$)/i)?.[1].toLowerCase();
   if (!host) return null;
-  return GOOGLE_REVIEW_HOSTS.some((h) => host === h || host.endsWith(`.${h}`)) ? url : null;
+  if (!GOOGLE_REVIEW_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) return null;
+  // Los links que comparte Google Maps en iPhone traen "?g_st=ic" y la app de Google Maps los rechaza
+  // ("El vínculo no es compatible"): se quita ese parámetro.
+  return url.replace(/([?&])g_st=[^&#]*&?/, '$1').replace(/[?&]$/, '');
 }
 
 function useCountdown(expiresAt: string | null) {
@@ -528,6 +531,7 @@ export default function CanjesScreen() {
   const activeId = activeRedemption?.id ?? null;
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [answeredId, setAnsweredId] = useState<string | null>(null);
+  const [shownId, setShownId] = useState<string | null>(null);
   const confirmed = !!activeId && confirmedId === activeId;
   const answered = !!activeId && answeredId === activeId;
   // El final del canje va de a una pantalla: confirmado, compra extra, reseña y historia.
@@ -1867,9 +1871,19 @@ export default function CanjesScreen() {
                     Vence en <Text className="font-bold text-text-light dark:text-text-dark">{mm}:{ss}</Text>
                   </Text>
                 </View>
-                <Press accessibilityRole="button" onPress={closeCode} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
-                  <Text className="text-white font-bold text-[15px]">Ya lo mostré</Text>
-                </Press>
+                {/* "Ya lo mostré" no cierra: queda esperando que el local valide y pasa solo a "Canje confirmado". */}
+                {shownId === activeId ? (
+                  <View accessibilityLiveRegion="polite" className="flex-row items-center justify-center gap-2.5 bg-bg-light dark:bg-bg-dark rounded-2xl py-4 mb-2.5">
+                    <ActivityIndicator size="small" color={colors.aqua} />
+                    <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">
+                      Esperando que {activeBenefit?.business.name ?? 'el local'} lo confirme…
+                    </Text>
+                  </View>
+                ) : (
+                  <Press accessibilityRole="button" onPress={() => setShownId(activeId)} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5">
+                    <Text className="text-white font-bold text-[15px]">Ya lo mostré</Text>
+                  </Press>
+                )}
               </>
             ) : (
               <>
@@ -1887,7 +1901,7 @@ export default function CanjesScreen() {
                 </Press>
               </>
             )}
-            <Press accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode}>
+            <Press accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode} style={{ marginTop: 14 }}>
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center">Cerrar</Text>
             </Press>
           </Glass>
