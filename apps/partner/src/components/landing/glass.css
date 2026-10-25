@@ -55,10 +55,10 @@
 .lp .stat-big b{color:var(--mint)}
 .lp .stat-big span{color:var(--ink)}
 .lp .reparto{color:var(--ink)}.lp .reparto b{color:var(--mint)}
-.lp .fact p,.lp .fact:first-child p,.lp .plan .blurb,.lp .plan.feat .blurb,.lp .loc-cat,.lp .loc-dir,.lp .loc li small,.lp .flow p{color:var(--muted)}
+.lp .fact p,.lp .fact:first-child p,.lp .plan .blurb,.lp .plan.feat .blurb,.lp .loc-cat,.lp .loc .loc-dir,.lp .loc li small,.lp .flow p{color:var(--muted)}
 .lp .fact a{color:var(--mint)}
 .lp .loc,.lp .fact,.lp .plan,.lp .flow li{border-radius:28px}
-.lp .loc li,.lp .plan li,.lp .plan.feat li,.lp .flow{border-color:rgba(255,255,255,.12)}
+.lp .loc li,.lp .loc .loc-dir,.lp .plan li,.lp .plan.feat li,.lp .flow{border-color:rgba(255,255,255,.12)}
 .lp .loc li b{background:rgba(127,237,196,.16);color:var(--mint);border:1px solid rgba(127,237,196,.35)}
 .lp .loc-logo{border-color:rgba(255,255,255,.35)}
 .lp .flow .num{background:rgba(127,237,196,.16);color:var(--mint);border:1px solid rgba(127,237,196,.4)}
