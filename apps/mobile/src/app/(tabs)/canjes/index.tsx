@@ -146,6 +146,14 @@ function openFullMap(lat: number, lng: number, label: string) {
   });
 }
 
+// Google Maps (la app si está instalada; si no, la web) centrado en ese punto.
+function openGoogleMaps(lat: number, lng: number, latitudeDelta: number) {
+  const zoom = Math.max(3, Math.min(20, Math.round(Math.log2(360 / Math.max(latitudeDelta, 0.0005)))));
+  const web = `https://www.google.com/maps/@${lat},${lng},${zoom}z`;
+  const app = Platform.OS === 'ios' ? `comgooglemaps://?center=${lat},${lng}&zoom=${zoom}` : web;
+  Linking.openURL(app).catch(() => Linking.openURL(web));
+}
+
 function distanceMeters(a: { latitude: number; longitude: number }, lat: number, lng: number) {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -292,9 +300,10 @@ function useLogoReady(logoUrl?: string | null) {
   return logoUrl ? state : 'none';
 }
 
-// Pines que caerían encimados (locales en la misma cuadra) se reparten en ronda alrededor de su punto medio,
-// a la distancia justa para que se vean todos. Se recalcula con el zoom: al acercarse vuelven a su lugar real.
-const PIN_GAP_PX = 54;
+// Pines que caerían encimados (locales en la misma cuadra) se separan apenas, en ronda alrededor de su punto medio:
+// quedan pegados y medio superpuestos (como en Pasito), sin desparramarse. Se recalcula con el zoom: al acercarse
+// vuelven a su lugar real.
+const PIN_GAP_PX = 30;
 type LatLng = { latitude: number; longitude: number };
 export function spreadPins(items: { id: string; lat: number; lng: number }[], latitudeDelta: number, mapHeightPx: number) {
   const out = new Map<string, LatLng>();
@@ -485,6 +494,29 @@ export default function CanjesScreen() {
     router.setParams({ negocio: undefined });
   }, [negocio]);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  // En iPhone un panel (Modal) no puede abrirse mientras otro se está cerrando: si se intenta, no aparece
+  // y la pantalla queda trabada sin responder. Por eso lo siguiente se abre recién en onDismiss del
+  // panel que se cierra (solo existe en iOS); en Android alcanza con esperar la animación.
+  const afterMapClose = useRef<(() => void) | null>(null);
+  const afterProfileClose = useRef<(() => void) | null>(null);
+  // isOpen: si el panel ya estaba cerrado (por ejemplo, se cerró mientras se generaba el código) no habrá onDismiss.
+  function runAfterClose(slot: { current: (() => void) | null }, isOpen: boolean, next: () => void) {
+    if (!isOpen) next();
+    else if (Platform.OS === 'ios') {
+      slot.current = next;
+      // Respaldo por si onDismiss no llega: lo que corra primero vacía el lugar y el otro no hace nada.
+      setTimeout(() => slot.current === next && flushAfterClose(slot), 1200);
+    } else setTimeout(next, 350);
+  }
+  function flushAfterClose(slot: { current: (() => void) | null }) {
+    const next = slot.current;
+    slot.current = null;
+    next?.();
+  }
+  function closeProfile() {
+    setGalleryOpen(false);
+    setProfileBusinessId(null);
+  }
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
@@ -612,6 +644,28 @@ export default function CanjesScreen() {
       .slice(0, 6);
   }, [mapSearch, businessesWithCoords]);
 
+  // Lo que se está viendo en el mapa completo (para abrir Google Maps en la misma zona).
+  const fullCenter = useRef<{ latitude: number; longitude: number; latitudeDelta: number } | null>(null);
+  const bottomInset = useSafeAreaInsets().bottom;
+  async function centerOnMe() {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Sin acceso a tu ubicación', 'Activa la ubicación para Camina en Ajustes para centrar el mapa en dónde estás.');
+        return;
+      }
+      const last = await Location.getLastKnownPositionAsync();
+      const pos = last ?? (await Location.getCurrentPositionAsync({}));
+      setHasGps(true);
+      fullMapRef.current?.animateToRegion(
+        { latitude: pos.coords.latitude, longitude: pos.coords.longitude, latitudeDelta: 0.012, longitudeDelta: 0.012 },
+        500
+      );
+    } catch {
+      Alert.alert('No pudimos encontrarte', 'Intenta de nuevo en un momento.');
+    }
+  }
+
   function focusBusiness(b: BusinessT) {
     setMapSearch('');
     fullMapRef.current?.animateToRegion(
@@ -659,6 +713,10 @@ export default function CanjesScreen() {
     const list = (benefits ?? []).filter((b) => b.business.id === profileBusinessId);
     return list.length ? { business: list[0].business, benefits: list } : null;
   }, [benefits, profileBusinessId]);
+  const profileOpenRef = useRef(false);
+  useEffect(() => {
+    profileOpenRef.current = !!profileGroup;
+  }, [profileGroup]);
   const { data: loyalty } = useLoyaltyCard(profileGroup?.business.id);
   const { data: newPlaceBonus } = useNewPlaceBonus(profileGroup?.business.id);
 
@@ -716,11 +774,11 @@ export default function CanjesScreen() {
       const result = await redeem.mutateAsync(benefitId);
       // Primero se cierra la ficha del comercio; el modal del código se abre
       // recién después para que iOS no intente mostrar dos modales a la vez.
-      setProfileBusinessId(null);
-      setTimeout(() => {
+      runAfterClose(afterProfileClose, profileOpenRef.current, () => {
         setActiveBenefit(benefit);
         setActiveRedemption(result);
-      }, 350);
+      });
+      closeProfile();
     } catch (e) {
       Alert.alert('No se pudo canjear', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -1088,7 +1146,7 @@ export default function CanjesScreen() {
       </ScrollView>
 
       {/* Mapa completo */}
-      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)}>
+      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)} onDismiss={() => flushAfterClose(afterMapClose)}>
         <View style={{ flex: 1, backgroundColor: '#1d1b2e' }}>
           {mapRegion && (
             <MapView
@@ -1099,7 +1157,10 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
               onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
-              onRegionChangeComplete={(r) => setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d))}
+              onRegionChangeComplete={(r) => {
+                fullCenter.current = r;
+                setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d));
+              }}
             >
               {mapBusinesses.map((b) => (
                 <BusinessMarker
@@ -1107,8 +1168,8 @@ export default function CanjesScreen() {
                   business={b}
                   coordinate={fullPins.get(b.id)}
                   onPress={() => {
+                    runAfterClose(afterMapClose, true, () => setProfileBusinessId(b.id));
                     setMapOpen(false);
-                    setTimeout(() => setProfileBusinessId(b.id), 350);
                   }}
                 />
               ))}
@@ -1177,22 +1238,30 @@ export default function CanjesScreen() {
               </View>
             )}
           </View>
-          {mapRegion && (
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel="Abrir en Google Maps"
-              onPress={() => openFullMap(mapRegion.latitude, mapRegion.longitude, 'Comercios cerca tuyo')}
-              className="absolute items-center justify-center rounded-full"
-              style={{ bottom: 44, right: 20, width: 44, height: 44, backgroundColor: 'rgba(29,27,46,0.78)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}
-            >
-              <Navigation size={18} color="#fff" />
-            </Press>
-          )}
+          {/* Tocar el logo de Google (abajo a la izquierda) abre Google Maps en la zona que se está viendo. */}
+          <Press
+            accessibilityRole="link"
+            accessibilityLabel="Abrir en Google Maps"
+            onPress={() => {
+              const c = fullCenter.current ?? mapRegion;
+              if (c) openGoogleMaps(c.latitude, c.longitude, c.latitudeDelta);
+            }}
+            style={{ position: 'absolute', left: 0, bottom: 0, width: 130, height: 34 + bottomInset }}
+          />
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel="Centrar el mapa en dónde estás"
+            onPress={centerOnMe}
+            className="absolute items-center justify-center rounded-full bg-card-light"
+            style={{ bottom: 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+          >
+            <Locate size={22} color={colors.aquaDeep} />
+          </Press>
         </View>
       </Modal>
 
       {/* Ficha del comercio */}
-      <Modal visible={!!profileGroup} animationType="slide" onRequestClose={() => setProfileBusinessId(null)}>
+      <Modal visible={!!profileGroup} animationType="slide" onRequestClose={closeProfile} onDismiss={() => flushAfterClose(afterProfileClose)}>
         {profileGroup && (
           <View className="flex-1 bg-bg-light dark:bg-bg-dark">
             <ScrollView contentContainerClassName="pb-12" showsVerticalScrollIndicator={false}>
@@ -1223,7 +1292,7 @@ export default function CanjesScreen() {
                 <Press
                   accessibilityRole="button"
                   accessibilityLabel="Cerrar"
-                  onPress={() => setProfileBusinessId(null)}
+                  onPress={closeProfile}
                   className="absolute bg-card-light rounded-full items-center justify-center"
                   style={{ top: 54, left: 20, width: 40, height: 40 }}
                 >
@@ -1432,11 +1501,11 @@ export default function CanjesScreen() {
                                 accessibilityState={{ busy: redeeming }}
                                 onPress={() => {
                                   if (myPending) {
-                                    setProfileBusinessId(null);
-                                    setTimeout(() => {
+                                    runAfterClose(afterProfileClose, profileOpenRef.current, () => {
                                       setActiveBenefit(b);
                                       setActiveRedemption(myPending as unknown as Redemption);
-                                    }, 350);
+                                    });
+                                    closeProfile();
                                     return;
                                   }
                                   confirmRedeem(b);
@@ -1513,56 +1582,55 @@ export default function CanjesScreen() {
                 ) : null}
               </View>
             </ScrollView>
+          {/* Fotos del local: va dentro de la ficha porque en iPhone un panel solo puede abrirse encima del que está a la vista. */}
+          <Modal visible={galleryOpen && galleryPhotos.length > 0} animationType="fade" onRequestClose={() => setGalleryOpen(false)}>
+            <View style={{ flex: 1, backgroundColor: '#0B0B10' }}>
+              <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
+                <Press
+                  onPress={() => setGalleryOpen(false)}
+                  className="rounded-full items-center justify-center"
+                  style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.16)' }}
+                  accessibilityLabel="Cerrar las fotos"
+                >
+                  <X size={18} color="#fff" />
+                </Press>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                  {Math.min(galleryIndex + 1, galleryPhotos.length)} de {galleryPhotos.length}
+                </Text>
+                <View style={{ width: 40 }} />
+              </View>
+              <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 12 }}>
+                {galleryPhotos[galleryIndex] ? (
+                  <Image
+                    source={{ uri: galleryPhotos[galleryIndex] }}
+                    style={{ width: '100%', height: '88%', borderRadius: 20 }}
+                    resizeMode="contain"
+                  />
+                ) : null}
+              </View>
+              {galleryPhotos.length > 1 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 36 }}>
+                  {galleryPhotos.map((uri, i) => (
+                    <Press key={uri} onPress={() => setGalleryIndex(i)} accessibilityLabel={`Foto ${i + 1}`}>
+                      <Image
+                        source={{ uri }}
+                        style={{
+                          width: 74,
+                          height: 74,
+                          borderRadius: 14,
+                          opacity: i === galleryIndex ? 1 : 0.55,
+                          borderWidth: i === galleryIndex ? 2 : 0,
+                          borderColor: '#fff',
+                        }}
+                      />
+                    </Press>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          </Modal>
           </View>
         )}
-      </Modal>
-
-      {/* Fotos del local */}
-      <Modal visible={galleryOpen && galleryPhotos.length > 0} animationType="fade" onRequestClose={() => setGalleryOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: '#0B0B10' }}>
-          <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
-            <Press
-              onPress={() => setGalleryOpen(false)}
-              className="rounded-full items-center justify-center"
-              style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.16)' }}
-              accessibilityLabel="Cerrar las fotos"
-            >
-              <X size={18} color="#fff" />
-            </Press>
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-              {Math.min(galleryIndex + 1, galleryPhotos.length)} de {galleryPhotos.length}
-            </Text>
-            <View style={{ width: 40 }} />
-          </View>
-          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 12 }}>
-            {galleryPhotos[galleryIndex] ? (
-              <Image
-                source={{ uri: galleryPhotos[galleryIndex] }}
-                style={{ width: '100%', height: '88%', borderRadius: 20 }}
-                resizeMode="contain"
-              />
-            ) : null}
-          </View>
-          {galleryPhotos.length > 1 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 36 }}>
-              {galleryPhotos.map((uri, i) => (
-                <Press key={uri} onPress={() => setGalleryIndex(i)} accessibilityLabel={`Foto ${i + 1}`}>
-                  <Image
-                    source={{ uri }}
-                    style={{
-                      width: 74,
-                      height: 74,
-                      borderRadius: 14,
-                      opacity: i === galleryIndex ? 1 : 0.55,
-                      borderWidth: i === galleryIndex ? 2 : 0,
-                      borderColor: '#fff',
-                    }}
-                  />
-                </Press>
-              ))}
-            </ScrollView>
-          )}
-        </View>
       </Modal>
 
       {/* Código de canje */}
