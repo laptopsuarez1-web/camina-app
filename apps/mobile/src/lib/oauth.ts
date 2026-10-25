@@ -80,3 +80,12 @@ export async function signInWithApple() {
 
   return data;
 }
+
+// Para borrar una cuenta creada con Apple hay que avisarle a Apple (revocar el permiso), y para eso el
+// servidor necesita un código de autorización recién emitido. Se lo pide de nuevo a Apple con Face ID,
+// sin pedir nombre ni correo. Devuelve null fuera de iPhone; si la persona cancela, tira el error de Apple.
+export async function getAppleAuthorizationCode() {
+  if (!(await isAppleSignInAvailable())) return null;
+  const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] });
+  return credential.authorizationCode ?? null;
+}

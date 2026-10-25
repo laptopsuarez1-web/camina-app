@@ -37,7 +37,10 @@
           }
         ]
       },
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "associatedDomains": [
+        "applinks:caminaapp.com"
+      ]
     },
     "android": {
       "package": "bo.camina.app",

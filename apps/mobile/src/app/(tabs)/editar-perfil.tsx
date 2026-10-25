@@ -21,6 +21,7 @@ import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { AccountEmailCard } from '@/components/AccountEmailCard';
+import { getAppleAuthorizationCode } from '@/lib/oauth';
 
 const INTEREST_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
   Café: Coffee,
@@ -222,7 +223,23 @@ export default function EditarPerfilScreen() {
 
   async function deleteAccount() {
     setDeleting(true);
-    const { error } = await supabase.functions.invoke('delete-account');
+    // Cuenta creada con Apple: Apple pide que al borrarla se revoque su permiso. Se confirma con Apple
+    // para obtener el código que el servidor usa para revocarlo. Si la persona cancela, no se borra nada.
+    let appleAuthorizationCode: string | null = null;
+    if (((session?.user.app_metadata?.providers as string[] | undefined) ?? []).includes('apple')) {
+      try {
+        appleAuthorizationCode = await getAppleAuthorizationCode();
+      } catch (e) {
+        setDeleting(false);
+        const message = e instanceof Error ? e.message : '';
+        if ((e as { code?: string })?.code === 'ERR_REQUEST_CANCELED' || message.includes('ERR_REQUEST_CANCELED')) return;
+        Alert.alert('No pudimos confirmar con Apple', 'Intenta de nuevo para eliminar tu cuenta.');
+        return;
+      }
+    }
+    const { error } = await supabase.functions.invoke('delete-account', {
+      body: appleAuthorizationCode ? { appleAuthorizationCode } : {},
+    });
     if (error) {
       setDeleting(false);
       Alert.alert('No pudimos eliminar tu cuenta', `Intenta de nuevo en un rato o escríbenos a ${SUPPORT_EMAIL}.`);
