@@ -70,7 +70,7 @@ export function LoyaltyCardView({ card, showHistory, title }: { card: LoyaltyCar
       <Stamps card={card} size={showHistory ? 34 : 36} />
       <Text className="text-[13px] leading-[18px] text-text-light dark:text-text-dark mt-3">{statusLine(card)}</Text>
       {!card.ready && card.next_allowed_at && new Date(card.next_allowed_at).getTime() > now ? (
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">Tu próximo canje acá, desde el {formatDay(card.next_allowed_at)}.</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1">Tu próximo canje aquí, desde el {formatDay(card.next_allowed_at)}.</Text>
       ) : null}
       {showHistory && card.history.length > 0 ? (
         <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">

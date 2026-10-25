@@ -55,7 +55,7 @@ export default function TarjetasScreen() {
           </SkeletonGroup>
         )}
         {isError && !cards && (
-          <EmptyState title="No pudimos cargar tus tarjetas" text="Revisá tu conexión e intentá de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
+          <EmptyState title="No pudimos cargar tus tarjetas" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
         )}
         {cards?.map((card) => (
           <Press key={card.business_id} accessibilityRole="button" accessibilityLabel={`Ver ${card.business_name}`} onPress={() => router.push('/(tabs)/canjes')}>
@@ -64,8 +64,8 @@ export default function TarjetasScreen() {
         ))}
         {cards && cards.length === 0 && (
           <EmptyState
-            title="Todavía no tenés tarjetas"
-            text="Cuando canjees en un local con tarjeta de fidelidad, tu primer sello aparece acá."
+            title="Todavía no tienes tarjetas"
+            text="Cuando canjees en un local con tarjeta de fidelidad, tu primer sello aparece aquí."
           />
         )}
       </View>

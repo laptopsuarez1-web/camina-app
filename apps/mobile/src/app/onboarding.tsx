@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { View, Image, ScrollView, Animated, AccessibilityInfo, useWindowDimensions } from 'react-native';
+import { useRef, useState } from 'react';
+import { View, Image, ScrollView, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
@@ -24,20 +24,7 @@ export default function OnboardingScreen() {
   // Alto real del área de pantallas: el ScrollView horizontal no estira a sus hijos en todas las plataformas.
   const [pageHeight, setPageHeight] = useState(0);
   const scroller = useRef<ScrollView>(null);
-  const [fade] = useState(() => new Animated.Value(1));
-  const reduceMotion = useRef(false);
   const last = step === ONBOARDING.length - 1;
-
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => (reduceMotion.current = v)).catch(() => {});
-  }, []);
-
-  // Entrada corta de la ilustración al cambiar de pantalla; sin animación si el teléfono pide reducir movimiento.
-  useEffect(() => {
-    if (reduceMotion.current) return;
-    fade.setValue(0);
-    Animated.timing(fade, { toValue: 1, duration: 320, useNativeDriver: true }).start();
-  }, [step, fade]);
 
   async function finish() {
     await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1');
@@ -72,26 +59,24 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(e) => setStep(Math.round(e.nativeEvent.contentOffset.x / width))}
         onLayout={(e) => setPageHeight(e.nativeEvent.layout.height)}
+        // En iPhone el ajuste automático de márgenes corría el contenido hacia abajo.
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
         style={{ flex: 1 }}
       >
-        {ONBOARDING.map((slide, i) => (
-          // Vertical con flexGrow: con letra normal entra todo; con texto grande el contenido crece y se desplaza.
-          <ScrollView
-            key={slide.art}
-            style={{ width, height: pageHeight || undefined }}
-            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, alignItems: 'center' }}
-            showsVerticalScrollIndicator={false}
-          >
-            <Animated.View style={{ flex: 1, minHeight: 260, alignSelf: 'stretch', marginHorizontal: -28, opacity: i === step ? fade : 1 }}>
-              <Image source={ART[slide.art]} accessible={false} resizeMode="contain" style={{ flex: 1, width: '100%' }} />
-            </Animated.View>
+        {ONBOARDING.map((slide) => (
+          // Pantalla fija: la ilustración se achica para que el título y el texto entren siempre sin desplazar.
+          <View key={slide.art} style={{ width, height: pageHeight || undefined, paddingHorizontal: 28, alignItems: 'center' }}>
+            <View style={{ flex: 1, minHeight: 0, alignSelf: 'stretch', marginHorizontal: -28 }}>
+              <Image source={ART[slide.art]} accessible={false} resizeMode="contain" style={{ flex: 1, width: '100%', height: undefined }} />
+            </View>
             <View style={{ maxWidth: 340, alignItems: 'center', paddingTop: 8, paddingBottom: 8 }}>
-              <Text accessibilityRole="header" style={{ color: colors.light.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.3, textAlign: 'center', marginBottom: 10 }}>
+              <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={{ color: colors.light.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.3, textAlign: 'center', marginBottom: 10 }}>
                 {slide.title}
               </Text>
-              <Text style={{ color: colors.light.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
+              <Text maxFontSizeMultiplier={1.3} style={{ color: colors.light.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' }}>{slide.desc}</Text>
             </View>
-          </ScrollView>
+          </View>
         ))}
       </ScrollView>
 

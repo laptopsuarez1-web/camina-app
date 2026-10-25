@@ -25,7 +25,7 @@ export default function TerminosScreen() {
     // Usuario de la sesión guardada en el teléfono (getUser() llama al servidor y falla sin red).
     const userId = useAuthStore.getState().session?.user.id;
     if (!userId) {
-      Alert.alert('Tu sesión venció', 'Volvé a iniciar sesión para continuar.');
+      Alert.alert('Tu sesión venció', 'Vuelve a iniciar sesión para continuar.');
       router.replace('/(auth)/welcome');
       return;
     }
@@ -41,7 +41,7 @@ export default function TerminosScreen() {
       // Primera vez: elegir la meta de pasos (de ahí sigue a Health Connect en Android o a la app).
       router.replace({ pathname: '/(auth)/meta', params: joinedGroupId ? { group: joinedGroupId } : {} });
     } catch (e) {
-      Alert.alert('Algo salió mal', friendlyError(e, 'Intentá de nuevo.'));
+      Alert.alert('Algo salió mal', friendlyError(e, 'Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }

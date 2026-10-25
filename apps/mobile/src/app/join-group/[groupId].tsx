@@ -53,7 +53,7 @@ export default function JoinGroupScreen() {
     const { data: groupId, error } = await supabase.rpc('join_group_with_code', { p_code: code });
     setJoining(false);
     if (error || !groupId) {
-      Alert.alert('No se pudo unir al grupo', friendlyServerError(error, 'Intentá de nuevo.'));
+      Alert.alert('No se pudo unir al grupo', friendlyServerError(error, 'Intenta de nuevo.'));
       return;
     }
     router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });

@@ -58,8 +58,10 @@ function distanceMeters(a: { latitude: number; longitude: number }, lat: number,
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+// Más de 100 km no es "cerca" (por ejemplo, el teléfono está en otra ciudad): no se muestra la distancia.
+const MAX_SHOWN_DISTANCE_M = 100_000;
 function formatDistance(m: number) {
-  return m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} m` : `${(m / 1000).toFixed(1)} km`;
+  return m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} m` : m < 10_000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 1000)} km`;
 }
 
 export function useHomePosition() {
@@ -147,8 +149,8 @@ export function NearbyRow({
         <SectionHeader title="Locales cerca tuyo" />
         <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/canjes?view=lista')} className="mx-5">
           <Glass className="rounded-3xl p-4">
-            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá comercios</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mirá qué se puede canjear.</Text>
+            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explora comercios</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mira qué se puede canjear.</Text>
           </Glass>
         </Press>
       </View>
@@ -165,7 +167,7 @@ export function NearbyRow({
             <Press
               key={p.business.id}
               accessibilityRole="button"
-              accessibilityLabel={`${p.business.name}, ${p.business.category}${featured ? ', destacado' : ''}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null ? `, a ${formatDistance(p.distance)}` : ''}, desde ${p.minCost} ${plural(p.minCost, 'Punto', 'Puntos')}`}
+              accessibilityLabel={`${p.business.name}, ${p.business.category}${featured ? ', destacado' : ''}, ${p.count} ${p.count === 1 ? 'premio' : 'premios'}${p.distance != null && p.distance < MAX_SHOWN_DISTANCE_M ? `, a ${formatDistance(p.distance)}` : ''}, desde ${p.minCost} ${plural(p.minCost, 'Punto', 'Puntos')}`}
               onPress={() => router.push(`/(tabs)/canjes?negocio=${p.business.id}`)}
               style={{ width: 268 }}
             >
@@ -181,7 +183,7 @@ export function NearbyRow({
                       {featured && <GoldBadge size={15} />}
                     </View>
                     <Text className="text-[13px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
-                      {p.distance != null ? `${p.business.category} · ${formatDistance(p.distance)}` : p.business.category}
+                      {p.distance != null && p.distance < MAX_SHOWN_DISTANCE_M ? `${p.business.category} · ${formatDistance(p.distance)}` : p.business.category}
                     </Text>
                   </View>
                 </View>

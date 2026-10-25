@@ -63,7 +63,7 @@ export default function WelcomeScreen() {
 
   async function handleGoogle() {
     if (!googleOAuthConfigured) {
-      Alert.alert('Google no está disponible ahora', 'Usá tu correo para continuar.');
+      Alert.alert('Google no está disponible ahora', 'Usa tu correo para continuar.');
       return;
     }
     await promptGoogleAsync();
@@ -78,7 +78,7 @@ export default function WelcomeScreen() {
     } catch (e) {
       const message = e instanceof Error ? e.message : '';
       if (!message.includes('ERR_REQUEST_CANCELED')) {
-        Alert.alert('No pudimos iniciar sesión con Apple', friendlyError(e, 'Intentá de nuevo.'));
+        Alert.alert('No pudimos iniciar sesión con Apple', friendlyError(e, 'Intenta de nuevo.'));
       }
     } finally {
       setOauthLoading(false);
@@ -109,7 +109,7 @@ export default function WelcomeScreen() {
 
   async function handleSubmit() {
     if (!email.trim() || password.length < 6) {
-      Alert.alert('Faltan datos', 'Ingresá tu correo y una contraseña de al menos 6 caracteres.');
+      Alert.alert('Faltan datos', 'Ingresa tu correo y una contraseña de al menos 6 caracteres.');
       return;
     }
     setLoading(true);
@@ -136,7 +136,7 @@ export default function WelcomeScreen() {
 
   async function handleForgotPassword() {
     if (!email.trim()) {
-      Alert.alert('Falta tu correo', 'Escribí tu correo arriba primero.');
+      Alert.alert('Falta tu correo', 'Escribe tu correo arriba primero.');
       return;
     }
     setRecovering(true);
@@ -158,7 +158,7 @@ export default function WelcomeScreen() {
     if (!awaitingConfirmation || !password) return;
     const { data, error } = await supabase.auth.signInWithPassword({ email: awaitingConfirmation, password });
     if (error || !data.session) {
-      if (showError) Alert.alert('Todavía no está confirmado', 'Abrí el link del correo y después tocá este botón de nuevo.');
+      if (showError) Alert.alert('Todavía no está confirmado', 'Abre el link del correo y después toca este botón de nuevo.');
       return;
     }
     setAwaitingConfirmation(null);
@@ -192,12 +192,12 @@ export default function WelcomeScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }} showsVerticalScrollIndicator={false}>
           <Image source={require('@/../assets/icon.png')} style={{ width: 84, height: 84, borderRadius: 42 }} />
           <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginTop: 18, marginBottom: 10, textAlign: 'center' }}>
-            Confirmá tu correo
+            Confirma tu correo
           </Text>
           <Text style={{ color: colors.authMuted, marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
             {Platform.OS === 'web'
-              ? `Te mandamos un link a ${awaitingConfirmation}. Abrilo desde donde quieras para activar tu cuenta y dejá esta pestaña abierta: apenas se confirma, entrás solo.`
-              : `Te mandamos un link a ${awaitingConfirmation}. Abrilo desde el teléfono para activar tu cuenta y volvé a entrar acá.`}
+              ? `Te mandamos un link a ${awaitingConfirmation}. Ábrelo desde donde quieras para activar tu cuenta y deja esta pestaña abierta: apenas se confirma, entras solo.`
+              : `Te mandamos un link a ${awaitingConfirmation}. Ábrelo desde el teléfono para activar tu cuenta y vuelve a entrar aquí.`}
           </Text>
           <Press
             accessibilityRole="button"
@@ -269,7 +269,7 @@ export default function WelcomeScreen() {
             CAMINA
           </Text>
           <Text style={{ color: colors.authMuted, marginTop: 6, marginBottom: 30, textAlign: 'center', fontSize: 13.5, lineHeight: 19, maxWidth: 280 }}>
-            Caminá, ganá Puntos y canjealos en tu ciudad.
+            Camina, gana Puntos y canjéalos en tu ciudad.
           </Text>
 
           <View style={{ width: '100%', maxWidth: 320, gap: 10 }}>
@@ -378,20 +378,20 @@ export default function WelcomeScreen() {
             {authKind === 'login' && (
               <Press accessibilityRole="button" onPress={handleForgotPassword} disabled={recovering} style={{ minHeight: 44, justifyContent: 'center' }}>
                 <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center' }}>
-                  {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisá tu correo' : '¿Olvidaste tu contraseña?'}
+                  {recovering ? 'Mandando…' : recoverySent ? 'Te mandamos un link — revisa tu correo' : '¿Olvidaste tu contraseña?'}
                 </Text>
               </Press>
             )}
 
             <Press accessibilityRole="link" onPress={() => router.push('/legal')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center', lineHeight: 16 }}>
-                Al continuar aceptás los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
+                Al continuar aceptas los <Text style={{ textDecorationLine: 'underline' }}>Términos y la Política de privacidad</Text> de Camina.
               </Text>
             </Press>
 
             <Press accessibilityRole="button" onPress={() => setAuthKind(authKind === 'login' ? 'signup' : 'login')} style={{ minHeight: 44, justifyContent: 'center' }}>
               <Text style={{ color: colors.authMuted, fontSize: 12, textAlign: 'center' }}>
-                {authKind === 'login' ? '¿Sos nuevo? Crear cuenta' : '¿Ya tenés cuenta? Iniciar sesión'}
+                {authKind === 'login' ? '¿Eres nuevo? Crear cuenta' : '¿Ya tienes cuenta? Iniciar sesión'}
               </Text>
             </Press>
           </View>

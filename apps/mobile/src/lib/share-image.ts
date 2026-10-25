@@ -8,8 +8,8 @@ import * as Sharing from 'expo-sharing';
 // (ahí aparecen Instagram, WhatsApp, Guardar imagen...). La imagen se arma en el teléfono y no se sube a ningún lado.
 export const SHARE_PX_WIDTH = 1080;
 
-export async function shareCard(ref: RefObject<View | null>, size: { width: number; height: number }, filename: string, title = 'Compartí tu progreso') {
-  if (!ref.current) throw new Error('La tarjeta todavía no está lista. Probá de nuevo.');
+export async function shareCard(ref: RefObject<View | null>, size: { width: number; height: number }, filename: string, title = 'Comparte tu progreso') {
+  if (!ref.current) throw new Error('La tarjeta todavía no está lista. Prueba de nuevo.');
   const scale = SHARE_PX_WIDTH / size.width;
   const uri = await captureRef(ref, {
     format: 'png',

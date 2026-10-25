@@ -54,7 +54,7 @@ export function useStoryFlow() {
       setComposed(null);
       setStep('compose');
     } catch (e) {
-      Alert.alert('No pudimos abrir la foto', friendlyError(e, 'Probá de nuevo.'));
+      Alert.alert('No pudimos abrir la foto', friendlyError(e, 'Prueba de nuevo.'));
       if (!photo) reset();
     }
   }
@@ -78,7 +78,7 @@ export function useStoryFlow() {
       await shareToInstagram(await composedUri());
       setStep('confirm');
     } catch (e) {
-      Alert.alert('No pudimos abrir Instagram', friendlyError(e, 'Probá de nuevo.'));
+      Alert.alert('No pudimos abrir Instagram', friendlyError(e, 'Prueba de nuevo.'));
     } finally {
       setBusy(false);
     }
@@ -92,7 +92,7 @@ export function useStoryFlow() {
       queryClient.invalidateQueries({ queryKey: ['story-shares'] });
       setStep('done');
     } catch (e) {
-      Alert.alert('No pudimos mandar tu historia', friendlyError(e, 'Probá de nuevo en un momento.'));
+      Alert.alert('No pudimos mandar tu historia', friendlyError(e, 'Prueba de nuevo en un momento.'));
     } finally {
       setBusy(false);
     }
@@ -102,7 +102,7 @@ export function useStoryFlow() {
     <>
       <ActionSheet
         visible={step === 'pick'}
-        title="Subí tu historia"
+        title="Sube tu historia"
         actions={[
           { label: 'Sacar una foto', onPress: () => pick('camera') },
           { label: 'Elegir de la galería', onPress: () => pick('library') },

@@ -226,8 +226,9 @@ export function useTodaySteps() {
   const healthKit = useHealthKitSteps(Platform.OS === 'ios');
   const healthConnect = useHealthConnectSteps(Platform.OS === 'android');
 
-  // El sensor de CoreMotion (solo iPhone) se usa únicamente si Salud no está disponible.
-  const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true && !healthKit.ready);
+  // El sensor de CoreMotion (solo iPhone) corre siempre como respaldo: si la persona no le dio a Camina el permiso
+  // de leer Pasos en Salud, iOS no avisa y Salud devuelve 0, pero el sensor (permiso "Movimiento y forma física") sí cuenta.
+  const iosSensorSteps = useIosSensorSteps(Platform.OS === 'ios' && sensorAvailable === true);
 
   let result: {
     steps: number;
@@ -237,7 +238,7 @@ export function useTodaySteps() {
     live: boolean;
   };
   if (Platform.OS === 'ios') {
-    if (healthKit.ready && healthKit.steps != null) {
+    if (healthKit.ready && healthKit.steps != null && healthKit.steps >= iosSensorSteps) {
       result = { steps: healthKit.steps, available: true, source: 'healthkit', healthConnectStatus: null, live: true };
     } else {
       result = { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? 'sensor' : null, healthConnectStatus: null, live: sensorAvailable === true };

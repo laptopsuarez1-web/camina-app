@@ -23,18 +23,18 @@ export default function SaludScreen() {
   }
 
   const steps: [string, string, string, () => void][] = [
-    ['1', 'Instalá Health Connect', 'Es la app oficial de Android donde se guardan tus pasos. En Android 14 o más nuevo ya viene en el teléfono.', () => openStore(HEALTH_CONNECT)],
-    ['2', 'Instalá Google Fit', 'Cuenta tus pasos con el sensor del teléfono y los guarda en Health Connect. Abrila una vez y aceptá sus permisos.', () => openStore(GOOGLE_FIT)],
-    ['3', 'Dale permiso a Camina', 'En Health Connect, dentro de Permisos de apps, activá "Pasos" para Camina y para Google Fit.', () => openHealthConnectSettings()],
+    ['1', 'Instala Health Connect', 'Es la app oficial de Android donde se guardan tus pasos. En Android 14 o más nuevo ya viene en el teléfono.', () => openStore(HEALTH_CONNECT)],
+    ['2', 'Instala Google Fit', 'Cuenta tus pasos con el sensor del teléfono y los guarda en Health Connect. Ábrela una vez y acepta sus permisos.', () => openStore(GOOGLE_FIT)],
+    ['3', 'Dale permiso a Camina', 'En Health Connect, dentro de Permisos de apps, activa "Pasos" para Camina y para Google Fit.', () => openHealthConnectSettings()],
   ];
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg }}>
       <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 32 }}>
         <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 14 }} />
-        <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activá el conteo de pasos</Text>
+        <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 }}>Activa el conteo de pasos</Text>
         <Text style={{ color: colors.authMuted, fontSize: 14, lineHeight: 21, marginBottom: 24 }}>
-          Para que Camina sume tus pasos de forma segura, se leen desde Health Connect. Son tres pasos y lo hacés una sola vez.
+          Para que Camina sume tus pasos de forma segura, se leen desde Health Connect. Son tres pasos y lo haces una sola vez.
         </Text>
 
         {steps.map(([n, title, text, onPress]) => (

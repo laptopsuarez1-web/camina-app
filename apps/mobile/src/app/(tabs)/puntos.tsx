@@ -110,7 +110,7 @@ export default function PuntosScreen() {
   async function shareLink() {
     if (!link) return;
     await Share.share({
-      message: `Te invito a Camina — caminá y ganá Puntos para canjear en comercios adheridos. Sumate con mi link:\n${link}`,
+      message: `Te invito a Camina — camina y gana Puntos para canjear en comercios adheridos. Súmate con mi link:\n${link}`,
       url: link,
     });
   }
@@ -164,7 +164,7 @@ export default function PuntosScreen() {
                 ? `${tarjetasListas} ${plural(tarjetasListas, 'premio te espera', 'premios te esperan')}`
                 : tarjetas && tarjetas.length > 0
                   ? `${tarjetas.length} ${plural(tarjetas.length, 'local', 'locales')}`
-                  : 'Sumá sellos en cada local y ganá su premio'}
+                  : 'Suma sellos en cada local y gana su premio'}
             </Text>
           </View>
           <ChevronRight size={18} color={colors.light.muted} />
@@ -174,11 +174,11 @@ export default function PuntosScreen() {
         <View className="flex-row items-center gap-3 mb-2">
           <IconBubble icon={Users} tone="purple" size={40} />
           <Text className="flex-1 font-bold text-[14px] text-text-light dark:text-text-dark">
-            Invitá a tus amigos y ganá 5 Puntos por cada uno
+            Invita a tus amigos y gana 5 Puntos por cada uno
           </Text>
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
-          Compartí tu link de invitación. Recibís 5 Puntos cuando tu amigo se registra y consigue su primer punto.
+          Comparte tu link de invitación. Recibes 5 Puntos cuando tu amigo se registra y consigue su primer punto.
         </Text>
         <Press
           accessibilityRole="button"
@@ -240,7 +240,7 @@ export default function PuntosScreen() {
         {isError && !movimientos && (
           <EmptyState
             title="No pudimos cargar"
-            text="Revisá tu conexión e intentá de nuevo."
+            text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"
             onAction={() => refetch()}
           />
@@ -248,8 +248,8 @@ export default function PuntosScreen() {
         {!isLoading && !isError && (movimientos ?? []).length === 0 && (
           <EmptyState
             illustration="puntos"
-            title="Tus Puntos van a aparecer acá"
-            text="Cada 1.000 pasos que camines sumás un punto, siempre que abras la app ese día. También ganás por retos, invitando amigos y desafíos de grupo."
+            title="Tus Puntos van a aparecer aquí"
+            text="Cada 1.000 pasos que camines sumas un punto, siempre que abras la app ese día. También ganas por retos, invitando amigos y desafíos de grupo."
           />
         )}
       </View>

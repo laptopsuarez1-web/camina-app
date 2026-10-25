@@ -39,9 +39,9 @@ export default function EventosScreen() {
       await join.mutateAsync(p.id);
       // iOS ignora accessibilityLiveRegion: se anuncia a mano que ya quedó anotado.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Ya estás anotado');
-      Alert.alert('¡Listo!', p.kind === 'evento' ? 'Ya estás anotado en el evento.' : 'Ya sos parte del desafío. Tus pasos cuentan desde ahora.');
+      Alert.alert('¡Listo!', p.kind === 'evento' ? 'Ya estás anotado en el evento.' : 'Ya eres parte del desafío. Tus pasos cuentan desde ahora.');
     } catch (e) {
-      Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
 
@@ -50,7 +50,7 @@ export default function EventosScreen() {
       const points = await claim.mutateAsync(reto.id);
       celebrate({ kind: 'sheet', title: '¡Reto cumplido!', body: reto.title, points: Number(points) || reto.reward_points });
     } catch (e) {
-      Alert.alert('No pudimos darte los Puntos', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos darte los Puntos', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
 
@@ -80,7 +80,7 @@ export default function EventosScreen() {
         })}
       </View>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
-        {tab === 'eventos' ? 'Viví experiencias únicas con tus marcas favoritas' : 'Sumate, caminá y ganá premios de tus marcas favoritas'}
+        {tab === 'eventos' ? 'Vive experiencias únicas con tus marcas favoritas' : 'Súmate, camina y gana premios de tus marcas favoritas'}
       </Text>
       {tab === 'eventos' && (
         <View className="gap-4 mb-7 items-center">
@@ -98,7 +98,7 @@ export default function EventosScreen() {
         <View className="mb-8">
           <EmptyState
             title="No pudimos cargar"
-            text="Revisá tu conexión e intentá de nuevo."
+            text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"
             onAction={() => refetchPromos()}
           />
@@ -111,14 +111,14 @@ export default function EventosScreen() {
             {tab === 'eventos' ? 'Todavía no hay eventos' : 'Todavía no hay desafíos de comercios'}
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
-            Cuando un comercio de tu ciudad publique uno, lo vas a ver acá.
+            Cuando un comercio de tu ciudad publique uno, lo vas a ver aquí.
           </Text>
         </Glass>
       )}
       {tab === 'desafios' && (<>
       <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
-        Cumplí metas caminando y ganá Puntos extra.
+        Cumple metas caminando y gana Puntos extra.
       </Text>
 
       {(retos ?? []).length === 0 && (

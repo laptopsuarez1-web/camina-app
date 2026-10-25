@@ -155,8 +155,10 @@ function distanceMeters(a: { latitude: number; longitude: number }, lat: number,
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+// Más de 100 km no es "cerca" (por ejemplo, el teléfono está en otra ciudad): no se muestra la distancia.
+const MAX_SHOWN_DISTANCE_M = 100_000;
 function formatDistance(m: number) {
-  return m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  return m < 1000 ? `${Math.round(m / 10) * 10} m` : m < 10_000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 1000)} km`;
 }
 
 // El link de reseñas lo escribe el comercio a mano: solo se abre si es https y de Google; si no, se ignora.
@@ -269,19 +271,19 @@ function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string; logoUr
   );
 }
 
-// Los pines de Android se "fotografían" una vez, así que el logo tiene que estar en caché ANTES de dibujarlos:
-// se precarga y el marcador recién se monta cuando el logo está listo (o falló / pasó el tope y sale con la inicial).
-// Ya montado se deja actualizar un momento más para que alcance a pintarse y después se congela (rinde mejor con muchos pines).
+// Los pines se "fotografían" (Android siempre, y iPhone con el mapa de Google), así que el logo tiene que estar en caché
+// ANTES de dibujarlos: se precarga y el marcador recién se monta cuando la precarga terminó (o pasó el tope).
+// La precarga solo calienta la caché: aunque diga que falló, el pin intenta igual mostrar el logo, y la inicial
+// queda solo para cuando la imagen misma no carga. Ya montado se deja actualizar hasta que el logo se pintó y después se congela.
 const LOGO_WAIT_MS = 7000;
 function useLogoReady(logoUrl?: string | null) {
-  const [state, setState] = useState<'wait' | 'ok' | 'none'>('wait');
+  const [state, setState] = useState<'wait' | 'ok'>('wait');
   useEffect(() => {
     if (!logoUrl) return;
     let alive = true;
-    const cap = setTimeout(() => alive && setState('none'), LOGO_WAIT_MS);
-    Image.prefetch(logoUrl)
-      .then((ok) => alive && setState(ok === false ? 'none' : 'ok'))
-      .catch(() => alive && setState('none'));
+    const done = () => alive && setState('ok');
+    const cap = setTimeout(done, LOGO_WAIT_MS);
+    Image.prefetch(logoUrl).then(done, done);
     return () => {
       alive = false;
       clearTimeout(cap);
@@ -290,7 +292,60 @@ function useLogoReady(logoUrl?: string | null) {
   return logoUrl ? state : 'none';
 }
 
-function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: () => void }) {
+// Pines que caerían encimados (locales en la misma cuadra) se reparten en ronda alrededor de su punto medio,
+// a la distancia justa para que se vean todos. Se recalcula con el zoom: al acercarse vuelven a su lugar real.
+const PIN_GAP_PX = 54;
+type LatLng = { latitude: number; longitude: number };
+export function spreadPins(items: { id: string; lat: number; lng: number }[], latitudeDelta: number, mapHeightPx: number) {
+  const out = new Map<string, LatLng>();
+  if (!items.length || !mapHeightPx) {
+    for (const b of items) out.set(b.id, { latitude: b.lat, longitude: b.lng });
+    return out;
+  }
+  const degPerPx = latitudeDelta / mapHeightPx;
+  const cos = Math.cos((items[0].lat * Math.PI) / 180) || 1;
+  // Grupos: dos pines están en el mismo grupo si quedan a menos de PIN_GAP_PX en pantalla (cadena simple).
+  const groups: (typeof items)[] = [];
+  const seen = new Set<string>();
+  for (const b of items) {
+    if (seen.has(b.id)) continue;
+    const group = [b];
+    seen.add(b.id);
+    for (let i = 0; i < group.length; i++) {
+      for (const o of items) {
+        if (seen.has(o.id)) continue;
+        const dy = (o.lat - group[i].lat) / degPerPx;
+        const dx = ((o.lng - group[i].lng) * cos) / degPerPx;
+        if (Math.hypot(dx, dy) < PIN_GAP_PX) {
+          group.push(o);
+          seen.add(o.id);
+        }
+      }
+    }
+    groups.push(group);
+  }
+  for (const group of groups) {
+    if (group.length === 1) {
+      out.set(group[0].id, { latitude: group[0].lat, longitude: group[0].lng });
+      continue;
+    }
+    const lat = group.reduce((a, b) => a + b.lat, 0) / group.length;
+    const lng = group.reduce((a, b) => a + b.lng, 0) / group.length;
+    // Radio para que pines vecinos en la ronda queden a PIN_GAP_PX entre sí.
+    const rPx = PIN_GAP_PX / (2 * Math.sin(Math.PI / group.length));
+    const sorted = [...group].sort((a, b) => a.id.localeCompare(b.id));
+    sorted.forEach((b, i) => {
+      const ang = (2 * Math.PI * i) / sorted.length - Math.PI / 2;
+      out.set(b.id, {
+        latitude: lat + rPx * Math.sin(ang) * degPerPx * -1,
+        longitude: lng + (rPx * Math.cos(ang) * degPerPx) / cos,
+      });
+    });
+  }
+  return out;
+}
+
+function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT; coordinate?: LatLng; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
   const [painted, setPainted] = useState(false);
   const featured = isFeatured(business);
@@ -306,9 +361,11 @@ function BusinessMarker({ business, onPress }: { business: BusinessT; onPress?: 
   if (logo === 'wait') return null;
   return (
     <Marker
-      coordinate={{ latitude: business.lat!, longitude: business.lng! }}
-      tracksViewChanges={Platform.OS === 'android' ? tracking : false}
+      coordinate={coordinate ?? { latitude: business.lat!, longitude: business.lng! }}
+      tracksViewChanges={tracking}
       anchor={{ x: 0.5, y: (h - PIN_PAD) / h }}
+      // Los destacados quedan arriba si igual llegan a tocarse.
+      zIndex={featured ? 2 : 1}
       onPress={onPress}
     >
       <View style={{ width: w, height: h }}>
@@ -394,7 +451,7 @@ export default function CanjesScreen() {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
     } catch {
-      Alert.alert('No pudimos copiar', 'Intentá de nuevo.');
+      Alert.alert('No pudimos copiar', 'Intenta de nuevo.');
     }
   }
   const { data: balance, isError: balanceError } = usePointsBalance();
@@ -536,6 +593,16 @@ export default function CanjesScreen() {
     return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
   }, [hasGps, businessesWithCoords, baseRegion]);
 
+  // Reparto de pines encimados: la vista previa mide 250 de alto; el mapa completo sigue el zoom actual.
+  const [fullMapHeight, setFullMapHeight] = useState(0);
+  const [fullDelta, setFullDelta] = useState(0.045);
+  useEffect(() => {
+    if (mapRegion) setFullDelta(mapRegion.latitudeDelta);
+  }, [mapRegion]);
+  const pinItems = useMemo(() => mapBusinesses.map((b) => ({ id: b.id, lat: b.lat!, lng: b.lng! })), [mapBusinesses]);
+  const previewPins = useMemo(() => spreadPins(pinItems, mapRegion?.latitudeDelta ?? 0.045, 250), [pinItems, mapRegion]);
+  const fullPins = useMemo(() => spreadPins(pinItems, fullDelta, fullMapHeight), [pinItems, fullDelta, fullMapHeight]);
+
   // Buscador del mapa completo: busca en TODOS los comercios con ubicación (sin filtros de categoría).
   const mapResults = useMemo(() => {
     const q = mapSearch.trim().toLowerCase();
@@ -651,7 +718,7 @@ export default function CanjesScreen() {
         setActiveRedemption(result);
       }, 350);
     } catch (e) {
-      Alert.alert('No se pudo canjear', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No se pudo canjear', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
 
@@ -662,7 +729,7 @@ export default function CanjesScreen() {
       const result = await regenerate.mutateAsync(activeRedemption.id);
       setActiveRedemption(result);
     } catch (e) {
-      Alert.alert('No pudimos generar el código', friendlyError(e, 'Intentá de nuevo en un momento.'));
+      Alert.alert('No pudimos generar el código', friendlyError(e, 'Intenta de nuevo en un momento.'));
     }
   }
 
@@ -673,7 +740,7 @@ export default function CanjesScreen() {
       setActiveRedemption(null);
       setActiveBenefit(null);
     } catch (e) {
-      Alert.alert('No pudimos cancelar el canje', friendlyError(e, 'Intentá de nuevo en un momento.'));
+      Alert.alert('No pudimos cancelar el canje', friendlyError(e, 'Intenta de nuevo en un momento.'));
     }
   }
 
@@ -739,7 +806,7 @@ export default function CanjesScreen() {
               toolbarEnabled={false}
             >
               {mapBusinesses.map((b) => (
-                <BusinessMarker key={b.id} business={b} />
+                <BusinessMarker key={b.id} business={b} coordinate={previewPins.get(b.id)} />
               ))}
             </MapView>
           ) : (
@@ -801,12 +868,12 @@ export default function CanjesScreen() {
 
           {!profile?.zone && showZonePrompt && (
             <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-3.5">
-              <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">¿Desde qué zona caminás?</Text>
+              <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">¿Desde qué zona caminas?</Text>
               <View className="flex-row items-center gap-2">
                 <TextInput
                   value={zoneInput}
                   onChangeText={setZoneInput}
-                  accessibilityLabel="¿Desde qué zona caminás?"
+                  accessibilityLabel="¿Desde qué zona caminas?"
                   placeholder="Ej: Equipetrol, Centro, Los Pinos…"
                   placeholderTextColor={muted}
                   className="flex-1 bg-white dark:bg-card-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
@@ -930,7 +997,7 @@ export default function CanjesScreen() {
           {isError && !benefits && (
             <EmptyState
               title="No pudimos cargar"
-              text="Revisá tu conexión e intentá de nuevo."
+              text="Revisa tu conexión e intenta de nuevo."
               actionLabel="Reintentar"
               onAction={() => refetch()}
             />
@@ -977,7 +1044,7 @@ export default function CanjesScreen() {
                   ) : null}
                   <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-ink dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
-                    {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
+                    {g.distance != null && g.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
@@ -1009,8 +1076,8 @@ export default function CanjesScreen() {
 
           {!isLoading && !isError && groups.length === 0 && (
             <EmptyState
-              title="No encontramos comercios acá"
-              text="Probá con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, seguí juntando Puntos."
+              title="No encontramos comercios aquí"
+              text="Prueba con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, sigue juntando Puntos."
             />
           )}
         </View>
@@ -1027,11 +1094,14 @@ export default function CanjesScreen() {
               initialRegion={mapRegion}
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
+              onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
+              onRegionChangeComplete={(r) => setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d))}
             >
               {mapBusinesses.map((b) => (
                 <BusinessMarker
                   key={b.id}
                   business={b}
+                  coordinate={fullPins.get(b.id)}
                   onPress={() => {
                     setMapOpen(false);
                     setTimeout(() => setProfileBusinessId(b.id), 350);
@@ -1263,7 +1333,7 @@ export default function CanjesScreen() {
                   <View className="mt-6 flex-row items-center rounded-2xl px-3.5 py-3 bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 10 }}>
                     <Text style={{ fontSize: 20 }}>🎁</Text>
                     <View className="flex-1">
-                      <Text className="text-aqua-ink dark:text-aqua font-extrabold text-[13.5px]">Primera vez acá: +{newPlaceBonus} Puntos</Text>
+                      <Text className="text-aqua-ink dark:text-aqua font-extrabold text-[13.5px]">Primera vez aquí: +{newPlaceBonus} Puntos</Text>
                       <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-0.5">Se suman cuando el local confirme tu primer canje.</Text>
                     </View>
                   </View>
@@ -1548,12 +1618,12 @@ export default function CanjesScreen() {
                   </Press>
                 </View>
                 <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark mb-3">
-                  Abrí la tienda, armá tu pedido y pegá este cupón en el campo cupón antes de pagar. Ya se descontaron tus Puntos.
+                  Abre la tienda, arma tu pedido y pega este cupón en el campo cupón antes de pagar. Ya se descontaron tus Puntos.
                 </Text>
                 {activeBenefit.business.website ? (
                   <Press
                     accessibilityRole="button"
-                    onPress={() => Linking.openURL(websiteUrl(activeBenefit.business.website!)).catch(() => Alert.alert('No pudimos abrir la tienda', 'Copiá el cupón y entrá a su página.'))}
+                    onPress={() => Linking.openURL(websiteUrl(activeBenefit.business.website!)).catch(() => Alert.alert('No pudimos abrir la tienda', 'Copia el cupón y entra a su página.'))}
                     className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5"
                   >
                     <Text className="text-white font-bold text-[15px]">Ir a la tienda</Text>
@@ -1645,7 +1715,7 @@ export default function CanjesScreen() {
                   return (
                     <>
                       <Text className="text-[13px] leading-5 text-muted-light dark:text-muted-dark mb-3">
-                        Mandale este código a la tienda por {via} y coordinen el pago y la entrega. Ellos lo confirman cuando lo reciban.
+                        Mándale este código a la tienda por {via} y coordinen el pago y la entrega. Ellos lo confirman cuando lo reciban.
                       </Text>
                       <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl px-4 py-3 mb-3">
                         <Text className="text-[12.5px] leading-[18px] text-purple-ink dark:text-purple-soft">{message.replace(/\*/g, '')}</Text>
@@ -1656,7 +1726,7 @@ export default function CanjesScreen() {
                           onPress={async () => {
                             // Solo WhatsApp acepta el texto ya escrito; en las redes se copia el mensaje para pegarlo en el chat.
                             if (!contact.prefilled) await copyText(message, 'msg');
-                            Linking.openURL(contact.url).catch(() => Alert.alert('No pudimos abrir el enlace', 'Copiá el mensaje y escribile a la tienda.'));
+                            Linking.openURL(contact.url).catch(() => Alert.alert('No pudimos abrir el enlace', 'Copia el mensaje y escríbele a la tienda.'));
                           }}
                           className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5"
                         >
@@ -1675,7 +1745,7 @@ export default function CanjesScreen() {
             ) : !expired ? (
               <>
                 <View className="bg-bg-light dark:bg-bg-dark rounded-3xl py-6 items-center mb-4">
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Mostrá este código en el mostrador</Text>
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-1.5">Muestra este código en el mostrador</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark mb-2 px-6 text-center">Tus Puntos se descuentan cuando el local lo confirma.</Text>
                   {/* Se lee dígito por dígito, para dictárselo al comercio. */}
                   <Text

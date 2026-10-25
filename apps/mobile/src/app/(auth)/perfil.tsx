@@ -44,20 +44,20 @@ export default function CompletarPerfilScreen() {
 
   async function handleContinue() {
     if (!fullName.trim()) {
-      Alert.alert('Falta tu nombre', 'Contanos cómo te llamás.');
+      Alert.alert('Falta tu nombre', 'Cuéntanos cómo te llamas.');
       return;
     }
     if (!bDay.trim() || !bMonth.trim() || !bYear.trim()) {
-      Alert.alert('Falta tu fecha de nacimiento', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+      Alert.alert('Falta tu fecha de nacimiento', 'Ingresa día, mes y año (por ejemplo 15 / 04 / 1998).');
       return;
     }
     const birth = birthToISO(bDay, bMonth, bYear);
     if (!birth) {
-      Alert.alert('Esa fecha no existe', 'Revisá día, mes y año.');
+      Alert.alert('Esa fecha no existe', 'Revisa día, mes y año.');
       return;
     }
     if (ageFromISO(birth) < MIN_AGE) {
-      Alert.alert('Camina es para personas de 13 años o más', 'Por ahora no podés usar la app. ¡Te esperamos cuando cumplas 13!');
+      Alert.alert('Camina es para personas de 13 años o más', 'Por ahora no puedes usar la app. ¡Te esperamos cuando cumplas 13!');
       await supabase.auth.signOut();
       router.replace('/(auth)/welcome');
       return;
@@ -78,7 +78,7 @@ export default function CompletarPerfilScreen() {
       await useAuthStore.getState().refreshProfile();
       router.replace('/(auth)/terminos');
     } catch (e) {
-      Alert.alert('Algo salió mal', friendlyError(e, 'Intentá de nuevo.'));
+      Alert.alert('Algo salió mal', friendlyError(e, 'Intenta de nuevo.'));
     } finally {
       setLoading(false);
     }
@@ -93,9 +93,9 @@ export default function CompletarPerfilScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerClassName="px-6 pt-20 pb-10 flex-grow justify-center" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamás?</Text>
+        <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamas?</Text>
         <Text className="text-muted-light dark:text-muted-dark text-[14px] leading-5 mb-7">
-          Con esto ya podés empezar a caminar. Tu barrio es opcional y el resto lo completás cuando quieras, desde Perfil.
+          Con esto ya puedes empezar a caminar. Tu barrio es opcional y el resto lo completas cuando quieras, desde Perfil.
         </Text>
 
         <Press accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
@@ -176,7 +176,7 @@ export default function CompletarPerfilScreen() {
           />
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1 mb-6">
-          La usamos solo para confirmar que tenés 13 años o más. No se muestra a nadie.
+          La usamos solo para confirmar que tienes 13 años o más. No se muestra a nadie.
         </Text>
 
         <View className="mb-6">

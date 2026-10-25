@@ -41,7 +41,7 @@ export function ResumenShareSheet({
             onChange={setPeriod}
             options={[{ value: 'day', label: 'Hoy' }, { value: 'week', label: 'Semana' }, { value: 'month', label: 'Mes' }]}
           />
-          {firstName ? <Toggle label="Mostrar mi nombre" hint="Si lo apagás, la tarjeta no lleva tu nombre." value={withName} onChange={setWithName} /> : null}
+          {firstName ? <Toggle label="Mostrar mi nombre" hint="Si lo apagas, la tarjeta no lleva tu nombre." value={withName} onChange={setWithName} /> : null}
           {weeklyRank && period !== 'day' ? <Toggle label="Mostrar mi puesto en el ranking" hint="Tu puesto de esta semana entre todos los caminantes." value={withRank} onChange={setWithRank} /> : null}
         </>
       }

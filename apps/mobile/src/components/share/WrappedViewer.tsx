@@ -39,9 +39,9 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   async function share() {
     setBusy(true);
     try {
-      await shareCard(shotRef, { width: CARD_W, height: h }, `camina-wrapped-${data!.monthName}-${i + 1}`, 'Compartí tu mes');
+      await shareCard(shotRef, { width: CARD_W, height: h }, `camina-wrapped-${data!.monthName}-${i + 1}`, 'Comparte tu mes');
     } catch (e) {
-      Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Probá de nuevo en un momento.'));
+      Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     } finally {
       setBusy(false);
     }

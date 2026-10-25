@@ -34,7 +34,7 @@ export default function AgregarAlGrupoScreen() {
           Alert.alert(n > 0 ? 'Invitaciones enviadas' : 'Sin invitaciones nuevas', n > 0 ? 'Van a entrar al grupo cuando acepten.' : 'Esas personas ya tenían una invitación o ya están en el grupo.');
           router.back();
         },
-        onError: (e) => Alert.alert('No se pudo invitar', friendlyServerError(e, 'Intentá de nuevo.')),
+        onError: (e) => Alert.alert('No se pudo invitar', friendlyServerError(e, 'Intenta de nuevo.')),
       },
     );
   }
@@ -54,7 +54,7 @@ export default function AgregarAlGrupoScreen() {
         </Text>
 
         {!isLoading && (friends ?? []).length === 0 ? (
-          <EmptyState title="Todavía no tenés amigos en Camina" text="Invitá a tus amigos con tu link. Mientras tanto, podés compartir el link o el código del grupo." actionLabel="Ir a Amigos" onAction={() => router.replace('/(tabs)/amigos')} />
+          <EmptyState title="Todavía no tienes amigos en Camina" text="Invita a tus amigos con tu link. Mientras tanto, puedes compartir el link o el código del grupo." actionLabel="Ir a Amigos" onAction={() => router.replace('/(tabs)/amigos')} />
         ) : (
           <>
             <FriendPicker friends={friends ?? []} selected={picked} taken={members} onToggle={toggle} />
@@ -66,11 +66,11 @@ export default function AgregarAlGrupoScreen() {
               style={{ backgroundColor: colors.aquaDeep, opacity: picked.length === 0 || invite.isPending ? 0.5 : 1 }}
             >
               <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
-                {invite.isPending ? 'Enviando…' : picked.length > 0 ? `Invitar a ${picked.length} ${picked.length === 1 ? 'amigo' : 'amigos'}` : 'Elegí a quién invitar'}
+                {invite.isPending ? 'Enviando…' : picked.length > 0 ? `Invitar a ${picked.length} ${picked.length === 1 ? 'amigo' : 'amigos'}` : 'Elige a quién invitar'}
               </Text>
             </Press>
             <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-3.5">
-              ¿Todavía no está en Camina? Compartí el link o el código desde el grupo.
+              ¿Todavía no está en Camina? Comparte el link o el código desde el grupo.
             </Text>
           </>
         )}

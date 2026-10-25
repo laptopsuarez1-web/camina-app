@@ -17,7 +17,7 @@ export async function scheduleWrappedReminder(now: Date = new Date()): Promise<v
       identifier: REMINDER_ID,
       content: {
         title: `Tu ${monthName(monthIndex)} en Camina`,
-        body: 'Ya está tu resumen del mes. Mirá cómo caminaste y compartilo.',
+        body: 'Ya está tu resumen del mes. Mira cómo caminaste y compártelo.',
         data: { type: 'wrapped' },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: 'default' },

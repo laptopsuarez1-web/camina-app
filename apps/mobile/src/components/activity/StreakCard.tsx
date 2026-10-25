@@ -55,11 +55,11 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
         </Animated.View>
         <View className="flex-1">
           <Text className="text-[13.5px] font-bold" style={{ color: ink }}>
-            {streak > 0 ? `${streak} ${streak === 1 ? 'día seguido' : 'días seguidos'}` : 'Empezá tu racha'}
+            {streak > 0 ? `${streak} ${streak === 1 ? 'día seguido' : 'días seguidos'}` : 'Empieza tu racha'}
           </Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">
             {streak <= 0
-              ? `Cumplí tu meta ${STREAK_BONUS_DAYS} días seguidos y ganás +${STREAK_BONUS_POINTS} Puntos`
+              ? `Cumple tu meta ${STREAK_BONUS_DAYS} días seguidos y ganas +${STREAK_BONUS_POINTS} Puntos`
               : filled === STREAK_BONUS_DAYS
                 ? `¡Semana completa! Sumaste +${STREAK_BONUS_POINTS} Puntos`
                 : `${left === 1 ? 'Falta 1 día' : `Faltan ${left} días`} para +${STREAK_BONUS_POINTS} Puntos`}

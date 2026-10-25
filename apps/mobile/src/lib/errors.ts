@@ -3,19 +3,19 @@
 // mostrar tal cual: se traducen por código y, si no se conoce, se usa un texto genérico.
 const BY_CODE: Record<string, string> = {
   invalid_credentials: 'El correo o la contraseña no son correctos.',
-  user_already_exists: 'Ese correo ya tiene una cuenta. Probá iniciar sesión.',
-  email_exists: 'Ese correo ya tiene una cuenta. Probá iniciar sesión.',
-  weak_password: 'La contraseña es muy corta. Usá al menos 6 caracteres.',
-  validation_failed: 'Revisá que el correo esté bien escrito.',
-  email_address_invalid: 'Revisá que el correo esté bien escrito.',
-  email_not_confirmed: 'Todavía falta confirmar tu correo. Revisá tu bandeja de entrada.',
-  over_email_send_rate_limit: 'Pediste muchos correos seguidos. Esperá un rato e intentá de nuevo.',
-  over_request_rate_limit: 'Hiciste muchos intentos seguidos. Esperá un minuto e intentá de nuevo.',
+  user_already_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
+  email_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
+  weak_password: 'La contraseña es muy corta. Usa al menos 6 caracteres.',
+  validation_failed: 'Revisa que el correo esté bien escrito.',
+  email_address_invalid: 'Revisa que el correo esté bien escrito.',
+  email_not_confirmed: 'Todavía falta confirmar tu correo. Revisa tu bandeja de entrada.',
+  over_email_send_rate_limit: 'Pediste muchos correos seguidos. Espera un rato e intenta de nuevo.',
+  over_request_rate_limit: 'Hiciste muchos intentos seguidos. Espera un minuto e intenta de nuevo.',
   '23505': 'Eso ya estaba registrado.',
 };
 
-const OFFLINE = 'No hay conexión. Revisá tu internet e intentá de nuevo.';
-const GENERIC = 'Algo salió mal. Intentá de nuevo.';
+const OFFLINE = 'No hay conexión. Revisa tu internet e intenta de nuevo.';
+const GENERIC = 'Algo salió mal. Intenta de nuevo.';
 
 // Errores de RPC con "raise exception" (código P0001): el servidor ya escribió el aviso en español
 // y dice qué pasó ("Saldo insuficiente", "El desafío ya empezó"); cualquier otro error se traduce.

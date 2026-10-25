@@ -50,7 +50,7 @@ export function ForceUpdateGate({ children }: { children: ReactNode }) {
         ¡Hay una versión nueva de Camina!
       </Text>
       <Text style={{ color: '#B7A9E0', fontSize: 14, lineHeight: 21, textAlign: 'center', marginBottom: 26 }}>
-        Actualizá la app para seguir sumando Puntos con tus pasos. Es rapidito.
+        Actualiza la app para seguir sumando Puntos con tus pasos. Es rapidito.
       </Text>
       {storeUrl ? (
         <Press

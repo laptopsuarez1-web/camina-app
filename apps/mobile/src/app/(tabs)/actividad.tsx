@@ -238,7 +238,7 @@ export default function ActividadScreen() {
             </View>
             <View className="flex-1">
               <Text className="text-white font-extrabold text-[15.5px]">Tu {wrappedMonthName(wrappedStart.getMonth())} en Camina</Text>
-              <Text className="text-[12.5px]" style={{ color: '#D9CCF5' }}>Mirá tu resumen del mes y compartilo.</Text>
+              <Text className="text-[12.5px]" style={{ color: '#D9CCF5' }}>Mira tu resumen del mes y compártelo.</Text>
             </View>
             <ChevronRight size={16} color="#fff" />
           </LinearGradient>
@@ -463,7 +463,7 @@ export default function ActividadScreen() {
             </View>
           ))}
         </View>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Tocá un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Toca un día para ver su detalle. Cada día se mide con la meta que tenías ese día.</Text>
       </Glass>
 
       <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>Toda tu actividad</Text>
@@ -495,7 +495,7 @@ export default function ActividadScreen() {
         {!isLoading && fullHistory.length === 0 && (
           <EmptyState
             title="Tu historial empieza hoy"
-            text="Abrí Inicio y caminá: tus pasos de cada día se van guardando acá para que veas cómo avanzás."
+            text="Abre Inicio y camina: tus pasos de cada día se van guardando aquí para que veas cómo avanzas."
           />
         )}
       </View>
@@ -539,12 +539,12 @@ export default function ActividadScreen() {
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">Meta de ese día: {g.toLocaleString('es-BO')} pasos</Text>
                 {!opened && (
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">
-                    Para que los pasos cuenten y sumen Puntos, tenés que abrir la app ese día.
+                    Para que los pasos cuenten y sumen Puntos, tienes que abrir la app ese día.
                   </Text>
                 )}
                 {opened && selected !== todayKey && steps - (countedByDay.get(selected) ?? 0) > 0 && (
                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">
-                    {(steps - (countedByDay.get(selected) ?? 0)).toLocaleString('es-BO')} de estos pasos no sumaron Puntos: los Puntos solo se cargan cuando abrís la app ese día.
+                    {(steps - (countedByDay.get(selected) ?? 0)).toLocaleString('es-BO')} de estos pasos no sumaron Puntos: los Puntos solo se cargan cuando abres la app ese día.
                   </Text>
                 )}
                 <Press accessibilityRole="button" onPress={() => setSelected(null)} className="mt-4 rounded-xl py-3 items-center bg-purple-light-light dark:bg-purple-light-dark">

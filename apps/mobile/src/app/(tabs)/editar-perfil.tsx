@@ -104,18 +104,18 @@ export default function EditarPerfilScreen() {
   async function save() {
     if (!profile) return;
     if (!nameInput.trim()) {
-      Alert.alert('Falta tu nombre', 'Escribí cómo te llamás.');
+      Alert.alert('Falta tu nombre', 'Escribe cómo te llamas.');
       return;
     }
     let birth: string | null | undefined;
     if (bDay || bMonth || bYear) {
       birth = birthToISO(bDay, bMonth, bYear);
       if (!birth) {
-        Alert.alert('Fecha no válida', 'Ingresá día, mes y año (por ejemplo 15 / 04 / 1998).');
+        Alert.alert('Fecha no válida', 'Ingresa día, mes y año (por ejemplo 15 / 04 / 1998).');
         return;
       }
       if (ageFromISO(birth) < MIN_AGE) {
-        Alert.alert('Camina es para personas de 13 años o más', 'Revisá la fecha de nacimiento.');
+        Alert.alert('Camina es para personas de 13 años o más', 'Revisa la fecha de nacimiento.');
         return;
       }
     }
@@ -137,7 +137,7 @@ export default function EditarPerfilScreen() {
       setPhotoB64(null);
       router.back();
     } catch (e) {
-      Alert.alert('No pudimos guardar', friendlyError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos guardar', friendlyError(e, 'Intenta de nuevo.'));
     } finally {
       setSaving(false);
     }
@@ -145,7 +145,7 @@ export default function EditarPerfilScreen() {
 
   async function savePassword() {
     if (!currentPassword) {
-      Alert.alert('Falta tu contraseña actual', 'Escribila para confirmar que sos vos.');
+      Alert.alert('Falta tu contraseña actual', 'Escríbela para confirmar que eres tú.');
       return;
     }
     if (newPassword.length < 6) {
@@ -157,7 +157,7 @@ export default function EditarPerfilScreen() {
       return;
     }
     if (newPassword === currentPassword) {
-      Alert.alert('Es la misma contraseña', 'Elegí una distinta a la actual.');
+      Alert.alert('Es la misma contraseña', 'Elige una distinta a la actual.');
       return;
     }
     setSavingPassword(true);
@@ -165,13 +165,13 @@ export default function EditarPerfilScreen() {
     const check = await supabase.auth.signInWithPassword({ email, password: currentPassword });
     if (check.error) {
       setSavingPassword(false);
-      Alert.alert('Contraseña actual incorrecta', 'Revisala e intentá de nuevo.');
+      Alert.alert('Contraseña actual incorrecta', 'Revísala e intenta de nuevo.');
       return;
     }
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setSavingPassword(false);
     if (error) {
-      Alert.alert('No pudimos cambiarla', friendlyError(error, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos cambiarla', friendlyError(error, 'Intenta de nuevo.'));
       return;
     }
     setCurrentPassword('');
@@ -187,7 +187,7 @@ export default function EditarPerfilScreen() {
     if (!email) return;
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: emailRedirectUrl() });
     if (error) {
-      Alert.alert('No pudimos mandar el correo', friendlyError(error, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos mandar el correo', friendlyError(error, 'Intenta de nuevo.'));
       return;
     }
     setRecoverySent(true);
@@ -209,7 +209,7 @@ export default function EditarPerfilScreen() {
     const { error } = await supabase.functions.invoke('delete-account');
     if (error) {
       setDeleting(false);
-      Alert.alert('No pudimos eliminar tu cuenta', `Intentá de nuevo en un rato o escribinos a ${SUPPORT_EMAIL}.`);
+      Alert.alert('No pudimos eliminar tu cuenta', `Intenta de nuevo en un rato o escríbenos a ${SUPPORT_EMAIL}.`);
       return;
     }
     await supabase.auth.signOut();
@@ -269,10 +269,10 @@ export default function EditarPerfilScreen() {
               placeholder="Camino los domingos al Prado"
               placeholderTextColor={isDark ? colors.dark.muted : colors.light.muted}
               accessibilityLabel="Sobre mí, hasta 80 caracteres"
-              accessibilityHint="Lo ven tus amigos y quienes comparten un grupo con vos"
+              accessibilityHint="Lo ven tus amigos y quienes comparten un grupo contigo"
               className="bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3.5 py-3 text-[14px] text-text-light dark:text-text-dark mb-1"
             />
-            <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Lo ven tus amigos y quienes comparten un grupo con vos.</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-4">Lo ven tus amigos y quienes comparten un grupo contigo.</Text>
 
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1.5">Ciudad</Text>
             <View className="flex-row flex-wrap mb-2">
@@ -298,7 +298,7 @@ export default function EditarPerfilScreen() {
               <TextInput ref={monthRef} value={bMonth} onChangeText={(t) => { const v = t.replace(/\D/g, '').slice(0, 2); setBMonth(v); if (v.length === 2) yearRef.current?.focus(); }} placeholder="Mes" accessibilityLabel="Mes de nacimiento" keyboardType="number-pad" placeholderTextColor={placeholder} style={{ minWidth: 0 }} className={`flex-1 ${field}`} />
               <TextInput ref={yearRef} value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" accessibilityLabel="Año de nacimiento" keyboardType="number-pad" placeholderTextColor={placeholder} style={{ minWidth: 0 }} className={`flex-[1.4] ${field}`} />
             </View>
-            <Text className="text-muted-light dark:text-muted-dark text-[12px]">Solo para confirmar que tenés 13 años o más. No se muestra a nadie.</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-[12px]">Solo para confirmar que tienes 13 años o más. No se muestra a nadie.</Text>
           </Glass>
 
           <Glass className="rounded-3xl p-4 mb-4">
@@ -344,10 +344,10 @@ export default function EditarPerfilScreen() {
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-3">Cuenta: {email}</Text>
                   <PasswordField label="Contraseña actual" value={currentPassword} onChange={setCurrentPassword} autoComplete="password" />
                   <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
-                  <PasswordField label="Repetí la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
+                  <PasswordField label="Repite la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
                   <Press accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
                     <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">
-                      {recoverySent ? `Te mandamos un link a ${email}. Abrilo para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
+                      {recoverySent ? `Te mandamos un link a ${email}. Ábrelo para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
                     </Text>
                   </Press>
                   <View className="flex-row gap-2">

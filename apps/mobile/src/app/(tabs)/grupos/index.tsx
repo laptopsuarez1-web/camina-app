@@ -38,10 +38,10 @@ export default function GruposScreen() {
     if (yes) {
       accept.mutate(groupId, {
         onSuccess: (id) => id && router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id } }),
-        onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intentá de nuevo.')),
+        onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intenta de nuevo.')),
       });
     } else {
-      decline.mutate(groupId, { onError: (e) => Alert.alert('No se pudo rechazar', friendlyServerError(e, 'Intentá de nuevo.')) });
+      decline.mutate(groupId, { onError: (e) => Alert.alert('No se pudo rechazar', friendlyServerError(e, 'Intenta de nuevo.')) });
     }
   }
 
@@ -57,7 +57,7 @@ export default function GruposScreen() {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });
     },
-    onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revisalo e intentá de nuevo.' : friendlyServerError(e, 'Intentá de nuevo.')),
+    onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revísalo e intenta de nuevo.' : friendlyServerError(e, 'Intenta de nuevo.')),
   });
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
@@ -69,7 +69,7 @@ export default function GruposScreen() {
       <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Grupos</ScreenTitle>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
-        Caminá, compartí y ganá en equipo
+        Camina, comparte y gana en equipo
       </Text>
 
       <Glass className="rounded-3xl overflow-hidden mb-4">
@@ -125,7 +125,7 @@ export default function GruposScreen() {
         <View className="mb-7">
           <EmptyState
             title="No pudimos cargar"
-            text="Revisá tu conexión e intentá de nuevo."
+            text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"
             onAction={() => refetch()}
           />
@@ -136,7 +136,7 @@ export default function GruposScreen() {
         <View className="mb-7">
           <EmptyState
             title="Todavía no estás en ningún grupo"
-            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con Puntos. Creá uno o sumate con el código que te pase un amigo."
+            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con Puntos. Crea uno o súmate con el código que te pase un amigo."
             actionLabel="Crear un grupo"
             onAction={() => router.push('/(tabs)/grupos/nuevo')}
           />
@@ -274,7 +274,7 @@ export default function GruposScreen() {
                 Crear un grupo nuevo
               </Text>
               <Text className="text-muted-light dark:text-muted-dark text-xs">
-                Armá tu propio grupo y sumá amigos
+                Arma tu propio grupo y suma amigos
               </Text>
             </View>
           </Press>

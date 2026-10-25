@@ -20,7 +20,7 @@ async function toBase64(uri: string, base64?: string | null): Promise<string> {
 // Sube la foto elegida al bucket "avatars" y devuelve su URL pública.
 export async function uploadAvatar(userId: string, uri: string, base64?: string | null): Promise<string> {
   const data = await toBase64(uri, base64);
-  if (!data) throw new Error('No pudimos leer la foto. Elegí otra.');
+  if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
   const path = `${userId}/avatar.jpg`;
   const { error } = await supabase.storage.from('avatars').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;

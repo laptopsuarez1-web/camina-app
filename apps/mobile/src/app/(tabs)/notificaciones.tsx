@@ -102,7 +102,7 @@ export default function NotificacionesScreen() {
         {isError && items.length === 0 && (
           <EmptyState
             title="No pudimos cargar"
-            text="Revisá tu conexión e intentá de nuevo."
+            text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"
             onAction={() => refetch()}
           />
@@ -110,9 +110,9 @@ export default function NotificacionesScreen() {
         {!isLoading && !isError && items.length === 0 && (
           <View className="items-center py-14" style={{ gap: 10 }}>
             <EmptyIllustration kind="avisos" />
-            <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por acá</Text>
+            <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por aquí</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
-              Te avisamos acá de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
+              Te avisamos aquí de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
             </Text>
           </View>
         )}

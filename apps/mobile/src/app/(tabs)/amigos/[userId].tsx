@@ -46,7 +46,7 @@ export default function FriendProfileScreen() {
   const [reasons, setReasons] = useState(false);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
-  const fail = (title: string) => (e: unknown) => Alert.alert(title, friendlyServerError(e, 'Intentá de nuevo.'));
+  const fail = (title: string) => (e: unknown) => Alert.alert(title, friendlyServerError(e, 'Intenta de nuevo.'));
 
   const isSelf = card?.relation === 'self';
   const isFriend = card?.relation === 'friend';
@@ -80,7 +80,7 @@ export default function FriendProfileScreen() {
         await reportContent('user', userId!, null, r.key);
         Alert.alert('Gracias', 'Recibimos tu reporte. Lo revisamos y, si corresponde, actuamos.');
       } catch (e) {
-        Alert.alert('No se pudo enviar', friendlyServerError(e, 'Intentá de nuevo.'));
+        Alert.alert('No se pudo enviar', friendlyServerError(e, 'Intenta de nuevo.'));
       }
     },
   }));
@@ -97,7 +97,7 @@ export default function FriendProfileScreen() {
   if (isError && !card) {
     return (
       <View className="flex-1 px-5 justify-center">
-        <EmptyState title="No pudimos cargar el perfil" text="Revisá tu conexión e intentá de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
+        <EmptyState title="No pudimos cargar el perfil" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
       </View>
     );
   }
@@ -133,7 +133,7 @@ export default function FriendProfileScreen() {
         {card && !showData && (
           <Glass className="rounded-3xl p-4 mx-5 -mt-7" style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
-              {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptás, van a ver los pasos del otro.' : 'Agregá a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
+              {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
             </Text>
             {card.relation === 'none' && (
               <Press accessibilityRole="button" disabled={send.isPending} onPress={() => send.mutate(userId!, { onError: fail('No se pudo enviar') })} className="rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
@@ -221,14 +221,14 @@ export default function FriendProfileScreen() {
               )}
             </Glass>
             <Text className="text-[12px] text-center mt-3 text-muted-light dark:text-muted-dark">
-              {isSelf ? 'Tus amigos ven esto de vos.' : 'Solo la ven los amigos que aceptó.'}
+              {isSelf ? 'Tus amigos ven esto de ti.' : 'Solo la ven los amigos que aceptó.'}
             </Text>
           </>
         )}
       </ScrollView>
 
       <ActionSheet visible={menu} onClose={() => setMenu(false)} actions={menuActions} />
-      <ActionSheet visible={reasons} title="¿Por qué lo reportás?" onClose={() => setReasons(false)} actions={reasonActions} />
+      <ActionSheet visible={reasons} title="¿Por qué lo reportas?" onClose={() => setReasons(false)} actions={reasonActions} />
     </View>
   );
 }

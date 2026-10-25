@@ -26,7 +26,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
     try {
       const perm = await Location.requestForegroundPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Necesitamos tu ubicación', 'Activá el permiso de ubicación para Camina o buscá tu barrio escribiendo.', [
+        Alert.alert('Necesitamos tu ubicación', 'Activa el permiso de ubicación para Camina o busca tu barrio escribiendo.', [
           { text: 'Ahora no', style: 'cancel' },
           { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
         ]);
@@ -40,10 +40,10 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         onChange(found);
         setQuery('');
       } else {
-        Alert.alert('No reconocimos tu barrio', 'Escribilo en el buscador y elegilo de la lista.');
+        Alert.alert('No reconocimos tu barrio', 'Escríbelo en el buscador y elígelo de la lista.');
       }
     } catch {
-      Alert.alert('No pudimos ubicarte', 'Escribí tu barrio en el buscador.');
+      Alert.alert('No pudimos ubicarte', 'Escribe tu barrio en el buscador.');
     } finally {
       setLocating(false);
     }
@@ -67,7 +67,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Escribí tu barrio"
+          placeholder="Escribe tu barrio"
           placeholderTextColor={muted}
           autoCorrect={false}
           accessibilityLabel="Buscar barrio"
