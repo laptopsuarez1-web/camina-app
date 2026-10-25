@@ -149,7 +149,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <p className="text-mint text-[13px] font-semibold">{PLAN_NOMBRE[business.plan]}</p>
             {vence && (
               <p className="text-auth-muted text-[10.5px] mt-0.5">
-                {vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} {fechaCorta(vence.fecha)}
+                {vence.fecha ? `${vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} ${fechaCorta(vence.fecha)}` : 'Gratis: empieza cuando salga la app'}
               </p>
             )}
           </Link>
