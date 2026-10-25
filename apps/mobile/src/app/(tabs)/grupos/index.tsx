@@ -66,7 +66,7 @@ export default function GruposScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Grupos</ScreenTitle>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Camina, comparte y gana en equipo

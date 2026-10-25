@@ -56,7 +56,7 @@ export default function TerminosScreen() {
         Antes de seguir, necesitamos que leas y aceptes esto.
       </Text>
 
-      <ScrollView className="flex-1 px-6" contentContainerClassName="pb-4">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6" contentContainerClassName="pb-4">
         <LegalSections />
       </ScrollView>
 

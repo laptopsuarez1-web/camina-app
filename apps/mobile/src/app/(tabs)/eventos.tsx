@@ -57,7 +57,7 @@ export default function EventosScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>{tab === 'eventos' ? 'Eventos' : 'Desafíos'}</ScreenTitle>
       <View accessibilityRole="tablist" className="flex-row rounded-full p-1 mb-4 bg-purple-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
         {(['eventos', 'desafios'] as const).map((k) => {

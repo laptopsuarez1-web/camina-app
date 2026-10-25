@@ -258,7 +258,7 @@ export default function HomeScreen() {
 
   return (
     <View ref={rootRef} className="flex-1">
-    <ScrollView
+    <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.mint} colors={[colors.aqua]} progressBackgroundColor={colors.authBgSoft} />}
