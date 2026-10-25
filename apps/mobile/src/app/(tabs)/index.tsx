@@ -497,11 +497,18 @@ export default function HomeScreen() {
               </Text>
             </Press>
           </View>
-        ) : Platform.OS === 'ios' && stepSource === 'healthkit' && deviceSteps === 0 ? (
-          <Press accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+        ) : Platform.OS === 'ios' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
+          // Recién pasada la medianoche los pasos de hoy son 0 de verdad: el aviso aparece desde las 9.
+          // El permiso de Salud no está en los Ajustes de la app sino dentro de la app Salud, así que el botón abre Salud.
+          <Press
+            accessibilityRole="button"
+            onPress={() => Linking.openURL('x-apple-health://').catch(() => Linking.openSettings())}
+            className="mx-5 mt-4 rounded-2xl p-3.5"
+            style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+          >
             <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
             <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
-              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Toca aquí y activa Pasos en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina.
+              Toca aquí para abrir Salud. Ahí toca tu foto (arriba a la derecha) &gt; Apps &gt; Camina y activa Pasos.
             </Text>
           </Press>
         ) : available === false ? (

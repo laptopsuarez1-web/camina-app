@@ -155,8 +155,10 @@ function distanceMeters(a: { latitude: number; longitude: number }, lat: number,
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+// Más de 100 km no es "cerca" (por ejemplo, el teléfono está en otra ciudad): no se muestra la distancia.
+const MAX_SHOWN_DISTANCE_M = 100_000;
 function formatDistance(m: number) {
-  return m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000).toFixed(1)} km`;
+  return m < 1000 ? `${Math.round(m / 10) * 10} m` : m < 10_000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 1000)} km`;
 }
 
 // El link de reseñas lo escribe el comercio a mano: solo se abre si es https y de Google; si no, se ignora.
@@ -1042,7 +1044,7 @@ export default function CanjesScreen() {
                   ) : null}
                   <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-ink dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
                     {g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
-                    {g.distance != null ? ` · ${formatDistance(g.distance)}` : ''}
+                    {g.distance != null && g.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(g.distance)}` : ''}
                   </Text>
                 </View>
                 <View className="items-center" style={{ gap: 10 }}>
