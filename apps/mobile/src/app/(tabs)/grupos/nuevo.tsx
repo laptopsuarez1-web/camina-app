@@ -45,10 +45,10 @@ export default function NuevoGrupoScreen() {
     },
     onSuccess: ({ id, inviteFailed }) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
-      if (inviteFailed) Alert.alert('El grupo está creado', 'No pudimos mandar las invitaciones. Probá de nuevo desde "Agregar amigos".');
+      if (inviteFailed) Alert.alert('El grupo está creado', 'No pudimos mandar las invitaciones. Prueba de nuevo desde "Agregar amigos".');
       router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: picked.length === 0 ? { groupId: id, compartir: '1' } : { groupId: id } });
     },
-    onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intentá de nuevo.')),
+    onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intenta de nuevo.')),
   });
 
   const ready = name.trim().length >= 2 && !create.isPending;
@@ -80,9 +80,9 @@ export default function NuevoGrupoScreen() {
 
         {(friends ?? []).length > 0 ? (
           <>
-            <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Invitá a tus amigos</Text>
+            <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Invita a tus amigos</Text>
             <FriendPicker friends={friends!} selected={picked} onToggle={toggle} />
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2.5 mx-1">Les llega la invitación y entran cuando aceptan. Después también podés compartir el link o el código.</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2.5 mx-1">Les llega la invitación y entran cuando aceptan. Después también puedes compartir el link o el código.</Text>
           </>
         ) : (
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-3 mx-1" style={{ lineHeight: 18 }}>

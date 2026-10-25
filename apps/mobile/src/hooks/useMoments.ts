@@ -31,7 +31,7 @@ export function useHomeMoments(streak: number | undefined) {
       celebrate({
         kind: 'sheet', sparks: false, cta: 'Empezar a caminar',
         title: first ? `¡Hola, ${first}!` : '¡Bienvenido a Camina!',
-        body: 'Tu primer punto está a 1.000 pasos. Caminá hoy y mirá cómo se llena el aro.',
+        body: 'Tu primer punto está a 1.000 pasos. Camina hoy y mira cómo se llena el aro.',
       }),
     );
   }, [profile?.id, userId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -45,7 +45,7 @@ export function useHomeMoments(streak: number | undefined) {
     AsyncStorage.getItem(key).then((saved) => {
       if (Number(saved ?? 0) >= hit) return;
       AsyncStorage.setItem(key, String(hit)).catch(() => {});
-      celebrate({ kind: 'toast', icon: 'flame', title: `${hit} días de racha`, body: '¡Seguí así mañana!' });
+      celebrate({ kind: 'toast', icon: 'flame', title: `${hit} días de racha`, body: '¡Sigue así mañana!' });
     }).catch(() => {});
   }, [streak, userId]);
 

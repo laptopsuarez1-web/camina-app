@@ -61,7 +61,7 @@ export default function NuevoDesafioScreen() {
     });
     setSaving(false);
     if (error) {
-      Alert.alert('No se pudo crear el desafío', friendlyServerError(error, 'Intentá de nuevo.'));
+      Alert.alert('No se pudo crear el desafío', friendlyServerError(error, 'Intenta de nuevo.'));
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
@@ -82,12 +82,12 @@ export default function NuevoDesafioScreen() {
         <IconBubble icon={Trophy} tone="gold" size={110} />
         <Text className="text-[24px] font-extrabold text-center text-text-light dark:text-text-dark mt-6">¡{name.trim()} está en marcha!</Text>
         <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark mt-2 leading-5">
-          Del {fmtShort(start)} al {fmtShort(end)}. Invitá a tu grupo: quienes cumplan la meta se reparten los puntos.
+          Del {fmtShort(start)} al {fmtShort(end)}. Invita a tu grupo: quienes cumplan la meta se reparten los puntos.
         </Text>
         <View className="absolute left-5 right-5" style={{ bottom: 50 }}>
           <Press
             accessibilityRole="button"
-            onPress={() => Share.share({ message: `Sumate a mi desafío "${name.trim()}" en Camina.\n${groupInviteLink(groupId!)}` })}
+            onPress={() => Share.share({ message: `Súmate a mi desafío "${name.trim()}" en Camina.\n${groupInviteLink(groupId!)}` })}
             className="bg-mint rounded-2xl py-4 items-center mb-3"
           >
             <Text className="text-mint-dark font-bold text-[15px]">Compartir link</Text>
@@ -138,7 +138,7 @@ export default function NuevoDesafioScreen() {
 
         {step === 2 && (
           <>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Elegí la regla</Text>
+            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Elige la regla</Text>
             {RULES.map((r) => (
               <Press
                 key={r.key}
@@ -184,7 +184,7 @@ export default function NuevoDesafioScreen() {
 
             <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark mt-5">Puntos en juego</Text>
             <View className="flex-row items-center mt-0.5 mb-3" style={{ gap: 6 }}>
-              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cada persona pone de sus propios Puntos · tenés</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cada persona pone de sus propios Puntos · tienes</Text>
               <Coin size={14} />
               <Text className="text-[12px] font-bold text-text-light dark:text-text-dark">{balance ?? 0}</Text>
             </View>

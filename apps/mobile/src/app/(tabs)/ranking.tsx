@@ -27,7 +27,7 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
   return (
     <Press
       accessibilityRole="button"
-      accessibilityLabel={`Puesto ${r.position}: ${r.name}${r.me ? ' (vos)' : ''}, ${r.steps.toLocaleString('es-BO')} ${plural(r.steps, 'paso', 'pasos')}. Ver perfil`}
+      accessibilityLabel={`Puesto ${r.position}: ${r.name}${r.me ? ' (tú)' : ''}, ${r.steps.toLocaleString('es-BO')} ${plural(r.steps, 'paso', 'pasos')}. Ver perfil`}
       onPress={() => router.push({ pathname: '/(tabs)/amigos/[userId]', params: { userId: r.id } })}
       feedback="row"
       className="flex-row items-center p-3.5"
@@ -36,7 +36,7 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
       <Text className="w-6 text-center text-[13px] font-semibold text-muted-light dark:text-muted-dark">{r.position}</Text>
       <PersonAvatar name={r.name} photoUrl={r.photoUrl} size={40} />
       <View className="flex-1">
-        <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{r.me ? `${r.name} (vos)` : r.name}</Text>
+        <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{r.me ? `${r.name} (tú)` : r.name}</Text>
         {r.sub ? <Text className="text-[12.5px] text-muted-light dark:text-muted-dark" numberOfLines={1}>{r.sub}</Text> : null}
       </View>
       <View className="items-end">
@@ -74,7 +74,7 @@ export default function RankingScreen() {
   }));
   const meInTop = globalRows.some((r) => r.me);
   const myExtra: Row | null = !meInTop && myRank && userId
-    ? { id: userId, name: profile?.full_name ?? 'Vos', photoUrl: profile?.photo_url ?? null, steps: myRank.steps, position: myRank.position, me: true }
+    ? { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null, steps: myRank.steps, position: myRank.position, me: true }
     : null;
 
   const friendRows: Row[] = (friends ?? []).map((r, i) => ({
@@ -132,7 +132,7 @@ export default function RankingScreen() {
               </View>
             )}
             {globalLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-            {globalError && !global && <EmptyState title="No pudimos cargar el ranking" text="Revisá tu conexión e intentá de nuevo." actionLabel="Reintentar" onAction={() => refetchGlobal()} />}
+            {globalError && !global && <EmptyState title="No pudimos cargar el ranking" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchGlobal()} />}
             {!globalLoading && !globalError && globalRows.length === 0 && (
               <EmptyState title="Todavía nadie caminó esta semana" text="Sé la primera persona en sumar pasos: el ranking arranca cada lunes." />
             )}
@@ -143,18 +143,18 @@ export default function RankingScreen() {
               </Glass>
             )}
             <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mx-1" style={{ lineHeight: 17 }}>
-              {visible ? 'Aparecés en el ranking global por defecto. Podés desactivarlo en Opciones.' : 'Ahora no aparecés en el ranking global. Podés activarlo en Opciones.'}
+              {visible ? 'Apareces en el ranking global por defecto. Puedes desactivarlo en Opciones.' : 'Ahora no apareces en el ranking global. Puedes activarlo en Opciones.'}
             </Text>
           </>
         ) : (
           <>
             {friendsLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-            {friendsError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisá tu conexión e intentá de nuevo." actionLabel="Reintentar" onAction={() => refetchFriends()} />}
+            {friendsError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchFriends()} />}
             {!friendsLoading && !friendsError && friendRows.length <= 1 && (
               <View className="mb-4">
                 <EmptyState
-                  title="Todavía no tenés amigos en Camina"
-                  text="Invitá a quienes caminan con vos y compitan cada semana. Los pasos los ven solo los amigos que aceptaste."
+                  title="Todavía no tienes amigos en Camina"
+                  text="Invita a quienes caminan contigo y compitan cada semana. Los pasos los ven solo los amigos que aceptaste."
                   actionLabel="Invitar amigos"
                   onAction={() => router.push('/(tabs)/amigos')}
                 />

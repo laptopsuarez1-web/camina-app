@@ -23,7 +23,7 @@ export function GroupShareSheet({
   async function shareLink() {
     close();
     await Share.share({
-      message: `Unite a mi grupo "${groupName}" en Camina — caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
+      message: `Únete a mi grupo "${groupName}" en Camina — caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
       url: groupInviteLink(inviteCode),
     });
   }
@@ -81,7 +81,7 @@ export function GroupShareSheet({
               <IconBubble icon={UserPlus} tone="purple" size={38} />
               <View className="flex-1">
                 <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Agregar amigos</Text>
-                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Elegí de tu lista de amigos</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Elige de tu lista de amigos</Text>
               </View>
               <ChevronRight size={14} color={muted} />
             </Press>

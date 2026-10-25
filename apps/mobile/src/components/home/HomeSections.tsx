@@ -147,8 +147,8 @@ export function NearbyRow({
         <SectionHeader title="Locales cerca tuyo" />
         <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/canjes?view=lista')} className="mx-5">
           <Glass className="rounded-3xl p-4">
-            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explorá comercios</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mirá qué se puede canjear.</Text>
+            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explora comercios</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mira qué se puede canjear.</Text>
           </Glass>
         </Press>
       </View>

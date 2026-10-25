@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { friendlyError } from '../src/lib/errors.ts';
 
-const GENERIC = 'Algo salió mal. Intentá de nuevo.';
-const OFFLINE = 'No hay conexión. Revisá tu internet e intentá de nuevo.';
+const GENERIC = 'Algo salió mal. Intenta de nuevo.';
+const OFFLINE = 'No hay conexión. Revisa tu internet e intenta de nuevo.';
 
 test('friendlyError: credenciales inválidas se traducen y no filtran el texto en inglés', () => {
   const supabaseError = { code: 'invalid_credentials', message: 'Invalid login credentials', status: 400, name: 'AuthApiError' };
@@ -69,7 +69,7 @@ test('friendlyError: ningún texto que ve la persona está en inglés ni muestra
 test('friendlyServerError: el aviso en español del servidor (P0001) se muestra tal cual; el resto se traduce', async () => {
   const { friendlyServerError } = await import('../src/lib/errors.ts');
   assert.equal(friendlyServerError({ code: 'P0001', message: 'Saldo insuficiente' }), 'Saldo insuficiente');
-  assert.equal(friendlyServerError({ code: '42501', message: 'new row violates row-level security policy' }, 'Intentá de nuevo.'), 'Intentá de nuevo.');
+  assert.equal(friendlyServerError({ code: '42501', message: 'new row violates row-level security policy' }, 'Intenta de nuevo.'), 'Intenta de nuevo.');
   assert.match(friendlyServerError({ message: 'Failed to fetch' }), /No hay conexión/);
   assert.equal(friendlyServerError(null, 'x'), 'x');
 });

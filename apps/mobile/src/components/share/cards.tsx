@@ -75,7 +75,7 @@ export function CardFrame({
           </View>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
-        <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginTop: story ? 10 : 4 }}>{CAMINA_HANDLE} · Caminá y ganá Puntos</Text>
+        <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginTop: story ? 10 : 4 }}>{CAMINA_HANDLE} · Camina y gana Puntos</Text>
       </View>
     </View>
   );
@@ -340,7 +340,7 @@ function Medal({ p, label, rank, steps, isMe, big }: { p: Pal; label: string; ra
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
-      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: 4 }} numberOfLines={1}>{isMe ? 'Vos' : label}</Text> : <View style={{ height: 4 }} />}
+      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: 4 }} numberOfLines={1}>{isMe ? 'Tú' : label}</Text> : <View style={{ height: 4 }} />}
       <View style={{ width: '88%', marginTop: 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: big ? 14 : 9 }}>
         <Text style={{ fontSize: big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>

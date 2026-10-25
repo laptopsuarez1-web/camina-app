@@ -28,7 +28,7 @@ export default function AmigosScreen() {
   const { respond } = useFriendActions();
 
   const answer = (personId: string, accept: boolean) =>
-    respond.mutate({ personId, accept }, { onError: (e) => Alert.alert('No se pudo responder', friendlyServerError(e, 'Intentá de nuevo.')) });
+    respond.mutate({ personId, accept }, { onError: (e) => Alert.alert('No se pudo responder', friendlyServerError(e, 'Intenta de nuevo.')) });
 
   return (
     <View className="flex-1">
@@ -71,11 +71,11 @@ export default function AmigosScreen() {
         </Text>
 
         {isLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-        {isError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisá tu conexión e intentá de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
+        {isError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
         {!isLoading && !isError && (friends ?? []).length === 0 && (
           <EmptyState
-            title="Todavía no tenés amigos en Camina"
-            text="Mandales tu link: cuando se registren te llega la solicitud. Ganás 5 Puntos cuando tu amigo empiece a caminar. Los pasos los ven solo los amigos que aceptaste."
+            title="Todavía no tienes amigos en Camina"
+            text="Mándales tu link: cuando se registren te llega la solicitud. Ganas 5 Puntos cuando tu amigo empiece a caminar. Los pasos los ven solo los amigos que aceptaste."
           />
         )}
         {(friends ?? []).length > 0 && (
@@ -117,7 +117,7 @@ export default function AmigosScreen() {
             <Share2 size={18} color="#fff" />
             <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>Invitar amigos</Text>
           </Press>
-          <Text className="text-[12px] text-center text-muted-light dark:text-muted-dark -mt-1">Ganás 5 Puntos cuando tu amigo empiece a caminar</Text>
+          <Text className="text-[12px] text-center text-muted-light dark:text-muted-dark -mt-1">Ganas 5 Puntos cuando tu amigo empiece a caminar</Text>
           {(friends ?? []).length > 0 && (
             <Press
               accessibilityRole="button"

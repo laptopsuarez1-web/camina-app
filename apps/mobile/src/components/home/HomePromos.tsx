@@ -20,7 +20,7 @@ function usePromoSheet() {
       await join.mutateAsync(p.id);
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Ya estás anotado');
     } catch (e) {
-      Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
   const open = (promos ?? []).find((p) => p.id === openId) ?? null;

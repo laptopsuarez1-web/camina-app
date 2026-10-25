@@ -230,7 +230,7 @@ export default function HomeScreen() {
       ? `La meta mínima es ${MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos`
       : goalDraft >= GOOD_DAILY_GOAL
         ? '¡Muy bien! Una meta que suma'
-        : '¡Vos podés más!';
+        : '¡Tú puedes más!';
   // iOS ignora accessibilityLiveRegion: cuando el aviso cambia mientras se edita la meta, se anuncia a mano.
   const lastGoalHint = useRef('');
   useEffect(() => {
@@ -244,7 +244,7 @@ export default function HomeScreen() {
     expiring && expiring.amount > 0
       ? `${expiring.amount} ${plural(expiring.amount, 'Punto vence', 'Puntos vencen')} ${expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}`
       : '';
-  const expiringHint = expiring?.amount === 1 ? 'Canjealo antes de perderlo' : 'Canjealos antes de perderlos';
+  const expiringHint = expiring?.amount === 1 ? 'Canjéalo antes de perderlo' : 'Canjéalos antes de perderlos';
 
   async function saveGoal() {
     const n = parseInt(goalInput, 10);
@@ -466,14 +466,14 @@ export default function HomeScreen() {
               <Image accessible={false} source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
               <View className="flex-1">
                 <Text className="text-white font-bold text-[14px]">
-                  {healthConnectStatus === 'unavailable' ? 'Instalá Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'El podómetro no funciona sin este permiso'}
+                  {healthConnectStatus === 'unavailable' ? 'Instala Health Connect' : healthConnectStatus === 'error' ? 'No pudimos leer tus pasos' : 'El podómetro no funciona sin este permiso'}
                 </Text>
                 <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
                   {healthConnectStatus === 'unavailable'
                     ? 'Es la app de Android que le pasa tus pasos a Camina.'
                     : healthConnectStatus === 'error'
-                      ? 'Fue un problema pasajero. Tocá Reintentar.'
-                      : 'Activá el permiso de Pasos para Camina en Health Connect y volvé a abrir la app: sin eso no sumás Puntos.'}
+                      ? 'Fue un problema pasajero. Toca Reintentar.'
+                      : 'Activa el permiso de Pasos para Camina en Health Connect y vuelve a abrir la app: sin eso no sumas Puntos.'}
                 </Text>
               </View>
             </View>
@@ -501,7 +501,7 @@ export default function HomeScreen() {
           <Press accessibilityRole="button" onPress={() => Linking.openSettings()} className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
             <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
             <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
-              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Tocá acá y activá Pasos en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina.
+              Si le negaste a Camina el acceso a Salud, el podómetro no funciona. Toca aquí y activa Pasos en Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; Camina.
             </Text>
           </Press>
         ) : available === false ? (
@@ -554,7 +554,7 @@ export default function HomeScreen() {
             icon={UserPlus}
             tone="purple"
             title="Amigos"
-            value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invitá'}
+            value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invita'}
             alert={(friendRequests ?? []).length > 0}
             onPress={() => router.push('/(tabs)/amigos')}
           />

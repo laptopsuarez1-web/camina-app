@@ -23,7 +23,7 @@ export function StoryRewardButton({ state, onPress }: { state: StoryState; onPre
     return (
       <View style={{ gap: 6 }}>
         {state === 'rejected' ? (
-          <Text className="text-[12px] text-center text-warn-deep dark:text-warn-soft">No encontramos tu historia. Podés volver a subirla.</Text>
+          <Text className="text-[12px] text-center text-warn-deep dark:text-warn-soft">No encontramos tu historia. Puedes volver a subirla.</Text>
         ) : null}
         <Press
           accessibilityRole="button"
@@ -33,7 +33,7 @@ export function StoryRewardButton({ state, onPress }: { state: StoryState; onPre
           style={{ gap: 6, paddingVertical: 8 }}
         >
           <Instagram size={14} color={dark ? colors.mint : colors.aquaInk} weight="bold" />
-          <Text className="text-aqua-ink dark:text-mint font-bold text-[12.5px]">Subir historia y ganá</Text>
+          <Text className="text-aqua-ink dark:text-mint font-bold text-[12.5px]">Subir historia y gana</Text>
           <Coin size={15} />
           <Text className="text-aqua-ink dark:text-mint font-extrabold text-[12.5px]">{STORY_REWARD}</Text>
         </Press>
@@ -105,12 +105,12 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
       <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 20, alignItems: 'center' }}>
         <View className="flex-row items-center mb-1.5" style={{ gap: 6 }}>
           <Instagram size={18} color={colors.purple} weight="bold" />
-          <Text className="text-[16px] font-bold text-text-light dark:text-text-dark">Subí una historia y ganá</Text>
+          <Text className="text-[16px] font-bold text-text-light dark:text-text-dark">Sube una historia y gana</Text>
           <Coin size={18} />
           <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{STORY_REWARD}</Text>
         </View>
         <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center mb-4" style={{ lineHeight: 18 }}>
-          Sacale una foto a lo que canjeaste, subila a tu historia y etiquetá a {CAMINA_INSTAGRAM}.
+          Sácale una foto a lo que canjeaste, súbela a tu historia y etiqueta a {CAMINA_INSTAGRAM}.
         </Text>
         <Press accessibilityRole="button" onPress={onStory} className="w-full bg-aqua-deep rounded-2xl py-3 flex-row items-center justify-center" style={{ gap: 7 }}>
           <Camera size={16} color="#fff" weight="bold" />
@@ -178,7 +178,7 @@ export function StoryComposer({
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
-          Publicala en tu historia y etiquetá a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
+          Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
         <Press accessibilityRole="button" accessibilityState={{ busy: !!busy }} disabled={busy} onPress={onPublish} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: colors.aquaDeep, opacity: busy ? 0.7 : 1 }}>
           <Instagram size={18} color="#fff" weight="bold" />
@@ -216,7 +216,7 @@ export function StoryConfirmSheet({
         </View>
         <Text accessibilityRole="header" className="text-[17px] font-extrabold text-text-light dark:text-text-dark">¿Ya subiste la historia?</Text>
         <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-1" style={{ lineHeight: 18 }}>
-          Decinos tu usuario de Instagram para encontrarla. Acordate de etiquetar a {CAMINA_INSTAGRAM}.
+          Dinos tu usuario de Instagram para encontrarla. Acuérdate de etiquetar a {CAMINA_INSTAGRAM}.
         </Text>
       </View>
       <View className="flex-row items-center bg-bg-light dark:bg-bg-dark rounded-2xl border border-line-light dark:border-line-dark px-4 mb-4" style={{ height: 52 }}>
@@ -233,7 +233,7 @@ export function StoryConfirmSheet({
         />
       </View>
       <Press accessibilityRole="button" accessibilityState={{ busy: !!busy, disabled: !handle.trim() }} onPress={onConfirm} disabled={!handle.trim() || busy} className="bg-aqua-deep rounded-2xl py-4 items-center mb-2.5" style={{ opacity: handle.trim() && !busy ? 1 : 0.5 }}>
-        <Text className="text-white font-bold text-[15px]">{busy ? 'Enviando…' : 'Sí, ya la subí'}</Text>
+        <Text className="text-white font-bold text-[15px]">{busy ? 'Enviando…' : 'Sí, ya la sube'}</Text>
       </Press>
       <Press accessibilityRole="button" onPress={onLater} className="py-2 items-center">
         <Text className="text-[13.5px] font-semibold text-muted-light dark:text-muted-dark">Todavía no</Text>

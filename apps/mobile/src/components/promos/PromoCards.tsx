@@ -204,9 +204,9 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
     if (!p) return;
     try {
       await redeem.mutateAsync(p.id);
-      Alert.alert('¡Listo!', 'Ya tenés tu entrada. Se descontaron los Puntos.');
+      Alert.alert('¡Listo!', 'Ya tienes tu entrada. Se descontaron los Puntos.');
     } catch (e) {
-      Alert.alert('No pudimos canjear', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos canjear', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
   const photoUrls = p ? [...(p.bg_image_url ? [p.bg_image_url] : []), ...(p.photos ?? [])] : [];
@@ -221,12 +221,12 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
       : p.kind === 'evento'
         ? [
             { icon: <Calendar size={18} color="#5B31A3" />, text: `${dateRangeLabel(p.starts_at, p.ends_at)} · desde las ${boliviaTime(p.starts_at)}.` },
-            ...(ticket === 'free' ? [{ icon: <Check size={18} color="#5B31A3" />, text: 'Tocá "Anotarme" para avisar que vas.' }] : []),
+            ...(ticket === 'free' ? [{ icon: <Check size={18} color="#5B31A3" />, text: 'Toca "Anotarme" para avisar que vas.' }] : []),
             ...(p.prize ? [{ icon: <Gift size={18} color="#5B31A3" />, text: p.prize }] : []),
           ]
         : [
-            { icon: <Check size={18} color="#5B31A3" />, text: 'Tocá "Participar". Tus pasos cuentan desde ese momento.' },
-            { icon: <Footprints size={18} color="#5B31A3" />, text: goal ? `Cumplí la meta: ${goal.big} ${goal.small}.` : 'Cumplí la meta del desafío.' },
+            { icon: <Check size={18} color="#5B31A3" />, text: 'Toca "Participar". Tus pasos cuentan desde ese momento.' },
+            { icon: <Footprints size={18} color="#5B31A3" />, text: goal ? `Cumple la meta: ${goal.big} ${goal.small}.` : 'Cumple la meta del desafío.' },
             { icon: <Gift size={18} color="#5B31A3" />, text: `Al terminar, Camina sortea ${p.prize ? `"${p.prize}"` : 'los premios'} entre quienes cumplieron.` },
           ]
     : [];
@@ -306,7 +306,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                 <View style={{ gap: 8 }}>
                   {ticket === 'has' ? (
                     <View className="rounded-2xl py-3.5 items-center mt-5 bg-mint/15">
-                      <Text className="text-mint-dark dark:text-mint" style={{ fontWeight: '800', fontSize: 14.5 }}>Ya tenés tu entrada</Text>
+                      <Text className="text-mint-dark dark:text-mint" style={{ fontWeight: '800', fontSize: 14.5 }}>Ya tienes tu entrada</Text>
                     </View>
                   ) : null}
                   {ticket === 'sold_out' ? (
@@ -351,7 +351,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
               ) : p.joined ? (
                 <View className="rounded-2xl py-3.5 items-center mt-5 bg-mint/15">
                   <Text className="text-mint-dark dark:text-mint" style={{ fontWeight: '800', fontSize: 14.5 }}>
-                    {p.kind === 'evento' ? 'Ya estás anotado' : '¡Ya sos parte del desafío!'}
+                    {p.kind === 'evento' ? 'Ya estás anotado' : '¡Ya eres parte del desafío!'}
                   </Text>
                 </View>
               ) : (

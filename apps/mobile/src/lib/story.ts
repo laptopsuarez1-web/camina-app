@@ -35,7 +35,7 @@ export async function pickStoryPhoto(source: 'camera' | 'library'): Promise<stri
   const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.85, allowsEditing: true, aspect: [9, 16] };
   if (source === 'camera') {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) throw new Error('Para sacar la foto, permití el uso de la cámara en los ajustes del teléfono.');
+    if (!perm.granted) throw new Error('Para sacar la foto, permite el uso de la cámara en los ajustes del teléfono.');
     const res = await ImagePicker.launchCameraAsync(opts);
     return res.canceled ? null : res.assets[0].uri;
   }
@@ -62,7 +62,7 @@ export async function shareToInstagram(uri: string) {
     return;
   }
   if (!(await Sharing.isAvailableAsync())) throw new Error('Tu teléfono no permite compartir la foto desde la app.');
-  await Sharing.shareAsync(uri, { mimeType: 'image/jpeg', dialogTitle: 'Subila a tu historia', UTI: 'public.jpeg' });
+  await Sharing.shareAsync(uri, { mimeType: 'image/jpeg', dialogTitle: 'Súbela a tu historia', UTI: 'public.jpeg' });
 }
 
 async function toArrayBuffer(uri: string): Promise<ArrayBuffer> {
@@ -80,7 +80,7 @@ async function toArrayBuffer(uri: string): Promise<ArrayBuffer> {
 // Sube la foto (la versión con el sticker de Camina) y avisa al equipo. Devuelve la fila creada.
 export async function submitStory(userId: string, redemptionId: string, uri: string, handle: string): Promise<StoryShare> {
   const clean = normalizeHandle(handle);
-  if (!clean) throw new Error('Revisá tu usuario de Instagram: solo letras, números, puntos y guiones bajos.');
+  if (!clean) throw new Error('Revisa tu usuario de Instagram: solo letras, números, puntos y guiones bajos.');
   const path = `${userId}/${redemptionId}-${Date.now()}.jpg`;
   const { error: upErr } = await supabase.storage.from('story-photos').upload(path, await toArrayBuffer(uri), { contentType: 'image/jpeg' });
   if (upErr) throw upErr;

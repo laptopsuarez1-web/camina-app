@@ -39,10 +39,10 @@ export default function MetaScreen() {
   }
 
   const hint = useMemo(() => {
-    if (value < DEFAULT_DAILY_GOAL) return 'Para empezar está bien. Cuando te acostumbres, subila.';
+    if (value < DEFAULT_DAILY_GOAL) return 'Para empezar está bien. Cuando te acostumbres, súbela.';
     if (value === DEFAULT_DAILY_GOAL) return 'Es la meta que recomendamos para arrancar.';
     if (value <= 10000) return '¡Buena meta! Cada 1.000 pasos te dan 1 Punto.';
-    return 'Meta exigente: dale de a poco y cuidate.';
+    return 'Meta exigente: ve de a poco y cuídate.';
   }, [value]);
 
   function next() {
@@ -66,7 +66,7 @@ export default function MetaScreen() {
       await useAuthStore.getState().refreshProfile();
       next();
     } catch (e) {
-      Alert.alert('No pudimos guardar tu meta', friendlyError(e, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos guardar tu meta', friendlyError(e, 'Intenta de nuevo.'));
     } finally {
       setSaving(false);
     }
@@ -75,7 +75,7 @@ export default function MetaScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.authBg, paddingHorizontal: 24, paddingTop: 72, paddingBottom: 32 }}>
       <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 14 }} />
-      <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 26, fontWeight: '800', marginBottom: 8 }}>¿Cuántos pasos querés hacer por día?</Text>
+      <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 26, fontWeight: '800', marginBottom: 8 }}>¿Cuántos pasos quieres hacer por día?</Text>
       <View style={{ alignSelf: 'flex-start', backgroundColor: 'rgba(127,237,196,0.16)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, marginBottom: 6 }}>
         <Text style={{ color: colors.mint, fontSize: 13.5, fontWeight: '700' }}>Te recomendamos 5.000 pasos por día</Text>
       </View>
@@ -126,7 +126,7 @@ export default function MetaScreen() {
       </View>
 
       <Text style={{ color: colors.authMuted, fontSize: 13, lineHeight: 19, textAlign: 'center', marginBottom: 14 }}>
-        Podés caminar más que tu meta: todos tus pasos suman. La cambiás cuando quieras desde Inicio.
+        Puedes caminar más que tu meta: todos tus pasos suman. La cambias cuando quieras desde Inicio.
       </Text>
       <Press accessibilityRole="button" onPress={save} disabled={saving} style={{ backgroundColor: colors.mint, borderRadius: 16, paddingVertical: 15, alignItems: 'center', opacity: saving ? 0.6 : 1 }}>
         <Text style={{ color: colors.mintDark, fontWeight: '800', fontSize: 15 }}>{saving ? 'Guardando…' : `Listo, ${value.toLocaleString('es-BO')} pasos`}</Text>

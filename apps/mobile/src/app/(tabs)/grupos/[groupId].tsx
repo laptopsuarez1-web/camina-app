@@ -110,7 +110,7 @@ export default function GroupDetailScreen() {
   async function saveGoal() {
     const n = parseInt(goalInput.replace(/\D/g, ''), 10);
     if (!n || n < 5000 || n > 5_000_000) {
-      Alert.alert('Meta no válida', 'Ingresá una meta semanal entre 5.000 y 5.000.000 de pasos.');
+      Alert.alert('Meta no válida', 'Ingresa una meta semanal entre 5.000 y 5.000.000 de pasos.');
       return;
     }
     const { error } = await supabase.from('groups').update({ challenge_target: n }).eq('id', groupId!);
@@ -125,7 +125,7 @@ export default function GroupDetailScreen() {
 
   function askReason(kind: 'message' | 'photo' | 'user', targetUser: string, messageId: string | null) {
     setSheet({
-      title: '¿Por qué lo reportás?',
+      title: '¿Por qué lo reportas?',
       actions: REPORT_REASONS.map((r) => ({
         label: r.label,
         onPress: async () => {
@@ -133,7 +133,7 @@ export default function GroupDetailScreen() {
             await reportContent(kind, targetUser, messageId, r.key);
             Alert.alert('Gracias', 'Recibimos tu reporte. Lo revisamos y, si corresponde, actuamos.');
           } catch (e) {
-            Alert.alert('No se pudo reportar', friendlyServerError(e, 'Intentá de nuevo.'));
+            Alert.alert('No se pudo reportar', friendlyServerError(e, 'Intenta de nuevo.'));
           }
         },
       })),
@@ -141,7 +141,7 @@ export default function GroupDetailScreen() {
   }
 
   function confirmBlock(id: string, name: string) {
-    Alert.alert(`¿Bloquear a ${name}?`, 'Dejás de ver sus mensajes. Podés desbloquearla o desbloquearlo desde Perfil.', [
+    Alert.alert(`¿Bloquear a ${name}?`, 'Dejas de ver sus mensajes. Puedes desbloquearla o desbloquearlo desde Perfil.', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Bloquear', style: 'destructive', onPress: () => blocks.block.mutate(id) },
     ]);
@@ -149,7 +149,7 @@ export default function GroupDetailScreen() {
 
   async function deleteNote(id: string) {
     const { error } = await supabase.from('group_notes').delete().eq('id', id);
-    if (error) Alert.alert('No se pudo borrar', friendlyServerError(error, 'Intentá de nuevo.'));
+    if (error) Alert.alert('No se pudo borrar', friendlyServerError(error, 'Intenta de nuevo.'));
     else queryClient.invalidateQueries({ queryKey: ['group-notes', groupId] });
   }
 
@@ -183,7 +183,7 @@ export default function GroupDetailScreen() {
       await postNote.mutateAsync({ userId, text: value });
     } catch (e) {
       setText(value);
-      Alert.alert('No se pudo enviar', friendlyServerError(e, 'Intentá de nuevo.'));
+      Alert.alert('No se pudo enviar', friendlyServerError(e, 'Intenta de nuevo.'));
       return;
     }
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
@@ -266,7 +266,7 @@ export default function GroupDetailScreen() {
                       </View>
                     }
                   />
-                  <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Vos' : m.name}</Text>
+                  <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Tú' : m.name}</Text>
                   <Text className="text-[12px]" style={{ color: colors.authMuted }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
                   <View
                     style={{
@@ -387,7 +387,7 @@ export default function GroupDetailScreen() {
             {(ch?.standings ?? []).slice(0, 3).map((st, i) => (
               <View key={st.user_id} className="flex-row items-center py-1" style={{ gap: 8 }}>
                 <Text className="w-4 text-[12px] font-bold text-text-light dark:text-text-dark">{i + 1}</Text>
-                <Text className="flex-1 text-[12.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{st.user_id === userId ? `${nameOf(st.user_id)} (vos)` : nameOf(st.user_id)}</Text>
+                <Text className="flex-1 text-[12.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{st.user_id === userId ? `${nameOf(st.user_id)} (tú)` : nameOf(st.user_id)}</Text>
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark">
                   {active.rule === 'steps' ? st.steps.toLocaleString('es-BO') : active.rule === 'days' ? `${st.goal_days} ${plural(st.goal_days, 'día', 'días')}` : `racha ${st.best_streak}`}
                 </Text>
@@ -400,14 +400,14 @@ export default function GroupDetailScreen() {
                   try {
                     await joinChallenge.mutateAsync(active.id);
                   } catch (e) {
-                    Alert.alert('No se pudo sumar', friendlyServerError(e, 'Intentá de nuevo.'));
+                    Alert.alert('No se pudo sumar', friendlyServerError(e, 'Intenta de nuevo.'));
                   }
                 }}
                 disabled={joinChallenge.isPending}
                 className="bg-mint rounded-2xl py-3 items-center mt-2.5 flex-row justify-center"
                 style={{ gap: 6 }}
               >
-                <Text className="text-mint-dark font-bold text-[13.5px]">Sumarme{active.stake > 0 ? ' · ponés' : ''}</Text>
+                <Text className="text-mint-dark font-bold text-[13.5px]">Sumarme{active.stake > 0 ? ' · pones' : ''}</Text>
                 {active.stake > 0 && (
                   <>
                     <Coin size={16} />
@@ -431,7 +431,7 @@ export default function GroupDetailScreen() {
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
-                  Armá uno: elijan la regla, la meta y cuántos puntos poner en juego.
+                  Arma uno: elijan la regla, la meta y cuántos puntos poner en juego.
                 </Text>
               </View>
             </View>
@@ -467,7 +467,7 @@ export default function GroupDetailScreen() {
                 }
               />
               <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
-                {m.id === userId ? `${m.name} (vos)` : m.name}
+                {m.id === userId ? `${m.name} (tú)` : m.name}
               </Text>
               <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
                 <Text className="text-[12.5px] font-bold text-aqua-ink dark:text-aqua">
@@ -507,7 +507,7 @@ export default function GroupDetailScreen() {
                     <View key={r.user_id} className="flex-row items-center py-1" style={{ gap: 10 }}>
                       <Text className="w-6 text-[12px] font-bold text-muted-light dark:text-muted-dark">{r.rank}.º</Text>
                       <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
-                        {r.user_id === userId ? `${r.name} (vos)` : r.name}
+                        {r.user_id === userId ? `${r.name} (tú)` : r.name}
                       </Text>
                       <Text className="text-[12px] text-muted-light dark:text-muted-dark">{r.goal_days} {plural(r.goal_days, 'día', 'días')} de meta</Text>
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">{r.steps.toLocaleString('es-BO')}</Text>
@@ -554,7 +554,7 @@ export default function GroupDetailScreen() {
         })}
         {(notes ?? []).length === 0 && (
           <Text className="text-center text-muted-light dark:text-muted-dark text-[13px] py-6">
-            Todavía no hay mensajes. Escribí el primero.
+            Todavía no hay mensajes. Escribe el primero.
           </Text>
         )}
         </View>
@@ -564,7 +564,7 @@ export default function GroupDetailScreen() {
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Escribí un mensaje…"
+          placeholder="Escribe un mensaje…"
           accessibilityLabel="Mensaje para el grupo"
           placeholderTextColor={muted}
           className="flex-1 bg-card-light dark:bg-card-dark rounded-[20px] px-4 py-2.5 text-[13.5px] text-text-light dark:text-text-dark"

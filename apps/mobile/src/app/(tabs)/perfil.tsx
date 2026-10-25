@@ -120,7 +120,7 @@ export default function PerfilScreen() {
       await loadPermissions();
       return;
     }
-    Alert.alert('Pasos desde Salud', 'En Ajustes > Salud > Acceso a datos y dispositivos > Camina, activá "Pasos".', [
+    Alert.alert('Pasos desde Salud', 'En Ajustes > Salud > Acceso a datos y dispositivos > Camina, activa "Pasos".', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
     ]);
@@ -157,7 +157,7 @@ export default function PerfilScreen() {
     const { error } = await supabase.auth.signOut();
     // Sin red, signOut devuelve error aunque la sesión local ya se cerró: ahí no hay nada que avisar.
     if (error && (await supabase.auth.getSession()).data.session) {
-      Alert.alert('No pudimos cerrar sesión', friendlyError(error, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos cerrar sesión', friendlyError(error, 'Intenta de nuevo.'));
       return;
     }
     router.replace('/(auth)/welcome?modo=login');
@@ -221,7 +221,7 @@ export default function PerfilScreen() {
           <IconBubble icon={UserPlus} tone="purple" size={46} />
           <View className="flex-1">
             <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Amigos</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Mirá su ranking e invitá y ganá 5 Puntos</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Mira su ranking e invita y gana 5 Puntos</Text>
           </View>
           {(friendRequests ?? []).length > 0 && (
             <View className="rounded-full items-center justify-center" style={{ minWidth: 22, height: 22, paddingHorizontal: 6, backgroundColor: colors.dangerFill }}>
@@ -272,14 +272,14 @@ export default function PerfilScreen() {
         <PermRow
           icon={Heartbeat}
           title={Platform.OS === 'ios' ? 'Pasos (Salud)' : 'Pasos (Health Connect)'}
-          text={stepsStatus === 'granted' ? 'Camina cuenta tus pasos desde Health Connect.' : 'Sin este permiso el podómetro no funciona y no sumás Puntos.'}
+          text={stepsStatus === 'granted' ? 'Camina cuenta tus pasos desde Health Connect.' : 'Sin este permiso el podómetro no funciona y no sumas Puntos.'}
           status={Platform.OS === 'ios' ? 'denied' : stepsStatus}
           onPress={stepsAction}
         />
         <PermRow
           icon={MapPin}
           title="Ubicación"
-          text={locationStatus === 'granted' ? 'La usamos para mostrarte comercios cerca.' : 'Para ver comercios cerca de vos en el mapa.'}
+          text={locationStatus === 'granted' ? 'La usamos para mostrarte comercios cerca.' : 'Para ver comercios cerca de ti en el mapa.'}
           status={locationStatus}
           onPress={locationAction}
           last

@@ -36,18 +36,18 @@ export function AccountEmailCard() {
   async function save() {
     const next = newEmail.trim().toLowerCase();
     if (!EMAIL_RE.test(next)) {
-      Alert.alert('Revisá el correo', 'Escribilo completo, por ejemplo nombre@gmail.com.');
+      Alert.alert('Revisa el correo', 'Escríbelo completo, por ejemplo nombre@gmail.com.');
       return;
     }
     if (next === email.toLowerCase()) {
-      Alert.alert('Es el mismo correo', 'Escribí un correo distinto al actual.');
+      Alert.alert('Es el mismo correo', 'Escribe un correo distinto al actual.');
       return;
     }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ email: next }, { emailRedirectTo: emailRedirectUrl() });
     setSaving(false);
     if (error) {
-      Alert.alert('No pudimos cambiar el correo', friendlyError(error, 'Intentá de nuevo.'));
+      Alert.alert('No pudimos cambiar el correo', friendlyError(error, 'Intenta de nuevo.'));
       return;
     }
     setSentTo(next);
@@ -68,7 +68,7 @@ export function AccountEmailCard() {
           <CheckCircle2 size={20} color={dark ? colors.mint : colors.aquaInk} weight="fill" />
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-3">
-          Entrás con tu cuenta de {PROVIDER_NAME[linked]}. Si querés usar otro correo, cambialo desde {PROVIDER_NAME[linked]}.
+          Entras con tu cuenta de {PROVIDER_NAME[linked]}. Si quieres usar otro correo, cámbialo desde {PROVIDER_NAME[linked]}.
         </Text>
       </Glass>
     );
@@ -91,7 +91,7 @@ export function AccountEmailCard() {
 
       {pending && !editing && (
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3">
-          Te mandamos un link a {pending}. Abrilo para confirmar el cambio; hasta entonces seguís entrando con {email}.
+          Te mandamos un link a {pending}. Ábrelo para confirmar el cambio; hasta entonces sigues entrando con {email}.
         </Text>
       )}
 

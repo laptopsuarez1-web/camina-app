@@ -83,7 +83,7 @@ export function CardShareSheet({
     try {
       await shareCard(shotRef, { width: CARD_W, height: h }, filename);
     } catch (e) {
-      Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Probá de nuevo en un momento.'));
+      Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     } finally {
       setBusy(false);
     }
@@ -117,7 +117,7 @@ export function CardShareSheet({
               <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
             </Press>
             <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
-              La imagen se arma en tu teléfono. Elegís dónde compartirla: Instagram, WhatsApp o guardarla.
+              La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.
             </Text>
           </ScrollView>
         </Press>

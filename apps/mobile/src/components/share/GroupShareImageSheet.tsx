@@ -28,7 +28,7 @@ export function GroupShareImageSheet({
         id: m.id,
         steps: m.steps,
         isMe: m.id === userId,
-        label: m.id === userId ? 'Vos' : withNames ? m.name.trim().split(/\s+/)[0] || 'Caminante' : (m.name.trim()[0] ?? 'C').toUpperCase(),
+        label: m.id === userId ? 'Tú' : withNames ? m.name.trim().split(/\s+/)[0] || 'Caminante' : (m.name.trim()[0] ?? 'C').toUpperCase(),
       })),
       target,
       total: members.reduce((a, m) => a + m.steps, 0),
