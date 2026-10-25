@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs, Redirect, router } from 'expo-router';
 import { View } from 'react-native';
 import { TabGlyph, type TabKind } from '@/components/ui/TabGlyph';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -24,7 +24,7 @@ const EventsIcon = glyph('events');
 const CanjesIcon = glyph('canjes');
 
 export default function TabsLayout() {
-  const { session, initializing } = useAuthStore();
+  const { session, initializing, passwordRecovery } = useAuthStore();
 
   useEffect(() => {
     if (session) {
@@ -33,6 +33,11 @@ export default function TabsLayout() {
       registerDevice();
     }
   }, [session]);
+
+  // Entró con el link de "olvidé mi contraseña": se abre directo el formulario para elegir la nueva.
+  useEffect(() => {
+    if (session && passwordRecovery) router.push('/(tabs)/editar-perfil?nueva=1');
+  }, [session, passwordRecovery]);
 
   useNotificationTaps(!!session);
 

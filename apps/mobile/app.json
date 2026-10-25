@@ -26,6 +26,12 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
+              "camina",
+              "bo.camina.app"
+            ]
+          },
+          {
+            "CFBundleURLSchemes": [
               "com.googleusercontent.apps.326158603986-6shm71vlt0a7qt6rp7mi25pc2dg3chga"
             ]
           }

@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, Camera, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
@@ -65,6 +65,9 @@ function PasswordField({ label, value, onChange, placeholder, autoComplete }: { 
 export default function EditarPerfilScreen() {
   const profile = useAuthStore((s) => s.profile);
   const session = useAuthStore((s) => s.session);
+  // ?nueva=1: llegó con el link de "olvidé mi contraseña" (ver app/(tabs)/_layout.tsx).
+  const { nueva } = useLocalSearchParams<{ nueva?: string }>();
+  const recovering = nueva === '1';
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: places } = usePlaces();
   const b = profile?.birth_date;
@@ -88,8 +91,18 @@ export default function EditarPerfilScreen() {
   const monthRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
   const email = session?.user.email ?? '';
-  // Las cuentas de Google o Apple no tienen contraseña propia.
-  const hasPassword = (session?.user.app_metadata?.provider ?? 'email') === 'email';
+  // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una acá (queda marcado en has_password).
+  const hasPassword = session?.user.user_metadata?.has_password === true || (session?.user.app_metadata?.provider ?? 'email') === 'email';
+  const linkedProvider = ((session?.user.app_metadata?.providers as string[] | undefined) ?? []).includes('apple') ? 'Apple' : 'Google';
+  // Con el link del correo ya se comprobó que es la persona: no se pide la actual.
+  const askCurrent = hasPassword && !recovering;
+  const passwordTitle = recovering ? 'Elegir contraseña nueva' : hasPassword ? 'Cambiar contraseña' : 'Crear contraseña';
+
+  const passwordFormOpen = changingPassword || recovering;
+
+  useEffect(() => {
+    if (recovering) useAuthStore.setState({ passwordRecovery: false });
+  }, [recovering]);
   const field = 'bg-bg-light dark:bg-bg-dark border border-line-light dark:border-line-dark rounded-xl px-3 py-3 text-[14px] text-center text-text-light dark:text-text-dark';
   const placeholder = isDark ? colors.dark.muted : colors.light.muted;
 
@@ -144,7 +157,7 @@ export default function EditarPerfilScreen() {
   }
 
   async function savePassword() {
-    if (!currentPassword) {
+    if (askCurrent && !currentPassword) {
       Alert.alert('Falta tu contraseña actual', 'Escríbela para confirmar que eres tú.');
       return;
     }
@@ -156,19 +169,21 @@ export default function EditarPerfilScreen() {
       Alert.alert('No coinciden', 'La nueva contraseña y su repetición tienen que ser iguales.');
       return;
     }
-    if (newPassword === currentPassword) {
+    if (askCurrent && newPassword === currentPassword) {
       Alert.alert('Es la misma contraseña', 'Elige una distinta a la actual.');
       return;
     }
     setSavingPassword(true);
     // Primero se confirma la contraseña actual con el correo de la cuenta.
-    const check = await supabase.auth.signInWithPassword({ email, password: currentPassword });
-    if (check.error) {
-      setSavingPassword(false);
-      Alert.alert('Contraseña actual incorrecta', 'Revísala e intenta de nuevo.');
-      return;
+    if (askCurrent) {
+      const check = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+      if (check.error) {
+        setSavingPassword(false);
+        Alert.alert('Contraseña actual incorrecta', 'Revísala o toca "¿Olvidaste tu contraseña?" para elegir una nueva con el correo.');
+        return;
+      }
     }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await supabase.auth.updateUser({ password: newPassword, data: { has_password: true } });
     setSavingPassword(false);
     if (error) {
       Alert.alert('No pudimos cambiarla', friendlyError(error, 'Intenta de nuevo.'));
@@ -178,7 +193,8 @@ export default function EditarPerfilScreen() {
     setNewPassword('');
     setRepeatPassword('');
     setChangingPassword(false);
-    Alert.alert('Listo', 'Tu contraseña se actualizó.');
+    Alert.alert('Listo', hasPassword ? 'Tu contraseña se actualizó.' : `Ya puedes entrar con ${email} y tu contraseña, además de ${linkedProvider}.`);
+    if (recovering) router.setParams({ nueva: undefined });
   }
 
   // Si no se acuerda de la actual: se manda un link al correo de la cuenta y desde ahí elige una nueva.
@@ -331,32 +347,39 @@ export default function EditarPerfilScreen() {
             {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
           </Press>
 
-          {hasPassword && (
+          {!!email && (
             <Glass className="rounded-3xl p-4 mb-4">
-              {!changingPassword ? (
+              {!passwordFormOpen ? (
                 <Press accessibilityRole="button" onPress={() => setChangingPassword(true)} className="flex-row items-center gap-3">
                   <IconBubble icon={KeyRound} tone="purple" size={38} />
-                  <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Cambiar contraseña</Text>
+                  <View className="flex-1">
+                    <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">{passwordTitle}</Text>
+                    {!hasPassword && (
+                      <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-0.5">Opcional: para entrar también con tu correo, no solo con {linkedProvider}.</Text>
+                    )}
+                  </View>
                 </Press>
               ) : (
                 <View>
-                  <Text className="font-bold text-[14.5px] mb-1 text-text-light dark:text-text-dark">Cambiar contraseña</Text>
+                  <Text className="font-bold text-[14.5px] mb-1 text-text-light dark:text-text-dark">{passwordTitle}</Text>
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-3">Cuenta: {email}</Text>
-                  <PasswordField label="Contraseña actual" value={currentPassword} onChange={setCurrentPassword} autoComplete="password" />
+                  {askCurrent && <PasswordField label="Contraseña actual" value={currentPassword} onChange={setCurrentPassword} autoComplete="password" />}
                   <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
                   <PasswordField label="Repite la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
-                  <Press accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
-                    <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">
-                      {recoverySent ? `Te mandamos un link a ${email}. Ábrelo para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
-                    </Text>
-                  </Press>
+                  {askCurrent && (
+                    <Press accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">
+                      <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold underline">
+                        {recoverySent ? `Te mandamos un link a ${email}. Ábrelo en este teléfono para elegir una nueva.` : '¿Olvidaste tu contraseña? Cambiarla con el correo'}
+                      </Text>
+                    </Press>
+                  )}
                   <View className="flex-row gap-2">
                     <Press accessibilityRole="button" onPress={savePassword} disabled={savingPassword} className="flex-1 bg-aqua-deep rounded-xl py-3 items-center">
-                      {savingPassword ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Cambiar contraseña</Text>}
+                      {savingPassword ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">{hasPassword ? 'Cambiar contraseña' : 'Crear contraseña'}</Text>}
                     </Press>
                     <Press
                       accessibilityRole="button"
-                      onPress={() => { setChangingPassword(false); setCurrentPassword(''); setNewPassword(''); setRepeatPassword(''); }}
+                      onPress={() => { setChangingPassword(false); if (recovering) router.setParams({ nueva: undefined }); setCurrentPassword(''); setNewPassword(''); setRepeatPassword(''); }}
                       className="border border-line-light dark:border-line-dark rounded-xl px-4 py-3 items-center"
                     >
                       <Text className="text-muted-light dark:text-muted-dark font-semibold text-[13.5px]">Cancelar</Text>
