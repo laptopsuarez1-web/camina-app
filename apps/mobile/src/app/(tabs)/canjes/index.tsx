@@ -363,8 +363,9 @@ function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT
   useEffect(() => {
     if (logo === 'wait') return;
     // El pin se congela recién cuando el logo avisó que ya se pintó (más un respiro); sin logo, enseguida.
-    // Tope de seguridad: si el aviso no llega, se congela igual a los 12 s para no dejar el mapa trabajando de más.
-    const t = setTimeout(() => setTracking(false), logo === 'ok' ? (painted ? 700 : 12000) : 600);
+    // Tope de seguridad corto: en iPhone cada pin que se sigue actualizando redibuja el mapa de Google en cada
+    // cuadro, y con varios pines (y varios mapas montados) eso trababa la pantalla. El logo ya viene precargado.
+    const t = setTimeout(() => setTracking(false), logo === 'ok' ? (painted ? 500 : 2500) : 600);
     return () => clearTimeout(t);
   }, [logo, painted]);
   if (logo === 'wait') return null;
