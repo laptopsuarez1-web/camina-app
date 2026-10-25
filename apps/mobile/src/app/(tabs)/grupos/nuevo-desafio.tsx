@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Alert, ActivityIndicator, Share, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
-import { ChevronLeft, Trophy, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
+import { ChevronLeft, X, Trophy, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { groupInviteLink } from '@/constants/sharing';
@@ -24,6 +24,8 @@ const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Act
   { key: 'streak', title: 'Mejor racha', desc: 'Gana quien mantiene la racha más larga', icon: Flame, tone: 'orange' },
 ];
 const STAKES = [0, 5, 10, 20, 50];
+// Tope de la base (group_challenges.stake between 0 and 50).
+const MAX_STAKE = 50;
 
 function addDays(d: Date, n: number) {
   const x = new Date(d);
@@ -47,6 +49,28 @@ export default function NuevoDesafioScreen() {
   const [stake, setStake] = useState(0);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  // Cantidad propia de Puntos ("Otra"): se escribe a mano entre 1 y MAX_STAKE.
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customText, setCustomText] = useState('');
+
+  // La pantalla queda montada entre visitas (es una pestaña oculta): al salir se vuelve a empezar,
+  // así la próxima vez no aparece otra vez el "está en marcha" del desafío anterior.
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        setStep(1);
+        setName('');
+        setRule('steps');
+        setGoal(5000);
+        setDays(7);
+        setStake(0);
+        setDone(false);
+        setCustomOpen(false);
+        setCustomText('');
+      },
+      [],
+    ),
+  );
   const start = new Date();
   const end = addDays(start, days - 1);
   const fmtShort = (d: Date) => d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit' });
@@ -82,6 +106,16 @@ export default function NuevoDesafioScreen() {
   if (done) {
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark items-center px-8" style={{ paddingTop: 160 }}>
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar"
+          onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })}
+          hitSlop={10}
+          className="absolute w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark"
+          style={{ top: 56, left: 20 }}
+        >
+          <X size={18} color={accentIcon} />
+        </Press>
         <IconBubble icon={Trophy} tone="gold" size={110} />
         <Text className="text-[24px] font-extrabold text-center text-text-light dark:text-text-dark mt-6">¡{name.trim()} está en marcha!</Text>
         <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark mt-2 leading-5">
@@ -103,6 +137,9 @@ export default function NuevoDesafioScreen() {
           </Press>
           <Press accessibilityRole="button" onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })} className="items-center py-2">
             <Text className="font-bold text-[14px] text-aqua-ink dark:text-aqua">Ir al grupo</Text>
+          </Press>
+          <Press accessibilityRole="button" onPress={() => router.replace('/(tabs)')} className="items-center py-2 mt-1">
+            <Text className="font-semibold text-[13.5px] text-muted-light dark:text-muted-dark">Volver al inicio</Text>
           </Press>
         </View>
       </View>
@@ -198,13 +235,61 @@ export default function NuevoDesafioScreen() {
               <Text className="text-[12px] font-bold text-text-light dark:text-text-dark">{balance ?? 0}</Text>
             </View>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-              {STAKES.map((v) => (
-                <Press key={v} accessibilityRole="button" accessibilityState={{ selected: stake === v }} aria-pressed={stake === v} onPress={() => setStake(v)} className="rounded-full px-5 py-2.5 flex-row items-center" style={{ gap: 5, backgroundColor: stake === v ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}>
-                  {v > 0 && <Coin size={14} />}
-                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(stake === v ? { color: '#fff' } : null) }}>{v}</Text>
-                </Press>
-              ))}
+              {STAKES.map((v) => {
+                const on = !customOpen && stake === v;
+                return (
+                  <Press
+                    key={v}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: on }}
+                    aria-pressed={on}
+                    onPress={() => {
+                      setCustomOpen(false);
+                      setStake(v);
+                    }}
+                    className="rounded-full px-5 py-2.5 flex-row items-center"
+                    style={{ gap: 5, backgroundColor: on ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}
+                  >
+                    {v > 0 && <Coin size={14} />}
+                    <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(on ? { color: '#fff' } : null) }}>{v}</Text>
+                  </Press>
+                );
+              })}
+              <Press
+                accessibilityRole="button"
+                accessibilityState={{ selected: customOpen }}
+                aria-pressed={customOpen}
+                onPress={() => {
+                  setCustomOpen(true);
+                  const n = parseInt(customText, 10);
+                  setStake(Number.isFinite(n) ? n : 0);
+                }}
+                className="rounded-full px-5 py-2.5"
+                style={{ backgroundColor: customOpen ? colors.aquaDeep : 'rgba(124,106,156,0.14)' }}
+              >
+                <Text className="text-muted-light dark:text-muted-dark" style={{ fontWeight: '800', ...(customOpen ? { color: '#fff' } : null) }}>Otra</Text>
+              </Press>
             </View>
+            {customOpen && (
+              <View className="flex-row items-center mt-3" style={{ gap: 8 }}>
+                <Coin size={18} />
+                <TextInput
+                  value={customText}
+                  onChangeText={(t) => {
+                    const digits = t.replace(/[^0-9]/g, '').slice(0, 2);
+                    const n = Math.min(MAX_STAKE, parseInt(digits || '0', 10));
+                    setCustomText(digits ? String(n) : '');
+                    setStake(n);
+                  }}
+                  keyboardType="number-pad"
+                  autoFocus
+                  placeholder={`De 1 a ${MAX_STAKE}`}
+                  accessibilityLabel="Cantidad de Puntos en juego"
+                  className="flex-1 rounded-2xl px-4 py-3 text-[16px] font-bold bg-card-light dark:bg-card-dark text-text-light dark:text-text-dark"
+                />
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark">máx. {MAX_STAKE}</Text>
+              </View>
+            )}
             {insufficient && <Text className="text-[12px] mt-2" style={{ color: dangerText }}>No te alcanzan los Puntos para poner {stake}.</Text>}
             <Glass className="rounded-2xl p-3.5 mt-4">
               <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">Cómo se reparte</Text>
