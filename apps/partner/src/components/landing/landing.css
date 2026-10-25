@@ -130,6 +130,7 @@
 .loc-logo{flex:none;width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--line);background:#fff}
 .loc h3{font-size:20px;margin:0}
 .loc-cat{margin:2px 0 0;color:var(--muted);font-size:13px}
+.loc .loc-dir{margin:16px 22px 0;padding-top:12px;border-top:1.5px solid var(--line);color:var(--muted);font-size:14px;font-weight:500;line-height:1.4}
 .loc ul{margin:16px 22px 0;display:grid;gap:0}
 .loc li{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1.5px solid var(--line);align-items:center}
 .loc li span{font-weight:700}
