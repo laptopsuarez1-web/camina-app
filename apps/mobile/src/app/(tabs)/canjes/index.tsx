@@ -357,6 +357,9 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
   return out;
 }
 
+// Ancho del borde de la tarjeta del comercio: 2 en dorado para los destacados, 1 para el resto.
+const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
+
 function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT; coordinate?: LatLng; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
   const [painted, setPainted] = useState(false);
@@ -1129,7 +1132,19 @@ export default function CanjesScreen() {
                   source={{ uri: g.business.cover_url }}
                   accessibilityIgnoresInvertColors
                   resizeMode="cover"
-                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}
+                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
+                />
+              ) : null}
+              {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
+                  el borde se repite por encima de todo, del mismo ancho y color. */}
+              {g.business.cover_url ? (
+                <View
+                  pointerEvents="none"
+                  className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
+                  style={{
+                    position: 'absolute', zIndex: 1, top: -cardBorder(g.business), left: -cardBorder(g.business), right: -cardBorder(g.business), bottom: -cardBorder(g.business),
+                    borderRadius: 24, borderWidth: cardBorder(g.business), ...(isFeatured(g.business) ? { borderColor: GOLD } : {}),
+                  }}
                 />
               ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
