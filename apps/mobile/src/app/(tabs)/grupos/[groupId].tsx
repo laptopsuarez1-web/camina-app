@@ -165,10 +165,15 @@ export default function GroupDetailScreen() {
     setSheet({ title: mine ? 'Tu mensaje' : name, actions });
   }
 
+  function openProfile(id: string) {
+    router.push({ pathname: '/(tabs)/amigos/[userId]', params: { userId: id } });
+  }
+
   function openMemberMenu(m: { id: string; name: string }) {
     setSheet({
       title: m.name,
       actions: [
+        { label: 'Ver perfil y agregar amigo', onPress: () => openProfile(m.id) },
         { label: 'Reportar foto o perfil', onPress: () => askReason('photo', m.id, null) },
         { label: `Bloquear a ${m.name}`, danger: true, onPress: () => confirmBlock(m.id, m.name) },
       ],
@@ -457,6 +462,13 @@ export default function GroupDetailScreen() {
           {data.members.map((m, i) => (
             <View key={m.id} className="flex-row items-center gap-3 py-1.5">
               <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel={m.id === userId ? 'Tu perfil' : `Ver perfil de ${m.name}`}
+                disabled={m.id === userId}
+                onPress={() => openProfile(m.id)}
+                className="flex-1 flex-row items-center gap-3"
+              >
               <AvatarImage
                 uri={m.photoUrl}
                 style={{ width: 32, height: 32, borderRadius: 16 }}
@@ -469,6 +481,7 @@ export default function GroupDetailScreen() {
               <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
                 {m.id === userId ? `${m.name} (tú)` : m.name}
               </Text>
+              </Press>
               <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: 'rgba(79,195,168,0.16)' }}>
                 <Text className="text-[12.5px] font-bold text-aqua-ink dark:text-aqua">
                   {m.steps.toLocaleString('es-BO')}
