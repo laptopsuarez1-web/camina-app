@@ -14,6 +14,7 @@ import {
   aggregateGroupByPeriod,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
+import { enableBackgroundSteps } from '@/lib/background-steps';
 import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
@@ -58,6 +59,7 @@ function useHealthKitSteps(enabled: boolean) {
         await requestHealthKitAuthorization({ toRead: [STEP_COUNT_IDENTIFIER] });
         if (cancelled) return;
         setReady(true);
+        enableBackgroundSteps();
         await readToday();
         interval = setInterval(readToday, POLL_MS);
       } catch {
@@ -118,6 +120,7 @@ function useHealthConnectSteps(enabled: boolean) {
         if (cancelled) return;
         setReady(true);
         setStatus('ok');
+        enableBackgroundSteps();
         await readToday();
         interval = setInterval(readToday, POLL_MS);
       } catch {

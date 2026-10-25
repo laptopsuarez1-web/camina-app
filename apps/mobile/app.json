@@ -54,7 +54,8 @@
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",
         "CAMERA",
-        "android.permission.health.READ_STEPS"
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
       ],
       "config": {
         "googleMaps": {
@@ -117,7 +118,7 @@
         {
           "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
           "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
-          "background": false
+          "background": true
         }
       ],
       [
@@ -127,6 +128,7 @@
         }
       ],
       "react-native-health-connect",
+      "expo-background-task",
       [
         "expo-image-picker",
         {
