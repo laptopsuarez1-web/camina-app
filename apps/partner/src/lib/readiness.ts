@@ -1,7 +1,7 @@
 import type { Business } from '@/lib/supabase';
 
-// Lo mínimo para publicar un local en la app. Lo usa el cartel del dueño ("te falta…") y el admin
-// (el botón Aprobar aparece recién cuando no falta nada), así los dos miran la misma lista.
+// Lo recomendado para publicar un local en la app. Lo usa el cartel del dueño ("te recomendamos…") y el admin
+// (lo muestra como recomendación; el admin puede aprobar siempre, aunque falte algo), así los dos miran la misma lista.
 // Un beneficio activo NO es requisito: el comercio se puede aprobar sin premios y aparece en Canjes
 // y en el mapa recién cuando carga el primero (ver sugerenciaBeneficio).
 export interface Requisito {

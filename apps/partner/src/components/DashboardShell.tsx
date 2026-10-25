@@ -207,7 +207,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {faltan.length > 0 ? (
             <>
               <p className="mb-2">
-                Para que lo revisemos y aparezca en la app, te falta cargar{' '}
+                Camina puede aprobarlo igual, pero te recomendamos cargar{' '}
                 <strong>{listaEnCastellano(faltan.map((f) => f.texto))}</strong>.
               </p>
               <div className="flex flex-wrap gap-1.5">
