@@ -10,6 +10,8 @@ interface AuthState {
   // true si no se pudo LEER el perfil (sin red o error del servidor): distinto de "todavía no existe".
   profileError: boolean;
   initializing: boolean;
+  // true al entrar con el link de "olvidé mi contraseña": la app lleva a elegir una nueva (ver app/index.tsx).
+  passwordRecovery: boolean;
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
   refreshProfile: () => Promise<void>;
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   profile: null,
   profileError: false,
   initializing: true,
+  passwordRecovery: false,
   setSession: (session) => set({ session }),
   setProfile: (profile) => set({ profile }),
   refreshProfile: async () => {
@@ -99,6 +102,9 @@ export function initAuthListener() {
       queryClient.clear();
     }
     lastUserId = nextId;
+    // Se marca antes de publicar la sesión, así app/index.tsx ya sabe que tiene que pedir la contraseña nueva.
+    if (event === 'PASSWORD_RECOVERY') useAuthStore.setState({ passwordRecovery: true });
+    if (event === 'SIGNED_OUT') useAuthStore.setState({ passwordRecovery: false });
 
     await publishSession(session);
   });

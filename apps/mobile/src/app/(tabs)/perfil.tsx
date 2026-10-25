@@ -5,6 +5,7 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
+import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthorization as requestHealthKitAuthorization, queryStatisticsForQuantity } from '@kingstinct/react-native-healthkit';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
 import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
@@ -27,6 +28,25 @@ import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/pu
 import { Coin } from '@/components/ui/Coin';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
+
+const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
+// AuthorizationRequestStatus.shouldRequest: todavía no se le mostró a la persona la hoja de permisos de Salud.
+const HK_SHOULD_REQUEST = 1;
+
+// iPhone no deja saber si se negó la lectura de Salud. Lo que sí se sabe: si ya se pidió el permiso, y si Salud
+// devuelve pasos de hoy (entonces seguro está dado).
+async function healthKitStepsStatus(): Promise<Perm> {
+  if (!isHealthDataAvailable()) return 'denied';
+  const request = await getRequestStatusForAuthorization({ toRead: [STEP_COUNT_IDENTIFIER] });
+  if (request === HK_SHOULD_REQUEST) return 'denied';
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const stats = await queryStatisticsForQuantity(STEP_COUNT_IDENTIFIER, ['cumulativeSum'], {
+    filter: { date: { startDate: midnight, endDate: new Date() } },
+    unit: 'count',
+  });
+  return (stats.sumQuantity?.quantity ?? 0) > 0 ? 'granted' : 'unknown';
+}
 
 function PermRow({ icon, title, text, status, onPress, last }: { icon: (p: { size?: number; color?: string }) => React.ReactElement; title: string; text: string; status: Perm; onPress: () => void; last?: boolean }) {
   const dark = useColorScheme().colorScheme === 'dark';
@@ -60,7 +80,8 @@ export default function PerfilScreen() {
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
   const [permsOpen, setPermsOpen] = useState(false);
-  const pendingPerms = [pushStatus, Platform.OS === 'ios' ? 'granted' : stepsStatus, locationStatus].filter((x) => x !== 'granted').length;
+  // En iPhone "unknown" es: ya se pidió pero hoy Salud no tiene pasos; no se cuenta como pendiente.
+  const pendingPerms = [pushStatus, Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus, locationStatus].filter((x) => x !== 'granted').length;
 
   // Los permisos se vuelven a leer cada vez que se entra a la pantalla (por si se cambiaron en los ajustes).
   const loadPermissions = useCallback(async () => {
@@ -82,9 +103,12 @@ export default function PerfilScreen() {
       } catch {
         setStepsStatus('unknown');
       }
-    } else {
-      // iPhone no deja saber si se negó el acceso de lectura a Salud: solo se puede mandar a los ajustes.
-      setStepsStatus('unknown');
+    } else if (Platform.OS === 'ios') {
+      try {
+        setStepsStatus(await healthKitStepsStatus());
+      } catch {
+        setStepsStatus('unknown');
+      }
     }
     try {
       const Location = await import('expo-location');
@@ -120,9 +144,28 @@ export default function PerfilScreen() {
       await loadPermissions();
       return;
     }
-    Alert.alert('Pasos desde Salud', 'En Ajustes > Salud > Acceso a datos y dispositivos > Camina, activa "Pasos".', [
+    if (stepsStatus === 'denied') {
+      try {
+        if (!isHealthDataAvailable()) {
+          Alert.alert('Salud no está disponible', 'Este teléfono no tiene la app Salud, así que Camina cuenta tus pasos con el sensor del teléfono.');
+          return;
+        }
+        // La primera vez esto abre la hoja de Salud para activar "Pasos"; después iOS ya no la vuelve a mostrar.
+        if ((await getRequestStatusForAuthorization({ toRead: [STEP_COUNT_IDENTIFIER] })) === HK_SHOULD_REQUEST) {
+          await requestHealthKitAuthorization({ toRead: [STEP_COUNT_IDENTIFIER] });
+          await loadPermissions();
+          return;
+        }
+      } catch (e) {
+        // Se muestra el detalle: si falla acá suele ser un problema del build (permiso de Salud del App ID).
+        Alert.alert('No pudimos abrir Salud', `Intenta de nuevo. Detalle: ${e instanceof Error ? e.message : String(e)}`);
+        return;
+      }
+    }
+    // Ya se pidió una vez: iPhone solo deja cambiarlo desde la app Salud (no aparece en Ajustes > Camina).
+    Alert.alert('Pasos desde Salud', 'Abre la app Salud, toca tu foto (arriba a la derecha) > Apps > Camina y activa "Pasos".', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
+      { text: 'Abrir Salud', onPress: () => Linking.openURL('x-apple-health://').catch(() => Linking.openSettings()) },
     ]);
   }
 
@@ -272,8 +315,14 @@ export default function PerfilScreen() {
         <PermRow
           icon={Heartbeat}
           title={Platform.OS === 'ios' ? 'Pasos (Salud)' : 'Pasos (Health Connect)'}
-          text={stepsStatus === 'granted' ? 'Camina cuenta tus pasos desde Health Connect.' : 'Sin este permiso el podómetro no funciona y no sumas Puntos.'}
-          status={Platform.OS === 'ios' ? 'denied' : stepsStatus}
+          text={
+            stepsStatus === 'granted'
+              ? `Camina cuenta tus pasos desde ${Platform.OS === 'ios' ? 'Salud' : 'Health Connect'}.`
+              : Platform.OS === 'ios' && stepsStatus === 'unknown'
+                ? 'Si no ves tus pasos, revisa en la app Salud que Camina pueda leer "Pasos".'
+                : 'Sin este permiso el podómetro no funciona y no sumas Puntos.'
+          }
+          status={stepsStatus}
           onPress={stepsAction}
         />
         <PermRow
