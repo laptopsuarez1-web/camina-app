@@ -667,6 +667,10 @@ export default function CanjesScreen() {
     ? ([profileGroup.business.cover_url, ...(profileGroup.business.photos ?? [])].filter(Boolean) as string[])
     : [];
 
+  // "Tu 1 Punto se descuenta" / "Tus 50 Puntos se descuentan".
+  const pointsCharged = (n: number) =>
+    n === 1 ? 'Tu 1 Punto se descuenta' : `Tus ${n} Puntos se descuentan`;
+
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
     const free = loyalty?.benefit_id === benefit.id && loyalty.ready;
@@ -674,7 +678,7 @@ export default function CanjesScreen() {
       Alert.alert(
         `¿Canjear ${benefit.name}?`,
         `Te damos un cupón de ${benefit.business.name} para pegar en el campo cupón al pagar en su página. ` +
-          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan ahora.`),
+          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `${pointsCharged(benefit.cost_points)} ahora.`),
         [
           { text: 'Todavía no', style: 'cancel' },
           { text: 'Obtener cupón', onPress: () => handleRedeem(benefit.id, benefit) },
@@ -687,7 +691,7 @@ export default function CanjesScreen() {
       Alert.alert(
         `¿Canjear ${benefit.name}?`,
         `Te damos un código que dura ${ONLINE_CODE_TTL_DAYS} días y un mensaje listo para mandarle a ${benefit.business.name} por ${via}. ` +
-          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando la tienda confirme el código.`),
+          (free ? 'Es el premio de tu tarjeta: no se te descuentan Puntos.' : `${pointsCharged(benefit.cost_points)} cuando la tienda confirme el código.`),
         [
           { text: 'Todavía no', style: 'cancel' },
           { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
@@ -698,8 +702,8 @@ export default function CanjesScreen() {
     Alert.alert(
       `¿Canjear ${benefit.name}?`,
       free
-        ? `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Es el premio de tu tarjeta: no se te descuentan Puntos.`
-        : `Hacelo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Tus ${benefit.cost_points} ${plural(benefit.cost_points, 'Punto', 'Puntos')} se descuentan cuando el local confirme el código.`,
+        ? `Hazlo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Es el premio de tu tarjeta: no se te descuentan Puntos.`
+        : `Hazlo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. ${pointsCharged(benefit.cost_points)} cuando el local confirme el código.`,
       [
         { text: 'Todavía no', style: 'cancel' },
         { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
