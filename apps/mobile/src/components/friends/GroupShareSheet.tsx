@@ -22,6 +22,8 @@ export function GroupShareSheet({
 
   async function shareLink() {
     close();
+    // En iPhone, abrir el menú de compartir mientras esta hoja todavía se está cerrando no hace nada: se espera a que termine.
+    await new Promise((r) => setTimeout(r, 500));
     // Solo `message`, con el link al final: en iPhone, si además se pasa `url`, WhatsApp se queda con una sola de las dos.
     await Share.share({
       message: `Únete a mi grupo "${groupName}" en Camina: caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
