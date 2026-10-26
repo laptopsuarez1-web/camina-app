@@ -5,7 +5,7 @@ import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useColorScheme } from 'nativewind';
 import { useGlassStore } from '@/store/useGlassStore';
 import { paletteFor } from '@/components/ui/backgrounds';
-import { cardFill, blurWeb, glassOn } from '@/components/ui/glassMath';
+import { cardFill, blurWeb, glassOn, crystal } from '@/components/ui/glassMath';
 import { colors } from '@/theme/tokens';
 
 // Radios de las clases de Tailwind más usadas (los "md/lg/xl" son los del tailwind.config.js de la app).
@@ -39,6 +39,15 @@ const EDGE_DARK: ViewStyle = {
   borderTopColor: 'rgba(255,255,255,0.36)', borderLeftColor: 'rgba(255,255,255,0.22)',
   borderRightColor: 'rgba(255,255,255,0.12)', borderBottomColor: 'rgba(255,255,255,0.05)',
 };
+// En Cristal el canto brilla más (en claro, todo el borde blanco: sobre las manchas de color se ve el contorno del vidrio).
+const EDGE_LIGHT_CRYSTAL: ViewStyle = {
+  borderTopColor: '#fff', borderLeftColor: 'rgba(255,255,255,0.95)',
+  borderRightColor: 'rgba(255,255,255,0.6)', borderBottomColor: 'rgba(255,255,255,0.45)',
+};
+const EDGE_DARK_CRYSTAL: ViewStyle = {
+  borderTopColor: 'rgba(255,255,255,0.55)', borderLeftColor: 'rgba(255,255,255,0.36)',
+  borderRightColor: 'rgba(255,255,255,0.18)', borderBottomColor: 'rgba(255,255,255,0.1)',
+};
 
 // Tarjeta de "vidrio": relleno translúcido con degradé, borde brillante arriba y sombra suave.
 export function Glass({
@@ -51,6 +60,7 @@ export function Glass({
   const dark = colorScheme === 'dark';
   const amount = useGlassStore((s) => s.amount);
   const on = glassOn(amount);
+  const k = crystal(amount);
   const topOnly = className?.match(/rounded-t-\[(\d+)px\]/);
   const radius = topOnly ? 0 : radiusFrom(className);
   const shape: ViewStyle = topOnly
@@ -72,7 +82,7 @@ export function Glass({
           // Con vidrio, el borde tiene luz con dirección (la luz viene de arriba a la izquierda): casi blanco de ese lado y lila apenas visible del otro.
           // Sin vidrio (Sólido) en claro el borde va en el lila de las líneas: blanco sobre el fondo casi blanco no se veía (1.09:1), y en Android no hay sombra.
           // Si la tarjeta trae su propio borderColor (p. ej. el dorado de paso_adelante), ese gana: los colores por lado le ganarían a borderColor.
-          ...(ownBorder ? null : on ? (dark ? EDGE_DARK : EDGE_LIGHT) : { borderColor: dark ? 'rgba(255,255,255,0.2)' : colors.light.line }),
+          ...(ownBorder ? null : on ? (dark ? (k > 0.5 ? EDGE_DARK_CRYSTAL : EDGE_DARK) : k > 0.5 ? EDGE_LIGHT_CRYSTAL : EDGE_LIGHT) : { borderColor: dark ? 'rgba(255,255,255,0.2)' : colors.light.line }),
           shadowColor: dark ? '#000' : colors.purpleDeep,
           shadowOpacity: dark ? 0.3 : 0.13,
           shadowRadius: 18,
@@ -88,10 +98,11 @@ export function Glass({
     >
       {on && LIQUID ? (
         <>
+          {/* En la mitad alta del tramo Cristal pasa al vidrio "clear" del sistema (casi sin velo) y el tinte lila se apaga. */}
           <GlassView
-            glassEffectStyle="regular"
+            glassEffectStyle={k > 0.5 ? 'clear' : 'regular'}
             colorScheme={dark ? 'dark' : 'light'}
-            tintColor={dark ? undefined : `rgba(${(paletteFor(dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount).toFixed(3)})`}
+            tintColor={dark ? undefined : `rgba(${(paletteFor(dark).tint ?? [167, 139, 250]).join(',')},${(0.22 * amount * (1 - 0.7 * k)).toFixed(3)})`}
             pointerEvents="none"
             style={[StyleSheet.absoluteFill, innerShape]}
           />
@@ -104,7 +115,7 @@ export function Glass({
       ) : (
         <>
           {on && Platform.OS === 'ios' && (
-            <BlurView intensity={30} tint={dark ? 'dark' : 'light'} pointerEvents="none" style={[StyleSheet.absoluteFill, innerShape, { overflow: 'hidden' }]} />
+            <BlurView intensity={Math.round(30 - 10 * k)} tint={dark ? 'dark' : 'light'} pointerEvents="none" style={[StyleSheet.absoluteFill, innerShape, { overflow: 'hidden' }]} />
           )}
           <LinearGradient
             colors={fill}
@@ -118,7 +129,7 @@ export function Glass({
       {on && !topOnly && !LIQUID && (
         // Brillo especular suave desde la esquina superior izquierda: se apaga hacia el centro. Va debajo del contenido.
         <LinearGradient
-          colors={dark ? ['rgba(255,255,255,0.10)', 'rgba(255,255,255,0)'] : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+          colors={dark ? [`rgba(255,255,255,${(0.1 + 0.08 * k).toFixed(3)})`, 'rgba(255,255,255,0)'] : [`rgba(255,255,255,${(0.55 + 0.25 * k).toFixed(3)})`, 'rgba(255,255,255,0)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0.55, y: 0.5 }}
           pointerEvents="none"
