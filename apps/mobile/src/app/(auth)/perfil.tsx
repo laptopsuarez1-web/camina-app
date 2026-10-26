@@ -58,7 +58,7 @@ export default function CompletarPerfilScreen() {
     }
     if (ageFromISO(birth) < MIN_AGE) {
       Alert.alert('Camina es para personas de 13 años o más', 'Por ahora no puedes usar la app. ¡Te esperamos cuando cumplas 13!');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
       router.replace('/(auth)/welcome');
       return;
     }

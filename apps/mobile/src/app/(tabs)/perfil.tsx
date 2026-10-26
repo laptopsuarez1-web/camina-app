@@ -201,7 +201,8 @@ export default function PerfilScreen() {
 
   async function handleLogout() {
     await unregisterPushToken();
-    const { error } = await supabase.auth.signOut();
+    // Solo en este teléfono: el cierre global también sacaba a la persona de la web y de sus otros teléfonos.
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     // Sin red, signOut devuelve error aunque la sesión local ya se cerró: ahí no hay nada que avisar.
     if (error && (await supabase.auth.getSession()).data.session) {
       Alert.alert('No pudimos cerrar sesión', friendlyError(error, 'Intenta de nuevo.'));

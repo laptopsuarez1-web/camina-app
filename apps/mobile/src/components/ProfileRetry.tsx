@@ -24,9 +24,8 @@ export function ProfileRetry() {
   }
 
   async function logout() {
-    // Sin red el cierre global falla y deja la sesión: en ese caso se cierra solo en este teléfono.
-    const { error } = await supabase.auth.signOut();
-    if (error) await supabase.auth.signOut({ scope: 'local' });
+    // Solo en este teléfono: el cierre global también sacaba a la persona de la web y de sus otros teléfonos.
+    await supabase.auth.signOut({ scope: 'local' });
     router.replace('/(auth)/welcome');
   }
 
