@@ -34,15 +34,17 @@ const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
 const HK_SHOULD_REQUEST = 1;
 
 // iPhone no deja saber si se negó la lectura de Salud. Lo que sí se sabe: si ya se pidió el permiso, y si Salud
-// devuelve pasos de hoy (entonces seguro está dado).
+// devuelve pasos de los últimos 7 días (entonces seguro está dado). Se mira una semana y no solo hoy porque
+// recién pasada la medianoche hoy todavía no hay pasos.
 async function healthKitStepsStatus(): Promise<Perm> {
   if (!isHealthDataAvailable()) return 'denied';
   const request = await getRequestStatusForAuthorization({ toRead: [STEP_COUNT_IDENTIFIER] });
   if (request === HK_SHOULD_REQUEST) return 'denied';
-  const midnight = new Date();
-  midnight.setHours(0, 0, 0, 0);
+  const weekAgo = new Date();
+  weekAgo.setHours(0, 0, 0, 0);
+  weekAgo.setDate(weekAgo.getDate() - 7);
   const stats = await queryStatisticsForQuantity(STEP_COUNT_IDENTIFIER, ['cumulativeSum'], {
-    filter: { date: { startDate: midnight, endDate: new Date() } },
+    filter: { date: { startDate: weekAgo, endDate: new Date() } },
     unit: 'count',
   });
   return (stats.sumQuantity?.quantity ?? 0) > 0 ? 'granted' : 'unknown';
@@ -80,8 +82,10 @@ export default function PerfilScreen() {
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
   const [permsOpen, setPermsOpen] = useState(false);
-  // En iPhone "unknown" es: ya se pidió pero hoy Salud no tiene pasos; no se cuenta como pendiente.
-  const pendingPerms = [pushStatus, Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus, locationStatus].filter((x) => x !== 'granted').length;
+  // En iPhone "unknown" es: ya se pidió pero Salud no devolvió pasos esta semana; se muestra como activo (iOS no
+  // deja saber si se negó) y el botón lleva a la app Salud para revisarlo.
+  const stepsShown: Perm = Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus;
+  const pendingPerms = [pushStatus, stepsShown, locationStatus].filter((x) => x !== 'granted').length;
 
   // Los permisos se vuelven a leer cada vez que se entra a la pantalla (por si se cambiaron en los ajustes).
   const loadPermissions = useCallback(async () => {
@@ -322,7 +326,7 @@ export default function PerfilScreen() {
                 ? 'Si no ves tus pasos, revisa en la app Salud que Camina pueda leer "Pasos".'
                 : 'Sin este permiso el podómetro no funciona y no sumas Puntos.'
           }
-          status={stepsStatus}
+          status={stepsShown}
           onPress={stepsAction}
         />
         <PermRow
