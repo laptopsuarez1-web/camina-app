@@ -9,6 +9,7 @@ import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
+import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupJoinedScene, StreakScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
 const GOLD = '#E2B33C';
 const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
@@ -224,6 +225,12 @@ export function CelebrationHost() {
       {current.kind === 'win' && <Win key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'challenge-joined' && <ChallengeJoinedScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'challenge-ended' && <ChallengeEndedScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'ticket-bought' && <TicketBoughtScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'event-joined' && <EventJoinedScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'group-joined' && <GroupJoinedScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'group-created' && <GroupCreatedScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'friend-made' && <FriendMadeScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'streak-milestone' && <StreakScene key={current.id} c={current} onDone={dismiss} />}
     </View>
   );
 }

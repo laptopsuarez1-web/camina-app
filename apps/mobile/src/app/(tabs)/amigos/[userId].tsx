@@ -15,6 +15,8 @@ import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration'
 import { buildDayCells, compactSteps, WEEK_LABELS, type DayCell } from '@/lib/friend-week';
 import { localDay } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
+import { useAuthStore } from '@/store/useAuthStore';
+import { celebrate } from '@/store/useCelebrationStore';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -40,6 +42,19 @@ export default function FriendProfileScreen() {
   const { data: card, isLoading, isError, refetch } = useFriendCard(userId);
   const { send, respond, remove } = useFriendActions();
   const blocks = useBlocks();
+  const meId = useAuthStore((s) => s.session?.user.id);
+  const profile = useAuthStore((s) => s.profile);
+  // Ya son amigos (acepté yo, o la otra persona ya me había pedido): escena corta con los dos.
+  const friendsNow = () => {
+    if (!meId || !card) return;
+    celebrate({
+      kind: 'friend-made',
+      me: { id: meId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null },
+      friend: { id: userId!, name: card.full_name, photoUrl: card.photo_url },
+      onCreateGroup: () => router.push({ pathname: '/(tabs)/grupos/nuevo', params: { friend: userId! } }),
+      onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
+    });
+  };
   const { text, muted, line } = useThemeColors();
   const [span, setSpan] = useState<'semana' | 'mes'>('semana');
   const [menu, setMenu] = useState(false);
@@ -136,7 +151,7 @@ export default function FriendProfileScreen() {
               {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
             </Text>
             {card.relation === 'none' && (
-              <Press accessibilityRole="button" disabled={send.isPending} onPress={() => send.mutate(userId!, { onError: fail('No se pudo enviar') })} className="rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
+              <Press accessibilityRole="button" disabled={send.isPending} onPress={() => send.mutate(userId!, { onSuccess: (r) => { if (r === 'accepted') friendsNow(); }, onError: fail('No se pudo enviar') })} className="rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
                 <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{send.isPending ? 'Enviando…' : 'Agregar amigo'}</Text>
               </Press>
             )}
@@ -147,7 +162,7 @@ export default function FriendProfileScreen() {
             )}
             {card.relation === 'pending_in' && (
               <View className="flex-row" style={{ gap: 10 }}>
-                <Press accessibilityRole="button" disabled={respond.isPending} onPress={() => respond.mutate({ personId: userId!, accept: true }, { onError: fail('No se pudo aceptar') })} className="flex-1 rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
+                <Press accessibilityRole="button" disabled={respond.isPending} onPress={() => respond.mutate({ personId: userId!, accept: true }, { onSuccess: friendsNow, onError: fail('No se pudo aceptar') })} className="flex-1 rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
                   <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>Aceptar</Text>
                 </Press>
                 <Press accessibilityRole="button" disabled={respond.isPending} onPress={() => respond.mutate({ personId: userId!, accept: false }, { onSuccess: back, onError: fail('No se pudo rechazar') })} className="flex-1 rounded-2xl py-3.5 items-center" style={{ borderWidth: 1, borderColor: line }}>

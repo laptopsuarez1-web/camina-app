@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, Image, Platform, Share, useWindowDimensions, View, type ViewStyle } from 'react-native';
 import Animated, {
-  Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming,
+  Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
@@ -21,18 +21,18 @@ import { buzz } from '@/lib/haptics';
 // y terminar (podio; con corona y monedas si ganaste, más calmo si no). Todo corre en el hilo de UI con Reanimated.
 // Tocar el fondo salta al final. Con "reducir movimiento" no hay vuelos ni chispas: la escena final aparece con un fundido.
 
-const GOLD = '#E2B33C';
-const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];
-const CAMINA_SPARKS = [colors.aqua, GOLD, '#B7A6F0', colors.warn];
-const EASE = Easing.out(Easing.cubic);
-const SPRING = { damping: 11, stiffness: 160, mass: 0.8 };
+export const GOLD = '#E2B33C';
+export const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];
+export const CAMINA_SPARKS = [colors.aqua, GOLD, '#B7A6F0', colors.warn];
+export const EASE = Easing.out(Easing.cubic);
+export const SPRING = { damping: 11, stiffness: 160, mass: 0.8 };
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export type CinePerson = { id: string; name: string; photoUrl?: string | null };
 
 // ---------- línea de tiempo de una escena ----------
 
-type Timeline = {
+export type Timeline = {
   reduced: boolean;
   register: (sv: SharedValue<number>) => void;
   onSkip: (fn: () => void) => void;
@@ -41,7 +41,7 @@ type Timeline = {
   playing: boolean;
 };
 
-function useTimeline(totalMs: number): Timeline {
+export function useTimeline(totalMs: number): Timeline {
   const reduced = useReducedMotion();
   const values = useRef<SharedValue<number>[]>([]);
   const finishers = useRef<(() => void)[]>([]);
@@ -73,7 +73,7 @@ function useTimeline(totalMs: number): Timeline {
 }
 
 // Un "golpe" de la escena: valor de 0 a 1 que arranca a los `delay` ms. Con reducir movimiento ya nace en 1.
-function useBeat(tl: Timeline, delay: number, opts: { duration?: number; spring?: boolean } = {}) {
+export function useBeat(tl: Timeline, delay: number, opts: { duration?: number; spring?: boolean } = {}) {
   const sv = useSharedValue(tl.reduced ? 1 : 0);
   useEffect(() => {
     tl.register(sv);
@@ -85,7 +85,7 @@ function useBeat(tl: Timeline, delay: number, opts: { duration?: number; spring?
 }
 
 // Contador que sube de `from` a `to` (en JS: solo se redibuja ese texto).
-function useCount(tl: Timeline, from: number, to: number, delay: number, duration = 700) {
+export function useCount(tl: Timeline, from: number, to: number, delay: number, duration = 700) {
   const [n, setN] = useState(tl.reduced ? to : from);
   const raf = useRef(0);
   useEffect(() => {
@@ -107,7 +107,7 @@ function useCount(tl: Timeline, from: number, to: number, delay: number, duratio
 }
 
 // Aparece subiendo un poco (o con resorte desde chico si `pop`).
-function Reveal({ tl, delay, pop, dy = 12, from = 0.5, style, children }: { tl: Timeline; delay: number; pop?: boolean; dy?: number; from?: number; style?: ViewStyle; children: ReactNode }) {
+export function Reveal({ tl, delay, pop, dy = 12, from = 0.5, style, children }: { tl: Timeline; delay: number; pop?: boolean; dy?: number; from?: number; style?: ViewStyle; children: ReactNode }) {
   const k = useBeat(tl, delay, { spring: pop, duration: 420 });
   const a = useAnimatedStyle(() => ({
     opacity: Math.min(1, k.value * 1.6),
@@ -117,7 +117,7 @@ function Reveal({ tl, delay, pop, dy = 12, from = 0.5, style, children }: { tl: 
 }
 
 // Sello que cae fuerte desde grande (reglas del desafío, EN MARCHA).
-function Stamp({ tl, delay, rotate = 0, style, children }: { tl: Timeline; delay: number; rotate?: number; style?: ViewStyle; children: ReactNode }) {
+export function Stamp({ tl, delay, rotate = 0, style, children }: { tl: Timeline; delay: number; rotate?: number; style?: ViewStyle; children: ReactNode }) {
   const k = useBeat(tl, delay, { duration: 260 });
   const a = useAnimatedStyle(() => ({
     opacity: Math.min(1, k.value * 3),
@@ -138,7 +138,7 @@ function SparkDot({ k, angle, radius, color }: { k: SharedValue<number>; angle: 
 }
 
 // Chispas chicas que salen de un punto y se apagan. Con reducir movimiento no se dibujan.
-function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { tl: Timeline; delay: number; palette: string[]; count?: number; radius?: number; style?: ViewStyle }) {
+export function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { tl: Timeline; delay: number; palette: string[]; count?: number; radius?: number; style?: ViewStyle }) {
   const k = useSharedValue(0);
   useEffect(() => {
     if (tl.reduced) return;
@@ -157,7 +157,7 @@ function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { tl: Tim
 }
 
 // Moneda que viaja en arco desde (dx, dy) relativo a su lugar final, y se apaga al llegar.
-function FlyingCoin({ tl, delay, dx, dy, size = 22, onLand }: { tl: Timeline; delay: number; dx: number; dy: number; size?: number; onLand?: () => void }) {
+export function FlyingCoin({ tl, delay, dx, dy, size = 22, onLand }: { tl: Timeline; delay: number; dx: number; dy: number; size?: number; onLand?: () => void }) {
   const k = useSharedValue(0);
   useEffect(() => {
     if (tl.reduced) return;
@@ -183,7 +183,7 @@ function FlyingCoin({ tl, delay, dx, dy, size = 22, onLand }: { tl: Timeline; de
 }
 
 // Aro que se dibuja de `from` a `to` (fracciones de 0 a 1).
-function DrawRing({ tl, delay, size, stroke, from = 0, to = 1, duration = 800, color = colors.aqua, track, children }: {
+export function DrawRing({ tl, delay, size, stroke, from = 0, to = 1, duration = 800, color = colors.aqua, track, children }: {
   tl: Timeline; delay: number; size: number; stroke: number; from?: number; to?: number; duration?: number; color?: string; track: string; children?: ReactNode;
 }) {
   const r = (size - stroke) / 2;
@@ -205,7 +205,7 @@ function DrawRing({ tl, delay, size, stroke, from = 0, to = 1, duration = 800, c
 const INITIAL_BG = [colors.purple, colors.aquaIcon, colors.warn, colors.purpleDeep, colors.aquaDeep];
 const initialColor = (id: string) => INITIAL_BG[Array.from(id).reduce((a, ch) => a + ch.charCodeAt(0), 0) % INITIAL_BG.length];
 
-function Avatar({ p, size, ring }: { p: CinePerson; size: number; ring?: string }) {
+export function Avatar({ p, size, ring }: { p: CinePerson; size: number; ring?: string }) {
   const border = ring ? { borderWidth: 3, borderColor: ring } : {};
   return (
     <AvatarImage
@@ -220,7 +220,7 @@ function Avatar({ p, size, ring }: { p: CinePerson; size: number; ring?: string 
   );
 }
 
-function usePalette() {
+export function usePalette() {
   const dark = useColorScheme().colorScheme === 'dark';
   return {
     dark,
@@ -240,11 +240,11 @@ function usePalette() {
   };
 }
 
-const display = (size: number) =>
+export const display = (size: number) =>
   brandFontsReady() ? { fontFamily: WORDMARK_FAMILY, fontWeight: 'normal' as const, fontSize: size } : { fontWeight: '900' as const, fontSize: size };
 
 // Fondo de la escena: tapa la pantalla, se funde al entrar y un toque salta al final.
-function Stage({ tl, children, announce, align = 'center' }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top' }) {
+export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top' }) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
   const fade = useSharedValue(0);
@@ -270,19 +270,19 @@ function Stage({ tl, children, announce, align = 'center' }: { tl: Timeline; chi
   );
 }
 
-function Eyebrow({ children, color }: { children: string; color: string }) {
+export function Eyebrow({ children, color }: { children: string; color: string }) {
   return <Text style={{ fontSize: 11, letterSpacing: 1.6, fontWeight: '800', color, textTransform: 'uppercase', textAlign: 'center' }} numberOfLines={1}>{children}</Text>;
 }
 
-function MainButton({ label, onPress, gold }: { label: string; onPress: () => void; gold?: boolean }) {
+export function MainButton({ label, onPress, gold, bg }: { label: string; onPress: () => void; gold?: boolean; bg?: string }) {
   return (
-    <Press accessibilityRole="button" haptic="light" onPress={onPress} style={{ alignSelf: 'stretch', backgroundColor: gold ? GOLD : colors.mint, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
-      <Text style={{ color: gold ? '#3a2a00' : colors.mintDark, fontWeight: '800', fontSize: 15 }}>{label}</Text>
+    <Press accessibilityRole="button" haptic="light" onPress={onPress} style={{ alignSelf: 'stretch', backgroundColor: bg ?? (gold ? GOLD : colors.mint), borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+      <Text style={{ color: bg ? '#3a1a00' : gold ? '#3a2a00' : colors.mintDark, fontWeight: '800', fontSize: 15 }}>{label}</Text>
     </Press>
   );
 }
 
-function LinkButton({ label, onPress, color }: { label: string; onPress: () => void; color: string }) {
+export function LinkButton({ label, onPress, color }: { label: string; onPress: () => void; color: string }) {
   return (
     <Press accessibilityRole="button" onPress={onPress} style={{ alignItems: 'center', paddingVertical: 10 }}>
       <Text style={{ fontWeight: '700', fontSize: 14, color }}>{label}</Text>
@@ -377,6 +377,107 @@ export function ChallengeCreatedScene({
   );
 }
 
+
+// Posición de un lugar del círculo (centrada en el círculo): el 0 es arriba y siguen en sentido horario.
+export function orbitSlot(i: number, n: number, size: number, slot: number) {
+  const r = (size - 10) / 2 - 6;
+  const a = -Math.PI / 2 + (i / Math.max(1, n)) * Math.PI * 2;
+  return { left: size / 2 + Math.cos(a) * r - slot / 2, top: size / 2 + Math.sin(a) * r - slot / 2, dx: Math.cos(a) * r, dy: Math.sin(a) * r };
+}
+
+// Saltito de cortesía: cada foto "saluda" cuando el grupo se completa.
+function Hop({ tl, delay, children, style }: { tl: Timeline; delay: number; children: ReactNode; style?: ViewStyle }) {
+  const k = useBeat(tl, delay, { duration: 420 });
+  const a = useAnimatedStyle(() => ({ transform: [{ translateY: -9 * Math.sin(Math.PI * Math.min(1, k.value)) }] }));
+  return <Animated.View style={[style, a]}>{children}</Animated.View>;
+}
+
+// Aro de puntos finos que gira despacio detrás de las fotos.
+function SlowSpin({ tl, size, color }: { tl: Timeline; size: number; color: string }) {
+  const k = useSharedValue(0);
+  useEffect(() => {
+    if (tl.reduced) return;
+    k.value = withRepeat(withTiming(1, { duration: 24000, easing: Easing.linear }), -1, false);
+    return () => cancelAnimation(k);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const a = useAnimatedStyle(() => ({ transform: [{ rotate: `${k.value * 360}deg` }] }));
+  const r = size / 2 - 1;
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size }, a]}>
+      <Svg width={size} height={size}>
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={2} strokeDasharray="1 9" strokeLinecap="round" fill="none" />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+// El círculo del grupo: halo suave, aro que se dibuja, aro fino que gira, fotos en el borde (hasta 7 + burbuja "+N"),
+// lugares vacíos punteados y, si se pasa `me`, tu foto que sube desde abajo y cierra el aro.
+export function GroupOrbit({
+  tl, size = 244, slot = 48, delay = 300, people, extra = 0, me, emptySlots = 0, meDelay = 1000, center, hopAt, closeRing = true,
+}: {
+  tl: Timeline; size?: number; slot?: number; delay?: number; people: CinePerson[]; extra?: number; me?: CinePerson | null; emptySlots?: number;
+  meDelay?: number; center: ReactNode; hopAt?: number; closeRing?: boolean;
+}) {
+  const p = usePalette();
+  const { height } = useWindowDimensions();
+  const hasMe = !!me;
+  const n = (hasMe ? 1 : 0) + people.length + (extra > 0 ? 1 : 0) + emptySlots;
+  const first = hasMe ? 1 : 0;
+  const mine = orbitSlot(0, n, size, slot);
+  const fly = useBeat(tl, meDelay, { duration: 560 });
+  const flyStyle = useAnimatedStyle(() => {
+    const t = fly.value;
+    return { transform: [{ translateX: -90 * (1 - t) }, { translateY: height * 0.34 * (1 - t) - 46 * Math.sin(Math.PI * t) }, { scale: 1 + 0.28 * Math.sin(Math.PI * t) }] };
+  });
+  const arc = hasMe && closeRing ? (n - 1) / n : 1;
+  const stage = p.dark ? '#1c1030' : '#FFFFFF';
+  return (
+    <Reveal tl={tl} delay={delay} pop from={0.7}>
+      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', width: size + 44, height: size + 44, borderRadius: (size + 44) / 2, backgroundColor: p.dark ? 'rgba(127,237,196,0.06)' : 'rgba(79,195,168,0.10)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', width: size - 20, height: size - 20, borderRadius: (size - 20) / 2, backgroundColor: p.dark ? 'rgba(127,237,196,0.07)' : 'rgba(79,195,168,0.10)' }} />
+        <SlowSpin tl={tl} size={size - 46} color={p.dark ? 'rgba(255,255,255,0.28)' : 'rgba(91,49,163,0.3)'} />
+        <DrawRing tl={tl} delay={delay + 250} size={size} stroke={8} track={p.track} to={arc} duration={arc < 1 ? 600 : 900}>
+          {hasMe && closeRing ? <DrawRingTail tl={tl} delay={meDelay + 520} size={size} from={arc} /> : null}
+          {center}
+          {people.map((o, i) => (
+            <Reveal key={o.id} tl={tl} delay={delay + 450 + i * 70} pop style={{ position: 'absolute', ...orbitSlot(first + i, n, size, slot) }}>
+              <Hop tl={tl} delay={(hopAt ?? meDelay + 900) + i * 80}>
+                <View style={{ borderRadius: slot / 2, borderWidth: 2.5, borderColor: stage }}><Avatar p={o} size={slot - 5} /></View>
+              </Hop>
+            </Reveal>
+          ))}
+          {extra > 0 && (
+            <Reveal tl={tl} delay={delay + 450 + people.length * 70} pop style={{ position: 'absolute', ...orbitSlot(first + people.length, n, size, slot) }}>
+              <MoreBubble extra={extra} size={slot - 5} bg={colors.purple} color="#fff" />
+            </Reveal>
+          )}
+          {Array.from({ length: emptySlots }, (_, i) => (
+            <Reveal key={`e${i}`} tl={tl} delay={delay + 700 + i * 110} pop style={{ position: 'absolute', ...orbitSlot(first + people.length + (extra > 0 ? 1 : 0) + i, n, size, slot) }}>
+              <View style={{ width: slot - 5, height: slot - 5, margin: 2.5, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: p.dark ? 'rgba(127,237,196,0.5)' : colors.aquaDeep, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 18, fontWeight: '700', color: p.dark ? 'rgba(127,237,196,0.7)' : colors.aquaDeep }}>+</Text>
+              </View>
+            </Reveal>
+          ))}
+          {hasMe && (
+            <>
+              <Reveal tl={tl} delay={delay + 500} pop style={{ position: 'absolute', left: mine.left, top: mine.top }}>
+                <View style={{ width: slot, height: slot, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.aqua }} />
+              </Reveal>
+              <Animated.View style={[{ position: 'absolute', left: mine.left, top: mine.top }, flyStyle]}>
+                <View style={{ borderRadius: slot / 2, borderWidth: 3, borderColor: colors.aqua }}><Avatar p={me!} size={slot - 6} /></View>
+              </Animated.View>
+            </>
+          )}
+          {hasMe && <Burst tl={tl} delay={meDelay + 1000} palette={[colors.aqua, GOLD, colors.mint]} radius={size * 0.42} style={{ left: size / 2, top: size / 2 }} />}
+        </DrawRing>
+      </View>
+    </Reveal>
+  );
+}
+
 // =====================================================================
 // 2) Aceptar: entrar al aro
 // =====================================================================
@@ -393,15 +494,28 @@ export type JoinedCinematic = {
   logoUrl?: string | null;
 };
 
-const RING = 200;
-const SLOT = 46;
+const RING = 248;
+const SLOT = 50;
+
+// Quiénes entran en el aro: hasta 7 fotos; si hay más gente, 6 fotos y una burbuja "+N" con el resto.
+export function ringPeople<T>(others: T[], max = 7): { shown: T[]; extra: number } {
+  if (others.length <= max) return { shown: others, extra: 0 };
+  return { shown: others.slice(0, max - 1), extra: others.length - (max - 1) };
+}
+
+export function MoreBubble({ extra, size, bg, color }: { extra: number; size: number; bg: string; color: string }) {
+  return (
+    <View accessible accessibilityLabel={`y ${extra} más`} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Text allowFontScaling={false} style={{ color, fontWeight: '800', fontSize: extra > 99 ? size * 0.26 : size * 0.32, fontVariant: ['tabular-nums'] }}>+{extra}</Text>
+    </View>
+  );
+}
 
 export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone: () => void }) {
   const p = usePalette();
-  const { height } = useWindowDimensions();
   const tl = useTimeline(3100);
-  const shown = c.others.slice(0, 7);
-  const n = shown.length + 1;
+  const { shown, extra } = ringPeople(c.others);
+  const n = shown.length + 1 + (extra > 0 ? 1 : 0);
   const pot = useCount(tl, c.potBefore, c.potBefore + c.stake, 1700, 520);
   const [reader, setReader] = useState(false);
   const closed = useRef(false);
@@ -426,66 +540,38 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reader]);
 
-  const r = (RING - 10) / 2 - 4;
-  const slotAt = (i: number) => {
-    // Tu lugar va a la derecha (ángulo 0); los demás se reparten en el resto del aro.
-    const a = (i / n) * Math.PI * 2;
-    return { left: RING / 2 + Math.cos(a) * r - SLOT / 2, top: RING / 2 + Math.sin(a) * r - SLOT / 2 };
-  };
-  const mine = slotAt(0);
-  // Tu foto sale desde donde estaba el botón (abajo) y vuela a su lugar.
-  const fly = useBeat(tl, 900, { duration: 540 });
-  const flyStyle = useAnimatedStyle(() => {
-    const t = fly.value;
-    return {
-      transform: [{ translateX: -120 * (1 - t) }, { translateY: height * 0.32 * (1 - t) - 40 * Math.sin(Math.PI * t) }, { scale: 1 + 0.25 * Math.sin(Math.PI * t) }],
-    };
-  });
+  const mine = orbitSlot(0, n, RING, SLOT);
+  const center = c.stake <= 0 ? (
+    // Sin bote (desafíos de comercios): el logo del local, o el trofeo si no tiene.
+    <Reveal tl={tl} delay={600} pop>
+      {c.logoUrl ? (
+        <Image source={{ uri: c.logoUrl }} style={{ width: 84, height: 84, borderRadius: 20 }} />
+      ) : (
+        <View style={{ width: 84, height: 84, borderRadius: 42, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
+          <Trophy size={42} color={GOLD} />
+        </View>
+      )}
+    </Reveal>
+  ) : (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Bote</Text>
+      <View>
+        <Text style={{ ...display(36), color: p.gold, fontVariant: ['tabular-nums'], lineHeight: 42 }}>{pot}</Text>
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={{ position: 'absolute', left: '50%', top: 20 }}>
+            <FlyingCoin tl={tl} delay={1500 + i * 130} dx={mine.dx} dy={mine.dy} size={20} />
+          </View>
+        ))}
+      </View>
+      <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Puntos</Text>
+    </View>
+  );
   return (
     <Stage tl={tl} announce={`Estás dentro de ${c.name}. ${c.subtitle}`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.name}</Eyebrow></Reveal>
-      <Reveal tl={tl} delay={300} pop from={0.7} style={{ marginTop: 22 }}>
-        <DrawRing tl={tl} delay={650} size={RING} stroke={8} track={p.track} from={(n - 1) / n * 0.5} to={(n - 1) / n} duration={500}>
-          <DrawRingTail tl={tl} delay={1450} size={RING} from={(n - 1) / n} />
-          {c.stake <= 0 ? (
-            // Sin bote (desafíos de comercios): el logo del local, o el trofeo si no tiene.
-            <Reveal tl={tl} delay={600} pop>
-              {c.logoUrl ? (
-                <Image source={{ uri: c.logoUrl }} style={{ width: 84, height: 84, borderRadius: 20 }} />
-              ) : (
-                <View style={{ width: 84, height: 84, borderRadius: 42, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
-                  <Trophy size={42} color={GOLD} />
-                </View>
-              )}
-            </Reveal>
-          ) : (
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Bote</Text>
-              <View>
-                <Text style={{ ...display(34), color: p.gold, fontVariant: ['tabular-nums'], lineHeight: 40 }}>{pot}</Text>
-                {[0, 1, 2].map((i) => (
-                  <View key={i} style={{ position: 'absolute', left: '50%', top: 20 }}>
-                    <FlyingCoin tl={tl} delay={1500 + i * 130} dx={mine.left + SLOT / 2 - RING / 2} dy={0} size={20} />
-                  </View>
-                ))}
-              </View>
-              <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Puntos</Text>
-            </View>
-          )}
-          {shown.map((o, i) => (
-            <Reveal key={o.id} tl={tl} delay={700 + i * 60} pop style={{ position: 'absolute', ...slotAt(i + 1) }}>
-              <Avatar p={o} size={SLOT} />
-            </Reveal>
-          ))}
-          <Reveal tl={tl} delay={800} pop style={{ position: 'absolute', ...mine }}>
-            <View style={{ width: SLOT, height: SLOT, borderRadius: SLOT / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.aqua }} />
-          </Reveal>
-          <Animated.View style={[{ position: 'absolute', ...mine }, flyStyle]}>
-            <Avatar p={c.me} size={SLOT} ring={colors.aqua} />
-          </Animated.View>
-          <Burst tl={tl} delay={1950} palette={[colors.aqua, GOLD, colors.mint]} radius={80} style={{ left: RING / 2, top: RING / 2 }} />
-        </DrawRing>
-      </Reveal>
+      <View style={{ marginTop: 22 }}>
+        <GroupOrbit tl={tl} size={RING} slot={SLOT} delay={300} people={shown} extra={extra} me={c.me} meDelay={900} center={center} />
+      </View>
       <Reveal tl={tl} delay={1950} pop from={0.6} style={{ marginTop: 26 }}>
         <Text style={{ ...display(30), color: p.text, textAlign: 'center' }}>¡Estás dentro!</Text>
       </Reveal>
@@ -502,7 +588,7 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
 }
 
 // El tramo final del aro (tu parte) se dibuja cuando llega tu foto.
-function DrawRingTail({ tl, delay, size, from }: { tl: Timeline; delay: number; size: number; from: number }) {
+export function DrawRingTail({ tl, delay, size, from }: { tl: Timeline; delay: number; size: number; from: number }) {
   const stroke = 8;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;

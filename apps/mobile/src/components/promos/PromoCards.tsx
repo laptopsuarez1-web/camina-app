@@ -11,6 +11,7 @@ import type { PromotionItem } from '@/hooks/usePromotions';
 import { usePromotionProgress, useRedeemTicket } from '@/hooks/usePromotions';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { friendlyServerError } from '@/lib/errors';
+import { celebrate } from '@/store/useCelebrationStore';
 import { PROMO_BG, promoBgKey, type PromoBg, timeLeftLabel, dateRangeLabel, boliviaDate, boliviaTime, goalParts, participantsLabel, fmtSteps } from '@/lib/promo';
 
 const WHITE_SOFT = 'rgba(255,255,255,0.92)';
@@ -203,8 +204,18 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
   async function redeemTicket() {
     if (!p) return;
     try {
+      const before = balance ?? 0;
       await redeem.mutateAsync(p.id);
-      Alert.alert('¡Listo!', 'Ya tienes tu entrada. Se descontaron los Puntos.');
+      onClose();
+      celebrate({
+        kind: 'ticket-bought',
+        title: p.title,
+        business: p.business?.name,
+        when: `${dateRangeLabel(p.starts_at, p.ends_at)} · ${boliviaTime(p.starts_at)}`,
+        place: p.place_name ?? p.place_address ?? undefined,
+        points: p.ticket_points ?? 0,
+        balanceBefore: before,
+      });
     } catch (e) {
       Alert.alert('No pudimos canjear', friendlyServerError(e, 'Intenta de nuevo.'));
     }

@@ -51,7 +51,8 @@ function GoalBar({ pct }: { pct: number }) {
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
   const { muted, accentText, accentIcon, warnText } = useThemeColors();
-  const { groupId, compartir } = useLocalSearchParams<{ groupId: string; compartir?: string }>();
+  const { groupId, nuevo, bienvenida } = useLocalSearchParams<{ groupId: string; nuevo?: string; bienvenida?: string }>();
+  const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
   const { data, isLoading, refetch } = useGroupDetail(groupId);
   const { data: notes } = useGroupNotes(groupId);
@@ -71,14 +72,28 @@ export default function GroupDetailScreen() {
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
   const groupName = data?.group.name;
-  // Recién creado: se abre solo la hoja para invitar (link, código o amigos), una vez.
-  const autoShared = useRef(false);
+  // Recién creado o recién unido: escena de bienvenida, una vez. "Invitar amigos" abre la hoja para compartir.
+  const welcomed = useRef(false);
   useEffect(() => {
-    if (compartir === '1' && data && !autoShared.current) {
-      autoShared.current = true;
-      setShareOpen(true);
+    if (welcomed.current || !data || !userId || (nuevo !== '1' && bienvenida !== '1')) return;
+    welcomed.current = true;
+    const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };
+    if (nuevo === '1') {
+      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, onInvite: () => setShareOpen(true) });
+      return;
     }
-  }, [compartir, data]);
+    const target = data.group.challenge_target;
+    const done = data.members.reduce((a, m) => a + m.steps, 0);
+    celebrate({
+      kind: 'group-joined',
+      name: data.group.name,
+      me,
+      others: data.members.filter((m) => m.id !== userId).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null })),
+      total: data.members.length,
+      goalText: target > 0 ? `Meta de la semana: ${target.toLocaleString('es-BO')} pasos juntos. Van ${done.toLocaleString('es-BO')}.` : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nuevo, bienvenida, data, userId]);
   const groupTotal = data ? data.members.reduce((a, m) => a + m.steps, 0) : 0;
   const groupTarget = data?.group.challenge_target ?? 0;
 

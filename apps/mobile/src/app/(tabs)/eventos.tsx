@@ -13,6 +13,7 @@ import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
 import { celebrate } from '@/store/useCelebrationStore';
+import { boliviaDate, boliviaTime, MONTHS } from '@/lib/promo';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
@@ -54,9 +55,24 @@ export default function EventosScreen() {
         });
         return;
       }
+      if (p.kind === 'evento') {
+        setOpen(null);
+        const d = boliviaDate(p.starts_at);
+        celebrate({
+          kind: 'event-joined',
+          title: p.title,
+          day: d.day,
+          month: MONTHS[d.month],
+          when: boliviaTime(p.starts_at),
+          place: p.place_name ?? p.place_address ?? undefined,
+          placeUrl: p.place_url,
+          participants: p.participants + 1,
+        });
+        return;
+      }
       // iOS ignora accessibilityLiveRegion: se anuncia a mano que ya quedó anotado.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Ya estás anotado');
-      Alert.alert('¡Listo!', p.kind === 'evento' ? 'Ya estás anotado en el evento.' : 'Ya eres parte del sorteo.');
+      Alert.alert('¡Listo!', 'Ya eres parte del sorteo.');
     } catch (e) {
       Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }

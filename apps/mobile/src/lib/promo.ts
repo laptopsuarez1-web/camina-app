@@ -47,7 +47,7 @@ export function timeLeftLabel(startsAt: string, endsAt: string, now: Date = new 
   return d === 1 ? 'Termina mañana' : `Termina en ${d} días`;
 }
 
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+export const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 // "18 – 20 oct" o "28 oct – 2 nov". Usa la hora de Bolivia (UTC-4) para que no cambie según el celular.
 export function dateRangeLabel(startsAt: string, endsAt: string): string {
