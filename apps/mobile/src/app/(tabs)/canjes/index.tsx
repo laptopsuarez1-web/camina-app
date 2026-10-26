@@ -488,6 +488,7 @@ export default function CanjesScreen() {
   const redeem = useRedeemBenefit();
   const redeemLocal = useRedeemWithLocalCode();
   const [localCodeFor, setLocalCodeFor] = useState<BenefitWithBusiness | null>(null);
+  const localResult = useRef<{ benefit: BenefitWithBusiness; redemption: Redemption } | null>(null);
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
 
@@ -854,11 +855,8 @@ export default function CanjesScreen() {
     try {
       const result = await redeemLocal.mutateAsync({ benefitId: benefit.id, code, lat, lng });
       if (result.ok) {
-        runAfterClose(afterLocalCodeClose, true, () => {
-          setActiveBenefit(benefit);
-          setActiveRedemption(result.redemption);
-        });
-        setLocalCodeFor(null);
+        // La hoja muestra "¡Canjeado!" un momento y recién después (onSuccess) se abre el canje confirmado.
+        localResult.current = { benefit, redemption: result.redemption };
         return null;
       }
       switch (result.reason) {
@@ -1810,14 +1808,23 @@ export default function CanjesScreen() {
       <LocalCodeSheet
         visible={!!localCodeFor}
         businessName={localCodeFor?.business.name ?? ''}
+        logoUrl={localCodeFor?.business.logo_url}
+        category={localCodeFor?.business.category}
         benefitName={localCodeFor?.name ?? ''}
-        costLine={
-          localCodeFor && loyalty?.benefit_id === localCodeFor.id && loyalty.ready
-            ? 'Es el premio de tu tarjeta: no se te descuentan Puntos'
-            : localCodeFor ? pointsCharged(localCodeFor.cost_points).replace(' cuando el local confirme el código', '') : ''
-        }
+        costPoints={localCodeFor?.cost_points ?? 0}
+        free={!!localCodeFor && loyalty?.benefit_id === localCodeFor.id && !!loyalty.ready}
         onClose={() => setLocalCodeFor(null)}
         onSubmit={(code) => (localCodeFor ? submitLocalCode(localCodeFor, code) : Promise.resolve(null))}
+        onSuccess={() => {
+          const done = localResult.current;
+          localResult.current = null;
+          if (!done) return;
+          runAfterClose(afterLocalCodeClose, true, () => {
+            setActiveBenefit(done.benefit);
+            setActiveRedemption(done.redemption);
+          });
+          setLocalCodeFor(null);
+        }}
         onDismiss={() => flushAfterClose(afterLocalCodeClose)}
       />
 
