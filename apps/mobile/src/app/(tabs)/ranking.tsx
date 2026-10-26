@@ -123,6 +123,9 @@ export default function RankingScreen() {
 
         {view === 'global' ? (
           <>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-3 mx-1" style={{ lineHeight: 18 }}>
+              El ranking global es semanal: cuenta los pasos de lunes a domingo y arranca de cero cada lunes.
+            </Text>
             {average != null && average > 0 && (
               <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-4">
                 <Text className="text-[13px] text-text-light dark:text-text-dark">

@@ -534,7 +534,6 @@ export default function GroupDetailScreen() {
 
         <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">se vacía cada lunes</Text>
         </View>
         <View className="px-5 gap-2 pb-2">
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
