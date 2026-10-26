@@ -133,7 +133,7 @@ export interface LoyaltyCard {
 // Respuesta de redeem_with_local_code: o se canjeó, o dice por qué no (las reglas del canje salen como error aparte).
 export type LocalCodeResult =
   | { ok: true; redemption: Redemption }
-  | { ok: false; reason: 'codigo_incorrecto' | 'lejos' | 'sin_ubicacion' | 'bloqueado' | 'sin_codigo'; left?: number; distance_m?: number };
+  | { ok: false; reason: 'codigo_incorrecto' | 'lejos' | 'sin_ubicacion' | 'sin_codigo'; distance_m?: number };
 
 export interface Redemption {
   id: string;

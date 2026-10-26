@@ -145,16 +145,6 @@ end;
 $f$ language plpgsql security definer set search_path = public;
 
 -- ---------- 4) Canje con el código del local ----------
-create table if not exists local_code_attempts (
-  id bigserial primary key,
-  user_id uuid not null references profiles (id) on delete cascade,
-  business_id uuid not null references businesses (id) on delete cascade,
-  created_at timestamptz not null default now()
-);
-create index if not exists local_code_attempts_user_idx on local_code_attempts (user_id, created_at desc);
-alter table local_code_attempts enable row level security;
--- Sin políticas: solo la función security definer la toca.
-
 -- Distancia en metros entre dos puntos (fórmula de haversine).
 create or replace function distance_m(lat1 double precision, lng1 double precision, lat2 double precision, lng2 double precision)
 returns integer as $f$
@@ -168,7 +158,7 @@ create or replace function local_code_max_distance_m() returns integer as $f$
   select 300;
 $f$ language sql immutable;
 
--- Devuelve {ok:true, redemption:{...}} o {ok:false, reason:'codigo_incorrecto'|'lejos'|'sin_ubicacion'|'bloqueado'|'sin_codigo'}.
+-- Devuelve {ok:true, redemption:{...}} o {ok:false, reason:'codigo_incorrecto'|'lejos'|'sin_ubicacion'|'sin_codigo'}.
 -- Los errores de reglas del canje (saldo, espera de 7 días, cupos, horario) salen como excepción, igual que redeem_benefit.
 create or replace function redeem_with_local_code(
   p_benefit_id uuid, p_code text, p_lat double precision, p_lng double precision
@@ -178,7 +168,6 @@ declare
   v_benefit benefits%rowtype;
   v_biz businesses%rowtype;
   v_code text;
-  v_fails integer;
   v_dist integer;
   v_red redemptions;
 begin
@@ -199,12 +188,6 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'sin_codigo');
   end if;
 
-  select count(*) into v_fails from local_code_attempts
-  where user_id = v_user and created_at > now() - interval '1 hour';
-  if v_fails >= 5 then
-    return jsonb_build_object('ok', false, 'reason', 'bloqueado');
-  end if;
-
   if p_lat is null or p_lng is null then
     return jsonb_build_object('ok', false, 'reason', 'sin_ubicacion');
   end if;
@@ -214,8 +197,7 @@ begin
   end if;
 
   if p_code is distinct from v_code then
-    insert into local_code_attempts (user_id, business_id) values (v_user, v_biz.id);
-    return jsonb_build_object('ok', false, 'reason', 'codigo_incorrecto', 'left', greatest(0, 4 - v_fails));
+    return jsonb_build_object('ok', false, 'reason', 'codigo_incorrecto');
   end if;
 
   -- Código correcto y cerca: se aplican las reglas de siempre (saldo, espera, cupos, horario) y se confirma en el acto.

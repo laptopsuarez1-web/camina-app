@@ -172,12 +172,12 @@ export function Reglas() {
             <span>puntos por día</span>
           </InView>
           <InView className="stat" delay={240}>
-            <b><Counter to={6} /></b>
-            <span>dígitos tiene tu código de canje</span>
+            <b><Counter to={4} /></b>
+            <span>números es el código del local</span>
           </InView>
           <InView className="stat" delay={360}>
-            <b><Counter to={15} /></b>
-            <span>minutos dura tu código</span>
+            <b><Counter to={300} /></b>
+            <span>metros: tenés que estar en el local</span>
           </InView>
         </div>
         <InView className="reparto">
@@ -371,7 +371,7 @@ export function PasosComercio() {
     ['Creás tu perfil en el panel', 'Es gratis con cualquier plan. Cargás tu local, tu logo, tus fotos y tu primer premio.'],
     ['Elegís tu plan al terminar', 'Empezás gratis, o elegís Paso Firme o Paso Adelante y pagás con el QR. Si sos de los primeros 20, pedís tu cupo fundador por WhatsApp y te habilitamos.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
-    ['Aparecés en el mapa', 'La gente de tu zona te encuentra y canjea. Vos confirmás cada código desde el celular.'],
+    ['Aparecés en el mapa', 'La gente de tu zona te encuentra y canjea. Les decís el código de tu local y listo.'],
   ];
   return (
     <section className="lp-sec" id="como-sumarte">
@@ -399,7 +399,7 @@ const BENEFICIOS = [
   ['Aparecés en el mapa', 'La gente de tu zona te encuentra cuando elige dónde canjear.'],
   ['Vos elegís el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
   ['Vos ponés el cupo', 'Definís cuántos cupones das por día, o ilimitados.'],
-  ['Se valida en segundos', 'El cliente muestra un código de 6 números y lo confirmás desde el celular.'],
+  ['Se valida en segundos', 'Le decís a tu cliente el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado al instante.'],
   ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 7 días. Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
   ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargás en tu ficha.'],
   ['Historias que te muestran', 'Quien canjea puede subir una historia de Instagram con el sticker de Camina y gana 5 Puntos extra cuando el equipo de Camina la aprueba.'],
@@ -435,7 +435,7 @@ export function PanelComercio() {
       <div className="wrap panel-row">
         <div>
           <Kinetic text="Todo desde tu panel." as="h2" />
-          <p className="lead">Cargás tu local y tus premios, confirmás los códigos desde el celular y mirás tus canjes. Sin instalar nada.</p>
+          <p className="lead">Cargás tu local y tus premios, tenés tu código de canje y mirás tus canjes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
             <Link className="lp-btn line" href="/login">Ya tengo cuenta</Link>
@@ -776,7 +776,7 @@ const TILES: Tile[] = [
   { t: 'Claro, oscuro y cristal a tu gusto', d: 'Elegís el modo de la app y cuánto vidrio querés ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
   { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
   { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
-  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, el local te confirma el canje con un código de 6 números.', ico: 'regalo', span: 's3', fill: true },
+  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, le pedís al local su código de 4 números, lo escribís en la app y el canje se confirma al instante.', ico: 'regalo', span: 's3', fill: true },
 ];
 
 export function MasParaGente() {

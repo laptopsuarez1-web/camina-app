@@ -861,15 +861,11 @@ export default function CanjesScreen() {
       }
       switch (result.reason) {
         case 'codigo_incorrecto':
-          return result.left && result.left > 0
-            ? `Ese código no es. Revísalo con el local (te quedan ${result.left} ${plural(result.left, 'intento', 'intentos')}).`
-            : 'Ese código no es. Espera una hora para volver a probar.';
+          return 'Ese código no es. Revísalo con el local.';
         case 'lejos':
           return `Estás a ${result.distance_m ?? 'más de 300'} m del local. Acércate y vuelve a probar.`;
         case 'sin_ubicacion':
           return 'Necesitamos tu ubicación para confirmar que estás en el local. Actívala en los ajustes del teléfono.';
-        case 'bloqueado':
-          return 'Probaste muchas veces. Espera una hora para volver a intentar.';
         default:
           return 'Este local todavía no puede canjear con código. Escríbenos y lo arreglamos.';
       }

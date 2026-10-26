@@ -87,7 +87,7 @@ export default function RealMap() {
     ['Salís a caminar', 'Tu recorrido de todos los días ya cuenta: cada 1.000 pasos, 1 punto.'],
     ['Pasás por locales de tu barrio', 'En el mapa de Camina ves los comercios que tienen premios para vos.'],
     ['Elegís a dónde ir', 'Con tus puntos, canjeás en el local que más te gusta.'],
-    ['Llegás y canjeás', "Mostrás tu código de 6 dígitos y te dan tu premio."],
+    ['Llegás y canjeás', "Pedís el código de 4 números del local, lo escribís en la app y te dan tu premio."],
   ][fase];
 
   return (

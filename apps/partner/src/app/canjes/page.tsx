@@ -93,12 +93,12 @@ export default function CanjesPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Canjes" subtitle="Cada vez que un usuario te muestra su código, queda acá." />
+      <TopBar title="Canjes" subtitle="Cada canje queda acá, con su premio y cómo se confirmó." />
 
       <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
-        <p className="text-white font-semibold text-sm mb-1">Confirmar código</p>
+        <p className="text-white font-semibold text-sm mb-1">Confirmar código de 6 dígitos</p>
         <p className="text-auth-muted text-xs mb-3.5">
-          Escribí el código de 6 dígitos que te muestra el cliente en su celular.
+          Solo para premios online (WhatsApp y redes) o clientes con una versión anterior de la app. Los canjes en tu local se confirman solos con el código de 4 números.
         </p>
         <div className="flex gap-2">
           <input

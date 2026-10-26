@@ -34,10 +34,6 @@ begin
 
   res := redeem_with_local_code(b, '0000x', -17.7834, -63.1822);
   perform tt.t_eq('código incorrecto', res->>'reason', 'codigo_incorrecto');
-  for n in 1..4 loop
-    res := redeem_with_local_code(b, '0000x', -17.7834, -63.1822);
-  end loop;
-  perform tt.t_eq('a los 5 intentos fallidos se bloquea', (redeem_with_local_code(b, code, -17.7834, -63.1822))->>'reason', 'bloqueado');
 
   -- ===== El panel sigue andando y el dueño puede cambiar el código =====
   u := tt.mk_user(); perform tt.give(u, 25, 60); perform tt.t_as(u);
