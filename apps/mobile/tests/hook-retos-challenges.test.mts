@@ -6,7 +6,7 @@ import { rq, resetRq } from './helpers/stubs/react-query.mts';
 import { setAuth } from './helpers/stubs/auth-store.mts';
 import { db, resetDb } from './helpers/stubs/supabase.mts';
 import { useRetos, useWeeklyGoalReto, useClaimReto } from '../src/hooks/useRetos.ts';
-import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, daysLeft, RULE_LABEL } from '../src/hooks/useChallenges.ts';
+import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, daysLeft, RULE_LABEL, ruleText } from '../src/hooks/useChallenges.ts';
 
 const USER = 'u-1';
 
@@ -196,19 +196,36 @@ test('anotarse al desafío: llama a join_group_challenge y refresca desafío, sa
   await assert.rejects(() => rq.lastMutation.mutationFn('c1'), /Ya no se puede sumar/);
 });
 
-test('mi resultado en el último desafío terminado: devuelve premio y puesto, o null', async () => {
+test('mi resultado en el último desafío terminado: devuelve mi puesto, premio y el podio, o null', async () => {
   useMyChallengeResult('g1');
   db.tables.group_challenges = [];
   assert.equal(await rq.lastQuery.queryFn(), null);
   db.tables.group_challenges = [
-    { id: 'c1', name: 'Viejo', status: 'finished', settled_at: '2026-09-01', group_id: 'g1' },
-    { id: 'c2', name: 'Reciente', status: 'finished', settled_at: '2026-10-01', group_id: 'g1' },
+    { id: 'c1', name: 'Viejo', rule: 'steps', start_day: '2026-09-01', end_day: '2026-09-07', status: 'finished', settled_at: '2026-09-01', group_id: 'g1' },
+    { id: 'c2', name: 'Reciente', rule: 'days', start_day: '2026-09-24', end_day: '2026-09-30', status: 'finished', settled_at: '2026-10-01', group_id: 'g1' },
     { id: 'c3', name: 'En curso', status: 'active', settled_at: null, group_id: 'g1' },
   ];
-  db.tables.group_challenge_results = [{ challenge_id: 'c2', user_id: USER, payout: 15, rank: 1 }];
-  assert.deepEqual(await rq.lastQuery.queryFn(), { challengeId: 'c2', name: 'Reciente', payout: 15, rank: 1 });
-  db.tables.group_challenge_results = [{ challenge_id: 'c2', user_id: 'otro', payout: 15, rank: 1 }];
+  const yo = { challenge_id: 'c2', user_id: USER, steps: 20000, goal_days: 6, best_streak: 4, payout: 15, rank: 1 };
+  const otro = { challenge_id: 'c2', user_id: 'otro', steps: 18000, goal_days: 5, best_streak: 3, payout: 0, rank: 2 };
+  db.tables.group_challenge_results = [otro, yo];
+  const r = await rq.lastQuery.queryFn();
+  assert.equal(r.challengeId, 'c2');
+  assert.equal(r.name, 'Reciente');
+  assert.equal(r.rule, 'days');
+  assert.equal(r.days, 7);
+  assert.equal(r.payout, 15);
+  assert.equal(r.rank, 1);
+  assert.deepEqual(r.results.map((x: any) => x.user_id), [USER, 'otro']);
+  db.tables.group_challenge_results = [otro];
   assert.equal(await rq.lastQuery.queryFn(), null);
+});
+
+test('ruleText: el valor de cada persona dicho con la regla del desafío', () => {
+  const r = { steps: 21430, goal_days: 1, best_streak: 4 };
+  assert.equal(ruleText('steps', r), `${(21430).toLocaleString('es-BO')} pasos`);
+  assert.equal(ruleText('days', r), '1 día');
+  assert.equal(ruleText('days', { ...r, goal_days: 5 }), '5 días');
+  assert.equal(ruleText('streak', r), 'racha de 4');
 });
 
 // ---------------------------------------------------------------- días que faltan en un desafío de grupo

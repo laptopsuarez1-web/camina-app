@@ -8,6 +8,7 @@ import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/u
 import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
+import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
 
 const GOLD = '#E2B33C';
 const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
@@ -221,6 +222,8 @@ export function CelebrationHost() {
       {current.kind === 'toast' && <Toast key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'sheet' && <Sheet key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'win' && <Win key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'challenge-joined' && <ChallengeJoinedScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'challenge-ended' && <ChallengeEndedScene key={current.id} c={current} onDone={dismiss} />}
     </View>
   );
 }

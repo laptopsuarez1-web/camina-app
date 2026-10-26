@@ -6,6 +6,8 @@ export const buzz = {
   light: () => { if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); },
   // Cambiar de pestaña, filtro o interruptor.
   selection: () => { if (Platform.OS !== 'web') Haptics.selectionAsync().catch(() => {}); },
+  // Golpe un poco más firme: momentos de las cinemáticas (sumarse a un desafío, subir al podio).
+  medium: () => { if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); },
   error: () => { if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); },
   success: () => { if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}); },
 };

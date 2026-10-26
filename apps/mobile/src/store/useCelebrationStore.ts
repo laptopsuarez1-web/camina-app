@@ -1,14 +1,18 @@
 import { create } from 'zustand';
+import type { EndedCinematic, JoinedCinematic } from '@/components/challenge/ChallengeCinematics';
 
 // Celebraciones y avisos de logros. Hay tres tamaños, de menor a mayor:
 //  - toast: aviso corto arriba (o abajo, con at: 'bottom') que se va solo (racha, "se unió un amigo");
 //  - sheet: hoja desde abajo con chispas (reto cumplido, bienvenida);
-//  - win: pantalla completa, solo para el gran momento (ganar un desafío de grupo).
+//  - win: pantalla completa para un gran logro;
+//  - challenge-joined / challenge-ended: cinemáticas de los desafíos (sumarse y terminar).
 export type ToastIcon = 'flame' | 'gift' | 'check' | 'users';
 export type Celebration =
   | { kind: 'toast'; icon: ToastIcon; title: string; body?: string; at?: 'top' | 'bottom' }
   | { kind: 'sheet'; title: string; body?: string; points?: number; cta?: string; sparks?: boolean }
-  | { kind: 'win'; title: string; body?: string; points: number };
+  | { kind: 'win'; title: string; body?: string; points: number }
+  | JoinedCinematic
+  | EndedCinematic;
 
 interface CelebrationState {
   queue: (Celebration & { id: number })[];

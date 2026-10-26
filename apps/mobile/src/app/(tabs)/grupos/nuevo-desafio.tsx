@@ -5,7 +5,7 @@ import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
-import { ChevronLeft, X, Trophy, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
+import { ChevronLeft, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { groupInviteLink } from '@/constants/sharing';
@@ -13,7 +13,8 @@ import { MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
-import type { ChallengeRule } from '@/hooks/useChallenges';
+import { RULE_LABEL, type ChallengeRule } from '@/hooks/useChallenges';
+import { ChallengeCreatedScene } from '@/components/challenge/ChallengeCinematics';
 import { friendlyServerError } from '@/lib/errors';
 import { localDay } from '@/lib/format';
 import { Coin } from '@/components/ui/Coin';
@@ -38,7 +39,9 @@ export default function NuevoDesafioScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const queryClient = useQueryClient();
   // El link de invitación lleva el código del grupo, no su id.
-  const inviteCode = useGroupDetail(groupId).data?.group.invite_code;
+  const groupDetail = useGroupDetail(groupId).data;
+  const inviteCode = groupDetail?.group.invite_code;
+  const groupName = groupDetail?.group.name;
   const { data: balance } = usePointsBalance();
   const { muted, accentIcon, dangerText } = useThemeColors();
   const [step, setStep] = useState(1);
@@ -104,44 +107,25 @@ export default function NuevoDesafioScreen() {
   }
 
   if (done) {
+    const toGroup = () => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } });
     return (
-      <View className="flex-1 bg-bg-light dark:bg-bg-dark items-center px-8" style={{ paddingTop: 160 }}>
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar"
-          onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })}
-          hitSlop={10}
-          className="absolute w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark"
-          style={{ top: 56, left: 20 }}
-        >
-          <X size={18} color={accentIcon} />
-        </Press>
-        <IconBubble icon={Trophy} tone="gold" size={110} />
-        <Text className="text-[24px] font-extrabold text-center text-text-light dark:text-text-dark mt-6">¡{name.trim()} está en marcha!</Text>
-        <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark mt-2 leading-5">
-          Del {fmtShort(start)} al {fmtShort(end)}. Invita a tu grupo: quienes cumplan la meta se reparten los puntos.
-        </Text>
-        <View className="absolute left-5 right-5" style={{ bottom: 50 }}>
-          <Press
-            accessibilityRole="button"
-            onPress={() =>
-              Share.share({
-                message: inviteCode
-                  ? `Súmate a mi desafío "${name.trim()}" en Camina.\nCódigo del grupo: ${inviteCode}\n${groupInviteLink(inviteCode)}`
-                  : `Súmate a mi desafío "${name.trim()}" en Camina.`,
-              })
-            }
-            className="bg-mint rounded-2xl py-4 items-center mb-3"
-          >
-            <Text className="text-mint-dark font-bold text-[15px]">Compartir link</Text>
-          </Press>
-          <Press accessibilityRole="button" onPress={() => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } })} className="items-center py-2">
-            <Text className="font-bold text-[14px] text-aqua-ink dark:text-aqua">Ir al grupo</Text>
-          </Press>
-          <Press accessibilityRole="button" onPress={() => router.replace('/(tabs)')} className="items-center py-2 mt-1">
-            <Text className="font-semibold text-[13.5px] text-muted-light dark:text-muted-dark">Volver al inicio</Text>
-          </Press>
-        </View>
+      <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+        <ChallengeCreatedScene
+          name={name.trim()}
+          groupName={groupName}
+          chips={[RULE_LABEL[rule], `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
+          stake={stake}
+          dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
+          onInvite={() =>
+            Share.share({
+              message: inviteCode
+                ? `Súmate a mi desafío "${name.trim()}" en Camina.\nCódigo del grupo: ${inviteCode}\n${groupInviteLink(inviteCode)}`
+                : `Súmate a mi desafío "${name.trim()}" en Camina.`,
+            })
+          }
+          onGoGroup={toGroup}
+          onHome={() => router.replace('/(tabs)')}
+        />
       </View>
     );
   }
