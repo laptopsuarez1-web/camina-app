@@ -1,10 +1,10 @@
+import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
-import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Animated, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
@@ -404,53 +404,6 @@ function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boole
       <Coin size={20} />
       <Text style={{ color: dim ? colors.light.muted : '#fff', fontSize: 13, fontWeight: '700' }}>{cost}</Text>
       {was != null ? <Text style={{ color: dim ? colors.light.muted : '#D9F3EC', fontSize: 12, textDecorationLine: 'line-through' }}>{was}</Text> : null}
-    </View>
-  );
-}
-
-// Marca de éxito animada: un sello redondo con degradé, tilde blanco y chispas; entra con un rebote y el anillo se expande una vez.
-const CHISPA = 'M0 -6 C0.8 -1.5 1.5 -0.8 6 0 C1.5 0.8 0.8 1.5 0 6 C-0.8 1.5 -1.5 0.8 -6 0 C-1.5 -0.8 -0.8 -1.5 0 -6 Z';
-function SuccessMark() {
-  const [scale] = useState(() => new Animated.Value(0.4));
-  const [ring] = useState(() => new Animated.Value(0));
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scale, { toValue: 1, friction: 4, tension: 90, useNativeDriver: true }),
-      Animated.timing(ring, { toValue: 1, duration: 900, useNativeDriver: true }),
-    ]).start();
-  }, [scale, ring]);
-  return (
-    <View style={{ width: 120, height: 104, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          width: 92,
-          height: 92,
-          borderRadius: 46,
-          borderWidth: 3,
-          borderColor: colors.aqua,
-          opacity: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0] }),
-          transform: [{ scale: ring.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.35] }) }],
-        }}
-      />
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <Svg width={120} height={104} viewBox="0 0 120 104">
-          <Defs>
-            <LinearGradient id="sello" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#5FE3B8" />
-              <Stop offset="1" stopColor="#1F9C7E" />
-            </LinearGradient>
-          </Defs>
-          <Circle cx={60} cy={52} r={44} fill={colors.mint} fillOpacity={0.28} />
-          <Circle cx={60} cy={52} r={34} fill="url(#sello)" />
-          <Circle cx={60} cy={52} r={34} fill="none" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={2.5} />
-          <Path d="M46 53 L56 63 L75 42" fill="none" stroke="#FFFFFF" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" />
-          <Path d={CHISPA} fill={colors.mint} transform="translate(104 20) scale(1.3)" />
-          <Path d={CHISPA} fill="#A672E8" transform="translate(14 28) scale(0.9)" />
-          <Path d={CHISPA} fill={colors.mint} transform="translate(100 88) scale(0.7)" />
-          <Circle cx={18} cy={78} r={3} fill="#A672E8" fillOpacity={0.7} />
-        </Svg>
-      </Animated.View>
     </View>
   );
 }
@@ -1168,7 +1121,7 @@ export default function CanjesScreen() {
           )}
 
           {isError && !benefits && (
-            <EmptyState
+            <EmptyState mascot="confundido"
               title="No pudimos cargar"
               text="Revisa tu conexión e intenta de nuevo."
               actionLabel="Reintentar"
@@ -1900,7 +1853,7 @@ export default function CanjesScreen() {
               <View className="items-center">
                 {paso === 'ok' ? (
                   <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
-                    <SuccessMark />
+                    <BaifoMascot pose="festeja" height={132} />
                     <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
                     <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
                       {activeBenefit?.business.name} ya te entregó tu beneficio.

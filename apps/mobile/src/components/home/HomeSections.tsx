@@ -262,6 +262,7 @@ export function MyRedemptionsSection({
       {list.length === 0 ? (
         <View className="mx-5">
           <EmptyState
+            mascot="sentado"
             title="Todavía no canjeaste nada"
             text="Tus pasos se vuelven Puntos, y los Puntos se vuelven premios en comercios de tu ciudad."
             actionLabel="Ir a canjear"

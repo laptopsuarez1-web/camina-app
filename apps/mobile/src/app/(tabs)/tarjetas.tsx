@@ -55,7 +55,7 @@ export default function TarjetasScreen() {
           </SkeletonGroup>
         )}
         {isError && !cards && (
-          <EmptyState title="No pudimos cargar tus tarjetas" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
+          <EmptyState mascot="confundido" title="No pudimos cargar tus tarjetas" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
         )}
         {cards?.map((card) => (
           <Press key={card.business_id} accessibilityRole="button" accessibilityLabel={`Ver ${card.business_name}`} onPress={() => router.push('/(tabs)/canjes')}>

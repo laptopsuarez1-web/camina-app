@@ -618,7 +618,8 @@ export default function HomeScreen() {
           </Glass>
         </Press>
 
-        {(redemptions?.length ?? 0) > 0 && (
+        {/* Sin canjes también se muestra: es el estado vacío con el Baifo. Si falló la carga, no. */}
+        {(redemptions !== undefined || redemptionsLoading) && (
           <View style={{ marginTop: 28 }}>
             <MyRedemptionsSection
               redemptions={redemptions as unknown as RedemptionRow[] | undefined}

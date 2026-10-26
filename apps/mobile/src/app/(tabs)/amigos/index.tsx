@@ -85,7 +85,7 @@ export default function AmigosScreen() {
         </Text>
 
         {isLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-        {isError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
+        {isError && !friends && <EmptyState mascot="confundido" title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
         {!isLoading && !isError && (friends ?? []).length === 0 && (
           <EmptyState
             title="Todavía no tienes amigos en Camina"
