@@ -9,6 +9,7 @@ import type { IconProps as PhosphorProps, IconWeight } from 'phosphor-react-nati
 // props (size, color, fill) que usaba lucide, así cada pantalla solo cambia el import.
 // Se importa cada ícono por separado para no meter los 1.500 en la app.
 import { ShieldCheck as ShieldCheck_ } from 'phosphor-react-native/src/icons/ShieldCheck';
+import { List as List_ } from 'phosphor-react-native/src/icons/List';
 import { Target as Target_ } from 'phosphor-react-native/src/icons/Target';
 import { Bell as Bell_ } from 'phosphor-react-native/src/icons/Bell';
 import { FacebookLogo as FacebookLogo_ } from 'phosphor-react-native/src/icons/FacebookLogo';
@@ -125,6 +126,7 @@ export const Navigation = make(NavigationArrow);
 export const MapIcon = make(MapTrifold);
 export const Heart = make(Heart_);
 export const Share2 = make(ShareNetwork);
+export const MenuIcon = make(List_, 'bold');
 export const Activity = make(Pulse, 'bold');
 export const Flame = make(Flame_);
 export const Home = make(House);
