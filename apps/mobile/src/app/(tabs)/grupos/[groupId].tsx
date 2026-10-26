@@ -146,6 +146,34 @@ export default function GroupDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
 
+  function confirmExit() {
+    const del = data?.group.created_by === userId;
+    Alert.alert(
+      del ? '¿Eliminar este grupo?' : '¿Salir de este grupo?',
+      del
+        ? 'Se borran el grupo, el chat, el historial y los desafíos para todos los miembros. Los puntos puestos en un desafío activo se devuelven. No se puede deshacer.'
+        : 'Dejas de ver el ranking y el chat. Puedes volver a entrar con el código o el link de invitación.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: del ? 'Eliminar grupo' : 'Salir',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await supabase.rpc(del ? 'delete_group' : 'leave_group', { p_group: groupId! });
+            if (error) {
+              Alert.alert(del ? 'No se pudo eliminar' : 'No se pudo salir', friendlyServerError(error, 'Intenta de nuevo.'));
+              return;
+            }
+            queryClient.removeQueries({ queryKey: ['group-detail', groupId] });
+            queryClient.invalidateQueries({ queryKey: ['groups'] });
+            queryClient.invalidateQueries({ queryKey: ['my-groups-week'] });
+            router.replace('/(tabs)/grupos');
+          },
+        },
+      ]
+    );
+  }
+
   async function saveGoal() {
     const n = parseInt(goalInput.replace(/\D/g, ''), 10);
     if (!n || n < 5000 || n > 5_000_000) {
@@ -584,6 +612,16 @@ export default function GroupDetailScreen() {
           })}
         </View>
       )}
+
+        <Press
+          accessibilityRole="button"
+          onPress={confirmExit}
+          className="mx-5 mb-3 rounded-2xl py-3 items-center border border-line-light dark:border-line-dark"
+        >
+          <Text className="text-[13.5px] font-bold text-danger-ink dark:text-danger-soft">
+            {isCreator ? 'Eliminar grupo' : 'Salir del grupo'}
+          </Text>
+        </Press>
 
         <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
