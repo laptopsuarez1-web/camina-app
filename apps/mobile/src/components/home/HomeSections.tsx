@@ -16,6 +16,7 @@ import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
 import { StoryRewardButton, type StoryState } from '@/components/story/StoryShare';
 import { Coin } from '@/components/ui/Coin';
+import { RedemptionDetailSheet, type RedemptionDetail } from '@/components/home/RedemptionDetailSheet';
 
 // ---------------------------------------------------------------------------------------------
 // Piezas comunes
@@ -236,6 +237,7 @@ export function MyRedemptionsSection({
   onStory?: (r: RedemptionRow) => void;
 }) {
   const dark = useColorScheme().colorScheme === 'dark';
+  const [detail, setDetail] = useState<RedemptionDetail | null>(null);
   const list = (redemptions ?? []).slice(0, 3);
   if (loading && !redemptions) {
     return (
@@ -277,8 +279,8 @@ export function MyRedemptionsSection({
               <View key={r.id} className={i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}>
                 <Press
                   accessibilityRole="button"
-                  accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}`}
-                  onPress={() => router.push(r.business?.id ? `/(tabs)/canjes?negocio=${r.business.id}` : '/(tabs)/canjes')}
+                  accessibilityLabel={`${r.benefit?.name ?? 'Premio'} en ${r.business?.name ?? 'un comercio'}, ${STATUS_LABEL[r.status]}. Ver detalle`}
+                  onPress={() => setDetail(r as unknown as RedemptionDetail)}
                   className="flex-row items-center p-3.5"
                   style={{ gap: 12 }}
                 >
@@ -303,6 +305,11 @@ export function MyRedemptionsSection({
           })}
         </Glass>
       )}
+      <RedemptionDetailSheet
+        redemption={detail}
+        onClose={() => setDetail(null)}
+        onOpenBusiness={(id) => router.push(`/(tabs)/canjes?negocio=${id}`)}
+      />
     </View>
   );
 }
