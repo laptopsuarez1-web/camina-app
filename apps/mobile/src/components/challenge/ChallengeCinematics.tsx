@@ -553,17 +553,16 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
       )}
     </Reveal>
   ) : (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Bote</Text>
+    <View accessible accessibilityLabel={`Bote: ${pot} Puntos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <View>
-        <Text style={{ ...display(36), color: p.gold, fontVariant: ['tabular-nums'], lineHeight: 42 }}>{pot}</Text>
+        <Coin size={34} />
         {[0, 1, 2].map((i) => (
-          <View key={i} style={{ position: 'absolute', left: '50%', top: 20 }}>
+          <View key={i} style={{ position: 'absolute', left: 17, top: 17 }}>
             <FlyingCoin tl={tl} delay={1500 + i * 130} dx={mine.dx} dy={mine.dy} size={20} />
           </View>
         ))}
       </View>
-      <Text style={{ fontSize: 11, color: p.muted, fontWeight: '700' }}>Puntos</Text>
+      <Text allowFontScaling={false} style={{ ...display(44), color: p.gold, fontVariant: ['tabular-nums'], lineHeight: 50 }}>{pot}</Text>
     </View>
   );
   return (

@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } fro
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Coin } from '@/components/ui/Coin';
-import { Flame, Heart, Users } from '@/components/icons';
+import { Flame, Users } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { participantsLabel } from '@/lib/promo';
@@ -349,9 +349,6 @@ export function FriendMadeScene({ c, onDone }: { c: FriendMadeCinematic; onDone:
         <Animated.View style={[{ position: 'absolute', right: 0 }, bStyle]}>
           <View style={{ borderRadius: SIZE / 2, borderWidth: 4, borderColor: p.dark ? '#1c1030' : '#fff' }}><Avatar p={c.friend} size={SIZE - 8} /></View>
         </Animated.View>
-        <Reveal tl={tl} delay={900} pop from={0.2} style={{ position: 'absolute', top: -22 }}>
-          <Heart size={30} color={colors.warn} weight="fill" />
-        </Reveal>
         <Burst tl={tl} delay={800} palette={CAMINA_SPARKS} count={16} radius={110} style={{ left: '50%', top: '50%' }} />
       </View>
       <Reveal tl={tl} delay={1000} pop from={0.6} style={{ marginTop: 30 }}>
@@ -393,21 +390,22 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   return (
     <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
-      <View style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center', marginTop: 20 }}>
+      <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
-          {[230, 180, 130].map((d) => <View key={d} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: flame, opacity: 0.1 }} />)}
+          {[210, 165, 120].map((d) => <View key={d} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: flame, opacity: 0.1 }} />)}
         </Animated.View>
         <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, flameStyle]}>
-          <Flame size={170} color={flame} weight="fill" />
+          <Flame size={140} color={flame} weight="fill" />
         </Animated.View>
-        <View style={{ position: 'absolute', top: 112 }}>
-          <Text allowFontScaling={false} style={{ ...display(46), color: '#3a1a00', fontVariant: ['tabular-nums'], textAlign: 'center', lineHeight: 52, minWidth: 100 }}>{days}</Text>
-        </View>
-        <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.warn, '#FFD97A', '#FFF1B8']} count={20} radius={130} style={{ left: '50%', top: '50%' }} />
+        <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.warn, '#FFD97A', '#FFF1B8']} count={20} radius={120} style={{ left: '50%', top: '50%' }} />
       </View>
-      <Reveal tl={tl} delay={2050} pop from={0.6} style={{ marginTop: 12 }}>
-        <Text style={{ ...display(30), color: p.text, textAlign: 'center' }}>¡{c.days} días seguidos!</Text>
-      </Reveal>
+      {/* El número va debajo de la llama, bien grande, para que no se pierda contra el dibujo. */}
+      <View accessible accessibilityLabel={`${c.days} días seguidos`} style={{ alignItems: 'center', marginTop: 6 }}>
+        <Text allowFontScaling={false} style={{ ...display(76), color: flame, fontVariant: ['tabular-nums'], textAlign: 'center', lineHeight: 84, minWidth: 160 }}>{days}</Text>
+        <Reveal tl={tl} delay={2050} pop from={0.6}>
+          <Text style={{ ...display(24), color: p.text, textAlign: 'center' }}>días seguidos</Text>
+        </Reveal>
+      </View>
       <Reveal tl={tl} delay={2250}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 6, lineHeight: 20, maxWidth: 280 }}>
           {big ? 'Cien días cumpliendo tu meta. Eres imparable.' : 'Un mes entero cumpliendo tu meta.'}
