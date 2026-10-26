@@ -84,7 +84,7 @@ export default function GruposScreen() {
           <IconBubble icon={Trophy} tone="gold" size={38} />
           <View className="flex-1">
             <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ranking semanal</Text>
-            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Global y amigos · se reinicia el lunes</Text>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Global y entre amigos</Text>
           </View>
           <Text className="text-[13px] text-muted-light dark:text-muted-dark">{myRank ? `Vas ${myRank.position}.º` : 'Ver'}</Text>
           <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />

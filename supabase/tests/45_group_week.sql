@@ -75,7 +75,7 @@ begin
   select goal_days into n from group_weekly_results where group_id = g and week_start = wk and user_id = a;
   perform tt.t_xfail_eq('cumplió su meta de ese día (4.000 >= 3.000) aunque hoy su meta sea 6.000: debería contar 1 día', n, 1);
 
-  -- weekly_group_maintenance cierra la semana anterior y ya NO vacía los chats (duran 90 días, 0066).
+  -- weekly_group_maintenance cierra la semana anterior y ya NO vacía los chats (se borran cada mes, 0066).
   insert into group_notes (group_id, user_id, text) values (g, a, 'hola');
   perform weekly_group_maintenance();
   select count(*) into n from group_notes;
