@@ -13,12 +13,16 @@ export default function CanjesPage() {
   const [result, setResult] = useState<{ ok: boolean; msg: string; premio?: string } | null>(null);
   const [checking, setChecking] = useState(false);
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  // Código de 4 números del local: se lo dice al cliente en la caja y el cliente lo escribe en la app.
+  const [localCode, setLocalCode] = useState<string | null>(null);
+  const [changing, setChanging] = useState(false);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const loadRedemptions = useCallback(async () => {
     if (!business) return;
     const { data } = await supabase
       .from('redemptions')
-      .select('id, code, status, created_at, confirmed_at, benefit_id, loyalty_free, benefit:benefits(name)')
+      .select('id, code, status, created_at, confirmed_at, benefit_id, loyalty_free, confirmed_via, benefit:benefits(name)')
       .eq('business_id', business.id)
       .order('created_at', { ascending: false })
       .limit(30);
@@ -28,6 +32,27 @@ export default function CanjesPage() {
   useEffect(() => {
     loadRedemptions();
   }, [loadRedemptions]);
+
+  useEffect(() => {
+    if (!business) return;
+    supabase
+      .from('business_local_codes')
+      .select('code')
+      .eq('business_id', business.id)
+      .maybeSingle()
+      .then(({ data }) => setLocalCode(data?.code ?? null));
+  }, [business]);
+
+  async function changeLocalCode() {
+    if (!business || changing) return;
+    if (!window.confirm('¿Cambiar el código del local? El anterior deja de servir y tenés que avisarle el nuevo a tu equipo.')) return;
+    setChanging(true);
+    setCodeError(null);
+    const { data, error } = await supabase.rpc('reset_local_code', { p_business_id: business.id });
+    setChanging(false);
+    if (error) setCodeError(mensajeError(error));
+    else setLocalCode(data as string);
+  }
 
   async function checkCode() {
     if (!business) return;
@@ -110,6 +135,27 @@ export default function CanjesPage() {
         )}
       </div>
 
+      <div className="bg-card border border-line rounded-2xl p-5 mb-5 max-w-[480px]">
+        <p className="font-semibold text-sm mb-1">Código de tu local</p>
+        <p className="text-muted text-xs mb-3.5">
+          Decile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace
+          falta que abras el panel. Si se filtró, cambialo cuando quieras.
+        </p>
+        <div className="flex items-center gap-3">
+          <span aria-label={localCode ? `Código del local ${localCode.split('').join(' ')}` : 'Sin código'} className="flex-1 bg-bg rounded-[10px] px-3.5 py-2.5 text-[28px] font-extrabold tracking-[10px] text-center">
+            {localCode ?? '····'}
+          </span>
+          <button
+            onClick={changeLocalCode}
+            disabled={changing || !localCode}
+            className="shrink-0 border border-line rounded-[10px] px-4 py-2.5 font-semibold text-[13px]"
+          >
+            {changing ? 'Cambiando…' : 'Cambiar código'}
+          </button>
+        </div>
+        {codeError && <p className="text-warn text-[12.5px] mt-2.5">{codeError}</p>}
+      </div>
+
       <div className="bg-card border border-line rounded-2xl overflow-hidden">
         <div className="grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3 border-b border-line bg-bg">
           <span className="text-[11.5px] font-semibold text-muted">Código</span>
@@ -122,7 +168,7 @@ export default function CanjesPage() {
             key={r.id}
             className={`grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3.5 items-center ${i < redemptions.length - 1 ? 'border-b border-line' : ''}`}
           >
-            <span className="text-[13.5px] font-semibold tracking-wide">{r.code}</span>
+            <span className="text-[13.5px] font-semibold tracking-wide">{r.confirmed_via === 'local_code' ? '—' : r.code}</span>
             <span className="text-[13px] truncate pr-2">
               {r.benefit?.name ?? '—'}
               {r.loyalty_free && <span className="ml-1.5 text-[10.5px] font-bold rounded-full px-2 py-0.5" style={{ background: '#FFF4D6', color: '#8F6307' }}>Premio de tarjeta</span>}
@@ -133,8 +179,9 @@ export default function CanjesPage() {
               {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
             </span>
             {r.status === 'confirmed' ? (
-              <span className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-[#2E9E7C]">
-                <Check size={13} /> Confirmado
+              <span className="text-[11.5px] font-semibold text-[#2E9E7C] leading-tight">
+                <span className="inline-flex items-center gap-1"><Check size={13} /> Confirmado</span>
+                {r.confirmed_via === 'local_code' && <span className="block text-[10.5px] font-medium text-muted">código del local</span>}
               </span>
             ) : r.status === 'pending' ? (
               <span className="text-[11.5px] font-semibold text-muted">Pendiente</span>

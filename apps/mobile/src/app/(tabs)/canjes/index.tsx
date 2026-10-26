@@ -20,6 +20,7 @@ import {
   useOnlineRedeemed,
   useMyRedemptions,
   useRedeemBenefit,
+  useRedeemWithLocalCode,
   useRegenerateCode,
   useCancelExpiredRedemption,
   type BenefitWithBusiness,
@@ -41,6 +42,7 @@ import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -484,6 +486,8 @@ export default function CanjesScreen() {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const redeem = useRedeemBenefit();
+  const redeemLocal = useRedeemWithLocalCode();
+  const [localCodeFor, setLocalCodeFor] = useState<BenefitWithBusiness | null>(null);
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
 
@@ -524,6 +528,7 @@ export default function CanjesScreen() {
   const afterMapClose = useRef<(() => void) | null>(null);
   const afterProfileClose = useRef<(() => void) | null>(null);
   const afterCodeClose = useRef<(() => void) | null>(null);
+  const afterLocalCodeClose = useRef<(() => void) | null>(null);
   // isOpen: si el panel ya estaba cerrado (por ejemplo, se cerró mientras se generaba el código) no habrá onDismiss.
   function runAfterClose(slot: { current: (() => void) | null }, isOpen: boolean, next: () => void) {
     if (!isOpen) next();
@@ -826,16 +831,53 @@ export default function CanjesScreen() {
       );
       return;
     }
-    Alert.alert(
-      `¿Canjear ${benefit.name}?`,
-      free
-        ? `Hazlo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. Es el premio de tu tarjeta: no se te descuentan Puntos.`
-        : `Hazlo cuando ya estés en ${benefit.business.name}: el código dura ${REDEMPTION_CODE_TTL_MINUTES} minutos. ${pointsCharged(benefit.cost_points)} cuando el local confirme el código.`,
-      [
-        { text: 'Todavía no', style: 'cancel' },
-        { text: 'Generar código', onPress: () => handleRedeem(benefit.id, benefit) },
-      ]
-    );
+    // Local físico: se pide el código de 4 números que el local le dice a la persona. Antes se cierra la ficha
+    // del comercio para que iOS no tenga dos paneles a la vez.
+    runAfterClose(afterProfileClose, profileOpenRef.current, () => setLocalCodeFor(benefit));
+    closeProfile();
+  }
+
+  // Devuelve el mensaje de error para la hoja, o null si el canje quedó confirmado.
+  async function submitLocalCode(benefit: BenefitWithBusiness, code: string): Promise<string | null> {
+    let lat: number | null = null;
+    let lng: number | null = null;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const pos = (await Location.getLastKnownPositionAsync({ maxAge: 60_000 })) ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }));
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      }
+    } catch {
+      // Sin GPS se avisa abajo con "sin_ubicacion".
+    }
+    try {
+      const result = await redeemLocal.mutateAsync({ benefitId: benefit.id, code, lat, lng });
+      if (result.ok) {
+        runAfterClose(afterLocalCodeClose, true, () => {
+          setActiveBenefit(benefit);
+          setActiveRedemption(result.redemption);
+        });
+        setLocalCodeFor(null);
+        return null;
+      }
+      switch (result.reason) {
+        case 'codigo_incorrecto':
+          return result.left && result.left > 0
+            ? `Ese código no es. Revísalo con el local (te quedan ${result.left} ${plural(result.left, 'intento', 'intentos')}).`
+            : 'Ese código no es. Espera una hora para volver a probar.';
+        case 'lejos':
+          return `Estás a ${result.distance_m ?? 'más de 300'} m del local. Acércate y vuelve a probar.`;
+        case 'sin_ubicacion':
+          return 'Necesitamos tu ubicación para confirmar que estás en el local. Actívala en los ajustes del teléfono.';
+        case 'bloqueado':
+          return 'Probaste muchas veces. Espera una hora para volver a intentar.';
+        default:
+          return 'Este local todavía no usa el código. Toca "Prefiero mostrar un código al cajero".';
+      }
+    } catch (e) {
+      return friendlyServerError(e, 'No se pudo canjear. Intenta de nuevo.');
+    }
   }
 
   async function handleRedeem(benefitId: string, benefit: BenefitWithBusiness) {
@@ -1763,6 +1805,27 @@ export default function CanjesScreen() {
           </View>
         )}
       </Modal>
+
+      {/* Código del local (4 números) */}
+      <LocalCodeSheet
+        visible={!!localCodeFor}
+        businessName={localCodeFor?.business.name ?? ''}
+        benefitName={localCodeFor?.name ?? ''}
+        costLine={
+          localCodeFor && loyalty?.benefit_id === localCodeFor.id && loyalty.ready
+            ? 'Es el premio de tu tarjeta: no se te descuentan Puntos'
+            : localCodeFor ? pointsCharged(localCodeFor.cost_points).replace(' cuando el local confirme el código', '') : ''
+        }
+        onClose={() => setLocalCodeFor(null)}
+        onSubmit={(code) => (localCodeFor ? submitLocalCode(localCodeFor, code) : Promise.resolve(null))}
+        onFallback={() => {
+          const b = localCodeFor;
+          if (!b) return;
+          runAfterClose(afterLocalCodeClose, true, () => handleRedeem(b.id, b));
+          setLocalCodeFor(null);
+        }}
+        onDismiss={() => flushAfterClose(afterLocalCodeClose)}
+      />
 
       {/* Código de canje */}
       <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode} onDismiss={() => flushAfterClose(afterCodeClose)}>
