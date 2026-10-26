@@ -92,7 +92,16 @@ export function daysLeft(endDay: string, today: string = localDay()) {
   return Math.max(0, Math.round((Date.parse(endDay) - Date.parse(today)) / 86400000));
 }
 
-// Mi resultado en el último desafío terminado del grupo (para celebrar una sola vez si gané puntos).
+// Mi resultado en el último desafío terminado del grupo, con el podio, para la cinemática del cierre (se muestra una sola vez).
+export interface ChallengeResultRow {
+  user_id: string;
+  steps: number;
+  goal_days: number;
+  best_streak: number;
+  rank: number;
+  payout: number;
+}
+
 export function useMyChallengeResult(groupId: string | undefined) {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
@@ -101,21 +110,39 @@ export function useMyChallengeResult(groupId: string | undefined) {
     queryFn: async () => {
       const { data: ch } = await supabase
         .from('group_challenges')
-        .select('id, name')
+        .select('id, name, rule, start_day, end_day')
         .eq('group_id', groupId!)
         .eq('status', 'finished')
         .order('settled_at', { ascending: false })
         .limit(1)
         .maybeSingle();
       if (!ch) return null;
-      const { data: res } = await supabase
+      const { data: rows } = await supabase
         .from('group_challenge_results')
-        .select('payout, rank')
+        .select('user_id, steps, goal_days, best_streak, rank, payout')
         .eq('challenge_id', ch.id)
-        .eq('user_id', userId!)
-        .maybeSingle();
-      if (!res) return null;
-      return { challengeId: ch.id as string, name: ch.name as string, payout: res.payout as number, rank: res.rank as number };
+        .order('rank', { ascending: true });
+      const results = (rows ?? []) as unknown as ChallengeResultRow[];
+      const mine = results.find((r) => r.user_id === userId);
+      if (!mine) return null;
+      const days = Math.round((Date.parse(ch.end_day as string) - Date.parse(ch.start_day as string)) / 86400000) + 1;
+      return {
+        challengeId: ch.id as string,
+        name: ch.name as string,
+        rule: ch.rule as ChallengeRule,
+        days,
+        payout: mine.payout,
+        rank: mine.rank,
+        mine,
+        results,
+      };
     },
   });
+}
+
+// Valor de una persona con la regla del desafío, en palabras ("21.430 pasos", "5 días", "racha de 4").
+export function ruleText(rule: ChallengeRule, r: { steps: number; goal_days: number; best_streak: number }) {
+  if (rule === 'steps') return `${r.steps.toLocaleString('es-BO')} pasos`;
+  if (rule === 'days') return `${r.goal_days} ${r.goal_days === 1 ? 'día' : 'días'}`;
+  return `racha de ${r.best_streak}`;
 }

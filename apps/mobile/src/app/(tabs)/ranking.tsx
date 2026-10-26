@@ -109,7 +109,7 @@ export default function RankingScreen() {
         </View>
 
         <View className="flex-row items-center justify-between mb-3.5">
-          <Text accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text, flexShrink: 1 }]}>Ranking semanal</Text>
+          <Text accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text, flexShrink: 1 }]}>Ranking</Text>
           <Press accessibilityRole="button" accessibilityLabel="Opciones del ranking" onPress={() => setOptions(true)} className="flex-row items-center rounded-full px-3.5 py-2 ml-2" style={{ gap: 6, backgroundColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: dark ? colors.dark.line : colors.light.line }}>
             <Sliders size={14} color={text} />
             <Text style={{ fontSize: 13, fontWeight: '600', color: text }}>Opciones</Text>
@@ -132,7 +132,7 @@ export default function RankingScreen() {
               </View>
             )}
             {globalLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-            {globalError && !global && <EmptyState title="No pudimos cargar el ranking" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchGlobal()} />}
+            {globalError && !global && <EmptyState mascot="confundido" title="No pudimos cargar el ranking" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchGlobal()} />}
             {!globalLoading && !globalError && globalRows.length === 0 && (
               <EmptyState title="Todavía nadie caminó esta semana" text="Sé la primera persona en sumar pasos: el ranking arranca cada lunes." />
             )}
@@ -149,7 +149,7 @@ export default function RankingScreen() {
         ) : (
           <>
             {friendsLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-            {friendsError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchFriends()} />}
+            {friendsError && !friends && <EmptyState mascot="confundido" title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchFriends()} />}
             {!friendsLoading && !friendsError && friendRows.length <= 1 && (
               <View className="mb-4">
                 <EmptyState

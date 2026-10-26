@@ -33,7 +33,7 @@ export default function InicioPage() {
 
     supabase
       .from('redemptions')
-      .select('id, code, status, created_at, confirmed_at, benefit:benefits(name)')
+      .select('id, code, status, created_at, confirmed_at, confirmed_via, benefit:benefits(name)')
       .eq('business_id', business.id)
       .order('created_at', { ascending: false })
       .limit(10)
@@ -123,7 +123,7 @@ export default function InicioPage() {
                   <Ticket size={13} color="#4FC3A8" />
                 </div>
                 <span className="text-[13px] font-medium">
-                  {r.benefit?.name ?? 'Canje'} <span className="text-muted font-normal">· código {r.code}</span>
+                  {r.benefit?.name ?? 'Canje'} <span className="text-muted font-normal">· {r.confirmed_via === 'local_code' ? 'código del local' : `código ${r.code}`}</span>
                 </span>
               </div>
               <span className="text-xs text-muted">

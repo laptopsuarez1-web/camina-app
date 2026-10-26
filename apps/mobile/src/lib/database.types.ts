@@ -130,6 +130,11 @@ export interface LoyaltyCard {
   history: string[];
 }
 
+// Respuesta de redeem_with_local_code: o se canjeó, o dice por qué no (las reglas del canje salen como error aparte).
+export type LocalCodeResult =
+  | { ok: true; redemption: Redemption }
+  | { ok: false; reason: 'codigo_incorrecto' | 'lejos' | 'sin_ubicacion' | 'sin_codigo'; distance_m?: number };
+
 export interface Redemption {
   id: string;
   user_id: string;
@@ -145,6 +150,7 @@ export interface Redemption {
   extra_consumption: boolean | null;
   confirmed_at: string | null;
   confirmed_by: string | null;
+  confirmed_via?: 'panel' | 'local_code';
   created_at: string;
 }
 
@@ -249,6 +255,11 @@ export type Database = {
         Returns: number;
       };
       redeem_benefit: { Args: { p_benefit_id: string }; Returns: Redemption };
+      redeem_with_local_code: {
+        Args: { p_benefit_id: string; p_code: string; p_lat: number | null; p_lng: number | null };
+        Returns: LocalCodeResult;
+      };
+      reset_local_code: { Args: { p_business_id: string }; Returns: string };
       benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number; codes_left: number | null }[] };
       my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };

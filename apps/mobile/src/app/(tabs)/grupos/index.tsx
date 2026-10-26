@@ -37,7 +37,7 @@ export default function GruposScreen() {
   function answerInvite(groupId: string, yes: boolean) {
     if (yes) {
       accept.mutate(groupId, {
-        onSuccess: (id) => id && router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id } }),
+        onSuccess: (id) => id && router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id, bienvenida: '1' } }),
         onError: (e) => Alert.alert('No se pudo unir al grupo', friendlyServerError(e, 'Intenta de nuevo.')),
       });
     } else {
@@ -55,7 +55,7 @@ export default function GruposScreen() {
     onSuccess: (groupId) => {
       setCode('');
       queryClient.invalidateQueries({ queryKey: ['groups'] });
-      router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });
+      router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId, bienvenida: '1' } });
     },
     onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revísalo e intenta de nuevo.' : friendlyServerError(e, 'Intenta de nuevo.')),
   });
@@ -123,7 +123,7 @@ export default function GruposScreen() {
 
       {isError && !groups && (
         <View className="mb-7">
-          <EmptyState
+          <EmptyState mascot="confundido"
             title="No pudimos cargar"
             text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"

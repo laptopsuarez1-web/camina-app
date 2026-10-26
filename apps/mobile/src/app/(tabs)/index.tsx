@@ -17,7 +17,6 @@ import { useTodaySteps } from '@/hooks/usePedometer';
 import { useIsQa } from '@/hooks/useIsQa';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
-import { useSyncYesterday } from '@/hooks/useSyncYesterday';
 import { buzz } from '@/lib/haptics';
 import { useBenefits, useMyRedemptions, useMyStoryShares } from '@/hooks/useBenefits';
 import { useStoryFlow } from '@/components/story/StoryFlow';
@@ -119,7 +118,6 @@ export default function HomeScreen() {
   const { data: friends } = useFriends();
   const { data: friendRequests } = useFriendRequests();
   const syncSteps = useSyncSteps();
-  useSyncYesterday(live);
   const lastSynced = useRef(0);
   // Reintento del envío de pasos: valor que se reintenta, cuántas veces y el temporizador pendiente.
   const retryFor = useRef({ steps: 0, tries: 0 });
@@ -620,7 +618,8 @@ export default function HomeScreen() {
           </Glass>
         </Press>
 
-        {(redemptions?.length ?? 0) > 0 && (
+        {/* Sin canjes también se muestra: es el estado vacío con el Baifo. Si falló la carga, no. */}
+        {(redemptions !== undefined || redemptionsLoading) && (
           <View style={{ marginTop: 28 }}>
             <MyRedemptionsSection
               redemptions={redemptions as unknown as RedemptionRow[] | undefined}

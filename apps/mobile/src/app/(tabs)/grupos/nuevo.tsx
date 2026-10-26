@@ -46,7 +46,7 @@ export default function NuevoGrupoScreen() {
     onSuccess: ({ id, inviteFailed }) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       if (inviteFailed) Alert.alert('El grupo está creado', 'No pudimos mandar las invitaciones. Prueba de nuevo desde "Agregar amigos".');
-      router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: picked.length === 0 ? { groupId: id, compartir: '1' } : { groupId: id } });
+      router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id, nuevo: '1' } });
     },
     onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intenta de nuevo.')),
   });

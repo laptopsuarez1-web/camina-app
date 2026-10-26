@@ -100,7 +100,7 @@ export default function NotificacionesScreen() {
           );
         })}
         {isError && items.length === 0 && (
-          <EmptyState
+          <EmptyState mascot="confundido"
             title="No pudimos cargar"
             text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"

@@ -45,7 +45,9 @@ export function useHomeMoments(streak: number | undefined) {
     AsyncStorage.getItem(key).then((saved) => {
       if (Number(saved ?? 0) >= hit) return;
       AsyncStorage.setItem(key, String(hit)).catch(() => {});
-      celebrate({ kind: 'toast', icon: 'flame', title: `${hit} días de racha`, body: '¡Sigue así mañana!' });
+      // 30 y 100 días: pantalla completa con la llama; el resto, aviso corto.
+      if (hit >= 30 && hit !== 60) celebrate({ kind: 'streak-milestone', days: hit });
+      else celebrate({ kind: 'toast', icon: 'flame', title: `${hit} días de racha`, body: '¡Sigue así mañana!' });
     }).catch(() => {});
   }, [streak, userId]);
 

@@ -88,6 +88,8 @@ export interface Redemption {
   benefit_id?: string | null;
   // El canje salió gratis por la tarjeta de fidelidad.
   loyalty_free?: boolean;
+  // Cómo se confirmó: con el código de 6 números en el panel o con el código de 4 números del local.
+  confirmed_via?: 'panel' | 'local_code';
   // Nombre del premio, cuando la consulta lo trae con benefit:benefits(name).
   benefit?: { name: string } | null;
 }

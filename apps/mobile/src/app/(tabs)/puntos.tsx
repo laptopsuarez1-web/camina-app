@@ -238,7 +238,7 @@ export default function PuntosScreen() {
           </Glass>
         ))}
         {isError && !movimientos && (
-          <EmptyState
+          <EmptyState mascot="confundido"
             title="No pudimos cargar"
             text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"

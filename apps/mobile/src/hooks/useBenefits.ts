@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import type { Benefit, Business, Redemption, StoryShare } from '@/lib/database.types';
+import type { Benefit, Business, LocalCodeResult, Redemption, StoryShare } from '@/lib/database.types';
 
 export type BenefitWithBusiness = Benefit & { business: Business };
 
@@ -87,6 +87,29 @@ export function useRedeemBenefit() {
       queryClient.invalidateQueries({ queryKey: ['benefits-online-redeemed'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty-card'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty-cards'] });
+    },
+  });
+}
+
+// Canje con el código de 4 números del local: si todo está bien, queda confirmado en el acto.
+export function useRedeemWithLocalCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { benefitId: string; code: string; lat: number | null; lng: number | null }) => {
+      const { data, error } = await supabase.rpc('redeem_with_local_code', {
+        p_benefit_id: args.benefitId,
+        p_code: args.code,
+        p_lat: args.lat,
+        p_lng: args.lng,
+      });
+      if (error) throw error;
+      return data as unknown as LocalCodeResult;
+    },
+    onSuccess: (result) => {
+      if (!result.ok) return;
+      for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions', 'benefits-remaining-today', 'new-place-bonus', 'loyalty-card', 'loyalty-cards']) {
+        queryClient.invalidateQueries({ queryKey: [key] });
+      }
     },
   });
 }

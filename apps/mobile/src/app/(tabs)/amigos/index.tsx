@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, Share2, Users } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { useFriends, useFriendRequests, useFriendActions } from '@/hooks/useFriends';
 import { useAuthStore } from '@/store/useAuthStore';
+import { celebrate } from '@/store/useCelebrationStore';
 import { shareInviteLink } from '@/lib/invite';
 import { friendlyServerError } from '@/lib/errors';
 import { colors } from '@/theme/tokens';
@@ -27,8 +28,21 @@ export default function AmigosScreen() {
   const { data: requests } = useFriendRequests();
   const { respond } = useFriendActions();
 
-  const answer = (personId: string, accept: boolean) =>
-    respond.mutate({ personId, accept }, { onError: (e) => Alert.alert('No se pudo responder', friendlyServerError(e, 'Intenta de nuevo.')) });
+  const profile = useAuthStore((s) => s.profile);
+  const answer = (r: { user_id: string; full_name: string; photo_url: string | null }, accept: boolean) =>
+    respond.mutate({ personId: r.user_id, accept }, {
+      onSuccess: () => {
+        if (!accept || !userId) return;
+        celebrate({
+          kind: 'friend-made',
+          me: { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null },
+          friend: { id: r.user_id, name: r.full_name, photoUrl: r.photo_url },
+          onCreateGroup: () => router.push({ pathname: '/(tabs)/grupos/nuevo', params: { friend: r.user_id } }),
+          onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
+        });
+      },
+      onError: (e) => Alert.alert('No se pudo responder', friendlyServerError(e, 'Intenta de nuevo.')),
+    });
 
   return (
     <View className="flex-1">
@@ -55,10 +69,10 @@ export default function AmigosScreen() {
                     <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Quiere ser tu amigo</Text>
                   </View>
                 </Press>
-                <Press accessibilityRole="button" accessibilityLabel={`Aceptar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r.user_id, true)} className="rounded-full px-3.5 py-2" style={{ backgroundColor: colors.aquaDeep }}>
+                <Press accessibilityRole="button" accessibilityLabel={`Aceptar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, true)} className="rounded-full px-3.5 py-2" style={{ backgroundColor: colors.aquaDeep }}>
                   <Text style={{ color: '#fff', fontSize: 12.5, fontWeight: '700' }}>Aceptar</Text>
                 </Press>
-                <Press accessibilityRole="button" accessibilityLabel={`Rechazar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r.user_id, false)} className="rounded-full px-3.5 py-2" style={{ borderWidth: 1, borderColor: line }}>
+                <Press accessibilityRole="button" accessibilityLabel={`Rechazar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, false)} className="rounded-full px-3.5 py-2" style={{ borderWidth: 1, borderColor: line }}>
                   <Text style={{ color: muted, fontSize: 12.5, fontWeight: '700' }}>No</Text>
                 </Press>
               </View>
@@ -71,7 +85,7 @@ export default function AmigosScreen() {
         </Text>
 
         {isLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
-        {isError && !friends && <EmptyState title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
+        {isError && !friends && <EmptyState mascot="confundido" title="No pudimos cargar a tus amigos" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />}
         {!isLoading && !isError && (friends ?? []).length === 0 && (
           <EmptyState
             title="Todavía no tienes amigos en Camina"

@@ -20,6 +20,7 @@ const REPLACED = {
   '@/lib/supabase': 'supabase.mts',
   '@/store/useAuthStore': 'auth-store.mts',
   '@react-native-async-storage/async-storage': 'async-storage.mts',
+  '@/lib/health-steps': 'health-steps.mts',
 };
 
 registerHooks({

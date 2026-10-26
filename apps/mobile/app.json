@@ -18,9 +18,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "bo.camina.app",
       "infoPlist": {
-        "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganás caminando.",
+        "NSMotionUsageDescription": "Camina usa tus pasos para calcular los Puntos que ganas caminando.",
         "NSLocationWhenInUseUsageDescription": "Camina usa tu ubicación para mostrarte los comercios y beneficios más cercanos.",
-        "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+        "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganas caminando.",
         "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleURLTypes": [
@@ -116,7 +116,7 @@
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganás caminando.",
+          "NSHealthShareUsageDescription": "Camina lee tus pasos de Salud para calcular los Puntos que ganas caminando.",
           "NSHealthUpdateUsageDescription": "Camina no escribe datos en Salud, solo lee tus pasos.",
           "background": true
         }
