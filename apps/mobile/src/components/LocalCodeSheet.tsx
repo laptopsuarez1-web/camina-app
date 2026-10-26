@@ -14,13 +14,11 @@ type Props = {
   onClose: () => void;
   // Devuelve el mensaje de error para mostrar, o null si el canje salió bien.
   onSubmit: (code: string) => Promise<string | null>;
-  // El local no da código o la persona prefiere el código para el cajero (el de 6 números de siempre).
-  onFallback: () => void;
   onDismiss?: () => void;
 };
 
 // Hoja para canjear con el código de 4 números que el local le dice a la persona en la caja.
-export function LocalCodeSheet({ visible, businessName, benefitName, costLine, onClose, onSubmit, onFallback, onDismiss }: Props) {
+export function LocalCodeSheet({ visible, businessName, benefitName, costLine, onClose, onSubmit, onDismiss }: Props) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -102,9 +100,6 @@ export function LocalCodeSheet({ visible, businessName, benefitName, costLine, o
               {busy ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-[15px] font-bold text-white">Canjear</Text>}
             </Press>
 
-            <Press accessibilityRole="button" hitSlop={8} onPress={onFallback} disabled={busy} className="py-2.5 items-center">
-              <Text className="text-[13px] font-bold text-purple-ink dark:text-purple-soft">Prefiero mostrar un código al cajero</Text>
-            </Press>
             <Press accessibilityRole="button" hitSlop={8} onPress={onClose} disabled={busy} className="py-2 items-center">
               <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no</Text>
             </Press>

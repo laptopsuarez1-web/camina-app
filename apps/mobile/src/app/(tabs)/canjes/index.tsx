@@ -873,7 +873,7 @@ export default function CanjesScreen() {
         case 'bloqueado':
           return 'Probaste muchas veces. Espera una hora para volver a intentar.';
         default:
-          return 'Este local todavía no usa el código. Toca "Prefiero mostrar un código al cajero".';
+          return 'Este local todavía no puede canjear con código. Escríbenos y lo arreglamos.';
       }
     } catch (e) {
       return friendlyServerError(e, 'No se pudo canjear. Intenta de nuevo.');
@@ -1818,12 +1818,6 @@ export default function CanjesScreen() {
         }
         onClose={() => setLocalCodeFor(null)}
         onSubmit={(code) => (localCodeFor ? submitLocalCode(localCodeFor, code) : Promise.resolve(null))}
-        onFallback={() => {
-          const b = localCodeFor;
-          if (!b) return;
-          runAfterClose(afterLocalCodeClose, true, () => handleRedeem(b.id, b));
-          setLocalCodeFor(null);
-        }}
         onDismiss={() => flushAfterClose(afterLocalCodeClose)}
       />
 
