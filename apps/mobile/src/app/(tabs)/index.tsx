@@ -166,11 +166,17 @@ export default function HomeScreen() {
   const [pillBump] = useState(() => new Animated.Value(0));
   const [flight, setFlight] = useState<CoinFlightPath | null>(null);
   const flying = useRef(false);
+  // Puntos que se ganaron mientras otra moneda iba volando: cada uno sale después, uno por uno.
+  const pendingCoins = useRef(0);
+  const flyingSince = useRef(0);
   function launchCoin() {
-    if (reduceMotion.current || flying.current) return;
+    if (reduceMotion.current) return;
+    // Si una moneda quedó trabada (p. ej. se cortó al cambiar de pestaña), no bloquea las siguientes.
+    if (flying.current && Date.now() - flyingSince.current < 6000) { pendingCoins.current += 1; return; }
     const root = rootRef.current, chip = chipRef.current, pill = pillRef.current;
     if (!root || !chip || !pill) return;
     flying.current = true;
+    flyingSince.current = Date.now();
     root.measureInWindow((ox, oy) => {
       chip.measureInWindow((cx, cy, cw, ch) => {
         pill.measureInWindow((px, py, pw, ph) => {
@@ -214,7 +220,8 @@ export default function HomeScreen() {
     AsyncStorage.setItem(`camina_home_seen_${userId}`, JSON.stringify(seen.current)).catch(() => {});
     if (newPoint) {
       buzz.light();
-      launchCoin();
+      // Una moneda por cada Punto nuevo (si de golpe se ganaron 3, salen 3 una tras otra).
+      for (let i = 0; i < Math.min(pointsToday - before.points, 5); i++) launchCoin();
       chipPop.setValue(0);
       Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     }
@@ -633,7 +640,11 @@ export default function HomeScreen() {
 
       </View>
     </ScrollView>
-    {flight && <CoinFlight path={flight} bump={pillBump} onDone={() => { flying.current = false; setFlight(null); }} />}
+    {flight && <CoinFlight path={flight} bump={pillBump} onDone={() => {
+      flying.current = false;
+      setFlight(null);
+      if (pendingCoins.current > 0) { pendingCoins.current -= 1; setTimeout(launchCoin, 150); }
+    }} />}
     </View>
   );
 }
