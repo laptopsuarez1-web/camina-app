@@ -47,14 +47,26 @@ begin
   select steps into st from steps_daily where user_id = u and day = today;
   perform tt.t_eq('pasos negativos: se guardan como 0', st, 0);
 
-  -- ===== Fechas válidas: hoy y ayer =====
+  -- ===== Fechas válidas: solo hoy (0067) =====
   u := tt.mk_user(); perform tt.t_as(u);
   perform tt.t_raises('mañana no se puede sincronizar', format('select earn_points_from_steps(%L, %L, 1000)', u, today + 1), 'Fecha de sincronización inválida');
   perform tt.t_raises('hace dos días no se puede sincronizar', format('select earn_points_from_steps(%L, %L, 1000)', u, today - 2), 'Fecha de sincronización inválida');
-  perform earn_points_from_steps(u, ytd, 20000);
+  bal := earn_points_from_steps(u, ytd, 20000);
+  perform tt.t_eq('ayer no da Puntos (cuenta nueva con pasos guardados de ayer)', tt.steps_pts(u, ytd), 0);
+  perform tt.t_eq('ayer no da error: devuelve el saldo (apps viejas siguen sincronizando hoy)', bal, 0);
+  perform tt.t_eq('ayer no guarda pasos', (select count(*)::integer from steps_daily where user_id = u and day = ytd), 0);
   perform earn_points_from_steps(u, today, 20000);
-  perform tt.t_eq('ayer y hoy tienen cada uno su tope de 20 (40 Puntos)', tt.steps_pts(u, ytd) + tt.steps_pts(u, today), 40);
-  perform tt.t_eq('el saldo suma los dos días', user_points_balance(u), 40);
+  perform tt.t_eq('hoy sí suma (tope de 20)', tt.steps_pts(u, today), 20);
+  perform tt.t_eq('el saldo es solo el de hoy', user_points_balance(u), 20);
+
+  -- Ayer con pasos ya guardados y Puntos ya ganados ese día: no se suma nada más ni se pierde lo ganado.
+  u := tt.mk_user(); perform tt.t_as(u);
+  perform tt.seed_steps(u, ytd, 3000);
+  insert into points_ledger (user_id, amount, reason, ref_day, expires_at) values (u, 3, 'steps', ytd, now() + interval '30 days');
+  perform earn_points_from_steps(u, ytd, 15000);
+  perform tt.t_eq('ayer con 3 Puntos ya ganados: siguen siendo 3', tt.steps_pts(u, ytd), 3);
+  select steps into st from steps_daily where user_id = u and day = ytd;
+  perform tt.t_eq('ayer con fila previa: los pasos guardados no cambian', st, 3000);
 
   -- ===== Identidad =====
   u2 := tt.mk_user();
@@ -97,11 +109,6 @@ begin
   perform earn_points_from_steps(u, today, 6000);               -- pide menos de lo permitido
   select steps into st from steps_daily where user_id = u and day = today;
   perform tt.t_eq('si pide menos de lo permitido, se guarda lo pedido', st, 6000);
-
-  -- Ayer sin fila previa: la ventana arranca a medianoche de ayer (más de 24 h), así que no limita.
-  u := tt.mk_user(); perform tt.t_as(u);
-  perform earn_points_from_steps(u, ytd, 25000);
-  perform tt.t_eq('ayer sin fila previa: 25.000 pasos dan 20 Puntos', tt.steps_pts(u, ytd), 20);
 
   -- ===== BUG: el margen de 2.000 se suma en CADA llamada, no una vez por tiempo transcurrido =====
   -- Cada sync actualiza updated_at = now(); la siguiente llamada vuelve a sumar +2.000 sin que pase tiempo.

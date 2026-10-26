@@ -14,10 +14,10 @@ import {
 } from 'react-native-health-connect';
 import { supabase } from '@/lib/supabase';
 import { STEP_COUNT_IDENTIFIER } from '@/lib/health-steps';
-import { syncRecentDays } from '@/lib/steps-sync';
+import { syncToday } from '@/lib/steps-sync';
 
 // Sincronización de pasos con la app cerrada, para que los Puntos de hoy no dependan de abrirla.
-// - Android: una tarea periódica (WorkManager, cada 15 min o más) lee Health Connect y manda ayer y hoy.
+// - Android: una tarea periódica (WorkManager, cada 15 min o más) lee Health Connect y manda los pasos de hoy.
 //   Necesita el permiso "leer en segundo plano" de Health Connect (se pide una vez).
 // - iPhone: HealthKit despierta la app cuando hay pasos nuevos (como mucho una vez por hora; Apple decide cuándo)
 //   y además hay una tarea periódica de respaldo. Si la persona cierra Camina deslizándola, iOS puede dejar de despertarla.
@@ -30,7 +30,7 @@ const MIN_GAP_MS = 2 * 60_000;
 let lastRun = 0;
 let running: Promise<void> | null = null;
 
-// Manda ayer y hoy si hay sesión. Nunca lanza: corre sin pantalla y no hay nadie a quien mostrarle un error.
+// Manda los pasos de hoy si hay sesión. Nunca lanza: corre sin pantalla y no hay nadie a quien mostrarle un error.
 export function syncStepsInBackground(): Promise<void> {
   if (running) return running;
   if (Date.now() - lastRun < MIN_GAP_MS) return Promise.resolve();
@@ -40,7 +40,7 @@ export function syncStepsInBackground(): Promise<void> {
       const userId = data.session?.user.id;
       if (!userId) return;
       if (Platform.OS === 'android') await initializeHealthConnect();
-      await syncRecentDays(userId);
+      await syncToday(userId);
       lastRun = Date.now();
     } catch {
       // sin red, teléfono bloqueado (Salud no se puede leer) o sin permiso: se intenta en la próxima
