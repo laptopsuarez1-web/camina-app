@@ -317,7 +317,7 @@ export function ChallengeCreatedScene({
     transform: [{ translateY: (1 - ticket.value) * 60 }, { scale: 0.86 + 0.14 * ticket.value }, { rotate: `${(1 - ticket.value) * -3}deg` }],
   }));
   return (
-    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`} align="top">
+    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`}>
       <Reveal tl={tl} delay={250}><Eyebrow color={p.muted}>{groupName ? `Nuevo desafío · ${groupName}` : 'Nuevo desafío'}</Eyebrow></Reveal>
       <Animated.View style={[{ alignSelf: 'stretch', marginTop: 16, borderRadius: 28, paddingVertical: 20, paddingHorizontal: 16, alignItems: 'center', gap: 12, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }, ticketStyle]}>
         <DrawRing tl={tl} delay={300} size={128} stroke={8} track={p.track}>
@@ -368,7 +368,7 @@ export function ChallengeCreatedScene({
           {dates}. Invita a tu grupo: quienes cumplan la meta se reparten los Puntos.
         </Text>
       </Reveal>
-      <Reveal tl={tl} delay={3050} dy={20} style={{ alignSelf: 'stretch', marginTop: 'auto' }}>
+      <Reveal tl={tl} delay={3050} dy={20} style={{ alignSelf: 'stretch', marginTop: 28 }}>
         <MainButton label="Invitar al grupo" onPress={onInvite} />
         <LinkButton label="Ir al grupo" onPress={onGoGroup} color={p.accent} />
         <LinkButton label="Volver al inicio" onPress={onHome} color={p.muted} />
