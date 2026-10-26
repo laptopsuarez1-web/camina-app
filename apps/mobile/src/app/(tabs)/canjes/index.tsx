@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
 import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Animated, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -539,6 +540,7 @@ export default function CanjesScreen() {
   }
   function closeProfile() {
     setGalleryOpen(false);
+    setDetailBenefitId(null);
     setProfileBusinessId(null);
   }
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -782,6 +784,8 @@ export default function CanjesScreen() {
   useEffect(() => {
     profileOpenRef.current = !!profileGroup;
   }, [profileGroup]);
+  const [detailBenefitId, setDetailBenefitId] = useState<string | null>(null);
+  const detailBenefit = profileGroup?.benefits.find((x) => x.id === detailBenefitId) ?? null;
   const { data: loyalty } = useLoyaltyCard(profileGroup?.business.id);
   const { data: newPlaceBonus } = useNewPlaceBonus(profileGroup?.business.id);
 
@@ -1573,7 +1577,13 @@ export default function CanjesScreen() {
                               className="rounded-3xl p-3.5"
                               style={{ opacity: available && !outOfStock ? 1 : 0.7 }}
                             >
-                              <View className="flex-row items-center" style={{ gap: 14 }}>
+                              <Press
+                                accessibilityRole="button"
+                                accessibilityLabel={`${b.name}. Ver detalle: horario, validez y condiciones`}
+                                onPress={() => setDetailBenefitId(b.id)}
+                                className="flex-row items-center"
+                                style={{ gap: 14 }}
+                              >
                                 {b.image_url ? (
                                   <Image source={{ uri: b.image_url }} style={{ width: 84, height: 84, borderRadius: 18 }} />
                                 ) : (
@@ -1606,7 +1616,7 @@ export default function CanjesScreen() {
                                     ) : null}
                                   </View>
                                 </View>
-                              </View>
+                              </Press>
                               <Press
                                 accessibilityRole="button"
                                 accessibilityState={{ busy: redeeming }}
@@ -1746,6 +1756,9 @@ export default function CanjesScreen() {
                 </ScrollView>
               )}
             </View>
+          ) : null}
+          {detailBenefit && profileGroup ? (
+            <BenefitDetailOverlay benefit={detailBenefit} business={profileGroup.business} onClose={() => setDetailBenefitId(null)} />
           ) : null}
           </View>
         )}
