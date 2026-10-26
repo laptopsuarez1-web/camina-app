@@ -13,6 +13,8 @@ import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
 import { celebrate } from '@/store/useCelebrationStore';
+import { boliviaDate, boliviaTime, MONTHS } from '@/lib/promo';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/promos/PromoCards';
@@ -23,6 +25,7 @@ export default function EventosScreen() {
   const claim = useClaimReto();
   const { data: promos, isLoading: promosLoading, isError: promosError, refetch: refetchPromos } = usePromotions();
   const join = useJoinPromotion();
+  const profile = useAuthStore((s) => s.profile);
   const params = useLocalSearchParams<{ tab?: string }>();
   // Viene de Inicio con ?tab=...; si la persona toca una pestaña, manda su elección.
   const [picked, setPicked] = useState<{ from: string | undefined; tab: 'eventos' | 'desafios' } | null>(null);
@@ -37,9 +40,39 @@ export default function EventosScreen() {
   async function handleJoin(p: PromotionItem) {
     try {
       await join.mutateAsync(p.id);
+      if (p.kind === 'desafio') {
+        // Desafío de un comercio: misma cinemática que en los grupos, con el logo del local en el centro del aro.
+        setOpen(null);
+        celebrate({
+          kind: 'challenge-joined',
+          name: p.title,
+          me: { id: 'yo', name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null },
+          others: [],
+          stake: 0,
+          potBefore: 0,
+          logoUrl: p.business?.logo_url ?? null,
+          subtitle: `Tus pasos cuentan desde ahora.${p.business ? ` Desafío de ${p.business.name}.` : ''}`,
+        });
+        return;
+      }
+      if (p.kind === 'evento') {
+        setOpen(null);
+        const d = boliviaDate(p.starts_at);
+        celebrate({
+          kind: 'event-joined',
+          title: p.title,
+          day: d.day,
+          month: MONTHS[d.month],
+          when: boliviaTime(p.starts_at),
+          place: p.place_name ?? p.place_address ?? undefined,
+          placeUrl: p.place_url,
+          participants: p.participants + 1,
+        });
+        return;
+      }
       // iOS ignora accessibilityLiveRegion: se anuncia a mano que ya quedó anotado.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility('Ya estás anotado');
-      Alert.alert('¡Listo!', p.kind === 'evento' ? 'Ya estás anotado en el evento.' : 'Ya eres parte del desafío. Tus pasos cuentan desde ahora.');
+      Alert.alert('¡Listo!', 'Ya eres parte del sorteo.');
     } catch (e) {
       Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }

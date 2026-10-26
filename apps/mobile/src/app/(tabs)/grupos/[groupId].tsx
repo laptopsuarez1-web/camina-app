@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
 import { celebrate } from '@/store/useCelebrationStore';
-import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft } from '@/hooks/useChallenges';
+import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft, ruleText } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { GroupShareSheet } from '@/components/friends/GroupShareSheet';
@@ -51,7 +51,8 @@ function GoalBar({ pct }: { pct: number }) {
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
   const { muted, accentText, accentIcon, warnText } = useThemeColors();
-  const { groupId, compartir } = useLocalSearchParams<{ groupId: string; compartir?: string }>();
+  const { groupId, nuevo, bienvenida } = useLocalSearchParams<{ groupId: string; nuevo?: string; bienvenida?: string }>();
+  const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
   const { data, isLoading, refetch } = useGroupDetail(groupId);
   const { data: notes } = useGroupNotes(groupId);
@@ -71,29 +72,67 @@ export default function GroupDetailScreen() {
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
   const groupName = data?.group.name;
-  // Recién creado: se abre solo la hoja para invitar (link, código o amigos), una vez.
-  const autoShared = useRef(false);
+  // Recién creado o recién unido: escena de bienvenida, una vez. "Invitar amigos" abre la hoja para compartir.
+  const welcomed = useRef(false);
   useEffect(() => {
-    if (compartir === '1' && data && !autoShared.current) {
-      autoShared.current = true;
-      setShareOpen(true);
+    if (welcomed.current || !data || !userId || (nuevo !== '1' && bienvenida !== '1')) return;
+    welcomed.current = true;
+    const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };
+    if (nuevo === '1') {
+      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, onInvite: () => setShareOpen(true) });
+      return;
     }
-  }, [compartir, data]);
+    const target = data.group.challenge_target;
+    const done = data.members.reduce((a, m) => a + m.steps, 0);
+    celebrate({
+      kind: 'group-joined',
+      name: data.group.name,
+      me,
+      others: data.members.filter((m) => m.id !== userId).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null })),
+      total: data.members.length,
+      goalText: target > 0 ? `Meta de la semana: ${target.toLocaleString('es-BO')} pasos juntos. Van ${done.toLocaleString('es-BO')}.` : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nuevo, bienvenida, data, userId]);
   const groupTotal = data ? data.members.reduce((a, m) => a + m.steps, 0) : 0;
   const groupTarget = data?.group.challenge_target ?? 0;
 
-  // Gané puntos en un desafío que ya terminó: pantalla de celebración, una sola vez.
+  // Terminó el último desafío: cinemática del podio, una sola vez (ganes o no).
   useEffect(() => {
-    if (!lastResult || lastResult.payout <= 0) return;
-    const key = `camina_ch_win_${lastResult.challengeId}`;
-    AsyncStorage.getItem(key).then((seen) => {
-      if (seen) return;
+    if (!lastResult || !data || !userId) return;
+    const key = `camina_ch_end_${lastResult.challengeId}`;
+    // Quien ya vio la pantalla vieja de "Ganaste" no la vuelve a ver.
+    AsyncStorage.multiGet([key, `camina_ch_win_${lastResult.challengeId}`]).then((pairs) => {
+      if (pairs.some(([, v]) => v)) return;
       AsyncStorage.setItem(key, '1').catch(() => {});
-      celebrate({ kind: 'win', title: `Ganaste «${lastResult.name}»`, body: `Quedaste en el puesto ${lastResult.rank}${groupName ? ` en ${groupName}` : ''}`, points: lastResult.payout });
-      queryClient.invalidateQueries({ queryKey: ['points-balance'] });
+      const person = (id: string) => {
+        const m = data.members.find((x) => x.id === id);
+        return { id, name: m?.name ?? 'Caminante', photoUrl: m?.photoUrl ?? null };
+      };
+      const { results, mine, rule } = lastResult;
+      const above = results.find((r) => r.rank === mine.rank - 1);
+      let gap: string | undefined;
+      if (above && rule === 'steps') gap = `Te faltaron ${(above.steps - mine.steps).toLocaleString('es-BO')} pasos para alcanzar a ${person(above.user_id).name.split(' ')[0]}. ¡La próxima es tuya!`;
+      else if (above && rule === 'days' && above.goal_days > mine.goal_days) gap = `Te ${above.goal_days - mine.goal_days === 1 ? 'faltó 1 día' : `faltaron ${above.goal_days - mine.goal_days} días`} con meta para alcanzar a ${person(above.user_id).name.split(' ')[0]}.`;
+      celebrate({
+        kind: 'challenge-ended',
+        name: lastResult.name,
+        groupName,
+        meId: userId,
+        myRank: mine.rank,
+        participants: results.length,
+        payout: mine.payout,
+        podium: results.slice(0, 3).map((r) => ({ person: person(r.user_id), value: ruleText(rule, r) })),
+        myValue: ruleText(rule, mine),
+        goalDays: mine.goal_days,
+        days: lastResult.days,
+        gap,
+        onRematch: () => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: groupId! } }),
+      });
+      if (mine.payout > 0) queryClient.invalidateQueries({ queryKey: ['points-balance'] });
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastResult?.challengeId]);
+  }, [lastResult?.challengeId, !!data]);
 
   // Meta semanal del grupo cumplida: aviso una sola vez por semana.
   useEffect(() => {
@@ -402,8 +441,22 @@ export default function GroupDetailScreen() {
               <Press
                 accessibilityRole="button"
                 onPress={async () => {
+                  const others = (ch?.standings ?? []).filter((st) => st.user_id !== userId).map((st) => {
+                    const m = data.members.find((x) => x.id === st.user_id);
+                    return { id: st.user_id, name: m?.name ?? 'Caminante', photoUrl: m?.photoUrl ?? null };
+                  });
+                  const me = data.members.find((x) => x.id === userId);
                   try {
                     await joinChallenge.mutateAsync(active.id);
+                    celebrate({
+                      kind: 'challenge-joined',
+                      name: active.name,
+                      me: { id: userId ?? 'yo', name: me?.name ?? 'Tú', photoUrl: me?.photoUrl ?? null },
+                      others,
+                      stake: active.stake,
+                      potBefore: pot,
+                      subtitle: `Tus pasos de hoy ya cuentan. ${others.length + 1} ${plural(others.length + 1, 'caminante', 'caminantes')}, ${left + 1} ${plural(left + 1, 'día', 'días')}.`,
+                    });
                   } catch (e) {
                     Alert.alert('No se pudo sumar', friendlyServerError(e, 'Intenta de nuevo.'));
                   }

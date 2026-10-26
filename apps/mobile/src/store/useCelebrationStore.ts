@@ -1,14 +1,28 @@
 import { create } from 'zustand';
+import type { EndedCinematic, JoinedCinematic } from '@/components/challenge/ChallengeCinematics';
+import type {
+  EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupJoinedCinematic, StreakCinematic, TicketBoughtCinematic,
+} from '@/components/celebrations/MomentScenes';
 
 // Celebraciones y avisos de logros. Hay tres tamaños, de menor a mayor:
 //  - toast: aviso corto arriba (o abajo, con at: 'bottom') que se va solo (racha, "se unió un amigo");
 //  - sheet: hoja desde abajo con chispas (reto cumplido, bienvenida);
-//  - win: pantalla completa, solo para el gran momento (ganar un desafío de grupo).
+//  - win: pantalla completa para un gran logro;
+//  - challenge-joined / challenge-ended: cinemáticas de los desafíos (sumarse y terminar);
+//  - ticket-bought, event-joined, group-joined, group-created, friend-made, streak-milestone: escenas de momentos grandes.
 export type ToastIcon = 'flame' | 'gift' | 'check' | 'users';
 export type Celebration =
   | { kind: 'toast'; icon: ToastIcon; title: string; body?: string; at?: 'top' | 'bottom' }
   | { kind: 'sheet'; title: string; body?: string; points?: number; cta?: string; sparks?: boolean }
-  | { kind: 'win'; title: string; body?: string; points: number };
+  | { kind: 'win'; title: string; body?: string; points: number }
+  | JoinedCinematic
+  | EndedCinematic
+  | TicketBoughtCinematic
+  | EventJoinedCinematic
+  | GroupJoinedCinematic
+  | GroupCreatedCinematic
+  | FriendMadeCinematic
+  | StreakCinematic;
 
 interface CelebrationState {
   queue: (Celebration & { id: number })[];

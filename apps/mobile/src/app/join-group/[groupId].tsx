@@ -56,7 +56,7 @@ export default function JoinGroupScreen() {
       Alert.alert('No se pudo unir al grupo', friendlyServerError(error, 'Intenta de nuevo.'));
       return;
     }
-    router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId } });
+    router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId, bienvenida: '1' } });
   }
 
   if (loading || !group) {
