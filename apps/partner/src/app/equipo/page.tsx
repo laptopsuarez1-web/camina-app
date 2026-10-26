@@ -66,7 +66,7 @@ export default function EquipoPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Mi equipo" subtitle="Dale acceso a tus cajeros para que confirmen canjes sin usar tu contraseña." />
+      <TopBar title="Mi equipo" subtitle="Dale acceso a tus cajeros para que vean el código del local y atiendan canjes sin usar tu contraseña." />
       <div className="max-w-[560px]">
         <div className="bg-card border border-line rounded-2xl p-4 mb-5 text-[13px] leading-5">
           <p className="font-bold mb-1">Cómo funciona</p>

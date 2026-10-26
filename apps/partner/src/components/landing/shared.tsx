@@ -435,7 +435,7 @@ export function PanelComercio() {
       <div className="wrap panel-row">
         <div>
           <Kinetic text="Todo desde tu panel." as="h2" />
-          <p className="lead">Cargás tu local y tus premios, tenés tu código de canje y mirás tus canjes. Sin instalar nada.</p>
+          <p className="lead">Cargás tu local y tus premios, tenés el código de tu local y mirás tus canjes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
             <Link className="lp-btn line" href="/login">Ya tengo cuenta</Link>
