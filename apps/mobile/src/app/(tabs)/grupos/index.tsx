@@ -123,7 +123,7 @@ export default function GruposScreen() {
 
       {isError && !groups && (
         <View className="mb-7">
-          <EmptyState
+          <EmptyState mascot="confundido"
             title="No pudimos cargar"
             text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"

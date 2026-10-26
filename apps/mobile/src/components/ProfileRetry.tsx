@@ -31,7 +31,7 @@ export function ProfileRetry() {
 
   return (
     <View className="flex-1 justify-center bg-bg-light dark:bg-bg-dark px-6">
-      <EmptyState title="No pudimos cargar tu perfil" text="Revisa tu conexión e intenta de nuevo." />
+      <EmptyState mascot="confundido" title="No pudimos cargar tu perfil" text="Revisa tu conexión e intenta de nuevo." />
       <Press
         accessibilityRole="button"
         accessibilityLabel="Reintentar"

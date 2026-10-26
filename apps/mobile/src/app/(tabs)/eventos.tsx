@@ -11,7 +11,7 @@ import { Glass } from '@/components/ui/Glass';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
+import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { celebrate } from '@/store/useCelebrationStore';
 import { boliviaDate, boliviaTime, MONTHS } from '@/lib/promo';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -129,7 +129,7 @@ export default function EventosScreen() {
 
       {promosError && !promos && (
         <View className="mb-8">
-          <EmptyState
+          <EmptyState mascot="confundido"
             title="No pudimos cargar"
             text="Revisa tu conexión e intenta de nuevo."
             actionLabel="Reintentar"
@@ -139,7 +139,7 @@ export default function EventosScreen() {
       )}
       {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 : challenges.length === 0) && (
         <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
-          <EmptyIllustration kind="eventos" />
+          <BaifoMascot pose="sentado" />
           <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
             {tab === 'eventos' ? 'Todavía no hay eventos' : 'Todavía no hay desafíos de comercios'}
           </Text>

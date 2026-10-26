@@ -112,7 +112,7 @@ export default function FriendProfileScreen() {
   if (isError && !card) {
     return (
       <View className="flex-1 px-5 justify-center">
-        <EmptyState title="No pudimos cargar el perfil" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
+        <EmptyState mascot="confundido" title="No pudimos cargar el perfil" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetch()} />
       </View>
     );
   }
