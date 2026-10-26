@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { Image, Linking, Platform, View } from 'react-native';
+import { Press } from '@/components/ui/Press';
 import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
@@ -17,8 +18,9 @@ export type BenefitFacts = {
   valid_days_mask?: number;
   online?: boolean;
   online_channel?: string | null;
+  image_url?: string | null;
 };
-export type PlaceFacts = { address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours };
+export type PlaceFacts = { name?: string; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours; lat?: number | null; lng?: number | null };
 
 const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const CHANNEL: Record<string, string> = {
@@ -56,16 +58,36 @@ export function Chip({ icon: Icon, label, tone }: { icon: Parameters<typeof Icon
 }
 
 // Título grande, local y dirección a la izquierda; costo en una pastilla arriba a la derecha.
-export function BenefitHeader({ title, businessName, address, cost, avatar }: { title: string; businessName: string; address?: string | null; cost: number; avatar?: React.ReactNode }) {
+function CostPill({ cost }: { cost: number }) {
+  return (
+    <View className="flex-row items-center rounded-full bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 6, paddingHorizontal: 12, paddingVertical: 8 }}>
+      <Coin size={20} />
+      <Text className="text-[15px] font-bold text-aqua-ink dark:text-aqua">{cost} {plural(cost, 'Punto', 'Puntos')}</Text>
+    </View>
+  );
+}
+
+// Foto del premio (la que sube el comercio para ese premio, no la del local), con el costo encima.
+export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number }) {
+  if (!url) return null;
   return (
     <View>
-      <View className="flex-row items-center justify-between" style={{ marginBottom: 12 }}>
-        {avatar ?? <View />}
-        <View className="flex-row items-center rounded-full bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 6, paddingHorizontal: 12, paddingVertical: 8 }}>
-          <Coin size={20} />
-          <Text className="text-[15px] font-bold text-aqua-ink dark:text-aqua">{cost} {plural(cost, 'Punto', 'Puntos')}</Text>
+      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: '100%', height: 190, borderRadius: 20 }} resizeMode="cover" />
+      <View style={{ position: 'absolute', top: 10, right: 10 }}><CostPill cost={cost} /></View>
+    </View>
+  );
+}
+
+// Título grande, local y dirección; el costo va arriba a la derecha (o sobre la foto si hay foto).
+export function BenefitHeader({ title, businessName, address, cost, avatar, hasPhoto }: { title: string; businessName: string; address?: string | null; cost: number; avatar?: React.ReactNode; hasPhoto?: boolean }) {
+  return (
+    <View>
+      {hasPhoto ? null : (
+        <View className="flex-row items-center justify-between" style={{ marginBottom: 12 }}>
+          {avatar ?? <View />}
+          <CostPill cost={cost} />
         </View>
-      </View>
+      )}
       <Text accessibilityRole="header" className="text-[26px] font-bold text-text-light dark:text-text-dark" style={{ lineHeight: 31 }}>{title}</Text>
       <Text className="text-[14px] text-muted-light dark:text-muted-dark" style={{ marginTop: 4, lineHeight: 20 }}>
         <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">{businessName}</Text>
@@ -139,6 +161,35 @@ export function PlaceBlock({ benefit: b, place, showAddress = true }: { benefit:
         </View>
       ) : null}
       {hasHours ? <BusinessHours openingHours={place!.opening_hours} hoursText={place!.hours_text ?? null} /> : null}
+    </View>
+  );
+}
+
+function openDirections(place: PlaceFacts) {
+  const label = encodeURIComponent(place.name ?? place.address ?? 'Local');
+  const hasPoint = typeof place.lat === 'number' && typeof place.lng === 'number';
+  const web = hasPoint
+    ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address ?? '')}`;
+  const native = hasPoint
+    ? Platform.select({ ios: `maps:0,0?q=${label}@${place.lat},${place.lng}`, android: `geo:0,0?q=${place.lat},${place.lng}(${label})` })
+    : undefined;
+  (native ? Linking.openURL(native) : Promise.reject()).catch(() => Linking.openURL(web).catch(() => {}));
+}
+
+// "Cómo llegar": dirección y botón que abre el mapa del teléfono. Los locales sin dirección ni ubicación no lo muestran.
+export function HowToGetThere({ place }: { place?: PlaceFacts | null }) {
+  if (!place || (!place.address && (typeof place.lat !== 'number' || typeof place.lng !== 'number'))) return null;
+  return (
+    <View>
+      <SectionTitle>Cómo llegar</SectionTitle>
+      <Glass className="flex-row items-center rounded-2xl px-3.5 py-3" style={{ gap: 12 }}>
+        <IconBubble icon={MapPin} tone="aqua" size={38} />
+        <Text className="flex-1 text-[14px] text-text-light dark:text-text-dark">{place.address ?? place.name}</Text>
+        <Press accessibilityRole="link" accessibilityLabel="Ver en el mapa" onPress={() => openDirections(place)}>
+          <Text className="text-[14px] font-bold text-aqua-ink dark:text-aqua">Ver en mapa</Text>
+        </Press>
+      </Glass>
     </View>
   );
 }

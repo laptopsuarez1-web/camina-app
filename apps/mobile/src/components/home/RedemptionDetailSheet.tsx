@@ -5,7 +5,7 @@ import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { type OpeningHours } from '@/components/BusinessHours';
 import { Glass } from '@/components/ui/Glass';
 import { CheckCircle2, Clock, IconBubble, X } from '@/components/icons';
-import { BenefitHeader, ChannelChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BenefitPhoto, HowToGetThere, BenefitHeader, ChannelChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un canje ya hecho (Inicio > Tus canjes): qué premio es, dónde, cuándo vale y en qué estado está.
 // Los datos salen de la misma consulta de useMyRedemptions (benefit:benefits(*), business:businesses(*)).
@@ -28,6 +28,7 @@ export type RedemptionDetail = {
     valid_days_mask?: number;
     online?: boolean;
     online_channel?: string | null;
+    image_url?: string | null;
   } | null;
   business: {
     id?: string;
@@ -35,6 +36,8 @@ export type RedemptionDetail = {
     logo_url: string | null;
     category: string;
     address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
     hours_text?: string | null;
     opening_hours?: OpeningHours;
     plan?: string | null;
@@ -76,12 +79,14 @@ export function RedemptionDetailSheet({
           {r && st ? (
             <>
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 12, gap: 22 }}>
+                <BenefitPhoto url={b?.image_url} cost={r.cost_points} />
                 <BenefitHeader
+                  hasPhoto={!!b?.image_url}
                   title={b?.name ?? 'Premio'}
                   businessName={biz?.name ?? 'Comercio'}
                   address={biz?.address}
                   cost={r.cost_points}
-                  avatar={<BusinessAvatar logoUrl={biz?.logo_url} category={biz?.category} size={56} />}
+                  avatar={b?.image_url ? undefined : <BusinessAvatar logoUrl={biz?.logo_url} category={biz?.category} size={56} />}
                 />
 
                 <Glass className="flex-row items-center rounded-2xl px-3.5 py-3" style={{ gap: 12 }}>
@@ -110,6 +115,7 @@ export function RedemptionDetailSheet({
                 {r.status === 'pending' ? <HowToRedeem steps={steps} /> : null}
                 {b ? <Conditions items={conditionsOf(b)} /> : null}
                 {b ? <PlaceBlock benefit={b} place={biz} showAddress={false} /> : null}
+                {b && !b.online ? <HowToGetThere place={biz} /> : null}
               </ScrollView>
               <View style={{ paddingTop: 10, paddingBottom: 28 }}>
                 {biz?.id ? (
