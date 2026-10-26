@@ -95,6 +95,9 @@ Deno.serve(async (req) => {
   // las filas para reintentarlas en la próxima corrida; los tokens inválidos se borran.
   let failed = false;
   const deadTokens: string[] = [];
+  // Errores que Expo devuelve en el ticket (distintos de un token muerto). Antes se ignoraban y la fila
+  // quedaba como enviada aunque nunca saliera el aviso.
+  const ticketErrors: Record<string, number> = {};
   for (let i = 0; i < messages.length; i += 100) {
     const chunk = messages.slice(i, i + 100);
     try {
@@ -111,9 +114,16 @@ Deno.serve(async (req) => {
         failed = true;
         continue;
       }
-      const body = (await res.json()) as { data?: Array<{ status: string; details?: { error?: string } }> };
+      const body = (await res.json()) as { data?: Array<{ status: string; message?: string; details?: { error?: string } }> };
       (body.data ?? []).forEach((ticket, idx) => {
-        if (ticket.status === 'error' && ticket.details?.error === 'DeviceNotRegistered') deadTokens.push(chunk[idx].to);
+        if (ticket.status !== 'error') return;
+        if (ticket.details?.error === 'DeviceNotRegistered') {
+          deadTokens.push(chunk[idx].to);
+          return;
+        }
+        const reason = ticket.details?.error ?? 'desconocido';
+        ticketErrors[reason] = (ticketErrors[reason] ?? 0) + 1;
+        console.error('Expo rechazó un push:', reason, ticket.message ?? '');
       });
     } catch {
       failed = true;
@@ -128,5 +138,5 @@ Deno.serve(async (req) => {
   const ids = rows.map((r) => r.id);
   await supabase.from('notifications_outbox').update({ sent_at: new Date().toISOString() }).in('id', ids);
 
-  return new Response(JSON.stringify({ sent: rows.length, pushes: messages.length }), { status: 200 });
+  return new Response(JSON.stringify({ sent: rows.length, pushes: messages.length, ticketErrors }), { status: 200 });
 });

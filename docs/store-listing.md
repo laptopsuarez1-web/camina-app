@@ -5,8 +5,8 @@
 | Campo | Valor |
 |---|---|
 | Nombre | Camina |
-| Subtítulo iOS (30 car.) | Caminá y ganá Puntos |
-| Descripción corta Google Play (80 car.) | Convertí tus pasos en Puntos y canjealos en comercios de tu ciudad. |
+| Subtítulo iOS (30 car.) | Camina y gana Puntos |
+| Descripción corta Google Play (80 car.) | Convierte tus pasos en Puntos y canjéalos en comercios de tu ciudad. |
 | Categoría | Salud y bienestar (secundaria: Estilo de vida) |
 | Países / regiones de la tienda | Bolivia (agregar otros países solo si se abre ahí) |
 | Clasificación de edad | 4+ / Todos |
@@ -18,26 +18,26 @@
 
 ## Descripción larga (iOS y Google Play)
 
-Camina convierte tus pasos de todos los días en Puntos que podés canjear en comercios de tu ciudad.
+Camina convierte tus pasos de todos los días en Puntos que puedes canjear en comercios de tu ciudad.
 
 CÓMO FUNCIONA
-• Caminá: Camina cuenta tus pasos desde Salud (iPhone) o Health Connect (Android).
-• Sumá Puntos: cada 1.000 pasos ganás 1 Punto, hasta un tope diario.
-• Canjeá: elegí un premio o descuento en un comercio cercano y mostrá tu código en el mostrador.
+• Camina: Camina cuenta tus pasos desde Salud (iPhone) o Health Connect (Android).
+• Suma Puntos: cada 1.000 pasos ganas 1 Punto, hasta un tope diario.
+• Canjea: elige un premio o descuento en un comercio cercano y muestra tu código en el mostrador.
 
 TODO EN UNA APP
 • Aro de pasos diario con tu meta, tu racha y los Puntos que ganaste hoy.
 • Actividad: tu semana, tu promedio frente a tu zona y un calendario de metas cumplidas.
-• Mapa de comercios con sus premios y descuentos, cerca tuyo.
-• Grupos: caminá con amigos, mirá el ranking del grupo y sumá pasos en equipo.
-• Retos Camina: invitá amigos, mantené tu racha y ganá Puntos extra.
+• Mapa de comercios con sus premios y descuentos, cerca de ti.
+• Grupos: camina con amigos, mira el ranking del grupo y suma pasos en equipo.
+• Retos Camina: invita amigos, mantén tu racha y gana Puntos extra.
 
 TU PRIVACIDAD
 Camina solo lee la cantidad de pasos. No escribe en Salud, no vende tus datos y tu ubicación se usa solo para mostrarte comercios cerca.
 
 Disponible en Tarija; pronto en Santa Cruz, La Paz y más ciudades de Bolivia.
 
-¿Tenés un comercio? Sumalo en caminaapp.com y ofrecé premios a quienes caminan.
+¿Tienes un comercio? Súmalo en caminaapp.com y ofrece premios a quienes caminan.
 
 ## Justificación de permisos (para App Review y Google Play)
 
