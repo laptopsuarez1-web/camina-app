@@ -34,7 +34,7 @@ export function LegalContent() {
           {"Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Si no hay Salud o Health Connect disponible, en iPhone podemos leer el sensor de movimiento del teléfono para contar pasos."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Los mensajes de grupo se borran automáticamente cada semana; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Podés reportar y bloquear a otras personas dentro de la app."}
+          {"Los mensajes de grupo se borran automáticamente cada mes; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Podés reportar y bloquear a otras personas dentro de la app."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
           {"Eliminación de tu cuenta: podés hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no podés entrar a la app, escribinos a caminaappbo@gmail.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}

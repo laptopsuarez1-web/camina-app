@@ -109,7 +109,7 @@ export default function RankingScreen() {
         </View>
 
         <View className="flex-row items-center justify-between mb-3.5">
-          <Text accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text, flexShrink: 1 }]}>Ranking semanal</Text>
+          <Text accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text, flexShrink: 1 }]}>Ranking</Text>
           <Press accessibilityRole="button" accessibilityLabel="Opciones del ranking" onPress={() => setOptions(true)} className="flex-row items-center rounded-full px-3.5 py-2 ml-2" style={{ gap: 6, backgroundColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: dark ? colors.dark.line : colors.light.line }}>
             <Sliders size={14} color={text} />
             <Text style={{ fontSize: 13, fontWeight: '600', color: text }}>Opciones</Text>

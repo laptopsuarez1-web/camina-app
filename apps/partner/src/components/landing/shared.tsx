@@ -572,7 +572,7 @@ const GRUPO_PANT = [
   ['El podio de la semana', 'Se arma solo con los pasos de cada uno desde el lunes. La corona es para quien más caminó.', CAP.grupo],
   ['Meta del grupo y desafío', 'Una meta semanal que suman entre todos y desafíos con Puntos en juego: eligen la regla, la meta diaria y cuánto pone cada uno.', CAP.grupoReto],
   ['Ranking y semanas anteriores', 'Todos los integrantes ordenados por pasos y quién ganó cada semana.', CAP.grupoRanking],
-  ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada lunes.', CAP.grupoChat],
+  ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada mes.', CAP.grupoChat],
   ['Tus amigos', 'Las solicitudes nuevas y los pasos de la semana de cada amigo.', CAP.amigos],
   ['Ranking entre amigos', 'Además del ranking global, uno solo con tus amigos.', CAP.rankingAmigos],
   ['El perfil de un amigo', 'Su racha, su promedio, su meta y cómo viene su semana.', CAP.amigoPerfil],
