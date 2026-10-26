@@ -50,7 +50,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [loading, session, isAdmin, router]);
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    // Solo en este navegador: el cierre global (el de siempre de Supabase) también sacaba de la app del teléfono.
+    await supabase.auth.signOut({ scope: 'local' });
     router.replace('/login');
   }
 

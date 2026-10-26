@@ -1,4 +1,5 @@
 import 'react-native-url-polyfill/auto';
+import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
@@ -30,3 +31,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     flowType: 'pkce',
   },
 });
+
+// Lo que recomienda Supabase para apps de teléfono: renovar la sesión solo con la app en pantalla. En segundo plano
+// iOS congela la app a mitad de una renovación y la respuesta se pierde; al volver, la sesión se renueva sola.
+if (Platform.OS !== 'web') {
+  if (AppState.currentState === 'active') supabase.auth.startAutoRefresh();
+  else supabase.auth.stopAutoRefresh();
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') supabase.auth.startAutoRefresh();
+    else supabase.auth.stopAutoRefresh();
+  });
+}
