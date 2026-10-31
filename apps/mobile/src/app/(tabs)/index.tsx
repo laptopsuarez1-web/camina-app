@@ -32,7 +32,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_MIN_STEPS, STREAK_BONUS_DAYS, STREAK_BONUS_POINTS } from '@/constants/business-rules';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
@@ -151,9 +151,6 @@ export default function HomeScreen() {
 
   const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const pct = goal > 0 ? steps / goal : 0;
-  // Casillas de la semana de racha: se llenan de a una y a los 7 días llegan los Puntos.
-  const streakFilled = (streak ?? 0) <= 0 ? 0 : (streak ?? 0) % STREAK_BONUS_DAYS === 0 ? STREAK_BONUS_DAYS : (streak ?? 0) % STREAK_BONUS_DAYS;
-  const streakLeft = streakFilled === 0 ? STREAK_BONUS_DAYS : STREAK_BONUS_DAYS - streakFilled;
   const goalMet = steps >= goal;
   const prefRacha = useNotificationPrefs((s) => s.racha);
   const prefAliento = useNotificationPrefs((s) => s.aliento);
@@ -379,7 +376,7 @@ export default function HomeScreen() {
               >
                 {stepsText}
               </Text>
-              <Text className="text-auth-muted text-[13px] mt-1">de {goal.toLocaleString('es-BO')} pasos hoy</Text>
+              <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <Animated.View
                 ref={chipRef}
                 style={{
@@ -397,30 +394,27 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <View className="items-center" style={{ marginTop: 22 }}>
-          <Press
-            accessibilityRole="button"
-            accessibilityLabel={`Racha de ${streak ?? 0} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
-            onPress={() => setStreaksOpen(true)}
-            className="flex-row items-center rounded-full"
-            style={{ gap: 10, backgroundColor: 'rgba(242,152,92,0.16)', borderWidth: 1, borderColor: 'rgba(242,152,92,0.35)', paddingLeft: 12, paddingRight: 18, paddingVertical: 10 }}
+        <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
+          {(streak ?? 0) > 0 && (
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
+              onPress={() => setStreaksOpen(true)}
+              className="flex-row items-center rounded-full"
+              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+            >
+              <Flame size={11} color={colors.mint} />
+              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
+            </Press>
+          )}
+          <View
+            accessible
+            accessibilityLabel={`Meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
+            className="rounded-full"
+            style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
           >
-            <Flame size={30} color={colors.warn} />
-            <View>
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>
-                {streak ?? 0} {streak === 1 ? 'día' : 'días'} de racha
-              </Text>
-              <Text style={{ color: colors.authMuted, fontSize: 12 }}>
-                {(streak ?? 0) <= 0
-                  ? `Camina ${STREAK_MIN_STEPS.toLocaleString('es-BO')} pasos hoy para empezar`
-                  : streakLeft === STREAK_BONUS_DAYS
-                    ? `¡Semana completa! +${STREAK_BONUS_POINTS} Puntos`
-                    : `${streakLeft === 1 ? 'Falta 1 día' : `Faltan ${streakLeft} días`} para +${STREAK_BONUS_POINTS} Puntos`}
-              </Text>
-            </View>
-          </Press>
-        </View>
-        <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: goalMet ? 12 : 0 }}>
+            <Text style={{ color: colors.authMuted, fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
+          </View>
           {goalMet && (
             <Animated.View
               style={{
