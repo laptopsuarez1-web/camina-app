@@ -70,6 +70,7 @@ export default function GroupDetailScreen() {
   const [shareOpen, setShareOpen] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
+  const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
   const { data: lastResult } = useMyChallengeResult(groupId);
   const groupName = data?.group.name;
@@ -142,7 +143,14 @@ export default function GroupDetailScreen() {
     AsyncStorage.getItem(key).then((seen) => {
       if (seen) return;
       AsyncStorage.setItem(key, '1').catch(() => {});
-      celebrate({ kind: 'toast', at: 'bottom', icon: 'users', title: '¡Lo lograron juntos!', body: `${groupName ?? 'Tu grupo'} cumplió la meta de la semana` });
+      celebrate({
+        kind: 'group-goal',
+        name: groupName ?? 'Tu grupo',
+        total: groupTotal,
+        target: groupTarget,
+        people: (data?.members ?? []).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null, steps: m.steps })),
+        onShare: () => setRankShareOpen(true),
+      });
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
@@ -282,7 +290,7 @@ export default function GroupDetailScreen() {
 
   return (
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
-      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
+      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
         <LinearGradient colors={colors.headerGradient} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
@@ -354,7 +362,7 @@ export default function GroupDetailScreen() {
           <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
         </Press>
 
-        <Glass className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
+        <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <IconBubble icon={Users} tone="purple" size={34} />
@@ -382,12 +390,15 @@ export default function GroupDetailScreen() {
             <View className="flex-row items-center gap-2 mb-3">
               <TextInput
                 value={goalInput}
-                onChangeText={setGoalInput}
+                onChangeText={(v) => setGoalInput(v.replace(/\D/g, '').slice(0, 7))}
                 keyboardType="number-pad"
+                autoFocus
+                selectTextOnFocus
+                onFocus={() => setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(0, goalCardY.current - 12), animated: true }), 250)}
                 placeholder="Meta semanal de pasos"
                 accessibilityLabel="Meta semanal de pasos"
                 placeholderTextColor={muted}
-                className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-xs text-text-light dark:text-text-dark"
+                className="flex-1 bg-bg-light dark:bg-bg-dark rounded-full px-3.5 py-2 text-[15px] font-semibold text-text-light dark:text-text-dark"
               />
               <Press accessibilityRole="button" onPress={saveGoal} className="bg-purple-deep rounded-full px-3.5 py-2">
                 <Text className="text-xs font-semibold text-white">Guardar</Text>
