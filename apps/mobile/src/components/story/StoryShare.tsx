@@ -145,7 +145,7 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
   );
 }
 
-// Pantalla completa con la foto en formato historia (9:16) y el sticker de Camina, lista para publicar.
+// Pantalla completa con la foto en formato historia (9:16), sin textos encima, lista para publicar.
 export function StoryComposer({
   photo,
   businessName,
@@ -179,27 +179,15 @@ export function StoryComposer({
       </View>
 
       <View className="flex-1 px-6 items-center">
-        {/* Así se va a ver en Instagram: foto a pantalla completa y el sticker de Camina abajo. */}
+        {/* Así se va a ver en Instagram: foto limpia a pantalla completa, sin textos encima. */}
         <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
-          <View style={{ position: 'absolute', left: 14, right: 14, bottom: 18, alignItems: 'flex-start', gap: 8 }}>
-            <View className="flex-row items-center rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.94)', paddingVertical: 8, paddingLeft: 8, paddingRight: 12, gap: 8 }}>
-              <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 30, height: 30, borderRadius: 15 }} />
-              <View>
-                <Text style={{ color: '#291C47', fontWeight: '800', fontSize: 13 }}>{benefitName}</Text>
-                <Text style={{ color: '#655483', fontWeight: '600', fontSize: 12 }}>en {businessName} · con Camina</Text>
-              </View>
-            </View>
-            <View className="rounded-lg" style={{ backgroundColor: '#fff', paddingVertical: 4, paddingHorizontal: 9 }}>
-              <Text style={{ fontWeight: '800', fontSize: 14, color: '#8B4FD1' }}>{CAMINA_INSTAGRAM}</Text>
-            </View>
-          </View>
         </View>
       </View>
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
-          Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
+          Publícala en tu historia y etiquetá a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
         <Press accessibilityRole="button" accessibilityState={{ busy: !!busy }} disabled={busy} onPress={onPublish} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: colors.aquaDeep, opacity: busy ? 0.7 : 1 }}>
           <Instagram size={18} color="#fff" weight="bold" />

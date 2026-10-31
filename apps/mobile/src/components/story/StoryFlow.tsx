@@ -60,7 +60,7 @@ export function useStoryFlow() {
     }
   }
 
-  // Captura la foto con el sticker de Camina; si falla (por ejemplo en la web), se usa la foto sola.
+  // Captura la foto en formato historia; si falla (por ejemplo en la web), se usa la foto sola.
   async function composedUri(): Promise<string> {
     if (composed) return composed;
     let uri = photo!;
