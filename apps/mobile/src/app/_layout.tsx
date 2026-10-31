@@ -14,6 +14,7 @@ import { startAuthLinkListener } from '@/lib/auth-links';
 import { queryClient } from '@/lib/query-client';
 import { Sentry, setMonitoringUser } from '@/lib/monitoring';
 import { ForceUpdateGate } from '@/components/ForceUpdateGate';
+import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { useGlassStore } from '@/store/useGlassStore';
 import { setBrandFontsReady, useBrandFonts } from '@/theme/fonts';
 
@@ -48,6 +49,7 @@ function RootLayout() {
     initAuthListener();
     startAuthLinkListener();
     useGlassStore.getState().hydrate();
+    useNotificationPrefs.getState().hydrate();
     // En web el documento sale con lang="en"; la app está en español.
     if (Platform.OS === 'web' && typeof document !== 'undefined') document.documentElement.lang = 'es';
   }, []);

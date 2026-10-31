@@ -24,6 +24,7 @@ import { storyStateFor } from '@/lib/story';
 import { useGroups } from '@/hooks/useGroups';
 import { useStreaks } from '@/hooks/useStreak';
 import { StreaksSheet } from '@/components/StreaksSheet';
+import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { syncStreakReminders } from '@/lib/streak-reminders';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
 import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
@@ -154,12 +155,14 @@ export default function HomeScreen() {
   const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const pct = goal > 0 ? steps / goal : 0;
   const goalMet = steps >= goal;
+  const prefRacha = useNotificationPrefs((s) => s.racha);
+  const prefAliento = useNotificationPrefs((s) => s.aliento);
   // Avisos de racha de día y de noche (los programa el teléfono): se reemplazan cuando cambia la racha, la meta o si ya se cumplió hoy.
   useEffect(() => {
     if (streak === undefined) return;
-    syncStreakReminders({ streak, stepsToday: steps, goal });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- los pasos sueltos no reprograman: solo cuenta si ya llegó a la meta.
-  }, [streak, goal, goalMet]);
+    syncStreakReminders({ streak, stepsToday: steps, goal, racha: prefRacha, aliento: prefAliento });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- los pasos reprograman de a 250 para que el "te faltan" no quede viejo.
+  }, [streak, goal, goalMet, Math.floor(steps / 250), prefRacha, prefAliento]);
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
   // Celebraciones suaves (una sola vez por Punto nuevo y por meta del día):
   // - cada Punto nuevo: el chip "+N Puntos" late;
