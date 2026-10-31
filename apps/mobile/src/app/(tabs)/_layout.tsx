@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Tabs, Redirect, router } from 'expo-router';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { TabGlyph, type TabKind } from '@/components/ui/TabGlyph';
 import { useAuthStore } from '@/store/useAuthStore';
 import { registerForPushNotificationsAsync, useNotificationTaps } from '@/lib/push-notifications';
@@ -30,7 +30,14 @@ export default function TabsLayout() {
     if (session) {
       registerForPushNotificationsAsync();
       shareCoarseLocation();
-      registerDevice();
+      registerDevice(session.user.id).then((status) => {
+        if (status === 'blocked') {
+          Alert.alert(
+            'Este celular ya tiene otra cuenta',
+            'En cada celular solo puede sumar pasos una cuenta de Camina. Con esta cuenta no se sumarán pasos ni Puntos desde este teléfono. Entra con tu cuenta original o escríbenos si crees que es un error.',
+          );
+        }
+      });
     }
   }, [session]);
 

@@ -59,10 +59,10 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
           </Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">
             {streak <= 0
-              ? `Cumple tu meta ${STREAK_BONUS_DAYS} días seguidos y ganas +${STREAK_BONUS_POINTS} Puntos`
+              ? `Cumple tu meta ${STREAK_BONUS_DAYS} días seguidos (mínimo 5.000 pasos al día) y ganas +${STREAK_BONUS_POINTS} Puntos`
               : filled === STREAK_BONUS_DAYS
                 ? `¡Semana completa! Sumaste +${STREAK_BONUS_POINTS} Puntos`
-                : `${left === 1 ? 'Falta 1 día' : `Faltan ${left} días`} para +${STREAK_BONUS_POINTS} Puntos`}
+                : `${left === 1 ? 'Falta 1 día' : `Faltan ${left} días`} para +${STREAK_BONUS_POINTS} Puntos (mín. 5.000 pasos al día)`}
           </Text>
         </View>
       </View>
