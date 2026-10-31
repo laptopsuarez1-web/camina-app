@@ -64,7 +64,7 @@ export default function RegistroPage() {
     try {
       setLogo(await fileToSmallDataUrl(file));
     } catch {
-      setError('No pudimos leer esa imagen. Probá con otra en PNG o JPG.');
+      setError('No pudimos leer esa imagen. Prueba con otra en PNG o JPG.');
     }
   }
 
@@ -106,7 +106,7 @@ export default function RegistroPage() {
 
     if (!data.session) {
       // Confirmación de email obligatoria: todavía no hay sesión para poder
-      // insertar el negocio (RLS lo exige). Guardamos los datos del alta acá
+      // insertar el negocio (RLS lo exige). Guardamos los datos del alta aquí
       // y useBusinessAuth los consume solo cuando el usuario confirme y entre.
       savePendingBusiness({
         email: email.trim(),
@@ -181,9 +181,9 @@ export default function RegistroPage() {
   if (awaitingConfirmation) {
     return (
       <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-white font-bold text-[22px] mb-2">Confirmá tu correo</p>
+        <p className="text-white font-bold text-[22px] mb-2">Confirma tu correo</p>
         <p className="text-auth-muted text-[13px] mb-7 max-w-[300px]">
-          Te mandamos un link a {email}. Abrilo para activar la cuenta: apenas lo confirmes entrás solo al
+          Te mandamos un link a {email}. Ábrelo para activar la cuenta: apenas lo confirmes entras solo al
           panel, sin volver a escribir nada.
         </p>
         {error && <p className="text-warn text-[12.5px] mb-4">{error}</p>}
@@ -222,8 +222,8 @@ export default function RegistroPage() {
 
           {step === 1 && (
             <>
-              <h1 className="text-[22px] font-bold mb-1">¿Cómo querés usar Camina?</h1>
-              <p className="text-muted text-[13px] mb-5">Elegí el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
+              <h1 className="text-[22px] font-bold mb-1">¿Cómo quieres usar Camina?</h1>
+              <p className="text-muted text-[13px] mb-5">Elige el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
               <div className="flex flex-col gap-2.5 mb-5">
                 {[
                   { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y beneficios para canje' },
@@ -272,9 +272,9 @@ export default function RegistroPage() {
                 Continuar
               </button>
               <p className="text-muted text-[12px] mt-4">
-                ¿Ya tenés cuenta?{' '}
+                ¿Ya tienes cuenta?{' '}
                 <Link href="/login" className="underline">
-                  Iniciá sesión
+                  Inicia sesión
                 </Link>
               </p>
             </>
@@ -283,8 +283,8 @@ export default function RegistroPage() {
           {step === 2 && (
             <div className="flex flex-col gap-4">
               <div>
-                <h1 className="text-[22px] font-bold mb-1">Creá tu comercio</h1>
-                <p className="text-muted text-[13px]">Completá los datos del comercio.</p>
+                <h1 className="text-[22px] font-bold mb-1">Crea tu comercio</h1>
+                <p className="text-muted text-[13px]">Completa los datos del comercio.</p>
               </div>
 
               <div>
@@ -304,7 +304,7 @@ export default function RegistroPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-[14px]">{logo ? 'Cambiar imagen' : 'Subir imagen'}</p>
-                    <p className="text-muted text-[12px]">Opcional. La podés subir después desde tu Perfil, antes de publicarte en la app.</p>
+                    <p className="text-muted text-[12px]">Opcional. La puedes subir después desde tu Perfil, antes de publicarte en la app.</p>
                   </div>
                 </button>
                 <input
@@ -405,7 +405,7 @@ export default function RegistroPage() {
 
               <p className="text-muted text-[12px] leading-[18px]">
                 Después de crear la cuenta, el equipo de Camina revisa tu comercio antes de que aparezca en la app.
-                Para publicarte necesitamos el <strong>logo</strong> y una <strong>foto de portada</strong> (las cargás en Perfil).
+                Para publicarte necesitamos el <strong>logo</strong> y una <strong>foto de portada</strong> (las cargas en Perfil).
               </p>
 
               <div className="flex gap-2.5">

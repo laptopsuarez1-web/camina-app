@@ -4,7 +4,7 @@ import { cssInterop } from 'nativewind';
 import { WEB_FAMILY, brandFamily, brandFontsReady } from '@/theme/fonts';
 
 // Text y TextInput de la app: igual que los de React Native, pero con la fuente de marca.
-// Con una fuente propia el peso no sale de `fontWeight` sino de la familia, así que acá se traduce uno en otro
+// Con una fuente propia el peso no sale de `fontWeight` sino de la familia, así que aquí se traduce uno en otro
 // (y se pisa `fontWeight`, para que Android no lo "engorde" encima). `className` ya llega resuelto como `style`.
 const InsideText = createContext(false);
 

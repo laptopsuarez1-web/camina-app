@@ -34,7 +34,7 @@ export function useLoyaltyCards() {
   });
 }
 
-// Puntos extra que ofrece este local por la primera vez de la persona (0 si no aplica: plan gratis o ya canjeó acá).
+// Puntos extra que ofrece este local por la primera vez de la persona (0 si no aplica: plan gratis o ya canjeó aquí).
 export function useNewPlaceBonus(businessId: string | null | undefined) {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({

@@ -37,12 +37,12 @@ export default function RecuperarPage() {
       {sent ? (
         <p className="text-auth-muted text-[13px] text-center max-w-[300px] mb-7">
           Si {email.trim()} tiene una cuenta en Camina, te mandamos un link para elegir una contraseña nueva.
-          Revisá tu correo (y la carpeta de spam).
+          Revisa tu correo (y la carpeta de spam).
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="w-full max-w-[320px] flex flex-col gap-2.5">
           <p className="text-auth-muted text-[13px] text-center mb-2">
-            Escribí el email con el que te registraste y te mandamos un link para poner una contraseña nueva.
+            Escribe el email con el que te registraste y te mandamos un link para poner una contraseña nueva.
           </p>
           <input
             value={email}

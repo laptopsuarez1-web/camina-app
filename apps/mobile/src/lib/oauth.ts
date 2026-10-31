@@ -73,7 +73,7 @@ export async function signInWithApple() {
   const fullName = [credential.fullName?.givenName, credential.fullName?.familyName].filter(Boolean).join(' ').trim();
   if (fullName && data.user) {
     // upsert (no update): la primera vez que este usuario entra todavía no
-    // existe su fila en profiles — se crea recién en /(auth)/perfil, pero acá
+    // existe su fila en profiles — se crea recién en /(auth)/perfil, pero aquí
     // ya tenemos el nombre real de Apple, así que se la ahorramos.
     await supabase.from('profiles').upsert({ id: data.user.id, full_name: fullName });
   }

@@ -135,7 +135,7 @@ export default function EventosPage() {
     );
     setMsg({
       ok: true,
-      text: `Recibimos tu solicitud. Para publicarla, hacé la transferencia de Bs ${price} y mandanos el comprobante por WhatsApp.`,
+      text: `Recibimos tu solicitud. Para publicarla, haz la transferencia de Bs ${price} y mándanos el comprobante por WhatsApp.`,
     });
     setTitle('');
     setDescription('');
@@ -179,14 +179,14 @@ export default function EventosPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Desafíos y eventos" subtitle="Publicá un desafío, un evento o publicidad dentro de la app de Camina." />
+      <TopBar title="Desafíos y eventos" subtitle="Publica un desafío, un evento o publicidad dentro de la app de Camina." />
 
       <div className="max-w-[600px]">
         <div className="bg-card border border-line rounded-2xl p-4 mb-5 text-[13px] leading-5">
           <p className="font-bold mb-1">Cómo funciona</p>
           <p className="text-muted">
             {isAd
-              ? <>Tu paquete cuesta <strong>Bs 400</strong> y incluye publicidad: elegís si va como <strong>banner</strong>, <strong>evento</strong> o <strong>desafío</strong>.</>
+              ? <>Tu paquete cuesta <strong>Bs 400</strong> y incluye publicidad: eliges si va como <strong>banner</strong>, <strong>evento</strong> o <strong>desafío</strong>.</>
               : <>Cada publicación cuesta <strong>Bs 200</strong> y puede ser un <strong>evento</strong> o un <strong>desafío</strong>. Para publicidad en el banner de Inicio, hace falta el paquete de solo publicidad (Bs 400).</>}
             {' '}Camina la revisa y la aprueba antes de mostrarla. En los desafíos, los pasos cuentan desde que la persona toca “Participar”. Al terminar, Camina sortea entre quienes cumplieron y te pasa los ganadores.
           </p>
@@ -214,7 +214,7 @@ export default function EventosPage() {
               <label>
                 <span className={label}>Link al que lleva</span>
                 <input value={ctaUrl} maxLength={300} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://wa.me/591…  ·  https://instagram.com/…  ·  tu página" className={field} />
-                <span className="block text-muted text-[12px] mt-1">Al tocar el banner, la persona va directo acá. Puede ser WhatsApp, Instagram, Facebook, TikTok o una página web; no hace falta que sea un local.</span>
+                <span className="block text-muted text-[12px] mt-1">Al tocar el banner, la persona va directo aquí. Puede ser WhatsApp, Instagram, Facebook, TikTok o una página web; no hace falta que sea un local.</span>
               </label>
             )}
           </div>
@@ -241,7 +241,7 @@ export default function EventosPage() {
               <input value={placeName} maxLength={80} onChange={(e) => setPlaceName(e.target.value)} placeholder="Nombre del lugar. Ej: Café Sol" className={field} aria-label="Nombre del lugar" />
               <input value={placeAddress} maxLength={160} onChange={(e) => setPlaceAddress(e.target.value)} placeholder="Dirección. Ej: Av. 6 de Agosto 123, zona Sopocachi" className={field} aria-label="Dirección" />
               <input value={placeUrl} maxLength={300} onChange={(e) => setPlaceUrl(e.target.value)} placeholder="Link de Google Maps (opcional)" className={field} aria-label="Link de Google Maps" />
-              <p className="text-muted text-[12px]">Si ponés el link, la app muestra el botón “Cómo llegar”. En Google Maps tocá Compartir y copiá el link.</p>
+              <p className="text-muted text-[12px]">Si pones el link, la app muestra el botón “Cómo llegar”. En Google Maps toca Compartir y copia el link.</p>
               {badPlaceUrl && <p className="text-warn text-[12.5px]">El link tiene que empezar con https://</p>}
             </div>
           )}
@@ -262,7 +262,7 @@ export default function EventosPage() {
           {kind === 'evento' && (
             <div className={section}>
               <span className={label}>Entradas</span>
-              <p className="text-muted text-[12px] -mt-2">Si el evento es libre, no marques nada: en la app aparece “Anotarme”. Podés marcar las dos opciones a la vez.</p>
+              <p className="text-muted text-[12px] -mt-2">Si el evento es libre, no marques nada: en la app aparece “Anotarme”. Puedes marcar las dos opciones a la vez.</p>
               <label className="flex items-center gap-2 text-[13.5px] font-semibold">
                 <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} /> Se canjean con Puntos de Camina
               </label>
@@ -291,9 +291,9 @@ export default function EventosPage() {
                   ))}
                 </div>
                 <input value={ticketContact} maxLength={300} onChange={(e) => setTicketContact(e.target.value)} placeholder={ticketMode === 'whatsapp' ? 'Tu número. Ej: 70000000' : 'https://… (web, Instagram, Facebook, TikTok)'} className={field} aria-label="Contacto para entradas" />
-                <p className="text-muted text-[12px] mt-1">{usePaid ? 'A donde va la persona para comprar.' : usePoints ? 'Quien canjea puede hablarte por acá.' : 'Si lo dejás vacío, la gente toca “Anotarme”. Si lo ponés, en la app aparece un botón para contactarte.'}</p>
+                <p className="text-muted text-[12px] mt-1">{usePaid ? 'A donde va la persona para comprar.' : usePoints ? 'Quien canjea puede hablarte por aquí.' : 'Si lo dejas vacío, la gente toca “Anotarme”. Si lo pones, en la app aparece un botón para contactarte.'}</p>
               </div>
-              {badTicket && <p className="text-warn text-[12.5px]">Revisá las entradas: con plata hace falta precio y contacto; el link empieza con https:// o un número válido.</p>}
+              {badTicket && <p className="text-warn text-[12.5px]">Revisa las entradas: con plata hace falta precio y contacto; el link empieza con https:// o un número válido.</p>}
             </div>
           )}
 
@@ -352,7 +352,7 @@ export default function EventosPage() {
             ) : business ? (
               <>
                 <ImageUpload bucket="business-logos" path={`${business.id}/promo-${photoId}`} value={bgImage} onUploaded={setBgImage} label="Foto de fondo" shape="wide" />
-                <p className="text-muted text-[12px]">{kind === 'publicidad' ? 'Subí tu banner o una foto de tu marca (mejor horizontal). ' : ''}Camina la oscurece un poco para que el texto se lea bien.</p>
+                <p className="text-muted text-[12px]">{kind === 'publicidad' ? 'Sube tu banner o una foto de tu marca (mejor horizontal). ' : ''}Camina la oscurece un poco para que el texto se lea bien.</p>
               </>
             ) : null}
             <div className="rounded-3xl p-4 text-white relative overflow-hidden" style={{ ...previewBg, minHeight: kind === 'publicidad' ? 132 : undefined }} aria-label="Vista previa">
@@ -361,7 +361,7 @@ export default function EventosPage() {
                 <img src={business.logo_url} alt="" className="absolute -right-6 -bottom-6 w-[170px] h-[170px] rounded-[48px] object-cover opacity-20" />
               )}
               <p className="text-[12px] font-bold opacity-90">{kind === 'publicidad' ? (business?.name ?? '') : KIND_LABEL[kind]}</p>
-              <p className="text-[19px] font-extrabold leading-tight">{title || 'Tu título acá'}</p>
+              <p className="text-[19px] font-extrabold leading-tight">{title || 'Tu título aquí'}</p>
               {kind === 'desafio' && (
                 <p className="mt-1"><span className="text-[34px] font-extrabold" style={{ color: '#7FEDC4' }}>{goalSteps.toLocaleString('es-BO')}</span> <span className="text-[13px] font-bold">{goalMode === 'daily' ? `pasos por día, durante ${goalDays} días` : 'pasos en total'}</span></p>
               )}

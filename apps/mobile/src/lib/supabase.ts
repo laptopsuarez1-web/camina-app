@@ -17,7 +17,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Se tipa manualmente en cada hook con las interfaces de database.types.ts, y
 // esto se reemplaza por el genérico real en cuanto exista un proyecto Supabase:
 //   npx supabase gen types typescript --project-id <id> > src/lib/database.types.ts
-//   y volver a pasar <Database> acá.
+//   y volver a pasar <Database> aquí.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: authStorage,

@@ -56,7 +56,7 @@ export function OpenInApp({ path, id, title, text }: { path: string; id: string;
             <p className="text-white font-semibold text-[14px] mb-1">¿Todavía no tienes la app?</p>
             {installUrl ? (
               <a href={installUrl} className={`${btn} bg-white/10 text-white border border-white/20 mx-auto mt-2`}>
-                {os === 'ios' ? 'Descargar para iPhone' : 'Descargar para Android'}
+                {os === 'ios' ? 'Descargar para iOS' : 'Descargar para Android'}
               </a>
             ) : (
               <p className="text-auth-muted text-[12.5px] leading-[18px]">

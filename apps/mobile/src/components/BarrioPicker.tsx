@@ -10,7 +10,7 @@ import { colors } from '@/theme/tokens';
 
 const norm = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
-// Barrio por búsqueda: se escribe y salen solo los que coinciden (nada de una lista enorme),
+// Zona por búsqueda: se escribe y salen solo los que coinciden (nada de una lista enorme),
 // o se usa la ubicación actual para que la app lo reconozca.
 export function BarrioPicker({ city, zone, onChange }: { city: string; zone: string | null; onChange: (zone: string | null) => void }) {
   const { data } = usePlaces();
@@ -26,7 +26,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
     try {
       const perm = await Location.requestForegroundPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Necesitamos tu ubicación', 'Activa el permiso de ubicación para Camina o busca tu barrio escribiendo.', [
+        Alert.alert('Necesitamos tu ubicación', 'Activa el permiso de ubicación para Camina o busca tu zona escribiendo.', [
           { text: 'Ahora no', style: 'cancel' },
           { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
         ]);
@@ -40,10 +40,10 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         onChange(found);
         setQuery('');
       } else {
-        Alert.alert('No reconocimos tu barrio', 'Escríbelo en el buscador y elígelo de la lista.');
+        Alert.alert('No reconocimos tu zona', 'Escríbela en el buscador y elígela de la lista.');
       }
     } catch {
-      Alert.alert('No pudimos ubicarte', 'Escribe tu barrio en el buscador.');
+      Alert.alert('No pudimos ubicarte', 'Escribe tu zona en el buscador.');
     } finally {
       setLocating(false);
     }
@@ -52,12 +52,12 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
   const muted = dark ? colors.dark.muted : colors.light.muted;
   return (
     <View>
-      <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1.5">Barrio</Text>
+      <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1.5">Zona</Text>
       {zone && (
         <View className="flex-row items-center self-start rounded-full pl-3.5 pr-2 py-2 mb-2 bg-mint" style={{ gap: 8 }}>
           <Check size={13} color={colors.mintInk} />
           <Text style={{ color: colors.mintInk, fontWeight: '700', fontSize: 13 }}>{zone}</Text>
-          <Press accessibilityRole="button" accessibilityLabel={`Quitar barrio ${zone}`} onPress={() => onChange(null)} hitSlop={15}>
+          <Press accessibilityRole="button" accessibilityLabel={`Quitar zona ${zone}`} onPress={() => onChange(null)} hitSlop={15}>
             <X size={14} color={colors.mintInk} />
           </Press>
         </View>
@@ -67,10 +67,10 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Escribe tu barrio"
+          placeholder="Escribe tu zona"
           placeholderTextColor={muted}
           autoCorrect={false}
-          accessibilityLabel="Buscar barrio"
+          accessibilityLabel="Buscar zona"
           className="flex-1 py-3 text-[14px] text-text-light dark:text-text-dark"
           style={{ minWidth: 0 }}
         />
@@ -88,7 +88,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
               <Text className="text-text-light dark:text-text-dark text-[13px] font-medium">{z}</Text>
             </Press>
           ))}
-          {matches.length === 0 && <Text className="text-muted-light dark:text-muted-dark text-[12.5px]">No hay un barrio con ese nombre.</Text>}
+          {matches.length === 0 && <Text className="text-muted-light dark:text-muted-dark text-[12.5px]">No hay una zona con ese nombre.</Text>}
         </View>
       )}
       <Press accessibilityRole="button" accessibilityState={{ busy: locating }} onPress={useMyLocation} disabled={locating} className="flex-row items-center self-start mt-2 py-1.5" style={{ gap: 6 }}>

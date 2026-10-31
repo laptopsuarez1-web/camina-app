@@ -23,7 +23,7 @@ export function coinFlightPath(x0: number, y0: number, x1: number, y1: number): 
 }
 
 // La moneda de Puntos sale del chip del aro, cruza la pantalla y entra en la moneda del saldo.
-// Al llegar corre `bump` (0 a 1): el que lo pasa hace latir el saldo y acá sale un aro. Se pinta encima de todo y no recibe toques.
+// Al llegar corre `bump` (0 a 1): el que lo pasa hace latir el saldo y aquí sale un aro. Se pinta encima de todo y no recibe toques.
 export function CoinFlight({ path, bump, onDone }: { path: CoinFlightPath; bump: Animated.Value; onDone: () => void }) {
   const [spawn] = useState(() => new Animated.Value(0));
   const [fly] = useState(() => new Animated.Value(0));

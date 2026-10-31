@@ -16,7 +16,7 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, i
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
 // (nada de gradiente ni glow), mismo logo, mismo orden de botones, mismo
-// texto. La única diferencia real con el prototipo es que acá los botones
+// texto. La única diferencia real con el prototipo es que aquí los botones
 // hacen algo de verdad (auth de Supabase) en vez de saltar directo a la app.
 type AuthKind = 'login' | 'signup';
 
