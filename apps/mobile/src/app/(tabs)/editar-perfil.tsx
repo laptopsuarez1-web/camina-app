@@ -3,10 +3,12 @@ import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
+import { GoalSheet } from '@/components/GoalSheet';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, Camera, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
+import { ChevronLeft, ChevronDown, Camera, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { supabase } from '@/lib/supabase';
@@ -84,6 +86,8 @@ export default function EditarPerfilScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoB64, setPhotoB64] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [goalOpen, setGoalOpen] = useState(false);
+  const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const [deleting, setDeleting] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -333,6 +337,18 @@ export default function EditarPerfilScreen() {
               <TextInput ref={yearRef} value={bYear} onChangeText={(t) => setBYear(t.replace(/\D/g, '').slice(0, 4))} placeholder="Año" accessibilityLabel="Año de nacimiento" keyboardType="number-pad" placeholderTextColor={placeholder} style={{ minWidth: 0 }} className={`flex-[1.4] ${field}`} />
             </View>
             <Text className="text-muted-light dark:text-muted-dark text-[12px]">Solo para confirmar que tienes 13 años o más. No se muestra a nadie.</Text>
+
+            <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-4 mb-1">Tu meta diaria</Text>
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Tu meta diaria, ${goal.toLocaleString('es-BO')} pasos. Cambiar`}
+              onPress={() => setGoalOpen(true)}
+              className={`flex-row items-center justify-between ${field}`}
+            >
+              <Text className="text-text-light dark:text-text-dark text-[15px]">{goal.toLocaleString('es-BO')} pasos</Text>
+              <ChevronDown size={16} color={isDark ? colors.dark.muted : colors.light.muted} />
+            </Press>
+            <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-1">Todos tus pasos suman, llegues o no a la meta.</Text>
           </Glass>
 
           <Glass className="rounded-3xl p-4 mb-4">
@@ -422,6 +438,7 @@ export default function EditarPerfilScreen() {
           </Press>
         </View>
       </ScrollView>
+      <GoalSheet visible={goalOpen} goal={goal} isDark={isDark} onClose={() => setGoalOpen(false)} />
     </KeyboardSafe>
   );
 }

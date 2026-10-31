@@ -218,7 +218,7 @@ export default function PerfilScreen() {
       <ScreenTitle marginBottom={16}>Perfil</ScreenTitle>
 
       <Glass className="rounded-3xl p-4 mb-3">
-        <View className="flex-row items-center gap-3.5">
+        <Press accessibilityRole="button" accessibilityLabel={`${profile?.full_name ?? 'Tu perfil'}, ver y editar tu usuario`} onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center gap-3.5">
           <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
             <AvatarImage
               uri={profile?.photo_url}
@@ -232,7 +232,8 @@ export default function PerfilScreen() {
               {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
             </Text>
           </View>
-        </View>
+          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+        </Press>
         {profile?.bio ? <Text className="text-text-light dark:text-text-dark text-[13.5px] mt-3" style={{ lineHeight: 19 }}>{profile.bio}</Text> : null}
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
         <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
