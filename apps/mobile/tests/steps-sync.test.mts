@@ -8,6 +8,8 @@ import * as stepsSync from '../src/lib/steps-sync.ts';
 
 const LA_PAZ = 'America/La_Paz';
 const USER = 'u-1';
+// El celular se registra antes de cada envío (un celular, una cuenta): aquí solo se miran los envíos de pasos.
+const earns = () => db.rpcLog.filter((r) => r.name === 'earn_points_from_steps');
 
 beforeEach(() => {
   resetDb();
@@ -20,8 +22,9 @@ test('segundo plano: lee y manda solo hoy, nunca ayer', async () => {
   const sent = await atTime('2026-10-26T05:06:00Z', LA_PAZ, () => stepsSync.syncToday(USER)); // 01:06 en La Paz
   assert.equal(sent, true);
   assert.deepEqual(health.readLog, ['2026-10-26']);
-  assert.equal(db.rpcLog.length, 1);
-  assert.deepEqual(db.rpcLog[0], { name: 'earn_points_from_steps', args: { p_user_id: USER, p_day: '2026-10-26', p_steps: 7926 } });
+  assert.equal(earns().length, 1);
+  assert.equal(db.rpcLog[0].name, 'register_device'); // el celular se registra antes de sumar
+  assert.deepEqual(earns()[0], { name: 'earn_points_from_steps', args: { p_user_id: USER, p_day: '2026-10-26', p_steps: 7926 } });
 });
 
 test('segundo plano: sin pasos hoy no manda nada', async () => {
@@ -29,7 +32,7 @@ test('segundo plano: sin pasos hoy no manda nada', async () => {
   assert.equal(await stepsSync.syncToday(USER), false);
   health.steps = null; // sin fuente de pasos (web)
   assert.equal(await stepsSync.syncToday(USER), false);
-  assert.equal(db.rpcLog.length, 0);
+  assert.equal(earns().length, 0);
 });
 
 test('ya no existe la sincronización de ayer', () => {

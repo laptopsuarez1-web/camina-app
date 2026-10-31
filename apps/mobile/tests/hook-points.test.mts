@@ -42,7 +42,7 @@ test('sincronizar pasos: manda el día LOCAL del dispositivo, no el día UTC (22
     useSyncSteps();
     const res = await rq.lastMutation.mutationFn(7345);
     assert.equal(res, 7);
-    assert.deepEqual(db.rpcLog[0], { name: 'earn_points_from_steps', args: { p_user_id: USER, p_day: '2026-10-02', p_steps: 7345 } });
+    assert.deepEqual(db.rpcLog.find((r) => r.name === 'earn_points_from_steps'), { name: 'earn_points_from_steps', args: { p_user_id: USER, p_day: '2026-10-02', p_steps: 7345 } });
   });
 });
 
@@ -51,7 +51,7 @@ test('sincronizar pasos: los meses y días de una cifra llevan cero (2026-01-05)
     db.rpc.earn_points_from_steps = () => 0;
     useSyncSteps();
     await rq.lastMutation.mutationFn(10);
-    assert.equal(db.rpcLog[0].args.p_day, '2026-01-05');
+    assert.equal(db.rpcLog.find((r) => r.name === 'earn_points_from_steps')?.args.p_day, '2026-01-05');
   });
 });
 
