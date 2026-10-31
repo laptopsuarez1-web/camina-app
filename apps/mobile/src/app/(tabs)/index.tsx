@@ -10,7 +10,6 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -34,7 +33,7 @@ import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_MIN_STEPS, STREAK_BONUS_DAYS, STREAK_BONUS_POINTS } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
+import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
@@ -380,7 +379,7 @@ export default function HomeScreen() {
               >
                 {stepsText}
               </Text>
-              <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
+              <Text className="text-auth-muted text-[13px] mt-1">de {goal.toLocaleString('es-BO')} pasos hoy</Text>
               <Animated.View
                 ref={chipRef}
                 style={{
@@ -398,23 +397,20 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel={`Racha de ${streak ?? 0} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
-          onPress={() => setStreaksOpen(true)}
-          className="mx-5 rounded-3xl"
-          style={{ marginTop: 22, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 16, paddingVertical: 14 }}
-        >
-          <View className="flex-row items-center" style={{ gap: 14 }}>
-            <View style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(242,152,92,0.18)' }}>
-              <Flame size={28} color={colors.warn} />
-            </View>
-            <View className="flex-1">
-              <View className="flex-row items-baseline" style={{ gap: 6 }}>
-                <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
-                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{streak === 1 ? 'día' : 'días'} de racha</Text>
-              </View>
-              <Text style={{ color: colors.authMuted, fontSize: 12.5, marginTop: 1 }}>
+        <View className="items-center" style={{ marginTop: 22 }}>
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`Racha de ${streak ?? 0} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
+            onPress={() => setStreaksOpen(true)}
+            className="flex-row items-center rounded-full"
+            style={{ gap: 10, backgroundColor: 'rgba(242,152,92,0.16)', borderWidth: 1, borderColor: 'rgba(242,152,92,0.35)', paddingLeft: 12, paddingRight: 18, paddingVertical: 10 }}
+          >
+            <Flame size={30} color={colors.warn} />
+            <View>
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>
+                {streak ?? 0} {streak === 1 ? 'día' : 'días'} de racha
+              </Text>
+              <Text style={{ color: colors.authMuted, fontSize: 12 }}>
                 {(streak ?? 0) <= 0
                   ? `Camina ${STREAK_MIN_STEPS.toLocaleString('es-BO')} pasos hoy para empezar`
                   : streakLeft === STREAK_BONUS_DAYS
@@ -422,14 +418,8 @@ export default function HomeScreen() {
                     : `${streakLeft === 1 ? 'Falta 1 día' : `Faltan ${streakLeft} días`} para +${STREAK_BONUS_POINTS} Puntos`}
               </Text>
             </View>
-            <ChevronRight size={14} color={colors.authMuted} />
-          </View>
-          <View className="flex-row" style={{ gap: 6, marginTop: 12 }}>
-            {Array.from({ length: STREAK_BONUS_DAYS }, (_, i) => (
-              <View key={i} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i < streakFilled ? colors.warn : 'rgba(255,255,255,0.14)' }} />
-            ))}
-          </View>
-        </Press>
+          </Press>
+        </View>
         <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: goalMet ? 12 : 0 }}>
           {goalMet && (
             <Animated.View
