@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text } from '@/components/ui/Text';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Camera, Check, Share2, Trash2, Users, X } from '@/components/icons';
@@ -12,7 +12,7 @@ import { colors } from '@/theme/tokens';
 // Barra lateral del grupo: datos, meta, foto, fondo, invitación y salida. Entra desde la derecha.
 export function GroupDrawer({
   visible, onClose, name, photoUrl, background, memberCount, inviteCode, goal, isCreator,
-  busy, onInvite, onEditGoal, onPickPhoto, onPickBackground, onLeave, onDelete,
+  busy, onRename, onInvite, onEditGoal, onPickPhoto, onPickBackground, onLeave, onDelete,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -28,6 +28,7 @@ export function GroupDrawer({
   onEditGoal: () => void;
   onPickPhoto: () => void;
   onPickBackground: (key: string) => void;
+  onRename: (name: string) => Promise<boolean>;
   onLeave: () => void;
   onDelete: () => void;
 }) {
@@ -39,6 +40,13 @@ export function GroupDrawer({
     if (visible) Animated.timing(x, { toValue: 0, duration: 240, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     else x.setValue(panelW);
   }, [visible, x, panelW]);
+
+  const [renaming, setRenaming] = useState(false);
+  const [draft, setDraft] = useState('');
+  async function saveName() {
+    const ok = await onRename(draft.trim());
+    if (ok) setRenaming(false);
+  }
 
   const row = 'flex-row items-center py-3.5 border-t border-line-light dark:border-line-dark';
   const initial = name[0]?.toUpperCase() ?? 'G';
@@ -80,7 +88,42 @@ export function GroupDrawer({
             </View>
           </LinearGradient>
 
-          <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
+          <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {isCreator && (
+              <View className="py-3.5">
+                {renaming ? (
+                  <View style={{ gap: 8 }}>
+                    <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark">Nombre del grupo</Text>
+                    <TextInput
+                      value={draft}
+                      onChangeText={setDraft}
+                      maxLength={40}
+                      autoFocus
+                      accessibilityLabel="Nombre del grupo"
+                      className="rounded-xl px-3.5 py-2.5 text-[15px] bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark"
+                    />
+                    <View className="flex-row" style={{ gap: 8 }}>
+                      <Press accessibilityRole="button" disabled={busy || draft.trim().length < 2} onPress={saveName} className="rounded-full px-4 py-2" style={{ backgroundColor: colors.aquaDeep, opacity: busy || draft.trim().length < 2 ? 0.5 : 1 }}>
+                        <Text className="text-xs font-semibold text-white">Guardar</Text>
+                      </Press>
+                      <Press accessibilityRole="button" onPress={() => setRenaming(false)} className="px-3 py-2">
+                        <Text className="text-xs text-muted-light dark:text-muted-dark">Cancelar</Text>
+                      </Press>
+                    </View>
+                  </View>
+                ) : (
+                  <View className="flex-row items-center">
+                    <View className="flex-1">
+                      <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark">Nombre del grupo</Text>
+                      <Text className="text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>{name}</Text>
+                    </View>
+                    <Press accessibilityRole="button" onPress={() => { setDraft(name); setRenaming(true); }} hitSlop={8} className="rounded-full px-3 py-1.5 bg-purple-light-light dark:bg-purple-light-dark">
+                      <Text className="text-xs font-semibold text-purple-ink dark:text-purple-soft">Cambiar</Text>
+                    </Press>
+                  </View>
+                )}
+              </View>
+            )}
             <Press accessibilityRole="button" onPress={onInvite} className={row}>
               <Share2 size={18} color={colors.aquaDeep} />
               <View className="ml-3 flex-1">

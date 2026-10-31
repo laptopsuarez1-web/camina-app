@@ -202,6 +202,22 @@ export default function GroupDetailScreen() {
     }
   }
 
+  // El nombre pasa por el filtro de palabras del servidor (guard_group_name) y solo lo cambia quien creó el grupo.
+  async function renameGroup(newName: string) {
+    if (!groupId || newName.length < 2) return false;
+    if (newName === data?.group.name) return true;
+    setLookBusy(true);
+    const { error } = await supabase.from('groups').update({ name: newName }).eq('id', groupId);
+    setLookBusy(false);
+    if (error) {
+      Alert.alert('No se pudo cambiar el nombre', friendlyServerError(error, 'Intenta de nuevo.'));
+      return false;
+    }
+    queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['groups'] });
+    return true;
+  }
+
   async function pickGroupBackground(key: string) {
     if (!groupId) return;
     setLookBusy(true);
@@ -766,6 +782,7 @@ export default function GroupDetailScreen() {
         onEditGoal={() => { setDrawerOpen(false); setGoalInput(String(challengeTarget)); setEditingGoal(true); }}
         onPickPhoto={pickGroupPhoto}
         onPickBackground={pickGroupBackground}
+        onRename={renameGroup}
         onLeave={() => { setDrawerOpen(false); confirmExit(false); }}
         onDelete={() => { setDrawerOpen(false); confirmExit(true); }}
       />
