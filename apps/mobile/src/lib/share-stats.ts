@@ -1,7 +1,7 @@
 import { KCAL_PER_STEP, STEP_LENGTH_METERS, DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 
 // Cuentas de las tarjetas para compartir (día, semana y mes). Todo se calcula en el teléfono con los mismos datos
-// que ya muestra Actividad; acá no se toca la base.
+// que ya muestra Actividad; aquí no se toca la base.
 export type SharePeriod = 'day' | 'week' | 'month';
 
 export type ShareDay = { key: string; label: string; steps: number; met: boolean; isBest: boolean; isToday: boolean };

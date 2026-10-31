@@ -29,7 +29,7 @@ export default function AdminAlertasPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Alertas de cuentas repetidas</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Revisalo una vez por semana. Varias cuentas en un mismo celular no siempre son trampa (una familia puede
+        Revísalo una vez por semana. Varias cuentas en un mismo celular no siempre son trampa (una familia puede
         compartirlo), pero si además se invitan entre sí o suman puntos parecidos, conviene actuar.
       </p>
       <div className="max-w-[720px] flex flex-col gap-5">

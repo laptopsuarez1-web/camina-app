@@ -91,7 +91,7 @@ export default function EditarPerfilScreen() {
   const monthRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
   const email = session?.user.email ?? '';
-  // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una acá (queda marcado en has_password).
+  // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una aquí (queda marcado en has_password).
   const hasPassword = session?.user.user_metadata?.has_password === true || (session?.user.app_metadata?.provider ?? 'email') === 'email';
   const linkedProvider = ((session?.user.app_metadata?.providers as string[] | undefined) ?? []).includes('apple') ? 'Apple' : 'Google';
   // Con el link del correo ya se comprobó que es la persona: no se pide la actual.

@@ -212,7 +212,7 @@ export interface PushToken {
 
 // supabase-js v2 exige esta forma exacta (Row/Insert/Update/Relationships) para
 // poder inferir tipos en .from(...).select()/.insert()/.update(). Relationships
-// queda vacío porque acá no describimos joins automáticos vía FK hints.
+// queda vacío porque aquí no describimos joins automáticos vía FK hints.
 type Table<Row, Insert, Update = Partial<Insert>> = {
   Row: Row;
   Insert: Insert;

@@ -3,26 +3,26 @@
 
 const PASOS = [
   { t: 'La persona elige el premio en la app', d: 'En tu local toca Canjear y la app le pide el código de 4 números de tu local.' },
-  { t: 'Le decís tu código', d: 'Decile el código de tu local (lo ves en Canjes, arriba). No hace falta que abras el panel ni el celular.' },
+  { t: 'Le dices tu código', d: 'Decile el código de tu local (lo ves en Canjes, arriba). No hace falta que abras el panel ni el celular.' },
   { t: 'La app confirma al instante', d: 'La persona escribe el código estando en tu local y ve "Canje confirmado". El canje queda registrado en Canjes con su premio.' },
-  { t: 'Entregás el beneficio', d: 'Entregá lo prometido. Cada persona puede canjear una vez cada 7 días en tu local.' },
+  { t: 'Entregas el beneficio', d: 'Entrega lo prometido. Cada persona puede canjear una vez cada 7 días en tu local.' },
 ];
 
 const SI_FALLA = [
-  ['La app dice "Ese código no es"', 'Revisá en Canjes cuál es el código actual de tu local (son 4 números) y volvé a decírselo.'],
-  ['La app dice que está lejos', 'La persona tiene que estar a menos de 300 m de tu local. Pedile que active la ubicación; si tu local aparece mal en el mapa, escribinos por WhatsApp.'],
-  ['Se filtró tu código', 'En Canjes tocá "Cambiar código": el anterior deja de servir. Avisale el nuevo a tu equipo.'],
+  ['La app dice "Ese código no es"', 'Revisa en Canjes cuál es el código actual de tu local (son 4 números) y vuelve a decírselo.'],
+  ['La app dice que está lejos', 'La persona tiene que estar a menos de 300 m de tu local. Pedile que active la ubicación; si tu local aparece mal en el mapa, escríbenos por WhatsApp.'],
+  ['Se filtró tu código', 'En Canjes toca "Cambiar código": el anterior deja de servir. Avísale el nuevo a tu equipo.'],
   ['Quiere canjear otra vez', 'Cada persona puede canjear en tu local una vez cada 7 días. La app se lo avisa.'],
 ];
 
 const REGLAS = [
-  ['Lo que publicás es lo que entregás', 'El beneficio tiene que ser real, vigente y como está descrito (horario, días, condiciones). Si algo cambia, editalo o pausalo en "Mis beneficios".'],
-  ['Sin consumo extra obligatorio', 'Un beneficio "gratis" no puede pedir que la persona compre otra cosa. Si tu descuento es sobre una compra, dejalo claro en la descripción.'],
+  ['Lo que publicas es lo que entregas', 'El beneficio tiene que ser real, vigente y como está descrito (horario, días, condiciones). Si algo cambia, edítalo o páusalo en "Mis beneficios".'],
+  ['Sin consumo extra obligatorio', 'Un beneficio "gratis" no puede pedir que la persona compre otra cosa. Si tu descuento es sobre una compra, déjalo claro en la descripción.'],
   ['Un canje, una entrega', 'Cada canje se entrega una sola vez. No des tu código a quien no esté en tu local.'],
-  ['El código es de tu local', 'Tu código de 4 números sirve solo en tu comercio. Cambialo desde Canjes cuando quieras.'],
+  ['El código es de tu local', 'Tu código de 4 números sirve solo en tu comercio. Cámbialo desde Canjes cuando quieras.'],
   ['Una vez cada 7 días por comercio', 'Cada persona puede canjear en tu local una vez cada 7 días. Así el beneficio alcanza para más gente.'],
-  ['Tarjeta de fidelidad (Paso Firme y Paso Adelante)', 'Cada canje confirmado en tu local suma un sello. Al completar 5, el siguiente canje del premio que elijas en la sección Tarjeta de fidelidad sale gratis: el premio lo ponés vos y a la persona no se le descuentan Puntos. Después la tarjeta vuelve a empezar.'],
-  ['Cupones por día', 'Elegís cuántos cupones das por día, o ilimitados. Cuando se agotan, el beneficio aparece como agotado hasta el día siguiente.'],
+  ['Tarjeta de fidelidad (Paso Firme y Paso Adelante)', 'Cada canje confirmado en tu local suma un sello. Al completar 5, el siguiente canje del premio que elijas en la sección Tarjeta de fidelidad sale gratis: el premio lo pones tú y a la persona no se le descuentan Puntos. Después la tarjeta vuelve a empezar.'],
+  ['Cupones por día', 'Eliges cuántos cupones das por día, o ilimitados. Cuando se agotan, el beneficio aparece como agotado hasta el día siguiente.'],
   ['Puntos justos', 'Como guía: 2,5 puntos equivalen a Bs 1, o sea que algo de Bs 10 ronda los 25 puntos. En la app se gana 1 punto cada 1.000 pasos, con un máximo de 20 por día.'],
   ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada beneficio necesita su propia foto para poder guardarse.'],
   ['Avisos cercanos (Paso Adelante)', 'Hasta 3 por mes. Los revisamos antes de enviarlos, salen entre 8:00 y 21:00 y cada persona recibe como máximo 1 por semana. Nada de mensajes engañosos.'],
@@ -30,12 +30,12 @@ const REGLAS = [
 ];
 
 const FAQ = [
-  ['¿Cómo cambio mi horario?', 'Perfil del local → Horarios. Marcás los días que abrís y la hora de apertura y cierre.'],
-  ['¿Cómo subo o pauso un beneficio?', 'Mis beneficios → elegís el beneficio → "Activo" para pausarlo o reactivarlo.'],
-  ['¿Puedo cambiar de plan?', 'Sí, cuando quieras desde Plan. Empezás gratis en Primer Paso.'],
+  ['¿Cómo cambio mi horario?', 'Perfil del local → Horarios. Marcas los días que abres y la hora de apertura y cierre.'],
+  ['¿Cómo subo o pauso un beneficio?', 'Mis beneficios → eliges el beneficio → "Activo" para pausarlo o reactivarlo.'],
+  ['¿Puedo cambiar de plan?', 'Sí, cuando quieras desde Plan. Empiezas gratis en Primer Paso.'],
   ['¿Dónde veo cuánta gente canjeó?', 'En Inicio y en Estadísticas (según tu plan).'],
-  ['¿Y los premios online (WhatsApp y redes)?', 'Esos canjes generan un código de 6 números que dura 7 días. La persona te lo manda y lo confirmás en Canjes → "Confirmar código".'],
-  ['Necesito ayuda', 'Escribinos por WhatsApp al +591 627 14286.'],
+  ['¿Y los premios online (WhatsApp y redes)?', 'Esos canjes generan un código de 6 números que dura 7 días. La persona te lo manda y lo confirmas en Canjes → "Confirmar código".'],
+  ['Necesito ayuda', 'Escríbenos por WhatsApp al +591 627 14286.'],
 ];
 
 function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {

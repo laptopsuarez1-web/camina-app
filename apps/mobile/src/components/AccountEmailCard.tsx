@@ -14,7 +14,7 @@ import { colors } from '@/theme/tokens';
 const PROVIDER_NAME: Record<string, string> = { google: 'Google', apple: 'Apple' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Correo con el que la persona entra a Camina. Si entró con Google o Apple el correo lo maneja esa cuenta y acá
+// Correo con el que la persona entra a Camina. Si entró con Google o Apple el correo lo maneja esa cuenta y aquí
 // solo se avisa que está vinculada; si entró con correo y contraseña puede cambiarlo (Supabase manda un link
 // para confirmar el correo nuevo y hasta que no se abre se sigue entrando con el actual).
 export function AccountEmailCard() {

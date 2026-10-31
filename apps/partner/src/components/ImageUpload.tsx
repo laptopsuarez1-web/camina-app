@@ -32,11 +32,11 @@ export function ImageUpload({
       .upload(`${path}.${ext}`, file, { upsert: true, contentType: file.type });
     setUploading(false);
     if (uploadError) {
-      setError('No pudimos subir la foto. Intentá de nuevo.');
+      setError('No pudimos subir la foto. Intenta de nuevo.');
       return;
     }
     const { data } = supabase.storage.from(bucket).getPublicUrl(`${path}.${ext}`);
-    // cache-bust: si reemplazás la foto, la URL pública es la misma y el
+    // cache-bust: si reemplazas la foto, la URL pública es la misma y el
     // navegador podría seguir mostrando la vieja desde caché.
     onUploaded(`${data.publicUrl}?t=${Date.now()}`);
   }

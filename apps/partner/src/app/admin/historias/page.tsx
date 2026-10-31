@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { AdminShell } from '@/components/AdminShell';
 
 // Historias de Instagram por un canje (migración 0055). La persona avisa desde la app que subió la historia
-// etiquetando a @caminaapp; acá el equipo la busca en Instagram y la aprueba (acredita 5 Puntos) o la rechaza.
+// etiquetando a @caminaapp; aquí el equipo la busca en Instagram y la aprueba (acredita 5 Puntos) o la rechaza.
 
 type Status = 'pending' | 'approved' | 'rejected';
 
@@ -79,9 +79,9 @@ export default function AdminHistoriasPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Historias de Instagram</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[640px]">
-        Personas que avisan que subieron una historia con lo que canjearon. Buscá la mención de <strong>@caminaapp</strong> en
-        Instagram (o abrí su perfil) y aprobala: le acreditamos 5 Puntos y le llega un aviso. Las historias duran 24 horas:
-        revisá esta lista todos los días.
+        Personas que avisan que subieron una historia con lo que canjearon. Busca la mención de <strong>@caminaapp</strong> en
+        Instagram (o abre su perfil) y aprobala: le acreditamos 5 Puntos y le llega un aviso. Las historias duran 24 horas:
+        revisa esta lista todos los días.
       </p>
 
       <div className="flex gap-2 mb-5 flex-wrap">
@@ -101,7 +101,7 @@ export default function AdminHistoriasPage() {
 
       {msg && <p className="text-warn text-[12.5px] mb-3">{msg}</p>}
       {loaded && rows.length === 0 && (
-        <p className="text-muted text-[13px]">{tab === 'pending' ? 'No hay historias por revisar. 🎉' : 'Todavía no hay historias acá.'}</p>
+        <p className="text-muted text-[13px]">{tab === 'pending' ? 'No hay historias por revisar. 🎉' : 'Todavía no hay historias aquí.'}</p>
       )}
 
       <div className="grid gap-4 max-w-[1000px]" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>

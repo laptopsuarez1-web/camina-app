@@ -51,8 +51,8 @@ export default function AdminEventosPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Desafíos y eventos</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Aprobá las publicaciones cuando confirmes el pago (Bs 200 comercios con local, Bs 400 solo publicidad). Cuando termina la
-        vigencia, sorteá: se eligen al azar entre quienes se anotaron y cumplieron la condición.
+        Aprueba las publicaciones cuando confirmes el pago (Bs 200 comercios con local, Bs 400 solo publicidad). Cuando termina la
+        vigencia, sortea: se eligen al azar entre quienes se anotaron y cumplieron la condición.
       </p>
       {msg && <p className="text-warn text-[12.5px] mb-3">{msg}</p>}
       <div className="max-w-[760px] flex flex-col gap-2.5">

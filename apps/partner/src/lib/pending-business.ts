@@ -1,7 +1,7 @@
 // Cuando la confirmación de email está activada en Supabase (recomendado, ver
 // README raíz), signUp() no devuelve sesión hasta que el usuario confirma
 // desde el correo. Para que /registro no pierda los datos del comercio en
-// ese lapso, los guardamos acá (localStorage, keyeados por email) y los
+// ese lapso, los guardamos aquí (localStorage, keyeados por email) y los
 // consumimos recién cuando useBusinessAuth detecta sesión sin negocio creado.
 
 export interface PendingBusiness {

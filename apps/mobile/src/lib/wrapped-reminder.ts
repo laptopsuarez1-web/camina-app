@@ -5,7 +5,7 @@ import { monthName, nextWrappedReminder } from '@/lib/share-stats';
 const REMINDER_ID = 'camina-wrapped';
 
 // Aviso local (sin servidor) para el 1.º de cada mes a las 9:00: "Tu septiembre en Camina". Solo se programa si la persona ya
-// dio permiso de avisos (no se lo pedimos acá) y cada vez reemplaza al anterior, así nunca se acumulan.
+// dio permiso de avisos (no se lo pedimos aquí) y cada vez reemplaza al anterior, así nunca se acumulan.
 export async function scheduleWrappedReminder(now: Date = new Date()): Promise<void> {
   if (Platform.OS === 'web') return;
   try {

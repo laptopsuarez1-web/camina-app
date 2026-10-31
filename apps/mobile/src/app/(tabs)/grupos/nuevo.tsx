@@ -16,7 +16,7 @@ import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Grupo nuevo: nombre y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
+// Grupo nuevo: nombre y, si quieres, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
 export default function NuevoGrupoScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, muted, accentIcon } = useThemeColors();

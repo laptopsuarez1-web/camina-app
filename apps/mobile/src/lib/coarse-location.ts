@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 const KEY = 'camina_coarse_location_last';
 const EVERY_MS = 6 * 60 * 60 * 1000; // como máximo una vez cada 6 horas
 
-// Se redondea acá a la misma grilla de ~550 m que usa el servidor, así la ubicación exacta nunca sale del teléfono.
+// Se redondea aquí a la misma grilla de ~550 m que usa el servidor, así la ubicación exacta nunca sale del teléfono.
 const roundCoarse = (x: number) => Number((Math.round(x / 0.005) * 0.005).toFixed(3));
 
 // Manda al servidor una ubicación APROXIMADA (el servidor la redondea a ~550 m) para poder avisarte

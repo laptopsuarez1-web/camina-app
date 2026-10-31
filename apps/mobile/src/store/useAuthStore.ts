@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 let sessionSeq = 0;
 
 // Publica sesión y perfil JUNTOS. Si se publicara la sesión primero, hay un instante con sesión y sin perfil en que
-// la app creería que la persona es nueva y la mandaría al alta de cuenta (que pisa nombre, ciudad y barrio).
+// la app creería que la persona es nueva y la mandaría al alta de cuenta (que pisa nombre, ciudad y zona).
 async function publishSession(session: Session | null) {
   const seq = ++sessionSeq;
   if (!session) {

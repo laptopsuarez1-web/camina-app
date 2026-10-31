@@ -69,7 +69,7 @@ export function RedemptionDetailSheet({
   const biz = r?.business ?? null;
 
   const st = r ? STATUS_STYLE[r.status] : null;
-  const steps = ['Mostrale el código al local.', 'El local lo confirma con su PIN.', '¡Disfrutá tu premio!'];
+  const steps = ['Mostrale el código al local.', 'El local lo confirma con su PIN.', '¡Disfruta tu premio!'];
 
   return (
     <Modal visible={!!r} transparent animationType="slide" onRequestClose={onClose}>
@@ -95,7 +95,7 @@ export function RedemptionDetailSheet({
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">{st.title}</Text>
                     <Text className="text-[13px] text-muted-light dark:text-muted-dark" style={{ marginTop: 1 }}>
                       {r.status === 'confirmed' && r.confirmed_at ? `El local lo confirmó el ${dateTime(r.confirmed_at)}`
-                        : r.status === 'pending' ? 'Mostrá el código en el local para que lo confirmen.'
+                        : r.status === 'pending' ? 'Muestra el código en el local para que lo confirmen.'
                         : r.status === 'expired' ? 'El código no se usó a tiempo.'
                         : 'Te devolvimos los Puntos.'}
                     </Text>

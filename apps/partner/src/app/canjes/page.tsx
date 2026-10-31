@@ -45,7 +45,7 @@ export default function CanjesPage() {
 
   async function changeLocalCode() {
     if (!business || changing) return;
-    if (!window.confirm('¿Cambiar el código del local? El anterior deja de servir y tenés que avisarle el nuevo a tu equipo.')) return;
+    if (!window.confirm('¿Cambiar el código del local? El anterior deja de servir y tienes que avisarle el nuevo a tu equipo.')) return;
     setChanging(true);
     setCodeError(null);
     const { data, error } = await supabase.rpc('reset_local_code', { p_business_id: business.id });
@@ -83,8 +83,8 @@ export default function CanjesPage() {
     setResult({
       ok: true,
       msg: conTarjeta
-        ? `Código ${clean} válido. Canje con tarjeta de fidelidad: este premio va gratis. Entregá:`
-        : premio ? `Código ${clean} válido. Entregá:` : `Código ${clean} válido. Entregá el beneficio.`,
+        ? `Código ${clean} válido. Canje con tarjeta de fidelidad: este premio va gratis. Entrega:`
+        : premio ? `Código ${clean} válido. Entrega:` : `Código ${clean} válido. Entrega el beneficio.`,
       premio,
     });
     setCodeInput('');
@@ -93,7 +93,7 @@ export default function CanjesPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Canjes" subtitle="Cada canje queda acá, con su premio y cómo se confirmó." />
+      <TopBar title="Canjes" subtitle="Cada canje queda aquí, con su premio y cómo se confirmó." />
 
       <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="text-white font-semibold text-sm mb-1">Confirmar código de 6 dígitos</p>
@@ -139,7 +139,7 @@ export default function CanjesPage() {
         <p className="font-semibold text-sm mb-1">Código de tu local</p>
         <p className="text-muted text-xs mb-3.5">
           Decile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace
-          falta que abras el panel. Si se filtró, cambialo cuando quieras.
+          falta que abras el panel. Si se filtró, cámbialo cuando quieras.
         </p>
         <div className="flex items-center gap-3">
           <span aria-label={localCode ? `Código del local ${localCode.split('').join(' ')}` : 'Sin código'} className="flex-1 bg-bg rounded-[10px] px-3.5 py-2.5 text-[28px] font-extrabold tracking-[10px] text-center">
