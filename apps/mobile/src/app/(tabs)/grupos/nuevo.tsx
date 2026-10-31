@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
@@ -18,7 +19,7 @@ import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Grupo nuevo: nombre y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
+// Grupo nuevo: nombre y, si quieres, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
 export default function NuevoGrupoScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, muted, accentIcon } = useThemeColors();
@@ -70,7 +71,7 @@ export default function NuevoGrupoScreen() {
   const ready = name.trim().length >= 2 && !create.isPending;
 
   return (
-    <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="px-5" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
         <View className="flex-row items-center justify-between mb-5">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)' }}>
@@ -121,6 +122,6 @@ export default function NuevoGrupoScreen() {
           </Text>
         </Press>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }

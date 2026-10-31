@@ -57,13 +57,13 @@ export default function ActualizarClavePage() {
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
-      <p className="text-white font-bold text-[22px] mb-1.5">Elegí una contraseña nueva</p>
+      <p className="text-white font-bold text-[22px] mb-1.5">Elige una contraseña nueva</p>
 
       {done ? (
         <p className="text-auth-muted text-[13px] text-center">Listo, te llevamos a tu panel…</p>
       ) : !ready ? (
         <p className="text-auth-muted text-[13px] text-center max-w-[300px]">
-          Abrí esta página desde el link que te mandamos por correo — este link solo funciona una vez y por poco
+          Abre esta página desde el link que te mandamos por correo — este link solo funciona una vez y por poco
           tiempo.
         </p>
       ) : (

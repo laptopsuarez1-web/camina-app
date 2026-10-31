@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
-import { View, Alert, ActivityIndicator, Share, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Alert, ActivityIndicator } from 'react-native';
+import { shareText } from '@/lib/share';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -117,11 +119,11 @@ export default function NuevoDesafioScreen() {
           stake={stake}
           dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
           onInvite={() =>
-            Share.share({
-              message: inviteCode
+            shareText(
+              inviteCode
                 ? `Súmate a mi desafío "${name.trim()}" en Camina.\nCódigo del grupo: ${inviteCode}\n${groupInviteLink(inviteCode)}`
                 : `Súmate a mi desafío "${name.trim()}" en Camina.`,
-            })
+            )
           }
           onGoGroup={toGroup}
           onHome={() => router.replace('/(tabs)')}
@@ -134,7 +136,7 @@ export default function NuevoDesafioScreen() {
   const insufficient = stake > 0 && (balance ?? 0) < stake;
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <View className="px-5 pt-14 flex-row items-center justify-between">
         <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
           <ChevronLeft size={18} color={accentIcon} />
@@ -298,6 +300,6 @@ export default function NuevoDesafioScreen() {
           {saving ? <ActivityIndicator color={colors.mintDark} /> : <Text className="text-mint-dark font-bold text-[15px]">{step < 3 ? 'Siguiente' : 'Crear desafío'}</Text>}
         </Press>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }

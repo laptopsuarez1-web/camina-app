@@ -107,7 +107,7 @@ export default function ActividadScreen() {
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
     for (const h of history ?? []) map.set(h.day, h.steps);
-    // Salud guarda los pasos de los días en que no abriste la app: se muestran acá, pero no suman Puntos.
+    // Salud guarda los pasos de los días en que no abriste la app: se muestran aquí, pero no suman Puntos.
     for (const [k, v] of Object.entries(healthDaily)) map.set(k, Math.max(map.get(k) ?? 0, v));
     map.set(localKey(new Date()), stepsToday);
     return map;

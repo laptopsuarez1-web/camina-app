@@ -1,7 +1,7 @@
 // Datos reales de los primeros comercios (Tarija), tomados de la base de Camina el 2026-10-17.
 // Puntos ya con la regla de 2,5 puntos por Bs 1 (antes x1,25, redondeo hacia arriba).
 // Un local sin premios cargados (premios: []) se muestra igual, solo con nombre, rubro y dirección.
-// La página es estática: si cambia un premio o sus puntos en el panel, hay que actualizar acá.
+// La página es estática: si cambia un premio o sus puntos en el panel, hay que actualizar aquí.
 export type Premio = { nombre: string; detalle: string; puntos: number };
 export type Local = {
   id: 'bloom' | 'coco' | 'fripaps' | 'cancheritos';

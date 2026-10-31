@@ -28,7 +28,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-// Ciudad de una lista corta; el barrio se busca escribiendo (salen solo las coincidencias) o con la ubicación, así queda siempre bien escrito.
+// Ciudad de una lista corta; la zona se busca escribiendo (salen solo las coincidencias) o con la ubicación, así queda siempre bien escrito.
 export function PlacePicker({
   city,
   zone,

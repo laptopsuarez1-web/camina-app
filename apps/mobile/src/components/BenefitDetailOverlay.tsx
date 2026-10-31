@@ -22,8 +22,8 @@ type Benefit = {
 };
 type Business = { name: string; lat?: number | null; lng?: number | null; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours };
 
-const STEPS_LOCAL = ['Acercate al mostrador.', 'Tocá Canjear y mostrale el código al local.', 'El local lo confirma y ¡disfrutá tu premio!'];
-const STEPS_ONLINE = ['Tocá Canjear y guardá tu código.', 'Escribile al local y decile el código.', '¡Disfrutá tu premio!'];
+const STEPS_LOCAL = ['Acércate al mostrador.', 'Toca Canjear y muéstrale el código al local.', 'El local lo confirma y ¡disfruta tu premio!'];
+const STEPS_ONLINE = ['Toca Canjear y guarda tu código.', 'Escríbele al local y dile el código.', '¡Disfruta tu premio!'];
 
 export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefit: Benefit; business: Business; onClose: () => void }) {
   return (

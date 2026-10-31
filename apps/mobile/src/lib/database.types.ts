@@ -214,7 +214,7 @@ export interface PushToken {
 
 // supabase-js v2 exige esta forma exacta (Row/Insert/Update/Relationships) para
 // poder inferir tipos en .from(...).select()/.insert()/.update(). Relationships
-// queda vacío porque acá no describimos joins automáticos vía FK hints.
+// queda vacío porque aquí no describimos joins automáticos vía FK hints.
 type Table<Row, Insert, Update = Partial<Insert>> = {
   Row: Row;
   Insert: Insert;
@@ -305,7 +305,8 @@ export type Database = {
         Args: { p_kind: string; p_target_user: string | null; p_message: string | null; p_reason: string };
         Returns: void;
       };
-      register_device: { Args: { p_device_id: string }; Returns: void };
+      register_device: { Args: { p_device_id: string }; Returns: string };
+      admin_release_device: { Args: { p_device_id: string }; Returns: void };
       claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };

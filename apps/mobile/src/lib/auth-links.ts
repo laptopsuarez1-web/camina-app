@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 // El link que Supabase manda por correo para confirmar la cuenta (o para
 // "olvidé mi contraseña") abre camina://auth-callback?code=... — con flowType
-// 'pkce' (ver lib/supabase.ts) ese "code" se canjea a mano por una sesión acá,
+// 'pkce' (ver lib/supabase.ts) ese "code" se canjea a mano por una sesión aquí,
 // porque detectSessionInUrl no existe fuera de un browser.
 let listening = false;
 

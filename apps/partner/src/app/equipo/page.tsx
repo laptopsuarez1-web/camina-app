@@ -71,11 +71,11 @@ export default function EquipoPage() {
         <div className="bg-card border border-line rounded-2xl p-4 mb-5 text-[13px] leading-5">
           <p className="font-bold mb-1">Cómo funciona</p>
           <ol className="text-muted list-decimal pl-4 flex flex-col gap-0.5">
-            <li>Escribí el correo de tu empleado y tocá &ldquo;Invitar&rdquo;.</li>
+            <li>Escribe el correo de tu empleado y toca &ldquo;Invitar&rdquo;.</li>
             <li>Tu empleado entra a <strong>caminaapp.com/unirme</strong>, crea su cuenta con ese correo y confirma el mail.</li>
             <li>Al entrar, ve <strong>solo la pantalla de canjes</strong>: escribe el código y confirma. No ve estadísticas ni planes.</li>
           </ol>
-          <p className="text-muted mt-1.5">Podés tener hasta 5 cajeros y sacarles el acceso cuando quieras.</p>
+          <p className="text-muted mt-1.5">Puedes tener hasta 5 cajeros y sacarles el acceso cuando quieras.</p>
         </div>
 
         <div className="bg-card border border-line rounded-2xl p-5 mb-5">

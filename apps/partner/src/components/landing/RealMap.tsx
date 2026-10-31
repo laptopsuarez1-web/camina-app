@@ -84,10 +84,10 @@ export default function RealMap() {
   const llego = p > 0.72;
   const fase = p < 0.12 ? 0 : p < 0.45 ? 1 : p < 0.72 ? 2 : 3;
   const textos = [
-    ['Salís a caminar', 'Tu recorrido de todos los días ya cuenta: cada 1.000 pasos, 1 punto.'],
-    ['Pasás por locales de tu barrio', 'En el mapa de Camina ves los comercios que tienen premios para vos.'],
-    ['Elegís a dónde ir', 'Con tus puntos, canjeás en el local que más te gusta.'],
-    ['Llegás y canjeás', "Pedís el código de 4 números del local, lo escribís en la app y te dan tu premio."],
+    ['Sales a caminar', 'Tu recorrido de todos los días ya cuenta: cada 1.000 pasos, 1 punto.'],
+    ['Pasas por locales de tu zona', 'En el mapa de Camina ves los comercios que tienen premios para ti.'],
+    ['Eliges a dónde ir', 'Con tus puntos, canjeas en el local que más te gusta.'],
+    ['Llegas y canjeas', "Pides el código de 4 números del local, lo escribes en la app y te dan tu premio."],
   ][fase];
 
   return (

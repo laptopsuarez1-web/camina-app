@@ -80,9 +80,9 @@ export default function BeneficioPage() {
           <p className="text-[12.5px] text-[#4A3D68]">
             {hasGratis
               ? hasDescuento
-                ? '🔓 Ya tenés tu premio gratis y tu descuento. Pasá a Paso Firme o Paso Adelante para sumar más premios y cupones ilimitados.'
-                : '🔓 Ya podés crear un descuento. Con Primer Paso tenés 1 premio gratis y 1 descuento.'
-              : '🔒 Creá un premio gratis para poder agregar un descuento. Con Primer Paso tenés 1 premio gratis y 1 descuento.'}
+                ? '🔓 Ya tienes tu premio gratis y tu descuento. Pasa a Paso Firme o Paso Adelante para sumar más premios y cupones ilimitados.'
+                : '🔓 Ya puedes crear un descuento. Con Primer Paso tienes 1 premio gratis y 1 descuento.'
+              : '🔒 Crea un premio gratis para poder agregar un descuento. Con Primer Paso tienes 1 premio gratis y 1 descuento.'}
           </p>
         </div>
       )}
@@ -90,7 +90,7 @@ export default function BeneficioPage() {
       <button
         onClick={() => !atFreeLimit && setEditingId('new')}
         disabled={atFreeLimit}
-        title={atFreeLimit ? 'Con el plan Primer Paso tenés 1 premio gratis y 1 descuento' : ''}
+        title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
         className="flex items-center gap-2 rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-4.5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: '#241748', color: '#7FEDC4' }}
       >
@@ -101,7 +101,7 @@ export default function BeneficioPage() {
 
       {!loading && benefits.length === 0 && (
         <div className="bg-card border border-line rounded-2xl p-6 text-center max-w-[480px]">
-          <p className="text-[13.5px] text-muted">Todavía no tenés ningún beneficio cargado.</p>
+          <p className="text-[13.5px] text-muted">Todavía no tienes ningún beneficio cargado.</p>
         </div>
       )}
 
@@ -162,11 +162,11 @@ export default function BeneficioPage() {
 
 // Canales para cobrar un premio online. El contacto sale de los datos del local, así no se carga dos veces.
 const CANALES_ONLINE: { id: OnlineChannel; label: string; tiene: (b: Business) => boolean; falta: string }[] = [
-  { id: 'whatsapp', label: 'WhatsApp', tiene: (b) => !!b.phone?.trim(), falta: 'Cargá tu WhatsApp en Perfil' },
-  { id: 'instagram', label: 'Instagram', tiene: (b) => !!b.instagram?.trim(), falta: 'Cargá tu Instagram en Perfil' },
-  { id: 'facebook', label: 'Facebook', tiene: (b) => !!b.facebook?.trim(), falta: 'Cargá tu Facebook en Perfil' },
-  { id: 'tiktok', label: 'TikTok', tiene: (b) => !!b.tiktok?.trim(), falta: 'Cargá tu TikTok en Perfil' },
-  { id: 'web', label: 'Mi página web', tiene: (b) => !!b.website?.trim(), falta: 'Cargá tu página en Perfil' },
+  { id: 'whatsapp', label: 'WhatsApp', tiene: (b) => !!b.phone?.trim(), falta: 'Carga tu WhatsApp en Perfil' },
+  { id: 'instagram', label: 'Instagram', tiene: (b) => !!b.instagram?.trim(), falta: 'Carga tu Instagram en Perfil' },
+  { id: 'facebook', label: 'Facebook', tiene: (b) => !!b.facebook?.trim(), falta: 'Carga tu Facebook en Perfil' },
+  { id: 'tiktok', label: 'TikTok', tiene: (b) => !!b.tiktok?.trim(), falta: 'Carga tu TikTok en Perfil' },
+  { id: 'web', label: 'Mi página web', tiene: (b) => !!b.website?.trim(), falta: 'Carga tu página en Perfil' },
 ];
 
 function BeneficioForm({
@@ -361,8 +361,8 @@ function BeneficioForm({
           <Star size={15} color="#8B4FD1" />
           <p className="text-[12.5px] text-[#4A3D68]">
             {freeHasGratis
-              ? '🔓 Ya tenés un premio gratis: este puede ser tu descuento.'
-              : '🔒 Creá primero un premio gratis: así se habilita el descuento.'}
+              ? '🔓 Ya tienes un premio gratis: este puede ser tu descuento.'
+              : '🔒 Crea primero un premio gratis: así se habilita el descuento.'}
           </p>
         </div>
       )}
@@ -406,7 +406,7 @@ function BeneficioForm({
           <button
             disabled={gratisLocked}
             onClick={() => !gratisLocked && setTipo('gratis')}
-            title={gratisLocked ? 'Ya tenés un premio gratis: este puede ser un descuento' : ''}
+            title={gratisLocked ? 'Ya tienes un premio gratis: este puede ser un descuento' : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
             style={{
               borderColor: tipo === 'gratis' ? '#4FC3A8' : '#E1D2F5',
@@ -419,7 +419,7 @@ function BeneficioForm({
           <button
             disabled={descuentoLocked}
             onClick={() => !descuentoLocked && setTipo('descuento')}
-            title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tenés un solo descuento' : 'Creá primero un premio gratis') : ''}
+            title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
             style={{
               borderColor: tipo === 'descuento' ? '#8B4FD1' : '#E1D2F5',
@@ -469,7 +469,7 @@ function BeneficioForm({
                     placeholder="20"
                     className="w-24 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
                   />
-                  <span className="text-[13.5px] text-muted">% — ej: poné 20 para &ldquo;20% de descuento&rdquo;</span>
+                  <span className="text-[13.5px] text-muted">% — ej: pon 20 para &ldquo;20% de descuento&rdquo;</span>
                 </div>
               </Field>
             ) : (
@@ -487,13 +487,13 @@ function BeneficioForm({
 
         <div className="bg-aqua-light rounded-xl p-3.5 mt-4.5 mb-4">
           <p className="text-[12.5px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>
-            ¿No sabés cuántos Puntos poner?
+            ¿No sabes cuántos Puntos poner?
           </p>
           <p className="text-[11.5px] mb-2.5" style={{ color: '#3A8C72' }}>
             Como referencia, 2,5 Puntos equivalen a Bs 1: algo de <strong>Bs 10</strong> ronda los <strong>25 Puntos</strong> (con el
-            tope de 20 Puntos ganados por día, ya le lleva más de una jornada caminando). Metí el
-            valor de lo que estás regalando y te tiramos una sugerencia — es una guía, no una regla, vos
-            ponés el número final.
+            tope de 20 Puntos ganados por día, ya le lleva más de una jornada caminando). Mete el
+            valor de lo que estás regalando y te tiramos una sugerencia — es una guía, no una regla, tú
+            pones el número final.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-[12.5px] text-muted">Vale aprox.</span>
@@ -526,7 +526,7 @@ function BeneficioForm({
               <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Premio online (sin ir al local)</span>
               <span className="block text-[11.5px] leading-4 mt-0.5" style={{ color: '#3A8C72' }}>
                 La persona canjea en la app y no hace falta que vaya al local. Por WhatsApp o redes recibe un código propio que le
-                manda a tu tienda y vos lo confirmás en Canjes cuando quieras (le dura 7 días). Si tenés página web, cargás tus
+                manda a tu tienda y tú lo confirmas en Canjes cuando quieras (le dura 7 días). Si tienes página web, cargas tus
                 propios cupones y ella los pega al pagar. Los días y horarios de abajo se respetan igual.
               </span>
             </span>
@@ -559,7 +559,7 @@ function BeneficioForm({
               </div>
               {!canalOk && (
                 <p className="text-warn text-[12px] mt-2">
-                  Elegí un canal. Si no ves el tuyo, cargalo primero en <a href="/perfil" className="underline">Perfil</a>.
+                  Elige un canal. Si no ves el tuyo, cárgalo primero en <a href="/perfil" className="underline">Perfil</a>.
                 </p>
               )}
               {esWeb ? (
@@ -574,7 +574,7 @@ function BeneficioForm({
                     />
                   </Field>
                   <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-                    Creá estos cupones en tu página (con el descuento de este premio) y pegalos acá. Cada persona que canjea recibe uno
+                    Crea estos cupones en tu página (con el descuento de este premio) y pegalos aquí. Cada persona que canjea recibe uno
                     distinto y lo pega en el campo cupón al pagar: los cupos son los cupones que cargues. Los Puntos se descuentan
                     al canjear, así que no hay nada que confirmar en Camina.
                   </p>
@@ -583,7 +583,7 @@ function BeneficioForm({
                     {codigosNuevos.length > 0 ? ` · se van a sumar ${codigosNuevos.length} al guardar` : ''}
                   </p>
                   {codigosLibres + codigosNuevos.length === 0 && (
-                    <p className="text-warn text-[12px] mt-1">Cargá al menos un cupón para guardar.</p>
+                    <p className="text-warn text-[12px] mt-1">Carga al menos un cupón para guardar.</p>
                   )}
                 </div>
               ) : (
@@ -598,7 +598,7 @@ function BeneficioForm({
                     </Field>
                   </div>
                   <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-                    Poné los que quieras. Cuando se usan todos, el premio queda agotado. Si cancelás o vence un canje, ese cupo se libera.
+                    Pon los que quieras. Cuando se usan todos, el premio queda agotado. Si cancelas o vence un canje, ese cupo se libera.
                   </p>
                 </>
               )}
@@ -637,11 +637,11 @@ function BeneficioForm({
 
         <div className="bg-purple-light rounded-xl p-3.5 mb-3.5">
           <p className="text-[12.5px] font-semibold mb-1" style={{ color: '#4A3D68' }}>
-            ⏰ Horas muertas: llená tu local cuando está vacío
+            ⏰ Horas muertas: llena tu local cuando está vacío
           </p>
           <p className="text-[11.5px] mb-2.5 leading-4" style={{ color: '#4A3D68' }}>
             Son las horas en que casi no entra nadie. Si el premio vale justo ahí, la gente camina hasta tu local cuando más
-            lo necesitás, y en las horas de mucho movimiento no regalás de más. Elegí una franja o armá la tuya abajo.
+            lo necesitas, y en las horas de mucho movimiento no regalas de más. Elige una franja o arma la tuya abajo.
           </p>
           <div className="flex flex-wrap gap-1.5">
             {FRANJAS_COMUNES.map((f) => {
@@ -695,7 +695,7 @@ function BeneficioForm({
             <p className="text-[11px] mt-2" style={{ color: '#7C6A9C' }}>
               {isFree
                 ? 'Con Paso Firme, Camina te sugiere tus horas más flojas según tus canjes.'
-                : 'Cuando tengas más canjes, acá te vamos a sugerir tus horas más flojas.'}
+                : 'Cuando tengas más canjes, aquí te vamos a sugerir tus horas más flojas.'}
             </p>
           )}
         </div>
@@ -724,7 +724,7 @@ function BeneficioForm({
           </div>
         </div>
         <p className="text-[11px] text-muted mb-2">
-          Dejá los dos vacíos si vale a cualquier hora. Fuera de este rango, a los usuarios les aparece
+          Deja los dos vacíos si vale a cualquier hora. Fuera de este rango, a los usuarios les aparece
           &ldquo;Fuera de horario&rdquo; y no lo pueden canjear.
         </p>
 
@@ -776,7 +776,7 @@ function BeneficioForm({
           </button>
         </div>
 
-        {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Subí una foto del beneficio para poder guardarlo: es lo que ven las personas antes de canjear.</p>}
+        {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Sube una foto del beneficio para poder guardarlo: es lo que ven las personas antes de canjear.</p>}
         {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
         {saved && <p className="text-aqua text-[12.5px] mb-3">Guardado.</p>}
 

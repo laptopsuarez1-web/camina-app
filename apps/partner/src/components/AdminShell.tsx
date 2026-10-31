@@ -17,7 +17,7 @@ const NAV = [
   { href: '/admin/cuentas', label: 'Cuentas', icon: Users },
   { href: '/admin/reportes', label: 'Reportes', icon: Flag },
   { href: '/admin/alertas', label: 'Alertas', icon: Radar },
-  { href: '/admin/lugares', label: 'Ciudades y barrios', icon: MapPinned },
+  { href: '/admin/lugares', label: 'Ciudades y zonas', icon: MapPinned },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

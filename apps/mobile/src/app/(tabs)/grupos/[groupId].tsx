@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Platform, Alert, Animated, Easing } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -395,7 +396,7 @@ export default function GroupDetailScreen() {
   const pot = active ? active.stake * (ch?.entries ?? 0) : 0;
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
         <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
@@ -786,7 +787,7 @@ export default function GroupDetailScreen() {
         onLeave={() => { setDrawerOpen(false); confirmExit(false); }}
         onDelete={() => { setDrawerOpen(false); confirmExit(true); }}
       />
-      <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} />
-    </KeyboardAvoidingView>
+      <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} progress={{ members: data.members.length, total: totalSteps, target: challengeTarget }} />
+    </KeyboardSafe>
   );
 }

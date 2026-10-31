@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, ActivityIndicator, Alert, ScrollView, Platform } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,7 +16,7 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, i
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
 // (nada de gradiente ni glow), mismo logo, mismo orden de botones, mismo
-// texto. La única diferencia real con el prototipo es que acá los botones
+// texto. La única diferencia real con el prototipo es que aquí los botones
 // hacen algo de verdad (auth de Supabase) en vez de saltar directo a la app.
 type AuthKind = 'login' | 'signup';
 
@@ -125,6 +126,13 @@ export default function WelcomeScreen() {
         return;
       }
       Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', friendlyError(error));
+      return;
+    }
+    // Con confirmación de correo, Supabase no da error si el correo ya existe: devuelve un usuario sin identidades.
+    // Sin este aviso la persona quedaba esperando un correo que nunca llega.
+    if (authKind === 'signup' && data.user && (data.user.identities?.length ?? 1) === 0) {
+      Alert.alert('Ese correo ya tiene una cuenta', 'Inicia sesión con tu contraseña. Si no la recuerdas, toca "¿Olvidaste tu contraseña?".');
+      setAuthKind('login');
       return;
     }
     if (authKind === 'signup' && !data.session) {
@@ -244,7 +252,7 @@ export default function WelcomeScreen() {
 
   return (
     <LinearGradient colors={colors.headerGradient} style={{ flex: 1 }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardSafe style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -396,7 +404,7 @@ export default function WelcomeScreen() {
             </Press>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardSafe>
     </LinearGradient>
   );
 }

@@ -5,7 +5,7 @@ import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { GuiaContent } from '@/components/GuiaContent';
 
 const MATERIAL = [
-  { file: '/marca/afiche-aqui-se-canjea.pdf', t: 'Afiche "Aquí canjeás con Camina"', d: 'A4 para pegar en la vitrina o la caja.' },
+  { file: '/marca/afiche-aqui-se-canjea.pdf', t: 'Afiche "Aquí canjeas con Camina"', d: 'A4 para pegar en la vitrina o la caja.' },
   { file: '/marca/logo-solo-transparente.png', t: 'Logo (fondo transparente)', d: 'Para tus redes o tu carta.' },
   { file: '/marca/logo-con-nombre-transparente.png', t: 'Logo con nombre (transparente)', d: 'Para portadas y afiches.' },
   { file: '/marca/nombre-camina-transparente.png', t: 'Solo el nombre CAMINA (transparente)', d: 'Para encabezados.' },
@@ -15,7 +15,7 @@ const MATERIAL = [
 export default function GuiaPage() {
   return (
     <DashboardShell>
-      <TopBar title="Guía y reglas" subtitle="Todo lo que necesitás para atender canjes sin dudas." />
+      <TopBar title="Guía y reglas" subtitle="Todo lo que necesitas para atender canjes sin dudas." />
       <div className="max-w-[720px]">
         <a
           href="/guia-camina-comercios.pdf"
@@ -30,7 +30,7 @@ export default function GuiaPage() {
         <section id="material" className="mb-8">
           <h2 className="font-extrabold text-[18px] mb-1" style={{ color: '#241748' }}>Material para tu local</h2>
           <p className="text-muted text-[13px] mb-3.5">
-            Avisale a tus clientes que en tu local se canjea con Camina. Imprimí el afiche o usá el logo en tus redes.
+            Avísale a tus clientes que en tu local se canjea con Camina. Imprime el afiche o usa el logo en tus redes.
           </p>
           <div className="flex flex-col gap-2">
             {MATERIAL.map((m) => (
@@ -51,8 +51,8 @@ export default function GuiaPage() {
           <div className="bg-bg border border-line rounded-xl p-4 mt-4">
             <p className="font-semibold text-[13px] mb-1">Texto listo para tu Instagram o WhatsApp</p>
             <p className="text-[12.5px] leading-5 text-muted">
-              &ldquo;¡Ya estamos en Camina! 🚶 Caminá, juntá puntos y canjealos por beneficios en nuestro local. Descargá
-              la app en caminaapp.com y pedinos el código del local en la caja.&rdquo;
+              &ldquo;¡Ya estamos en Camina! 🚶 Camina, junta puntos y canjéalos por beneficios en nuestro local. Descarga
+              la app en caminaapp.com y pídenos el código del local en la caja.&rdquo;
             </p>
           </div>
         </section>

@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         '¡Tu comercio ya está publicado! 🎉',
         [
           `Revisamos <strong>${nombre}</strong> y ya aparece en el mapa y en la lista de la app.`,
-          'Desde el panel podés ver tus canjes, validar los códigos de tus clientes y sumar más beneficios.',
+          'Desde el panel puedes ver tus canjes, validar los códigos de tus clientes y sumar más beneficios.',
         ],
         panelUrl ? { texto: 'Entrar al panel', url: `${panelUrl}/inicio` } : undefined
       );
@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
         [
           `Revisamos <strong>${nombre}</strong> y hay algo para corregir antes de publicarlo:`,
           `<em>${esc(business.rejection_reason ?? '')}</em>`,
-          'Corregilo desde Perfil del local y tocá "Ya lo corregí, volver a enviar". Lo revisamos de nuevo enseguida.',
+          'Corregilo desde Perfil del local y toca "Ya lo corregí, volver a enviar". Lo revisamos de nuevo enseguida.',
         ],
         panelUrl ? { texto: 'Corregir mi ficha', url: `${panelUrl}/perfil` } : undefined
       );
@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       'Te invitaron como cajero',
       [
         `<strong>${nombre}</strong> te sumó a su equipo en Camina para que valides los códigos de los clientes.`,
-        'Creá tu cuenta con este mismo correo (es gratis y tarda un minuto). Después entrás directo a la pantalla de canjes.',
+        'Crea tu cuenta con este mismo correo (es gratis y tarda un minuto). Después entras directo a la pantalla de canjes.',
       ],
       panelUrl ? { texto: 'Crear mi cuenta de cajero', url: `${panelUrl}/unirme?email=${encodeURIComponent(email)}` } : undefined
     );
