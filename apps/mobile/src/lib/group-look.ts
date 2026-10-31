@@ -1,19 +1,23 @@
 import { colors } from '@/theme/tokens';
 
-// Fondos que puede elegir quien creó el grupo (se guarda la clave en groups.background; la lista de claves está en la migración 0069).
+// Temas del grupo (se guarda la clave en groups.background; las claves están en el check de la migración 0069).
+// Cada tema cambia la cabecera, el color de acento (barra de la meta, botones) y el velo de color del fondo de la pantalla.
 export const GROUP_BACKGROUNDS = [
-  { key: 'aqua', label: 'Noche', colors: colors.headerGradient },
-  { key: 'sunset', label: 'Atardecer', colors: ['#7a3a6b', '#3d1a45', '#1a0d26'] as const },
-  { key: 'night', label: 'Océano', colors: ['#1d4e6b', '#0f2a44', '#0a1626'] as const },
-  { key: 'forest', label: 'Bosque', colors: ['#1f6b57', '#0f3a31', '#0a1f1b'] as const },
-  { key: 'berry', label: 'Frutilla', colors: ['#8a2f5a', '#4a1a3a', '#220c1b'] as const },
-  { key: 'sand', label: 'Arena', colors: ['#8a6a3a', '#4a3a22', '#241c10'] as const },
+  { key: 'aqua', label: 'Violeta', colors: colors.headerGradient, accent: colors.aqua, accentDeep: colors.aquaDeep, wash: '#8B4FD1' },
+  { key: 'forest', label: 'Esmeralda', colors: ['#12896b', '#0b4d3e', '#06241e'] as const, accent: '#5BE0B4', accentDeep: '#0F7A5C', wash: '#12B886' },
+  { key: 'night', label: 'Océano', colors: ['#1c6fd1', '#123f7a', '#0a1d3a'] as const, accent: '#6CB6FF', accentDeep: '#1B62B8', wash: '#339AF0' },
+  { key: 'sunset', label: 'Atardecer', colors: ['#e8590c', '#a02c4a', '#3a1230'] as const, accent: '#FFB070', accentDeep: '#C2410C', wash: '#FF8A3D' },
+  { key: 'berry', label: 'Rosa', colors: ['#d6336c', '#8a1f4e', '#34102a'] as const, accent: '#FF8FBF', accentDeep: '#B02A5B', wash: '#F06595' },
+  { key: 'sand', label: 'Dorado', colors: ['#c98a00', '#7a5200', '#2e2005'] as const, accent: '#FFD166', accentDeep: '#8F6200', wash: '#F5B300' },
 ] as const;
 
 export type GroupBackgroundKey = (typeof GROUP_BACKGROUNDS)[number]['key'];
 
+export function groupTheme(key: string | null | undefined) {
+  return GROUP_BACKGROUNDS.find((b) => b.key === key) ?? GROUP_BACKGROUNDS[0];
+}
 export function groupGradient(key: string | null | undefined) {
-  return (GROUP_BACKGROUNDS.find((b) => b.key === key) ?? GROUP_BACKGROUNDS[0]).colors;
+  return groupTheme(key).colors;
 }
 
 // Metas semanales sugeridas para el grupo entero (pasos sumados de todos).

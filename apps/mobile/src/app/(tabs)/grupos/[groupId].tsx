@@ -26,7 +26,7 @@ import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
-import { groupGradient } from '@/lib/group-look';
+import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupPhoto } from '@/lib/avatar';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -41,7 +41,7 @@ function weekKey() {
 }
 
 // Barra de la meta del grupo: se llena con animación al entrar, un brillo la recorre mientras falta y, al cumplirla, late.
-function GoalBar({ pct }: { pct: number }) {
+function GoalBar({ pct, accent }: { pct: number; accent: string }) {
   const w = useRef(new Animated.Value(0)).current;
   const shine = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(1)).current;
@@ -66,7 +66,7 @@ function GoalBar({ pct }: { pct: number }) {
   return (
     <Animated.View style={{ transform: [{ scaleY: pulse }] }}>
       <View className="h-2.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-        <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: pct >= 100 ? colors.mint : colors.aqua, overflow: 'hidden', borderRadius: 999 }}>
+        <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: pct >= 100 ? colors.mint : accent, overflow: 'hidden', borderRadius: 999 }}>
           <Animated.View
             style={{
               position: 'absolute', top: 0, bottom: 0, width: 60, backgroundColor: 'rgba(255,255,255,0.45)',
@@ -364,6 +364,7 @@ export default function GroupDetailScreen() {
   const totalSteps = data.members.reduce((a, m) => a + m.steps, 0);
   const challengeTarget = data.group.challenge_target;
   const isCreator = data.group.created_by === userId;
+  const theme = groupTheme(data.group.background);
   const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
   const myRank = data.members.findIndex((m) => m.id === userId) + 1;
@@ -379,6 +380,7 @@ export default function GroupDetailScreen() {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
         <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
@@ -393,8 +395,8 @@ export default function GroupDetailScreen() {
                 {data.group.name}
               </Text>
             </View>
-            <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10}>
-              <IconBubble icon={MenuIcon} tone="aqua" size={36} />
+            <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+              <MenuIcon size={18} color="#fff" />
             </Press>
           </View>
 
@@ -450,7 +452,7 @@ export default function GroupDetailScreen() {
           accessibilityLabel="Compartir el ranking del grupo como imagen"
           onPress={() => setRankShareOpen(true)}
           className="mx-5 mb-3 flex-row items-center justify-center rounded-2xl"
-          style={{ gap: 9, paddingVertical: 13, backgroundColor: colors.aquaDeep }}
+          style={{ gap: 9, paddingVertical: 13, backgroundColor: theme.accentDeep }}
         >
           <Share2 size={17} color="#fff" weight="bold" />
           <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
@@ -499,7 +501,7 @@ export default function GroupDetailScreen() {
               </Press>
             </View>
           )}
-          <GoalBar pct={challengePct} />
+          <GoalBar pct={challengePct} accent={theme.accent} />
           {challengePct >= 100 ? (
             <View className="flex-row items-center mt-2.5 rounded-xl px-3 py-2" style={{ gap: 6, backgroundColor: 'rgba(79,195,168,0.14)' }}>
               <Check size={14} color={accentIcon} />

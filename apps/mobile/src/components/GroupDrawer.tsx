@@ -32,7 +32,7 @@ export function GroupDrawer({
   onDelete: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const panelW = Math.min(340, width * 0.86);
   const x = useRef(new Animated.Value(panelW)).current;
   useEffect(() => {
@@ -49,9 +49,9 @@ export function GroupDrawer({
         <Press accessibilityRole="button" accessibilityLabel="Cerrar menú del grupo" feedback="none" className="flex-1" onPress={onClose} />
         <Animated.View
           accessibilityViewIsModal
-          className="bg-card-light dark:bg-card-dark"
-          style={{ width: panelW, transform: [{ translateX: x }], borderTopLeftRadius: 28, borderBottomLeftRadius: 28, overflow: 'hidden' }}
+          style={{ width: panelW, height, transform: [{ translateX: x }], borderTopLeftRadius: 28, borderBottomLeftRadius: 28, overflow: 'hidden' }}
         >
+          <View className="flex-1 bg-card-light dark:bg-card-dark">
           <LinearGradient colors={groupGradient(background)} style={{ paddingTop: insets.top + 14, paddingBottom: 20, paddingHorizontal: 20 }}>
             <View className="flex-row justify-end">
               <Press accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
@@ -110,8 +110,9 @@ export function GroupDrawer({
                     const on = (background ?? 'aqua') === b.key;
                     return (
                       <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Fondo ${b.label}`} accessibilityState={{ selected: on }} disabled={busy} onPress={() => onPickBackground(b.key)}>
-                        <LinearGradient colors={b.colors} style={{ width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: on ? 2.5 : 1, borderColor: on ? colors.aqua : 'rgba(0,0,0,0.12)' }}>
-                          {on && <Check size={16} color="#fff" weight="bold" />}
+                        <LinearGradient colors={b.colors} style={{ width: (panelW - 40 - 20) / 3, height: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
+                          {on ? <Check size={16} color="#fff" weight="bold" /> : null}
+                          <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '700', marginTop: on ? 1 : 0 }}>{b.label}</Text>
                         </LinearGradient>
                       </Press>
                     );
@@ -130,6 +131,7 @@ export function GroupDrawer({
               </Press>
             )}
           </ScrollView>
+          </View>
         </Animated.View>
       </View>
     </Modal>

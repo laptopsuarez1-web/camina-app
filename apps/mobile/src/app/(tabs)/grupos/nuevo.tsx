@@ -147,8 +147,8 @@ export default function NuevoGrupoScreen() {
         </Text>
 
         <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 16, marginBottom: 10 }]}>Foto y fondo</Text>
-        <View className="flex-row items-center" style={{ gap: 14 }}>
-          <Press accessibilityRole="button" accessibilityLabel="Elegir foto del grupo" onPress={pickPhoto}>
+        <View style={{ gap: 14 }}>
+          <Press accessibilityRole="button" accessibilityLabel="Elegir foto del grupo" className="self-start" onPress={pickPhoto}>
             <AvatarImage
               uri={photo?.uri}
               style={{ width: 64, height: 64, borderRadius: 32 }}
@@ -159,13 +159,14 @@ export default function NuevoGrupoScreen() {
               }
             />
           </Press>
-          <View className="flex-row flex-wrap flex-1" style={{ gap: 8 }}>
+          <View className="flex-row flex-wrap" style={{ gap: 8 }}>
             {GROUP_BACKGROUNDS.map((b) => {
               const on = background === b.key;
               return (
                 <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Fondo ${b.label}`} accessibilityState={{ selected: on }} onPress={() => setBackground(b.key)}>
-                  <LinearGradient colors={b.colors} style={{ width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: on ? 2.5 : 1, borderColor: on ? colors.aqua : 'rgba(0,0,0,0.12)' }}>
-                    {on && <Check size={14} color="#fff" weight="bold" />}
+                  <LinearGradient colors={b.colors} style={{ width: 108, height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
+                    {on ? <Check size={14} color="#fff" weight="bold" /> : null}
+                    <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '700' }}>{b.label}</Text>
                   </LinearGradient>
                 </Press>
               );
