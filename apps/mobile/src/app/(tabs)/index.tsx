@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BellButton } from '@/components/ui/BellButton';
+import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -32,8 +33,8 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps } from '@/components/icons';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
+import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
@@ -127,6 +128,8 @@ export default function HomeScreen() {
   const retryFor = useRef({ steps: 0, tries: 0 });
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [retryTick, setRetryTick] = useState(0);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
 
   useEffect(() => {
     if (live && steps > 0 && steps !== lastSynced.current) {
@@ -264,12 +267,37 @@ export default function HomeScreen() {
   const myGroups = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const groupsValue = myGroups.length === 0 ? 'Ninguno' : myGroups.length === 1 ? '1 activo' : `${myGroups.length} activos`;
 
+  const goalDraft = parseInt(goalInput, 10) || 0;
+  const goalHint =
+    goalDraft < MIN_DAILY_GOAL
+      ? `La meta mínima es ${MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos`
+      : goalDraft >= GOOD_DAILY_GOAL
+        ? '¡Muy bien! Una meta que suma'
+        : '¡Tú puedes más!';
+  // iOS ignora accessibilityLiveRegion: cuando el aviso cambia mientras se edita la meta, se anuncia a mano.
+  const lastGoalHint = useRef('');
+  useEffect(() => {
+    const prev = lastGoalHint.current;
+    lastGoalHint.current = editingGoal ? goalHint : '';
+    if (editingGoal && prev && prev !== goalHint && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(goalHint);
+  }, [editingGoal, goalHint]);
+
   // Aviso de Puntos por vencer: el mismo texto se ve y se lee.
   const expiringMsg =
     expiring && expiring.amount > 0
       ? `${expiring.amount} ${plural(expiring.amount, 'Punto vence', 'Puntos vencen')} ${expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}`
       : '';
   const expiringHint = expiring?.amount === 1 ? 'Canjéalo antes de perderlo' : 'Canjéalos antes de perderlos';
+
+  async function saveGoal() {
+    const n = parseInt(goalInput, 10);
+    if (n < MIN_DAILY_GOAL) return; // el aviso de meta mínima ya se ve debajo
+    if (profile && n > 0) {
+      await supabase.from('profiles').update({ daily_goal: n }).eq('id', profile.id);
+      await useAuthStore.getState().refreshProfile();
+    }
+    setEditingGoal(false);
+  }
 
   return (
     <View ref={rootRef} className="flex-1">
@@ -407,14 +435,6 @@ export default function HomeScreen() {
               <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
             </Press>
           )}
-          <View
-            accessible
-            accessibilityLabel={`Meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
-            className="rounded-full"
-            style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
-          >
-            <Text style={{ color: colors.authMuted, fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
-          </View>
           {goalMet && (
             <Animated.View
               style={{
@@ -427,7 +447,64 @@ export default function HomeScreen() {
               <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '700' }}>¡Meta cumplida!</Text>
             </Animated.View>
           )}
+          {editingGoal ? (
+            <View className="flex-row items-center gap-1.5">
+              <TextInput
+                accessibilityLabel="Meta diaria de pasos"
+                value={goalInput}
+                onChangeText={(v) => setGoalInput(v.replace(/\D/g, ''))}
+                keyboardType="number-pad"
+                autoFocus
+                style={{
+                  width: 80,
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  borderWidth: 1,
+                  borderColor: colors.authBgSoft,
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  color: '#fff',
+                  fontSize: 12,
+                }}
+              />
+              <Press accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
+                <Text className="text-mint-dark font-bold text-[12px]">Listo</Text>
+              </Press>
+            </View>
+          ) : (
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Cambiar meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+              onPress={() => {
+                setGoalInput(String(goal));
+                setEditingGoal(true);
+              }}
+              className="rounded-full"
+              style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
+            >
+              <View className="flex-row items-center" style={{ gap: 4 }}>
+                <Text style={{ color: colors.authMuted, fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
+                <Pencil size={14} color={colors.authMuted} />
+              </View>
+            </Press>
+          )}
         </View>
+        {editingGoal && (
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={goalHint}
+            style={{
+              color: goalDraft < MIN_DAILY_GOAL ? '#FFB27A' : colors.mint,
+              fontSize: 12,
+              fontWeight: '600',
+              textAlign: 'center',
+              marginTop: 8,
+            }}
+          >
+            {goalHint}
+          </Text>
+        )}
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
