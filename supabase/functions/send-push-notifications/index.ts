@@ -83,8 +83,14 @@ Deno.serve(async (req) => {
     tokensByUser.set(t.user_id, list);
   }
 
+  // Quien apagó "Notificaciones de servicio" (canjes y Puntos por vencer) no recibe el push; el aviso queda en su bandeja.
+  const { data: prefRows } = await supabase.from('profiles').select('id, push_servicio').in('id', userIds);
+  const servicioOff = new Set((prefRows ?? []).filter((p) => p.push_servicio === false).map((p) => p.id as string));
+  const SERVICE_TYPES = new Set(['redemption', 'redemption_expiring', 'points_expiring']);
+
   const messages: Array<{ to: string; title: string; body: string; data: Record<string, unknown> }> = [];
   for (const row of rows) {
+    if (servicioOff.has(row.user_id) && SERVICE_TYPES.has(String(row.data?.type))) continue;
     const tokens = tokensByUser.get(row.user_id) ?? [];
     for (const token of tokens) {
       messages.push({ to: token, title: row.title, body: row.body, data: row.data ?? {} });
