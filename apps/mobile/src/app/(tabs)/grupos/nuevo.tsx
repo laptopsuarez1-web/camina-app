@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, ScrollView } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { consumeNewGroupFormStale } from '@/lib/new-group-form';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -24,6 +25,18 @@ export default function NuevoGrupoScreen() {
   const [background, setBackground] = useState<string>('aqua');
   const [photo, setPhoto] = useState<GroupPhoto | null>(null);
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
+
+  // Al volver después de crear o eliminar un grupo, el formulario arranca limpio.
+  useFocusEffect(
+    useCallback(() => {
+      if (consumeNewGroupFormStale()) {
+        setName('');
+        setBackground('aqua');
+        setPhoto(null);
+        setPicked(friend ? [friend] : []);
+      }
+    }, [friend])
+  );
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 

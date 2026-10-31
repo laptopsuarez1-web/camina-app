@@ -14,6 +14,7 @@ export const RULE_LABEL: Record<ChallengeRule, string> = {
 export interface Challenge {
   id: string;
   group_id: string;
+  created_by: string;
   name: string;
   rule: ChallengeRule;
   daily_goal: number;
@@ -44,7 +45,7 @@ export function useGroupChallenge(groupId: string | undefined) {
     queryFn: async () => {
       const { data: rows, error } = await supabase
         .from('group_challenges')
-        .select('id, group_id, name, rule, daily_goal, start_day, end_day, stake, status')
+        .select('id, group_id, created_by, name, rule, daily_goal, start_day, end_day, stake, status')
         .eq('group_id', groupId!)
         .order('created_at', { ascending: false })
         .limit(2);
