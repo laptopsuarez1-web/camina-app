@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Keyboard, Platform, Alert, Animated, Easing } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -122,6 +122,8 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     if (welcomed.current || !data || !userId || (nuevo !== '1' && bienvenida !== '1')) return;
     welcomed.current = true;
+    Keyboard.dismiss();
+    setEditingGoal(false);
     const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };
     if (nuevo === '1') {
       celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, onInvite: () => setShareOpen(true) });

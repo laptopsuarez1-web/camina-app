@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, ScrollView, Alert, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { View, ScrollView, Alert, Keyboard, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -84,6 +84,7 @@ export default function NuevaMetaScreen() {
     },
     onSuccess: ({ id, inviteFailed }) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
+      Keyboard.dismiss();
       markNewGroupFormStale();
       setIndex(startIndex);
       last.current = startIndex;
