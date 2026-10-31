@@ -10,7 +10,7 @@ import { Activity, IconBubble, ChevronUp, ChevronDown, ChevronRight, Share2, Spa
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
-import { useStreak } from '@/hooks/useStreak';
+import { useStreaks } from '@/hooks/useStreak';
 import { StreakCard } from '@/components/activity/StreakCard';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
@@ -74,7 +74,8 @@ export default function ActividadScreen() {
   const healthDaily = useHealthDailySteps(35);
   const { data: history, isLoading } = useStepsHistory();
   const profile = useAuthStore((s) => s.profile);
-  const { data: streak } = useStreak();
+  const { data: streaks } = useStreaks();
+  const streak = streaks?.racha;
   const queryClient = useQueryClient();
   const claimTried = useRef(false);
 

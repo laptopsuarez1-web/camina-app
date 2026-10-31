@@ -5,7 +5,7 @@ import { atTime } from './helpers/clock.mts';
 import { rq, resetRq } from './helpers/stubs/react-query.mts';
 import { setAuth } from './helpers/stubs/auth-store.mts';
 import { db, resetDb } from './helpers/stubs/supabase.mts';
-import { useStreak } from '../src/hooks/useStreak.ts';
+import { useStreaks } from '../src/hooks/useStreak.ts';
 
 const LA_PAZ = 'America/La_Paz';
 const USER = 'u-1';
@@ -23,8 +23,8 @@ function seed(rows: Row[]) {
 }
 async function streak(profileGoal: number | undefined = 6000): Promise<number> {
   setAuth(USER, profileGoal === undefined ? {} : { daily_goal: profileGoal });
-  useStreak();
-  return rq.lastQuery.queryFn();
+  useStreaks();
+  return (await rq.lastQuery.queryFn()).meta;
 }
 
 beforeEach(() => {
@@ -35,10 +35,10 @@ beforeEach(() => {
 
 test('sin sesión la consulta no corre y la clave incluye usuario y meta', () => {
   setAuth(null, null);
-  useStreak();
+  useStreaks();
   assert.equal(rq.lastQuery.enabled, false);
   setAuth(USER, { daily_goal: 7000 });
-  useStreak();
+  useStreaks();
   assert.deepEqual(rq.lastQuery.queryKey, ['streak', USER, 7000]);
   assert.equal(rq.lastQuery.enabled, true);
 });
@@ -157,7 +157,7 @@ test('un error de la base se propaga (la pantalla muestra su estado de error)', 
   await atTime(AHORA, LA_PAZ, async () => {
     db.errors.steps_daily = new Error('boom');
     setAuth(USER, { daily_goal: 6000 });
-    useStreak();
+    useStreaks();
     await assert.rejects(() => rq.lastQuery.queryFn(), /boom/);
   });
 });
@@ -176,5 +176,18 @@ test('una racha de más de 60 días no se recorta', async () => {
   await atTime(AHORA, LA_PAZ, async () => {
     seed(Array.from({ length: 100 }, (_, i) => ({ day: dayKey(-i), steps: 7000, goal: 6000 })));
     assert.equal(await streak(), 100);
+  });
+});
+
+test('Racha cuenta con 5.000 pasos aunque la meta sea otra; Meta personal usa la meta del día y no cambia la Racha', async () => {
+  await atTime(AHORA, LA_PAZ, async () => {
+    seed([
+      { day: dayKey(0), steps: 5200, goal: 8000 }, // Racha sí, meta no
+      { day: dayKey(-1), steps: 8500, goal: 8000 },
+      { day: dayKey(-2), steps: 4000, goal: 3000 }, // meta sí, Racha no
+    ]);
+    setAuth(USER, { daily_goal: 8000 });
+    useStreaks();
+    assert.deepEqual(await rq.lastQuery.queryFn(), { racha: 2, meta: 2 });
   });
 });
