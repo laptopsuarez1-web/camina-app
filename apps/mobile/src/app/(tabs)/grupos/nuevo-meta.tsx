@@ -3,7 +3,7 @@ import { View, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Text } from '@/components/ui/Text';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
@@ -18,6 +18,8 @@ import { useThemeColors } from '@/theme/useThemeColors';
 // Acá se crea el grupo, con el nombre y los amigos del paso anterior.
 const GOALS = [25000, 50000, 100000, 150000];
 const DEFAULT_GOAL = 50000;
+const MIN_GOAL = 5000; // mismos límites que la política de la tabla groups (0019)
+const MAX_GOAL = 5_000_000;
 
 export default function NuevaMetaScreen() {
   const insets = useSafeAreaInsets();
@@ -27,6 +29,7 @@ export default function NuevaMetaScreen() {
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
   const [goal, setGoal] = useState(DEFAULT_GOAL);
+  const goalOk = goal >= MIN_GOAL && goal <= MAX_GOAL;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -64,12 +67,20 @@ export default function NuevaMetaScreen() {
         <Text className="text-[14px] text-muted-light dark:text-muted-dark text-center" style={{ maxWidth: 280, lineHeight: 20 }}>
           ¿Cuántos pasos quieren sumar entre todos, de lunes a domingo?
         </Text>
-        <Text accessibilityLabel={`${goal} pasos`} allowFontScaling={false} style={{ fontSize: 60, lineHeight: 68, fontWeight: '800', letterSpacing: -1.5, color: text, marginTop: 14, fontVariant: ['tabular-nums'] }}>
-          {goal.toLocaleString('es-BO')}
-        </Text>
+        {/* El número es el campo: se toca y se escribe otra meta (las opciones de abajo lo cambian de un toque). */}
+        <TextInput
+          value={goal ? goal.toLocaleString('es-BO') : ''}
+          onChangeText={(v) => setGoal(parseInt(v.replace(/\D/g, '').slice(0, 7) || '0', 10))}
+          keyboardType="number-pad"
+          maxLength={11}
+          selectTextOnFocus
+          accessibilityLabel="Meta semanal de pasos. Toca para escribir otra."
+          allowFontScaling={false}
+          style={{ fontSize: 60, lineHeight: 68, fontWeight: '800', letterSpacing: -1.5, color: text, marginTop: 14, textAlign: 'center', minWidth: 240, fontVariant: ['tabular-nums'] }}
+        />
         <Text className="text-[15px] font-semibold" style={{ color: accentText }}>pasos</Text>
-        <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center" style={{ marginTop: 16 }}>
-          Unos {Math.round(goal / 7).toLocaleString('es-BO')} pasos por día entre todos.
+        <Text className="text-[13px] text-center" style={{ marginTop: 16, color: goalOk ? muted : colors.warn }}>
+          {goalOk ? 'Toca el número para escribir otra meta.' : `La meta tiene que estar entre ${MIN_GOAL.toLocaleString('es-BO')} y ${MAX_GOAL.toLocaleString('es-BO')} pasos.`}
         </Text>
       </View>
 
@@ -98,10 +109,10 @@ export default function NuevaMetaScreen() {
 
       <Press
         accessibilityRole="button"
-        disabled={create.isPending}
+        disabled={create.isPending || !goalOk}
         onPress={() => create.mutate()}
         className="rounded-2xl py-3.5 items-center mt-4"
-        style={{ backgroundColor: colors.aquaDeep, opacity: create.isPending ? 0.5 : 1 }}
+        style={{ backgroundColor: colors.aquaDeep, opacity: create.isPending || !goalOk ? 0.5 : 1 }}
       >
         <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
           {create.isPending ? 'Creando…' : picked.length > 0 ? `Crear e invitar a ${picked.length}` : 'Crear grupo'}
