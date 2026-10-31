@@ -303,7 +303,8 @@ export type Database = {
         Args: { p_kind: string; p_target_user: string | null; p_message: string | null; p_reason: string };
         Returns: void;
       };
-      register_device: { Args: { p_device_id: string }; Returns: void };
+      register_device: { Args: { p_device_id: string }; Returns: string };
+      admin_release_device: { Args: { p_device_id: string }; Returns: void };
       claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
     };

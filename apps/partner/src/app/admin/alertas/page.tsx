@@ -20,6 +20,16 @@ export default function AdminAlertasPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [refs, setRefs] = useState<Ref[]>([]);
 
+  async function release(deviceId: string) {
+    if (!window.confirm('¿Liberar este celular? La cuenta dueña lo pierde y la primera que vuelva a entrar desde ahí se queda con él.')) return;
+    const { error } = await supabase.rpc('admin_release_device', { p_device_id: deviceId });
+    if (error) {
+      window.alert('No se pudo liberar el celular.');
+      return;
+    }
+    setDevices((list) => list.filter((d) => d.device_id !== deviceId));
+  }
+
   useEffect(() => {
     supabase.rpc('flagged_devices').then(({ data }) => setDevices((data as Device[]) ?? []));
     supabase.rpc('suspicious_referrals').then(({ data }) => setRefs((data as Ref[]) ?? []));
@@ -29,8 +39,8 @@ export default function AdminAlertasPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Alertas de cuentas repetidas</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Revisalo una vez por semana. Varias cuentas en un mismo celular no siempre son trampa (una familia puede
-        compartirlo), pero si además se invitan entre sí o suman puntos parecidos, conviene actuar.
+        Cada celular suma pasos para una sola cuenta: la primera que lo usó. Las demás cuentas que entran desde ahí
+        quedan bloqueadas para sumar pasos y Puntos. Si alguien cambió de cuenta a propósito y lo pidió, libera el celular.
       </p>
       <div className="max-w-[720px] flex flex-col gap-5">
         <section>
@@ -41,6 +51,9 @@ export default function AdminAlertasPage() {
               <div key={d.device_id} className={`p-3.5 text-[13px] ${i < devices.length - 1 ? 'border-b border-line' : ''}`}>
                 <p className="font-semibold">{d.accounts} cuentas: {d.names}</p>
                 <p className="text-muted text-[11.5px]">Última vez: {new Date(d.last_seen).toLocaleDateString('es-BO')}</p>
+                <button type="button" onClick={() => release(d.device_id)} className="mt-1.5 text-[12px] font-semibold text-purple">
+                  Liberar celular
+                </button>
               </div>
             ))}
           </div>
