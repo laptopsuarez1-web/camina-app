@@ -12,23 +12,22 @@ function dayKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function copy(kind: 'day' | 'night', streak: number, missing: number | null) {
+function copy(kind: 'day' | 'night', streak: number) {
   if (kind === 'day') {
     return streak > 0
       ? { title: 'Tu racha sigue viva 🔥', body: `Llevas ${streak} ${streak === 1 ? 'día' : 'días'} seguidos. Sal a caminar un rato y no la cortes.` }
       : { title: 'Hoy es buen día para caminar', body: 'Cumple tu meta y empieza una racha nueva.' };
   }
-  const falta = missing && missing > 0 ? ` Te faltan ${missing.toLocaleString('es-BO')} pasos.` : '';
   return streak > 0
-    ? { title: 'Última llamada para tu racha', body: `Aún estás a tiempo de mantener tus ${streak} ${streak === 1 ? 'día' : 'días'}.${falta}` }
-    : { title: 'Todavía estás a tiempo', body: `Camina hasta tu meta antes de que acabe el día.${falta}` };
+    ? { title: 'Última llamada para tu racha', body: `Aún estás a tiempo de mantener tus ${streak} ${streak === 1 ? 'día' : 'días'}.` }
+    : { title: 'Todavía estás a tiempo', body: `Camina hasta tu meta antes de que acabe el día.` };
 }
 
-// `streak` = días seguidos hasta ayer o hoy; `metToday` = hoy ya llegó a la meta; `missing` = pasos que faltan hoy.
+// `streak` = días seguidos hasta ayer o hoy; `metToday` = hoy ya llegó a la meta.
 // Hoy solo se avisa lo que todavía no pasó y solo si no cumplió la meta. Los días siguientes, siempre.
 export function planStreakReminders(
   now: Date,
-  o: { streak: number; metToday: boolean; missing: number | null },
+  o: { streak: number; metToday: boolean },
 ): PlannedReminder[] {
   const out: PlannedReminder[] = [];
   for (let i = 0; i <= REMINDER_DAYS_AHEAD; i++) {
@@ -41,7 +40,7 @@ export function planStreakReminders(
       if (i === 0 && o.metToday) continue;
       // La racha que se cuenta mañana es la de hoy si hoy la cumplió; para días lejanos se usa la de ahora.
       const streak = o.streak;
-      const { title, body } = copy(kind, streak, i === 0 ? o.missing : null);
+      const { title, body } = copy(kind, streak);
       out.push({ id: `camina-racha-${key}-${kind}`, date, title, body });
     }
   }

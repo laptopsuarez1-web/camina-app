@@ -10,7 +10,14 @@ const ID_PREFIX = 'camina-racha-';
 // programa si ya está concedido (se pide desde Perfil o al abrir la app).
 type Snapshot = { streak: number; stepsToday: number; goal: number };
 
-export async function syncStreakReminders(o: Snapshot): Promise<void> {
+// Una pasada a la vez: si llegan dos cambios seguidos, la segunda espera a que termine la primera (así no se pisan al cancelar y programar).
+let queue: Promise<void> = Promise.resolve();
+export function syncStreakReminders(o: Snapshot): Promise<void> {
+  queue = queue.then(() => run(o), () => run(o));
+  return queue;
+}
+
+async function run(o: Snapshot): Promise<void> {
   if (Platform.OS === 'web') return;
   try {
     const perm = await Notifications.getPermissionsAsync();
@@ -19,8 +26,7 @@ export async function syncStreakReminders(o: Snapshot): Promise<void> {
       if (n.identifier.startsWith(ID_PREFIX)) await Notifications.cancelScheduledNotificationAsync(n.identifier);
     }
     if (perm.status !== 'granted') return;
-    const missing = Math.max(0, o.goal - o.stepsToday);
-    const plan = planStreakReminders(new Date(), { streak: o.streak, metToday: missing === 0, missing });
+    const plan = planStreakReminders(new Date(), { streak: o.streak, metToday: o.stepsToday >= o.goal });
     for (const r of plan) {
       await Notifications.scheduleNotificationAsync({
         identifier: r.id,
