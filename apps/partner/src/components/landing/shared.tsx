@@ -20,7 +20,7 @@ export const CAP = {
   grupoRanking: '/web/cap/grupo-ranking.jpg',
   grupoChat: '/web/cap/grupo-chat.jpg',
   grupoReto: '/web/cap/grupo-reto.jpg',
-  retoEliminar: '/web/cap/reto-eliminar.jpg',
+  grupoColor: '/web/cap/grupo-color.jpg',
   grupoMeta: '/web/cap/grupo-meta.jpg',
   grupoInvitar: '/web/cap/grupo-invitar.jpg',
   puntos: '/web/cap/puntos.jpg',
@@ -30,7 +30,6 @@ export const CAP = {
   rachas: '/web/cap/rachas.jpg',
   ranking: '/web/cap/ranking.jpg',
   perfil: '/web/cap/perfil.jpg',
-  permisos: '/web/cap/permisos.jpg',
   resenaHistoria: '/web/cap/resena-historia.jpg',
   historia: '/web/cap/historia.jpg',
 };
@@ -343,12 +342,6 @@ export function DiaADia() {
               img: CAP.perfil,
               alt: 'Pantalla de Perfil con el modo oscuro y el control de vidrio',
             },
-            {
-              t: 'Avisos que tú configuras',
-              d: 'En Perfil > Permisos eliges qué notificaciones quieres: avisos de servicio, como canjes y Puntos por vencer, y el aliento del día o los avisos de tu racha. Cada una se activa o se apaga cuando quieras.',
-              img: CAP.permisos,
-              alt: 'Pantalla de Permisos con las notificaciones que se pueden activar o apagar',
-            },
           ]}
         />
       </div>
@@ -618,7 +611,7 @@ const GRUPO_PANT = [
   ['El podio de la semana', 'Se arma solo con los pasos de cada integrante desde el lunes. La corona es para quien más caminó.', CAP.grupo],
   ['Ranking del grupo', 'Todos los integrantes ordenados por pasos, y botón para compartir el ranking.', CAP.grupoRanking],
   ['Reto de la semana', 'Un desafío con Puntos en juego: cómo va cada integrante y cuánto le falta a cada uno para el primer puesto.', CAP.grupoReto],
-  ['Eliminar un desafío', 'Quien lo creó puede eliminarlo si todavía no empezó o si está solo. Los Puntos puestos se devuelven.', CAP.retoEliminar],
+  ['Elige el color y la foto del grupo', 'Cada grupo tiene su propia foto y un fondo a elegir: violeta, esmeralda, océano, atardecer, rosa o dorado.', CAP.grupoColor],
   ['Invitar amigos al grupo', 'Eliges a tus amigos y les llega la invitación; se unen cuando aceptan.', CAP.grupoInvitar],
   ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada mes.', CAP.grupoChat],
   ['Ranking', 'El ranking global y el de tus amigos.', CAP.ranking],
