@@ -1,4 +1,4 @@
--- PROPUESTA 0068 — Pasos diarios de los últimos 30 días de las personas de UN grupo (para "Tendencia del grupo")
+-- PROPUESTA 0070 — Pasos diarios de los últimos 30 días de las personas de UN grupo (para "Tendencia del grupo")
 --
 -- Qué arregla / agrega: group_members_steps (0051) solo deja ver 8 días. La tarjeta "Tendencia del grupo" de la pantalla del grupo compara
 --   a los integrantes en los últimos 30 días, así que hace falta una segunda función, más angosta que la 0051 a propósito:

@@ -134,7 +134,7 @@ export function useGroupHistory(groupId: string | undefined) {
 
 export type GroupTrendRow = { user_id: string; day: string; steps: number };
 
-// Pasos diarios de los últimos 30 días de los integrantes del grupo (migración 0068). Si la base todavía no tiene la
+// Pasos diarios de los últimos 30 días de los integrantes del grupo (migración 0070). Si la base todavía no tiene la
 // función, o falla, devuelve null y la tarjeta de tendencia simplemente no se muestra.
 export function useGroupTrend(groupId: string | undefined) {
   return useQuery({
