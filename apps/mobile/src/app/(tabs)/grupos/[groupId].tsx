@@ -24,6 +24,7 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
+import { GroupTrendCard } from '@/components/activity/GroupTrendCard';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -504,6 +505,8 @@ export default function GroupDetailScreen() {
             </Press>
           </Glass>
         )}
+
+        <GroupTrendCard groupId={groupId!} userId={userId} members={data.members} />
 
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
           <View className="flex-row items-center mb-3" style={{ gap: 10 }}>

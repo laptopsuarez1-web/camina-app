@@ -11,6 +11,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreak } from '@/hooks/useStreak';
+import { TrendChart } from '@/components/activity/TrendChart';
+import { lastDaysSeries } from '@/lib/trend';
 import { StreakCard } from '@/components/activity/StreakCard';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
@@ -60,6 +62,7 @@ function useStepsHistory() {
 }
 
 const CHART_H = 110;
+const H_TREND = 190;
 
 // Colores del calendario: verde (abrió la app y cumplió), rojo (abrió la app y no llegó), gris (no abrió la app).
 const CAL_BG = { met: colors.mint, miss: '#F4A8A2', idle: '#D3D3DA', none: colors.light.line };
@@ -102,7 +105,7 @@ export default function ActividadScreen() {
     scheduleWrappedReminder();
   }, []);
   const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
-  const [range, setRange] = useState<7 | 30>(7);
+  const range = 7;
 
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
@@ -182,6 +185,7 @@ export default function ActividadScreen() {
 
   // Escala con margen sobre la meta para que la línea punteada siempre se vea.
   const chartMax = Math.max(goal * 1.15, ...chartDays.map((d) => d.steps));
+  const trend30 = useMemo(() => lastDaysSeries(30, byDay), [byDay]);
   const rangeTotal = chartDays.reduce((a, d) => a + d.steps, 0);
 
   const calendarWeeks = useMemo(() => {
@@ -253,37 +257,17 @@ export default function ActividadScreen() {
       >
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
-            <Text className="text-auth-muted text-xs mb-1">{range === 7 ? 'Esta semana' : 'Últimos 30 días'}</Text>
+            <Text className="text-auth-muted text-xs mb-1">Esta semana</Text>
             <AnimatedNumber id={`actividad-total-${range}`} value={rangeTotal} ready={!isLoading} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display} />
             <View className="flex-row flex-wrap items-center mt-0.5" style={{ columnGap: 8 }}>
               <Text className="text-auth-muted text-xs">pasos · {Math.round(rangeTotal / range).toLocaleString('es-BO')} por día</Text>
-              {range === 7 && weekTrendPct !== null ? (
+              {weekTrendPct !== null ? (
                 <View className="flex-row items-center" style={{ gap: 2 }}>
                   {weekTrendPct >= 0 ? <ChevronUp size={14} color={colors.authMuted} /> : <ChevronDown size={14} color={colors.authMuted} />}
                   <Text className="text-auth-muted text-xs">{Math.abs(weekTrendPct)}% vs. la anterior</Text>
                 </View>
               ) : null}
             </View>
-          </View>
-          {/* Selector 7 / 30 días dentro de la tarjeta: cambia el único gráfico de la pantalla. */}
-          <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            {([7, 30] as const).map((r) => (
-              <Press
-                key={r}
-                onPress={() => setRange(r)}
-                haptic="selection"
-                accessibilityRole="button"
-                accessibilityState={{ selected: range === r }}
-                aria-pressed={range === r}
-                hitSlop={{ top: 9, bottom: 9 }}
-                className="rounded-full px-3 py-1.5"
-                style={{ backgroundColor: range === r ? colors.mint : 'transparent' }}
-              >
-                <Text className="font-bold text-[12px]" style={{ color: range === r ? colors.mintDark : colors.authMuted }}>
-                  {r} días
-                </Text>
-              </Press>
-            ))}
           </View>
         </View>
 
@@ -358,6 +342,27 @@ export default function ActividadScreen() {
           </View>
         )}
       </LinearGradient>
+
+      <Glass className="rounded-3xl p-4 mb-3">
+        <Text accessibilityRole="header" className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Así vienen tus últimos 30 días</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-3">Toca o arrastra el dedo para ver cada día.</Text>
+        {isLoading ? (
+          <Skeleton height={H_TREND} radius={14} />
+        ) : (
+          <TrendChart
+            days={trend30.map((d) => d.key)}
+            series={[{ id: 'yo', label: 'Tú', color: isDark ? colors.mint : colors.aquaDeep, values: trend30.map((d) => d.steps) }]}
+            goal={goal}
+            muted={isDark ? colors.dark.muted : colors.light.muted}
+            textColor={isDark ? colors.dark.text : colors.light.text}
+            gridColor={isDark ? colors.dark.line : colors.light.line}
+          />
+        )}
+        <View className="flex-row items-center justify-between rounded-xl px-3 py-2.5 mt-3 bg-purple-light-light dark:bg-purple-light-dark">
+          <Text className="text-[12px] text-text-light dark:text-text-dark">Tendencia · últimos 30 días</Text>
+          <Text className="text-[13px] font-extrabold text-text-light dark:text-text-dark">{trend30.reduce((a, d) => a + d.steps, 0).toLocaleString('es-BO')} pasos</Text>
+        </View>
+      </Glass>
 
       <Press
         accessibilityRole="button"

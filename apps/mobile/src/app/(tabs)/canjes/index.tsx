@@ -12,7 +12,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown, Check } from '@/components/icons';
 import {
   useBenefits,
   useApprovedBusinesses,
@@ -37,7 +37,7 @@ import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
-import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
+import { BusinessAvatar } from '@/components/CategoryAvatar';
 import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
@@ -446,6 +446,7 @@ export default function CanjesScreen() {
   const cancelExpired = useCancelExpiredRedemption();
 
   const [category, setCategory] = useState('Todos');
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const favorites = useFavorites();
@@ -703,13 +704,13 @@ export default function CanjesScreen() {
     const map = new Map<string, { business: BusinessT; benefits: BenefitWithBusiness[] }>();
     for (const b of benefits ?? []) {
       if (category !== 'Todos' && b.business.category !== category) continue;
-      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category).toLowerCase().includes(q)) continue;
+      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '')).toLowerCase().includes(q)) continue;
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
       map.get(b.business.id)!.benefits.push(b);
     }
     for (const b of sinPremios) {
       if (category !== 'Todos' && b.category !== category) continue;
-      if (q && !(b.name + ' ' + b.category).toLowerCase().includes(q)) continue;
+      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q)) continue;
       map.set(b.id, { business: b, benefits: [] });
     }
     let list = [...map.values()].map((g) => ({
@@ -1027,40 +1028,26 @@ export default function CanjesScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              accessibilityLabel="Buscar comercios o categorías"
-              placeholder="Buscar comercios o categorías…"
+              accessibilityLabel="Buscar locales por nombre, categoría o dirección"
+              placeholder="Buscar locales…"
               placeholderTextColor={muted}
               className="flex-1 text-[13.5px] text-text-light dark:text-text-dark"
             />
           </Glass>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
-            {categories.filter((c) => c === 'Todos').map((c) => {
-              const st = categoryStyle(c);
-              const CIcon = st.icon;
-              const on = category === c;
-              return (
-                <Press
-                  key={c}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: category === c }}
-                  aria-pressed={on}
-                  onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-                  style={{
-                    gap: 6,
-                    minHeight: 40,
-                    paddingVertical: 7,
-                    paddingLeft: 10,
-                    paddingRight: 13,
-                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
-                  }}
-                >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
-                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
-                </Press>
-              );
-            })}
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Categoría: ${category}`}
+              aria-pressed={category !== 'Todos'}
+              haptic="selection"
+              onPress={() => setCategoryOpen(true)}
+              className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+              style={{ gap: 5, minHeight: 40, ...(category !== 'Todos' ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
+            >
+              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(category !== 'Todos' ? { color: '#fff' } : null) }}>{category === 'Todos' ? 'Categoría' : category}</Text>
+              <ChevronDown size={12} color={category !== 'Todos' ? '#fff' : muted} />
+            </Press>
             <Press
               accessibilityRole="button"
               accessibilityState={{ selected: onlyOpen }}
@@ -1084,34 +1071,29 @@ export default function CanjesScreen() {
               <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />
               <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
             </Press>
-            {categories.filter((c) => c !== 'Todos').map((c) => {
-              const st = categoryStyle(c);
-              const CIcon = st.icon;
-              const on = category === c;
-              return (
+          </ScrollView>
+        </View>
+
+        <Modal visible={categoryOpen} transparent animationType="slide" onRequestClose={() => setCategoryOpen(false)}>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar categorías" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setCategoryOpen(false)} />
+          <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32, maxHeight: '70%' }}>
+            <Text accessibilityRole="header" className="font-bold text-[17px] mb-2 ml-1 text-text-light dark:text-text-dark">Categoría</Text>
+            <ScrollView>
+              {categories.map((c) => (
                 <Press
                   key={c}
                   accessibilityRole="button"
                   accessibilityState={{ selected: category === c }}
-                  aria-pressed={on}
-                  onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-                  style={{
-                    gap: 6,
-                    minHeight: 40,
-                    paddingVertical: 7,
-                    paddingLeft: 10,
-                    paddingRight: 13,
-                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
-                  }}
+                  onPress={() => { setCategory(c); setCategoryOpen(false); }}
+                  className="flex-row items-center justify-between py-3.5 px-1 border-b border-line-light dark:border-line-dark"
                 >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
-                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
+                  <Text className="text-[15px] text-text-light dark:text-text-dark" style={{ fontWeight: category === c ? '800' : '500' }}>{c}</Text>
+                  {category === c ? <Check size={18} color={isDark ? colors.mint : colors.aquaDeep} weight="bold" /> : null}
                 </Press>
-              );
-            })}
-          </ScrollView>
-        </View>
+              ))}
+            </ScrollView>
+          </View>
+        </Modal>
 
         <View className="px-5 pt-4" style={{ gap: 12 }}>
           {isLoading && (

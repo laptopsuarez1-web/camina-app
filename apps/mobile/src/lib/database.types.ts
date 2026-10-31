@@ -275,6 +275,10 @@ export type Database = {
         Args: { p_since?: string };
         Returns: { user_id: string; day: string; steps: number }[];
       };
+      group_trend_steps: {
+        Args: { p_group: string };
+        Returns: { user_id: string; day: string; steps: number }[];
+      };
       global_weekly_ranking: {
         Args: { p_limit?: number };
         Returns: { user_id: string; full_name: string; photo_url: string | null; total_steps: number }[];

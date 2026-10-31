@@ -26,6 +26,7 @@ import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
+import { StreakReminderCard } from '@/components/StreakReminderCard';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -279,6 +280,8 @@ export default function PerfilScreen() {
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
+
+      <StreakReminderCard />
 
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press
