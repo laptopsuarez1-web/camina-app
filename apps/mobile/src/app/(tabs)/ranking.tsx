@@ -110,7 +110,7 @@ export default function RankingScreen() {
         <View className="flex-row items-center justify-between mb-3.5">
           {/* Sin adjustsFontSizeToFit: dentro de una fila con flexShrink, iOS lo achicaba al mínimo (título diminuto). */}
           <View style={{ flex: 1 }}>
-            <Text accessibilityRole="header" numberOfLines={2} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text }]}>Ranking semanal</Text>
+            <Text accessibilityRole="header" numberOfLines={2} maxFontSizeMultiplier={1.2} style={[typo.title, { color: text, fontSize: 36, lineHeight: 39 }]}>{'Ranking\nsemanal'}</Text>
           </View>
           <Press accessibilityRole="button" accessibilityLabel="Opciones del ranking" onPress={() => setOptions(true)} className="flex-row items-center rounded-full px-3.5 py-2 ml-2" style={{ gap: 6, backgroundColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: dark ? colors.dark.line : colors.light.line }}>
             <Sliders size={14} color={text} />
