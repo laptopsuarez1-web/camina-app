@@ -1,35 +1,61 @@
-import { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { useRef, useState } from 'react';
+import { View, ScrollView, Alert, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Text, TextInput } from '@/components/ui/Text';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { friendlyServerError } from '@/lib/errors';
+import { buzz } from '@/lib/haptics';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Grupo nuevo, paso 2: la meta de la semana (pasos entre todos). Viene en 50.000 y el grupo la cambia con las opciones de abajo.
-// Acá se crea el grupo, con el nombre y los amigos del paso anterior.
+// Grupo nuevo, paso 2: la meta de la semana (pasos entre todos), con una ruedita como la de la meta diaria: se desliza de 1.000 en 1.000.
+// Viene en 50.000; las opciones de abajo llevan la rueda de un salto. Acá se crea el grupo, con el nombre y los amigos del paso anterior.
+// Más de 300.000 o menos de 10.000 se puede poner después, escribiéndolo en el grupo (el servidor acepta de 5.000 a 5.000.000).
 const GOALS = [25000, 50000, 100000, 150000];
 const DEFAULT_GOAL = 50000;
-const MIN_GOAL = 5000; // mismos límites que la política de la tabla groups (0019)
-const MAX_GOAL = 5_000_000;
+const MIN = 10000;
+const MAX = 300000;
+const STEP = 1000;
+const VALUES = Array.from({ length: (MAX - MIN) / STEP + 1 }, (_, i) => MIN + i * STEP);
+const ROW = 56;
+const VISIBLE = 5; // filas a la vista: la del medio es la elegida
 
 export default function NuevaMetaScreen() {
   const insets = useSafeAreaInsets();
-  const { dark, text, muted, accentIcon, accentText } = useThemeColors();
+  const { dark, text, accentIcon, accentText } = useThemeColors();
   const { name, friends } = useLocalSearchParams<{ name: string; friends?: string }>();
   const picked = friends ? friends.split(',').filter(Boolean) : [];
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
-  const [goal, setGoal] = useState(DEFAULT_GOAL);
-  const goalOk = goal >= MIN_GOAL && goal <= MAX_GOAL;
+  const startIndex = VALUES.indexOf(DEFAULT_GOAL);
+  const [index, setIndex] = useState(startIndex);
+  const last = useRef(startIndex);
+  const wheel = useRef<ScrollView>(null);
+  const placed = useRef(false);
+  const goal = VALUES[index];
+  const pad = ((VISIBLE - 1) / 2) * ROW;
+
+  function onScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const i = Math.max(0, Math.min(VALUES.length - 1, Math.round(e.nativeEvent.contentOffset.y / ROW)));
+    if (i !== last.current) {
+      last.current = i;
+      setIndex(i);
+      buzz.selection();
+    }
+  }
+
+  function jumpTo(value: number) {
+    const i = VALUES.indexOf(value);
+    if (i < 0) return;
+    wheel.current?.scrollTo({ y: i * ROW, animated: true });
+  }
 
   const create = useMutation({
     mutationFn: async () => {
@@ -63,28 +89,56 @@ export default function NuevaMetaScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-[14px] text-muted-light dark:text-muted-dark text-center" style={{ maxWidth: 280, lineHeight: 20 }}>
-          ¿Cuántos pasos quieren sumar entre todos, de lunes a domingo?
-        </Text>
-        {/* El número es el campo: se toca y se escribe otra meta (las opciones de abajo lo cambian de un toque). */}
-        <TextInput
-          value={goal ? goal.toLocaleString('es-BO') : ''}
-          onChangeText={(v) => setGoal(parseInt(v.replace(/\D/g, '').slice(0, 7) || '0', 10))}
-          keyboardType="number-pad"
-          maxLength={11}
-          selectTextOnFocus
-          accessibilityLabel="Meta semanal de pasos. Toca para escribir otra."
-          allowFontScaling={false}
-          style={{ fontSize: 60, lineHeight: 68, fontWeight: '800', letterSpacing: -1.5, color: text, marginTop: 14, textAlign: 'center', minWidth: 240, fontVariant: ['tabular-nums'] }}
-        />
-        <Text className="text-[15px] font-semibold" style={{ color: accentText }}>pasos</Text>
-        <Text className="text-[13px] text-center" style={{ marginTop: 16, color: goalOk ? muted : colors.warn }}>
-          {goalOk ? 'Toca el número para escribir otra meta.' : `La meta tiene que estar entre ${MIN_GOAL.toLocaleString('es-BO')} y ${MAX_GOAL.toLocaleString('es-BO')} pasos.`}
-        </Text>
+      <Text className="text-[14px] text-muted-light dark:text-muted-dark text-center self-center" style={{ maxWidth: 290, lineHeight: 20 }}>
+        ¿Cuántos pasos quieren sumar entre todos, de lunes a domingo?
+      </Text>
+
+      <View className="flex-1 justify-center">
+        <View style={{ height: ROW * VISIBLE, overflow: 'hidden' }}>
+          {/* Franja de la fila elegida, como en el reloj del teléfono */}
+          <Glass pointerEvents="none" className="rounded-2xl" style={{ position: 'absolute', left: 0, right: 0, top: pad, height: ROW }} />
+          <ScrollView
+            accessibilityRole="adjustable"
+            accessibilityLabel="Meta de pasos de la semana"
+            accessibilityValue={{ text: `${goal.toLocaleString('es-BO')} pasos` }}
+            accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+            onAccessibilityAction={(e) => {
+              const i = e.nativeEvent.actionName === 'increment' ? Math.min(VALUES.length - 1, index + 1) : Math.max(0, index - 1);
+              wheel.current?.scrollTo({ y: i * ROW, animated: false });
+              last.current = i;
+              setIndex(i);
+            }}
+            showsVerticalScrollIndicator={false}
+            snapToInterval={ROW}
+            decelerationRate="fast"
+            ref={wheel}
+            // contentOffset solo funciona en iOS: en Android y web la ruedita se lleva a 50.000 apenas se mide.
+            onLayout={() => {
+              if (placed.current) return;
+              placed.current = true;
+              requestAnimationFrame(() => wheel.current?.scrollTo({ y: startIndex * ROW, animated: false }));
+            }}
+            contentOffset={{ x: 0, y: startIndex * ROW }}
+            contentContainerStyle={{ paddingVertical: pad }}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          >
+            {VALUES.map((v, i) => {
+              const d = Math.abs(i - index);
+              return (
+                <View key={v} style={{ height: ROW, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <Text allowFontScaling={false} style={{ color: text, opacity: d === 0 ? 1 : d === 1 ? 0.5 : 0.25, fontSize: d === 0 ? 36 : 26, fontWeight: d === 0 ? '800' : '600', fontVariant: ['tabular-nums'] }}>
+                    {v.toLocaleString('es-BO')}
+                  </Text>
+                  {d === 0 ? <Text style={{ color: accentText, fontSize: 16, fontWeight: '700' }}>pasos</Text> : null}
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
       </View>
 
-      <Text style={[typo.support, { color: muted, textAlign: 'center', marginBottom: 10 }]}>Si lo logran, el grupo lo festeja. Puedes cambiarla después.</Text>
+      <Text style={[typo.support, { textAlign: 'center', marginBottom: 10 }]} className="text-muted-light dark:text-muted-dark">Si lo logran, el grupo lo festeja. Puedes cambiarla después.</Text>
       <View className="flex-row" style={{ gap: 8 }}>
         {GOALS.map((n) => {
           const on = goal === n;
@@ -96,7 +150,7 @@ export default function NuevaMetaScreen() {
               accessibilityState={{ selected: on }}
               aria-pressed={on}
               haptic="selection"
-              onPress={() => setGoal(n)}
+              onPress={() => jumpTo(n)}
               className="flex-1"
             >
               <Glass className="rounded-2xl items-center" style={{ paddingVertical: 14, ...(on ? { backgroundColor: colors.aquaDeep, borderColor: colors.aquaDeep } : null) }}>
@@ -109,10 +163,10 @@ export default function NuevaMetaScreen() {
 
       <Press
         accessibilityRole="button"
-        disabled={create.isPending || !goalOk}
+        disabled={create.isPending}
         onPress={() => create.mutate()}
         className="rounded-2xl py-3.5 items-center mt-4"
-        style={{ backgroundColor: colors.aquaDeep, opacity: create.isPending || !goalOk ? 0.5 : 1 }}
+        style={{ backgroundColor: colors.aquaDeep, opacity: create.isPending ? 0.5 : 1 }}
       >
         <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
           {create.isPending ? 'Creando…' : picked.length > 0 ? `Crear e invitar a ${picked.length}` : 'Crear grupo'}
