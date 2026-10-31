@@ -26,7 +26,6 @@ import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
-import { StreakReminderCard } from '@/components/StreakReminderCard';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -162,7 +161,7 @@ export default function PerfilScreen() {
           return;
         }
       } catch (e) {
-        // Se muestra el detalle: si falla acá suele ser un problema del build (permiso de Salud del App ID).
+        // Se muestra el detalle: si falla aquí suele ser un problema del build (permiso de Salud del App ID).
         Alert.alert('No pudimos abrir Salud', `Intenta de nuevo. Detalle: ${e instanceof Error ? e.message : String(e)}`);
         return;
       }
@@ -230,7 +229,7 @@ export default function PerfilScreen() {
           <View className="flex-1">
             <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{profile?.full_name}</Text>
             <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-              {profile?.zone ?? 'Barrio no definido'} · {profile?.city ?? 'Tarija'}
+              {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
             </Text>
           </View>
         </View>
@@ -280,8 +279,6 @@ export default function PerfilScreen() {
           <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
-
-      <StreakReminderCard />
 
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Platform, Alert, Animated, Easing } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,7 +25,6 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
-import { GroupTrendCard } from '@/components/activity/GroupTrendCard';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -281,7 +281,7 @@ export default function GroupDetailScreen() {
   const pot = active ? active.stake * (ch?.entries ?? 0) : 0;
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
         <LinearGradient colors={colors.headerGradient} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
@@ -506,8 +506,6 @@ export default function GroupDetailScreen() {
           </Glass>
         )}
 
-        <GroupTrendCard groupId={groupId!} userId={userId} members={data.members} />
-
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
           <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
             <IconBubble icon={Trophy} tone="gold" size={34} />
@@ -648,7 +646,7 @@ export default function GroupDetailScreen() {
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
       <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
-      <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} />
-    </KeyboardAvoidingView>
+      <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} progress={{ members: data.members.length, total: totalSteps, target: challengeTarget }} />
+    </KeyboardSafe>
   );
 }
