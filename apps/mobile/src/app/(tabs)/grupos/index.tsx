@@ -5,6 +5,8 @@ import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { groupGradient } from '@/lib/group-look';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Plus, Users, Trophy, ChevronRight, IconBubble } from '@/components/icons';
 import { useMyGroupsWeek } from '@/hooks/useMyGroupsWeek';
@@ -160,10 +162,17 @@ export default function GruposScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`${g.name}, ${count} ${count === 1 ? 'miembro' : 'miembros'}${w?.myRank ? `, vas ${w.myRank}.º` : ''}`}
                   onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })}
-                  className="bg-auth-bg rounded-3xl p-4 gap-3"
+                  className="rounded-3xl p-4 gap-3 overflow-hidden"
                 >
+                  {/* El color de la tarjeta es el fondo que se eligió para el grupo. */}
+                  <LinearGradient pointerEvents="none" colors={groupGradient(g.background)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
                   <View className="flex-row items-center gap-3">
-                    <IconBubble icon={Users} tone="aqua" size={44} />
+                    {/* Si el grupo tiene foto, va en el mismo cuadrado redondeado de los íconos. */}
+                    <AvatarImage
+                      uri={g.photo_url}
+                      style={{ width: 44, height: 44, borderRadius: 44 * 0.32, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.35)' }}
+                      fallback={<IconBubble icon={Users} tone="aqua" size={44} />}
+                    />
                     <View className="flex-1">
                       <Text className="text-white font-bold text-[15px]" numberOfLines={1}>{g.name}</Text>
                       <Text className="text-auth-muted text-xs">
