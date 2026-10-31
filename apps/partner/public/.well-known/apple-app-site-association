@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "N39NPQNQ9U.bo.camina.app",
+        "appIDs": ["N39NPQNQ9U.bo.camina.app"],
+        "paths": ["/r/*", "/join-group/*"],
+        "components": [
+          { "/": "/r/*", "comment": "Invitación de un amigo" },
+          { "/": "/join-group/*", "comment": "Invitación a un grupo" }
+        ]
+      }
+    ]
+  }
+}
