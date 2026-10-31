@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
 import { Flame } from '@/components/icons';
 import { colors } from '@/theme/tokens';
-import { STREAK_BONUS_POINTS, STREAK_BONUS_DAYS } from '@/constants/business-rules';
+import { STREAK_BONUS_POINTS, STREAK_BONUS_DAYS, STREAK_MIN_STEPS } from '@/constants/business-rules';
 
 const DAYS = Array.from({ length: STREAK_BONUS_DAYS }, (_, i) => i);
 
@@ -59,10 +59,10 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
           </Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">
             {streak <= 0
-              ? `Cumple tu meta ${STREAK_BONUS_DAYS} días seguidos (mínimo 5.000 pasos al día) y ganas +${STREAK_BONUS_POINTS} Puntos`
+              ? `Camina al menos ${STREAK_MIN_STEPS.toLocaleString('es-BO')} pasos ${STREAK_BONUS_DAYS} días seguidos y ganas +${STREAK_BONUS_POINTS} Puntos`
               : filled === STREAK_BONUS_DAYS
                 ? `¡Semana completa! Sumaste +${STREAK_BONUS_POINTS} Puntos`
-                : `${left === 1 ? 'Falta 1 día' : `Faltan ${left} días`} para +${STREAK_BONUS_POINTS} Puntos (mín. 5.000 pasos al día)`}
+                : `${left === 1 ? 'Falta 1 día' : `Faltan ${left} días`} para +${STREAK_BONUS_POINTS} Puntos (mín. ${STREAK_MIN_STEPS.toLocaleString('es-BO')} pasos al día)`}
           </Text>
         </View>
       </View>

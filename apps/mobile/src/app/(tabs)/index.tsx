@@ -22,7 +22,8 @@ import { useBenefits, useMyRedemptions, useMyStoryShares } from '@/hooks/useBene
 import { useStoryFlow } from '@/components/story/StoryFlow';
 import { storyStateFor } from '@/lib/story';
 import { useGroups } from '@/hooks/useGroups';
-import { useStreak } from '@/hooks/useStreak';
+import { useStreaks } from '@/hooks/useStreak';
+import { StreaksSheet } from '@/components/StreaksSheet';
 import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { syncStreakReminders } from '@/lib/streak-reminders';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
@@ -112,7 +113,9 @@ export default function HomeScreen() {
   const story = useStoryFlow();
   const pos = useHomePosition();
   const { data: groups } = useGroups();
-  const { data: streak } = useStreak();
+  const { data: streaks } = useStreaks();
+  const streak = streaks?.racha;
+  const [streaksOpen, setStreaksOpen] = useState(false);
   useHomeMoments(streak);
   const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
@@ -421,13 +424,16 @@ export default function HomeScreen() {
 
         <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
           {(streak ?? 0) > 0 && (
-            <View
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
+              onPress={() => setStreaksOpen(true)}
               className="flex-row items-center rounded-full"
               style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <Flame size={11} color={colors.mint} />
               <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
-            </View>
+            </Press>
           )}
           {goalMet && (
             <Animated.View
@@ -650,6 +656,7 @@ export default function HomeScreen() {
 
       </View>
     </ScrollView>
+    <StreaksSheet visible={streaksOpen} racha={streaks?.racha ?? 0} meta={streaks?.meta ?? 0} goal={goal} isDark={isDark} onClose={() => setStreaksOpen(false)} />
     {flight && <CoinFlight path={flight} bump={pillBump} onDone={() => {
       flying.current = false;
       setFlight(null);

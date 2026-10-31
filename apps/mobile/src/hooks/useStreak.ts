@@ -1,20 +1,40 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_MIN_STEPS } from '@/constants/business-rules';
 import { localDay } from '@/lib/format';
 
-// Racha real calculada desde steps_daily: días consecutivos (terminando hoy
-// o ayer, para no cortar la racha mientras el día de hoy todavía está en
-// curso) donde los pasos llegaron a la meta que tenía ese día (cambiar la meta no toca los días anteriores).
-export function useStreak() {
+export interface Streaks {
+  /** Racha: días seguidos con al menos STREAK_MIN_STEPS pasos (5.000). Es la que da el bono semanal. */
+  racha: number;
+  /** Meta personal: días seguidos llegando a la meta que tenía la persona ese día. No cambia la Racha. */
+  meta: number;
+}
+
+const localKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// Días consecutivos que terminan hoy (o ayer, para no cortar mientras hoy sigue en curso) dentro del conjunto.
+function run(days: Set<string>): number {
+  const cursor = new Date();
+  let n = 0;
+  if (!days.has(localKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (days.has(localKey(cursor))) {
+    n += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return n;
+}
+
+// Las dos rachas, calculadas desde steps_daily (un día sin fila = no abrió la app = corta).
+export function useStreaks() {
   const userId = useAuthStore((s) => s.session?.user.id);
   const goal = useAuthStore((s) => Math.max(s.profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL));
 
   return useQuery({
     queryKey: ['streak', userId, goal],
     enabled: !!userId,
-    queryFn: async () => {
+    queryFn: async (): Promise<Streaks> => {
       const since = new Date();
       since.setDate(since.getDate() - 400);
       const { data, error } = await supabase
@@ -24,21 +44,10 @@ export function useStreak() {
         .gte('day', localDay(since))
         .order('day', { ascending: false });
       if (error) throw error;
-
-      const metDays = new Set((data ?? []).filter((d) => d.steps >= (d.goal ? Math.max(d.goal, MIN_DAILY_GOAL) : goal)).map((d) => d.day));
-      const localKey = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-      const cursor = new Date();
-      let streak = 0;
-      // si hoy todavía no llegó a la meta, arranca a contar desde ayer
-      if (!metDays.has(localKey(cursor))) cursor.setDate(cursor.getDate() - 1);
-      for (;;) {
-        if (!metDays.has(localKey(cursor))) break;
-        streak += 1;
-        cursor.setDate(cursor.getDate() - 1);
-      }
-      return streak;
+      const rows = data ?? [];
+      const racha = new Set(rows.filter((d) => d.steps >= STREAK_MIN_STEPS).map((d) => d.day));
+      const meta = new Set(rows.filter((d) => d.steps >= (d.goal ? Math.max(d.goal, MIN_DAILY_GOAL) : goal)).map((d) => d.day));
+      return { racha: run(racha), meta: run(meta) };
     },
   });
 }
