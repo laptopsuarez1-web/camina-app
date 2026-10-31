@@ -10,6 +10,7 @@ import { ChevronLeft } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { uploadGroupPhoto } from '@/lib/avatar';
+import { markNewGroupFormStale } from '@/lib/new-group-form';
 import { friendlyServerError } from '@/lib/errors';
 import { buzz } from '@/lib/haptics';
 import { colors } from '@/theme/tokens';
@@ -83,6 +84,10 @@ export default function NuevaMetaScreen() {
     },
     onSuccess: ({ id, inviteFailed }) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
+      markNewGroupFormStale();
+      setIndex(startIndex);
+      last.current = startIndex;
+      wheel.current?.scrollTo({ y: startIndex * ROW, animated: false });
       if (inviteFailed) Alert.alert('El grupo está creado', 'No pudimos mandar las invitaciones. Prueba de nuevo desde "Agregar amigos".');
       router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id, nuevo: '1' } });
     },

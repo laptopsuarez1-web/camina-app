@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { View, ScrollView, ActivityIndicator, Platform, Alert, Animated, Easing } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
@@ -29,6 +29,7 @@ import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupPhoto } from '@/lib/avatar';
+import { markNewGroupFormStale } from '@/lib/new-group-form';
 import * as ImagePicker from 'expo-image-picker';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
@@ -94,6 +95,15 @@ export default function GroupDetailScreen() {
   const queryClient = useQueryClient();
   const blocks = useBlocks();
   const { data: ch } = useGroupChallenge(groupId);
+  const { data: pending } = useQuery({
+    queryKey: ['group-pending', groupId],
+    enabled: !!groupId,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase.rpc('group_pending_invitees', { p_group: groupId! });
+      if (error) return [] as { user_id: string; full_name: string | null; photo_url: string | null }[];
+      return (rows ?? []) as { user_id: string; full_name: string | null; photo_url: string | null }[];
+    },
+  });
   const joinChallenge = useJoinChallenge(groupId);
   const { data: history } = useGroupHistory(groupId);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
@@ -239,6 +249,26 @@ export default function GroupDetailScreen() {
     queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
   }
 
+  function cancelChallenge(id: string) {
+    Alert.alert('¿Eliminar este desafío?', 'Los puntos puestos se devuelven.', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar desafío',
+        style: 'destructive',
+        onPress: async () => {
+          const { error } = await supabase.rpc('cancel_group_challenge', { p_challenge: id });
+          if (error) {
+            Alert.alert('No se pudo eliminar', friendlyServerError(error, 'Intenta de nuevo.'));
+            return;
+          }
+          queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
+          queryClient.invalidateQueries({ queryKey: ['points'] });
+          queryClient.invalidateQueries({ queryKey: ['ledger'] });
+        },
+      },
+    ]);
+  }
+
   function confirmExit(del: boolean) {
     const creator = data?.group.created_by === userId;
     Alert.alert(
@@ -262,6 +292,7 @@ export default function GroupDetailScreen() {
             queryClient.removeQueries({ queryKey: ['group-detail', groupId] });
             queryClient.invalidateQueries({ queryKey: ['groups'] });
             queryClient.invalidateQueries({ queryKey: ['my-groups-week'] });
+            markNewGroupFormStale();
             router.replace('/(tabs)/grupos');
           },
         },
@@ -409,7 +440,7 @@ export default function GroupDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
         <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
-            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
             <View className="flex-1 flex-row items-center justify-center px-3" style={{ gap: 8 }}>
@@ -615,6 +646,11 @@ export default function GroupDetailScreen() {
             ) : (
               <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
             )}
+            {(active.created_by === userId || data.group.created_by === userId) && (today < active.start_day || (ch?.entries ?? 0) <= 1) ? (
+              <Press accessibilityRole="button" onPress={() => cancelChallenge(active.id)} className="py-2.5 items-center mt-1">
+                <Text className="text-[13px] font-bold" style={{ color: colors.dangerSoft }}>Eliminar desafío</Text>
+              </Press>
+            ) : null}
           </Glass>
         ) : (
           <Glass className="mx-5 rounded-2xl p-4 mb-3">
@@ -682,6 +718,22 @@ export default function GroupDetailScreen() {
                 // Mismo ancho que el menú de las otras filas para que los puntos queden alineados.
                 <View className="pl-1" style={{ width: 17 }} />
               )}
+            </View>
+          ))}
+          {(pending ?? []).map((p) => (
+            <View key={p.user_id} className="flex-row items-center gap-3 py-1.5" style={{ opacity: 0.7 }}>
+              <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">·</Text>
+              <AvatarImage
+                uri={p.photo_url}
+                style={{ width: 32, height: 32, borderRadius: 16 }}
+                fallback={
+                  <View className="w-8 h-8 rounded-full bg-purple-light-light dark:bg-purple-light-dark items-center justify-center">
+                    <Text className="text-purple-ink dark:text-purple-soft text-xs font-bold">{(p.full_name ?? 'C')[0]?.toUpperCase()}</Text>
+                  </View>
+                }
+              />
+              <Text className="flex-1 text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>{p.full_name ?? 'Caminante'}</Text>
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Invitación enviada</Text>
             </View>
           ))}
         </Glass>

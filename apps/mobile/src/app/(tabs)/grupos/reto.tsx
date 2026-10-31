@@ -1,6 +1,7 @@
 import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -10,6 +11,7 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { ChevronLeft, Check } from '@/components/icons';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
 import { useGroupChallenge, useJoinChallenge, RULE_LABEL, daysLeft, type Standing, type ChallengeRule } from '@/hooks/useChallenges';
+import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { friendlyServerError } from '@/lib/errors';
@@ -38,6 +40,7 @@ export default function RetoScreen() {
   const { data: group } = useGroupDetail(groupId);
   const { data: ch, isLoading } = useGroupChallenge(groupId);
   const join = useJoinChallenge(groupId);
+  const queryClient = useQueryClient();
   const active = ch?.active ?? null;
   const today = localDay();
   const theme = groupTheme(group?.group.background);
@@ -88,6 +91,7 @@ export default function RetoScreen() {
   const pot = active.stake * (ch?.entries ?? 0);
   const canJoin = !ch?.joined && today <= active.start_day;
   const top = Math.max(1, ...standings.map((s) => valueOf(active.rule, s)));
+  const canCancel = (active.created_by === userId || group?.group.created_by === userId) && (today < active.start_day || (ch?.entries ?? 0) <= 1);
   const myIdx = standings.findIndex((s) => s.user_id === userId);
   const mine = myIdx >= 0 ? standings[myIdx] : null;
 
@@ -205,6 +209,35 @@ export default function RetoScreen() {
           </Press>
         )}
         {!canJoin && !ch?.joined && <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-4">Ya empezó: ya no se puede sumar.</Text>}
+        {canCancel && (
+          <Press
+            accessibilityRole="button"
+            onPress={() =>
+              Alert.alert('¿Eliminar este desafío?', 'Los puntos puestos se devuelven.', [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                  text: 'Eliminar desafío',
+                  style: 'destructive',
+                  onPress: async () => {
+                    const { error } = await supabase.rpc('cancel_group_challenge', { p_challenge: active.id });
+                    if (error) {
+                      Alert.alert('No se pudo eliminar', friendlyServerError(error, 'Intenta de nuevo.'));
+                      return;
+                    }
+                    queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
+                    queryClient.invalidateQueries({ queryKey: ['points'] });
+                    queryClient.invalidateQueries({ queryKey: ['ledger'] });
+                    back();
+                  },
+                },
+              ])
+            }
+            className="rounded-2xl py-3.5 items-center mx-5 mt-4"
+            style={{ borderWidth: 1.5, borderColor: colors.dangerSoft }}
+          >
+            <Text className="font-bold text-[14px]" style={{ color: colors.dangerSoft }}>Eliminar desafío</Text>
+          </Press>
+        )}
       </ScrollView>
     </View>
   );

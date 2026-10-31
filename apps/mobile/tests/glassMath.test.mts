@@ -31,8 +31,8 @@ test('cardFill en Sólido (0): blanco pleno en claro y el color sólido en oscur
 
 test('cardFill claro: valores exactos en el extremo Cristal (1) y en el valor por defecto (0,65)', () => {
   const [top1, bot1] = cardFill(1, false, SOLID_DARK);
-  assert.equal(top1, 'rgba(255,255,255,0.220)'); // arriba nunca baja de 0,22
-  assert.equal(bot1, 'rgba(167,139,250,0.100)'); // abajo: lila pleno y nunca baja de 0,10
+  assert.equal(top1, 'rgba(255,255,255,0.120)'); // extremo Cristal: velo arriba baja hasta 0,12
+  assert.equal(bot1, 'rgba(167,139,250,0.050)'); // abajo: lila pleno, baja hasta 0,05
   const [top65, bot65] = cardFill(0.65, false, SOLID_DARK);
   assert.equal(top65, 'rgba(255,255,255,0.480)');
   assert.equal(bot65, 'rgba(167,139,250,0.207)'); // (1 - 0,65) ^ 1,5
@@ -79,12 +79,12 @@ test('cardFill claro: el tinte lila llega al máximo en 0,65 y no sigue subiendo
 
 test('cardFill acepta otro tinte (el de la paleta de fondo)', () => {
   const bot = cardFill(1, false, SOLID_DARK, [215, 205, 245])[1];
-  assert.equal(bot, 'rgba(215,205,245,0.100)');
+  assert.equal(bot, 'rgba(215,205,245,0.050)');
 });
 
-test('blurWeb: de blur(18px) saturate(160%) a blur(28px) saturate(200%)', () => {
+test('blurWeb: de blur(18px) saturate(160%) a blur(16px) saturate(240%) en Cristal', () => {
   assert.equal(blurWeb(0), 'blur(18px) saturate(160%)');
-  assert.equal(blurWeb(1), 'blur(28px) saturate(200%)');
+  assert.equal(blurWeb(1), 'blur(16px) saturate(240%)'); // tramo cristal: menos desenfoque, más saturación
   assert.equal(blurWeb(0.65), 'blur(25px) saturate(186%)');
 });
 
