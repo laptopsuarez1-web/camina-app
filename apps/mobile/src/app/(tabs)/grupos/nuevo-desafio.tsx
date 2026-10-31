@@ -133,7 +133,7 @@ export default function NuevoDesafioScreen() {
   }
 
   const canNext = step === 1 ? name.trim().length >= 3 : true;
-  const insufficient = stake > 0 && (balance ?? 0) < stake;
+  const insufficient = stake > 0 && balance !== undefined && balance < stake;
 
   return (
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
