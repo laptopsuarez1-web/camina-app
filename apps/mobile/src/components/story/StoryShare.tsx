@@ -1,5 +1,5 @@
-import type { Ref } from 'react';
-import { View, Image, type ImageSourcePropType } from 'react-native';
+import { useEffect, useState, type Ref } from 'react';
+import { Keyboard, Platform, View, Image, type ImageSourcePropType } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -207,13 +207,22 @@ export function StoryConfirmSheet({
   onLater: () => void;
 }) {
   const dark = useColorScheme().colorScheme === 'dark';
+  // Con el teclado abierto la hoja se compacta (sin el ícono grande ni el aire de abajo) para que el campo y el botón queden bien a la vista.
+  const [kb, setKb] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKb(true));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKb(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
   return (
-    <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-10">
-      <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
+    <View className={`bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 ${kb ? 'pb-4' : 'pb-10'}`}>
+      <View className={`w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center ${kb ? 'mb-3' : 'mb-5'}`} />
       <View className="items-center mb-4">
-        <View className="w-14 h-14 rounded-full items-center justify-center mb-3 bg-purple-light-light dark:bg-purple-light-dark">
-          <Instagram size={28} color={dark ? colors.purpleSoft : colors.purpleInk} weight="bold" />
-        </View>
+        {!kb && (
+          <View className="w-14 h-14 rounded-full items-center justify-center mb-3 bg-purple-light-light dark:bg-purple-light-dark">
+            <Instagram size={28} color={dark ? colors.purpleSoft : colors.purpleInk} weight="bold" />
+          </View>
+        )}
         <Text accessibilityRole="header" className="text-[17px] font-extrabold text-text-light dark:text-text-dark">¿Ya subiste la historia?</Text>
         <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-1" style={{ lineHeight: 18 }}>
           Dinos tu usuario de Instagram para encontrarla. Acuérdate de etiquetar a {CAMINA_INSTAGRAM}.
