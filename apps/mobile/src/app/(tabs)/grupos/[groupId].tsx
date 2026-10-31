@@ -251,26 +251,6 @@ export default function GroupDetailScreen() {
     queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
   }
 
-  function cancelChallenge(id: string) {
-    Alert.alert('¿Eliminar este desafío?', 'Los puntos puestos se devuelven.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar desafío',
-        style: 'destructive',
-        onPress: async () => {
-          const { error } = await supabase.rpc('cancel_group_challenge', { p_challenge: id });
-          if (error) {
-            Alert.alert('No se pudo eliminar', friendlyServerError(error, 'Intenta de nuevo.'));
-            return;
-          }
-          queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
-          queryClient.invalidateQueries({ queryKey: ['points'] });
-          queryClient.invalidateQueries({ queryKey: ['ledger'] });
-        },
-      },
-    ]);
-  }
-
   function confirmExit(del: boolean) {
     const creator = data?.group.created_by === userId;
     Alert.alert(
@@ -648,11 +628,6 @@ export default function GroupDetailScreen() {
             ) : (
               <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-2">Ya empezó: ya no se puede sumar.</Text>
             )}
-            {(active.created_by === userId || data.group.created_by === userId) && (today < active.start_day || (ch?.entries ?? 0) <= 1) ? (
-              <Press accessibilityRole="button" onPress={() => cancelChallenge(active.id)} className="py-2.5 items-center mt-1">
-                <Text className="text-[13px] font-bold" style={{ color: colors.dangerSoft }}>Eliminar desafío</Text>
-              </Press>
-            ) : null}
           </Glass>
         ) : (
           <Glass className="mx-5 rounded-2xl p-4 mb-3">
