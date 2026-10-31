@@ -91,6 +91,17 @@ test('puntos de hoy: suma TODOS los orígenes desde la medianoche LOCAL (instant
   });
 });
 
+test('puntos de hoy: un canje (monto negativo) no baja lo ganado', async () => {
+  await atTime('2026-10-03T15:00:00Z', LA_PAZ, async () => {
+    db.tables.points_ledger = [
+      { user_id: USER, amount: 6, earned_at: '2026-10-03T10:00:00.000Z' },
+      { user_id: USER, amount: -20, earned_at: '2026-10-03T11:00:00.000Z' },
+    ];
+    usePointsToday();
+    assert.equal(await rq.lastQuery.queryFn(), 6);
+  });
+});
+
 test('puntos de hoy: sin movimientos es 0', async () => {
   await atTime('2026-10-03T15:00:00Z', LA_PAZ, async () => {
     db.tables.points_ledger = [];

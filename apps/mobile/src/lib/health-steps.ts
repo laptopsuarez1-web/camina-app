@@ -7,7 +7,7 @@ import { aggregateRecord, readRecords } from 'react-native-health-connect';
 import { Pedometer } from 'expo-sensors';
 
 // Lectura de pasos de un rango en la fuente real del teléfono (Salud en iPhone, Health Connect en Android),
-// descontando los pasos cargados a mano (antifraude). Lo usan Inicio (cada 15 s) y la sincronización en segundo plano, siempre con el día de hoy.
+// descontando los pasos cargados a mano (antifraude). Lo usan Inicio (cada 15 s) y la sincronización al abrir la app (hoy y ayer); no hay sincronización en segundo plano.
 // Se asume que la persona ya dio el permiso; si no, la lectura devuelve 0 o falla.
 export const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
 // Health Connect: RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY

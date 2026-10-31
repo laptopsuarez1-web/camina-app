@@ -76,7 +76,8 @@ export function usePointsToday() {
         .eq('user_id', userId!)
         .gte('earned_at', startOfTodayISO());
       if (error) throw error;
-      return (data ?? []).reduce((sum, row) => sum + row.amount, 0);
+      // Solo lo ganado: los canjes restan en el libro y no deben bajar "Puntos de hoy" (ni dejarlo negativo).
+      return (data ?? []).reduce((sum, row) => sum + Math.max(0, row.amount), 0);
     },
   });
 }
