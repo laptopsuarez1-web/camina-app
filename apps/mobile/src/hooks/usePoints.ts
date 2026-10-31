@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { registerDevice } from '@/lib/device';
 
 // OJO: nunca uses Date.toISOString() aquí — eso da la fecha en UTC, no la del
 // dispositivo. Para un usuario en Bolivia (UTC-4), toISOString() ya muestra
@@ -45,6 +46,8 @@ export function useSyncSteps() {
   return useMutation({
     mutationFn: async (steps: number) => {
       if (!userId) throw new Error('Sin sesión');
+      // El servidor solo suma pasos si el celular ya está registrado para esta cuenta (un celular, una cuenta).
+      await registerDevice(userId);
       const { data, error } = await supabase.rpc('earn_points_from_steps', {
         p_user_id: userId,
         p_day: todayISO(),

@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import type { View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
+import * as Clipboard from 'expo-clipboard';
 
 // Convierte una tarjeta (vista de 360 px de ancho) en una PNG de 1080 px y abre la hoja de compartir del sistema
 // (ahí aparecen Instagram, WhatsApp, Guardar imagen...). La imagen se arma en el teléfono y no se sube a ningún lado.
@@ -36,4 +37,12 @@ export async function shareCard(ref: RefObject<View | null>, size: { width: numb
   }
   if (!(await Sharing.isAvailableAsync())) throw new Error('Tu teléfono no permite compartir imágenes desde la app.');
   await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: title, UTI: 'public.png' });
+}
+
+// Copia la tarjeta (con su fondo transparente, si lo tiene) para pegarla como sticker en la historia de Instagram.
+export async function copyCardImage(ref: RefObject<View | null>, size: { width: number; height: number }) {
+  if (!ref.current) throw new Error('La tarjeta todavía no está lista. Prueba de nuevo.');
+  const scale = SHARE_PX_WIDTH / size.width;
+  const b64 = await captureRef(ref, { format: 'png', quality: 1, width: Math.round(size.width * scale), height: Math.round(size.height * scale), result: 'base64' });
+  await Clipboard.setImageAsync(b64);
 }

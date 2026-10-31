@@ -8,7 +8,7 @@ import ModoToggle from './ModoToggle';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
-export const EMAIL_AVISAME = `mailto:caminaappbo@gmail.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
+export const EMAIL_Avísame = `mailto:caminaappbo@gmail.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
 
 export const CAP = {
   inicio: '/web/cap/inicio.jpg',
@@ -356,7 +356,7 @@ export function DescargaGente() {
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
           </div>
           <div className="lp-cta">
-            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
+            <a className="lp-btn mint" href={EMAIL_Avísame}>Avísame cuando salga</a>
             <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
           </div>
         </div>
