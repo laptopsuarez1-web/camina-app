@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -91,7 +92,7 @@ export default function EditarPerfilScreen() {
   const monthRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
   const email = session?.user.email ?? '';
-  // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una acá (queda marcado en has_password).
+  // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una aquí (queda marcado en has_password).
   const hasPassword = session?.user.user_metadata?.has_password === true || (session?.user.app_metadata?.provider ?? 'email') === 'email';
   const linkedProvider = ((session?.user.app_metadata?.providers as string[] | undefined) ?? []).includes('apple') ? 'Apple' : 'Google';
   // Con el link del correo ya se comprobó que es la persona: no se pide la actual.
@@ -236,7 +237,7 @@ export default function EditarPerfilScreen() {
   const photo = photoUri ?? profile?.photo_url ?? null;
 
   return (
-    <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="bg-auth-bg pt-14 pb-5 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
           <View className="flex-row items-center gap-3">
@@ -404,6 +405,6 @@ export default function EditarPerfilScreen() {
           </Press>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }

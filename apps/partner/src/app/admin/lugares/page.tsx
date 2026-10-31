@@ -60,9 +60,9 @@ export default function AdminLugaresPage() {
 
   return (
     <AdminShell>
-      <h1 className="text-[22px] font-bold text-text mb-1">Ciudades y barrios</h1>
+      <h1 className="text-[22px] font-bold text-text mb-1">Ciudades y zonas</h1>
       <p className="text-muted text-[13.5px] mb-6 max-w-[620px]">
-        La gente y los comercios eligen ciudad y barrio de estas listas, así siempre quedan bien escritos. Prendé una
+        La gente y los comercios eligen ciudad y zona de estas listas, así siempre quedan bien escritos. Prende una
         ciudad cuando estés listo para lanzar ahí.
       </p>
       {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
@@ -97,7 +97,7 @@ export default function AdminLugaresPage() {
       </div>
 
       <div className="max-w-[560px] bg-card border border-line rounded-2xl p-4">
-        <p className="font-bold text-[14px] mb-3">Barrios de {selected}</p>
+        <p className="font-bold text-[14px] mb-3">Zonas de {selected}</p>
         <div className="flex flex-wrap gap-2 mb-3">
           {cityZones.map((z) => (
             <span key={z.id} className="inline-flex items-center gap-1.5 bg-bg border border-line rounded-full pl-3 pr-2 py-1 text-[12.5px]">
@@ -107,10 +107,10 @@ export default function AdminLugaresPage() {
               </button>
             </span>
           ))}
-          {cityZones.length === 0 && <p className="text-muted text-[12.5px]">Todavía no hay barrios para esta ciudad.</p>}
+          {cityZones.length === 0 && <p className="text-muted text-[12.5px]">Todavía no hay zonas para esta ciudad.</p>}
         </div>
         <div className="flex gap-2">
-          <input value={newZone} onChange={(e) => setNewZone(e.target.value)} placeholder="Agregar barrio" className={field} />
+          <input value={newZone} onChange={(e) => setNewZone(e.target.value)} placeholder="Agregar zona" className={field} />
           <button onClick={addZone} className="bg-mint text-mint-dark rounded-[10px] px-4 font-semibold text-[13px]">
             Agregar
           </button>

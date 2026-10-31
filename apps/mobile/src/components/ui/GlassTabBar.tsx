@@ -78,7 +78,7 @@ export function GlassTabBar({ state, descriptors, navigation }: TabBarProps) {
   if (descriptors[state.routes[state.index]?.key]?.options.tabBarStyle?.display === 'none') return null;
 
   // Las pantallas sin pestaña (perfil, puntos, avisos, detalle de grupo) se declaran con href: null;
-  // expo-router las convierte en tabBarItemStyle { display: 'none' }, así que se filtran acá.
+  // expo-router las convierte en tabBarItemStyle { display: 'none' }, así que se filtran aquí.
   const visible = state.routes
     .map((route, index) => ({ route, index }))
     .filter(({ route }) => {

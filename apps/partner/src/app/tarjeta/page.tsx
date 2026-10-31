@@ -104,14 +104,14 @@ export default function TarjetaPage() {
         <div className="max-w-[860px]">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4 mb-5">
             <div className="bg-card border border-line rounded-2xl p-5">
-              <p className="font-bold text-[16px] mb-1">¿Qué premio regalás al completar la tarjeta?</p>
+              <p className="font-bold text-[16px] mb-1">¿Qué premio regalas al completar la tarjeta?</p>
               <p className="text-muted text-[12.5px] mb-3.5 leading-[18px]">
-                Elegí uno de tus premios activos. El premio lo ponés vos, como siempre; Camina no le descuenta Puntos al cliente en ese canje.
-                Si lo cambiás, quienes ya completaron su tarjeta usan el nuevo.
+                Elige uno de tus premios activos. El premio lo pones tú, como siempre; Camina no le descuenta Puntos al cliente en ese canje.
+                Si lo cambias, quienes ya completaron su tarjeta usan el nuevo.
               </p>
               {benefits.length === 0 ? (
                 <p className="text-[13px] text-muted">
-                  Primero creá un premio en <Link href="/beneficio" className="underline font-semibold">Mis beneficios</Link>.
+                  Primero crea un premio en <Link href="/beneficio" className="underline font-semibold">Mis beneficios</Link>.
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
@@ -201,7 +201,7 @@ export default function TarjetaPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-muted text-[13px] py-3">Todavía no hay clientes cerca de completar. Aparecen acá cuando les faltan 1 o 2 sellos.</p>
+              <p className="text-muted text-[13px] py-3">Todavía no hay clientes cerca de completar. Aparecen aquí cuando les faltan 1 o 2 sellos.</p>
             )}
           </div>
         </div>

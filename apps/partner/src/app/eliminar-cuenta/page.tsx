@@ -18,16 +18,16 @@ export default function EliminarCuentaPage() {
       <p className="text-muted text-[13px] mb-8">Cómo borrar tu cuenta de Camina y tus datos.</p>
 
       <section className="mb-8">
-        <h2 className="font-bold text-[15px] mb-2">Si tenés la app</h2>
+        <h2 className="font-bold text-[15px] mb-2">Si tienes la app</h2>
         <p className="text-[13.5px] leading-6 text-muted">
-          Entrá a Perfil, tocá Editar perfil y al final elegí Eliminar cuenta. Se borra al instante.
+          Entra a Perfil, toca Editar perfil y al final elige Eliminar cuenta. Se borra al instante.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="font-bold text-[15px] mb-2">Si no podés entrar a la app</h2>
+        <h2 className="font-bold text-[15px] mb-2">Si no puedes entrar a la app</h2>
         <p className="text-[13.5px] leading-6 text-muted">
-          Escribinos a{' '}
+          Escríbenos a{' '}
           <a className="text-aqua font-semibold" href={`mailto:${SUPPORT_EMAIL}?subject=Eliminar%20mi%20cuenta%20de%20Camina`}>
             {SUPPORT_EMAIL}
           </a>{' '}
@@ -51,7 +51,7 @@ export default function EliminarCuentaPage() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Si sos un comercio</h2>
         <p className="text-[13.5px] leading-6 text-muted">
-          Entrá al panel, abrí Perfil y elegí Eliminar cuenta y negocio de Camina, o escribinos al mismo correo.
+          Entra al panel, abre Perfil y elige Eliminar cuenta y negocio de Camina, o escríbenos al mismo correo.
         </p>
       </section>
     </div>

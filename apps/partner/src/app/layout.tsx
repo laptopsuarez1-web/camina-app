@@ -17,20 +17,20 @@ const jakarta = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL('https://caminaapp.com'),
   title: 'Camina — Panel de comercios',
-  description: 'Gestioná tu beneficio, tus canjes y tu plan en Camina.',
+  description: 'Gestiona tu beneficio, tus canjes y tu plan en Camina.',
   applicationName: 'Camina',
   openGraph: {
     type: 'website',
     siteName: 'Camina',
     locale: 'es_BO',
     title: 'Camina — Panel de comercios',
-    description: 'Registrá tu comercio, publicá tu beneficio y validá canjes en Camina.',
+    description: 'Registra tu comercio, publica tu beneficio y valida canjes en Camina.',
     images: [{ url: '/camina-logo.png', alt: 'Camina' }],
   },
   twitter: {
     card: 'summary',
     title: 'Camina — Panel de comercios',
-    description: 'Registrá tu comercio, publicá tu beneficio y validá canjes en Camina.',
+    description: 'Registra tu comercio, publica tu beneficio y valida canjes en Camina.',
     images: ['/camina-logo.png'],
   },
 };

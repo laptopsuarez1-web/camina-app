@@ -104,7 +104,6 @@ export default function RankingScreen() {
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)' }}>
             <ChevronLeft size={18} color={accentIcon} />
           </Press>
-          <Text accessibilityRole="header" className="text-[17px] font-bold text-aqua-ink dark:text-mint">Ranking</Text>
           <View style={{ width: 40 }} />
         </View>
 

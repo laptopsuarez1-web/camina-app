@@ -1,6 +1,6 @@
 // Reflejo, solo para UI (textos, cuentas regresivas), de las reglas que en verdad
 // se aplican del lado del servidor en supabase/migrations/0001_init.sql.
-// Si cambian acá, tienen que cambiar también las funciones SQL correspondientes.
+// Si cambian aquí, tienen que cambiar también las funciones SQL correspondientes.
 export const POINTS_PER_STEP_UNIT = 1000; // 1 Punto cada 1000 pasos
 export const STREAK_BONUS_DAYS = 7; // días seguidos para el bono de racha
 export const STREAK_BONUS_POINTS = 5; // Puntos por cada semana de racha

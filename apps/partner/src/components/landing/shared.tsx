@@ -54,7 +54,7 @@ export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
           CAMINA
         </Link>
         <nav className="lp-links" aria-label="Principal">
-          <Link href="/" aria-current={activo === 'gente' ? 'page' : undefined}>Para vos</Link>
+          <Link href="/" aria-current={activo === 'gente' ? 'page' : undefined}>Para ti</Link>
           <Link href="/comercios" aria-current={activo === 'comercios' ? 'page' : undefined}>Para comercios</Link>
         </nav>
         <Link href="/login" className="lp-login">Ingresar al panel</Link>
@@ -67,9 +67,9 @@ export function Footer() {
   return (
     <footer className="lp-foot">
       <div className="wrap">
-        <p>¿Dudas? Escribinos por WhatsApp al <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+591 627 14286</a>.</p>
+        <p>¿Dudas? Escríbenos por WhatsApp al <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+591 627 14286</a>.</p>
         <nav aria-label="Enlaces">
-          <Link href="/">Para vos</Link>
+          <Link href="/">Para ti</Link>
           <Link href="/comercios">Para comercios</Link>
           <Link href="/registro">Registrar mi comercio</Link>
           <Link href="/login">Ingresar al panel</Link>
@@ -124,7 +124,7 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
   const items = [
     { cls: 'fc1', ico: ICO.pasos, t: 'Cada 1.000 pasos', d: 'Se vuelven puntos', e: '1 punto' },
     { cls: 'fc2', ico: ICO.racha, t: 'Cada día', d: 'Tope diario de puntos', e: 'hasta 20 puntos' },
-    { cls: 'fc3', ico: ICO.amigos, t: 'Invitá a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
+    { cls: 'fc3', ico: ICO.amigos, t: 'Invita a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
   ];
   return (
     <>
@@ -143,7 +143,7 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
 }
 
 // Cinta con lo que tiene la app.
-const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que elegís', 'Racha y calendario', 'Grupos y ranking', 'Retos Camina', 'Desafíos y eventos', 'Compartí tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitás'];
+const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que eliges', 'Racha y calendario', 'Grupos y ranking', 'Retos Camina', 'Desafíos y eventos', 'Comparte tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitas'];
 export function Cinta({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
   const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`)) : CINTA;
   const fila = [...base, ...base];
@@ -177,11 +177,11 @@ export function Reglas() {
           </InView>
           <InView className="stat" delay={360}>
             <b><Counter to={300} /></b>
-            <span>metros: tenés que estar en el local</span>
+            <span>metros: tienes que estar en el local</span>
           </InView>
         </div>
         <InView className="reparto">
-          <b>Un local distinto cada vez.</b> Podés volver a canjear en el mismo local pasados 7 días: así descubrís lugares nuevos y todos los comercios tienen su oportunidad.
+          <b>Un local distinto cada vez.</b> Puedes volver a canjear en el mismo local pasados 7 días: así descubres lugares nuevos y todos los comercios tienen su oportunidad.
         </InView>
       </div>
     </section>
@@ -240,14 +240,14 @@ export function Galeria() {
   const pant = [
     ['Tu día en un vistazo', 'Tus pasos de hoy, tus puntos y tu racha.', CAP.inicio],
     ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
-    ['Grupos', 'Caminá en equipo con tus amigos.', CAP.grupos],
+    ['Grupos', 'Camina en equipo con tus amigos.', CAP.grupos],
     ['Tu grupo', 'Podio, meta compartida y desafíos.', CAP.grupo],
     ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
-    ['Desafíos', 'Sumate a desafíos con premios.', CAP.desafios],
+    ['Desafíos', 'Súmate a desafíos con premios.', CAP.desafios],
     ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
-    ['Canjear', 'Buscá comercios y mirá sus premios.', CAP.canjes],
+    ['Canjear', 'Busca comercios y mira sus premios.', CAP.canjes],
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
-    ['Tu meta de pasos', 'Elegís cuántos pasos por día.', CAP.meta],
+    ['Tu meta de pasos', 'Eliges cuántos pasos por día.', CAP.meta],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
@@ -272,7 +272,7 @@ export function Objetivos() {
   const bloques = [
     {
       t: 'Salud',
-      d: 'Una meta diaria de pasos que vos elegís y una racha que te empuja a no cortar. Mirás tu semana en un gráfico y sabés cómo venís.',
+      d: 'Una meta diaria de pasos que tú eliges y una racha que te empuja a no cortar. Miras tu semana en un gráfico y sabes cómo vienes.',
       img: CAP.actividad,
       alt: 'Pantalla de actividad con los pasos de la semana',
     },
@@ -283,8 +283,8 @@ export function Objetivos() {
       alt: 'Pantalla de grupos con la meta semanal',
     },
     {
-      t: 'Moverte por tu barrio',
-      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Salís a caminar y volvés con un premio.',
+      t: 'Moverte por tu zona',
+      d: 'Tus pasos te llevan a conocer locales de tu zona y a probar cosas nuevas. Sales a caminar y vuelves con un premio.',
       img: CAP.canjes,
       alt: 'Pantalla de canjes con comercios',
     },
@@ -349,14 +349,14 @@ export function DescargaGente() {
     <section className="lp-final" id="descargar">
       <div className="wrap final-grid">
         <div>
-          <Kinetic text="Descargá Camina y empezá a caminar." as="h2" />
-          <p>Camina está por llegar a Google Play y App Store. Escribinos por correo y te avisamos apenas esté lista.</p>
+          <Kinetic text="Descarga Camina y empieza a caminar." as="h2" />
+          <p>Camina está por llegar a Google Play y App Store. Escríbenos por correo y te avisamos apenas esté lista.</p>
           <div className="stores">
             <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
           </div>
           <div className="lp-cta">
-            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avisame cuando salga</a>
+            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
             <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
           </div>
         </div>
@@ -368,15 +368,15 @@ export function DescargaGente() {
 
 export function PasosComercio() {
   const pasos = [
-    ['Creás tu perfil en el panel', 'Es gratis con cualquier plan. Cargás tu local, tu logo, tus fotos y tu primer premio.'],
-    ['Elegís tu plan al terminar', 'Empezás gratis, o elegís Paso Firme o Paso Adelante y pagás con el QR. Si sos de los primeros 20, pedís tu cupo fundador por WhatsApp y te habilitamos.'],
+    ['Creas tu perfil en el panel', 'Es gratis con cualquier plan. Cargas tu local, tu logo, tus fotos y tu primer premio.'],
+    ['Eliges tu plan al terminar', 'Empiezas gratis, o eliges Paso Firme o Paso Adelante y pagas con el QR. Si sos de los primeros 20, pides tu cupo fundador por WhatsApp y te habilitamos.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
-    ['Aparecés en el mapa', 'La gente de tu zona te encuentra y canjea. Les decís el código de tu local y listo.'],
+    ['Apareces en el mapa', 'La gente de tu zona te encuentra y canjea. Les dices el código de tu local y listo.'],
   ];
   return (
     <section className="lp-sec" id="como-sumarte">
       <div className="wrap">
-        <Kinetic text="Cómo sumás tu comercio." />
+        <Kinetic text="Cómo sumas tu comercio." />
         <ol className="flow">
           {pasos.map(([t, d], i) => (
             <InView as="li" key={t} delay={i * 110}>
@@ -396,18 +396,18 @@ export function PasosComercio() {
 }
 
 const BENEFICIOS = [
-  ['Aparecés en el mapa', 'La gente de tu zona te encuentra cuando elige dónde canjear.'],
-  ['Vos elegís el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
-  ['Vos ponés el cupo', 'Definís cuántos cupones das por día, o ilimitados.'],
-  ['Se valida en segundos', 'Le decís a tu cliente el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado al instante.'],
+  ['Apareces en el mapa', 'La gente de tu zona te encuentra cuando elige dónde canjear.'],
+  ['Vos eliges el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
+  ['Vos pones el cupo', 'Defines cuántos cupones das por día, o ilimitados.'],
+  ['Se valida en segundos', 'Le dices a tu cliente el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado al instante.'],
   ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 7 días. Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
-  ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargás en tu ficha.'],
+  ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargas en tu ficha.'],
   ['Historias que te muestran', 'Quien canjea puede subir una historia de Instagram con el sticker de Camina y gana 5 Puntos extra cuando el equipo de Camina la aprueba.'],
-  ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, tu pin en el mapa y, si querés, eventos y sorteos que promocionan tu local dentro de la app.'],
+  ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, tu pin en el mapa y, si quieres, eventos y sorteos que promocionan tu local dentro de la app.'],
   ['Tu ficha completa', 'Fotos de tu local, horarios, dirección y tus redes (Instagram, Facebook, TikTok y WhatsApp) en un solo lugar.'],
   ['Tus días y horarios', 'Cada premio puede valer solo ciertos días y horas, por ejemplo de 16:00 a 23:00, o solo consumiendo en el local.'],
-  ['Llená tus horas muertas', 'Poné el premio justo en las horas en que tu local está vacío, como la media tarde o los días flojos. La gente llega cuando más la necesitás y no regalás de más en las horas de mucho movimiento.'],
-  ['Empezás gratis', 'El plan Primer Paso no tiene costo fijo. Cambiás de plan cuando quieras.'],
+  ['Llena tus horas muertas', 'Pon el premio justo en las horas en que tu local está vacío, como la media tarde o los días flojos. La gente llega cuando más la necesitas y no regalas de más en las horas de mucho movimiento.'],
+  ['Empiezas gratis', 'El plan Primer Paso no tiene costo fijo. Cambias de plan cuando quieras.'],
 ];
 
 export function BeneficiosComercio() {
@@ -435,7 +435,7 @@ export function PanelComercio() {
       <div className="wrap panel-row">
         <div>
           <Kinetic text="Todo desde tu panel." as="h2" />
-          <p className="lead">Cargás tu local y tus premios, tenés el código de tu local y mirás tus canjes. Sin instalar nada.</p>
+          <p className="lead">Cargas tu local y tus premios, tienes el código de tu local y miras tus canjes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
             <Link className="lp-btn line" href="/login">Ya tengo cuenta</Link>
@@ -454,7 +454,7 @@ export function Planes() {
     <section className="lp-sec" id="planes">
       <div className="wrap">
         <Kinetic text="Los planes." />
-        <p className="lead">Te registrás y creás tu perfil con cualquier plan. Al terminar elegís el plan (con QR si es pago). ¿Dudas? Escribinos por WhatsApp.</p>
+        <p className="lead">Te registras y creas tu perfil con cualquier plan. Al terminar eliges el plan (con QR si es pago). ¿Dudas? Escríbenos por WhatsApp.</p>
         <div className="planes">
           {PLANS.map((p, i) => (
             <InView as="article" key={p.id} className={`plan${p.featured ? ' feat' : ''}`} delay={i * 120}>
@@ -471,7 +471,7 @@ export function Planes() {
         </div>
         <div className="fund">
           <b>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app.</b>
-          <span>Para los primeros 20 comercios. Creás tu perfil en el panel con cualquier plan, nos escribís por WhatsApp y te habilitamos en la app y en el panel.</span>
+          <span>Para los primeros 20 comercios. Creas tu perfil en el panel con cualquier plan, nos escribes por WhatsApp y te habilitamos en la app y en el panel.</span>
           <a className="lp-btn dark" href={WA('Hola! Quiero pedir mi cupo fundador de Camina.')}>Pedir mi cupo fundador</a>
         </div>
       </div>
@@ -484,8 +484,8 @@ export function CierreComercio() {
     <section className="lp-final">
       <div className="wrap final-grid">
         <div>
-          <Kinetic text="Sumá tu comercio hoy." />
-          <p>Registrate en el panel o escribinos por WhatsApp si querés hablar antes.</p>
+          <Kinetic text="Suma tu comercio hoy." />
+          <p>Regístrate en el panel o escríbenos por WhatsApp si quieres hablar antes.</p>
           <div className="lp-cta">
             <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
             <a className="lp-btn ghost" href={WA_COMERCIO}>Hablar por WhatsApp</a>
@@ -501,8 +501,8 @@ export function SoyComercio() {
   return (
     <section className="lp-sec alt soy">
       <div className="wrap">
-        <Kinetic text="¿Tenés un comercio?" />
-        <p className="lead">Sumá tu local a Camina gratis y recibí personas que ya van caminando por tu barrio.</p>
+        <Kinetic text="¿Tienes un comercio?" />
+        <p className="lead">Suma tu local a Camina gratis y recibe personas que ya van caminando por tu zona.</p>
         <div className="lp-cta">
           <Link className="lp-btn dark" href="/comercios">Ver cómo sumarme</Link>
           <Link className="lp-btn line" href="/registro">Registrar mi comercio</Link>
@@ -537,12 +537,12 @@ export function EquipoRetos() {
   return (
     <section className="lp-sec night" id="equipo">
       <div className="wrap">
-        <Kinetic text="Caminá en equipo, sumá en grande." />
+        <Kinetic text="Camina en equipo, suma en grande." />
         <Bloques
           items={[
             {
               t: 'Grupos',
-              d: 'Creá un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
+              d: 'Crea un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
               img: CAP.grupos,
               alt: 'Pantalla de Grupos con un grupo de ejemplo y su meta de la semana',
               tag: 'Grupo de ejemplo',
@@ -555,7 +555,7 @@ export function EquipoRetos() {
             },
             {
               t: 'Eventos y sorteos',
-              d: 'Locales y Camina publican eventos y sorteos dentro de la app. Caminá, cumplí el requisito y participá.',
+              d: 'Locales y Camina publican eventos y sorteos dentro de la app. Camina, cumplí el requisito y participa.',
               img: CAP.eventos,
               alt: 'Pantalla de eventos de ejemplo',
               tag: 'Ejemplo de lo que puede haber',
@@ -576,7 +576,7 @@ const GRUPO_PANT = [
   ['Tus amigos', 'Las solicitudes nuevas y los pasos de la semana de cada amigo.', CAP.amigos],
   ['Ranking entre amigos', 'Además del ranking global, uno solo con tus amigos.', CAP.rankingAmigos],
   ['El perfil de un amigo', 'Su racha, su promedio, su meta y cómo viene su semana.', CAP.amigoPerfil],
-  ['Agregar un amigo', 'Le mandás la solicitud y, cuando acepta, ven los pasos del otro.', CAP.amigoAgregar],
+  ['Agregar un amigo', 'Le mandas la solicitud y, cuando acepta, ven los pasos del otro.', CAP.amigoAgregar],
 ] as const;
 
 export function GrupoEjemplo() {
@@ -617,16 +617,16 @@ export function PublicidadComercio() {
   return (
     <section className="lp-sec night" id="publicidad">
       <div className="wrap">
-        <Kinetic text="Promocioná tu local en eventos y sorteos." />
+        <Kinetic text="Promociona tu local en eventos y sorteos." />
         <p className="lead">
-          Además de los premios por canje, podés publicar un evento o un sorteo dentro de la app. Cada publicación dura hasta 2 semanas y cuesta Bs 200
-          (Bs 400 si solo querés publicidad, sin canjes). Lo revisamos y se publica cuando confirmamos el pago por WhatsApp.
+          Además de los premios por canje, puedes publicar un evento o un sorteo dentro de la app. Cada publicación dura hasta 2 semanas y cuesta Bs 200
+          (Bs 400 si solo quieres publicidad, sin canjes). Lo revisamos y se publica cuando confirmamos el pago por WhatsApp.
         </p>
         <Bloques
           items={[
             {
               t: 'Tu local, frente a quienes caminan',
-              d: 'Tu evento o sorteo aparece en la app de Camina. Podés pedir un requisito de pasos para participar y así atraer gente que ya sale a caminar.',
+              d: 'Tu evento o sorteo aparece en la app de Camina. Puedes pedir un requisito de pasos para participar y así atraer gente que ya sale a caminar.',
               img: CAP.eventos,
               alt: 'Pantalla de eventos de ejemplo de la app',
               tag: 'Ejemplo de lo que puede haber',
@@ -652,13 +652,13 @@ export function CanjeResena() {
           items={[
             {
               t: 'Reseñas en Google Maps',
-              d: 'Cuando confirmás un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargás vos en tu perfil.',
+              d: 'Cuando confirmas un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargas tú en tu perfil.',
               img: CAP.canjeResena,
               alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps',
             },
             {
               t: 'Historias en Instagram',
-              d: 'La persona arma una historia con el sticker de Camina y la sube a Instagram. Si el equipo de Camina la aprueba, gana 5 Puntos. Vos te mostrás en las redes de quienes te visitan.',
+              d: 'La persona arma una historia con el sticker de Camina y la sube a Instagram. Si el equipo de Camina la aprueba, gana 5 Puntos. Vos te muestras en las redes de quienes te visitan.',
               img: CAP.historia,
               alt: 'Pantalla de la app para subir una historia después de un canje',
             },
@@ -684,7 +684,7 @@ export function AppsSimilares() {
         </div>
         <p className="lead">
           Es un dato de otra app, sin metodología publicada, y no es una promesa de resultados de Camina. Lo que sí podemos decirte es qué cambia entre planes:
-          con Primer Paso tenés un premio 100% gratis y, con él, un descuento; con Paso Firme y Paso Adelante podés combinar regalos y descuentos y dar cupones sin límite, para que
+          con Primer Paso tienes un premio 100% gratis y, con él, un descuento; con Paso Firme y Paso Adelante puedes combinar regalos y descuentos y dar cupones sin límite, para que
           el premio sea la puerta y la compra extra quede de tu lado.
         </p>
       </div>
@@ -696,18 +696,18 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   const local = LOCALES.find((l) => l.id === 'fripaps')!;
   const texto =
     para === 'gente'
-      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjeá 5 veces en el mismo local y ganás ese premio. Tus tarjetas aparecen cuando entrás a verlas, sin tapar el resto de la app.'
-      : 'Elegís el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjea 5 veces en el mismo local y ganas ese premio. Tus tarjetas aparecen cuando entras a verlas, sin tapar el resto de la app.'
+      : 'Eliges el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
   const pasos =
     para === 'gente'
       ? [
-          ['Canjeá en tu local favorito', 'Cada canje confirmado suma un sello a tu tarjeta de ese local.'],
-          ['Pasan 7 días entre canjes', 'Así probás otros lugares y todos los comercios tienen su oportunidad.'],
-          ['Al llegar a 5, ganás el premio', 'El premio de fidelidad lo elige cada local.'],
+          ['Canjea en tu local favorito', 'Cada canje confirmado suma un sello a tu tarjeta de ese local.'],
+          ['Pasan 7 días entre canjes', 'Así pruebas otros lugares y todos los comercios tienen su oportunidad.'],
+          ['Al llegar a 5, ganas el premio', 'El premio de fidelidad lo elige cada local.'],
         ]
       : [
-          ['Activás la tarjeta', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
-          ['Elegís tu premio de fidelidad', 'El que quieras darle a tus clientes más constantes.'],
+          ['Activas la tarjeta', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
+          ['Eliges tu premio de fidelidad', 'El que quieras darle a tus clientes más constantes.'],
           ['Tus clientes vuelven', 'Cada canje confirmado suma un sello; con 5 se llevan el premio.'],
         ];
   return (
@@ -766,24 +766,24 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
 
 type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
-  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganás más puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
-  { t: 'Tu meta, a tu medida', d: 'Elegís cuántos pasos querés hacer por día. Te recomendamos 5.000 para arrancar y la cambiás cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
-  { t: 'Invitá amigos', d: 'Compartí tu link: recibís 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
-  { t: 'Historias que suman', d: 'Subí una historia a Instagram y ganá 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
-  { t: 'Compartí tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
-  { t: 'Tu racha y tu calendario', d: 'Mirás tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
-  { t: 'Grupos y ranking', d: 'Caminá en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
-  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Elegís el modo de la app y cuánto vidrio querés ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
-  { t: 'Desafíos y eventos', d: 'Sumate a desafíos y eventos con fecha y lugar, y mirá cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
-  { t: 'Tu ubicación, solo cuando la necesitás', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
-  { t: 'Canjeá tus puntos', d: 'Cuando quieras usar tus puntos, le pedís al local su código de 4 números, lo escribís en la app y el canje se confirma al instante.', ico: 'regalo', span: 's3', fill: true },
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganas más puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Eliges cuántos pasos quieres hacer por día. Te recomendamos 5.000 para arrancar y la cambias cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
+  { t: 'Invita amigos', d: 'Comparte tu link: recibes 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
+  { t: 'Historias que suman', d: 'Sube una historia a Instagram y gana 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
+  { t: 'Comparte tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
+  { t: 'Tu racha y tu calendario', d: 'Miras tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
+  { t: 'Grupos y ranking', d: 'Camina en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
+  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Eliges el modo de la app y cuánto vidrio quieres ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
+  { t: 'Desafíos y eventos', d: 'Súmate a desafíos y eventos con fecha y lugar, y mira cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
+  { t: 'Tu ubicación, solo cuando la necesitas', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
+  { t: 'Canjea tus puntos', d: 'Cuando quieras usar tus puntos, le pides al local su código de 4 números, lo escribes en la app y el canje se confirma al instante.', ico: 'regalo', span: 's3', fill: true },
 ];
 
 export function MasParaGente() {
   return (
     <section className="lp-sec night" id="mas">
       <div className="wrap">
-        <Kinetic text="Y hay más para vos." />
+        <Kinetic text="Y hay más para ti." />
         <p className="lead">Lo que Camina te da cada día, además de los puntos.</p>
         <ul className="bento">
           {TILES.map((x, i) => (

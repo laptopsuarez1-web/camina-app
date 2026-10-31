@@ -8,7 +8,7 @@ import { colors } from '@/theme/tokens';
 // A donde apuntan los links de confirmación/recuperación de Supabase
 // (emailRedirectUrl() en lib/auth-links.ts). El intercambio real del "code"
 // por una sesión lo hace el listener global de app/_layout.tsx — esta
-// pantalla solo existe para que Expo Router tenga una ruta real acá (sin
+// pantalla solo existe para que Expo Router tenga una ruta real aquí (sin
 // esto, en la versión web caía en "no encontrado" y el usuario se quedaba
 // afuera aunque el login hubiera funcionado). Apenas hay sesión, redirige a
 // la raíz, que ya sabe mandar a tabs/perfil/términos según corresponda.

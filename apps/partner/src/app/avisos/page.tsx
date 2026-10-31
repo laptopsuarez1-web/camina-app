@@ -71,13 +71,13 @@ export default function AvisosPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Avisos cercanos" subtitle="Mandá una notificación a quienes caminan cerca de tu local." />
+      <TopBar title="Avisos cercanos" subtitle="Manda una notificación a quienes caminan cerca de tu local." />
 
       {locked ? (
         <div className="bg-card border border-line rounded-2xl p-6 max-w-[520px]">
           <p className="font-bold text-[15px] mb-1.5">Los avisos cercanos son del plan Paso Adelante</p>
           <p className="text-muted text-[13px] leading-5 mb-4">
-            Con Paso Adelante podés avisar a las personas que están cerca de tu local, por ejemplo cuando tenés una promoción del día.
+            Con Paso Adelante puedes avisar a las personas que están cerca de tu local, por ejemplo cuando tienes una promoción del día.
           </p>
           <Link href="/plan" className="inline-block bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px]">
             Ver planes
@@ -103,7 +103,7 @@ export default function AvisosPage() {
                 maxLength={120}
                 rows={3}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder="Mostrá tu código de Camina en el local hasta las 19:00."
+                placeholder="Muestra tu código de Camina en el local hasta las 19:00."
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
               <span className="text-[11px] text-muted">{body.length}/120</span>

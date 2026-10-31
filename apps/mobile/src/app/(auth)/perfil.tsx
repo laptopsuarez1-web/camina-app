@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
@@ -14,7 +15,7 @@ import { colors } from '@/theme/tokens';
 import { PlacePicker } from '@/components/PlacePicker';
 import { friendlyError } from '@/lib/errors';
 
-// Único paso obligatorio después de crear la cuenta. Ciudad y barrio son opcionales (Tarija por defecto);
+// Único paso obligatorio después de crear la cuenta. Ciudad y zona son opcionales (Tarija por defecto);
 // los intereses se editan después desde Perfil.
 export default function CompletarPerfilScreen() {
   const [fullName, setFullName] = useState('');
@@ -91,11 +92,11 @@ export default function CompletarPerfilScreen() {
   const field = 'bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl px-4 py-3.5 text-[16px] text-text-light dark:text-text-dark';
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <ScrollView contentContainerClassName="px-6 pt-20 pb-10 flex-grow justify-center" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamas?</Text>
         <Text className="text-muted-light dark:text-muted-dark text-[14px] leading-5 mb-7">
-          Con esto ya puedes empezar a caminar. Tu barrio es opcional y el resto lo completas cuando quieras, desde Perfil.
+          Con esto ya puedes empezar a caminar. Tu zona es opcional y el resto lo completas cuando quieras, desde Perfil.
         </Text>
 
         <Press accessibilityRole="button" accessibilityLabel={photoUri ? 'Cambiar foto de perfil' : 'Agregar foto de perfil, opcional'} onPress={pickPhoto} className="self-center mb-7">
@@ -182,7 +183,7 @@ export default function CompletarPerfilScreen() {
         <View className="mb-6">
           <PlacePicker city={city} zone={zone} onChange={(c, z) => { setCity(c); setZone(z); }} />
           <Text className="text-muted-light dark:text-muted-dark text-[12.5px] leading-[18px] ml-1">
-            Opcional. Te mostramos primero los comercios de tu barrio.
+            Opcional. Te mostramos primero los comercios de tu zona.
           </Text>
         </View>
 
@@ -202,6 +203,6 @@ export default function CompletarPerfilScreen() {
           )}
         </Press>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }

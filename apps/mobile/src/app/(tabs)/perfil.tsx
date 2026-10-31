@@ -161,7 +161,7 @@ export default function PerfilScreen() {
           return;
         }
       } catch (e) {
-        // Se muestra el detalle: si falla acá suele ser un problema del build (permiso de Salud del App ID).
+        // Se muestra el detalle: si falla aquí suele ser un problema del build (permiso de Salud del App ID).
         Alert.alert('No pudimos abrir Salud', `Intenta de nuevo. Detalle: ${e instanceof Error ? e.message : String(e)}`);
         return;
       }
@@ -229,7 +229,7 @@ export default function PerfilScreen() {
           <View className="flex-1">
             <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{profile?.full_name}</Text>
             <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-              {profile?.zone ?? 'Barrio no definido'} · {profile?.city ?? 'Tarija'}
+              {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
             </Text>
           </View>
         </View>

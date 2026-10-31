@@ -97,7 +97,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted px-6 text-center text-sm">
-        {isAdmin ? 'Redirigiendo al panel de administrador…' : 'No encontramos un comercio asociado a esta cuenta. Contactá a soporte de Camina.'}
+        {isAdmin ? 'Redirigiendo al panel de administrador…' : 'No encontramos un comercio asociado a esta cuenta. Contacta a soporte de Camina.'}
       </div>
     );
   }
@@ -184,7 +184,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <strong>Motivo:</strong> {business.rejection_reason}
           </p>
           <p className="mb-2.5">
-            Corregilo desde <Link href="/perfil" className="underline font-semibold">Perfil</Link> y después tocá el botón
+            Corrígelo desde <Link href="/perfil" className="underline font-semibold">Perfil</Link> y después toca el botón
             para que lo volvamos a revisar.
           </p>
           <button
@@ -225,7 +225,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </>
           ) : beneficiosActivos == null ? null : (
             <>
-              <p>Ya tenés todo lo necesario. El equipo de Camina lo está revisando y te avisamos por correo apenas esté publicado.</p>
+              <p>Ya tienes todo lo necesario. El equipo de Camina lo está revisando y te avisamos por correo apenas esté publicado.</p>
               {sugerenciaBeneficio(business, beneficiosActivos) && (
                 <p className="mt-1.5">
                   Cuando cargues tu primer{' '}

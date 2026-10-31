@@ -12,7 +12,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown, Check } from '@/components/icons';
 import {
   useBenefits,
   useApprovedBusinesses,
@@ -37,7 +37,7 @@ import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
-import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
+import { BusinessAvatar } from '@/components/CategoryAvatar';
 import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
@@ -408,6 +408,25 @@ function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boole
   );
 }
 
+type SortBy = 'cerca' | 'destacados' | 'precio';
+const SORT_LABEL: Record<SortBy, string> = { cerca: 'Más cercanos', destacados: 'Recomendados', precio: 'Menor precio' };
+
+// Fila de las hojas de Categoría y Ordenar por: texto a la izquierda y tilde en la opción elegida.
+function OptionRow({ label, selected, onPress, isDark }: { label: string; selected: boolean; onPress: () => void; isDark: boolean }) {
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      className="flex-row items-center rounded-xl px-3"
+      style={{ minHeight: 48, gap: 10, backgroundColor: selected ? (isDark ? colors.dark.purpleLight : colors.light.purpleLight) : 'transparent' }}
+    >
+      <View style={{ width: 18 }}>{selected ? <Check size={16} color={isDark ? colors.mint : colors.aquaDeep} weight="bold" /> : null}</View>
+      <Text className="text-[15px] text-text-light dark:text-text-dark" style={{ fontWeight: selected ? '800' : '500' }}>{label}</Text>
+    </Press>
+  );
+}
+
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   const { muted, favorite } = useThemeColors();
@@ -446,6 +465,13 @@ export default function CanjesScreen() {
   const cancelExpired = useCancelExpiredRedemption();
 
   const [category, setCategory] = useState('Todos');
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categoryDraft, setCategoryDraft] = useState('Todos');
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortBy>('cerca');
+  const [sortDraft, setSortDraft] = useState<SortBy>('cerca');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [onlyAfford, setOnlyAfford] = useState(false);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
   const favorites = useFavorites();
@@ -698,18 +724,39 @@ export default function CanjesScreen() {
     return ['Todos', ...set];
   }, [benefits, sinPremios]);
 
+  const chip = (label: string, on: boolean, toggle: () => void, onColor: string = colors.aquaDeep, icon?: React.ReactNode) => (
+    <Press
+      key={label}
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      aria-pressed={on}
+      haptic="selection"
+      onPress={toggle}
+      className="flex-row items-center rounded-full border px-3.5 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+      style={{ gap: 5, minHeight: 40, ...(on ? { backgroundColor: onColor, borderColor: onColor === colors.aquaDeep ? colors.aqua : onColor } : null) }}
+    >
+      {icon}
+      <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{label}</Text>
+    </Press>
+  );
+  const quickChips = [
+    chip('Disponibles ahora', onlyOpen, () => setOnlyOpen((v) => !v)),
+    chip('Te alcanza', onlyAfford, () => setOnlyAfford((v) => !v)),
+    chip('Favoritos', onlyFavs, () => setOnlyFavs((v) => !v), colors.dangerFill, <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />),
+  ];
+
   const groups = useMemo(() => {
     const q = search.trim().toLowerCase();
     const map = new Map<string, { business: BusinessT; benefits: BenefitWithBusiness[] }>();
     for (const b of benefits ?? []) {
       if (category !== 'Todos' && b.business.category !== category) continue;
-      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category).toLowerCase().includes(q)) continue;
+      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '')).toLowerCase().includes(q)) continue;
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
       map.get(b.business.id)!.benefits.push(b);
     }
     for (const b of sinPremios) {
       if (category !== 'Todos' && b.category !== category) continue;
-      if (q && !(b.name + ' ' + b.category).toLowerCase().includes(q)) continue;
+      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q)) continue;
       map.set(b.id, { business: b, benefits: [] });
     }
     let list = [...map.values()].map((g) => ({
@@ -722,15 +769,19 @@ export default function CanjesScreen() {
     }));
     if (onlyOpen) list = list.filter((g) => g.openNow);
     if (onlyFavs) list = list.filter((g) => favIds.includes(g.business.id));
-    // Destacados siempre primero (también dentro de cada categoría), después por cercanía.
+    // "Te alcanza": el local tiene al menos un premio que se puede pagar con los Puntos de hoy.
+    if (onlyAfford) list = list.filter((g) => g.benefits.some((b) => b.cost_points <= (balance ?? 0)));
+    const cheapest = (g: (typeof list)[number]) => Math.min(...g.benefits.map((b) => b.cost_points), Infinity);
+    // Destacados siempre primero (también dentro de cada categoría); después, según "Ordenar por".
     list.sort(
       (a, b) =>
         Number(isFeatured(b.business)) - Number(isFeatured(a.business)) ||
-        (a.distance ?? Infinity) - (b.distance ?? Infinity) ||
+        (sortBy === 'precio' ? cheapest(a) - cheapest(b) || 0 : 0) ||
+        (sortBy === 'cerca' ? (a.distance ?? Infinity) - (b.distance ?? Infinity) : 0) ||
         a.business.name.localeCompare(b.business.name)
     );
     return list;
-  }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, favIds, hasGps, mapRegion]);
+  }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -1022,96 +1073,113 @@ export default function CanjesScreen() {
             </View>
           )}
 
-          <Glass className="flex-row items-center gap-2 rounded-2xl px-3.5 py-3 mb-3">
-            <Search size={16} color={muted} />
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              accessibilityLabel="Buscar comercios o categorías"
-              placeholder="Buscar comercios o categorías…"
-              placeholderTextColor={muted}
-              className="flex-1 text-[13.5px] text-text-light dark:text-text-dark"
-            />
-          </Glass>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
-            {categories.filter((c) => c === 'Todos').map((c) => {
-              const st = categoryStyle(c);
-              const CIcon = st.icon;
-              const on = category === c;
-              return (
-                <Press
-                  key={c}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: category === c }}
-                  aria-pressed={on}
-                  onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-                  style={{
-                    gap: 6,
-                    minHeight: 40,
-                    paddingVertical: 7,
-                    paddingLeft: 10,
-                    paddingRight: 13,
-                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
-                  }}
-                >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
-                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
+          {/* Como en Pasito: una sola fila de filtros. La lupa abre la búsqueda en el mismo lugar, con atajos debajo. */}
+          {searchOpen ? (
+            <View className="mb-1">
+              <View className="flex-row items-center" style={{ gap: 10 }}>
+                <Glass className="flex-1 flex-row items-center gap-2 rounded-2xl px-3.5" style={{ height: 46 }}>
+                  <Search size={16} color={muted} />
+                  <TextInput
+                    value={search}
+                    onChangeText={setSearch}
+                    autoFocus
+                    returnKeyType="search"
+                    accessibilityLabel="Buscar locales por nombre, categoría o dirección"
+                    placeholder="Buscar en locales"
+                    placeholderTextColor={muted}
+                    className="flex-1 text-[14px] text-text-light dark:text-text-dark"
+                  />
+                </Glass>
+                <Press accessibilityRole="button" accessibilityLabel="Cerrar búsqueda" hitSlop={10} onPress={() => { setSearch(''); setSearchOpen(false); }}>
+                  <X size={20} color={isDark ? colors.mint : colors.aquaDeep} />
                 </Press>
-              );
-            })}
-            <Press
-              accessibilityRole="button"
-              accessibilityState={{ selected: onlyOpen }}
-              aria-pressed={onlyOpen}
-              haptic="selection"
-              onPress={() => setOnlyOpen((v) => !v)}
-              className="rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-              style={{ minHeight: 40, justifyContent: 'center', ...(onlyOpen ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
-            >
-              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyOpen ? { color: '#fff' } : null) }}>Disponibles ahora</Text>
-            </Press>
-            <Press
-              accessibilityRole="button"
-              accessibilityState={{ selected: onlyFavs }}
-              aria-pressed={onlyFavs}
-              haptic="selection"
-              onPress={() => setOnlyFavs((v) => !v)}
-              className="flex-row items-center rounded-full border px-3.5 py-2 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-              style={{ gap: 5, minHeight: 40, ...(onlyFavs ? { backgroundColor: colors.dangerFill, borderColor: colors.dangerFill } : null) }}
-            >
-              <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />
-              <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(onlyFavs ? { color: '#fff' } : null) }}>Favoritos</Text>
-            </Press>
-            {categories.filter((c) => c !== 'Todos').map((c) => {
-              const st = categoryStyle(c);
-              const CIcon = st.icon;
-              const on = category === c;
-              return (
-                <Press
-                  key={c}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: category === c }}
-                  aria-pressed={on}
-                  onPress={() => setCategory(c)}
-                  className="flex-row items-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
-                  style={{
-                    gap: 6,
-                    minHeight: 40,
-                    paddingVertical: 7,
-                    paddingLeft: 10,
-                    paddingRight: 13,
-                    ...(on ? { backgroundColor: st.deep, borderColor: st.deep } : null),
-                  }}
-                >
-                  <CIcon size={16} color={on ? '#fff' : st.to} weight={on ? 'fill' : 'regular'} />
-                  <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(on ? { color: '#fff' } : null) }}>{c}</Text>
-                </Press>
-              );
-            })}
-          </ScrollView>
+              </View>
+              <View className="flex-row mt-3" style={{ gap: 8 }}>
+                {quickChips}
+              </View>
+            </View>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel={search ? `Buscar: ${search}` : 'Buscar locales'}
+                haptic="selection"
+                onPress={() => setSearchOpen(true)}
+                className="items-center justify-center rounded-full border bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+                style={{ width: 40, height: 40, ...(search ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
+              >
+                <Search size={16} color={search ? '#fff' : muted} />
+              </Press>
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel={`Categoría: ${category}`}
+                aria-pressed={category !== 'Todos'}
+                haptic="selection"
+                onPress={() => { setCategoryDraft(category); setCategoryOpen(true); }}
+                className="flex-row items-center rounded-full border px-3.5 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+                style={{ gap: 5, minHeight: 40, ...(category !== 'Todos' ? { backgroundColor: colors.aquaDeep, borderColor: colors.aqua } : null) }}
+              >
+                <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600', ...(category !== 'Todos' ? { color: '#fff' } : null) }}>{category === 'Todos' ? 'Categoría' : category}</Text>
+                <ChevronDown size={12} color={category !== 'Todos' ? '#fff' : muted} />
+              </Press>
+              <Press
+                accessibilityRole="button"
+                accessibilityLabel={`Ordenar por: ${SORT_LABEL[sortBy]}`}
+                haptic="selection"
+                onPress={() => { setSortDraft(sortBy); setSortOpen(true); }}
+                className="flex-row items-center rounded-full border px-3.5 bg-card-light dark:bg-card-dark border-line-light dark:border-line-dark"
+                style={{ gap: 5, minHeight: 40 }}
+              >
+                <Text className="text-muted-light dark:text-muted-dark" style={{ fontSize: 12, fontWeight: '600' }}>{SORT_LABEL[sortBy]}</Text>
+                <ChevronDown size={12} color={muted} />
+              </Press>
+              {quickChips}
+            </ScrollView>
+          )}
         </View>
+
+        <Modal visible={categoryOpen} transparent animationType="slide" onRequestClose={() => setCategoryOpen(false)}>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar categorías" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setCategoryOpen(false)} />
+          <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32, maxHeight: '75%' }}>
+            <View className="flex-row items-center justify-between mb-2 mx-1">
+              <Text accessibilityRole="header" className="font-bold text-[17px] text-text-light dark:text-text-dark">Categoría</Text>
+              <Press accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={10} onPress={() => setCategoryOpen(false)}>
+                <X size={20} color={isDark ? colors.mint : colors.aquaDeep} />
+              </Press>
+            </View>
+            <ScrollView>
+              {categories.map((c) => (
+                <OptionRow key={c} label={c === 'Todos' ? 'Todas' : c} selected={categoryDraft === c} onPress={() => setCategoryDraft(c)} isDark={isDark} />
+              ))}
+            </ScrollView>
+            <View className="flex-row items-center mt-3" style={{ gap: 14 }}>
+              <Press accessibilityRole="button" onPress={() => setCategoryDraft('Todos')} className="px-3 py-3">
+                <Text className="font-bold text-[14px]" style={{ color: isDark ? colors.mint : colors.aquaInk }}>Limpiar filtros</Text>
+              </Press>
+              <Press accessibilityRole="button" onPress={() => { setCategory(categoryDraft); setCategoryOpen(false); }} className="flex-1 rounded-2xl items-center py-3.5" style={{ backgroundColor: colors.aquaDeep }}>
+                <Text className="text-white font-bold text-[14.5px]">Aplicar</Text>
+              </Press>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal visible={sortOpen} transparent animationType="slide" onRequestClose={() => setSortOpen(false)}>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar orden" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setSortOpen(false)} />
+          <View style={{ backgroundColor: isDark ? '#1B1530' : '#F4F0FF', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 16, paddingBottom: 32 }}>
+            <View className="flex-row items-center justify-between mb-2 mx-1">
+              <Text accessibilityRole="header" className="font-bold text-[17px] text-text-light dark:text-text-dark">Ordenar por</Text>
+              <Press accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={10} onPress={() => setSortOpen(false)}>
+                <X size={20} color={isDark ? colors.mint : colors.aquaDeep} />
+              </Press>
+            </View>
+            {(Object.keys(SORT_LABEL) as SortBy[]).map((k) => (
+              <OptionRow key={k} label={SORT_LABEL[k]} selected={sortDraft === k} onPress={() => setSortDraft(k)} isDark={isDark} />
+            ))}
+            <Press accessibilityRole="button" onPress={() => { setSortBy(sortDraft); setSortOpen(false); }} className="rounded-2xl items-center py-3.5 mt-4" style={{ backgroundColor: colors.aquaDeep }}>
+              <Text className="text-white font-bold text-[14.5px]">Aplicar</Text>
+            </Press>
+          </View>
+        </Modal>
 
         <View className="px-5 pt-4" style={{ gap: 12 }}>
           {isLoading && (
@@ -1202,7 +1270,7 @@ export default function CanjesScreen() {
                     accessible
                     accessibilityLabel={`${b.name}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
                     className="flex-row items-center bg-aqua-deep rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
+                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12, opacity: b.cost_points > (balance ?? 0) ? 0.55 : 1 }}
                   >
                     <Coin size={20} />
                     <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
@@ -1217,7 +1285,7 @@ export default function CanjesScreen() {
           {!isLoading && !isError && groups.length === 0 && (
             <EmptyState
               title="No encontramos comercios aquí"
-              text="Prueba con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, sigue juntando Puntos."
+              text="Prueba con otra categoría o zona. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, sigue juntando Puntos."
             />
           )}
         </View>
@@ -1518,7 +1586,7 @@ export default function CanjesScreen() {
 
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
-                    Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver acá.
+                    Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver aquí.
                   </Text>
                 ) : null}
 

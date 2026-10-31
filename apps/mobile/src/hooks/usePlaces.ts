@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-// Ciudades activas y sus barrios (los administra el equipo de Camina desde el panel).
+// Ciudades activas y sus zonas (los administra el equipo de Camina desde el panel).
 export function usePlaces() {
   return useQuery({
     queryKey: ['places'],

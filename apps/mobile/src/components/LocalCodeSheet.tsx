@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, TextInput as RNTextInput, View } from 'react-native';
+import { ActivityIndicator, AccessibilityInfo, Modal, Platform, TextInput as RNTextInput, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
-import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
+import { useColorScheme } from 'nativewind';
+import { Press } from '@/components/ui/Press';
 import { Coin } from '@/components/ui/Coin';
-import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { Check } from '@/components/icons';
 import { buzz } from '@/lib/haptics';
@@ -85,6 +86,7 @@ export function LocalCodeSheet({
   visible, businessName, logoUrl, category, benefitName, costPoints, free, onClose, onSubmit, onSuccess, onDismiss,
 }: Props) {
   const theme = useThemeColors();
+  const dark = useColorScheme().colorScheme === 'dark';
   const reduced = useReducedMotion();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +101,15 @@ export function LocalCodeSheet({
       setPhase('typing');
     }
   }, [visible]);
+
+  // Al volver a 'typing' (inicio o tras un error) se vuelve a abrir el teclado. Antes se enfocaba en el mismo instante en que
+  // se cambiaba la fase, con el campo todavía bloqueado: el enfoque se perdía y no se podía volver a escribir.
+  useEffect(() => {
+    if (visible && phase === 'typing') {
+      const t = setTimeout(() => input.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [visible, phase]);
 
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
 
@@ -117,7 +128,6 @@ export function LocalCodeSheet({
       setTimeout(() => {
         setCode('');
         setPhase('typing');
-        input.current?.focus();
       }, 700);
       return;
     }
@@ -131,13 +141,11 @@ export function LocalCodeSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onDismiss={onDismiss}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardSafe className="flex-1">
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <View>
-          {/* El Baifo se asoma por arriba de la hoja mientras se espera el código. */}
-          <View pointerEvents="none" style={{ position: 'absolute', right: 24, top: -52, height: 56, width: 70, overflow: 'hidden', zIndex: 1 }}>
-            <View style={{ position: 'absolute', bottom: -4, left: -12, right: -12 }}><BaifoMascot pose="asoma" height={62} /></View>
-          </View>
+          {/* Liquid Glass sobre un fondo que lo vuelve legible: sin ese fondo se transparentaba la lista de locales de atrás y no se leía nada. */}
+          <View style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: dark ? 'rgba(22,16,31,0.86)' : 'rgba(255,255,255,0.82)' }}>
           <Glass className="rounded-t-[32px] px-6 pt-3 pb-8">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
@@ -177,7 +185,6 @@ export function LocalCodeSheet({
                 keyboardType="number-pad"
                 maxLength={DIGITS}
                 autoFocus
-                editable={phase === 'typing'}
                 caretHidden
                 textContentType="oneTimeCode"
                 accessibilityLabel="Código del local, 4 números"
@@ -222,8 +229,9 @@ export function LocalCodeSheet({
             </Press>
           </Glass>
           </View>
+          </View>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardSafe>
     </Modal>
   );
 }

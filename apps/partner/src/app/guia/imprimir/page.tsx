@@ -1,6 +1,6 @@
 import { GuiaContent } from '@/components/GuiaContent';
 
-// Versión sin menú de la guía: de acá sale el PDF descargable.
+// Versión sin menú de la guía: de aquí sale el PDF descargable.
 export default function GuiaImprimirPage() {
   return (
     <div className="bg-bg min-h-screen">

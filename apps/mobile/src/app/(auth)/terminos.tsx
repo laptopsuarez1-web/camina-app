@@ -13,7 +13,7 @@ import { colors } from '@/theme/tokens';
 import { useColorScheme } from 'nativewind';
 
 // Paso obligatorio antes de entrar a la app (ver app/index.tsx: si hay sesión
-// y perfil pero falta terms_accepted_at, se redirige acá). Sin esto, Apple y
+// y perfil pero falta terms_accepted_at, se redirige aquí). Sin esto, Apple y
 // Google rechazan la app en review por no tener un consentimiento explícito
 // a Términos y Política de Privacidad.
 export default function TerminosScreen() {

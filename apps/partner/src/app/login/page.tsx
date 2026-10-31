@@ -31,7 +31,7 @@ export default function LoginPage() {
     // No mandamos siempre a /inicio: si la cuenta es de admin y no tiene un
     // comercio propio, /inicio la rebota a /admin igual, pero de paso muestra
     // un instante la pantalla de "Panel de comercios" — confuso para un
-    // admin. Decidimos el destino acá mismo, antes de navegar.
+    // admin. Decidimos el destino aquí mismo, antes de navegar.
     const userId = data.session?.user.id;
     const { data: adminCheck } = await supabase.rpc('is_admin');
     const { data: ownBusiness } = userId
@@ -51,7 +51,7 @@ export default function LoginPage() {
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
       <p className="text-white font-bold text-[22px] mb-1.5">Panel de comercios</p>
       <p className="text-auth-muted text-[13px] mb-7 text-center max-w-[280px]">
-        Gestioná tu beneficio, tus canjes y tu plan en Camina.
+        Gestiona tu beneficio, tus canjes y tu plan en Camina.
       </p>
       <form onSubmit={handleLogin} className="w-full max-w-[320px] flex flex-col gap-2.5">
         <input
@@ -82,7 +82,7 @@ export default function LoginPage() {
           ¿Olvidaste tu contraseña?
         </Link>
         <Link href="/registro" className="text-auth-muted text-[12.5px] text-center">
-          ¿Todavía no tenés cuenta? Sumar mi comercio
+          ¿Todavía no tienes cuenta? Sumar mi comercio
         </Link>
         <Link href="/unirme" className="text-auth-muted text-[12.5px] text-center">
           Soy cajero de un comercio
@@ -93,7 +93,7 @@ export default function LoginPage() {
           rel="noopener noreferrer"
           className="mt-2 text-mint text-[13px] font-semibold text-center border border-mint/40 rounded-xl py-2.5"
         >
-          ¿Dudas? Escribinos por WhatsApp
+          ¿Dudas? Escríbenos por WhatsApp
         </a>
       </form>
     </div>

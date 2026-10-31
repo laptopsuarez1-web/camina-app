@@ -45,9 +45,9 @@ export default function UnirmePage() {
       {done ? (
         <>
           <p className="text-auth-muted text-[13px] mb-6 max-w-[300px]">
-            Te mandamos un correo a {email}. Confirmalo y después{' '}
+            Te mandamos un correo a {email}. Confírmalo y después{' '}
             <Link href="/login" className="text-mint underline">
-              iniciá sesión
+              inicia sesión
             </Link>
             : vas a entrar directo a los canjes de tu comercio.
           </p>
@@ -55,7 +55,7 @@ export default function UnirmePage() {
       ) : (
         <>
           <p className="text-auth-muted text-[13px] mb-6 max-w-[300px]">
-            Creá tu cuenta con el <strong>mismo correo</strong> con el que te invitó el comercio.
+            Crea tu cuenta con el <strong>mismo correo</strong> con el que te invitó el comercio.
           </p>
           <form onSubmit={submit} className="w-full max-w-[320px] flex flex-col gap-3">
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Tu correo" required className={input} />

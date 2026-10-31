@@ -29,7 +29,7 @@ export default function ElegirPlanPage() {
     const { error: e } = await supabase.from('businesses').update({ plan_onboarded: true }).eq('id', business.id);
     setSaving(false);
     if (e) {
-      setError('No pudimos guardar tu elección. Intentá de nuevo.');
+      setError('No pudimos guardar tu elección. Intenta de nuevo.');
       return;
     }
     router.replace('/inicio');
@@ -63,9 +63,9 @@ export default function ElegirPlanPage() {
         </div>
 
         <p className="text-mint-dark font-semibold text-[13px] mb-1">¡Tu cuenta está lista, {business.name}!</p>
-        <h1 className="text-[24px] font-bold mb-1.5">Elegí cómo querés empezar</h1>
+        <h1 className="text-[24px] font-bold mb-1.5">Elige cómo quieres empezar</h1>
         <p className="text-muted text-[13.5px] mb-6 max-w-[560px]">
-          Podés empezar gratis y cambiar cuando quieras, sin permanencia. Con un plan de pago tu local se ve más y recibe más clientes.
+          Puedes empezar gratis y cambiar cuando quieras, sin permanencia. Con un plan de pago tu local se ve más y recibe más clientes.
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 mb-5">
@@ -125,7 +125,7 @@ export default function ElegirPlanPage() {
           <div className="flex-1">
             <p className="text-[15px] font-bold" style={{ color: '#291C47' }}>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app</p>
             <p className="text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
-              Para los primeros 20 comercios. Escribinos por WhatsApp y te habilitamos en la app y en el panel. Mientras tanto ya podés crear tu perfil.
+              Para los primeros 20 comercios. Escríbenos por WhatsApp y te habilitamos en la app y en el panel. Mientras tanto ya puedes crear tu perfil.
             </p>
           </div>
           <a
@@ -144,7 +144,7 @@ export default function ElegirPlanPage() {
 
         <p className="text-muted text-[12.5px] leading-relaxed max-w-[640px]">
           Los planes de pago se activan cuando confirmamos tu transferencia (te pedimos el comprobante por WhatsApp). Mientras tanto
-          podés usar el panel.
+          puedes usar el panel.
         </p>
       </div>
     </div>
