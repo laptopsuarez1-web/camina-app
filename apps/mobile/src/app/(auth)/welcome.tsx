@@ -128,6 +128,13 @@ export default function WelcomeScreen() {
       Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', friendlyError(error));
       return;
     }
+    // Con confirmación de correo, Supabase no da error si el correo ya existe: devuelve un usuario sin identidades.
+    // Sin este aviso la persona quedaba esperando un correo que nunca llega.
+    if (authKind === 'signup' && data.user && (data.user.identities?.length ?? 1) === 0) {
+      Alert.alert('Ese correo ya tiene una cuenta', 'Inicia sesión con tu contraseña. Si no la recuerdas, toca "¿Olvidaste tu contraseña?".');
+      setAuthKind('login');
+      return;
+    }
     if (authKind === 'signup' && !data.session) {
       setAwaitingConfirmation(email.trim());
       return;

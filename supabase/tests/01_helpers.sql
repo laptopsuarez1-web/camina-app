@@ -90,6 +90,9 @@ declare v uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email) values (v, v || '@test.local');
   insert into profiles (id, full_name, daily_goal) values (v, p_name, p_goal);
+  -- Cada persona de prueba tiene su propio celular (un celular, una cuenta).
+  insert into device_owners (device_id, user_id) values ('test-' || v, v);
+  insert into user_devices (device_id, user_id) values ('test-' || v, v);
   return v;
 end $$;
 
