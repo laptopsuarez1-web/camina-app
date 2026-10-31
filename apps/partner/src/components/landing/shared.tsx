@@ -31,7 +31,6 @@ export const CAP = {
   ranking: '/web/cap/ranking.jpg',
   perfil: '/web/cap/perfil.jpg',
   permisos: '/web/cap/permisos.jpg',
-  editarMeta: '/web/cap/editar-meta.jpg',
   resenaHistoria: '/web/cap/resena-historia.jpg',
   historia: '/web/cap/historia.jpg',
 };
@@ -177,8 +176,8 @@ export function Reglas() {
             <span>números es el código del local</span>
           </InView>
           <InView className="stat" delay={360}>
-            <b><Counter to={300} /></b>
-            <span>metros: tienes que estar en el local</span>
+            <b><Counter to={90} /></b>
+            <span>días de vigencia de cada punto</span>
           </InView>
         </div>
         <InView className="reparto">
@@ -250,7 +249,6 @@ export function Galeria() {
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.ficha],
     ['Tus Puntos', 'Tu saldo, tus movimientos y cómo invitar amigos.', CAP.puntos],
     ['Perfil', 'Tus datos, tus amigos y tus permisos.', CAP.perfil],
-    ['Tu meta diaria', 'Se elige en Editar perfil, con una ruedita.', CAP.editarMeta],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
@@ -329,21 +327,21 @@ export function DiaADia() {
             },
             {
               t: 'Tu racha',
-              d: 'Tu racha cuenta los días seguidos con al menos 5.000 pasos, y cada 7 días sumas 5 Puntos. Si te saltas un día, vuelve a 0. Aparte está tu meta personal, que no cambia tu racha.',
+              d: 'Tu racha cuenta los días seguidos con al menos 5.000 pasos, y cada 7 días sumas 5 Puntos. Si te saltas un día, vuelve a 0. Aparte está tu meta personal: la eliges tú en Perfil > Editar perfil y no cambia tu racha.',
               img: CAP.rachas,
               alt: 'Hoja Tus rachas con la racha y la meta personal',
-            },
-            {
-              t: 'Tu meta diaria, en tu Perfil',
-              d: 'La meta la eliges tú, y se cambia desde Perfil > Editar perfil con una ruedita tipo reloj. Todos tus pasos suman, llegues o no a la meta.',
-              img: CAP.editarMeta,
-              alt: 'Pantalla de Editar perfil con la meta diaria',
             },
             {
               t: 'Tu semana, de un vistazo',
               d: 'La pantalla de Actividad muestra tus pasos de la semana en un gráfico, tu racha en el calendario y cuánto te falta para llegar a tu meta.',
               img: CAP.actividad,
               alt: 'Pantalla de Actividad con el gráfico de la semana y la racha',
+            },
+            {
+              t: 'Tu app, a tu gusto',
+              d: 'Desde Perfil eliges modo claro u oscuro y cuánto vidrio quieres ver en las tarjetas y la barra, desde sólido hasta cristal. Cada persona deja Camina como más le gusta.',
+              img: CAP.perfil,
+              alt: 'Pantalla de Perfil con el modo oscuro y el control de vidrio',
             },
             {
               t: 'Avisos que tú configuras',
@@ -819,13 +817,13 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
 type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
   { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cúmplelas y ganas más Puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Retos Camina', row2: true },
-  { t: 'Tu meta, a tu medida', d: 'La eliges en Perfil > Editar perfil con una ruedita tipo reloj y la cambias cuando quieras. Todos tus pasos suman, llegues o no a la meta.', ico: 'pasos', span: 's3', shot: CAP.editarMeta, alt: 'Pantalla de Editar perfil con la meta diaria', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Eliges tu meta diaria de pasos en Perfil > Editar perfil y la cambias cuando quieras. Todos tus pasos suman, llegues o no a la meta.', ico: 'pasos', span: 's3', fill: true },
   { t: 'Invita amigos', d: 'Comparte tu link: recibes 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
   { t: 'Historias que suman', d: 'Sube una historia a Instagram y gana 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
   { t: 'Comparte tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
   { t: 'Tu racha y tu calendario', d: 'Miras tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta. Cada 7 días de racha sumas 5 Puntos.', ico: 'calendario', span: 's2' },
   { t: 'Grupos y ranking', d: 'Camina en equipo con tus amigos, con meta semanal compartida, retos con Puntos en juego y ranking.', ico: 'grupo', span: 's2' },
-  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Eliges el modo de la app y cuánto vidrio quieres ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
+  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Cambias el modo de la app, claro u oscuro, y cuánto vidrio quieres ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
   { t: 'Desafíos y eventos', d: 'Súmate a desafíos y eventos con fecha y lugar, y mira cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
   { t: 'Tu ubicación, solo cuando la necesitas', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
   { t: 'Canjea tus puntos', d: 'Cuando quieras usar tus puntos, le pides al local su código de 4 números, lo escribes en la app y el canje se confirma al instante.', ico: 'regalo', span: 's3', fill: true },
