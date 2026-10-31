@@ -8,7 +8,7 @@ import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
+import { ChevronLeft, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft, ruleText } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -145,6 +145,45 @@ export default function GroupDetailScreen() {
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
+
+  function openGroupMenu() {
+    const actions: SheetAction[] = [
+      { label: 'Compartir invitación', onPress: () => setShareOpen(true) },
+      { label: 'Salir del grupo', danger: true, onPress: () => confirmExit(false) },
+    ];
+    if (data?.group.created_by === userId) actions.push({ label: 'Eliminar grupo', danger: true, onPress: () => confirmExit(true) });
+    setSheet({ title: data?.group.name ?? 'Grupo', actions });
+  }
+
+  function confirmExit(del: boolean) {
+    const creator = data?.group.created_by === userId;
+    Alert.alert(
+      del ? '¿Eliminar este grupo?' : '¿Salir de este grupo?',
+      del
+        ? 'Se borran el grupo, el chat, el historial y los desafíos para todos los miembros. Los puntos puestos en un desafío activo se devuelven. No se puede deshacer.'
+        : creator
+          ? 'Eres quien creó el grupo: la administración pasa a la persona más antigua del grupo. Si eres la única, el grupo se elimina.'
+          : 'Dejas de ver el ranking y el chat. Puedes volver a entrar con el código o el link de invitación.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: del ? 'Eliminar grupo' : 'Salir',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await supabase.rpc(del ? 'delete_group' : 'leave_group', { p_group: groupId! });
+            if (error) {
+              Alert.alert(del ? 'No se pudo eliminar' : 'No se pudo salir', friendlyServerError(error, 'Intenta de nuevo.'));
+              return;
+            }
+            queryClient.removeQueries({ queryKey: ['group-detail', groupId] });
+            queryClient.invalidateQueries({ queryKey: ['groups'] });
+            queryClient.invalidateQueries({ queryKey: ['my-groups-week'] });
+            router.replace('/(tabs)/grupos');
+          },
+        },
+      ]
+    );
+  }
 
   async function saveGoal() {
     const n = parseInt(goalInput.replace(/\D/g, ''), 10);
@@ -290,8 +329,8 @@ export default function GroupDetailScreen() {
             <Text className="flex-1 text-center text-[17px] font-bold text-white px-3" numberOfLines={1}>
               {data.group.name}
             </Text>
-            <Press accessibilityRole="button" accessibilityLabel="Compartir invitación al grupo" onPress={() => setShareOpen(true)} hitSlop={10}>
-              <IconBubble icon={Share2} tone="aqua" size={36} />
+            <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10}>
+              <IconBubble icon={MenuIcon} tone="aqua" size={36} />
             </Press>
           </View>
 
