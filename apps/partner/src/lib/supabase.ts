@@ -47,6 +47,8 @@ export interface Business {
   founder_until: string | null;
   plan: BusinessPlan;
   approved: boolean;
+  paused_at?: string | null;
+  pause_reason?: string | null;
   is_virtual: boolean;
   promo_video_url: string | null;
   ad_eligible: boolean;

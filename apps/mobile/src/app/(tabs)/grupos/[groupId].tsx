@@ -24,6 +24,11 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { GroupDrawer } from '@/components/GroupDrawer';
+import { groupGradient } from '@/lib/group-look';
+import { uploadGroupPhoto } from '@/lib/avatar';
+import * as ImagePicker from 'expo-image-picker';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -35,16 +40,42 @@ function weekKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
-// Barra de la meta del grupo: se llena con animación al entrar.
+// Barra de la meta del grupo: se llena con animación al entrar, un brillo la recorre mientras falta y, al cumplirla, late.
 function GoalBar({ pct }: { pct: number }) {
   const w = useRef(new Animated.Value(0)).current;
+  const shine = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    Animated.timing(w, { toValue: pct, duration: 900, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+    Animated.timing(w, { toValue: pct, duration: 1100, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [pct, w]);
+  useEffect(() => {
+    const loop = Animated.loop(
+      pct >= 100
+        ? Animated.sequence([
+            Animated.timing(pulse, { toValue: 1.04, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+            Animated.timing(pulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+          ])
+        : Animated.sequence([
+            Animated.timing(shine, { toValue: 1, duration: 1600, delay: 600, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+            Animated.timing(shine, { toValue: 0, duration: 0, useNativeDriver: true }),
+          ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pct >= 100, shine, pulse]);
   return (
-    <View className="h-2 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-      <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: colors.aqua }} />
-    </View>
+    <Animated.View style={{ transform: [{ scaleY: pulse }] }}>
+      <View className="h-2.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
+        <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: pct >= 100 ? colors.mint : colors.aqua, overflow: 'hidden', borderRadius: 999 }}>
+          <Animated.View
+            style={{
+              position: 'absolute', top: 0, bottom: 0, width: 60, backgroundColor: 'rgba(255,255,255,0.45)',
+              transform: [{ translateX: shine.interpolate({ inputRange: [0, 1], outputRange: [-60, 320] }) }, { skewX: '-20deg' }],
+            }}
+          />
+        </Animated.View>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -67,6 +98,8 @@ export default function GroupDetailScreen() {
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
@@ -147,12 +180,38 @@ export default function GroupDetailScreen() {
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
 
   function openGroupMenu() {
-    const actions: SheetAction[] = [
-      { label: 'Compartir invitación', onPress: () => setShareOpen(true) },
-      { label: 'Salir del grupo', danger: true, onPress: () => confirmExit(false) },
-    ];
-    if (data?.group.created_by === userId) actions.push({ label: 'Eliminar grupo', danger: true, onPress: () => confirmExit(true) });
-    setSheet({ title: data?.group.name ?? 'Grupo', actions });
+    setDrawerOpen(true);
+  }
+
+  // Foto y fondo los cambia solo quien creó el grupo (policies de la migración 0069).
+  async function pickGroupPhoto() {
+    if (!groupId) return;
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1], base64: true });
+    if (result.canceled) return;
+    setLookBusy(true);
+    try {
+      const url = await uploadGroupPhoto(groupId, result.assets[0].uri, result.assets[0].base64);
+      const { error } = await supabase.from('groups').update({ photo_url: url }).eq('id', groupId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    } catch (e) {
+      Alert.alert('No se pudo cambiar la foto', friendlyServerError(e, 'Intenta de nuevo.'));
+    } finally {
+      setLookBusy(false);
+    }
+  }
+
+  async function pickGroupBackground(key: string) {
+    if (!groupId) return;
+    setLookBusy(true);
+    const { error } = await supabase.from('groups').update({ background: key }).eq('id', groupId);
+    setLookBusy(false);
+    if (error) {
+      Alert.alert('No se pudo cambiar el fondo', friendlyServerError(error, 'Intenta de nuevo.'));
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
   }
 
   function confirmExit(del: boolean) {
@@ -321,14 +380,19 @@ export default function GroupDetailScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4">
-        <LinearGradient colors={colors.headerGradient} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
+        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
-            <Text className="flex-1 text-center text-[17px] font-bold text-white px-3" numberOfLines={1}>
-              {data.group.name}
-            </Text>
+            <View className="flex-1 flex-row items-center justify-center px-3" style={{ gap: 8 }}>
+              {data.group.photo_url ? (
+                <AvatarImage uri={data.group.photo_url} style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.6)' }} fallback={null} />
+              ) : null}
+              <Text className="text-[17px] font-bold text-white flex-shrink" numberOfLines={1}>
+                {data.group.name}
+              </Text>
+            </View>
             <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10}>
               <IconBubble icon={MenuIcon} tone="aqua" size={36} />
             </Press>
@@ -413,7 +477,7 @@ export default function GroupDetailScreen() {
             )}
           </View>
           <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">
-            {totalSteps.toLocaleString('es-BO')}
+            <AnimatedNumber value={totalSteps} id={`group-goal-${groupId}`} />
             <Text className="font-normal text-muted-light dark:text-muted-dark"> / {challengeTarget.toLocaleString('es-BO')} pasos</Text>
           </Text>
           {editingGoal && (
@@ -684,6 +748,24 @@ export default function GroupDetailScreen() {
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
       <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
+      <GroupDrawer
+        visible={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        name={data.group.name}
+        photoUrl={data.group.photo_url}
+        background={data.group.background}
+        memberCount={data.members.length}
+        inviteCode={data.group.invite_code}
+        goal={challengeTarget}
+        isCreator={isCreator}
+        busy={lookBusy}
+        onInvite={() => { setDrawerOpen(false); setShareOpen(true); }}
+        onEditGoal={() => { setDrawerOpen(false); setGoalInput(String(challengeTarget)); setEditingGoal(true); }}
+        onPickPhoto={pickGroupPhoto}
+        onPickBackground={pickGroupBackground}
+        onLeave={() => { setDrawerOpen(false); confirmExit(false); }}
+        onDelete={() => { setDrawerOpen(false); confirmExit(true); }}
+      />
       <GroupShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} groupId={data.group.id} groupName={data.group.name} inviteCode={data.group.invite_code} />
     </KeyboardAvoidingView>
   );

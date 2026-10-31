@@ -160,6 +160,8 @@ export interface Group {
   created_by: string | null;
   challenge_target: number;
   invite_code: string;
+  photo_url?: string | null;
+  background?: string | null;
   created_at: string;
 }
 
