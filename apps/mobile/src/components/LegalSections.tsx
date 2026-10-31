@@ -16,13 +16,13 @@ const SECTIONS: { title: string; body: string }[] = [
   },
   {
     title: 'Política de privacidad',
-    body: `Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tienes 13 años o más; nadie más la ve), foto de perfil (opcional), ciudad y barrio (opcionales), el token de notificaciones de tu teléfono y los pasos diarios que registras desde Apple Salud o Google Health Connect: solo el total diario, no tu ubicación GPS histórica ni tu ruta. Los pasos de un día se guardan en nuestros servidores solo si abres la app ese día; los de días en que no la abriste los lee tu teléfono desde Salud para mostrártelos en Actividad, pero no los guardamos.
+    body: `Guardamos tu nombre, correo, fecha de nacimiento (solo para confirmar que tienes 13 años o más; nadie más la ve), foto de perfil (opcional), ciudad y zona (opcionales), el token de notificaciones de tu teléfono y los pasos diarios que registras desde Apple Salud o Google Health Connect: solo el total diario, no tu ubicación GPS histórica ni tu ruta. Los pasos de un día se guardan en nuestros servidores solo si abres la app ese día; los de días en que no la abriste los lee tu teléfono desde Salud para mostrártelos en Actividad, pero no los guardamos.
 
 Ubicación: cuando la autorizas, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejas activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; puedes apagarlo en Perfil y se borra.
 
 Tus pasos y tu nombre solo son visibles para otros usuarios si activas "Aparecer en el ranking" o dentro de un grupo al que te unes tú mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y un servicio de reporte de errores.
 
-Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Si no hay Salud o Health Connect disponible, en iPhone podemos leer el sensor de movimiento del teléfono para contar pasos.
+Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Si no hay Salud o Health Connect disponible, en iOS podemos leer el sensor de movimiento del teléfono para contar pasos.
 
 Los mensajes de grupo se borran automáticamente cada mes; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Puedes reportar y bloquear a otras personas dentro de la app.
 

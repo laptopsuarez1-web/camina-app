@@ -19,7 +19,7 @@ export default function ComerciosPage() {
             <div className="copy">
               <Kinetic as="h1" text="Tus próximos clientes ya están caminando." />
               <p className="sub">
-                Camina premia a las personas por caminar y las lleva a los comercios de su barrio. Sumá el tuyo gratis y elegí qué premio dar.
+                Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo gratis y elige qué premio dar.
               </p>
               <div className="lp-cta">
                 <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
@@ -35,7 +35,7 @@ export default function ComerciosPage() {
           </div>
         </section>
         <Cinta para="comercios" />
-        <Mapa titulo="Así te encuentran." texto="Una persona camina por tu barrio, ve tu local en el mapa y llega a canjear. Este es el mapa real de Tarija con locales que ya están en Camina." />
+        <Mapa titulo="Así te encuentran." texto="Una persona camina por tu zona, ve tu local en el mapa y llega a canjear. Este es el mapa real de Tarija con locales que ya están en Camina." />
         <Locales />
         <BeneficiosComercio />
         <CanjeResena />

@@ -109,13 +109,13 @@ export default function PerfilPage() {
       if (res.ok) {
         const p: { lat: number; lng: number } = await res.json();
         setUbicacion(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
-        setUbicacionMsg('Listo: convertimos el link en el punto del mapa. Revisalo con "Ver ese punto en Google Maps".');
+        setUbicacionMsg('Listo: convertimos el link en el punto del mapa. Revísalo con "Ver ese punto en Google Maps".');
         return p;
       }
     } catch {
       // se avisa abajo
     }
-    setUbicacionMsg('No pudimos leer ese link. Probá con las coordenadas: en Google Maps mantené apretado tu local y copiá los números de arriba.');
+    setUbicacionMsg('No pudimos leer ese link. Prueba con las coordenadas: en Google Maps mantén apretado tu local y copia los números de arriba.');
     return null;
   }
 
@@ -128,9 +128,9 @@ export default function PerfilPage() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUbicacion(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
-        setUbicacionMsg('Listo: se tomó tu ubicación actual. Guardá los cambios abajo.');
+        setUbicacionMsg('Listo: se tomó tu ubicación actual. Guarda los cambios abajo.');
       },
-      () => setUbicacionMsg('No pudimos obtener tu ubicación. Permití el acceso o pegá el link de Google Maps.'),
+      () => setUbicacionMsg('No pudimos obtener tu ubicación. Permite el acceso o pega el link de Google Maps.'),
       { enableHighAccuracy: true, timeout: 15000 }
     );
   }
@@ -157,13 +157,13 @@ export default function PerfilPage() {
   async function handleSave() {
     if (!business) return;
     if (resenaUrl.trim() && !resenaValida(resenaUrl)) {
-      setResenaError('Ese link no es de Google. Pegá el link de tu local en Google Maps (Compartir > Copiar link).');
+      setResenaError('Ese link no es de Google. Pega el link de tu local en Google Maps (Compartir > Copiar link).');
       document.getElementById('campo-resenas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     setResenaError(null);
     if (descripcion.trim().length < 15) {
-      setDescripcionError('Este dato es obligatorio: contá en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
+      setDescripcionError('Este dato es obligatorio: cuenta en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
       document.getElementById('campo-descripcion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -174,7 +174,7 @@ export default function PerfilPage() {
       if (!punto) return;
     }
     if (!esVirtual && ubicacion.trim() && !punto) {
-      setUbicacionMsg('No entendimos esa ubicación. Pegá el link de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
+      setUbicacionMsg('No entendimos esa ubicación. Pega el link de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
       return;
     }
     setSaving(true);
@@ -235,7 +235,7 @@ export default function PerfilPage() {
     const { error } = await supabase.functions.invoke('delete-business-account');
     if (error) {
       setDeleting(false);
-      alert('No pudimos eliminar tu cuenta. Intentá de nuevo o escribinos.');
+      alert('No pudimos eliminar tu cuenta. Intenta de nuevo o escríbenos.');
       return;
     }
     await supabase.auth.signOut();
@@ -297,7 +297,7 @@ export default function PerfilPage() {
             />
             {descripcionError && <p className="text-warn text-[12px] mt-1.5">{descripcionError}</p>}
             <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-              Obligatoria. Es lo primero que lee un cliente en tu ficha de la app: qué ofrecés, qué te hace especial.
+              Obligatoria. Es lo primero que lee un cliente en tu ficha de la app: qué ofreces, qué te hace especial.
             </p>
           </Field>
           <Field label="Categoría">
@@ -360,14 +360,14 @@ export default function PerfilPage() {
                     setUbicacionMsg(null);
                     if (esLinkCorto(e.target.value)) resolverLinkCorto(e.target.value);
                   }}
-                  placeholder="Pegá el link de Google Maps o las coordenadas"
+                  placeholder="Pega el link de Google Maps o las coordenadas"
                   className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] mt-1.5"
                 />
               </details>
               <p className="text-[11.5px] text-muted mt-1.5 leading-4">
                 {ubicacion.trim()
-                  ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección. Podés arrastrar el pin para ajustarlo.'
-                  : 'Tocá el mapa en el lugar de tu local. Sin ubicación tu local no aparece en el mapa de la app.'}
+                  ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección. Puedes arrastrar el pin para ajustarlo.'
+                  : 'Toca el mapa en el lugar de tu local. Sin ubicación tu local no aparece en el mapa de la app.'}
               </p>
               {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
             </Field>
@@ -537,8 +537,8 @@ export default function PerfilPage() {
             />
             {resenaError && <p className="text-warn text-[12px] mt-1.5">{resenaError}</p>}
             <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-              Opcional. Si lo ponés, después de cada canje confirmado Camina le ofrece al cliente dejar su reseña en tu local. En
-              Google Maps buscá tu local, tocá &ldquo;Compartir&rdquo;, copiá el link y pegalo acá. También sirve el
+              Opcional. Si lo pones, después de cada canje confirmado Camina le ofrece al cliente dejar su reseña en tu local. En
+              Google Maps busca tu local, toca &ldquo;Compartir&rdquo;, copia el link y pégalo aquí. También sirve el
               link de &ldquo;Pedir reseñas&rdquo; de tu perfil de Google Business.
             </p>
           </Field>

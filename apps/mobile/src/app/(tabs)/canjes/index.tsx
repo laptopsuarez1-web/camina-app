@@ -1199,7 +1199,7 @@ export default function CanjesScreen() {
           {!isLoading && !isError && groups.length === 0 && (
             <EmptyState
               title="No encontramos comercios aquí"
-              text="Prueba con otra categoría o barrio. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, sigue juntando Puntos."
+              text="Prueba con otra categoría o zona. Estamos sumando comercios de tu ciudad todas las semanas: mientras tanto, sigue juntando Puntos."
             />
           )}
         </View>
@@ -1500,7 +1500,7 @@ export default function CanjesScreen() {
 
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
-                    Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver acá.
+                    Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver aquí.
                   </Text>
                 ) : null}
 

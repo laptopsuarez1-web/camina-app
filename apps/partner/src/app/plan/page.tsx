@@ -31,7 +31,7 @@ export default function PlanPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Tu plan" subtitle="Cambiá cuando quieras — sin permanencia." />
+      <TopBar title="Tu plan" subtitle="Cambia cuando quieras — sin permanencia." />
 
       {paying && payingQr && (
         <PaymentModal planName={paying.name} qr={payingQr} onClose={() => setPayingId(null)} />
@@ -43,7 +43,7 @@ export default function PlanPage() {
             <p className="font-bold text-[15px] mb-2">Pasar a {pending.name}</p>
             <p className="text-muted text-[12.5px] mb-4.5">
               Bajar de plan no es inmediato: si todavía te queda período pagado del plan actual, el cambio se
-              aplica recién cuando termine ese mes. Escribinos y coordinamos.
+              aplica recién cuando termine ese mes. Escríbenos y coordinamos.
             </p>
             <a
               href={requestDowngradeLink(pending.name)}

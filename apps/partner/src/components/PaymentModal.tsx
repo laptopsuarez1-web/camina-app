@@ -19,8 +19,8 @@ export function PaymentModal({
         </button>
         <p className="font-bold text-[15px] mb-1">Pasar a {planName}</p>
         <p className="text-muted text-[12.5px] mb-4">
-          Escaneá el código con tu app del banco y transferí el monto exacto ({qr.amount}).
-          Después mandanos el comprobante por WhatsApp y activamos tu plan.
+          Escanea el código con tu app del banco y transfiere el monto exacto ({qr.amount}).
+          Después mándanos el comprobante por WhatsApp y activamos tu plan.
         </p>
         <div className="rounded-xl overflow-hidden border border-line mb-4">
           <Image src={qr.image} alt={`QR de pago ${planName}`} width={340} height={480} className="w-full h-auto" />

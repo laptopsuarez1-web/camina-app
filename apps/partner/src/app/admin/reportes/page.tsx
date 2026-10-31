@@ -43,8 +43,8 @@ export default function AdminReportesPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Reportes</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Mensajes y fotos que reportaron las personas. Borrá el contenido, suspendé a quien lo publicó o descartá el
-        reporte. Apple y Google piden responder rápido: revisá esta lista todos los días.
+        Mensajes y fotos que reportaron las personas. Borra el contenido, suspende a quien lo publicó o descarta el
+        reporte. Apple y Google piden responder rápido: revisa esta lista todos los días.
       </p>
       {msg && <p className="text-warn text-[12.5px] mb-3">{msg}</p>}
       <div className="max-w-[720px] flex flex-col gap-2.5">

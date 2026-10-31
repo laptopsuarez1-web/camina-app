@@ -54,7 +54,7 @@ begin
   -- ===== Racha semanal =====
   perform tt.as_admin();
   u := tt.mk_user(3000, 'Racha');
-  for i in 1..7 loop perform tt.seed_steps(u, today - i, 3500); end loop;
+  for i in 1..7 loop perform tt.seed_steps(u, today - i, 5000); end loop;
   perform tt.t_as(u);
   select * into r from my_streak_state();
   perform tt.t_eq('7 días cumplidos (hoy aún no): racha 7', r.streak, 7);
@@ -65,12 +65,12 @@ begin
   perform tt.t_eq('los Puntos entran al saldo', user_points_balance(u), 5);
   perform tt.t_eq('cobrar de nuevo no duplica', claim_streak_bonus(), 0);
   perform tt.t_eq('saldo igual', user_points_balance(u), 5);
-  perform tt.seed_steps(u, today, 3500);
+  perform tt.seed_steps(u, today, 5000);
   perform tt.t_eq('día 8: todavía un solo bloque', (select blocks_done from my_streak_state()), 1);
   perform tt.t_eq('día 8: sin nada nuevo que cobrar', claim_streak_bonus(), 0);
   -- racha de 14 días con el primer bloque ya cobrado: solo cobra el segundo
   u := tt.mk_user(3000, 'Doble'); perform tt.t_as(u);
-  for i in 1..14 loop perform tt.seed_steps(u, today - i, 3500); end loop;
+  for i in 1..14 loop perform tt.seed_steps(u, today - i, 5000); end loop;
   insert into streak_claims (user_id, block_start, block_end, points) values (u, today - 14, today - 8, 5);
   perform tt.t_eq('14 días, 1 bloque cobrado: queda 1 por cobrar', (select blocks_done - blocks_claimed from my_streak_state()), 1);
   perform tt.t_eq('cobra solo el segundo bloque', claim_streak_bonus(), 5);
@@ -78,8 +78,25 @@ begin
 
   -- racha cortada: no hay bloques
   u := tt.mk_user(3000, 'Cortada'); perform tt.t_as(u);
-  for i in 1..5 loop perform tt.seed_steps(u, today - i, 3500); end loop;
+  for i in 1..5 loop perform tt.seed_steps(u, today - i, 5000); end loop;
   perform tt.t_eq('5 días: no cobra', claim_streak_bonus(), 0);
+
+  -- meta baja (3.000): la racha se ve, pero el bono exige 5.000 pasos cada día
+  u := tt.mk_user(3000, 'MetaBaja'); perform tt.t_as(u);
+  for i in 1..7 loop perform tt.seed_steps(u, today - i, 3500); end loop;
+  select * into r from my_streak_state();
+  perform tt.t_eq('meta baja: la racha se muestra (7)', r.streak, 7);
+  perform tt.t_eq('meta baja: sin bloque con bono', r.blocks_done, 0);
+  perform tt.t_eq('meta baja con 3.500: no cobra', claim_streak_bonus(), 0);
+  perform tt.seed_steps(u, today - 4, 5000);
+  perform tt.t_eq('un solo día de 5.000 no completa el bloque', claim_streak_bonus(), 0);
+  for i in 1..7 loop perform tt.seed_steps(u, today - i, 5000); end loop;
+  perform tt.t_eq('7 días de 5.000: cobra +5', claim_streak_bonus(), 5);
+  -- meta alta (8.000): con 5.000 no cuenta ni la racha
+  u := tt.mk_user(8000, 'MetaAlta'); perform tt.t_as(u);
+  for i in 1..7 loop perform tt.seed_steps(u, today - i, 5000); end loop;
+  perform tt.t_eq('meta 8.000 con 5.000: sin racha', (select streak from my_streak_state()), 0);
+  perform tt.t_eq('meta 8.000 con 5.000: no cobra', claim_streak_bonus(), 0);
 end $$;
 
 do $$

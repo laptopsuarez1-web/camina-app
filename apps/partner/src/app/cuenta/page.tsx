@@ -26,7 +26,7 @@ export default function CuentaPage() {
     e.preventDefault();
     const nuevo = email.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(nuevo)) {
-      setEmailMsg({ ok: false, texto: 'Ese correo no parece válido. Revisá que esté bien escrito.' });
+      setEmailMsg({ ok: false, texto: 'Ese correo no parece válido. Revisa que esté bien escrito.' });
       return;
     }
     if (nuevo === emailActual.toLowerCase()) {
@@ -44,7 +44,7 @@ export default function CuentaPage() {
     setEmail('');
     setEmailMsg({
       ok: true,
-      texto: `Te mandamos un link a ${nuevo}. Abrilo para confirmar el cambio (mirá también en Spam). Hasta entonces seguís entrando con ${emailActual}.`,
+      texto: `Te mandamos un link a ${nuevo}. Ábrelo para confirmar el cambio (mira también en Spam). Hasta entonces sigues entrando con ${emailActual}.`,
     });
   }
 
@@ -76,7 +76,7 @@ export default function CuentaPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Mi cuenta" subtitle="El correo y la contraseña con los que entrás al panel." />
+      <TopBar title="Mi cuenta" subtitle="El correo y la contraseña con los que entras al panel." />
       <div className="flex flex-col gap-5 max-w-[620px]">
         <form onSubmit={cambiarEmail} className="bg-card border border-line rounded-2xl p-5 flex flex-col gap-3">
           <p className="font-bold text-[15px]">Correo</p>

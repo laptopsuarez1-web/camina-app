@@ -16,12 +16,12 @@ export default function GentePage() {
           <Trail className="hero-trail" n={22} flat />
           <div className="wrap hero-grid">
             <div className="copy">
-              <Kinetic as="h1" text="Caminá, sumá puntos y canjealos en tu barrio." />
+              <Kinetic as="h1" text="Camina, suma puntos y canjéalos en tu zona." />
               <p className="sub">
                 Camina cuenta tus pasos y los convierte en puntos para canjear en los comercios de tu ciudad. Salir a caminar nunca tuvo tanto premio.
               </p>
               <div className="lp-cta">
-                <a className="lp-btn mint" href={EMAIL_AVISAME}>Avisame cuando salga</a>
+                <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
                 <a className="lp-btn ghost" href="#mapa">Ver cómo funciona</a>
               </div>
             </div>
@@ -36,7 +36,7 @@ export default function GentePage() {
         </section>
         <Cinta />
         <Reglas />
-        <Mapa titulo="Tu barrio, a pasos de distancia." texto="Mirá cómo un recorrido normal se vuelve un premio. El mapa es de Tarija y los locales son reales." />
+        <Mapa titulo="Tu zona, a pasos de distancia." texto="Mira cómo un recorrido normal se vuelve un premio. El mapa es de Tarija y los locales son reales." />
         <Objetivos />
         <Salud />
         <EquipoRetos />

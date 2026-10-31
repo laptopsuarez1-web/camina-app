@@ -647,7 +647,7 @@ function PodiumColumn({ tl, delay, rank, entry, isMe, won }: { tl: Timeline; del
             </Reveal>
           )}
         </View>
-        <Text numberOfLines={1} style={{ fontSize: 11.5, fontWeight: '700', color: p.text, marginTop: 4, maxWidth: 88 }}>{isMe ? 'Tú' : entry.person.name.split(' ')[0]}</Text>
+        <Text numberOfLines={1} style={{ fontSize: 11.5, fontWeight: '700', color: p.text, marginTop: 4, maxWidth: 88 }}>{entry.person.name.split(' ')[0]}</Text>
         <Text numberOfLines={1} style={{ fontSize: 10.5, color: p.muted, fontVariant: ['tabular-nums'] }}>{entry.value}</Text>
       </Reveal>
       <View style={{ width: '100%', height: POD_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14 }}>

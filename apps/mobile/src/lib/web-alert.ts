@@ -1,7 +1,7 @@
 import { Alert, Platform } from 'react-native';
 
 // En la web, Alert.alert de React Native no hace nada: los avisos y errores (por ejemplo al crear el perfil)
-// quedaban invisibles y parecía que "no deja". Acá se reemplaza por los diálogos del navegador.
+// quedaban invisibles y parecía que "no deja". Aquí se reemplaza por los diálogos del navegador.
 if (Platform.OS === 'web' && typeof window !== 'undefined') {
   Alert.alert = (title, message, buttons) => {
     const text = [title, message].filter(Boolean).join('\n\n');

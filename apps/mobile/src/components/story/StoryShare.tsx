@@ -1,5 +1,6 @@
-import type { Ref } from 'react';
-import { View, Image, type ImageSourcePropType } from 'react-native';
+import { useEffect, useState, type Ref } from 'react';
+import { Keyboard, Platform, View, Image, type ImageSourcePropType } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -15,6 +16,26 @@ export const STORY_REWARD = 5;
 export const CAMINA_INSTAGRAM = '@caminaapp';
 
 export type { StoryState };
+
+// Logo de Instagram: el cuadrado redondeado con su degradé de siempre y la cámara blanca adentro. Solo el logo, sin marco.
+function InstagramLogo({ size = 56 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}>
+      <Defs>
+        <SvgGradient id="ig" x1="0" y1="1" x2="1" y2="0">
+          <Stop offset="0" stopColor="#FEDA77" />
+          <Stop offset="0.35" stopColor="#F58529" />
+          <Stop offset="0.6" stopColor="#DD2A7B" />
+          <Stop offset="1" stopColor="#8134AF" />
+        </SvgGradient>
+      </Defs>
+      <Rect x="0" y="0" width="24" height="24" rx="6.5" fill="url(#ig)" />
+      <Rect x="5.2" y="5.2" width="13.6" height="13.6" rx="4" fill="none" stroke="#fff" strokeWidth="1.5" />
+      <Circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" strokeWidth="1.5" />
+      <Circle cx="16.1" cy="7.9" r="0.95" fill="#fff" />
+    </Svg>
+  );
+}
 
 // Botón debajo de cada canje confirmado (Inicio > Tus canjes), y su estado después de subir la historia.
 export function StoryRewardButton({ state, onPress }: { state: StoryState; onPress?: () => void }) {
@@ -207,13 +228,22 @@ export function StoryConfirmSheet({
   onLater: () => void;
 }) {
   const dark = useColorScheme().colorScheme === 'dark';
+  // Con el teclado abierto la hoja se compacta (sin el ícono grande ni el aire de abajo) para que el campo y el botón queden bien a la vista.
+  const [kb, setKb] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKb(true));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKb(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
   return (
-    <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-10">
-      <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
+    <View className={`bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 ${kb ? 'pb-4' : 'pb-10'}`}>
+      <View className={`w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center ${kb ? 'mb-3' : 'mb-5'}`} />
       <View className="items-center mb-4">
-        <View className="w-14 h-14 rounded-full items-center justify-center mb-3 bg-purple-light-light dark:bg-purple-light-dark">
-          <Instagram size={28} color={dark ? colors.purpleSoft : colors.purpleInk} weight="bold" />
-        </View>
+        {!kb && (
+          <View className="mb-3">
+            <InstagramLogo />
+          </View>
+        )}
         <Text accessibilityRole="header" className="text-[17px] font-extrabold text-text-light dark:text-text-dark">¿Ya subiste la historia?</Text>
         <Text className="text-[12.5px] text-center text-muted-light dark:text-muted-dark mt-1" style={{ lineHeight: 18 }}>
           Dinos tu usuario de Instagram para encontrarla. Acuérdate de etiquetar a {CAMINA_INSTAGRAM}.
@@ -227,6 +257,8 @@ export function StoryConfirmSheet({
           placeholder="tu.usuario"
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={() => { if (handle.trim() && !busy) onConfirm(); }}
           accessibilityLabel="Tu usuario de Instagram"
           className="flex-1 text-[15px] text-text-light dark:text-text-dark"
           placeholderTextColor={dark ? colors.dark.muted : colors.light.muted}

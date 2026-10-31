@@ -40,7 +40,7 @@ export function GalleryUpload({
         if (upErr) throw upErr;
         nuevas.push(`${supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}`);
       } catch {
-        setError('No pudimos subir alguna foto. Probá de nuevo con otra en PNG o JPG.');
+        setError('No pudimos subir alguna foto. Prueba de nuevo con otra en PNG o JPG.');
       }
     }
     if (nuevas.length > 0) await onChange([...photos, ...nuevas]);

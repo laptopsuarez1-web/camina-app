@@ -3,6 +3,7 @@ import { Alert, Modal, Platform, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { StoryComposer, StoryConfirmSheet, StoryPendingSheet } from '@/components/story/StoryShare';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -131,13 +132,13 @@ export function useStoryFlow() {
               onChangePhoto={() => setStep('pick')}
             />
             {step !== 'compose' ? (
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,10,30,0.55)', justifyContent: 'flex-end' }}>
+              <KeyboardSafe style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,10,30,0.55)', justifyContent: 'flex-end' }}>
                 {step === 'confirm' ? (
                   <StoryConfirmSheet handle={handle} onChangeHandle={setHandle} busy={busy} onConfirm={confirm} onLater={reset} />
                 ) : (
                   <StoryPendingSheet onDone={reset} />
                 )}
-              </View>
+              </KeyboardSafe>
             ) : null}
           </View>
         ) : null}

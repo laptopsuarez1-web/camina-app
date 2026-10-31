@@ -1,5 +1,5 @@
 // Claves de AsyncStorage para invitaciones que llegan por deep link antes de
-// que haya sesión (o antes de terminar el signup): se guardan acá y se
+// que haya sesión (o antes de terminar el signup): se guardan aquí y se
 // consumen apenas hay un usuario logueado — ver app/r/[refId].tsx,
 // app/join-group/[groupId].tsx y (auth)/perfil.tsx.
 export const PENDING_REFERRAL_KEY = 'camina_pending_referral';

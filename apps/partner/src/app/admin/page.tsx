@@ -228,7 +228,7 @@ export default function AdminPage() {
         )}
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
         <p className="text-muted text-[13.5px] mb-7">
-          Aprobá un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
+          Aprueba un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
           aplican al toque; bajar de plan queda agendado para cuando termine el período mensual pagado.
         </p>
 
@@ -340,7 +340,7 @@ export default function AdminPage() {
                             )}
                             {faltantesParaPublicar(b).length > 0 && (
                               <p className="text-[11.5px] text-warn font-semibold mt-0.5">
-                                Recomendado antes de aprobar (podés aprobar igual): {faltantesParaPublicar(b).map((f) => f.texto).join(', ')}
+                                Recomendado antes de aprobar (puedes aprobar igual): {faltantesParaPublicar(b).map((f) => f.texto).join(', ')}
                               </p>
                             )}
                             {sugerenciaBeneficio(b, activeBenefits[b.id] ?? 0) && (
@@ -386,13 +386,13 @@ export default function AdminPage() {
                         {rejectingId === b.id && (
                           <div className="mt-2.5">
                             <label className="block text-[12px] font-semibold text-text mb-1">
-                              ¿Por qué lo rechazás? Le llega por correo y lo ve en su panel; lo corrige y lo vuelve a enviar.
+                              ¿Por qué lo rechazas? Le llega por correo y lo ve en su panel; lo corrige y lo vuelve a enviar.
                             </label>
                             <textarea
                               value={rejectReason}
                               onChange={(e) => setRejectReason(e.target.value)}
                               rows={2}
-                              placeholder="Ej: La foto de portada no se ve bien. Subí una foto del local o de tus productos."
+                              placeholder="Ej: La foto de portada no se ve bien. Sube una foto del local o de tus productos."
                               className="w-full bg-white border border-line rounded-[10px] px-3 py-2 text-[13px] text-text"
                             />
                             <div className="flex gap-2 mt-1.5">
