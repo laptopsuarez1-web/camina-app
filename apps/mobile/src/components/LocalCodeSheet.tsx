@@ -3,6 +3,8 @@ import { ActivityIndicator, AccessibilityInfo, Modal, Platform, TextInput as RNT
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
+import { Glass } from '@/components/ui/Glass';
+import { useColorScheme } from 'nativewind';
 import { Press } from '@/components/ui/Press';
 import { Coin } from '@/components/ui/Coin';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
@@ -84,6 +86,7 @@ export function LocalCodeSheet({
   visible, businessName, logoUrl, category, benefitName, costPoints, free, onClose, onSubmit, onSuccess, onDismiss,
 }: Props) {
   const theme = useThemeColors();
+  const dark = useColorScheme().colorScheme === 'dark';
   const reduced = useReducedMotion();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -141,8 +144,9 @@ export function LocalCodeSheet({
       <KeyboardSafe className="flex-1">
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <View>
-          {/* Fondo sólido: con vidrio se transparentaba la lista de locales de atrás y no se leía nada. */}
-          <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-8 border-t border-line-light dark:border-line-dark">
+          {/* Liquid Glass sobre un fondo que lo vuelve legible: sin ese fondo se transparentaba la lista de locales de atrás y no se leía nada. */}
+          <View style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: dark ? 'rgba(22,16,31,0.86)' : 'rgba(255,255,255,0.82)' }}>
+          <Glass className="rounded-t-[32px] px-6 pt-3 pb-8">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center gap-2.5 mb-5">
@@ -223,6 +227,7 @@ export function LocalCodeSheet({
             <Press accessibilityRole="button" hitSlop={8} onPress={onClose} disabled={phase === 'busy' || phase === 'done'} className="py-2.5 items-center">
               <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no</Text>
             </Press>
+          </Glass>
           </View>
           </View>
         </View>

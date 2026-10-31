@@ -17,8 +17,8 @@ export const CAMINA_INSTAGRAM = '@caminaapp';
 
 export type { StoryState };
 
-// Logo de Instagram (cámara redondeada, lente y punto) con su degradé de siempre.
-function InstagramGlyph({ size }: { size: number }) {
+// Logo de Instagram: el cuadrado redondeado con su degradé de siempre y la cámara blanca adentro. Solo el logo, sin marco.
+function InstagramLogo({ size = 56 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}>
       <Defs>
@@ -29,19 +29,11 @@ function InstagramGlyph({ size }: { size: number }) {
           <Stop offset="1" stopColor="#8134AF" />
         </SvgGradient>
       </Defs>
-      <Rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="url(#ig)" strokeWidth="2" />
-      <Circle cx="12" cy="12" r="4.1" fill="none" stroke="url(#ig)" strokeWidth="2" />
-      <Circle cx="17.2" cy="6.8" r="1.2" fill="url(#ig)" />
+      <Rect x="0" y="0" width="24" height="24" rx="6.5" fill="url(#ig)" />
+      <Rect x="5.2" y="5.2" width="13.6" height="13.6" rx="4" fill="none" stroke="#fff" strokeWidth="1.5" />
+      <Circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" strokeWidth="1.5" />
+      <Circle cx="16.1" cy="7.9" r="0.95" fill="#fff" />
     </Svg>
-  );
-}
-
-// Burbuja de Liquid Glass (iOS 26; en lo demás, vidrio con desenfoque) con el logo adentro.
-function InstagramBubble({ size = 64 }: { size?: number }) {
-  return (
-    <Glass className="rounded-full" style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <InstagramGlyph size={Math.round(size * 0.5)} />
-    </Glass>
   );
 }
 
@@ -249,7 +241,7 @@ export function StoryConfirmSheet({
       <View className="items-center mb-4">
         {!kb && (
           <View className="mb-3">
-            <InstagramBubble />
+            <InstagramLogo />
           </View>
         )}
         <Text accessibilityRole="header" className="text-[17px] font-extrabold text-text-light dark:text-text-dark">¿Ya subiste la historia?</Text>
