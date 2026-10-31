@@ -2,10 +2,12 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Share2, X } from '@/components/icons';
+import * as Clipboard from 'expo-clipboard';
+import { Check, Share2, X } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
-import { shareCard } from '@/lib/share-image';
+import { copyCardImage, shareCard } from '@/lib/share-image';
+import { CAMINA_HANDLE } from '@/components/share/cards';
 import { CARD_W, cardHeight, type CardFormat, type CardTheme } from '@/components/share/cards';
 
 // Selector de 2 o 3 opciones con el estilo de los filtros de la app (verde oscuro para la elegida).
@@ -58,7 +60,7 @@ export function Toggle({ label, hint, value, onChange, onDark }: { label: string
 // la hoja del sistema. `render` dibuja la tarjeta; la hoja la dibuja dos veces: chica para la vista previa y a tamaño real
 // fuera de pantalla para capturarla.
 export function CardShareSheet({
-  visible, onClose, title, filename, extras, render, defaultFormat = 'story',
+  visible, onClose, title, filename, extras, render, defaultFormat = 'story', allowOverlay = false,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -67,11 +69,15 @@ export function CardShareSheet({
   extras?: ReactNode;
   render: (o: { theme: CardTheme; format: CardFormat }) => ReactNode;
   defaultFormat?: CardFormat;
+  // Suma la opción "Transparente" (solo texto, para pegar sobre tu propia foto).
+  allowOverlay?: boolean;
 }) {
   const { height: screenH, width: screenW } = useWindowDimensions();
   const [theme, setTheme] = useState<CardTheme>('light');
   const [format, setFormat] = useState<CardFormat>(defaultFormat);
   const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState<'tag' | 'img' | null>(null);
+  const overlay = format === 'overlay';
   const shotRef = useRef<View>(null);
 
   const h = cardHeight(format);
@@ -89,6 +95,26 @@ export function CardShareSheet({
     }
   }
 
+  function flash(k: 'tag' | 'img') {
+    setCopied(k);
+    setTimeout(() => setCopied(null), 2200);
+  }
+
+  // En Instagram el @ de una imagen no se puede tocar: se copia para pegarlo en el sticker de mención.
+  async function copyTag() {
+    await Clipboard.setStringAsync(CAMINA_HANDLE);
+    flash('tag');
+  }
+
+  async function copyImage() {
+    try {
+      await copyCardImage(shotRef, { width: CARD_W, height: h });
+      flash('img');
+    } catch (e) {
+      Alert.alert('No pudimos copiar la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
+    }
+  }
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
@@ -102,11 +128,13 @@ export function CardShareSheet({
           </View>
           <ScrollView contentContainerClassName="px-5 pb-8" showsVerticalScrollIndicator={false}>
             {extras}
-            <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia 9:16' }, { value: 'square', label: 'Cuadrada 1:1' }]} />
-            <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />
+            <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia' }, { value: 'square', label: 'Cuadrada' }, ...(allowOverlay ? [{ value: 'overlay' as CardFormat, label: 'Transparente' }] : [])]} />
+            {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />}
 
             {/* Vista previa: la misma tarjeta, achicada. */}
-            <View accessible accessibilityLabel="Vista previa de la tarjeta" style={{ alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8 }}>
+            <View accessible accessibilityLabel="Vista previa de la tarjeta" style={{ alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8, backgroundColor: overlay ? '#3B3552' : undefined }}>
+              {/* Fondo de ejemplo detrás de la tarjeta transparente: ahí va tu foto. */}
+              {overlay ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, opacity: 0.5, backgroundColor: '#8F86B3' }} /> : null}
               <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }} pointerEvents="none">
                 {render({ theme, format })}
               </View>
@@ -118,6 +146,20 @@ export function CardShareSheet({
             </Press>
             <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
               La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.
+            </Text>
+
+            {overlay ? (
+              <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-3.5 items-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark">
+                <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
+              </Press>
+            ) : null}
+            {/* El @ dentro de la imagen no se puede tocar: se copia y se pega en el sticker "Mención" de Instagram. */}
+            <Press accessibilityRole="button" onPress={copyTag} className="rounded-2xl py-3.5 flex-row items-center justify-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
+              {copied === 'tag' ? <Check size={14} color="#8B4FD1" /> : null}
+              <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'tag' ? `¡Copiado ${CAMINA_HANDLE}!` : `Copiar ${CAMINA_HANDLE} para etiquetarnos`}</Text>
+            </Press>
+            <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2">
+              En Instagram: sticker «Mención» y pega {CAMINA_HANDLE}, así queda tocable.
             </Text>
           </ScrollView>
         </Press>

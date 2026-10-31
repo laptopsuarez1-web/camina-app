@@ -11,8 +11,8 @@ import { useThemeColors } from '@/theme/useThemeColors';
 
 // Hoja para invitar al grupo: compartir el link, ver (y copiar) el código, o elegir amigos de tu lista.
 export function GroupShareSheet({
-  visible, onClose, groupId, groupName, inviteCode,
-}: { visible: boolean; onClose: () => void; groupId: string; groupName: string; inviteCode: string }) {
+  visible, onClose, groupId, groupName, inviteCode, progress,
+}: { visible: boolean; onClose: () => void; groupId: string; groupName: string; inviteCode: string; progress?: { members: number; total: number; target: number } }) {
   const { muted } = useThemeColors();
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -25,8 +25,13 @@ export function GroupShareSheet({
     // En iPhone, abrir el menú de compartir mientras esta hoja todavía se está cerrando no hace nada: se espera a que termine.
     await new Promise((r) => setTimeout(r, 500));
     // Solo `message`, con el link al final: en iPhone, si además se pasa `url`, WhatsApp se queda con una sola de las dos.
+    // Con el avance del grupo (sin nombres de nadie) el mensaje ya cuenta cómo va la semana.
+    const fmt = (n: number) => n.toLocaleString('es-BO');
+    const avance = progress && progress.target > 0
+      ? `\nEsta semana: ${fmt(progress.total)} de ${fmt(progress.target)} pasos (${Math.min(100, Math.round((progress.total / progress.target) * 100))} % de la meta) entre ${progress.members} ${progress.members === 1 ? 'integrante' : 'integrantes'}.`
+      : '';
     await Share.share({
-      message: `Únete a mi grupo "${groupName}" en Camina: caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
+      message: `Únete a mi grupo "${groupName}" en Camina: caminemos y ganemos Puntos juntos.${avance}\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
     });
   }
 

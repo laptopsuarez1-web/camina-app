@@ -11,10 +11,11 @@ import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, type ShareStats } fro
 // (9:16 para historias, 1:1 para chats) y se capturan a 1080 px. Los colores son propios: no cambian con el modo de la app.
 // Nada de esto sale de la app hasta que la persona toca Compartir: se arma en el teléfono.
 export type CardTheme = 'light' | 'dark';
-export type CardFormat = 'story' | 'square';
+// 'overlay' = fondo transparente, solo texto en blanco: se pega como sticker sobre la foto de la persona (como en Strava).
+export type CardFormat = 'story' | 'square' | 'overlay';
 
 export const CARD_W = 360;
-export const cardHeight = (f: CardFormat) => (f === 'story' ? 640 : 360);
+export const cardHeight = (f: CardFormat) => (f === 'square' ? 360 : 640);
 export const CAMINA_HANDLE = '@caminaapp';
 
 const PAL = {
@@ -35,6 +36,8 @@ const PAL = {
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
   },
 } as const;
+// Sombra suave para que el texto blanco se lea sobre cualquier foto.
+const SHADOW = { textShadowColor: 'rgba(0,0,0,0.45)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6 } as const;
 export type Pal = (typeof PAL)['light'] | (typeof PAL)['dark'];
 export const palette = (t: CardTheme): Pal => PAL[t];
 
@@ -44,7 +47,22 @@ export function CardFrame({
   theme, format, label, progress, children,
 }: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode }) {
   const p = PAL[theme];
-  const story = format === 'story';
+  const story = format !== 'square';
+  if (format === 'overlay') {
+    // Sin fondo ni logo grande: solo el contenido abajo y la marca chica, para que se vea la foto de atrás.
+    return (
+      <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden' }}>
+        <View style={{ flex: 1, paddingTop: 64, paddingBottom: 56, paddingHorizontal: 26, justifyContent: 'flex-end' }}>
+          <View style={{ flexShrink: 1 }}>{children}</View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 18 }}>
+            <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 20, height: 20, borderRadius: 10 }} />
+            <Text style={[{ fontFamily: WORDMARK_FAMILY, fontSize: 12, letterSpacing: 2.2, color: '#FFFFFF', fontWeight: '900' }, SHADOW]}>CAMINA</Text>
+            <Text style={[{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.9)' }, SHADOW]}>{CAMINA_HANDLE}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden', backgroundColor: p.bg[1] }}>
       <LinearGradient colors={[...p.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
@@ -75,7 +93,12 @@ export function CardFrame({
           </View>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
-        <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginTop: story ? 10 : 4 }}>{CAMINA_HANDLE} · Camina y gana Puntos</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: story ? 10 : 4 }}>
+          <View style={{ backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 12, paddingVertical: 4 }}>
+            <Text style={{ fontSize: 12, fontWeight: '800', color: p.accent }}>{CAMINA_HANDLE}</Text>
+          </View>
+          <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginLeft: 8 }}>Camina y gana Puntos</Text>
+        </View>
       </View>
     </View>
   );
@@ -228,6 +251,8 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   const story = format === 'story';
   const goal = stats.goalToday;
 
+  if (format === 'overlay') return <ResumenOverlay data={data} />;
+
   if (stats.period === 'day') {
     const pct = goal > 0 ? stats.steps / goal : 0;
     const done = pct >= 1;
@@ -321,6 +346,55 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   );
 }
 
+
+// ---------- Resumen transparente (tipo Strava) ----------
+
+function OStat({ label, value, unit }: { label: string; value: string; unit?: string }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={[{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.8)' }, SHADOW]} numberOfLines={1}>{label}</Text>
+      <Text style={[{ fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 }, SHADOW]} numberOfLines={1}>{value}</Text>
+      {unit ? <Text style={[{ fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.8)' }, SHADOW]} numberOfLines={1}>{unit}</Text> : null}
+    </View>
+  );
+}
+
+function ResumenOverlay({ data }: { data: ResumenData }) {
+  const { stats, streak, weeklyRank, name } = data;
+  const period = stats.period;
+  const title = period === 'day' ? 'Hoy' : period === 'week' ? 'Mi semana' : 'Mi mes';
+  const when = period === 'day' ? shortDay(stats.rangeEnd) : rangeLabel(stats.rangeStart, stats.rangeEnd);
+  const big = fmtInt(stats.steps);
+  const bigSize = fitSize(big, 76, CARD_W - 52);
+  const W = CARD_W - 52;
+  const n = stats.bars.length;
+  const max = Math.max(stats.goalToday * 1.15, ...stats.bars.map((b) => b.steps), 1);
+  const bw = n > 0 ? (W - 6 * (n - 1)) / n : 0;
+  const stat3 = period === 'day'
+    ? [{ label: 'Puntos', value: `+${stats.pointsToday}` }, { label: 'Distancia', value: fmtKm(stats.km), unit: 'km' }, { label: 'Racha', value: String(streak), unit: streak === 1 ? 'día' : 'días' }]
+    : [{ label: 'Promedio', value: fmtInt(stats.avgPerDay), unit: 'pasos/día' }, { label: 'Distancia', value: fmtKm(stats.km), unit: 'km' }, weeklyRank ? { label: 'Ranking', value: `${weeklyRank}.º`, unit: 'esta semana' } : { label: 'Meta', value: `${stats.daysMet}/${stats.days}`, unit: 'días' }];
+  return (
+    <CardFrame theme="dark" format="overlay" label="">
+      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#7FEDC4' }, SHADOW]}>{name ? `${title} de ${name}` : title} · {when}</Text>
+      <Text style={[{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.1), fontWeight: '800', color: '#FFFFFF', letterSpacing: -2, marginTop: 2 }, SHADOW]} numberOfLines={1}>{big}</Text>
+      <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>pasos</Text>
+      {period === 'month' ? null : (
+        <View style={{ marginTop: 16 }}>
+          <Svg width={W} height={52}>
+            {stats.bars.map((b, i) => {
+              const h = Math.max(3, (b.steps / max) * 50);
+              return <Rect key={b.key} x={i * (bw + 6)} y={52 - h} width={bw} height={h} rx={Math.min(5, bw / 2)} fill={b.met ? '#7FEDC4' : 'rgba(255,255,255,0.55)'} />;
+            })}
+          </Svg>
+        </View>
+      )}
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+        {stat3.map((t) => <OStat key={t.label} {...t} />)}
+      </View>
+    </CardFrame>
+  );
+}
+
 // ---------- Ranking del grupo ----------
 
 export type GroupCardData = {
@@ -353,17 +427,40 @@ function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: s
 
 export function GroupCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: GroupCardData }) {
   const p = PAL[theme];
-  const story = format === 'story';
+  const story = format !== 'square';
   const { members } = data;
   const top = members.slice(0, 3);
   const podium = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
-  const rest = story ? members.slice(3, 7) : [];
+  const rest = story ? members.slice(3, 8) : [];
   const max = Math.max(...members.map((m) => m.steps), 1);
   const pct = data.target > 0 ? Math.min(1, data.total / data.target) : 0;
+  const leader = members[0];
+  const me = members.find((m) => m.isMe);
+  const gap = leader && me && leader.id !== me.id ? leader.steps - me.steps : 0;
+  const done = pct >= 1;
   return (
     <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
       <Text style={{ fontSize: 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
       <Text style={{ fontSize: story ? 28 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
+      {story ? (
+        // Baifo festejando con el trofeo y el avance de la meta del grupo: llena el centro de la historia con algo propio de Camina.
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12 }}>
+          <View style={{ width: 74, height: 84, alignItems: 'center', justifyContent: 'flex-end' }}>
+            <Image source={require('@/../assets/baifo/festeja.webp')} accessible={false} resizeMode="contain" style={{ height: 84, aspectRatio: 287 / 420 }} />
+            <View style={{ position: 'absolute', right: -4, bottom: 2, width: 28, height: 28, borderRadius: 14, backgroundColor: p.gold, alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={16} color={theme === 'dark' ? '#2A1B52' : '#fff'} weight="fill" />
+            </View>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: p.muted }}>Meta del grupo</Text>
+            <Text style={{ fontSize: 30, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -1, lineHeight: 34 }}>{done ? '¡Cumplida!' : `${Math.round(pct * 100)} %`}</Text>
+            <View style={{ height: 7, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden', marginTop: 3 }}>
+              <View style={{ width: `${Math.max(2, pct * 100)}%`, height: 7, borderRadius: 4, backgroundColor: p.bar }} />
+            </View>
+            <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 4 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
+          </View>
+        </View>
+      ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 14 : 6, gap: 8 }}>
         {podium.map((m) => {
           const rank = members.findIndex((x) => x.id === m.id) + 1;
@@ -386,18 +483,26 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
           ))}
         </View>
       ) : null}
+      {story ? (
+        // Comparativo corto, para que la historia se entienda sin abrir la app.
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+          <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
+          <Tile p={p} small stack label={gap > 0 ? 'Te faltan para el 1.º' : 'Líder del grupo'} value={gap > 0 ? fmtInt(gap) : leader?.isMe ? 'Tú' : leader?.label ?? '–'} />
+        </View>
+      ) : null}
       <View style={{ flex: 1 }} />
-      {/* Aire fijo arriba (podio) y abajo (@caminaapp) para que la caja nunca quede pegada. */}
-      <View style={{ marginTop: 10, marginBottom: story ? 0 : 6, backgroundColor: p.tile, borderColor: pct >= 1 ? p.accent : p.tileLine, borderWidth: pct >= 1 ? 1.5 : 1, borderRadius: 16, padding: story ? 11 : 9 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-          <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink }}>Meta del grupo</Text>
-          <Text style={{ fontSize: 11, fontWeight: '800', color: p.accent }}>{pct >= 1 ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
+      {!story ? (
+        <View style={{ marginTop: 10, marginBottom: 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 16, padding: 9 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink }}>Meta del grupo</Text>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: p.accent }}>{done ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
+          </View>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.max(2, pct * 100)}%`, height: 8, borderRadius: 4, backgroundColor: p.bar }} />
+          </View>
+          <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
         </View>
-        <View style={{ height: 8, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
-          <View style={{ width: `${Math.max(2, pct * 100)}%`, height: 8, borderRadius: 4, backgroundColor: p.bar }} />
-        </View>
-        <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
-      </View>
+      ) : null}
     </CardFrame>
   );
 }
