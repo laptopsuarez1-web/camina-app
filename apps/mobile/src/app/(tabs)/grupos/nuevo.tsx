@@ -91,13 +91,17 @@ export default function NuevoGrupoScreen() {
         </Text>
         <Glass className="rounded-3xl px-4 pt-3 pb-1">
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Pasos de la semana</Text>
-          <TextInput
-            value={goalText ? parseInt(goalText, 10).toLocaleString('es-BO') : ''}
-            onChangeText={(v) => setGoalText(v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 7))}
-            keyboardType="number-pad"
-            accessibilityLabel="Meta semanal de pasos del grupo"
-            className="text-[17px] font-semibold py-2 text-text-light dark:text-text-dark"
-          />
+          <View className="flex-row items-center">
+            <TextInput
+              value={goalText ? parseInt(goalText, 10).toLocaleString('es-BO') : ''}
+              onChangeText={(v) => setGoalText(v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 7))}
+              keyboardType="number-pad"
+              accessibilityLabel="Meta semanal de pasos del grupo"
+              className="flex-1 text-[22px] font-extrabold py-2 text-text-light dark:text-text-dark"
+              style={{ fontVariant: ['tabular-nums'] }}
+            />
+            <Text className="text-[14px] font-semibold text-muted-light dark:text-muted-dark">pasos</Text>
+          </View>
         </Glass>
         <Text className="text-[12px] mt-2 mx-1" style={{ color: goalOk ? muted : colors.warn }}>
           {goalOk ? `Unos ${Math.round(goal / 7).toLocaleString('es-BO')} pasos por día entre todos.` : `La meta tiene que estar entre ${MIN_GOAL.toLocaleString('es-BO')} y ${MAX_GOAL.toLocaleString('es-BO')} pasos.`}
