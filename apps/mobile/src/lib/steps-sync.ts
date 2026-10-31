@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { dayISO, readDaySteps } from '@/lib/health-steps';
 import { registerDevice } from '@/lib/device';
+import { queryClient } from '@/lib/query-client';
 
 // Manda al servidor los pasos de un día (idempotente: acredita solo los Puntos que falten).
 // Cuenta el día en curso y ayer, pero ayer solo si ese día ya abriste Camina (el servidor lo verifica).
@@ -29,7 +30,16 @@ export async function syncYesterdayOnOpen(): Promise<void> {
     yesterday.setDate(yesterday.getDate() - 1);
     const steps = await readDaySteps(yesterday);
     if (steps == null || steps <= 0) return;
+    // El saldo de antes tiene que estar en caché para que, al acreditar ayer, el chip de Puntos "cuente" hasta el valor nuevo.
+    const balanceKey = ['points-balance', userId];
+    if (queryClient.getQueryData<number>(balanceKey) === undefined) {
+      const { data: before } = await supabase.rpc('user_points_balance', { p_user_id: userId });
+      if (typeof before === 'number' && queryClient.getQueryData<number>(balanceKey) === undefined) queryClient.setQueryData(balanceKey, before);
+    }
     await sendDaySteps(userId, yesterday, steps);
+    // Antes el saldo no se refrescaba tras acreditar ayer, y los Puntos aparecían de golpe sin animación.
+    queryClient.invalidateQueries({ queryKey: balanceKey });
+    queryClient.invalidateQueries({ queryKey: ['points-today', userId] });
     yesterdaySentFor = userId + today;
   } catch {
     // sin red o sin permiso: se intenta en la próxima apertura
