@@ -9,7 +9,7 @@ import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
-import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupJoinedScene, StreakScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
+import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
 const GOLD = '#E2B33C';
 const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
@@ -231,6 +231,9 @@ export function CelebrationHost() {
       {current.kind === 'group-created' && <GroupCreatedScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'friend-made' && <FriendMadeScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'streak-milestone' && <StreakScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'streak-week' && <StreakWeekScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'group-goal' && <GroupGoalScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'ranking-result' && <RankingResultScene key={current.id} c={current} onDone={dismiss} />}
     </View>
   );
 }

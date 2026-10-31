@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -10,22 +9,16 @@ import { Glass } from '@/components/ui/Glass';
 import { FriendPicker } from '@/components/friends/FriendPicker';
 import { ChevronLeft } from '@/components/icons';
 import { GroupLookPicker, type GroupPhoto } from '@/components/GroupLookPicker';
-import { uploadGroupPhoto } from '@/lib/avatar';
 import { useFriends } from '@/hooks/useFriends';
-import { useAuthStore } from '@/store/useAuthStore';
-import { supabase } from '@/lib/supabase';
-import { friendlyServerError } from '@/lib/errors';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Grupo nuevo: nombre y, si quieres, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
+// Grupo nuevo, paso 1: nombre y, si quieres, amigos para invitar de entrada. El grupo se crea en el paso 2 (nuevo-meta), después de elegir la meta.
 export default function NuevoGrupoScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, muted, accentIcon } = useThemeColors();
   const { friend } = useLocalSearchParams<{ friend?: string }>();
-  const userId = useAuthStore((s) => s.session?.user.id);
-  const queryClient = useQueryClient();
   const { data: friends } = useFriends();
   const [name, setName] = useState('');
   const [background, setBackground] = useState<string>('aqua');
@@ -34,41 +27,7 @@ export default function NuevoGrupoScreen() {
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
-  const create = useMutation({
-    mutationFn: async () => {
-      if (!userId) throw new Error('Sin sesión');
-      const { data: group, error } = await supabase.from('groups').insert({ name: name.trim(), created_by: userId, background }).select().single();
-      if (error) throw error;
-      const { error: memberError } = await supabase.from('group_members').insert({ group_id: group.id, user_id: userId });
-      if (memberError) throw memberError;
-      let photoFailed = false;
-      if (photo) {
-        // La foto es un extra: si falla, el grupo ya existe y se puede poner después desde el menú del grupo.
-        try {
-          const url = await uploadGroupPhoto(group.id, photo.uri, photo.b64);
-          const { error: photoError } = await supabase.from('groups').update({ photo_url: url }).eq('id', group.id);
-          if (photoError) photoFailed = true;
-        } catch {
-          photoFailed = true;
-        }
-      }
-      if (picked.length > 0) {
-        // Si la invitación falla, el grupo ya existe: se avisa y la persona puede reintentar desde "Agregar amigos".
-        const { error: inviteError } = await supabase.rpc('invite_friends_to_group', { p_group: group.id, p_users: picked });
-        if (inviteError) return { id: group.id as string, inviteFailed: true, photoFailed };
-      }
-      return { id: group.id as string, inviteFailed: false, photoFailed };
-    },
-    onSuccess: ({ id, inviteFailed, photoFailed }) => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      if (inviteFailed) Alert.alert('El grupo está creado', 'No pudimos mandar las invitaciones. Prueba de nuevo desde "Agregar amigos".');
-      if (photoFailed) Alert.alert('El grupo está creado', 'No pudimos subir la foto. Puedes ponerla desde el menú del grupo.');
-      router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: id, nuevo: '1' } });
-    },
-    onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intenta de nuevo.')),
-  });
-
-  const ready = name.trim().length >= 2 && !create.isPending;
+  const ready = name.trim().length >= 2;
 
   return (
     <KeyboardSafe className="flex-1">
@@ -113,12 +72,12 @@ export default function NuevoGrupoScreen() {
         <Press
           accessibilityRole="button"
           disabled={!ready}
-          onPress={() => create.mutate()}
+          onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-meta', params: { name: name.trim(), friends: picked.join(','), background, ...(photo ? { photo: photo.uri } : {}) } })}
           className="rounded-2xl py-3.5 items-center mt-5"
           style={{ backgroundColor: colors.aquaDeep, opacity: ready ? 1 : 0.5 }}
         >
           <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
-            {create.isPending ? 'Creando…' : picked.length > 0 ? `Crear e invitar a ${picked.length}` : 'Crear grupo'}
+            {picked.length > 0 ? `Crear e invitar a ${picked.length}` : 'Crear grupo'}
           </Text>
         </Press>
       </ScrollView>

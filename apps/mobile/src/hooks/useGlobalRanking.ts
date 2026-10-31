@@ -42,3 +42,19 @@ export function useMyWeeklyRank() {
     },
   });
 }
+
+// Mi puesto en la semana que cerró (lunes a domingo anterior). null si no aparecía en el ranking.
+export function useMyLastWeekRank() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['my-last-week-rank', userId],
+    enabled: !!userId,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('my_last_week_rank');
+      if (error) throw error;
+      const row = (data as { rank_position: number | string; total_steps: number | string }[] | null)?.[0];
+      return row ? { position: Number(row.rank_position), steps: Number(row.total_steps) } : null;
+    },
+  });
+}
