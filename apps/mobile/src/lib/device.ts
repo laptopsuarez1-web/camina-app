@@ -30,7 +30,9 @@ let current: { userId: string; promise: Promise<DeviceStatus> } | null = null;
 // y se reintenta la próxima vez.
 export function registerDevice(userId: string): Promise<DeviceStatus> {
   if (current?.userId === userId) return current.promise;
-  const promise = (async (): Promise<DeviceStatus> => {
+  // El catch de adentro se compara con esta entrada (no con la promesa, que todavía no existe cuando se escribe esa línea).
+  const entry = { userId, promise: undefined as unknown as Promise<DeviceStatus> };
+  entry.promise = (async (): Promise<DeviceStatus> => {
     try {
       const id = await deviceId();
       if (!id) return 'unknown';
@@ -38,10 +40,10 @@ export function registerDevice(userId: string): Promise<DeviceStatus> {
       if (error) throw error;
       return data === 'blocked' ? 'blocked' : 'ok';
     } catch {
-      if (current?.promise === promise) current = null;
+      if (current === entry) current = null;
       return 'unknown';
     }
   })();
-  current = { userId, promise };
-  return promise;
+  current = entry;
+  return entry.promise;
 }
