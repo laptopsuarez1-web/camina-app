@@ -161,12 +161,23 @@ export default function WelcomeScreen() {
 
   // Después de confirmar el correo, entra solo: probamos iniciar sesión cada
   // pocos segundos (y con el botón) sin importar por dónde se abrió el link.
+  // Solo "email not confirmed" significa "todavía no": cualquier otro error (límite
+  // de intentos, sin conexión) se muestra tal cual en vez de quedar mudo, y el
+  // sondeo se frena un rato tras un 429 para no gastar el límite del servidor.
   const [enteringNow, setEnteringNow] = useState(false);
+  const pausedUntil = useRef(0);
   async function tryEnterAfterConfirmation(showError: boolean) {
     if (!awaitingConfirmation || !password) return;
+    if (!showError && Date.now() < pausedUntil.current) return;
     const { data, error } = await supabase.auth.signInWithPassword({ email: awaitingConfirmation, password });
     if (error || !data.session) {
-      if (showError) Alert.alert('Todavía no está confirmado', 'Abre el link del correo y después toca este botón de nuevo.');
+      const code = (error as { code?: string } | null)?.code ?? '';
+      const notConfirmed = code === 'email_not_confirmed' || !!error?.message?.toLowerCase().includes('email not confirmed');
+      if (code === 'over_request_rate_limit') pausedUntil.current = Date.now() + 60_000;
+      if (showError) {
+        if (notConfirmed) Alert.alert('Todavía no está confirmado', 'Abre el link del correo y después toca este botón de nuevo. Si no te llegó, toca "Reenviar correo" y revisa spam.');
+        else Alert.alert('No pudimos entrar', friendlyError(error, 'Intenta de nuevo en un momento.'));
+      }
       return;
     }
     setAwaitingConfirmation(null);
@@ -176,7 +187,7 @@ export default function WelcomeScreen() {
     if (!awaitingConfirmation) return;
     const id = setInterval(() => {
       tryEnterAfterConfirmation(false);
-    }, 5000);
+    }, 15000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [awaitingConfirmation, password]);
@@ -190,7 +201,7 @@ export default function WelcomeScreen() {
       options: { emailRedirectTo: emailRedirectUrl() },
     });
     setResending(false);
-    if (error) Alert.alert('No pudimos reenviar el correo', friendlyError(error));
+    if (error) Alert.alert('No pudimos reenviar el correo', friendlyError(error, 'No pudimos mandar el correo ahora. Intenta en unos minutos o escríbenos a soporte.'));
     else Alert.alert('Listo', 'Te mandamos el correo de nuevo.');
   }
 
