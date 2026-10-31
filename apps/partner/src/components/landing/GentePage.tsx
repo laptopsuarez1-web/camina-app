@@ -3,7 +3,7 @@ import './glass.css';
 import GlassFx from './GlassFx';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, EquipoRetos, GrupoEjemplo, Salud, DescargaGente, SoyComercio, CAP, Shot, EMAIL_AVISAME } from './shared';
+import { MasParaGente, Fidelidad, Nav, Footer, FloatCards, Cinta, Reglas, Mapa, Galeria, Objetivos, DiaADia, EquipoRetos, GrupoEjemplo, Salud, DescargaGente, SoyComercio, CAP, Shot, EMAIL_AVISAME } from './shared';
 
 export default function GentePage() {
   return (
@@ -38,6 +38,7 @@ export default function GentePage() {
         <Reglas />
         <Mapa titulo="Tu zona, a pasos de distancia." texto="Mira cómo un recorrido normal se vuelve un premio. El mapa es de Tarija y los locales son reales." />
         <Objetivos />
+        <DiaADia />
         <Salud />
         <EquipoRetos />
         <GrupoEjemplo />
