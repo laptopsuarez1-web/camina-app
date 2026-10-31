@@ -179,7 +179,7 @@ export function StoryComposer({
       </View>
 
       <View className="flex-1 px-6 items-center">
-        {/* Así se va a ver en Instagram: foto a pantalla completa y el sticker de Camina abajo. */}
+        {/* Así se va a ver en Instagram: foto a pantalla completa y la cápsula del canje abajo. */}
         <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           <View style={{ position: 'absolute', left: 14, right: 14, bottom: 18, alignItems: 'flex-start', gap: 8 }}>
@@ -189,9 +189,6 @@ export function StoryComposer({
                 <Text style={{ color: '#291C47', fontWeight: '800', fontSize: 13 }}>{benefitName}</Text>
                 <Text style={{ color: '#655483', fontWeight: '600', fontSize: 12 }}>en {businessName} · con Camina</Text>
               </View>
-            </View>
-            <View className="rounded-lg" style={{ backgroundColor: '#fff', paddingVertical: 4, paddingHorizontal: 9 }}>
-              <Text style={{ fontWeight: '800', fontSize: 14, color: '#8B4FD1' }}>{CAMINA_INSTAGRAM}</Text>
             </View>
           </View>
         </View>
