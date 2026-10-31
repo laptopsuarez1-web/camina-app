@@ -4,7 +4,6 @@ import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, w
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { Check } from '@/components/icons';
@@ -100,6 +99,15 @@ export function LocalCodeSheet({
     }
   }, [visible]);
 
+  // Al volver a 'typing' (inicio o tras un error) se vuelve a abrir el teclado. Antes se enfocaba en el mismo instante en que
+  // se cambiaba la fase, con el campo todavía bloqueado: el enfoque se perdía y no se podía volver a escribir.
+  useEffect(() => {
+    if (visible && phase === 'typing') {
+      const t = setTimeout(() => input.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [visible, phase]);
+
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
 
   async function submit() {
@@ -117,7 +125,6 @@ export function LocalCodeSheet({
       setTimeout(() => {
         setCode('');
         setPhase('typing');
-        input.current?.focus();
       }, 700);
       return;
     }
@@ -134,7 +141,8 @@ export function LocalCodeSheet({
       <KeyboardSafe className="flex-1">
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <View>
-          <Glass className="rounded-t-[32px] px-6 pt-3 pb-8">
+          {/* Fondo sólido: con vidrio se transparentaba la lista de locales de atrás y no se leía nada. */}
+          <View className="bg-card-light dark:bg-card-dark rounded-t-[32px] px-6 pt-3 pb-8 border-t border-line-light dark:border-line-dark">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center gap-2.5 mb-5">
@@ -173,7 +181,6 @@ export function LocalCodeSheet({
                 keyboardType="number-pad"
                 maxLength={DIGITS}
                 autoFocus
-                editable={phase === 'typing'}
                 caretHidden
                 textContentType="oneTimeCode"
                 accessibilityLabel="Código del local, 4 números"
@@ -216,7 +223,7 @@ export function LocalCodeSheet({
             <Press accessibilityRole="button" hitSlop={8} onPress={onClose} disabled={phase === 'busy' || phase === 'done'} className="py-2.5 items-center">
               <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no</Text>
             </Press>
-          </Glass>
+          </View>
           </View>
         </View>
       </KeyboardSafe>
