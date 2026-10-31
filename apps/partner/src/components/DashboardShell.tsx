@@ -43,7 +43,7 @@ const NAV_MAS: NavItem[] = [
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { session, business, isAdmin, role, loading, refreshBusiness } = useBusinessAuth();
   const [resending, setResending] = useState(false);
-  const [beneficiosActitú, setBeneficiosActivos] = useState<number | null>(null);
+  const [beneficiosActivos, setBeneficiosActivos] = useState<number | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const enMas = NAV_MAS.some((i) => i.href === pathname);
