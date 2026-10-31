@@ -18,7 +18,6 @@ import { useThemeColors } from '@/theme/useThemeColors';
 
 // Grupo nuevo: nombre, meta semanal del grupo y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
 const DEFAULT_GOAL = 50000; // meta general sugerida: el grupo la puede cambiar acá o después
-const GOAL_PRESETS = [30000, 50000, 70000, 100000];
 const MIN_GOAL = 5000; // mismos límites que la política de la tabla groups (0019)
 const MAX_GOAL = 5_000_000;
 
@@ -30,8 +29,8 @@ export default function NuevoGrupoScreen() {
   const queryClient = useQueryClient();
   const { data: friends } = useFriends();
   const [name, setName] = useState('');
-  const [goal, setGoal] = useState(DEFAULT_GOAL);
-  const [custom, setCustom] = useState('');
+  const [goalText, setGoalText] = useState(String(DEFAULT_GOAL));
+  const goal = parseInt(goalText || '0', 10);
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -88,42 +87,16 @@ export default function NuevoGrupoScreen() {
 
         <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 4 }]}>Meta de la semana</Text>
         <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mx-1 mb-2.5" style={{ lineHeight: 18 }}>
-          La sugerimos en 50.000 pasos, pero la eligen ustedes: pasos que suman entre todos, de lunes a domingo. Si lo logran, el grupo lo festeja. Pueden cambiarla cuando quieran.
+          Ya viene en 50.000, pero la eligen ustedes: pasos que suman entre todos, de lunes a domingo. Si lo logran, el grupo lo festeja. Pueden cambiarla cuando quieran.
         </Text>
-        <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-          {GOAL_PRESETS.map((n) => {
-            const on = custom === '' && goal === n;
-            return (
-              <Press
-                key={n}
-                accessibilityRole="button"
-                accessibilityState={{ selected: on }}
-                aria-pressed={on}
-                haptic="selection"
-                onPress={() => { setCustom(''); setGoal(n); }}
-                className="rounded-2xl px-4 py-2.5"
-                style={{ backgroundColor: on ? colors.aquaDeep : dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: on ? colors.aquaDeep : dark ? colors.dark.line : colors.light.line }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: '700', color: on ? '#fff' : text }}>{n.toLocaleString('es-BO')}</Text>
-              </Press>
-            );
-          })}
-        </View>
-        <Glass className="rounded-2xl px-4 pt-2.5 pb-1 mt-2.5">
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Otra meta (pasos)</Text>
+        <Glass className="rounded-3xl px-4 pt-3 pb-1">
+          <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Pasos de la semana</Text>
           <TextInput
-            value={custom}
-            onChangeText={(v) => {
-              const digits = v.replace(/\D/g, '').slice(0, 7);
-              setCustom(digits);
-              if (digits) setGoal(parseInt(digits, 10));
-              else setGoal(DEFAULT_GOAL);
-            }}
+            value={goalText ? parseInt(goalText, 10).toLocaleString('es-BO') : ''}
+            onChangeText={(v) => setGoalText(v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 7))}
             keyboardType="number-pad"
-            placeholder="Por ejemplo 60.000"
-            placeholderTextColor={muted}
-            accessibilityLabel="Otra meta semanal de pasos"
-            className="text-[16px] font-semibold py-1.5 text-text-light dark:text-text-dark"
+            accessibilityLabel="Meta semanal de pasos del grupo"
+            className="text-[17px] font-semibold py-2 text-text-light dark:text-text-dark"
           />
         </Glass>
         <Text className="text-[12px] mt-2 mx-1" style={{ color: goalOk ? muted : colors.warn }}>
