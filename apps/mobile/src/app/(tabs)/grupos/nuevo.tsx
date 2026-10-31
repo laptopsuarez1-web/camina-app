@@ -8,6 +8,7 @@ import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { FriendPicker } from '@/components/friends/FriendPicker';
 import { ChevronLeft } from '@/components/icons';
+import { GroupLookPicker, type GroupPhoto } from '@/components/GroupLookPicker';
 import { useFriends } from '@/hooks/useFriends';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
@@ -20,6 +21,8 @@ export default function NuevoGrupoScreen() {
   const { friend } = useLocalSearchParams<{ friend?: string }>();
   const { data: friends } = useFriends();
   const [name, setName] = useState('');
+  const [background, setBackground] = useState<string>('aqua');
+  const [photo, setPhoto] = useState<GroupPhoto | null>(null);
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -51,6 +54,9 @@ export default function NuevoGrupoScreen() {
           />
         </Glass>
 
+        <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Foto y fondo</Text>
+        <GroupLookPicker photo={photo} onPhoto={setPhoto} background={background} onBackground={setBackground} />
+
         {(friends ?? []).length > 0 ? (
           <>
             <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Invita a tus amigos</Text>
@@ -66,7 +72,7 @@ export default function NuevoGrupoScreen() {
         <Press
           accessibilityRole="button"
           disabled={!ready}
-          onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-meta', params: { name: name.trim(), friends: picked.join(',') } })}
+          onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-meta', params: { name: name.trim(), friends: picked.join(','), background, ...(photo ? { photo: photo.uri } : {}) } })}
           className="rounded-2xl py-3.5 items-center mt-5"
           style={{ backgroundColor: colors.aquaDeep, opacity: ready ? 1 : 0.5 }}
         >

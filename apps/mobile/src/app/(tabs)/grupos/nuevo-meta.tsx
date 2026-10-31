@@ -9,6 +9,7 @@ import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
+import { uploadGroupPhoto } from '@/lib/avatar';
 import { friendlyServerError } from '@/lib/errors';
 import { buzz } from '@/lib/haptics';
 import { colors } from '@/theme/tokens';
@@ -30,7 +31,7 @@ const VISIBLE = 5; // filas a la vista: la del medio es la elegida
 export default function NuevaMetaScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, accentIcon, accentText } = useThemeColors();
-  const { name, friends } = useLocalSearchParams<{ name: string; friends?: string }>();
+  const { name, friends, background, photo } = useLocalSearchParams<{ name: string; friends?: string; background?: string; photo?: string }>();
   const picked = friends ? friends.split(',').filter(Boolean) : [];
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
@@ -60,10 +61,19 @@ export default function NuevaMetaScreen() {
   const create = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error('Sin sesión');
-      const { data: group, error } = await supabase.from('groups').insert({ name: (name ?? '').trim(), created_by: userId, challenge_target: goal }).select().single();
+      const { data: group, error } = await supabase.from('groups').insert({ name: (name ?? '').trim(), created_by: userId, challenge_target: goal, ...(background ? { background } : {}) }).select().single();
       if (error) throw error;
       const { error: memberError } = await supabase.from('group_members').insert({ group_id: group.id, user_id: userId });
       if (memberError) throw memberError;
+      if (photo) {
+        // La foto es un extra: si falla, el grupo ya existe y se puede poner después desde el menú del grupo.
+        try {
+          const url = await uploadGroupPhoto(group.id, photo);
+          await supabase.from('groups').update({ photo_url: url }).eq('id', group.id);
+        } catch {
+          // se puede volver a elegir desde el menú del grupo
+        }
+      }
       if (picked.length > 0) {
         // Si la invitación falla, el grupo ya existe: se avisa y la persona puede reintentar desde "Agregar amigos".
         const { error: inviteError } = await supabase.rpc('invite_friends_to_group', { p_group: group.id, p_users: picked });

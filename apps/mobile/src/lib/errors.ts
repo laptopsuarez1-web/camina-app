@@ -8,6 +8,7 @@ const BY_CODE: Record<string, string> = {
   weak_password: 'La contraseña es muy corta. Usa al menos 6 caracteres.',
   validation_failed: 'Revisa que el correo esté bien escrito.',
   email_address_invalid: 'Revisa que el correo esté bien escrito.',
+  user_banned: 'Esta cuenta fue suspendida por el equipo de Camina. Si crees que es un error, escribe a caminaappbo@gmail.com.',
   email_not_confirmed: 'Todavía falta confirmar tu correo. Revisa tu bandeja de entrada.',
   over_email_send_rate_limit: 'Pediste muchos correos seguidos. Espera un rato e intenta de nuevo.',
   over_request_rate_limit: 'Hiciste muchos intentos seguidos. Espera un minuto e intenta de nuevo.',

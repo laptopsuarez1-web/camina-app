@@ -6,6 +6,7 @@ import { supabase, type Business, type BusinessPlan } from '@/lib/supabase';
 import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { FichaPreviewModal } from '@/components/FichaPreview';
+import { AdminBusinessEditModal } from '@/components/AdminBusinessEdit';
 import { faltantesParaPublicar, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 
@@ -37,6 +38,9 @@ export default function AdminPage() {
   const [reviewMsg, setReviewMsg] = useState<string | null>(null);
   const [activeBenefits, setActiveBenefits] = useState<Record<string, number>>({});
   const [previewing, setPreviewing] = useState<Business | null>(null);
+  const [editing, setEditing] = useState<Business | null>(null);
+  const [pausingId, setPausingId] = useState<string | null>(null);
+  const [pauseReason, setPauseReason] = useState('');
 
   const loadBusinesses = useCallback(async () => {
     setListLoading(true);
@@ -166,6 +170,21 @@ export default function AdminPage() {
     setBusinesses((prev) => prev.filter((x) => x.id !== b.id));
   }
 
+  // Pausar saca al comercio de la app y frena los canjes; reanudar lo devuelve tal cual estaba.
+  async function setPaused(b: Business, paused: boolean) {
+    setSavingId(b.id);
+    setReviewMsg(null);
+    const { error } = await supabase.rpc('admin_set_business_paused', { p_business: b.id, p_paused: paused, p_reason: paused ? pauseReason : null });
+    setSavingId(null);
+    if (error) {
+      setReviewMsg(/admin_set_business_paused/i.test(error.message) ? 'Falta aplicar la migración 0069 en la base de datos.' : error.message);
+      return;
+    }
+    setPausingId(null);
+    setPauseReason('');
+    setBusinesses((prev) => prev.map((x) => (x.id === b.id ? { ...x, paused_at: paused ? new Date().toISOString() : null, pause_reason: paused ? pauseReason.trim() || null : null } : x)));
+  }
+
   async function toggleAdEligible(businessId: string, value: boolean) {
     setSavingId(businessId);
     const { error } = await supabase.from('businesses').update({ ad_eligible: value }).eq('id', businessId);
@@ -224,6 +243,16 @@ export default function AdminPage() {
                 </button>
               ) : undefined
             }
+          />
+        )}
+        {editing && (
+          <AdminBusinessEditModal
+            business={editing}
+            onClose={() => setEditing(null)}
+            onSaved={(updated) => {
+              setBusinesses((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+              setEditing(null);
+            }}
           />
         )}
         <h1 className="text-[22px] font-bold text-text mb-1">Todos los comercios</h1>
@@ -475,7 +504,7 @@ export default function AdminPage() {
           <p className="text-muted text-[13.5px]">Todavía no hay comercios registrados.</p>
         ) : (
           <div className="bg-card border border-line rounded-2xl overflow-x-auto">
-            <table className="w-full min-w-[840px] text-[13px]">
+            <table className="w-full min-w-[900px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left">
                   <th className="px-4 py-3 font-semibold text-muted text-[11.5px] uppercase tracking-wide">Nombre</th>
@@ -493,7 +522,11 @@ export default function AdminPage() {
                     <td className="px-4 py-3 font-semibold text-text">{b.name}</td>
                     <td className="px-4 py-3 text-muted">{b.category}</td>
                     <td className="px-4 py-3">
-                      {b.approved ? (
+                      {b.paused_at ? (
+                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: '#FFF3D6', color: '#8A5A2E' }} title={b.pause_reason ?? undefined}>
+                          En pausa
+                        </span>
+                      ) : b.approved ? (
                         <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
                           Aprobado
                         </span>
@@ -562,29 +595,80 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {deletingId === b.id ? (
-                        <span className="inline-flex items-center gap-2 text-[11.5px]">
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex gap-1.5">
                           <button
-                            onClick={() => deleteBusiness(b)}
-                            disabled={savingId === b.id}
-                            className="rounded-[8px] px-2.5 py-1.5 font-bold text-white disabled:opacity-50"
-                            style={{ background: '#C0392B' }}
+                            onClick={() => setEditing(b)}
+                            className="bg-white border border-line text-text rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
                           >
-                            Sí, eliminar
+                            Editar
                           </button>
-                          <button onClick={() => setDeletingId(null)} className="text-muted font-semibold">
-                            No
+                          {b.paused_at ? (
+                            <button
+                              onClick={() => setPaused(b, false)}
+                              disabled={savingId === b.id}
+                              className="bg-mint text-mint-dark rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold disabled:opacity-50"
+                            >
+                              Reanudar
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setPausingId(pausingId === b.id ? null : b.id);
+                                setPauseReason('');
+                                setDeletingId(null);
+                              }}
+                              className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                              style={{ background: '#FFF3D6', color: '#8A5A2E' }}
+                            >
+                              Pausar
+                            </button>
+                          )}
+                        </div>
+                        {pausingId === b.id && (
+                          <div className="flex flex-col items-end gap-1.5 w-[220px]">
+                            <input
+                              value={pauseReason}
+                              onChange={(e) => setPauseReason(e.target.value)}
+                              placeholder="Motivo (opcional)"
+                              aria-label="Motivo de la pausa"
+                              className="w-full bg-white border border-line rounded-[8px] px-2.5 py-1.5 text-[12px]"
+                            />
+                            <div className="flex gap-1.5">
+                              <button onClick={() => setPaused(b, true)} disabled={savingId === b.id} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#7FEDC4' }}>
+                                Pausar comercio
+                              </button>
+                              <button onClick={() => setPausingId(null)} className="text-muted text-[11.5px] font-semibold">No</button>
+                            </div>
+                          </div>
+                        )}
+                        {deletingId === b.id ? (
+                          <span className="inline-flex items-center gap-2 text-[11.5px]">
+                            <button
+                              onClick={() => deleteBusiness(b)}
+                              disabled={savingId === b.id}
+                              className="rounded-[8px] px-2.5 py-1.5 font-bold text-white disabled:opacity-50"
+                              style={{ background: '#C0392B' }}
+                            >
+                              Sí, eliminar
+                            </button>
+                            <button onClick={() => setDeletingId(null)} className="text-muted font-semibold">
+                              No
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setDeletingId(b.id);
+                              setPausingId(null);
+                            }}
+                            className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                            style={{ background: '#FDEEE2', color: '#C0392B' }}
+                          >
+                            Eliminar
                           </button>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => setDeletingId(b.id)}
-                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
-                          style={{ background: '#FDEEE2', color: '#C0392B' }}
-                        >
-                          Eliminar
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

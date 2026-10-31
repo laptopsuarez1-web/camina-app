@@ -81,6 +81,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="notificaciones" options={{ href: null }} />
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="editar-perfil" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="grupos/reto" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo-desafio" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/nuevo-meta" options={{ href: null, tabBarStyle: { display: 'none' } }} />
