@@ -436,18 +436,14 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
       <Text style={{ fontSize: 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
       <Text style={{ fontSize: story ? 28 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
       {story ? (
-        // Baifo festejando con el trofeo y el avance de la meta del grupo: llena el centro de la historia con algo propio de Camina.
+        // Aro con el avance de la meta del grupo: llena el centro de la historia sin dibujos de relleno.
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12 }}>
           <Ring p={p} size={84} pct={pct}>
-            <Trophy size={30} color={p.gold} weight="fill" />
+            <Text style={{ fontSize: done ? 14 : 20, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -0.5 }}>{done ? '¡Meta!' : `${Math.round(pct * 100)} %`}</Text>
           </Ring>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: p.muted }}>Meta del grupo</Text>
-            <Text style={{ fontSize: 30, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -1, lineHeight: 34 }}>{done ? '¡Cumplida!' : `${Math.round(pct * 100)} %`}</Text>
-            <View style={{ height: 7, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden', marginTop: 3 }}>
-              <View style={{ width: `${Math.max(2, pct * 100)}%`, height: 7, borderRadius: 4, backgroundColor: p.bar }} />
-            </View>
-            <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 4 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: p.ink }}>Meta del grupo</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: p.muted, marginTop: 3 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
           </View>
         </View>
       ) : null}
