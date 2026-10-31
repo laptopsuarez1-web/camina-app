@@ -51,7 +51,7 @@ export default function AdminAlertasPage() {
               <div key={d.device_id} className={`p-3.5 text-[13px] ${i < devices.length - 1 ? 'border-b border-line' : ''}`}>
                 <p className="font-semibold">{d.accounts} cuentas: {d.names}</p>
                 <p className="text-muted text-[11.5px]">Última vez: {new Date(d.last_seen).toLocaleDateString('es-BO')}</p>
-                <button type="button" onClick={() => release(d.device_id)} className="mt-1.5 text-[12px] font-semibold text-primary">
+                <button type="button" onClick={() => release(d.device_id)} className="mt-1.5 text-[12px] font-semibold text-purple">
                   Liberar celular
                 </button>
               </div>
