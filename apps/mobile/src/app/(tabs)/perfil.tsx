@@ -24,6 +24,8 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
+import { useNotificationPrefs } from '@/store/useNotificationPrefs';
+import { NotificationPrefs } from '@/components/NotificationPrefs';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
 
@@ -130,6 +132,12 @@ export default function PerfilScreen() {
       return;
     }
     await registerForPushNotificationsAsync({ userInitiated: true });
+    // Al aceptar las notificaciones todos los avisos arrancan activos (después cada uno se puede apagar).
+    if ((await Notifications.getPermissionsAsync()).status === 'granted') {
+      useNotificationPrefs.getState().set('aliento', true);
+      useNotificationPrefs.getState().set('racha', true);
+      if (profile) await supabase.from('profiles').update({ push_servicio: true }).eq('id', profile.id);
+    }
     await loadPermissions();
   }
 
@@ -317,6 +325,7 @@ export default function PerfilScreen() {
           status={pushStatus}
           onPress={pushStatus === 'granted' ? () => Linking.openSettings() : enablePush}
         />
+        {pushStatus === 'granted' && <NotificationPrefs />}
         <PermRow
           icon={Heartbeat}
           title={Platform.OS === 'ios' ? 'Pasos (Salud)' : 'Pasos (Health Connect)'}

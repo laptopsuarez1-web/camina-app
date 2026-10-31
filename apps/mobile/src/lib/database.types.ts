@@ -20,6 +20,7 @@ export interface Profile {
   terms_accepted_at: string | null;
   birth_date?: string | null;
   nearby_alerts?: boolean;
+  push_servicio?: boolean;
   city?: string;
   bio?: string | null;
   created_at: string;
