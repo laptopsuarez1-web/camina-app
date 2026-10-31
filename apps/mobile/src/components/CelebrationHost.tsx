@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Platform, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, findNodeHandle, Image, Keyboard, Platform, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -217,6 +217,10 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
 export function CelebrationHost() {
   const current = useCelebrationStore((s) => s.queue[0]);
   const dismiss = useCelebrationStore((s) => s.dismiss);
+  // Un teclado abierto de la pantalla de atrás (ej. el numérico de la meta) taparía la escena.
+  useEffect(() => {
+    if (current) Keyboard.dismiss();
+  }, [current?.id]);
   if (!current) return null;
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', inset: 0 }}>
