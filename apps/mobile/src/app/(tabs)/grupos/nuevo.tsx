@@ -17,7 +17,8 @@ import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
 // Grupo nuevo: nombre, meta semanal del grupo y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
-const GOAL_PRESETS = [20000, 42000, 70000, 100000];
+const DEFAULT_GOAL = 50000; // meta general sugerida: el grupo la puede cambiar acá o después
+const GOAL_PRESETS = [30000, 50000, 70000, 100000];
 const MIN_GOAL = 5000; // mismos límites que la política de la tabla groups (0019)
 const MAX_GOAL = 5_000_000;
 
@@ -29,7 +30,7 @@ export default function NuevoGrupoScreen() {
   const queryClient = useQueryClient();
   const { data: friends } = useFriends();
   const [name, setName] = useState('');
-  const [goal, setGoal] = useState(42000);
+  const [goal, setGoal] = useState(DEFAULT_GOAL);
   const [custom, setCustom] = useState('');
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
 
@@ -87,7 +88,7 @@ export default function NuevoGrupoScreen() {
 
         <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 4 }]}>Meta de la semana</Text>
         <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mx-1 mb-2.5" style={{ lineHeight: 18 }}>
-          Pasos que tienen que sumar entre todos, de lunes a domingo. Si lo logran, el grupo lo festeja. Puedes cambiarla después.
+          La sugerimos en 50.000 pasos, pero la eligen ustedes: pasos que suman entre todos, de lunes a domingo. Si lo logran, el grupo lo festeja. Pueden cambiarla cuando quieran.
         </Text>
         <View className="flex-row flex-wrap" style={{ gap: 8 }}>
           {GOAL_PRESETS.map((n) => {
@@ -116,7 +117,7 @@ export default function NuevoGrupoScreen() {
               const digits = v.replace(/\D/g, '').slice(0, 7);
               setCustom(digits);
               if (digits) setGoal(parseInt(digits, 10));
-              else setGoal(42000);
+              else setGoal(DEFAULT_GOAL);
             }}
             keyboardType="number-pad"
             placeholder="Por ejemplo 60.000"
