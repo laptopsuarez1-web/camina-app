@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { EndedCinematic, JoinedCinematic } from '@/components/challenge/ChallengeCinematics';
 import type {
-  EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupJoinedCinematic, StreakCinematic, TicketBoughtCinematic,
+  EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic, TicketBoughtCinematic,
 } from '@/components/celebrations/MomentScenes';
 
 // Celebraciones y avisos de logros. Hay tres tamaños, de menor a mayor:
@@ -9,7 +9,7 @@ import type {
 //  - sheet: hoja desde abajo con chispas (reto cumplido, bienvenida);
 //  - win: pantalla completa para un gran logro;
 //  - challenge-joined / challenge-ended: cinemáticas de los desafíos (sumarse y terminar);
-//  - ticket-bought, event-joined, group-joined, group-created, friend-made, streak-milestone: escenas de momentos grandes.
+//  - ticket-bought, event-joined, group-joined, group-created, friend-made, streak-milestone, streak-week, group-goal, ranking-result: escenas de momentos grandes.
 export type ToastIcon = 'flame' | 'gift' | 'check' | 'users';
 export type Celebration =
   | { kind: 'toast'; icon: ToastIcon; title: string; body?: string; at?: 'top' | 'bottom' }
@@ -22,7 +22,10 @@ export type Celebration =
   | GroupJoinedCinematic
   | GroupCreatedCinematic
   | FriendMadeCinematic
-  | StreakCinematic;
+  | StreakCinematic
+  | StreakWeekCinematic
+  | GroupGoalCinematic
+  | RankingResultCinematic;
 
 interface CelebrationState {
   queue: (Celebration & { id: number })[];

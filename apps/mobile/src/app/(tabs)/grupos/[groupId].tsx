@@ -141,7 +141,14 @@ export default function GroupDetailScreen() {
     AsyncStorage.getItem(key).then((seen) => {
       if (seen) return;
       AsyncStorage.setItem(key, '1').catch(() => {});
-      celebrate({ kind: 'toast', at: 'bottom', icon: 'users', title: '¡Lo lograron juntos!', body: `${groupName ?? 'Tu grupo'} cumplió la meta de la semana` });
+      celebrate({
+        kind: 'group-goal',
+        name: groupName ?? 'Tu grupo',
+        total: groupTotal,
+        target: groupTarget,
+        people: (data?.members ?? []).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null })),
+        onShare: () => setRankShareOpen(true),
+      });
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);

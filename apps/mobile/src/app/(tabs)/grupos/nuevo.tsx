@@ -16,7 +16,11 @@ import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Grupo nuevo: nombre y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
+// Grupo nuevo: nombre, meta semanal del grupo y, si querés, amigos para invitar de entrada (les llega la invitación y entran al aceptar).
+const GOAL_PRESETS = [20000, 42000, 70000, 100000];
+const MIN_GOAL = 5000; // mismos límites que la política de la tabla groups (0019)
+const MAX_GOAL = 5_000_000;
+
 export default function NuevoGrupoScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, muted, accentIcon } = useThemeColors();
@@ -25,6 +29,8 @@ export default function NuevoGrupoScreen() {
   const queryClient = useQueryClient();
   const { data: friends } = useFriends();
   const [name, setName] = useState('');
+  const [goal, setGoal] = useState(42000);
+  const [custom, setCustom] = useState('');
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -32,7 +38,7 @@ export default function NuevoGrupoScreen() {
   const create = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error('Sin sesión');
-      const { data: group, error } = await supabase.from('groups').insert({ name: name.trim(), created_by: userId }).select().single();
+      const { data: group, error } = await supabase.from('groups').insert({ name: name.trim(), created_by: userId, challenge_target: goal }).select().single();
       if (error) throw error;
       const { error: memberError } = await supabase.from('group_members').insert({ group_id: group.id, user_id: userId });
       if (memberError) throw memberError;
@@ -51,7 +57,8 @@ export default function NuevoGrupoScreen() {
     onError: (e) => Alert.alert('No se pudo crear el grupo', friendlyServerError(e, 'Intenta de nuevo.')),
   });
 
-  const ready = name.trim().length >= 2 && !create.isPending;
+  const goalOk = goal >= MIN_GOAL && goal <= MAX_GOAL;
+  const ready = name.trim().length >= 2 && goalOk && !create.isPending;
 
   return (
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -77,6 +84,50 @@ export default function NuevoGrupoScreen() {
             className="text-[17px] font-semibold py-2 text-text-light dark:text-text-dark"
           />
         </Glass>
+
+        <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 4 }]}>Meta de la semana</Text>
+        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mx-1 mb-2.5" style={{ lineHeight: 18 }}>
+          Pasos que tienen que sumar entre todos, de lunes a domingo. Si lo logran, el grupo lo festeja. Puedes cambiarla después.
+        </Text>
+        <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+          {GOAL_PRESETS.map((n) => {
+            const on = custom === '' && goal === n;
+            return (
+              <Press
+                key={n}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                aria-pressed={on}
+                haptic="selection"
+                onPress={() => { setCustom(''); setGoal(n); }}
+                className="rounded-2xl px-4 py-2.5"
+                style={{ backgroundColor: on ? colors.aquaDeep : dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: on ? colors.aquaDeep : dark ? colors.dark.line : colors.light.line }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '700', color: on ? '#fff' : text }}>{n.toLocaleString('es-BO')}</Text>
+              </Press>
+            );
+          })}
+        </View>
+        <Glass className="rounded-2xl px-4 pt-2.5 pb-1 mt-2.5">
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Otra meta (pasos)</Text>
+          <TextInput
+            value={custom}
+            onChangeText={(v) => {
+              const digits = v.replace(/\D/g, '').slice(0, 7);
+              setCustom(digits);
+              if (digits) setGoal(parseInt(digits, 10));
+              else setGoal(42000);
+            }}
+            keyboardType="number-pad"
+            placeholder="Por ejemplo 60.000"
+            placeholderTextColor={muted}
+            accessibilityLabel="Otra meta semanal de pasos"
+            className="text-[16px] font-semibold py-1.5 text-text-light dark:text-text-dark"
+          />
+        </Glass>
+        <Text className="text-[12px] mt-2 mx-1" style={{ color: goalOk ? muted : colors.warn }}>
+          {goalOk ? `Unos ${Math.round(goal / 7).toLocaleString('es-BO')} pasos por día entre todos.` : `La meta tiene que estar entre ${MIN_GOAL.toLocaleString('es-BO')} y ${MAX_GOAL.toLocaleString('es-BO')} pasos.`}
+        </Text>
 
         {(friends ?? []).length > 0 ? (
           <>

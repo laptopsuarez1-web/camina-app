@@ -2,9 +2,14 @@ import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { router } from 'expo-router';
+import { useMyLastWeekRank } from '@/hooks/useGlobalRanking';
+import { localDay } from '@/lib/format';
 import { celebrate } from '@/store/useCelebrationStore';
+import { STREAK_BONUS_DAYS, STREAK_BONUS_POINTS } from '@/constants/business-rules';
 
-const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
+// 7 y 14 no van acá: cada semana completa tiene su propia escena (abajo).
+const STREAK_MILESTONES = [3, 30, 60, 100];
 
 async function once(key: string, fn: () => void) {
   try {
@@ -20,6 +25,7 @@ async function once(key: string, fn: () => void) {
 export function useHomeMoments(streak: number | undefined) {
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
+  const { data: lastWeek } = useMyLastWeekRank();
 
   // Bienvenida: solo cuentas nuevas (creadas en los últimos 3 días), una vez.
   useEffect(() => {
@@ -36,7 +42,7 @@ export function useHomeMoments(streak: number | undefined) {
     );
   }, [profile?.id, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Racha: aviso corto al llegar a 3, 7, 14, 30, 60 y 100 días (solo el hito más alto alcanzado).
+  // Racha: aviso corto al llegar a 3, 30, 60 y 100 días (solo el hito más alto alcanzado).
   useEffect(() => {
     if (!userId || !streak) return;
     const hit = [...STREAK_MILESTONES].reverse().find((m) => streak >= m);
@@ -50,6 +56,31 @@ export function useHomeMoments(streak: number | undefined) {
       else celebrate({ kind: 'toast', icon: 'flame', title: `${hit} días de racha`, body: '¡Sigue así mañana!' });
     }).catch(() => {});
   }, [streak, userId]);
+
+  // Semana de racha completa (7, 14, 21… días seguidos): escena con las 7 casillas y los +5 Puntos, una vez por semana lograda.
+  useEffect(() => {
+    if (!userId || !streak || streak % STREAK_BONUS_DAYS !== 0) return;
+    const weeks = streak / STREAK_BONUS_DAYS;
+    const key = `camina_streak_wk_${userId}`;
+    AsyncStorage.getItem(key).then((saved) => {
+      if (Number(saved ?? 0) >= weeks) return;
+      AsyncStorage.setItem(key, String(weeks)).catch(() => {});
+      celebrate({ kind: 'streak-week', weeks, points: STREAK_BONUS_POINTS });
+    }).catch(() => {});
+  }, [streak, userId]);
+
+  // Resultado del ranking global de la semana que cerró: 1.º, podio, Top 10 o Top 100. Una vez por semana.
+  useEffect(() => {
+    if (!userId || !lastWeek || lastWeek.position > 100) return;
+    const monday = new Date();
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const key = `camina_rank_wk_${userId}_${localDay(monday)}`;
+    AsyncStorage.getItem(key).then((seen) => {
+      if (seen) return;
+      AsyncStorage.setItem(key, '1').catch(() => {});
+      celebrate({ kind: 'ranking-result', position: lastWeek.position, steps: lastWeek.steps, onRanking: () => router.push('/(tabs)/ranking') });
+    }).catch(() => {});
+  }, [lastWeek?.position, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Un amigo que invitaste ya caminó y te dio sus 5 Puntos. La primera vez solo se anotan los que ya había.
   useEffect(() => {

@@ -6,11 +6,11 @@ import { useAuthStore } from '@/store/useAuthStore';
 // las funciones security definer de supabase/migrations/0006_terms_global_ranking.sql (y 0056: abierto siempre)
 // porque steps_daily es select-own y el cliente no puede agregar pasos ajenos
 // directo. Solo entran quienes activaron "Aparecer en el ranking" en Perfil.
-export function useGlobalRanking() {
+export function useGlobalRanking(limit: 10 | 100 = 10) {
   return useQuery({
-    queryKey: ['global-ranking'],
+    queryKey: ['global-ranking', limit],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: 20 });
+      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: limit });
       if (error) throw error;
       return data;
     },
@@ -36,6 +36,22 @@ export function useMyWeeklyRank() {
     enabled: !!userId,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('my_weekly_rank');
+      if (error) throw error;
+      const row = (data as { rank_position: number | string; total_steps: number | string }[] | null)?.[0];
+      return row ? { position: Number(row.rank_position), steps: Number(row.total_steps) } : null;
+    },
+  });
+}
+
+// Mi puesto en la semana que cerró (lunes a domingo anterior). null si no aparecía en el ranking.
+export function useMyLastWeekRank() {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['my-last-week-rank', userId],
+    enabled: !!userId,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('my_last_week_rank');
       if (error) throw error;
       const row = (data as { rank_position: number | string; total_steps: number | string }[] | null)?.[0];
       return row ? { position: Number(row.rank_position), steps: Number(row.total_steps) } : null;
