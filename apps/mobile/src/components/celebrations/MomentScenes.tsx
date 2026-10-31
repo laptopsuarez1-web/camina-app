@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
+import { Glass } from '@/components/ui/Glass';
 import { Crown, Flame, Trophy, Users } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
@@ -26,7 +27,7 @@ export type FriendMadeCinematic = { kind: 'friend-made'; me: CinePerson; friend:
 export type StreakCinematic = { kind: 'streak-milestone'; days: number };
 export type StreakWeekCinematic = { kind: 'streak-week'; weeks: number; points: number };
 export type GroupGoalCinematic = { kind: 'group-goal'; name: string; total: number; target: number; people: (CinePerson & { steps: number })[]; onShare?: () => void };
-export type RankingResultCinematic = { kind: 'ranking-result'; position: number; steps: number; weekLabel: string; me: CinePerson; points?: number; onRanking?: () => void };
+export type RankingResultCinematic = { kind: 'ranking-result'; position: number; steps: number; weekLabel: string; me: CinePerson; onRanking?: () => void };
 
 const INK = '#2a1650';
 const INK_SOFT = '#6b5a8a';
@@ -519,7 +520,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
       <Reveal tl={tl} delay={2050} pop from={0.6} style={{ marginTop: 24 }}>
         <Text style={{ ...display(28), color: p.text, textAlign: 'center' }}>¡Lo lograron juntos!</Text>
       </Reveal>
-      <View style={{ alignSelf: 'stretch', marginTop: 16, gap: 7 }}>
+      <Glass className="rounded-3xl" style={{ alignSelf: 'stretch', marginTop: 16, gap: 8, padding: 12 }}>
         {top.map((q, i) => (
           <Reveal key={q.id} tl={tl} delay={2200 + i * 110} dy={10}>
             <View accessible accessibilityLabel={`${q.name}: ${q.steps} pasos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -533,7 +534,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
           </Reveal>
         ))}
         {rest > 0 ? <Reveal tl={tl} delay={2200 + top.length * 110}><Text style={{ fontSize: 12, color: p.muted, textAlign: 'center' }}>y {rest} {rest === 1 ? 'persona más' : 'personas más'}</Text></Reveal> : null}
-      </View>
+      </Glass>
       <Reveal tl={tl} delay={2450} dy={20} style={{ alignSelf: 'stretch', marginTop: 26 }}>
         {c.onShare ? <MainButton label="Compartir con el grupo" onPress={() => { c.onShare?.(); onDone(); }} /> : <MainButton label="Genial" onPress={onDone} />}
         {c.onShare ? <LinkButton label="Seguir" onPress={onDone} color={p.accent} /> : null}
@@ -594,10 +595,10 @@ function StatChip({ tl, delay, value, label }: { tl: Timeline; delay: number; va
   const p = usePalette();
   return (
     <Reveal tl={tl} delay={delay} dy={14} style={{ flex: 1 }}>
-      <View accessible accessibilityLabel={`${label}: ${value}`} style={{ borderRadius: 16, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }}>
+      <Glass accessible accessibilityLabel={`${label}: ${value}`} className="rounded-2xl" style={{ paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center' }}>
         <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 17, fontWeight: '900', color: p.text, fontVariant: ['tabular-nums'] }}>{value}</Text>
         <Text style={{ fontSize: 11, color: p.muted, marginTop: 1 }}>{label}</Text>
-      </View>
+      </Glass>
     </Reveal>
   );
 }
@@ -609,8 +610,6 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
   const limit = c.position <= 10 ? 10 : 100;
   const tone = t.key === 'top10' ? colors.aqua : t.key === 'top100' ? colors.purple : GOLD;
   const tl = useTimeline(podium ? 4100 : 3600);
-  const prizeAt = podium ? 2700 : 2500;
-  const total = useCount(tl, 0, c.points ?? 0, prizeAt + 100, 800);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     if (podium) {
@@ -621,7 +620,6 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
       [0, 1, 2, 3, 4, 5].forEach((i) => tl.at(500 + i * 150, buzz.selection));
       tl.at(1500, buzz.success);
     }
-    if (c.points) [0, 1, 2, 3, 4].forEach((i) => tl.at(prizeAt + i * 110 + 520, buzz.selection));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const share = () => {
@@ -629,7 +627,7 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
   };
   const steps = [2, 1, 3];
   return (
-    <Stage tl={tl} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.${c.points ? ` Ganaste ${c.points} Puntos.` : ''}`}>
+    <Stage tl={tl} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Ranking semanal global · ${c.weekLabel}`}</Eyebrow></Reveal>
 
       {podium ? (
@@ -663,22 +661,6 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
         <StatChip tl={tl} delay={podium ? 2550 : 1900} value={c.steps.toLocaleString('es-BO')} label="Pasos" />
         <StatChip tl={tl} delay={podium ? 2650 : 2000} value={Math.round(c.steps / 7).toLocaleString('es-BO')} label="Por día" />
       </View>
-
-      {c.points ? (
-        <Reveal tl={tl} delay={prizeAt} pop from={0.7} style={{ marginTop: 14 }}>
-          <View accessible accessibilityLabel={`${c.points} Puntos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 18, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.5)' }}>
-            <View>
-              <Coin size={26} />
-              {[0, 1, 2, 3, 4].map((i) => (
-                <View key={i} style={{ position: 'absolute', left: 13, top: 13 }}>
-                  <FlyingCoin tl={tl} delay={prizeAt + i * 110} dx={60 + (i - 2) * 14} dy={-150} />
-                </View>
-              ))}
-            </View>
-            <Text style={{ fontWeight: '900', fontSize: 26, color: p.gold, fontVariant: ['tabular-nums'] }}>+{total}</Text>
-          </View>
-        </Reveal>
-      ) : null}
 
       <Reveal tl={tl} delay={podium ? 2900 : 2200} dy={20} style={{ alignSelf: 'stretch', marginTop: 18 }}>
         <MainButton gold={podium} label="Compartir" onPress={share} />
