@@ -1,5 +1,8 @@
 import { useCallback } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Switch } from 'react-native';
+import { useColorScheme } from 'nativewind';
+import { useNotificationPrefs } from '@/store/useNotificationPrefs';
+import { buzz } from '@/lib/haptics';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
@@ -49,7 +52,27 @@ function timeAgo(iso: string) {
   return d === 1 ? 'Ayer' : `Hace ${d} días`;
 }
 
+function PrefRow({ title, text, value, onChange, last }: { title: string; text: string; value: boolean; onChange: (v: boolean) => void; last?: boolean }) {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  return (
+    <View className={`flex-row items-center justify-between py-3 ${last ? '' : 'border-b border-line-light dark:border-line-dark'}`} style={{ gap: 12 }}>
+      <View className="flex-1">
+        <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">{title}</Text>
+        <Text className="text-[12.5px] leading-[18px] text-muted-light dark:text-muted-dark mt-0.5">{text}</Text>
+      </View>
+      <Switch
+        accessibilityLabel={title}
+        value={value}
+        onValueChange={(v) => { buzz.selection(); onChange(v); }}
+        trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
+      />
+    </View>
+  );
+}
+
 export default function NotificacionesScreen() {
+  const prefs = useNotificationPrefs();
   const tabSpace = useTabBarSpace();
   const { items, seenAt, markAllSeen, isLoading, isError, refetch } = useNotifications();
 
@@ -69,6 +92,11 @@ export default function NotificacionesScreen() {
       </DarkHeader>
 
       <View className="px-5 pt-5" style={{ gap: 10 }}>
+        <Glass className="rounded-2xl px-4 pt-3 pb-1">
+          <Text accessibilityRole="header" className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Cómo funciona</Text>
+          <PrefRow title="Aliento del día" text="A las 18:30 te contamos cuánto te falta para tu meta o cuántos Puntos más puedes sumar." value={prefs.aliento} onChange={(v) => prefs.set('aliento', v)} />
+          <PrefRow title="Racha" text="Avisos de la tarde y la noche para que no cortes tu racha." value={prefs.racha} onChange={(v) => prefs.set('racha', v)} last />
+        </Glass>
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
           // Si el destino es esta misma pantalla no hay a dónde ir: la fila queda solo para leer.
