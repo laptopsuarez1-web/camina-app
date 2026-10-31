@@ -33,7 +33,7 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
       className="flex-row items-center p-3.5"
       style={{ gap: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: line }}
     >
-      <Text className="w-6 text-center text-[13px] font-semibold text-muted-light dark:text-muted-dark" style={r.position <= 3 ? { color: ['#E2B33C', '#9AA3B2', '#C98A5A'][r.position - 1], fontWeight: '900', fontSize: 15 } : undefined}>{r.position}</Text>
+      <Text className="w-6 text-center text-[13px] font-semibold text-muted-light dark:text-muted-dark">{r.position}</Text>
       <PersonAvatar name={r.name} photoUrl={r.photoUrl} size={40} />
       <View className="flex-1">
         <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{r.me ? `${r.name} (tú)` : r.name}</Text>
@@ -50,14 +50,13 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
 export default function RankingScreen() {
   const insets = useSafeAreaInsets();
   const tabSpace = useTabBarSpace();
-  const { dark, text, accentIcon, accentText } = useThemeColors();
+  const { dark, text, accentIcon } = useThemeColors();
   const params = useLocalSearchParams<{ view?: string }>();
   const [view, setView] = useState<'global' | 'amigos'>(params.view === 'amigos' ? 'amigos' : 'global');
   const [options, setOptions] = useState(false);
-  const [top, setTop] = useState<10 | 100>(10);
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { data: global, isLoading: globalLoading, isError: globalError, refetch: refetchGlobal } = useGlobalRanking(top);
+  const { data: global, isLoading: globalLoading, isError: globalError, refetch: refetchGlobal } = useGlobalRanking();
   const { data: myRank } = useMyWeeklyRank();
   const { data: average } = useCommunityAverage();
   const { data: friends, isLoading: friendsLoading, isError: friendsError, refetch: refetchFriends } = useFriendsRanking();
@@ -132,22 +131,6 @@ export default function RankingScreen() {
                 </Text>
               </View>
             )}
-            <View className="flex-row mb-3" style={{ gap: 8 }}>
-              {([10, 100] as const).map((n) => (
-                <Press
-                  key={n}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: top === n }}
-                  aria-pressed={top === n}
-                  haptic="selection"
-                  onPress={() => setTop(n)}
-                  className="rounded-full px-4 py-2"
-                  style={{ backgroundColor: top === n ? (dark ? 'rgba(127,237,196,0.18)' : colors.light.aquaLight) : 'transparent', borderWidth: 1, borderColor: top === n ? colors.aqua : dark ? colors.dark.line : colors.light.line }}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: top === n ? accentText : text }}>{`Top ${n}`}</Text>
-                </Press>
-              ))}
-            </View>
             {globalLoading && <SkeletonGroup style={{ gap: 8 }}>{[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}</SkeletonGroup>}
             {globalError && !global && <EmptyState mascot="confundido" title="No pudimos cargar el ranking" text="Revisa tu conexión e intenta de nuevo." actionLabel="Reintentar" onAction={() => refetchGlobal()} />}
             {!globalLoading && !globalError && globalRows.length === 0 && (

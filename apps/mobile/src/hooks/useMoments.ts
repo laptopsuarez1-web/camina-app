@@ -78,7 +78,18 @@ export function useHomeMoments(streak: number | undefined) {
     AsyncStorage.getItem(key).then((seen) => {
       if (seen) return;
       AsyncStorage.setItem(key, '1').catch(() => {});
-      celebrate({ kind: 'ranking-result', position: lastWeek.position, steps: lastWeek.steps, onRanking: () => router.push('/(tabs)/ranking') });
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() - 1);
+      const start = new Date(monday);
+      start.setDate(start.getDate() - 7);
+      const mes = (d: Date) => d.toLocaleDateString('es-BO', { month: 'short' }).replace('.', '');
+      const weekLabel = `${start.getDate()} ${mes(start)} al ${sunday.getDate()} ${mes(sunday)}`;
+      const prof = useAuthStore.getState().profile;
+      celebrate({
+        kind: 'ranking-result', position: lastWeek.position, steps: lastWeek.steps, weekLabel,
+        me: { id: userId, name: prof?.full_name || 'Tú', photoUrl: prof?.photo_url ?? null },
+        onRanking: () => router.push('/(tabs)/ranking'),
+      });
     }).catch(() => {});
   }, [lastWeek?.position, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 

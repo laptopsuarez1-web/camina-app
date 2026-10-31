@@ -6,11 +6,11 @@ import { useAuthStore } from '@/store/useAuthStore';
 // las funciones security definer de supabase/migrations/0006_terms_global_ranking.sql (y 0056: abierto siempre)
 // porque steps_daily es select-own y el cliente no puede agregar pasos ajenos
 // directo. Solo entran quienes activaron "Aparecer en el ranking" en Perfil.
-export function useGlobalRanking(limit: 10 | 100 = 10) {
+export function useGlobalRanking() {
   return useQuery({
-    queryKey: ['global-ranking', limit],
+    queryKey: ['global-ranking'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: limit });
+      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: 20 });
       if (error) throw error;
       return data;
     },

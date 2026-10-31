@@ -146,7 +146,7 @@ export default function GroupDetailScreen() {
         name: groupName ?? 'Tu grupo',
         total: groupTotal,
         target: groupTarget,
-        people: (data?.members ?? []).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null })),
+        people: (data?.members ?? []).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl ?? null, steps: m.steps })),
         onShare: () => setRankShareOpen(true),
       });
     }).catch(() => {});
