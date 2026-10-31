@@ -26,6 +26,9 @@ import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
+import { GoalSheet } from '@/components/GoalSheet';
+import { Target } from '@/components/icons';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -82,6 +85,8 @@ export default function PerfilScreen() {
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
   const [permsOpen, setPermsOpen] = useState(false);
+  const [goalOpen, setGoalOpen] = useState(false);
+  const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   // En iPhone "unknown" es: ya se pidió pero Salud no devolvió pasos esta semana; se muestra como activo (iOS no
   // deja saber si se negó) y el botón lleva a la app Salud para revisarlo.
   const stepsShown: Perm = Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus;
@@ -258,6 +263,23 @@ export default function PerfilScreen() {
         </Press>
       </Glass>
 
+      <Glass className="rounded-2xl overflow-hidden mb-3">
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel={`Meta diaria, ${goal.toLocaleString('es-BO')} pasos. Cambiar`}
+          onPress={() => setGoalOpen(true)}
+          className="flex-row items-center p-4"
+          style={{ gap: 12 }}
+        >
+          <IconBubble icon={Target} size={34} />
+          <View className="flex-1">
+            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Meta diaria</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs">{goal.toLocaleString('es-BO')} pasos por día</Text>
+          </View>
+          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+        </Press>
+      </Glass>
+
       <Glass className="rounded-3xl overflow-hidden mb-3">
         <Press
           accessibilityRole="button"
@@ -398,6 +420,7 @@ export default function PerfilScreen() {
         <LogOut size={15} color={isDark ? colors.warn : colors.warnDeep} />
         <Text className="text-warn-deep dark:text-warn font-semibold">Cerrar sesión</Text>
       </Press>
+      <GoalSheet visible={goalOpen} goal={goal} isDark={isDark} onClose={() => setGoalOpen(false)} />
     </ScrollView>
   );
 }
