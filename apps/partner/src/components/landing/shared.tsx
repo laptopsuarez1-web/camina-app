@@ -12,32 +12,31 @@ export const EMAIL_AVISAME = `mailto:caminaappbo@gmail.com?subject=${encodeURICo
 
 export const CAP = {
   inicio: '/web/cap/inicio.jpg',
-  canjes: '/web/cap/canjes.jpg',
-  fripaps: '/web/cap/ficha-fripaps.jpg',
-  bloom: '/web/cap/ficha-bloom.jpg',
-  coco: '/web/cap/ficha-coco.jpg',
-  grupos: '/web/cap/grupos.jpg',
   actividad: '/web/cap/actividad.jpg',
-  gruposActivo: '/web/cap/grupos-activo.jpg',
+  canjes: '/web/cap/canjes.jpg',
+  ficha: '/web/cap/ficha.jpg',
+  grupos: '/web/cap/grupos.jpg',
+  grupo: '/web/cap/grupo.jpg',
+  grupoRanking: '/web/cap/grupo-ranking.jpg',
+  grupoChat: '/web/cap/grupo-chat.jpg',
+  grupoReto: '/web/cap/grupo-reto.jpg',
+  grupoColor: '/web/cap/grupo-color.jpg',
+  grupoMeta: '/web/cap/grupo-meta.jpg',
+  grupoInvitar: '/web/cap/grupo-invitar.jpg',
+  puntos: '/web/cap/puntos.jpg',
   eventos: '/web/cap/eventos.jpg',
   desafios: '/web/cap/desafios.jpg',
   retos: '/web/cap/retos.jpg',
-  meta: '/web/cap/meta.jpg',
-  canjeResena: '/web/cap/canje-resena.jpg',
+  rachas: '/web/cap/rachas.jpg',
+  ranking: '/web/cap/ranking.jpg',
+  perfil: '/web/cap/perfil.jpg',
+  resenaHistoria: '/web/cap/resena-historia.jpg',
   historia: '/web/cap/historia.jpg',
-  grupo: '/web/cap/grupo.jpg',
-  grupoReto: '/web/cap/grupo-reto.jpg',
-  grupoRanking: '/web/cap/grupo-ranking.jpg',
-  grupoChat: '/web/cap/grupo-chat.jpg',
-  amigos: '/web/cap/amigos.jpg',
-  rankingAmigos: '/web/cap/ranking-amigos.jpg',
-  amigoPerfil: '/web/cap/amigo-perfil.jpg',
-  amigoAgregar: '/web/cap/amigo-agregar.jpg',
 };
 
 // "Así se ve Camina": cada pantalla en claro y en oscuro (el interruptor de la galería elige cuál se ve).
 const CAP_DARK: Record<string, string> = Object.fromEntries(
-  [CAP.inicio, CAP.canjes, CAP.fripaps, CAP.grupos, CAP.actividad, CAP.eventos, CAP.desafios, CAP.retos, CAP.meta, CAP.grupo, CAP.grupoReto, CAP.grupoRanking, CAP.grupoChat, CAP.amigos, CAP.rankingAmigos, CAP.amigoPerfil, CAP.amigoAgregar].map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
+  Object.values(CAP).map((c) => [c, c.replace('.jpg', '-dark.jpg')]),
 );
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
@@ -176,8 +175,8 @@ export function Reglas() {
             <span>números es el código del local</span>
           </InView>
           <InView className="stat" delay={360}>
-            <b><Counter to={300} /></b>
-            <span>metros: tienes que estar en el local</span>
+            <b><Counter to={90} /></b>
+            <span>días de vigencia de cada punto</span>
           </InView>
         </div>
         <InView className="reparto">
@@ -238,16 +237,17 @@ export function Locales() {
 
 export function Galeria() {
   const pant = [
-    ['Tu día en un vistazo', 'Tus pasos de hoy, tus puntos y tu racha.', CAP.inicio],
+    ['Tu día en un vistazo', 'Tus pasos de hoy, tus Puntos y tu racha.', CAP.inicio],
     ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
     ['Grupos', 'Camina en equipo con tus amigos.', CAP.grupos],
-    ['Tu grupo', 'Podio, meta compartida y desafíos.', CAP.grupo],
+    ['Tu grupo', 'Podio, meta compartida y reto de la semana.', CAP.grupo],
     ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
     ['Desafíos', 'Súmate a desafíos con premios.', CAP.desafios],
     ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
     ['Canjear', 'Busca comercios y mira sus premios.', CAP.canjes],
-    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.fripaps],
-    ['Tu meta de pasos', 'Eliges cuántos pasos por día.', CAP.meta],
+    ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.ficha],
+    ['Tus Puntos', 'Tu saldo, tus movimientos y cómo invitar amigos.', CAP.puntos],
+    ['Perfil', 'Tus datos, tus amigos y tus permisos.', CAP.perfil],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
@@ -306,6 +306,44 @@ export function Objetivos() {
             </InView>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function DiaADia() {
+  return (
+    <section className="lp-sec night" id="dia-a-dia">
+      <div className="wrap">
+        <Kinetic text="Tu día en Camina, paso a paso." />
+        <Bloques
+          items={[
+            {
+              t: 'Tus Puntos, con solo abrir la app',
+              d: 'Los pasos cuentan el día en que abres Camina. Con abrirla una vez al día, se acreditan los pasos de las 24 horas completas: en la pantalla de Inicio ves cuántos Puntos vas sumando. Si un día no la abres, ese día no suma.',
+              img: CAP.inicio,
+              alt: 'Pantalla de Inicio con los pasos del día, los Puntos que se acreditan, la racha y la meta',
+            },
+            {
+              t: 'Tu racha',
+              d: 'Tu racha cuenta los días seguidos con al menos 5.000 pasos, y cada 7 días sumas 5 Puntos. Si te saltas un día, vuelve a 0. Aparte está tu meta personal: la eliges tú en Perfil > Editar perfil y no cambia tu racha.',
+              img: CAP.rachas,
+              alt: 'Hoja Tus rachas con la racha y la meta personal',
+            },
+            {
+              t: 'Tu semana, de un vistazo',
+              d: 'La pantalla de Actividad muestra tus pasos de la semana en un gráfico, tu racha en el calendario y cuánto te falta para llegar a tu meta.',
+              img: CAP.actividad,
+              alt: 'Pantalla de Actividad con el gráfico de la semana y la racha',
+            },
+            {
+              t: 'Tu app, a tu gusto',
+              d: 'Desde Perfil eliges modo claro u oscuro y cuánto vidrio quieres ver en las tarjetas y la barra, desde sólido hasta cristal. Cada persona deja Camina como más le gusta.',
+              img: CAP.perfil,
+              alt: 'Pantalla de Perfil con el modo oscuro y el control de vidrio',
+            },
+          ]}
+        />
       </div>
     </section>
   );
@@ -542,7 +580,7 @@ export function EquipoRetos() {
           items={[
             {
               t: 'Grupos',
-              d: 'Crea un grupo con amigos o familia, sumen pasos juntos y miren el ranking de la semana. Es más fácil salir a caminar cuando hay con quién.',
+              d: 'Crea un grupo con amigos o familia, elijan una meta semanal entre todos, sumen pasos juntos y miren el ranking. Pueden armar retos con Puntos en juego e invitar a más amigos cuando quieran.',
               img: CAP.grupos,
               alt: 'Pantalla de Grupos con un grupo de ejemplo y su meta de la semana',
               tag: 'Grupo de ejemplo',
@@ -555,7 +593,7 @@ export function EquipoRetos() {
             },
             {
               t: 'Eventos y sorteos',
-              d: 'Locales y Camina publican eventos y sorteos dentro de la app. Camina, cumplí el requisito y participa.',
+              d: 'Locales y Camina publican eventos y sorteos dentro de la app. Camina, cumple el requisito y participa.',
               img: CAP.eventos,
               alt: 'Pantalla de eventos de ejemplo',
               tag: 'Ejemplo de lo que puede haber',
@@ -569,14 +607,14 @@ export function EquipoRetos() {
 
 // Un grupo de ejemplo ("Caminantes del Centro", personas inventadas) recorrido pantalla por pantalla.
 const GRUPO_PANT = [
-  ['El podio de la semana', 'Se arma solo con los pasos de cada uno desde el lunes. La corona es para quien más caminó.', CAP.grupo],
-  ['Meta del grupo y desafío', 'Una meta semanal que suman entre todos y desafíos con Puntos en juego: eligen la regla, la meta diaria y cuánto pone cada uno.', CAP.grupoReto],
-  ['Ranking y semanas anteriores', 'Todos los integrantes ordenados por pasos y quién ganó cada semana.', CAP.grupoRanking],
+  ['Elige la meta de la semana', 'Al crear el grupo, una ruedita de 1.000 en 1.000 pasos y atajos de 25.000 a 150.000. Se puede cambiar después.', CAP.grupoMeta],
+  ['El podio de la semana', 'Se arma solo con los pasos de cada integrante desde el lunes. La corona es para quien más caminó.', CAP.grupo],
+  ['Ranking del grupo', 'Todos los integrantes ordenados por pasos, y botón para compartir el ranking.', CAP.grupoRanking],
+  ['Reto de la semana', 'Un desafío con Puntos en juego: cómo va cada integrante y cuánto le falta a cada uno para el primer puesto.', CAP.grupoReto],
+  ['Elige el color y la foto del grupo', 'Cada grupo tiene su propia foto y un fondo a elegir: violeta, esmeralda, océano, atardecer, rosa o dorado.', CAP.grupoColor],
+  ['Invitar amigos al grupo', 'Eliges a tus amigos y les llega la invitación; se unen cuando aceptan.', CAP.grupoInvitar],
   ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada mes.', CAP.grupoChat],
-  ['Tus amigos', 'Las solicitudes nuevas y los pasos de la semana de cada amigo.', CAP.amigos],
-  ['Ranking entre amigos', 'Además del ranking global, uno solo con tus amigos.', CAP.rankingAmigos],
-  ['El perfil de un amigo', 'Su racha, su promedio, su meta y cómo viene su semana.', CAP.amigoPerfil],
-  ['Agregar un amigo', 'Le mandas la solicitud y, cuando acepta, ven los pasos del otro.', CAP.amigoAgregar],
+  ['Ranking', 'El ranking global y el de tus amigos.', CAP.ranking],
 ] as const;
 
 export function GrupoEjemplo() {
@@ -585,13 +623,13 @@ export function GrupoEjemplo() {
       <div className="wrap">
         <Kinetic text="Así se vive un grupo." />
         <p className="lead">
-          Un grupo de ejemplo, «Caminantes del Centro», para que veas cómo funciona: podio, meta compartida, un desafío con Puntos en juego, ranking, chat y amigos.
+          Un grupo de ejemplo, «Caminantes del Molino», para que veas cómo funciona: meta compartida, podio, un reto con Puntos en juego, invitaciones, ranking y chat.
         </p>
         <div className="grupo-datos">
-          <span><b>6</b> integrantes</span>
-          <span><b>183.400</b> pasos esta semana</span>
-          <span><b>92%</b> de la meta del grupo</span>
-          <span><b>50</b> Puntos en el pozo del desafío</span>
+          <span><b>7</b> integrantes</span>
+          <span><b>244.900</b> pasos esta semana</span>
+          <span><b>82%</b> de la meta del grupo</span>
+          <span><b>30</b> Puntos en el pozo del reto</span>
         </div>
         <ModoToggle target="grupo-ejemplo" />
       </div>
@@ -607,8 +645,7 @@ export function GrupoEjemplo() {
         ))}
       </div>
       <p className="wrap gal-nota">
-        Grupo de ejemplo: las personas, los pasos y los mensajes son inventados. En el desafío, quienes cumplen la meta diaria en al menos el 80% de los días se reparten el pozo en partes iguales; si nadie la cumple, cada uno recupera sus Puntos.
-      </p>
+        Grupo de ejemplo: las personas, los pasos y los mensajes son inventados. Al crear un desafío se elige la regla: gana quien suma más pasos o quien cumple la meta diaria más veces, y se reparten los Puntos puestos en juego.</p>
     </section>
   );
 }
@@ -651,16 +688,22 @@ export function CanjeResena() {
           dark={false}
           items={[
             {
-              t: 'Reseñas en Google Maps',
-              d: 'Cuando confirmas un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargas tú en tu perfil.',
-              img: CAP.canjeResena,
-              alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps',
+              t: 'Calificaciones en Google Maps',
+              d: 'Cuando se confirma un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargas tú en tu perfil. Más reseñas hacen que más gente te encuentre.',
+              img: CAP.resenaHistoria,
+              alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps y a subir una historia',
             },
             {
               t: 'Historias en Instagram',
-              d: 'La persona arma una historia con el sticker de Camina y la sube a Instagram. Si el equipo de Camina la aprueba, gana 5 Puntos. Vos te muestras en las redes de quienes te visitan.',
+              d: 'Quien canjea en tu local puede subir una historia a Instagram con una foto de lo que canjeó y el nombre de tu local. Se muestra a sus amigos y seguidores, y si el equipo de Camina la aprueba, gana 5 Puntos. Publicidad para ti, sin costo.',
               img: CAP.historia,
-              alt: 'Pantalla de la app para subir una historia después de un canje',
+              alt: 'Pantalla de la historia lista para publicar en Instagram con el nombre del premio y del local',
+            },
+            {
+              t: 'Tus redes en tu ficha',
+              d: 'En el panel dejas tu Instagram, Facebook, TikTok y WhatsApp. Aparecen como botones en la ficha de tu local dentro de la app, a un toque de que te sigan o te escriban.',
+              img: CAP.ficha,
+              alt: 'Ficha de un local con botones de Instagram y WhatsApp',
             },
           ]}
         />
@@ -766,14 +809,14 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
 
 type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
-  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cumplilas y ganas más puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Inicio con los Retos Camina', row2: true },
-  { t: 'Tu meta, a tu medida', d: 'Eliges cuántos pasos quieres hacer por día. Te recomendamos 5.000 para arrancar y la cambias cuando quieras.', ico: 'pasos', span: 's3', shot: CAP.meta, alt: 'Pantalla para elegir la meta de pasos por día', row2: true },
+  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cúmplelas y ganas más Puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Retos Camina', row2: true },
+  { t: 'Tu meta, a tu medida', d: 'Eliges tu meta diaria de pasos en Perfil > Editar perfil y la cambias cuando quieras. Todos tus pasos suman, llegues o no a la meta.', ico: 'pasos', span: 's3', fill: true },
   { t: 'Invita amigos', d: 'Comparte tu link: recibes 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
   { t: 'Historias que suman', d: 'Sube una historia a Instagram y gana 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
   { t: 'Comparte tu progreso', d: 'Tarjetas con tu día, tu semana o tu mes, y el ranking de tu grupo, listas para mandar o subir.', ico: 'grafico', span: 's2' },
-  { t: 'Tu racha y tu calendario', d: 'Miras tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta.', ico: 'calendario', span: 's2' },
-  { t: 'Grupos y ranking', d: 'Camina en equipo con tus amigos, con meta semanal compartida y ranking.', ico: 'grupo', span: 's2' },
-  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Eliges el modo de la app y cuánto vidrio quieres ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
+  { t: 'Tu racha y tu calendario', d: 'Miras tus días con objetivo cumplido, tu semana en un gráfico y cuánto te falta para la meta. Cada 7 días de racha sumas 5 Puntos.', ico: 'calendario', span: 's2' },
+  { t: 'Grupos y ranking', d: 'Camina en equipo con tus amigos, con meta semanal compartida, retos con Puntos en juego y ranking.', ico: 'grupo', span: 's2' },
+  { t: 'Claro, oscuro y cristal a tu gusto', d: 'Cambias el modo de la app, claro u oscuro, y cuánto vidrio quieres ver, desde sólido hasta cristal.', ico: 'vidrio', span: 's2' },
   { t: 'Desafíos y eventos', d: 'Súmate a desafíos y eventos con fecha y lugar, y mira cómo funciona cada uno antes de participar.', ico: 'calendario', span: 's3', shot: CAP.desafios, alt: 'Pantalla de Desafíos', row2: true },
   { t: 'Tu ubicación, solo cuando la necesitas', d: 'La usamos en el momento para mostrarte lo que hay cerca y no la guardamos. Tampoco vendemos tus datos.', ico: 'ubicacion', span: 's3', fill: true },
   { t: 'Canjea tus puntos', d: 'Cuando quieras usar tus puntos, le pides al local su código de 4 números, lo escribes en la app y el canje se confirma al instante.', ico: 'regalo', span: 's3', fill: true },
