@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, TextInput as RNTextInput, View } from 'react-native';
+import { ActivityIndicator, AccessibilityInfo, Modal, Platform, TextInput as RNTextInput, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
-import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { Check } from '@/components/icons';
 import { buzz } from '@/lib/haptics';
@@ -131,13 +131,9 @@ export function LocalCodeSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onDismiss={onDismiss}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardSafe className="flex-1">
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
           <View>
-          {/* El Baifo se asoma por arriba de la hoja mientras se espera el código. */}
-          <View pointerEvents="none" style={{ position: 'absolute', right: 24, top: -52, height: 56, width: 70, overflow: 'hidden', zIndex: 1 }}>
-            <View style={{ position: 'absolute', bottom: -4, left: -12, right: -12 }}><BaifoMascot pose="asoma" height={62} /></View>
-          </View>
           <Glass className="rounded-t-[32px] px-6 pt-3 pb-8">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
@@ -223,7 +219,7 @@ export function LocalCodeSheet({
           </Glass>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardSafe>
     </Modal>
   );
 }

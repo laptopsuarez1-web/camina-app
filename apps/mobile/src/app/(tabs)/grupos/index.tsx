@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -45,6 +46,8 @@ export default function GruposScreen() {
     }
   }
 
+  const scrollRef = useRef<ScrollView>(null);
+
   const joinGroup = useMutation({
     mutationFn: async (rawCode: string) => {
       const { data: groupId, error } = await supabase.rpc('join_group_with_code', { p_code: rawCode });
@@ -64,9 +67,9 @@ export default function GruposScreen() {
   const { data: week } = useMyGroupsWeek(my, userId);
 
   return (
-    <View className="flex-1">
+    <KeyboardSafe className="flex-1">
       <HeaderLight />
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Grupos</ScreenTitle>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Camina, comparte y gana en equipo
@@ -245,6 +248,10 @@ export default function GruposScreen() {
               autoCapitalize="characters"
               autoCorrect={false}
               maxLength={8}
+              returnKeyType="go"
+              onSubmitEditing={() => code.length >= 6 && joinGroup.mutate(code)}
+              // El campo está al final de la lista: al abrir el teclado se baja la lista para que quede a la vista.
+              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
               className="flex-1 border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 text-text-light dark:text-text-dark"
             />
             <Press
@@ -281,6 +288,6 @@ export default function GruposScreen() {
         )}
       </View>
       </ScrollView>
-    </View>
+    </KeyboardSafe>
   );
 }

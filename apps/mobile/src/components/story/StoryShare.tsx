@@ -227,6 +227,8 @@ export function StoryConfirmSheet({
           placeholder="tu.usuario"
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={() => { if (handle.trim() && !busy) onConfirm(); }}
           accessibilityLabel="Tu usuario de Instagram"
           className="flex-1 text-[15px] text-text-light dark:text-text-dark"
           placeholderTextColor={dark ? colors.dark.muted : colors.light.muted}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, ActivityIndicator, Alert, ScrollView, Platform } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -244,7 +245,7 @@ export default function WelcomeScreen() {
 
   return (
     <LinearGradient colors={colors.headerGradient} style={{ flex: 1 }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardSafe style={{ flex: 1 }}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -396,7 +397,7 @@ export default function WelcomeScreen() {
             </Press>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardSafe>
     </LinearGradient>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { View, ScrollView, Share, AccessibilityInfo, Platform } from 'react-native';
+import { View, ScrollView, AccessibilityInfo, Platform } from 'react-native';
+import { shareText } from '@/lib/share';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -109,10 +110,7 @@ export default function PuntosScreen() {
 
   async function shareLink() {
     if (!link) return;
-    await Share.share({
-      message: `Te invito a Camina — camina y gana Puntos para canjear en comercios adheridos. Súmate con mi link:\n${link}`,
-      url: link,
-    });
+    await shareText(`Te invito a Camina: camina y gana Puntos para canjear en comercios adheridos. Súmate con mi link:\n${link}`);
   }
 
   return (

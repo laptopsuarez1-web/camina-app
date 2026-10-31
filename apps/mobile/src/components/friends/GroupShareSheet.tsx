@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Modal, Share, View } from 'react-native';
+import { Modal, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { shareText } from '@/lib/share';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
@@ -24,10 +25,7 @@ export function GroupShareSheet({
     close();
     // En iPhone, abrir el menú de compartir mientras esta hoja todavía se está cerrando no hace nada: se espera a que termine.
     await new Promise((r) => setTimeout(r, 500));
-    // Solo `message`, con el link al final: en iPhone, si además se pasa `url`, WhatsApp se queda con una sola de las dos.
-    await Share.share({
-      message: `Únete a mi grupo "${groupName}" en Camina: caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`,
-    });
+    await shareText(`Únete a mi grupo "${groupName}" en Camina: caminemos y ganemos Puntos juntos.\nCódigo: ${inviteCode}\n${groupInviteLink(inviteCode)}`);
   }
 
   async function copyCode() {

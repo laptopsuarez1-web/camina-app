@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -236,7 +237,7 @@ export default function EditarPerfilScreen() {
   const photo = photoUri ?? profile?.photo_url ?? null;
 
   return (
-    <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="bg-auth-bg pt-14 pb-5 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
           <View className="flex-row items-center gap-3">
@@ -404,6 +405,6 @@ export default function EditarPerfilScreen() {
           </Press>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
@@ -91,7 +92,7 @@ export default function CompletarPerfilScreen() {
   const field = 'bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-2xl px-4 py-3.5 text-[16px] text-text-light dark:text-text-dark';
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-bg-light dark:bg-bg-dark" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <ScrollView contentContainerClassName="px-6 pt-20 pb-10 flex-grow justify-center" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" className="text-[26px] font-extrabold mb-1.5 text-text-light dark:text-text-dark">¿Cómo te llamas?</Text>
         <Text className="text-muted-light dark:text-muted-dark text-[14px] leading-5 mb-7">
@@ -202,6 +203,6 @@ export default function CompletarPerfilScreen() {
           )}
         </Press>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }
