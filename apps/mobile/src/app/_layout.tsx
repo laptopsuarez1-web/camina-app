@@ -1,6 +1,5 @@
 import '@/theme/global.css';
 import '@/lib/web-alert';
-import '@/lib/background-steps';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
