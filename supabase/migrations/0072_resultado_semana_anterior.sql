@@ -1,4 +1,4 @@
--- 0068 — Mi puesto en el ranking global de la SEMANA ANTERIOR (solo lectura).
+-- 0072 — Mi puesto en el ranking global de la SEMANA ANTERIOR (solo lectura).
 -- Para qué: la app muestra una escena de festejo (1.º, podio, Top 10 o Top 100) el primer día de la semana nueva.
 -- Qué hace: my_last_week_rank() devuelve (rank_position, total_steps) de la semana cerrada (lunes a domingo), con las mismas
 --   reglas que my_weekly_rank (0056): solo si aparezco en el ranking (ranking_visible) y sumé pasos. No entrega Puntos ni
