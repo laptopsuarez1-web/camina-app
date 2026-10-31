@@ -3,7 +3,7 @@
 
 const PASOS = [
   { t: 'La persona elige el premio en la app', d: 'En tu local toca Canjear y la app le pide el código de 4 números de tu local.' },
-  { t: 'Le dices tu código', d: 'Decile el código de tu local (lo ves en Canjes, arriba). No hace falta que abras el panel ni el celular.' },
+  { t: 'Le dices tu código', d: 'Dile el código de tu local (lo ves en Canjes, arriba). No hace falta que abras el panel ni el celular.' },
   { t: 'La app confirma al instante', d: 'La persona escribe el código estando en tu local y ve "Canje confirmado". El canje queda registrado en Canjes con su premio.' },
   { t: 'Entregas el beneficio', d: 'Entrega lo prometido. Cada persona puede canjear una vez cada 7 días en tu local.' },
 ];

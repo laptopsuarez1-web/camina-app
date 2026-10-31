@@ -52,7 +52,7 @@ export default function GuiaPage() {
             <p className="font-semibold text-[13px] mb-1">Texto listo para tu Instagram o WhatsApp</p>
             <p className="text-[12.5px] leading-5 text-muted">
               &ldquo;¡Ya estamos en Camina! 🚶 Camina, junta puntos y canjéalos por beneficios en nuestro local. Descarga
-              la app en caminaapp.com y pedinos el código del local en la caja.&rdquo;
+              la app en caminaapp.com y pídenos el código del local en la caja.&rdquo;
             </p>
           </div>
         </section>

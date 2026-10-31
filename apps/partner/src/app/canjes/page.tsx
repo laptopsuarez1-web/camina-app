@@ -138,7 +138,7 @@ export default function CanjesPage() {
       <div className="bg-card border border-line rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="font-semibold text-sm mb-1">Código de tu local</p>
         <p className="text-muted text-xs mb-3.5">
-          Decile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace
+          Dile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace
           falta que abras el panel. Si se filtró, cámbialo cuando quieras.
         </p>
         <div className="flex items-center gap-3">

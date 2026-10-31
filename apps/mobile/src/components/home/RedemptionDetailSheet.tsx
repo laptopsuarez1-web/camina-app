@@ -69,7 +69,7 @@ export function RedemptionDetailSheet({
   const biz = r?.business ?? null;
 
   const st = r ? STATUS_STYLE[r.status] : null;
-  const steps = ['Mostrale el código al local.', 'El local lo confirma con su PIN.', '¡Disfruta tu premio!'];
+  const steps = ['Muéstrale el código al local.', 'El local lo confirma con su PIN.', '¡Disfruta tu premio!'];
 
   return (
     <Modal visible={!!r} transparent animationType="slide" onRequestClose={onClose}>
