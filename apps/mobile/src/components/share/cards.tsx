@@ -409,7 +409,7 @@ function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: s
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
-      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: compact ? 3 : 4 }} numberOfLines={1}>{isMe ? 'Tú' : label}</Text> : <View style={{ height: 4 }} />}
+      {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: compact ? 3 : 4 }} numberOfLines={1}>{label}</Text> : <View style={{ height: 4 }} />}
       <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
         <Text style={{ fontSize: compact ? (big ? 22 : 18) : big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>
@@ -473,7 +473,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         // Comparativo corto, para que la historia se entienda sin abrir la app.
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
           <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
-          <Tile p={p} small stack label={gap > 0 ? 'Te faltan para el 1.º' : 'Líder del grupo'} value={gap > 0 ? fmtInt(gap) : leader?.isMe ? 'Tú' : leader?.label ?? '–'} />
+          <Tile p={p} small stack label={gap > 0 ? 'Te faltan para el 1.º' : 'Líder del grupo'} value={gap > 0 ? fmtInt(gap) : leader?.label ?? '–'} />
         </View>
       ) : null}
       <View style={{ flex: 1 }} />
