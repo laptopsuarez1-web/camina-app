@@ -19,14 +19,3 @@ export function groupTheme(key: string | null | undefined) {
 export function groupGradient(key: string | null | undefined) {
   return groupTheme(key).colors;
 }
-
-// Metas semanales sugeridas para el grupo entero (pasos sumados de todos).
-export const GROUP_GOAL_PRESETS = [
-  { value: 25000, label: 'Tranquila' },
-  { value: 50000, label: 'Constante' },
-  { value: 100000, label: 'Activa' },
-  { value: 200000, label: 'Reto' },
-] as const;
-export const GROUP_GOAL_MIN = 5000;
-export const GROUP_GOAL_MAX = 5_000_000;
-export const GROUP_GOAL_DEFAULT = 50000;

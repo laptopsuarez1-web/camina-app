@@ -8,7 +8,7 @@ import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft, ruleText } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -516,7 +516,7 @@ export default function GroupDetailScreen() {
 
         {active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
-            <View className="flex-row items-center justify-between mb-2">
+            <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
                 <IconBubble icon={Trophy} tone="gold" size={34} />
                 <View className="flex-1">
@@ -532,7 +532,8 @@ export default function GroupDetailScreen() {
                   <Text className="text-[12.5px] font-extrabold text-mint-dark dark:text-mint">{pot}</Text>
                 </View>
               )}
-            </View>
+              <ChevronRight size={16} color={muted} />
+            </Press>
             {(ch?.standings ?? []).slice(0, 3).map((st, i) => (
               <View key={st.user_id} className="flex-row items-center py-1" style={{ gap: 8 }}>
                 <Text className="w-4 text-[12px] font-bold text-text-light dark:text-text-dark">{i + 1}</Text>
