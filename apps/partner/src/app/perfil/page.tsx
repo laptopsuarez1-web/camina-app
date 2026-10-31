@@ -188,7 +188,7 @@ export default function PerfilPage() {
         lng: esVirtual ? null : punto ? punto.lng : null,
         hours_text: summarizeWeek(semana),
         opening_hours: semana,
-        phone: telefono.trim(),
+        phone: telefono.trim() || null,
         instagram: instagram.trim() || null,
         facebook: facebook.trim() || null,
         tiktok: tiktok.trim() || null,
@@ -479,7 +479,7 @@ export default function PerfilPage() {
               </p>
             </div>
           </Field>
-          <Field label="Contacto (WhatsApp)" icon={<Phone size={13} color="#7C6A9C" />}>
+          <Field label="Contacto (WhatsApp, opcional)" icon={<Phone size={13} color="#7C6A9C" />}>
             <input
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
