@@ -1,5 +1,6 @@
 import { useEffect, useState, type Ref } from 'react';
 import { Keyboard, Platform, View, Image, type ImageSourcePropType } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -15,6 +16,34 @@ export const STORY_REWARD = 5;
 export const CAMINA_INSTAGRAM = '@caminaapp';
 
 export type { StoryState };
+
+// Logo de Instagram (cámara redondeada, lente y punto) con su degradé de siempre.
+function InstagramGlyph({ size }: { size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" accessible={false}>
+      <Defs>
+        <SvgGradient id="ig" x1="0" y1="1" x2="1" y2="0">
+          <Stop offset="0" stopColor="#FEDA77" />
+          <Stop offset="0.35" stopColor="#F58529" />
+          <Stop offset="0.6" stopColor="#DD2A7B" />
+          <Stop offset="1" stopColor="#8134AF" />
+        </SvgGradient>
+      </Defs>
+      <Rect x="3" y="3" width="18" height="18" rx="5.2" fill="none" stroke="url(#ig)" strokeWidth="2" />
+      <Circle cx="12" cy="12" r="4.1" fill="none" stroke="url(#ig)" strokeWidth="2" />
+      <Circle cx="17.2" cy="6.8" r="1.2" fill="url(#ig)" />
+    </Svg>
+  );
+}
+
+// Burbuja de Liquid Glass (iOS 26; en lo demás, vidrio con desenfoque) con el logo adentro.
+function InstagramBubble({ size = 64 }: { size?: number }) {
+  return (
+    <Glass className="rounded-full" style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <InstagramGlyph size={Math.round(size * 0.5)} />
+    </Glass>
+  );
+}
 
 // Botón debajo de cada canje confirmado (Inicio > Tus canjes), y su estado después de subir la historia.
 export function StoryRewardButton({ state, onPress }: { state: StoryState; onPress?: () => void }) {
@@ -219,8 +248,8 @@ export function StoryConfirmSheet({
       <View className={`w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center ${kb ? 'mb-3' : 'mb-5'}`} />
       <View className="items-center mb-4">
         {!kb && (
-          <View className="w-14 h-14 rounded-full items-center justify-center mb-3 bg-purple-light-light dark:bg-purple-light-dark">
-            <Instagram size={28} color={dark ? colors.purpleSoft : colors.purpleInk} weight="bold" />
+          <View className="mb-3">
+            <InstagramBubble />
           </View>
         )}
         <Text accessibilityRole="header" className="text-[17px] font-extrabold text-text-light dark:text-text-dark">¿Ya subiste la historia?</Text>
