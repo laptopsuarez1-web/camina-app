@@ -57,7 +57,6 @@ export function CardFrame({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 18 }}>
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 20, height: 20, borderRadius: 10 }} />
             <Text style={[{ fontFamily: WORDMARK_FAMILY, fontSize: 12, letterSpacing: 2.2, color: '#FFFFFF', fontWeight: '900' }, SHADOW]}>CAMINA</Text>
-            <Text style={[{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.9)' }, SHADOW]}>{CAMINA_HANDLE}</Text>
           </View>
         </View>
       </View>
@@ -93,12 +92,6 @@ export function CardFrame({
           </View>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: story ? 10 : 4 }}>
-          <View style={{ backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 12, paddingVertical: 4 }}>
-            <Text style={{ fontSize: 12, fontWeight: '800', color: p.accent }}>{CAMINA_HANDLE}</Text>
-          </View>
-          <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginLeft: 8 }}>Camina y gana Puntos</Text>
-        </View>
       </View>
     </View>
   );
@@ -445,12 +438,9 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
       {story ? (
         // Baifo festejando con el trofeo y el avance de la meta del grupo: llena el centro de la historia con algo propio de Camina.
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12 }}>
-          <View style={{ width: 74, height: 84, alignItems: 'center', justifyContent: 'flex-end' }}>
-            <Image source={require('@/../assets/baifo/festeja.webp')} accessible={false} resizeMode="contain" style={{ height: 84, aspectRatio: 287 / 420 }} />
-            <View style={{ position: 'absolute', right: -4, bottom: 2, width: 28, height: 28, borderRadius: 14, backgroundColor: p.gold, alignItems: 'center', justifyContent: 'center' }}>
-              <Trophy size={16} color={theme === 'dark' ? '#2A1B52' : '#fff'} weight="fill" />
-            </View>
-          </View>
+          <Ring p={p} size={84} pct={pct}>
+            <Trophy size={30} color={p.gold} weight="fill" />
+          </Ring>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 11, fontWeight: '700', color: p.muted }}>Meta del grupo</Text>
             <Text style={{ fontSize: 30, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -1, lineHeight: 34 }}>{done ? '¡Cumplida!' : `${Math.round(pct * 100)} %`}</Text>

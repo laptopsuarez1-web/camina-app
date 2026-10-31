@@ -2,12 +2,10 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import * as Clipboard from 'expo-clipboard';
-import { Check, Share2, X } from '@/components/icons';
+import { Share2, X } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
 import { copyCardImage, shareCard } from '@/lib/share-image';
-import { CAMINA_HANDLE } from '@/components/share/cards';
 import { CARD_W, cardHeight, type CardFormat, type CardTheme } from '@/components/share/cards';
 
 // Selector de 2 o 3 opciones con el estilo de los filtros de la app (verde oscuro para la elegida).
@@ -76,7 +74,7 @@ export function CardShareSheet({
   const [theme, setTheme] = useState<CardTheme>('light');
   const [format, setFormat] = useState<CardFormat>(defaultFormat);
   const [busy, setBusy] = useState(false);
-  const [copied, setCopied] = useState<'tag' | 'img' | null>(null);
+  const [copied, setCopied] = useState<'img' | null>(null);
   const overlay = format === 'overlay';
   const shotRef = useRef<View>(null);
 
@@ -95,15 +93,9 @@ export function CardShareSheet({
     }
   }
 
-  function flash(k: 'tag' | 'img') {
+  function flash(k: 'img') {
     setCopied(k);
     setTimeout(() => setCopied(null), 2200);
-  }
-
-  // En Instagram el @ de una imagen no se puede tocar: se copia para pegarlo en el sticker de mención.
-  async function copyTag() {
-    await Clipboard.setStringAsync(CAMINA_HANDLE);
-    flash('tag');
   }
 
   async function copyImage() {
@@ -153,14 +145,6 @@ export function CardShareSheet({
                 <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
               </Press>
             ) : null}
-            {/* El @ dentro de la imagen no se puede tocar: se copia y se pega en el sticker "Mención" de Instagram. */}
-            <Press accessibilityRole="button" onPress={copyTag} className="rounded-2xl py-3.5 flex-row items-center justify-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
-              {copied === 'tag' ? <Check size={14} color="#8B4FD1" /> : null}
-              <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'tag' ? `¡Copiado ${CAMINA_HANDLE}!` : `Copiar ${CAMINA_HANDLE} para etiquetarnos`}</Text>
-            </Press>
-            <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2">
-              En Instagram: sticker «Mención» y pega {CAMINA_HANDLE}, así queda tocable.
-            </Text>
           </ScrollView>
         </Press>
       </Press>
