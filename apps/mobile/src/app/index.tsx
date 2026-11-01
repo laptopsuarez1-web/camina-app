@@ -18,6 +18,10 @@ export default function Index() {
       .catch(() => setOnboardingSeen(true));
   }, []);
 
+  useEffect(() => {
+    if (session && onboardingSeen === false) AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1').catch(() => {});
+  }, [session, onboardingSeen]);
+
   if (initializing || onboardingSeen === null) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
@@ -26,7 +30,9 @@ export default function Index() {
     );
   }
 
-  if (!onboardingSeen) return <Redirect href="/onboarding" />;
+  // Con sesión, la presentación ya se vio: si la marca guardada vino vacía, no se manda a nadie a la presentación
+  // (que termina en la pantalla de crear cuenta, como si se hubiera cerrado la sesión).
+  if (!onboardingSeen && !session) return <Redirect href="/onboarding" />;
   if (!session) return <Redirect href="/(auth)/welcome" />;
   // No pudimos leer el perfil (no es lo mismo que "no existe"): reintentar en vez de mandar al alta.
   if (!profile && profileError) return <ProfileRetry />;

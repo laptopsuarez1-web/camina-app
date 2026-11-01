@@ -42,6 +42,16 @@ export default function WelcomeScreen() {
     isAppleSignInAvailable().then(setAppleAvailable);
   }, []);
 
+  // Red de seguridad: si se llega al login con la sesión todavía abierta (por cualquier camino), se vuelve a la app
+  // en vez de pedir correo y contraseña. Solo se mira al abrir la pantalla, para no pisar la navegación de afterAuth().
+  const initializing = useAuthStore((s) => s.initializing);
+  const checkedOpenSession = useRef(false);
+  useEffect(() => {
+    if (initializing || checkedOpenSession.current) return;
+    checkedOpenSession.current = true;
+    if (useAuthStore.getState().session) router.replace('/');
+  }, [initializing]);
+
   useEffect(() => {
     if (googleResponse?.type !== 'success') return;
     const idToken = googleResponse.params.id_token;

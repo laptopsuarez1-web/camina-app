@@ -6,6 +6,7 @@ import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ONBOARDING, ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
+import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 
 // Cada ilustración es un teléfono con una captura real de la app (Inicio, Tus Puntos, Canjes y un grupo)
@@ -27,8 +28,9 @@ export default function OnboardingScreen() {
   const last = step === ONBOARDING.length - 1;
 
   async function finish() {
-    await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1');
-    router.replace('/(auth)/welcome');
+    await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, '1').catch(() => {});
+    // Con sesión abierta no se pasa por el login: la raíz manda a la app.
+    router.replace(useAuthStore.getState().session ? '/' : '/(auth)/welcome');
   }
 
   function next() {
