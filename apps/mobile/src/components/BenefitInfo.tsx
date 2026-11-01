@@ -70,10 +70,11 @@ function CostPill({ cost }: { cost: number }) {
 // Foto del premio (la que sube el comercio para ese premio, no la del local), con el costo encima.
 export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number }) {
   if (!url) return null;
+  // La foto del premio va chica, a un costado (como en Pasito): no está pensada para ocupar todo el ancho. El costo, a la derecha.
   return (
-    <View>
-      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: '100%', height: 190, borderRadius: 20 }} resizeMode="cover" />
-      <View style={{ position: 'absolute', top: 10, right: 10 }}><CostPill cost={cost} /></View>
+    <View className="flex-row items-start justify-between">
+      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: 96, height: 96, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />
+      <CostPill cost={cost} />
     </View>
   );
 }
