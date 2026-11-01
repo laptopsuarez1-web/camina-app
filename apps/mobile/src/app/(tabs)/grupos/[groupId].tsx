@@ -239,16 +239,25 @@ export default function GroupDetailScreen() {
     return true;
   }
 
+  // El fondo se aplica al instante (en el detalle y en la lista de Grupos) y el guardado va en segundo plano;
+  // si falla, se vuelve al fondo anterior.
   async function pickGroupBackground(key: string) {
     if (!groupId) return;
-    setLookBusy(true);
+    const prevDetail = queryClient.getQueryData<any>(['group-detail', groupId]);
+    const prevList = queryClient.getQueryData<any[]>(['groups']);
+    const prevKey = prevDetail?.group?.background ?? null;
+    if (prevKey === key) return;
+    queryClient.setQueryData<any>(['group-detail', groupId], (d: any) => (d ? { ...d, group: { ...d.group, background: key } } : d));
+    queryClient.setQueryData<any[]>(['groups'], (l) => (l ? l.map((g) => (g.id === groupId ? { ...g, background: key } : g)) : l));
     const { error } = await supabase.from('groups').update({ background: key }).eq('id', groupId);
-    setLookBusy(false);
     if (error) {
+      queryClient.setQueryData(['group-detail', groupId], prevDetail);
+      queryClient.setQueryData(['groups'], prevList);
       Alert.alert('No se pudo cambiar el fondo', friendlyServerError(error, 'Intenta de nuevo.'));
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['groups'] });
   }
 
   function confirmExit(del: boolean) {
