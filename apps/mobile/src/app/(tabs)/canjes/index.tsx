@@ -52,6 +52,7 @@ import { useLoyaltyCard, useNewPlaceBonus } from '@/hooks/useLoyalty';
 import { LoyaltyCardView } from '@/components/LoyaltyCardView';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { Image as CachedImage } from 'expo-image';
 import { friendlyError, friendlyServerError } from '@/lib/errors';
 import { plural } from '@/lib/format';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -441,7 +442,7 @@ export function MapPreviewCard({
               {shown.map((b) => (
                 <View key={b.id} className="flex-row items-center rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark px-2.5 py-2" style={{ gap: 10 }}>
                   {b.image_url ? (
-                    <Image source={{ uri: b.image_url }} accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
+                    <CachedImage source={{ uri: b.image_url }} accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
                   ) : (
                     <View className="items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ width: 40, height: 40, borderRadius: 12 }}>
                       <Gift size={18} color={colors.purple} />
@@ -1344,10 +1345,10 @@ export default function CanjesScreen() {
             >
               {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
               {g.business.cover_url ? (
-                <Image
+                <CachedImage
                   source={{ uri: g.business.cover_url }}
                   accessibilityIgnoresInvertColors
-                  resizeMode="cover"
+                  contentFit="cover"
                   style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
                 />
               ) : null}
@@ -1602,7 +1603,7 @@ export default function CanjesScreen() {
                     style={{ width: '100%', height: '100%' }}
                     accessibilityLabel="Ver las fotos del local"
                   >
-                    <Image source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    <CachedImage source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                   </Press>
                 ) : (
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
@@ -1803,7 +1804,7 @@ export default function CanjesScreen() {
                                 style={{ gap: 14 }}
                               >
                                 {b.image_url ? (
-                                  <Image source={{ uri: b.image_url }} style={{ width: 84, height: 84, borderRadius: 18 }} />
+                                  <CachedImage source={{ uri: b.image_url }} style={{ width: 84, height: 84, borderRadius: 18 }} />
                                 ) : (
                                   <View className="bg-purple-light-light dark:bg-purple-light-dark items-center justify-center" style={{ width: 84, height: 84, borderRadius: 18 }}>
                                     <Gift size={28} color={colors.purple} />
@@ -1947,10 +1948,10 @@ export default function CanjesScreen() {
               </View>
               <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 12 }}>
                 {galleryPhotos[galleryIndex] ? (
-                  <Image
+                  <CachedImage
                     source={{ uri: galleryPhotos[galleryIndex] }}
                     style={{ width: '100%', height: '88%', borderRadius: 20 }}
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ) : null}
               </View>
@@ -1958,7 +1959,7 @@ export default function CanjesScreen() {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 36 }}>
                   {galleryPhotos.map((uri, i) => (
                     <Press key={uri} onPress={() => setGalleryIndex(i)} accessibilityLabel={`Foto ${i + 1}`}>
-                      <Image
+                      <CachedImage
                         source={{ uri }}
                         style={{
                           width: 74,

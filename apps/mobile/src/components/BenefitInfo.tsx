@@ -1,4 +1,5 @@
-import { Image, Linking, Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Press } from '@/components/ui/Press';
 import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
@@ -72,7 +73,7 @@ export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number 
   if (!url) return null;
   return (
     <View>
-      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: '100%', height: 190, borderRadius: 20 }} resizeMode="cover" />
+      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: '100%', height: 190, borderRadius: 20 }} contentFit="cover" cachePolicy="memory-disk" transition={150} />
       <View style={{ position: 'absolute', top: 10, right: 10 }}><CostPill cost={cost} /></View>
     </View>
   );
