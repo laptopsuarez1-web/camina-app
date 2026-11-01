@@ -4,7 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
-import { View, ScrollView, Modal, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
@@ -364,6 +364,78 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
 // Ancho del borde de la tarjeta del comercio: 2 en dorado para los destacados, 1 para el resto.
 const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
 
+// Vista previa al tocar un local en el mapa: tarjeta corta que se desliza. Hacia arriba (o tocarla) abre la ficha completa; hacia abajo la cierra.
+function MapPreviewCard({
+  business, benefits, openNow, distance, bottomInset, onOpen, onClose,
+}: {
+  business: BusinessT; benefits: { id: string; name: string; cost_points: number }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
+}) {
+  const dy = useRef(new Animated.Value(0)).current;
+  const cb = useRef({ onOpen, onClose });
+  cb.current = { onOpen, onClose };
+  const pan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_e, g) => dy.setValue(Math.max(-40, g.dy)),
+      onPanResponderRelease: (_e, g) => {
+        if (g.dy < -40 || g.vy < -0.6) {
+          Animated.spring(dy, { toValue: 0, useNativeDriver: true }).start();
+          cb.current.onOpen();
+        } else if (g.dy > 60 || g.vy > 0.8) {
+          Animated.timing(dy, { toValue: 320, duration: 160, useNativeDriver: true }).start(() => cb.current.onClose());
+        } else {
+          Animated.spring(dy, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
+  const shown = benefits.slice(0, 3);
+  return (
+    <Animated.View
+      {...pan.panHandlers}
+      style={{ position: 'absolute', left: 12, right: 12, bottom: 12 + bottomInset, transform: [{ translateY: dy }] }}
+    >
+      <Press
+        accessibilityRole="button"
+        accessibilityLabel={`${business.name}. Toca para ver el detalle completo`}
+        accessibilityHint="Desliza hacia abajo para cerrar"
+        onPress={onOpen}
+        className="bg-card-light dark:bg-card-dark rounded-[24px] px-4 pt-2.5 pb-4"
+        style={{ shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
+      >
+        <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-3" />
+        <View className="flex-row items-center" style={{ gap: 12 }}>
+          {businessIcon(business.name, 56, business.logo_url, business.category, isFeatured(business))}
+          <View className="flex-1">
+            <Text className="text-[17px] font-extrabold text-text-light dark:text-text-dark" numberOfLines={1}>{business.name}</Text>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={1}>
+              {business.category}
+              {distance != null && distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(distance)}` : ''}
+              {benefits.length > 0 ? (openNow ? ' · Abierto ahora' : ' · Fuera de horario') : ''}
+            </Text>
+          </View>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={10} className="rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ width: 32, height: 32 }}>
+            <X size={15} color={colors.light.muted} />
+          </Press>
+        </View>
+        {shown.length > 0 ? (
+          <View className="flex-row flex-wrap mt-3" style={{ gap: 8 }}>
+            {shown.map((b) => (
+              <View key={b.id} className="rounded-full border border-line-light dark:border-line-dark px-3 py-1.5">
+                <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{b.name} · {b.cost_points}</Text>
+              </View>
+            ))}
+            {benefits.length > shown.length ? (
+              <Text className="text-[12.5px] text-muted-light dark:text-muted-dark self-center">+{benefits.length - shown.length} más</Text>
+            ) : null}
+          </View>
+        ) : null}
+        <Text className="text-[12px] font-semibold text-aqua-ink dark:text-aqua text-center mt-3">Desliza hacia arriba o toca para ver todo</Text>
+      </Press>
+    </Animated.View>
+  );
+}
+
 function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT; coordinate?: LatLng; onPress?: () => void }) {
   const [tracking, setTracking] = useState(true);
   const [painted, setPainted] = useState(false);
@@ -480,10 +552,12 @@ export default function CanjesScreen() {
   const [search, setSearch] = useState('');
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
+  const [previewBizId, setPreviewBizId] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
   const [fullMapReady, setFullMapReady] = useState(false);
   // Cerrado el mapa completo, se vuelve a esperar a que el panel termine de abrirse la próxima vez.
   if (!mapOpen && fullMapReady) setFullMapReady(false);
+  if (!mapOpen && previewBizId) setPreviewBizId(null);
   // Respaldo por si onShow no llega.
   useEffect(() => {
     if (!mapOpen) return;
@@ -782,6 +856,7 @@ export default function CanjesScreen() {
     );
     return list;
   }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion]);
+  const previewGroup = useMemo(() => (mapOpen && previewBizId ? groups.find((g) => g.business.id === previewBizId) ?? null : null), [mapOpen, previewBizId, groups]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -1319,6 +1394,7 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
               onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
+              onPress={() => setPreviewBizId(null)}
               onRegionChangeComplete={(r) => {
                 fullCenter.current = r;
                 setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d));
@@ -1330,13 +1406,34 @@ export default function CanjesScreen() {
                   business={b}
                   coordinate={fullPins.get(b.id)}
                   onPress={() => {
-                    runAfterClose(afterMapClose, true, () => setProfileBusinessId(b.id));
-                    setMapOpen(false);
+                    // Primero una vista previa; la ficha completa se abre solo al tocarla o deslizarla hacia arriba.
+                    setPreviewBizId(b.id);
+                    fullMapRef.current?.animateToRegion(
+                      { latitude: b.lat!, longitude: b.lng!, latitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01, longitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01 },
+                      300
+                    );
                   }}
                 />
               ))}
             </MapView>
           )}
+          {previewGroup ? (
+            <MapPreviewCard
+              key={previewGroup.business.id}
+              business={previewGroup.business}
+              benefits={previewGroup.benefits}
+              openNow={previewGroup.openNow}
+              distance={previewGroup.distance}
+              bottomInset={bottomInset}
+              onClose={() => setPreviewBizId(null)}
+              onOpen={() => {
+                const id = previewGroup.business.id;
+                setPreviewBizId(null);
+                runAfterClose(afterMapClose, true, () => setProfileBusinessId(id));
+                setMapOpen(false);
+              }}
+            />
+          ) : null}
           <Press
             accessibilityRole="button"
             accessibilityLabel="Cerrar mapa"
@@ -1415,7 +1512,7 @@ export default function CanjesScreen() {
             accessibilityLabel="Centrar el mapa en dónde estás"
             onPress={centerOnMe}
             className="absolute items-center justify-center rounded-full bg-card-light"
-            style={{ bottom: 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+            style={{ bottom: previewGroup ? 230 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
           >
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
