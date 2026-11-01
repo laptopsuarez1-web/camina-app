@@ -35,7 +35,7 @@ const PAL = {
     bar: '#7FEDC4', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
-    heat: ['#2C4A44', '#2F7F69', '#4FC9A3', '#9CF5D4'], heatInk: ['#F4EFFF', '#FFFFFF', '#0D2019', '#0D2019'], heatEmpty: 'rgba(255,255,255,0.28)',
+    heat: ['#2E5F52', '#3C8F76', '#59CBA6', '#A2F6D8'], heatInk: ['#F4EFFF', '#FFFFFF', '#0D2019', '#0D2019'], heatEmpty: 'rgba(255,255,255,0.28)',
   },
 } as const;
 // Sombra suave para que el texto blanco se lea sobre cualquier foto.
@@ -672,7 +672,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
 
   // 1 · Día más activo, con calendario de calor y mejor semana.
   if (slide === 1) {
-    const cell = 34;
+    const cell = 32;
     const cells: (null | WrappedData['calendar'][number])[] = [...Array(data.firstWeekday).fill(null), ...data.calendar];
     while (cells.length % 7 !== 0) cells.push(null);
     const rows: (typeof cells)[] = [];
@@ -688,12 +688,12 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
           {over && over > 0 ? <View style={{ marginTop: 8 }}><Pill p={p}>{over} % sobre tu promedio</Pill></View> : null}
         </View>
         <Panel p={p} style={{ alignItems: 'center' }}>
-          <View style={{ gap: 5 }}>
-            <View style={{ flexDirection: 'row', gap: 5 }}>
+          <View style={{ gap: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 4 }}>
               {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => <Text key={d} style={{ width: cell, textAlign: 'center', fontSize: 10, fontWeight: '700', color: p.muted }}>{d}</Text>)}
             </View>
             {rows.map((w, i) => (
-              <View key={i} style={{ flexDirection: 'row', gap: 5 }}>
+              <View key={i} style={{ flexDirection: 'row', gap: 4 }}>
                 {w.map((c, j) => {
                   const isBest = !!c && data.best?.key === c.key;
                   if (!c) return <View key={j} style={{ width: cell, height: cell }} />;
@@ -785,7 +785,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
         <View>
           <View style={{ marginBottom: 4 }}><TrophyArt size={64} /></View>
           <Kicker p={p}>Tu mejor puesto en el ranking global</Kicker>
-          <BigNumber p={p} value={`${position}.º`} size={96} />
+          <BigNumber p={p} value={`#${position}`} size={96} />
           <Text style={{ fontSize: 18, fontWeight: '800', color: p.ink }}>en la semana del {rangeLabel(data.rank.weekStart, data.rank.weekEnd)}</Text>
           <Text style={{ fontSize: 12.5, fontWeight: '600', color: p.muted, marginTop: 4 }}>entre {fmtInt(participants)} {participants === 1 ? 'caminante' : 'caminantes'} del ranking.</Text>
         </View>
@@ -911,7 +911,7 @@ export function WrappedOverlay({ data, index }: { data: WrappedData; index: numb
   } else if (slide === 2) {
     body = (<>{kick('Mi mejor racha')}{big(String(data.run.length), 96)}{sub(data.run.length === 1 ? 'día seguido' : 'días seguidos')}</>);
   } else if (slide === 3 && data.rank) {
-    body = (<>{kick('Mi mejor puesto en el ranking')}{big(`${data.rank.position}.º`, 90)}{sub(`entre ${fmtInt(data.rank.participants)} caminantes`)}</>);
+    body = (<>{kick('Mi mejor puesto en el ranking')}{big(`#${data.rank.position}`, 90)}{sub(`entre ${fmtInt(data.rank.participants)} caminantes`)}</>);
   } else if (slide === 4) {
     body = (<>{kick(`Puntos ganados en ${data.monthName}`)}{big(fmtInt(data.points.total), 90)}{sub('Puntos')}
       {stats([{ label: 'Por pasos', value: `+${fmtInt(data.points.steps)}` }, ...(data.points.bonus > 0 ? [{ label: 'Bonos', value: `+${fmtInt(data.points.bonus)}` }] : [])])}</>);

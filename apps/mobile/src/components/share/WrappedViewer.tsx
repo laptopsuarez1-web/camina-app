@@ -3,7 +3,6 @@ import { ActivityIndicator, Alert, Image, Modal, View, useWindowDimensions } fro
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
-import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Press } from '@/components/ui/Press';
 import { DownloadSimple, Share2, X } from '@/components/icons';
 import { CARD_W, cardHeight, palette, WrappedOverlay, WrappedSlide, wrappedSlideCount, type CardTheme, type WrappedData } from '@/components/share/cards';
@@ -64,6 +63,10 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const chrome = overlay ? '#FFFFFF' : p.ink;
   const chipBg = overlay ? 'rgba(255,255,255,0.18)' : theme === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)';
 
+  // Botones secundarios: en lámina clara van oscuros sobre fondo claro (antes eran blancos y no se veían).
+  const btnBg = !overlay && theme === 'light' ? 'rgba(41,28,71,0.1)' : 'rgba(255,255,255,0.2)';
+  const btnFg = !overlay && theme === 'light' ? p.ink : '#fff';
+
   async function share() {
     setBusy(true);
     try {
@@ -110,18 +113,16 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
 
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={close} statusBarTranslucent>
-      <View style={{ flex: 1, backgroundColor: overlay ? '#3B3552' : p.bg[1] }}>
+      <View style={{ flex: 1, backgroundColor: overlay ? '#3B3552' : p.bg[0] }}>
         {overlay ? (
           // Fondo de ejemplo: el sticker va sobre tu foto, acá se ve sobre un color.
           <LinearGradient colors={['#5A4B8A', '#2E2547', '#1B1432']} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
-        ) : (
-          <AmbientBackground dark={theme === 'dark'} />
-        )}
+        ) : null}
 
         {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2, top: cardTop, width: CARD_W * scale, height: h * scale }} /> : null}
 
         {/* La lámina a pantalla completa. */}
-        <View pointerEvents="none" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2, top: cardTop, width: CARD_W * scale, height: h * scale, overflow: 'hidden' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2, top: cardTop, width: CARD_W * scale, height: h * scale, overflow: 'hidden', borderRadius: overlay ? 0 : 22 * scale }}>
           <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }}>
             {overlay ? <WrappedOverlay data={shown} index={i} /> : <WrappedSlide theme={theme} data={shown} index={i} />}
           </View>
@@ -171,9 +172,9 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
             </>
           ) : null}
           <View className="flex-row" style={{ gap: 8 }}>
-            <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center" style={{ gap: 6, backgroundColor: 'rgba(255,255,255,0.2)' }}>
-              <DownloadSimple size={18} color="#fff" weight="bold" />
-              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
+            <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center" style={{ gap: 6, backgroundColor: btnBg }}>
+              <DownloadSimple size={18} color={btnFg} weight="bold" />
+              <Text style={{ color: btnFg, fontWeight: '800', fontSize: 14 }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
             </Press>
             <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
               {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
