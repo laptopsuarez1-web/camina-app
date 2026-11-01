@@ -3,17 +3,18 @@ import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 
 // El Baifo (cabrita de Camina) en 3D. Aparece en estados vacíos, de error, en el canje y en la entrada de "Tu mes en Camina".
-// Sentado respira despacio, confundido se balancea, festeja salta y asoma sube y baja un poco.
+// Sentado respira despacio, confundido se balancea, festeja salta, camina flota despacio, sin giros y asoma sube y baja un poco.
 // Con "reducir movimiento" queda quieto.
 const IMG = {
   sentado: { src: require('@/../assets/baifo/sentado.webp'), ratio: 300 / 360 },
   confundido: { src: require('@/../assets/baifo/confundido.webp'), ratio: 305 / 420 },
   festeja: { src: require('@/../assets/baifo/festeja.webp'), ratio: 287 / 420 },
+  camina: { src: require('@/../assets/baifo/camina.webp'), ratio: 284 / 420 },
   asoma: { src: require('@/../assets/baifo/asoma.webp'), ratio: 366 / 300 },
 } as const;
 export type BaifoPose = keyof typeof IMG;
 
-const DURACION: Record<BaifoPose, number> = { sentado: 1600, confundido: 1200, festeja: 450, asoma: 1400 };
+const DURACION: Record<BaifoPose, number> = { sentado: 1600, confundido: 1200, festeja: 450, camina: 1800, asoma: 1400 };
 
 export function BaifoMascot({ pose, height = 124 }: { pose: BaifoPose; height?: number }) {
   const reduced = useReducedMotion();
@@ -27,6 +28,7 @@ export function BaifoMascot({ pose, height = 124 }: { pose: BaifoPose; height?: 
     if (pose === 'sentado') return { transform: [{ scaleX: 1 + 0.02 * t.value }, { scaleY: 1 + 0.035 * t.value }] };
     if (pose === 'confundido') return { transform: [{ rotate: `${-2 + 4 * t.value}deg` }] };
     if (pose === 'festeja') return { transform: [{ translateY: -10 * t.value }] };
+    if (pose === 'camina') return { transform: [{ translateY: -3 * t.value }, { scale: 1 + 0.015 * t.value }] };
     return { transform: [{ translateY: 5 * t.value }] };
   });
   return (

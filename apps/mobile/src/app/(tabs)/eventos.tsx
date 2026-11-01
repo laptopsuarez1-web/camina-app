@@ -139,12 +139,12 @@ export default function EventosScreen() {
       )}
       {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 : challenges.length === 0) && (
         <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
-          <BaifoMascot pose="sentado" />
+          <BaifoMascot pose="camina" />
           <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
-            {tab === 'eventos' ? 'Todavía no hay eventos' : 'Todavía no hay desafíos de comercios'}
+            {tab === 'eventos' ? 'Pronto habrá eventos' : 'Pronto habrá desafíos de comercios'}
           </Text>
           <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
-            Cuando un comercio de tu ciudad publique uno, lo vas a ver aquí.
+            Mientras tanto, sigue caminando: cuando un comercio de tu ciudad publique uno, lo verás aquí.
           </Text>
         </Glass>
       )}
