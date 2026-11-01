@@ -1,12 +1,11 @@
 import { useRef } from 'react';
 import { Animated, Linking, PanResponder, ScrollView, View } from 'react-native';
 import { WhatsappIcon } from '@/components/icons';
-import { Glass } from '@/components/ui/Glass';
 import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import type { OpeningHours } from '@/components/BusinessHours';
-import { BenefitPhoto, HowToGetThere, BenefitHeader, ChannelChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un premio dentro de la ficha del local. Es una capa dentro de la ficha y NO otro Modal:
 // en iPhone un panel abierto encima de otro dejaba la pantalla sin responder (ver las fotos del local).
@@ -26,7 +25,7 @@ type Benefit = {
 };
 type Business = { name: string; lat?: number | null; lng?: number | null; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours; phone?: string | null };
 
-const STEPS_LOCAL = ['Acércate al mostrador.', 'Toca Canjear y muéstrale el código al local.', 'El local lo confirma y ¡disfruta tu premio!'];
+const STEPS_LOCAL = ['Acércate al mostrador.', 'Toca Canjear y pídele al local su código de 4 números.', 'Escríbelo en la app y ¡disfruta tu premio!'];
 const STEPS_ONLINE = ['Toca Canjear y guarda tu código.', 'Escríbele al local y dile el código.', '¡Disfruta tu premio!'];
 
 export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefit: Benefit; business: Business; onClose: () => void }) {
@@ -53,15 +52,27 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, elevation: 10, justifyContent: 'flex-end' }}>
       {/* El fondo es hermano de la hoja (no su padre): así la lista de la hoja recibe el gesto de desplazar sin que otro toque se lo quite. */}
       <Press accessibilityRole="button" accessibilityLabel="Cerrar detalle" feedback="none" onPress={onClose} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,10,30,0.5)' }} />
-      <Animated.View style={{ maxHeight: '88%', transform: [{ translateY: dy }] }}>
-      <Glass className="rounded-t-[28px] px-5 pt-3" style={{ flexShrink: 1, backgroundColor: dark ? 'rgba(22,16,31,0.72)' : 'rgba(255,255,255,0.74)' }}>
+      <Animated.View style={{ maxHeight: '74%', transform: [{ translateY: dy }] }}>
+      {/* Casi opaca (95 %): se nota apenas lo de atrás, pero las letras de la ficha no se leen como pasaba con el vidrio. */}
+      <View className="rounded-t-[28px] px-5 pt-3" style={{ flexShrink: 1, backgroundColor: dark ? 'rgba(34,25,51,0.95)' : 'rgba(255,255,255,0.95)' }}>
         <View {...pan.panHandlers} accessible accessibilityRole="button" accessibilityLabel="Cerrar. Desliza hacia abajo o toca dos veces" accessibilityActions={[{ name: 'activate' }]} onAccessibilityAction={onClose} style={{ paddingTop: 4, paddingBottom: 16, marginTop: -4 }}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center" />
         </View>
         <ScrollView style={{ flexShrink: 1 }} showsVerticalScrollIndicator={false} bounces nestedScrollEnabled onScrollEndDrag={(e) => { if (e.nativeEvent.contentOffset.y < -70) dismiss(); }} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: 12, gap: 22 }}>
-          <BenefitPhoto url={b.image_url} cost={b.cost_points} />
-          <BenefitHeader hasPhoto={!!b.image_url} title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
-          <View className="flex-row flex-wrap" style={{ gap: 8 }}><ChannelChip b={b} /></View>
+          {b.image_url ? (
+            // Foto cuadrada a la derecha del título; el costo va debajo. (Dónde se puede usar el premio va en "Condiciones".)
+            <>
+              <View className="flex-row items-start" style={{ gap: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <BenefitHeader hasPhoto title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
+                </View>
+                <BenefitThumb url={b.image_url} size={108} />
+              </View>
+              <View className="flex-row"><CostPill cost={b.cost_points} /></View>
+            </>
+          ) : (
+            <BenefitHeader title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
+          )}
           <WhatIncludes text={b.description} />
           <HowToRedeem steps={b.online ? STEPS_ONLINE : STEPS_LOCAL} />
           <Conditions items={conditionsOf(b)} />
@@ -88,7 +99,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
             <Text className="text-white text-[15px] font-bold">Entendido</Text>
           </Press>
         </View>
-      </Glass>
+      </View>
       </Animated.View>
     </View>
   );

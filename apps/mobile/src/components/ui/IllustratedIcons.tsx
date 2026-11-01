@@ -4,23 +4,27 @@ import Svg, { Defs, G, LinearGradient, Path, Rect, Circle, Stop } from 'react-na
 
 // Íconos ilustrados con degradé, en la línea del trofeo (dibujo en una grilla de 48). Los usan la barra de abajo (TabGlyph, por partes
 // para que cada uno haga su gesto) y las fichas de Inicio (IconBubble). Calendario y bolsa llevan las huellas de Camina, como el trofeo.
-export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'target' | 'friend' | 'gift' | 'bell' | 'flame';
+export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'target' | 'friend' | 'gift' | 'bell' | 'flame' | 'store';
 
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'aqua', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral' };
-const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral', store: 'gold' };
+const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
-  aqua: ['#7BDCFA', '#2B8FD0'], coral: ['#FFAE8E', '#E55A3C'], pink: ['#FF9FC4', '#D9457F'],
+  aqua: ['#7BDCFA', '#2B8FD0'], leaf: ['#C6F7A0', '#4DBB6A'], coral: ['#FFAE8E', '#E55A3C'], pink: ['#FF9FC4', '#D9457F'],
 } as const;
+
+// Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];
+  const second = SECOND_OF[kind] ?? SECOND[t];
   return (
     <Defs>
-      {([['f', t], ['g', SECOND[t]]] as const).map(([k, tone]) => (
+      {([['f', t], ['g', second]] as const).map(([k, tone]) => (
         <LinearGradient key={k} id={`${uid}${k}`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={GRAD[tone][0]} />
           <Stop offset="1" stopColor={GRAD[tone][1]} />
@@ -125,6 +129,16 @@ export const PARTS: Record<IllKind, IllPart[]> = {
   bell: [
     { origin: '50% 0%', node: ({ f }) => <Path d="M24 5a3 3 0 0 1 3 3v1.500c6 1.500 9.500 6.500 9.500 12.500v6.500l3.500 5c.8 1.200 0 2.800-1.500 2.800h-29c-1.500 0-2.300-1.600-1.500-2.800l3.500-5V22C11.500 16 15 11 21 9.500V8a3 3 0 0 1 3-3z" fill={f} /> },
     { origin: '50% 0%', node: ({ g }) => <Path d="M18.500 41.500a5.500 5.500 0 0 0 11 0z" fill={g} /> },
+  ],
+  store: [
+    { origin: '50% 100%', node: ({ f }) => <Path d="M9 22h30v16a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4z" fill={f} /> },
+    { origin: '50% 100%', node: ({ g }) => (
+      <>
+        <Path d="M5 21 9 8.500A3 3 0 0 1 11.900 6h24.200A3 3 0 0 1 39 8.500L43 21z" fill={g} />
+        <Path d="M5 21a6.300 6.300 0 0 0 12.600 0 6.300 6.300 0 0 0 12.800 0 6.300 6.300 0 0 0 12.600 0z" fill={g} />
+        <Rect x={19} y={29} width={10} height={13} rx={2.500} fill="#fff" fillOpacity={0.9} />
+      </>
+    ) },
   ],
   flame: [
     { origin: '50% 100%', node: ({ f }) => <Path d="M24 3c1 8 12 13 12 25a12 12 0 0 1-24 0c0-5 2.500-8 5-10 .3 3 1.500 5 3.500 6C19 17 21 9 24 3z" fill={f} /> },
