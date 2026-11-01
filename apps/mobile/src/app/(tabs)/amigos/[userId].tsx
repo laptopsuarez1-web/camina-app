@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -201,12 +200,10 @@ export default function FriendProfileScreen() {
 
         {card && showData && (
           <>
-            <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
-              {/* En claro, el encabezado oscuro se transparentaba por el vidrio y tapaba los números: un velo lila-blanco, casi opaco, lo cubre.
-                  La tarjeta queda en el mismo lugar y con el mismo borde de vidrio. */}
-              {!dark && (
-                <LinearGradient pointerEvents="none" colors={['rgba(255,255,255,0.97)', 'rgba(243,239,255,0.93)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 23 }} />
-              )}
+            {/* En claro la tarjeta NO usa el vidrio nativo: en iPhone el vidrio refracta el encabezado oscuro que tiene detrás y deja una banda oscura sobre los números.
+                Es una tarjeta de superficie lila-blanca (mismo borde, radio y sombra que el vidrio). En oscuro sigue el vidrio de siempre. */}
+            {dark ? (
+              <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
               <View className="flex-row">
                 {[
                   { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
@@ -219,7 +216,26 @@ export default function FriendProfileScreen() {
                   </View>
                 ))}
               </View>
-            </Glass>
+              </Glass>
+            ) : (
+              <View
+                className="rounded-3xl mx-5 -mt-7 py-3.5"
+                style={{ borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backgroundColor: '#F7F4FF', shadowColor: colors.purpleDeep, shadowOpacity: 0.13, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
+              >
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              </View>
+            )}
 
             <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
               <Text accessibilityRole="header" style={[typo.section, { color: text }]}>{span === 'semana' ? 'Esta semana' : 'Último mes'}</Text>
