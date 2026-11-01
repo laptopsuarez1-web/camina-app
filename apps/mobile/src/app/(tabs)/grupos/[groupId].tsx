@@ -9,7 +9,8 @@ import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, Crown, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft, ruleText } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -414,12 +415,7 @@ export default function GroupDetailScreen() {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
                 <View key={m.id} className="items-center" style={{ width: 92 }}>
-                  {rank === 0 && (
-                    // Mismo chip de vidrio con borde dorado que el trofeo del reto; apoyado sobre el aro de la foto.
-                    <View importantForAccessibility="no" accessibilityElementsHidden style={{ width: 28, height: 28, borderRadius: 14, marginBottom: -9, zIndex: 2, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#F5C64588', backgroundColor: 'rgba(40,22,48,0.72)' }}>
-                      <Crown size={16} color="#F5C645" weight="fill" />
-                    </View>
-                  )}
+                  {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={30} color="#F5C645" jewel="#7A2F3E" /></View>}
                   <AvatarImage
                     uri={m.photoUrl}
                     style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }}

@@ -2,7 +2,7 @@ import React, { type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
-import { Crown } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { FlameArt, TrophyArt } from '@/components/share/art';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
@@ -414,14 +414,10 @@ export type GroupCardData = {
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo y el @caminaapp no queden encimados.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
   const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
-  const crown = compact ? 15 : 18;
+  const crown = compact ? 24 : 30;
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      {rank === 1 ? (
-        <View style={{ width: crown + 10, height: crown + 10, borderRadius: (crown + 10) / 2, marginBottom: -7, zIndex: 2, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: `${p.gold}88`, backgroundColor: p.tile }}>
-          <Crown size={crown} color={p.gold} weight="fill" />
-        </View>
-      ) : <View style={{ height: crown + 3 }} />}
+      {rank === 1 ? <View style={{ marginBottom: 3 }}><CrownMark size={crown} color={p.gold} jewel={p === PAL.dark ? '#1B1530' : '#FFFFFF'} /></View> : <View style={{ height: crown * 0.8 + 3 }} />}
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
