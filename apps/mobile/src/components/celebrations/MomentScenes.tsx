@@ -6,7 +6,8 @@ import { Text } from '@/components/ui/Text';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
-import { Crown, Flame, Trophy, Users } from '@/components/icons';
+import { Flame, Trophy, Users } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { participantsLabel } from '@/lib/promo';
@@ -568,7 +569,7 @@ function MyStep({ tl, delay, rank, me, mine }: { tl: Timeline; delay: number; ra
       <View style={{ height: 78, justifyContent: 'flex-end', alignItems: 'center' }}>
         {mine ? (
           <Reveal tl={tl} delay={delay + 380} dy={-40} style={{ alignItems: 'center' }}>
-            {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -30 }}><Crown size={28} color={GOLD} weight="fill" /></Reveal> : null}
+            {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -36 }}><CrownMark size={44} /></Reveal> : null}
             <Avatar p={me} size={54} ring={winner ? GOLD : colors.aqua} />
             <Text style={{ fontSize: 11.5, fontWeight: '800', color: p.text, marginTop: 3 }}>Tú</Text>
           </Reveal>
