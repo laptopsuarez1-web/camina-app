@@ -23,6 +23,7 @@ const REPLACED = {
   '@/lib/health-steps': 'health-steps.mts',
   'react-native': 'react-native.mts',
   'expo-application': 'expo-application.mts',
+  '@/lib/monitoring': 'monitoring.mts',
   'expo-secure-store': 'secure-store.mts',
 };
 
