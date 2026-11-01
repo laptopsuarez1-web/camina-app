@@ -2,7 +2,7 @@ import React, { type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
-import { Crown } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { FlameArt, TrophyArt } from '@/components/share/art';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
@@ -412,10 +412,10 @@ export type GroupCardData = {
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo no quede encimada.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
   const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
-  const crown = compact ? 15 : 18;
+  const crown = compact ? 36 : 44;
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      {rank === 1 ? <Crown size={crown} color={p.gold} weight="fill" /> : <View style={{ height: crown }} />}
+      {rank === 1 ? <View style={{ marginBottom: 3 }}><CrownMark size={crown} /></View> : <View style={{ height: crown * 0.75 + 3 }} />}
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
@@ -470,18 +470,6 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
       <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
       <Text style={{ fontSize: story ? 32 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
       </View>
-      {story ? (
-        // Aro con el avance de la meta del grupo: llena el centro de la historia sin dibujos de relleno.
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 12, paddingHorizontal: 14 }}>
-          <Ring p={p} size={92} pct={pct}>
-            <Text style={{ fontSize: done ? 14 : 20, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -0.5 }}>{done ? '¡Meta!' : `${Math.round(pct * 100)} %`}</Text>
-          </Ring>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: '800', color: p.ink }}>Meta del grupo</Text>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: p.muted, marginTop: 3 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
-          </View>
-        </View>
-      ) : null}
       <View>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 0 : 6, gap: 8 }}>
         {podium.map((m) => {
@@ -514,18 +502,17 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
       ) : null}
       {!story ? <View style={{ flex: 1 }} /> : null}
-      {!story ? (
-        <View style={{ marginTop: 10, marginBottom: 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 16, padding: 9 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink }}>Meta del grupo</Text>
-            <Text style={{ fontSize: 11, fontWeight: '800', color: p.accent }}>{done ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
-          </View>
-          <View style={{ height: 8, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
-            <View style={{ width: `${Math.max(2, pct * 100)}%`, height: 8, borderRadius: 4, backgroundColor: p.bar }} />
-          </View>
-          <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
+      {/* Meta del grupo: barra de progreso, igual que en la pantalla del grupo (sin aro). */}
+      <View style={{ marginTop: story ? 12 : 10, marginBottom: story ? 0 : 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: story ? 20 : 16, padding: story ? 14 : 9 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: story ? 9 : 6 }}>
+          <Text style={{ fontSize: story ? 15 : 11, fontWeight: story ? '800' : '700', color: p.ink }}>Meta del grupo</Text>
+          <Text style={{ fontSize: story ? 15 : 11, fontWeight: '800', color: p.accent }}>{done ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
         </View>
-      ) : null}
+        <View style={{ height: story ? 12 : 8, borderRadius: 6, backgroundColor: p.track, overflow: 'hidden' }}>
+          <View style={{ width: `${Math.max(2, pct * 100)}%`, height: story ? 12 : 8, borderRadius: 6, backgroundColor: p.bar }} />
+        </View>
+        <Text style={{ fontSize: story ? 12 : 10, fontWeight: '600', color: p.muted, marginTop: story ? 7 : 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
+      </View>
       </View>
     </CardFrame>
   );
