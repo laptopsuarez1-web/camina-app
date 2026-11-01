@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
+import { Sentry } from '@/lib/monitoring';
 import { consumePendingDeepLinks } from '@/lib/deep-links';
 import { emailRedirectUrl } from '@/lib/auth-links';
 import { friendlyError } from '@/lib/errors';
@@ -41,6 +42,30 @@ export default function WelcomeScreen() {
   useEffect(() => {
     isAppleSignInAvailable().then(setAppleAvailable);
   }, []);
+
+  // Red de seguridad: si se llega al login con la sesión todavía abierta (por cualquier camino), se vuelve a la app
+  // en vez de pedir correo y contraseña. Solo se mira al abrir la pantalla, para no pisar la navegación de afterAuth().
+  const initializing = useAuthStore((s) => s.initializing);
+  const checkedOpenSession = useRef(false);
+  useEffect(() => {
+    if (initializing || checkedOpenSession.current) return;
+    checkedOpenSession.current = true;
+    if (useAuthStore.getState().session) {
+      Sentry.captureMessage('Login abierto con sesión en la app', 'warning');
+      router.replace('/');
+      return;
+    }
+    // La app dice "sin sesión": se mira igual lo guardado en el teléfono, por si quedó una sesión sin publicar.
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (!data.session || useAuthStore.getState().session) return;
+        Sentry.captureMessage('Login abierto con sesión guardada en el teléfono', 'warning');
+        await useAuthStore.getState().refreshFromStorage();
+        router.replace('/');
+      })
+      .catch(() => {});
+  }, [initializing]);
 
   useEffect(() => {
     if (googleResponse?.type !== 'success') return;

@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/query-client';
+import { Sentry } from '@/lib/monitoring';
 import type { Profile } from '@/lib/database.types';
 
 interface AuthState {
@@ -16,6 +17,8 @@ interface AuthState {
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
   refreshProfile: () => Promise<void>;
+  // Vuelve a leer la sesión guardada en el teléfono y la publica (si la app la había perdido de vista).
+  refreshFromStorage: () => Promise<void>;
 }
 
 type ProfileRead = { ok: true; profile: Profile | null } | { ok: false };
@@ -54,6 +57,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Si mientras tanto se cerró la sesión o entró otra persona, este resultado ya es viejo y se descarta.
     if (get().session?.user.id !== userId) return;
     set(profilePatch(read, userId, get().profile));
+  },
+  refreshFromStorage: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) await publishSession(data.session);
   },
 }));
 
@@ -105,6 +112,8 @@ export function initAuthListener() {
     .finally(() => useAuthStore.setState({ initializing: false }));
 
   supabase.auth.onAuthStateChange(async (event, session) => {
+    // Rastro para Sentry: si la app vuelve a mostrar el login sola, queda qué pasó con la sesión justo antes.
+    Sentry.addBreadcrumb({ category: 'auth', message: `${event}${session ? '' : ' (sin sesión)'}`, level: 'info' });
     // Al cerrar sesión o entrar con otra cuenta se vacía la caché de datos, para no mostrar lo de la persona anterior.
     // No se limpia con INITIAL_SESSION ni TOKEN_REFRESHED de la misma persona: vaciaría todo cada vez que vuelve la app.
     const nextId = session?.user.id ?? null;
