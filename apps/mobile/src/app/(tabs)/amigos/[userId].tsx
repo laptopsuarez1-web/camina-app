@@ -8,6 +8,7 @@ import { Glass } from '@/components/ui/Glass';
 import { DarkHeader } from '@/components/ui/DarkHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
+import { GoalBar } from '@/components/ui/GoalBar';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
 import { ChevronLeft, ChevronRight, DotsThree, Check, X } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -62,12 +63,13 @@ export default function FriendProfileScreen() {
       onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
     });
   };
-  const { text, muted, line, dark } = useThemeColors();
+  const { text, muted, line, dark, accentText, purpleText } = useThemeColors();
   // Para el comparativo: mi propia ficha (trae mi promedio) y, de ella, los Puntos y los grupos en común.
   const { data: myCard } = useFriendCard(card?.relation === 'friend' ? meId : undefined);
   const { data: extras } = useFriendExtras(userId, card?.relation === 'friend');
   const [span, setSpan] = useState<'semana' | 'mes'>('semana');
   const [menu, setMenu] = useState(false);
+  const [cmpSpan, setCmpSpan] = useState<'semana' | 'mes'>('semana');
   const [reasons, setReasons] = useState(false);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
@@ -111,6 +113,19 @@ export default function FriendProfileScreen() {
   }));
 
   const first = card?.full_name?.split(' ')[0] ?? 'ella';
+  // Comparativo de pasos por día: esta semana (7 días) o el último mes (30 días).
+  const cmp = (() => {
+    const mine = cmpSpan === 'semana' ? (myCard?.avg_week ?? 0) : periodAvg(myCard?.days ?? [], 30);
+    const theirs = cmpSpan === 'semana' ? (card?.avg_week ?? 0) : periodAvg(card?.days ?? [], 30);
+    const top = Math.max(1, mine, theirs);
+    const diff = mine > 0 && theirs > 0 ? Math.round((Math.abs(mine - theirs) / Math.min(mine, theirs)) * 100) : 0;
+    const same = diff < 2;
+    return {
+      mine, theirs, top,
+      verdict: same ? 'Van parejos' : mine > theirs ? `Vas ${diff}% por encima de ${first}` : `${first} va ${diff}% por encima de ti`,
+      verdictColor: same ? muted : mine > theirs ? accentText : purpleText,
+    };
+  })();
   const since = card?.friends_since ? new Date(card.friends_since).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' }) : null;
 
   if (!isLoading && !isError && !card) {
@@ -255,28 +270,38 @@ export default function FriendProfileScreen() {
             </Glass>
             {isFriend && myCard ? (
               <>
-                <Text accessibilityRole="header" className="mx-5 mt-6 mb-2.5" style={[typo.section, { color: text }]}>Promedio diario</Text>
-                <Glass className="rounded-3xl mx-5 p-4" style={{ gap: 16 }}>
-                  {[
-                    { title: 'Semanal · 7 días', mine: myCard.avg_week ?? 0, theirs: card.avg_week ?? 0 },
-                    { title: 'Mensual · 30 días', mine: periodAvg(myCard.days ?? [], 30), theirs: periodAvg(card.days ?? [], 30) },
-                  ].map((row) => {
-                    const top = Math.max(1, row.mine, row.theirs);
-                    return (
-                      <View key={row.title} style={{ gap: 7 }}>
-                        <Text className="text-[12.5px] font-bold text-muted-light dark:text-muted-dark">{row.title}</Text>
-                        {[{ who: 'Tú', v: row.mine, color: colors.aquaDeep }, { who: first, v: row.theirs, color: colors.purple }].map((r) => (
-                          <View key={r.who} className="flex-row items-center" style={{ gap: 10 }}>
-                            <Text className="text-[12.5px] text-text-light dark:text-text-dark" style={{ width: 56 }} numberOfLines={1}>{r.who}</Text>
-                            <View className="flex-1 rounded-full overflow-hidden" style={{ height: 9, backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(91,49,163,0.10)' }}>
-                              <View style={{ width: `${Math.max(4, Math.round((r.v / top) * 100))}%`, height: 9, borderRadius: 5, backgroundColor: r.color }} />
-                            </View>
-                            <Text style={{ width: 54, textAlign: 'right', fontSize: 13, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
-                          </View>
-                        ))}
+                <View className="flex-row items-center justify-between mx-5 mt-6 mb-2.5">
+                  <Text accessibilityRole="header" style={[typo.section, { color: text }]}>Tú vs. {first}</Text>
+                  <View className="flex-row" style={{ gap: 6 }}>
+                    {(['semana', 'mes'] as const).map((k) => (
+                      <Press
+                        key={k}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: cmpSpan === k }}
+                        haptic="selection"
+                        onPress={() => setCmpSpan(k)}
+                        className="rounded-full px-3 py-1.5"
+                        style={{ backgroundColor: cmpSpan === k ? colors.aquaDeep : 'transparent', borderWidth: 1, borderColor: cmpSpan === k ? colors.aquaDeep : line }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: cmpSpan === k ? '#fff' : text }}>{k === 'semana' ? '7 días' : 'Mes'}</Text>
+                      </Press>
+                    ))}
+                  </View>
+                </View>
+                <Glass className="rounded-3xl mx-5 p-4" style={{ gap: 14 }}>
+                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">
+                    Pasos por día · {cmpSpan === 'semana' ? 'esta semana' : 'último mes'}
+                  </Text>
+                  {[{ who: 'Tú', v: cmp.mine, color: colors.aquaDeep }, { who: first, v: cmp.theirs, color: colors.purple }].map((r) => (
+                    <View key={r.who} style={{ gap: 7 }}>
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1} style={{ flex: 1 }}>{r.who}</Text>
+                        <Text style={{ fontSize: 15, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
                       </View>
-                    );
-                  })}
+                      <GoalBar pct={Math.max(3, Math.round((r.v / cmp.top) * 100))} accent={r.color} plain />
+                    </View>
+                  ))}
+                  <Text className="text-[13px] font-semibold" style={{ color: cmp.verdictColor }}>{cmp.verdict}</Text>
                 </Glass>
               </>
             ) : null}
