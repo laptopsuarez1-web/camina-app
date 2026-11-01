@@ -17,7 +17,6 @@ export type CardFormat = 'story' | 'square' | 'overlay';
 
 export const CARD_W = 360;
 export const cardHeight = (f: CardFormat) => (f === 'square' ? 360 : 640);
-export const CAMINA_HANDLE = '@caminaapp';
 
 const PAL = {
   light: {
@@ -27,6 +26,7 @@ const PAL = {
     bar: '#4FC3A8', barBest: '#1F7A66', barOff: '#D4C8EC', goal: 'rgba(41,28,71,0.35)',
     track: 'rgba(91,49,163,0.12)', mark: '#8B4FD1', flame: '#E0782A', gold: '#B77A0B',
     logo: '#5B6B99', logoOpacity: 0.15, onBar: '#FFFFFF',
+    heat: ['#CFEDE4', '#8FD8C2', '#3FB896', '#1F7A66'], heatInk: ['#291C47', '#291C47', '#10261F', '#FFFFFF'], heatEmpty: 'rgba(91,49,163,0.22)',
   },
   dark: {
     bg: ['#15141B', '#1A1822', '#201C2B'] as const,
@@ -35,6 +35,7 @@ const PAL = {
     bar: '#7FEDC4', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
+    heat: ['#2E5F52', '#3C8F76', '#59CBA6', '#A2F6D8'], heatInk: ['#F4EFFF', '#FFFFFF', '#0D2019', '#0D2019'], heatEmpty: 'rgba(255,255,255,0.28)',
   },
 } as const;
 // Sombra suave para que el texto blanco se lea sobre cualquier foto.
@@ -95,9 +96,6 @@ export function CardFrame({
         </View>
         <View style={{ flex: 1 }}>{children}</View>
       </View>
-      {story ? (
-        <Text style={{ position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: p.muted }}>{CAMINA_HANDLE}</Text>
-      ) : null}
     </View>
   );
 }
@@ -411,7 +409,7 @@ export type GroupCardData = {
   total: number;
 };
 
-// compact: en la cuadrada el podio va más bajo para que la meta del grupo y el @caminaapp no queden encimados.
+// compact: en la cuadrada el podio va más bajo para que la meta del grupo no quede encimada.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
   const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
   const crown = compact ? 15 : 18;
@@ -674,7 +672,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
 
   // 1 · Día más activo, con calendario de calor y mejor semana.
   if (slide === 1) {
-    const cell = 34;
+    const cell = 32;
     const cells: (null | WrappedData['calendar'][number])[] = [...Array(data.firstWeekday).fill(null), ...data.calendar];
     while (cells.length % 7 !== 0) cells.push(null);
     const rows: (typeof cells)[] = [];
@@ -690,28 +688,36 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
           {over && over > 0 ? <View style={{ marginTop: 8 }}><Pill p={p}>{over} % sobre tu promedio</Pill></View> : null}
         </View>
         <Panel p={p} style={{ alignItems: 'center' }}>
-          <View style={{ gap: 5 }}>
-            <View style={{ flexDirection: 'row', gap: 5 }}>
+          <View style={{ gap: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 4 }}>
               {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => <Text key={d} style={{ width: cell, textAlign: 'center', fontSize: 10, fontWeight: '700', color: p.muted }}>{d}</Text>)}
             </View>
             {rows.map((w, i) => (
-              <View key={i} style={{ flexDirection: 'row', gap: 5 }}>
+              <View key={i} style={{ flexDirection: 'row', gap: 4 }}>
                 {w.map((c, j) => {
                   const isBest = !!c && data.best?.key === c.key;
-                  const t = c ? Math.max(0.12, Math.min(1, c.steps / max)) : 0;
+                  if (!c) return <View key={j} style={{ width: cell, height: cell }} />;
+                  // Cinco niveles de color sólidos (sin transparencia, así el número siempre se lee): 0 pasos = solo borde.
+                  const lvl = c.steps <= 0 ? -1 : Math.min(3, Math.floor((c.steps / max) * 4 - 0.0001));
                   return (
                     <View
                       key={j}
-                      style={{ width: cell, height: cell, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: c ? p.bar : 'transparent', opacity: c ? 0.18 + 0.82 * t : 1, borderWidth: isBest ? 2 : 0, borderColor: p.ink }}
+                      style={{ width: cell, height: cell, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: lvl < 0 ? 'transparent' : p.heat[Math.max(0, lvl)], borderWidth: isBest ? 2.5 : lvl < 0 ? 1.5 : 0, borderColor: isBest ? p.ink : p.heatEmpty }}
                     >
-                      {c ? <Text style={{ fontSize: 11, fontWeight: '800', color: t > 0.55 ? onAccent(theme) : p.ink }}>{c.day}</Text> : null}
+                      <Text style={{ fontSize: 12.5, fontWeight: '800', color: lvl < 0 ? p.muted : p.heatInk[Math.max(0, lvl)] }}>{c.day}</Text>
                     </View>
                   );
                 })}
               </View>
             ))}
           </View>
-          <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginTop: 10 }}>Más oscuro = más pasos ese día</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 12 }}>
+            <View style={{ width: 14, height: 14, borderRadius: 5, borderWidth: 1.5, borderColor: p.heatEmpty }} />
+            <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted, marginRight: 6 }}>Sin pasos</Text>
+            <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }}>Menos</Text>
+            {p.heat.map((c, k) => <View key={k} style={{ width: 14, height: 14, borderRadius: 5, backgroundColor: c }} />)}
+            <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }}>Más pasos</Text>
+          </View>
         </Panel>
         {bw ? (
           <Panel p={p} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 }}>
@@ -779,7 +785,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
         <View>
           <View style={{ marginBottom: 4 }}><TrophyArt size={64} /></View>
           <Kicker p={p}>Tu mejor puesto en el ranking global</Kicker>
-          <BigNumber p={p} value={`${position}.º`} size={96} />
+          <BigNumber p={p} value={`#${position}`} size={96} />
           <Text style={{ fontSize: 18, fontWeight: '800', color: p.ink }}>en la semana del {rangeLabel(data.rank.weekStart, data.rank.weekEnd)}</Text>
           <Text style={{ fontSize: 12.5, fontWeight: '600', color: p.muted, marginTop: 4 }}>entre {fmtInt(participants)} {participants === 1 ? 'caminante' : 'caminantes'} del ranking.</Text>
         </View>
@@ -905,7 +911,7 @@ export function WrappedOverlay({ data, index }: { data: WrappedData; index: numb
   } else if (slide === 2) {
     body = (<>{kick('Mi mejor racha')}{big(String(data.run.length), 96)}{sub(data.run.length === 1 ? 'día seguido' : 'días seguidos')}</>);
   } else if (slide === 3 && data.rank) {
-    body = (<>{kick('Mi mejor puesto en el ranking')}{big(`${data.rank.position}.º`, 90)}{sub(`entre ${fmtInt(data.rank.participants)} caminantes`)}</>);
+    body = (<>{kick('Mi mejor puesto en el ranking')}{big(`#${data.rank.position}`, 90)}{sub(`entre ${fmtInt(data.rank.participants)} caminantes`)}</>);
   } else if (slide === 4) {
     body = (<>{kick(`Puntos ganados en ${data.monthName}`)}{big(fmtInt(data.points.total), 90)}{sub('Puntos')}
       {stats([{ label: 'Por pasos', value: `+${fmtInt(data.points.steps)}` }, ...(data.points.bonus > 0 ? [{ label: 'Bonos', value: `+${fmtInt(data.points.bonus)}` }] : [])])}</>);
