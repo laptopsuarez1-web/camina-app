@@ -4,8 +4,8 @@ import { monthName, nextWrappedReminder } from '@/lib/share-stats';
 
 const REMINDER_ID = 'camina-wrapped';
 
-// Aviso local (sin servidor) para el 1.º de cada mes a las 9:00: "Tu septiembre en Camina". Solo se programa si la persona ya
-// dio permiso de avisos (no se lo pedimos aquí) y cada vez reemplaza al anterior, así nunca se acumulan.
+// Aviso local (sin servidor) para el 1.º de cada mes a las 9:00: "Tu Wrapped de septiembre está listo". Solo se programa si la persona ya
+// dio permiso de avisos (no se lo pedimos aquí) y se programa al abrir la app (no hace falta entrar a Actividad) y cada vez reemplaza al anterior, así nunca se acumulan.
 export async function scheduleWrappedReminder(now: Date = new Date()): Promise<void> {
   if (Platform.OS === 'web') return;
   try {
@@ -16,8 +16,8 @@ export async function scheduleWrappedReminder(now: Date = new Date()): Promise<v
     await Notifications.scheduleNotificationAsync({
       identifier: REMINDER_ID,
       content: {
-        title: `Tu ${monthName(monthIndex)} en Camina`,
-        body: 'Ya está tu resumen del mes. Mira cómo caminaste y compártelo.',
+        title: `Tu Wrapped de ${monthName(monthIndex)} está listo`,
+        body: 'Tu resumen del mes ya está. Mira cómo caminaste y compártelo en tus historias.',
         data: { type: 'wrapped' },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: 'default' },

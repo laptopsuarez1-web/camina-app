@@ -43,7 +43,7 @@ import { Trash as Trash } from 'phosphor-react-native/src/icons/Trash';
 import { Key as Key } from 'phosphor-react-native/src/icons/Key';
 import { PencilSimple as PencilSimple } from 'phosphor-react-native/src/icons/PencilSimple';
 import { PaperPlaneTilt as PaperPlaneTilt } from 'phosphor-react-native/src/icons/PaperPlaneTilt';
-import { Trophy as Trophy_ } from 'phosphor-react-native/src/icons/Trophy';
+import { TrophyArt } from '@/components/share/art';
 import { Plus as Plus_ } from 'phosphor-react-native/src/icons/Plus';
 import { Star as Star_ } from 'phosphor-react-native/src/icons/Star';
 import { Coffee as Coffee_ } from 'phosphor-react-native/src/icons/Coffee';
@@ -68,6 +68,7 @@ import { ChartBar as ChartBar_ } from 'phosphor-react-native/src/icons/ChartBar'
 import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
 import { Barbell as Barbell_ } from 'phosphor-react-native/src/icons/Barbell';
 import { Sparkle as Sparkle_ } from 'phosphor-react-native/src/icons/Sparkle';
+import { DownloadSimple as DownloadSimple_ } from 'phosphor-react-native/src/icons/DownloadSimple';
 import { FirstAid as FirstAid_ } from 'phosphor-react-native/src/icons/FirstAid';
 import { Wrench as Wrench_ } from 'phosphor-react-native/src/icons/Wrench';
 import { Storefront as Storefront_ } from 'phosphor-react-native/src/icons/Storefront';
@@ -137,7 +138,11 @@ export const Trash2 = make(Trash);
 export const KeyRound = make(Key);
 export const Pencil = make(PencilSimple);
 export const Send = make(PaperPlaneTilt);
-export const Trophy = make(Trophy_);
+// Trofeo propio de Camina (dorado, con las huellas del logo). Es un dibujo de colores fijos: ignora `color`. Va un poco más grande que
+// el tamaño pedido porque el dibujo ocupa menos del cuadro que un ícono de línea.
+export function Trophy({ size = 24 }: IconProps) {
+  return <TrophyArt size={Math.max(size * 1.25, 18)} />;
+}
 export const Plus = make(Plus_, 'bold');
 export const Star = make(Star_);
 export const Coffee = make(Coffee_);
@@ -164,6 +169,7 @@ export const Crown = make(Crown_);
 export const Ticket = make(Ticket_);
 export const Barbell = make(Barbell_);
 export const Sparkle = make(Sparkle_);
+export const DownloadSimple = make(DownloadSimple_);
 export const FirstAid = make(FirstAid_);
 export const Wrench = make(Wrench_);
 export const Storefront = make(Storefront_);

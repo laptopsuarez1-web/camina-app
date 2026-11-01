@@ -1,7 +1,7 @@
 // lib/share-stats.ts: cuentas de las tarjetas para compartir (día, semana y mes).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeShareStats, longestRun, nextWrappedReminder, periodDates, rangeLabel, splitMonthPoints, dayKey } from '../src/lib/share-stats.ts';
+import { computeShareStats, longestRun, nextWrappedReminder, periodDates, rangeLabel, splitMonthPoints, dayKey, weeklyTotals } from '../src/lib/share-stats.ts';
 
 const today = new Date(2026, 9, 18); // domingo 18 de octubre de 2026
 
@@ -86,4 +86,14 @@ test('el aviso del Wrapped es el 1.º del mes a las 9:00 y habla del mes que ter
   assert.equal(late.monthIndex, 10);
   // Diciembre pasa a enero del año que viene.
   assert.equal(dayKey(nextWrappedReminder(new Date(2026, 11, 20)).date), '2027-01-01');
+});
+
+test('weeklyTotals agrupa por semana lunes a domingo', () => {
+  // Octubre de 2026 arranca jueves (firstWeekday 3): la primera semana trae 4 días (1 al 4).
+  const days = Array.from({ length: 31 }, (_, i) => ({ key: `2026-10-${String(i + 1).padStart(2, '0')}`, steps: 1000 }));
+  const w = weeklyTotals(days, 3);
+  assert.equal(w.length, 5);
+  assert.deepEqual([w[0].from, w[0].to, w[0].steps], ['2026-10-01', '2026-10-04', 4000]);
+  assert.equal(w[1].steps, 7000);
+  assert.deepEqual([w[4].from, w[4].to, w[4].steps], ['2026-10-26', '2026-10-31', 6000]);
 });

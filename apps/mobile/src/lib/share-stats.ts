@@ -193,3 +193,15 @@ export function nextWrappedReminder(now: Date): { date: Date; monthIndex: number
   if (now.getTime() < thisMonth.getTime()) return { date: thisMonth, monthIndex: (now.getMonth() + 11) % 12 };
   return { date: new Date(now.getFullYear(), now.getMonth() + 1, 1, 9, 0, 0), monthIndex: now.getMonth() };
 }
+
+// Pasos por semana calendario (lunes a domingo) de un mes: la primera y la última pueden ser parciales.
+export function weeklyTotals(days: { key: string; steps: number }[], firstWeekday: number) {
+  const weeks: { from: string; to: string; steps: number }[] = [];
+  days.forEach((d, i) => {
+    const w = Math.floor((firstWeekday + i) / 7);
+    if (!weeks[w]) weeks[w] = { from: d.key, to: d.key, steps: 0 };
+    weeks[w].to = d.key;
+    weeks[w].steps += d.steps;
+  });
+  return weeks;
+}

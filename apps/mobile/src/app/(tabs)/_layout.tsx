@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { registerForPushNotificationsAsync, useNotificationTaps } from '@/lib/push-notifications';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import { registerDevice } from '@/lib/device';
+import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
@@ -30,6 +31,7 @@ export default function TabsLayout() {
     if (session) {
       registerForPushNotificationsAsync();
       shareCoarseLocation();
+      scheduleWrappedReminder();
       registerDevice(session.user.id).then((status) => {
         if (status === 'blocked') {
           Alert.alert(

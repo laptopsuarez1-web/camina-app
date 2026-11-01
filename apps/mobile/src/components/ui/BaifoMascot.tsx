@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 
-// El Baifo (cabrita de Camina) en 3D. Solo aparece en estados vacíos, de error y en el canje.
+// El Baifo (cabrita de Camina) en 3D. Aparece en estados vacíos, de error, en el canje y en la entrada de "Tu mes en Camina".
 // Sentado respira despacio, confundido se balancea, festeja salta y asoma sube y baja un poco.
 // Con "reducir movimiento" queda quieto.
 const IMG = {

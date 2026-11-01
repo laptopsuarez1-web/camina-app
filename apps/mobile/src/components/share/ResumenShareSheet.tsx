@@ -32,7 +32,6 @@ export function ResumenShareSheet({
       visible={visible}
       onClose={onClose}
       title="Compartir mi progreso"
-      allowOverlay
       filename={`camina-${period === 'day' ? 'dia' : period === 'week' ? 'semana' : 'mes'}`}
       extras={
         <>

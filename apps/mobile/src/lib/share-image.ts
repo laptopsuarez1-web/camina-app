@@ -4,6 +4,7 @@ import type { View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
+import * as MediaLibrary from 'expo-media-library/legacy';
 
 // Convierte una tarjeta (vista de 360 px de ancho) en una PNG de 1080 px y abre la hoja de compartir del sistema
 // (ahí aparecen Instagram, WhatsApp, Guardar imagen...). La imagen se arma en el teléfono y no se sube a ningún lado.
@@ -45,4 +46,25 @@ export async function copyCardImage(ref: RefObject<View | null>, size: { width: 
   const scale = SHARE_PX_WIDTH / size.width;
   const b64 = await captureRef(ref, { format: 'png', quality: 1, width: Math.round(size.width * scale), height: Math.round(size.height * scale), result: 'base64' });
   await Clipboard.setImageAsync(b64);
+}
+
+// Guarda la tarjeta (PNG de 1080 px) en la galería del teléfono. Pide solo permiso de escritura (no lee tus fotos).
+// En el navegador la baja como archivo. Devuelve false si la persona no dio el permiso.
+export async function saveCardToGallery(ref: RefObject<View | null>, size: { width: number; height: number }, filename: string): Promise<boolean> {
+  if (!ref.current) throw new Error('La tarjeta todavía no está lista. Prueba de nuevo.');
+  const scale = SHARE_PX_WIDTH / size.width;
+  const opts = { format: 'png' as const, quality: 1, width: Math.round(size.width * scale), height: Math.round(size.height * scale) };
+  if (Platform.OS === 'web') {
+    const uri = await captureRef(ref, { ...opts, result: 'data-uri' });
+    const a = document.createElement('a');
+    a.href = uri;
+    a.download = `${filename}.png`;
+    a.click();
+    return true;
+  }
+  const perm = await MediaLibrary.requestPermissionsAsync(true);
+  if (!perm.granted) return false;
+  const uri = await captureRef(ref, { ...opts, result: 'tmpfile' });
+  await MediaLibrary.saveToLibraryAsync(uri);
+  return true;
 }
