@@ -1,88 +1,47 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { partProgress, sample, withAlpha } from '@/lib/motion';
+import Svg from 'react-native-svg';
+import { Foot, gradientDefs, PARTS, type Fills, type IllKind } from '@/components/ui/IllustratedIcons';
+import { partProgress, sample } from '@/lib/motion';
 
 // Íconos de la barra de abajo, armados por partes para que cada uno haga su gesto al tocarlo:
 // la casa se levanta, las barras crecen, los grupos saltan, el calendario pasa de página, la bolsa se balancea.
-// Mismo dibujo en todos los teléfonos (antes en iPhone eran los símbolos del sistema). Inactivo: contorno; activo: contorno + relleno suave.
+// Mismo dibujo en todos los teléfonos. Los dibujos están en IllustratedIcons.
 export type TabKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes';
 
 const TOTAL_MS = 700;
 type PartAnim = { delay: number; dur: number; at: number[]; y?: number[]; scaleY?: number[]; rotate?: number[]; opacity?: number[] };
-type Part = { origin: string; anim?: PartAnim; draw: (c: { stroke: string; fill: string; ink: string }) => ReactNode };
 
 const hop: PartAnim['at'] = [0, 0.35, 0.65, 1];
+const squash: PartAnim = { delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], scaleY: [1, 0.92, 1.04, 1] };
+const bar = (delay: number): PartAnim => ({ delay, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] });
+const jump = (delay: number): PartAnim => ({ delay, dur: 520, at: hop, y: [0, -6, 1.5, 0] });
+const swing: PartAnim = { delay: 0, dur: 700, at: [0, 0.22, 0.5, 0.72, 1], rotate: [0, -15, 11, -5, 0] };
+const step = (delay: number): PartAnim => ({ delay, dur: 480, at: [0, 0.6, 1], y: [8, -1.5, 0], opacity: [0, 1, 1] });
 
-const PARTS: Record<TabKind, Part[]> = {
-  home: [
-    { origin: '50% 100%', anim: { delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], y: [0, -3.6, 0.8, 0] }, draw: ({ stroke }) => <Path d="M3.5 15.5 16 4.5l12.5 11" stroke={stroke} /> },
-    {
-      origin: '50% 100%',
-      anim: { delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], scaleY: [1, 0.92, 1.04, 1] },
-      draw: ({ stroke, fill }) => (
-        <>
-          <Path d="M7 13.5V26a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V13.5" stroke={stroke} fill={fill} />
-          <Path d="M13 28v-7a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v7" stroke={stroke} />
-        </>
-      ),
-    },
-  ],
-  activity: [
-    { origin: '50% 100%', anim: { delay: 0, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={3} y={14} width={7.5} height={14} rx={2.2} stroke={stroke} fill={fill} /> },
-    { origin: '50% 100%', anim: { delay: 70, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={12.25} y={8} width={7.5} height={20} rx={2.2} stroke={stroke} fill={fill} /> },
-    { origin: '50% 100%', anim: { delay: 140, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] }, draw: ({ stroke, fill }) => <Rect x={21.5} y={3} width={7.5} height={25} rx={2.2} stroke={stroke} fill={fill} /> },
-  ],
-  groups: [
-    { origin: '50% 50%', draw: ({ stroke }) => <Path d="M8.5 27.5a7.5 7.5 0 0 1 15 0M2.5 25a5 5 0 0 1 5-4.2M29.5 25a5 5 0 0 0-5-4.2" stroke={stroke} /> },
-    { origin: '50% 50%', anim: { delay: 80, dur: 520, at: hop, y: [0, -4.5, 1, 0] }, draw: ({ stroke, fill }) => <Circle cx={7} cy={13.5} r={3} stroke={stroke} fill={fill} /> },
-    { origin: '50% 50%', anim: { delay: 140, dur: 520, at: hop, y: [0, -4.5, 1, 0] }, draw: ({ stroke, fill }) => <Circle cx={25} cy={13.5} r={3} stroke={stroke} fill={fill} /> },
-    { origin: '50% 50%', anim: { delay: 0, dur: 520, at: hop, y: [0, -4.5, 1, 0] }, draw: ({ stroke, fill }) => <Circle cx={16} cy={10} r={4} stroke={stroke} fill={fill} /> },
-  ],
-  events: [
-    {
-      origin: '50% 50%',
-      draw: ({ stroke, fill }) => (
-        <>
-          <Rect x={4} y={6.5} width={24} height={21.5} rx={5} stroke={stroke} fill={fill} />
-          <Path d="M4 12.5h24" stroke={stroke} />
-        </>
-      ),
-    },
-    { origin: '50% 100%', anim: { delay: 0, dur: 520, at: [0, 0.25, 0.6, 1], rotate: [0, -14, 10, 0] }, draw: ({ stroke }) => <Path d="M10.5 3.8v5M21.5 3.8v5" stroke={stroke} /> },
-    {
-      origin: '50% 50%',
-      anim: { delay: 0, dur: 480, at: [0, 0.6, 1], y: [7, -1, 0], opacity: [0, 1, 1] },
-      draw: ({ ink }) => (
-        <>
-          <Circle cx={11} cy={18.5} r={1.5} fill={ink} stroke="none" />
-          <Circle cx={16} cy={18.5} r={1.5} fill={ink} stroke="none" />
-          <Circle cx={21} cy={18.5} r={1.5} fill={ink} stroke="none" />
-          <Circle cx={11} cy={23} r={1.5} fill={ink} stroke="none" />
-          <Circle cx={16} cy={23} r={1.5} fill={ink} stroke="none" />
-        </>
-      ),
-    },
-  ],
-  canjes: [
-    {
-      origin: '50% 0%',
-      anim: { delay: 0, dur: 700, at: [0, 0.22, 0.5, 0.72, 1], rotate: [0, -15, 11, -5, 0] },
-      draw: ({ stroke, fill }) => (
-        <>
-          <Path d="M6.5 11h19l1.5 14a3 3 0 0 1-3 3.3H8a3 3 0 0 1-3-3.3Z" stroke={stroke} fill={fill} />
-          <Path d="M11 11V9a5 5 0 0 1 10 0v2" stroke={stroke} />
-          <Path d="M12 17.5q4 3.5 8 0" stroke={stroke} />
-        </>
-      ),
-    },
-  ],
+// Gesto de cada parte, en el mismo orden que PARTS (IllustratedIcons): la casa se levanta, las barras crecen, los grupos saltan,
+// el calendario sacude las argollas y las huellas aparecen paso a paso, la bolsa se balancea.
+const ANIM: Partial<Record<TabKind, (PartAnim | undefined)[]>> = {
+  home: [{ delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], y: [0, -4.5, 1, 0] }, squash, squash],
+  activity: [bar(0), bar(70), bar(140)],
+  groups: [undefined, jump(0), jump(80), jump(140)],
+  events: [undefined, { delay: 0, dur: 520, at: [0, 0.25, 0.6, 1], rotate: [0, -14, 10, 0] }, step(0), step(160)],
+  canjes: [swing, swing, swing, swing],
 };
+const KIND: Record<TabKind, IllKind> = { home: 'home', activity: 'activity', groups: 'groups', events: 'events', canjes: 'canjes' };
 
-function Layer({ part, size, t, colors, reduced }: { part: Part; size: number; t: { value: number }; colors: { stroke: string; fill: string; ink: string }; reduced: boolean }) {
-  const a = part.anim;
-  const k = size / 32;
+// Oscurece un #rrggbb para el segundo tono de los íconos apagados.
+function shade(hex: string, k: number) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const c = (v: number) => Math.round(v * (1 - k)).toString(16).padStart(2, '0');
+  return `#${c((n >> 16) & 255)}${c((n >> 8) & 255)}${c(n & 255)}`;
+}
+
+function Layer({ children, a, size, t, origin, reduced }: { children: ReactNode; a?: PartAnim; size: number; t: { value: number }; origin: string; reduced: boolean }) {
+  const k = size / 48;
   const style = useAnimatedStyle(() => {
     if (!a || reduced) return {};
     const q = partProgress(t.value, a.delay, a.dur);
@@ -93,17 +52,17 @@ function Layer({ part, size, t, colors, reduced }: { part: Part; size: number; t
     return { opacity: o, transform: [{ translateY: y }, { scaleY: sy }, { rotate: `${r}deg` }] };
   });
   return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { transformOrigin: part.origin }, style]}>
-      <Svg width={size} height={size} viewBox="0 0 32 32" fill="none" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round">
-        {part.draw(colors)}
-      </Svg>
+    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { transformOrigin: origin }, style]}>
+      {children}
     </Animated.View>
   );
 }
 
 // `tick` sube cada vez que se toca la pestaña (también si ya estaba activa); además se anima al pasar a activa por otro camino.
-export function TabGlyph({ kind, color, focused, tick = 0, size = 26 }: { kind: TabKind; color: string; focused: boolean; tick?: number; size?: number }) {
+// Activa: ilustrada con degradé. Inactiva: del gris de la barra, en dos tonos.
+export function TabGlyph({ kind, color, focused, tick = 0, size = 28 }: { kind: TabKind; color: string; focused: boolean; tick?: number; size?: number }) {
   const reduced = useReducedMotion();
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Empieza en el final (reposo): si la animación no corre, el ícono se ve normal.
   const t = useSharedValue(TOTAL_MS);
   const first = useRef(true);
@@ -115,11 +74,22 @@ export function TabGlyph({ kind, color, focused, tick = 0, size = 26 }: { kind: 
     t.value = withTiming(TOTAL_MS, { duration: TOTAL_MS, easing: Easing.linear });
   }, [tick, focused, reduced, t]);
 
-  const colors = { stroke: color, fill: focused ? withAlpha(color, 0.22) : 'none', ink: color };
+  const ill = KIND[kind];
+  const c: Fills = focused ? { f: `url(#${uid}f)`, g: `url(#${uid}g)` } : { f: color, g: shade(color, 0.28) };
+  const anims = ANIM[kind] ?? [];
   return (
     <View style={{ width: size, height: size }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      {PARTS[kind].map((part, i) => (
-        <Layer key={i} part={part} size={size} t={t} colors={colors} reduced={reduced} />
+      {PARTS[ill].map((part, i) => (
+        <Layer key={i} a={anims[i]} size={size} t={t} origin={part.origin} reduced={reduced}>
+          {part.node ? (
+            <Svg width={size} height={size} viewBox="0 0 48 48">
+              {focused ? gradientDefs(uid, ill) : null}
+              {part.node(c)}
+            </Svg>
+          ) : part.foot ? (
+            <Foot part={part.foot} size={size} tint={focused ? '#FFF6D2' : c.g} />
+          ) : null}
+        </Layer>
       ))}
     </View>
   );

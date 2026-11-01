@@ -40,7 +40,7 @@ export function useTabBarSpace() {
 
 const liquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
-// Pastilla de la pestaña activa: una sola vista que se desliza de una pestaña a otra (resorte de unos 280 ms).
+// Pastilla de la pestaña activa: una sola vista que se desliza de una pestaña a otra (resorte suave, sin rebote).
 // Con "reducir movimiento" salta sin animar.
 function ActivePill({ position, count, dark }: { position: number; count: number; dark: boolean }) {
   const [trackW, setTrackW] = useState(0);
@@ -50,7 +50,8 @@ function ActivePill({ position, count, dark }: { position: number; count: number
   useEffect(() => {
     if (!itemW) return;
     const to = position * itemW;
-    x.value = reduced ? to : withSpring(to, { damping: 22, stiffness: 260 });
+    // Resorte sobreamortiguado y sin pasarse del destino: antes rebotaba y la pastilla se salía de la barra al cambiar de pestaña.
+    x.value = reduced ? to : withSpring(to, { damping: 34, stiffness: 240, overshootClamping: true });
   }, [position, itemW, reduced, x]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
   return (
