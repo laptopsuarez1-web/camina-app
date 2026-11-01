@@ -2,7 +2,7 @@
   "expo": {
     "name": "Camina",
     "slug": "camina",
-    "scheme": "camina",
+    "scheme": ["camina", "bo.camina.app"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
