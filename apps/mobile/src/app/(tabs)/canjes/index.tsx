@@ -1649,9 +1649,7 @@ export default function CanjesScreen() {
                 ) : null}
 
                 {profileGroup.business.description ? (
-                  <Glass className="rounded-2xl px-4 py-3 mt-3">
-                    <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark">{profileGroup.business.description}</Text>
-                  </Glass>
+                  <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>

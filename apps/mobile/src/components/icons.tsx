@@ -78,6 +78,8 @@ import { EnvelopeSimple as EnvelopeSimple_ } from 'phosphor-react-native/src/ico
 import { GoogleLogo as GoogleLogo_ } from 'phosphor-react-native/src/icons/GoogleLogo';
 import { AppleLogo as AppleLogo_ } from 'phosphor-react-native/src/icons/AppleLogo';
 
+import { IllArt, type IllKind } from '@/components/ui/IllustratedIcons';
+
 export type IconProps = {
   size?: number;
   color?: ColorValue;
@@ -199,6 +201,11 @@ const MOTIONS = new Map<unknown, IconMotion>([
   [Flame, 'flick'], [Trophy, 'wobble'], [Gift, 'wobble'], [Crown, 'wobble'], [Bell, 'ring'], [Target, 'thud'],
 ]);
 
+// Fichas con ilustración (en vez del glifo de línea): mismo estilo que el trofeo.
+const ILLUSTRATED = new Map<unknown, IllKind>([
+  [Users, 'groups'], [UserPlus, 'friend'], [Gift, 'gift'], [Bell, 'bell'], [Flame, 'flame'], [Target, 'target'], [Activity, 'activity'], [ShoppingBag, 'canjes'],
+]);
+
 export function IconBubble({
   icon: Icon,
   tone = 'aqua',
@@ -237,7 +244,7 @@ export function IconBubble({
       ]}
     >
       <ReactiveIcon motion={motion} tick={tick} idle={Icon === Flame}>
-        <Icon size={size * 0.54} color={color} weight="fill" />
+        {ILLUSTRATED.has(Icon) ? <IllArt kind={ILLUSTRATED.get(Icon)!} size={size * 0.7} /> : <Icon size={size * 0.54} color={color} weight="fill" />}
       </ReactiveIcon>
     </View>
   );
