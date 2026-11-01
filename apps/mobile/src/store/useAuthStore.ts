@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/query-client';
@@ -82,11 +83,21 @@ export function initAuthListener() {
   if (initialized) return;
   initialized = true;
 
-  supabase.auth
-    .getSession()
-    .then(async ({ data }) => {
-      if (lastUserId === null) lastUserId = data.session?.user.id ?? null;
-      await publishSession(data.session);
+  // Una lectura vacía puede ser pasajera (el almacén del teléfono no respondió a tiempo): se reintenta antes de
+  // dar por hecho que no hay sesión y mostrar el login.
+  async function readStoredSession(): Promise<Session | null> {
+    for (let i = 0; i < 3; i++) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) return data.session;
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    return null;
+  }
+
+  readStoredSession()
+    .then(async (session) => {
+      if (lastUserId === null) lastUserId = session?.user.id ?? null;
+      await publishSession(session);
     })
     .catch(() => {
       // Si falla la lectura local seguimos sin sesión, en vez de dejar el spinner para siempre.
@@ -108,4 +119,13 @@ export function initAuthListener() {
 
     await publishSession(session);
   });
+
+  // Si la app quedó mostrando el login pero en el teléfono sigue guardada la sesión, al volver a primer plano se recupera.
+  if (Platform.OS !== 'web') {
+    AppState.addEventListener('change', async (state) => {
+      if (state !== 'active' || useAuthStore.getState().session) return;
+      const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (data.session && !useAuthStore.getState().session) await publishSession(data.session);
+    });
+  }
 }
