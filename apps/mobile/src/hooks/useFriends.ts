@@ -87,6 +87,20 @@ export function useFriendCard(personId: string | undefined) {
   });
 }
 
+// Puntos de la persona y grupos que tienen en común (migración 0076). Solo amigos; si la función todavía no existe, devuelve null y la ficha lo oculta.
+export interface FriendExtras { points: number; common_groups: { id: string; name: string }[] }
+export function useFriendExtras(personId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['friend-extras', personId],
+    enabled: !!personId && enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('friend_extras', { p_user: personId! });
+      if (error) return null;
+      return (data ?? null) as FriendExtras | null;
+    },
+  });
+}
+
 export function useFriendActions() {
   const queryClient = useQueryClient();
   const refresh = () => {

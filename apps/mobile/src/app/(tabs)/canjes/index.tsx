@@ -42,7 +42,6 @@ import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
-import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
@@ -1210,30 +1209,33 @@ export default function CanjesScreen() {
                 if (e.nativeEvent.actionName === 'favorite') favorites.toggle(g.business.id);
               }}
               onPress={() => setProfileBusinessId(g.business.id)}
-              style={{ borderRadius: 24 }}
+              className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4"
+              style={{
+                shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
+                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
+              }}
             >
-              {/* Vidrio líquido: con portada, la foto ocupa toda la tarjeta y la información flota encima en un panel de vidrio
-                  (la foto se ve a través, desenfocada). Sin portada, la tarjeta entera es de vidrio. El dorado de los destacados es el borde. */}
-              <View
-                style={g.business.cover_url ? {
-                  borderRadius: 24, overflow: 'hidden', borderWidth: cardBorder(g.business),
-                  borderColor: isFeatured(g.business) ? GOLD : isDark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.9)',
-                  backgroundColor: isDark ? '#1d1b2e' : '#e9e2f7',
-                  shadowColor: isFeatured(g.business) ? GOLD : '#291C47', shadowOpacity: isFeatured(g.business) ? 0.3 : 0.14, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
-                } : undefined}
-              >
+              {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
               {g.business.cover_url ? (
                 <Image
                   source={{ uri: g.business.cover_url }}
                   accessibilityIgnoresInvertColors
                   resizeMode="cover"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
                 />
               ) : null}
-              <Glass
-                className="rounded-3xl p-4"
-                style={g.business.cover_url ? { margin: 8, marginTop: 130 } : isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.3 } : undefined}
-              >
+              {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
+                  el borde se repite por encima de todo, del mismo ancho y color. */}
+              {g.business.cover_url ? (
+                <View
+                  pointerEvents="none"
+                  className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
+                  style={{
+                    position: 'absolute', zIndex: 1, top: -cardBorder(g.business), left: -cardBorder(g.business), right: -cardBorder(g.business), bottom: -cardBorder(g.business),
+                    borderRadius: 24, borderWidth: cardBorder(g.business), ...(isFeatured(g.business) ? { borderColor: GOLD } : {}),
+                  }}
+                />
+              ) : null}
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, isFeatured(g.business))}
                 <View className="flex-1">
@@ -1270,7 +1272,7 @@ export default function CanjesScreen() {
                     accessible
                     accessibilityLabel={`${b.name}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
                     className="flex-row items-center bg-aqua-deep rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12, opacity: b.cost_points > (balance ?? 0) ? 0.55 : 1 }}
+                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
                   >
                     <Coin size={20} />
                     <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
@@ -1279,8 +1281,6 @@ export default function CanjesScreen() {
                 ))}
               </ScrollView>
               )}
-              </Glass>
-              </View>
             </Press>
           ))}
 
@@ -1432,7 +1432,6 @@ export default function CanjesScreen() {
         onDismiss={() => flushAfterClose(afterProfileClose)}>
         {profileGroup && (
           <View className="flex-1 bg-bg-light dark:bg-bg-dark">
-            <AmbientBackground />
             <ScrollView contentContainerClassName="pb-12" showsVerticalScrollIndicator={false}>
               <View style={{ height: 232, backgroundColor: colors.purple }}>
                 {profileGroup.business.cover_url ? (

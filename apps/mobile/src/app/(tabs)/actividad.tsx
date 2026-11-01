@@ -68,7 +68,7 @@ const CAL_FG = { met: colors.mintDark, miss: '#7A1510', idle: '#45454F', none: c
 export default function ActividadScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   // Textos de color (estado de la meta, "Cerrar") con su par para oscuro.
-  const { accentText, warnText, purpleText } = useThemeColors();
+  const { accentText, warnText, purpleText, dangerText } = useThemeColors();
   const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
@@ -492,7 +492,7 @@ export default function ActividadScreen() {
               <View className="items-end">
                 {pastAvg > 0 && h.day !== todayKey ? (
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-                    <Text className="font-extrabold" style={{ color: h.steps >= pastAvg ? accentText : warnText }}>
+                    <Text className="font-extrabold" style={{ color: h.steps >= pastAvg ? accentText : dangerText }}>
                       {h.steps >= pastAvg ? '+' : '−'}{Math.abs(Math.round((h.steps / pastAvg - 1) * 100))}%
                     </Text>
                     {' '}vs. promedio

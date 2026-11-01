@@ -10,7 +10,7 @@ import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
 import { ChevronLeft, DotsThree, Check, X } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
-import { useFriendCard, useFriendActions } from '@/hooks/useFriends';
+import { useFriendCard, useFriendActions, useFriendExtras } from '@/hooks/useFriends';
 import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration';
 import { buildDayCells, compactSteps, WEEK_LABELS, type DayCell } from '@/lib/friend-week';
 import { localDay } from '@/lib/format';
@@ -55,7 +55,10 @@ export default function FriendProfileScreen() {
       onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
     });
   };
-  const { text, muted, line } = useThemeColors();
+  const { text, muted, line, dark } = useThemeColors();
+  // Para el comparativo: mi propia ficha (trae mi promedio) y, de ella, los Puntos y los grupos en común.
+  const { data: myCard } = useFriendCard(card?.relation === 'friend' ? meId : undefined);
+  const { data: extras } = useFriendExtras(userId, card?.relation === 'friend');
   const [span, setSpan] = useState<'semana' | 'mes'>('semana');
   const [menu, setMenu] = useState(false);
   const [reasons, setReasons] = useState(false);
@@ -100,6 +103,8 @@ export default function FriendProfileScreen() {
     },
   }));
 
+  const first = card?.full_name?.split(' ')[0] ?? 'ella';
+  const topAvg = Math.max(1, myCard?.avg_week ?? 0, card?.avg_week ?? 0);
   const since = card?.friends_since ? new Date(card.friends_since).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' }) : null;
 
   if (!isLoading && !isError && !card) {
@@ -120,7 +125,7 @@ export default function FriendProfileScreen() {
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-        <DarkHeader style={{ paddingBottom: 28 }}>
+        <DarkHeader style={{ paddingBottom: 56 }}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -146,7 +151,7 @@ export default function FriendProfileScreen() {
         </DarkHeader>
 
         {card && !showData && (
-          <Glass className="rounded-3xl p-4 mx-5 mt-5" style={{ gap: 10 }}>
+          <Glass className="rounded-3xl p-4 mx-5 -mt-7" style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
               {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
             </Text>
@@ -175,17 +180,58 @@ export default function FriendProfileScreen() {
 
         {card && showData && (
           <>
-            <Glass className="flex-row rounded-3xl mx-5 mt-5 py-3.5">
-              {[
-                { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
-                { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
-                { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
-              ].map((s, i) => (
-                <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
-                  <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+            <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
+              {/* En claro, el encabezado oscuro se transparentaba por el vidrio y tapaba los números: un velo blanco lo cubre (el vidrio sigue, solo más lechoso). */}
+              {!dark && <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.9)' }} />}
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {isFriend && (extras || (myCard && myCard.avg_week != null)) ? (
+                <View className="mx-4 mt-3.5 pt-3.5" style={{ borderTopWidth: 1, borderTopColor: line, gap: 12 }}>
+                  {myCard && myCard.avg_week != null ? (
+                    <View style={{ gap: 6 }}>
+                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Promedio diario: tú y {first}</Text>
+                      {[{ who: 'Tú', v: myCard.avg_week ?? 0, color: colors.aquaDeep }, { who: first, v: card.avg_week ?? 0, color: colors.purple }].map((r) => (
+                        <View key={r.who} className="flex-row items-center" style={{ gap: 8 }}>
+                          <Text className="text-[12px] text-muted-light dark:text-muted-dark" style={{ width: 54 }} numberOfLines={1}>{r.who}</Text>
+                          <View className="flex-1 rounded-full overflow-hidden" style={{ height: 8, backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(91,49,163,0.10)' }}>
+                            <View style={{ width: `${Math.max(4, Math.round((r.v / topAvg) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: r.color }} />
+                          </View>
+                          <Text style={{ width: 50, textAlign: 'right', fontSize: 12.5, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                  {extras ? (
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Sus Puntos</Text>
+                      <Text style={{ fontSize: 15, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{extras.points.toLocaleString('es-BO')}</Text>
+                    </View>
+                  ) : null}
+                  {extras && extras.common_groups.length > 0 ? (
+                    <View style={{ gap: 6 }}>
+                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Grupos en común · {extras.common_groups.length}</Text>
+                      <View className="flex-row flex-wrap" style={{ gap: 6 }}>
+                        {extras.common_groups.map((g) => (
+                          <Press key={g.id} accessibilityRole="button" accessibilityLabel={`Abrir el grupo ${g.name}`} onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })} className="rounded-full px-3 py-1.5" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.10)' : 'rgba(91,49,163,0.08)', borderWidth: 1, borderColor: line }}>
+                            <Text style={{ fontSize: 12, fontWeight: '600', color: text }} numberOfLines={1}>{g.name}</Text>
+                          </Press>
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
                 </View>
-              ))}
+              ) : null}
             </Glass>
 
             <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
