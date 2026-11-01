@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
 import { Flame, Trophy, Users } from '@/components/icons';
+import { IllArt } from '@/components/ui/IllustratedIcons';
 import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
@@ -401,7 +402,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
           {[210, 165, 120].map((d) => <View key={d} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: flame, opacity: 0.1 }} />)}
         </Animated.View>
         <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, flameStyle]}>
-          <Flame size={140} color={flame} weight="fill" />
+          <IllArt kind="flame" size={150} />
         </Animated.View>
         <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.warn, '#FFD97A', '#FFF1B8']} count={20} radius={120} style={{ left: '50%', top: '50%' }} />
       </View>
@@ -443,7 +444,7 @@ export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone:
     <Stage tl={tl} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha semanal</Eyebrow></Reveal>
       <Reveal tl={tl} delay={300} pop from={0.4} style={{ marginTop: 18 }}>
-        <Flame size={96} color={colors.warn} weight="fill" />
+        <IllArt kind="flame" size={104} />
       </Reveal>
       <View accessible accessibilityLabel="7 de 7 días" style={{ flexDirection: 'row', gap: 6, alignSelf: 'stretch', marginTop: 26 }}>
         {[0, 1, 2, 3, 4, 5, 6].map((i) => (

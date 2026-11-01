@@ -9,18 +9,22 @@ export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'ta
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'aqua', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral' };
-const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral' };
+const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
-  aqua: ['#7BDCFA', '#2B8FD0'], coral: ['#FFAE8E', '#E55A3C'], pink: ['#FF9FC4', '#D9457F'],
+  aqua: ['#7BDCFA', '#2B8FD0'], leaf: ['#C6F7A0', '#4DBB6A'], coral: ['#FFAE8E', '#E55A3C'], pink: ['#FF9FC4', '#D9457F'],
 } as const;
+
+// Segundo color de cada ícono; Actividad va toda en verde y Grupos en morado con la gente de los costados en verde.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'leaf', groups: 'mint' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];
+  const second = SECOND_OF[kind] ?? SECOND[t];
   return (
     <Defs>
-      {([['f', t], ['g', SECOND[t]]] as const).map(([k, tone]) => (
+      {([['f', t], ['g', second]] as const).map(([k, tone]) => (
         <LinearGradient key={k} id={`${uid}${k}`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={GRAD[tone][0]} />
           <Stop offset="1" stopColor={GRAD[tone][1]} />

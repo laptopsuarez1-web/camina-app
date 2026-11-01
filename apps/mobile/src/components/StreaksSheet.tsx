@@ -1,7 +1,8 @@
 import { Modal, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Flame, Target } from '@/components/icons';
+import { Target } from '@/components/icons';
+import { IllArt } from '@/components/ui/IllustratedIcons';
 import { colors } from '@/theme/tokens';
 import { STREAK_MIN_STEPS, STREAK_BONUS_DAYS, STREAK_BONUS_POINTS } from '@/constants/business-rules';
 
@@ -17,7 +18,7 @@ function Row({ icon, title, value, text, isDark }: { icon: 'flame' | 'target'; t
           backgroundColor: icon === 'flame' ? (isDark ? 'rgba(242,152,92,0.18)' : colors.warnLight) : isDark ? 'rgba(127,237,196,0.12)' : 'rgba(18,140,110,0.1)',
         }}
       >
-        {icon === 'flame' ? <Flame size={22} color={colors.warn} /> : <Target size={22} color={colors.mint} />}
+        {icon === 'flame' ? <IllArt kind="flame" size={26} /> : <Target size={22} color={colors.mint} />}
       </View>
       <View className="flex-1">
         <View className="flex-row justify-between items-center">

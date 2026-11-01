@@ -3,6 +3,7 @@ import { AccessibilityInfo, Animated, Easing, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
 import { Flame } from '@/components/icons';
+import { IllArt } from '@/components/ui/IllustratedIcons';
 import { colors } from '@/theme/tokens';
 import { STREAK_BONUS_POINTS, STREAK_BONUS_DAYS, STREAK_MIN_STEPS } from '@/constants/business-rules';
 
@@ -51,7 +52,7 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
             opacity: flame, transform: [{ scale: flameScale }],
           }}
         >
-          <Flame size={22} color={colors.warn} />
+          <IllArt kind="flame" size={26} />
         </Animated.View>
         <View className="flex-1">
           <Text className="text-[13.5px] font-bold" style={{ color: ink }}>
