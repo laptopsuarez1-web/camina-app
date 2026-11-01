@@ -203,7 +203,7 @@ const MOTIONS = new Map<unknown, IconMotion>([
 
 // Fichas con ilustración (en vez del glifo de línea): mismo estilo que el trofeo.
 const ILLUSTRATED = new Map<unknown, IllKind>([
-  [Users, 'groups'], [UserPlus, 'friend'], [Gift, 'gift'], [Bell, 'bell'], [Flame, 'flame'], [Target, 'target'], [Activity, 'activity'], [ShoppingBag, 'canjes'],
+  [Users, 'groups'], [UserPlus, 'friend'], [Gift, 'gift'], [Bell, 'bell'], [Flame, 'flame'], [Target, 'target'], [Activity, 'activity'], [ShoppingBag, 'canjes'], [Storefront, 'store'],
 ]);
 
 export function IconBubble({
