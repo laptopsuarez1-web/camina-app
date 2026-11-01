@@ -16,8 +16,8 @@ const GRAD = {
   aqua: ['#7BDCFA', '#2B8FD0'], leaf: ['#C6F7A0', '#4DBB6A'], coral: ['#FFAE8E', '#E55A3C'], pink: ['#FF9FC4', '#D9457F'],
 } as const;
 
-// Segundo color de cada ícono; Actividad va toda en verde y Grupos en morado con la gente de los costados en verde.
-const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'leaf', groups: 'mint' };
+// Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];

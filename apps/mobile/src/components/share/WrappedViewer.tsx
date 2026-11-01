@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Platform, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
@@ -12,11 +12,14 @@ import { copyCardImage, saveCardToGallery, shareCard } from '@/lib/share-image';
 
 type Mode = CardTheme | 'overlay';
 
+// Sin el marco de enfoque del navegador en las zonas de toque (se veía una línea vertical en el medio).
+const NO_RING = (Platform.OS === 'web' ? { outlineStyle: 'none' } : {}) as object;
+
 function Chip({ label, on, onPress, a11y, bg, fg }: { label: string; on: boolean; onPress: () => void; a11y: string; bg: string; fg: string }) {
   return (
     <Press
       accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected: on }} haptic="selection" feedback="none" onPress={onPress}
-      className="rounded-full items-center justify-center" style={{ height: 34, paddingHorizontal: 12, backgroundColor: on ? '#1F7A66' : bg }}
+      className="rounded-full items-center justify-center" style={{ flex: 1, height: 36, paddingHorizontal: 8, backgroundColor: on ? '#1F7A66' : bg }}
     >
       <Text style={{ fontSize: 12.5, fontWeight: '800', color: on ? '#FFFFFF' : fg }}>{label}</Text>
     </Press>
@@ -130,8 +133,8 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
 
         {/* Mitad izquierda: lámina anterior; mitad derecha: la siguiente. */}
         <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, flexDirection: 'row' }}>
-          <Press accessibilityRole="button" accessibilityLabel="Lámina anterior" feedback="none" disabled={i === 0} onPress={() => setIndex(Math.max(0, i - 1))} style={{ flex: 1 }} />
-          <Press accessibilityRole="button" accessibilityLabel="Lámina siguiente" feedback="none" disabled={i === total - 1} onPress={() => setIndex(Math.min(total - 1, i + 1))} style={{ flex: 1 }} />
+          <Press accessibilityRole="button" accessibilityLabel="Lámina anterior" feedback="none" disabled={i === 0} onPress={() => setIndex(Math.max(0, i - 1))} style={[{ flex: 1 }, NO_RING]} />
+          <Press accessibilityRole="button" accessibilityLabel="Lámina siguiente" feedback="none" disabled={i === total - 1} onPress={() => setIndex(Math.min(total - 1, i + 1))} style={[{ flex: 1 }, NO_RING]} />
         </View>
 
         {/* Arriba: solo cerrar. Lo que se puede cambiar va abajo, junto a Guardar y Compartir. */}
@@ -145,12 +148,12 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
 
         {/* Botón de abajo, a la altura del pulgar. */}
         <View onLayout={(e) => setBotH(height - e.nativeEvent.layout.y + 6)} style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 14, gap: 8 }} pointerEvents="box-none">
-          <View className="flex-row items-center justify-center" style={{ gap: 6 }} pointerEvents="box-none">
+          <View className="flex-row items-center justify-center" style={{ gap: 8 }} pointerEvents="box-none">
             <Chip bg={chipBg} fg={chrome} label="Clara" a11y="Lámina clara" on={mode === 'light'} onPress={() => setMode('light')} />
             <Chip bg={chipBg} fg={chrome} label="Oscura" a11y="Lámina oscura" on={mode === 'dark'} onPress={() => setMode('dark')} />
             <Chip bg={chipBg} fg={chrome} label="Sticker" a11y="Transparente, para pegar como sticker en una historia" on={overlay} onPress={() => setMode('overlay')} />
           </View>
-          <View className="flex-row items-center justify-center" style={{ gap: 6 }} pointerEvents="box-none">
+          <View className="flex-row items-center" style={{ gap: 8 }} pointerEvents="box-none">
             {firstName ? <Chip bg={chipBg} fg={chrome} label="Mi nombre" a11y="Mostrar mi nombre" on={withName} onPress={() => setWithName(!withName)} /> : null}
             {data.rank ? <Chip bg={chipBg} fg={chrome} label="Mi puesto" a11y="Mostrar mi puesto en el ranking" on={withRank} onPress={() => setWithRank(!withRank)} /> : null}
           </View>
