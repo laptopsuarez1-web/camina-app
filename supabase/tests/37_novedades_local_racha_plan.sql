@@ -21,7 +21,7 @@ begin
   perform tt.t_eq('primer canje en un local de pago: -10 +5', user_points_balance(u), 195);
   perform tt.t_eq('el canje guarda el bono', r2.new_place_bonus, 5);
   perform tt.t_eq('ya no ofrece el bono en ese local', my_new_place_bonus(bz), 0);
-  update redemptions set created_at = created_at - interval '8 days' where user_id = u;
+  update redemptions set created_at = created_at - interval '15 days' where user_id = u;
   red := redeem_benefit(b);
   perform tt.t_as(owner); r2 := confirm_redemption_code(bz, red.code);
   perform tt.t_as(u);

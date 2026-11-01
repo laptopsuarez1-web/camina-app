@@ -26,7 +26,7 @@ test('valores de las reglas de negocio', () => {
   assert.equal(R.POINTS_PER_STEP_UNIT, 1000);
   assert.equal(R.DAILY_POINTS_CAP, 20);
   assert.equal(R.POINTS_TTL_DAYS, 90);
-  assert.equal(R.BUSINESS_REDEMPTION_COOLDOWN_DAYS, 7);
+  assert.equal(R.BUSINESS_REDEMPTION_COOLDOWN_DAYS, 14);
   assert.equal(R.REDEMPTION_CODE_TTL_MINUTES, 15);
   assert.equal(R.MIN_DAILY_GOAL, 1000);
   assert.equal(R.GOOD_DAILY_GOAL, 5000);

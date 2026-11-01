@@ -180,7 +180,7 @@ export function Reglas() {
           </InView>
         </div>
         <InView className="reparto">
-          <b>Un local distinto cada vez.</b> Puedes volver a canjear en el mismo local pasados 7 días: así descubres lugares nuevos y todos los comercios tienen su oportunidad.
+          <b>Un local distinto cada vez.</b> Puedes volver a canjear en el mismo local pasados 14 días (dos semanas): así descubres lugares nuevos y todos los comercios tienen su oportunidad.
         </InView>
       </div>
     </section>
@@ -438,7 +438,7 @@ const BENEFICIOS = [
   ['Vos eliges el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
   ['Vos pones el cupo', 'Defines cuántos cupones das por día, o ilimitados.'],
   ['Se valida en segundos', 'Le dices a tu cliente el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado al instante.'],
-  ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 7 días. Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
+  ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 14 días (dos semanas). Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
   ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargas en tu ficha.'],
   ['Historias que te muestran', 'Quien canjea puede subir una historia de Instagram con el sticker de Camina y gana 5 Puntos extra cuando el equipo de Camina la aprueba.'],
   ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, tu pin en el mapa y, si quieres, eventos y sorteos que promocionan tu local dentro de la app.'],

@@ -1,4 +1,4 @@
--- Tarjeta de fidelidad por local (0057): sellos, canje gratis, planes de pago, panel y espera de 7 días.
+-- Tarjeta de fidelidad por local (0057): sellos, canje gratis, planes de pago, panel y espera de 14 días.
 begin;
 
 do $$
@@ -13,7 +13,7 @@ begin
   update businesses set owner_user_id = owner where id = bz;
   insert into benefits (business_id, name, type, cost_points, daily_quota) values (bz, 'Otro premio', 'gratis', 30, 99) returning id into b2;
 
-  perform tt.t_eq('la espera entre canjes en un mismo local es de 7 días', business_redemption_cooldown_days(), 7);
+  perform tt.t_eq('la espera entre canjes en un mismo local es de 14 días', business_redemption_cooldown_days(), 14);
   perform tt.t_eq('la tarjeta es de 5 sellos', loyalty_goal(), 5);
 
   perform tt.t_as(u);
@@ -41,11 +41,11 @@ begin
   perform tt.t_eq('al confirmar el local, hay 1 sello', (select stamps from my_loyalty_cards(bz)), 1);
   perform tt.t_eq('con un sello aparece en "mis tarjetas"', (select count(*) from my_loyalty_cards())::int, 1);
   perform tt.t_eq('el historial guarda la fecha del canje', (select cardinality(history) from my_loyalty_cards(bz)), 1);
-  perform tt.t_true('próximo canje permitido a los 7 días', (select next_allowed_at from my_loyalty_cards(bz)) between now() + interval '6 days 23 hours' and now() + interval '7 days 1 hour');
-  perform tt.t_raises('dentro de los 7 días no se vuelve a canjear', format('select redeem_benefit(%L)', b), 'hace menos de 7 días');
+  perform tt.t_true('próximo canje permitido a los 14 días', (select next_allowed_at from my_loyalty_cards(bz)) between now() + interval '13 days 23 hours' and now() + interval '14 days 1 hour');
+  perform tt.t_raises('dentro de los 14 días no se vuelve a canjear', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
 
   for i in 2..5 loop
-    update redemptions set created_at = created_at - interval '8 days' where user_id = u;
+    update redemptions set created_at = created_at - interval '15 days' where user_id = u;
     perform tt.t_as(u); red := redeem_benefit(b);
     perform tt.t_as(owner); perform confirm_redemption_code(bz, red.code);
   end loop;
@@ -56,7 +56,7 @@ begin
   perform tt.t_eq('se cobraron los 5 canjes (500 - 5 × 20 + 5 de bono por local nuevo)', user_points_balance(u), 405);
 
   -- ===== Premio gratis: 0 Puntos, la tarjeta vuelve a cero =====
-  update redemptions set created_at = created_at - interval '8 days' where user_id = u;
+  update redemptions set created_at = created_at - interval '15 days' where user_id = u;
   red := redeem_benefit(b2);
   perform tt.t_eq('otro premio del local con la tarjeta completa cuesta lo normal', red.cost_points, 30);
   perform tt.t_eq('y no es gratis de tarjeta', red.loyalty_free, false);
@@ -74,7 +74,7 @@ begin
   perform tt.t_eq('el canje gratis no cuenta como sello', (select stamps from my_loyalty_cards(bz)), 0);
 
   -- ===== Si el código gratis vence, la tarjeta vuelve a estar completa =====
-  update redemptions set created_at = created_at - interval '8 days' where user_id = u;
+  update redemptions set created_at = created_at - interval '15 days' where user_id = u;
   update redemptions set status = 'expired', confirmed_at = null where id = r2.id;
   perform tt.t_eq('un canje gratis vencido devuelve la tarjeta completa', (select stamps from my_loyalty_cards(bz)), 5);
 

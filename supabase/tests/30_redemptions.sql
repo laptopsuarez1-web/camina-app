@@ -1,5 +1,5 @@
 -- Canjes con código y vencimiento (0001, 0003, 0026, 0033): redeem_benefit, regenerate_redemption_code,
--- confirm_redemption_code, cancel_expired_redemption, cooldown de 7 días por comercio y cupo diario.
+-- confirm_redemption_code, cancel_expired_redemption, cooldown de 14 días por comercio y cupo diario.
 begin;
 
 do $$
@@ -63,19 +63,19 @@ begin
   perform redeem_benefit(b);
   perform tt.t_pass('ventana nocturna: ahora cae adentro');
 
-  -- ===== Cooldown de 7 días por comercio =====
+  -- ===== Cooldown de 14 días por comercio =====
   u := tt.mk_user(); b := tt.mk_benefit(5, 99); perform tt.give(u, 100, 60); perform tt.t_as(u);
   select business_id into bz from benefits where id = b;
   red := redeem_benefit(b);
-  perform tt.t_raises('segundo canje en el mismo comercio', format('select redeem_benefit(%L)', b), 'Ya canjeaste en este comercio hace menos de 7 días');
-  update redemptions set created_at = now() - interval '6 days' where id = red.id;
-  perform tt.t_raises('6 días después sigue bloqueado', format('select redeem_benefit(%L)', b), 'hace menos de 7 días');
-  update redemptions set created_at = now() - interval '8 days' where id = red.id;
+  perform tt.t_raises('segundo canje en el mismo comercio', format('select redeem_benefit(%L)', b), 'Ya canjeaste en este comercio hace menos de 14 días');
+  update redemptions set created_at = now() - interval '13 days' where id = red.id;
+  perform tt.t_raises('13 días después sigue bloqueado', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
+  update redemptions set created_at = now() - interval '15 days' where id = red.id;
   perform redeem_benefit(b);
-  perform tt.t_pass('8 días después se puede volver a canjear');
+  perform tt.t_pass('15 días después se puede volver a canjear');
   -- otro beneficio del MISMO comercio también está bloqueado; de otro comercio no.
   insert into benefits (business_id, name, type, cost_points, daily_quota) values (bz, 'Otro del mismo comercio', 'gratis', 5, 5) returning id into b;
-  perform tt.t_raises('otro beneficio del mismo comercio también cuenta', format('select redeem_benefit(%L)', b), 'hace menos de 7 días');
+  perform tt.t_raises('otro beneficio del mismo comercio también cuenta', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
   perform redeem_benefit(tt.mk_benefit(5));
   perform tt.t_pass('otro comercio no está bloqueado');
 
@@ -90,7 +90,7 @@ begin
   perform redeem_benefit(b);
   perform tt.t_pass('un canje vencido libera el cooldown');
   update redemptions set status = 'confirmed' where user_id = u and status = 'pending';
-  perform tt.t_raises('un canje confirmado sí bloquea', format('select redeem_benefit(%L)', b), 'hace menos de 7 días');
+  perform tt.t_raises('un canje confirmado sí bloquea', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
 
   -- ===== Cupo diario =====
   b := tt.mk_benefit(5, 1); u := tt.mk_user(); u2 := tt.mk_user(); perform tt.give(u, 20, 60); perform tt.give(u2, 20, 60);
@@ -205,7 +205,7 @@ begin
   -- ===== Canjes pendientes que vencen y nadie cierra =====
   -- Hoy la única forma de devolver los Puntos es que la persona toque "cancelar" en la hoja del código
   -- (cancel_expired_redemption). Si cierra la hoja antes de que venza o mata la app, el canje queda 'pending' para
-  -- siempre: Puntos retenidos, cooldown de 7 días en ese comercio y un cupo del día ocupado.
+  -- siempre: Puntos retenidos, cooldown de 14 días en ese comercio y un cupo del día ocupado.
   select count(*) into n_sweepers from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
   where ns.nspname = 'public' and p.prosrc ilike '%update redemptions%' and p.prosrc ilike '%cancelled%';
   perform tt.t_eq('hoy hay una sola función que cancela canjes (la que dispara el cliente)', n_sweepers, 1);
@@ -216,7 +216,7 @@ begin
   perform tt.t_eq('canje vencido sin cerrar: los Puntos siguen retenidos', user_points_balance(u), 0);
   select status::text into st from redemptions where id = red.id;
   perform tt.t_eq('canje vencido sin cerrar: sigue figurando pendiente', st, 'pending');
-  perform tt.t_raises('canje vencido sin cerrar: el cooldown sigue bloqueando ese comercio', format('select redeem_benefit(%L)', b), 'hace menos de 7 días');
+  perform tt.t_raises('canje vencido sin cerrar: el cooldown sigue bloqueando ese comercio', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
 end $$;
 
 rollback;

@@ -143,7 +143,7 @@ export default function TarjetaPage() {
                   )}
                   {msg && <p className={`text-[12.5px] mt-1 ${msg.ok ? 'text-[#1A6555]' : 'text-warn'}`}>{msg.text}</p>}
                   <p className="text-muted text-[12px] mt-2">
-                    Sellos para completar: <b>{goal}</b> · Espera entre canjes en tu local: <b>7 días</b> (igual para todos).
+                    Sellos para completar: <b>{goal}</b> · Espera entre canjes en tu local: <b>14 días (dos semanas)</b> (igual para todos).
                   </p>
                 </div>
               )}
