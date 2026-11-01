@@ -30,7 +30,6 @@ import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { ResumenShareSheet } from '@/components/share/ResumenShareSheet';
 import { WrappedViewer } from '@/components/share/WrappedViewer';
 import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
-import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
@@ -99,9 +98,6 @@ export default function ActividadScreen() {
   const wrappedStart = useMemo(() => wrappedMonthStart(), []);
   const { data: wrapped } = useWrapped(wrappedStart);
   const firstName = profile?.full_name?.trim().split(/\s+/)[0] || null;
-  useEffect(() => {
-    scheduleWrappedReminder();
-  }, []);
   const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
 

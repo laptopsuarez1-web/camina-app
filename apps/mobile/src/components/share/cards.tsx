@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { Crown, Flame, Trophy } from '@/components/icons';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
 
@@ -20,7 +21,7 @@ export const CAMINA_HANDLE = '@caminaapp';
 
 const PAL = {
   light: {
-    bg: ['#FCE9F2', '#E6F8F0', '#E8E0FB'] as const,
+    bg: ['#FCFBFF', '#F8F6FC', '#F5F3FB'] as const,
     ink: '#291C47', muted: '#655483', accent: '#1F7A66', accentSoft: 'rgba(31,122,102,0.12)',
     tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)',
     bar: '#4FC3A8', barBest: '#1F7A66', barOff: '#D4C8EC', goal: 'rgba(41,28,71,0.35)',
@@ -28,7 +29,7 @@ const PAL = {
     logo: '#5B6B99', logoOpacity: 0.15, onBar: '#FFFFFF',
   },
   dark: {
-    bg: ['#2A1B52', '#1B1236', '#120C1F'] as const,
+    bg: ['#15141B', '#1A1822', '#201C2B'] as const,
     ink: '#F4EFFF', muted: '#B3A6D6', accent: '#7FEDC4', accentSoft: 'rgba(127,237,196,0.14)',
     tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)',
     bar: '#7FEDC4', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
@@ -44,8 +45,8 @@ export const palette = (t: CardTheme): Pal => PAL[t];
 // ---------- Marco común ----------
 
 export function CardFrame({
-  theme, format, label, progress, rich, children,
-}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; rich?: boolean; children: ReactNode }) {
+  theme, format, label, progress, children,
+}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode }) {
   const p = PAL[theme];
   const story = format !== 'square';
   if (format === 'overlay') {
@@ -64,10 +65,10 @@ export function CardFrame({
   }
   return (
     <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden', backgroundColor: p.bg[1] }}>
-      <LinearGradient colors={[...p.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
-      {rich ? <RichBackdrop theme={theme} /> : null}
+      {/* El mismo fondo que lleva la app (Olas): perlado arriba y tres olas al pie. */}
+      <AmbientBackground dark={theme === 'dark'} />
       {/* El logo de Camina grande y apagado de fondo, cortado por el borde. */}
-      {rich ? null : <Image
+      {story ? null : <Image
         source={require('@/../assets/logo-mint.png')}
         accessible={false}
         style={story
@@ -94,24 +95,9 @@ export function CardFrame({
         </View>
         <View style={{ flex: 1 }}>{children}</View>
       </View>
-      {rich ? (
+      {story ? (
         <Text style={{ position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: p.muted }}>{CAMINA_HANDLE}</Text>
       ) : null}
-    </View>
-  );
-}
-
-// Fondo de las láminas del mes: resplandores concéntricos en menta y violeta (sin imágenes ni desenfoque, se dibuja igual en todos lados).
-function RichBackdrop({ theme }: { theme: CardTheme }) {
-  const dark = theme === 'dark';
-  const glow = (cx: number, cy: number, r: number, color: string, op: number) =>
-    [1, 0.88, 0.76, 0.64, 0.52, 0.4, 0.28].map((k, i) => (
-      <View key={`${cx}-${cy}-${i}`} style={{ position: 'absolute', left: cx - r * k, top: cy - r * k, width: r * 2 * k, height: r * 2 * k, borderRadius: r * k, backgroundColor: color, opacity: op }} />
-    ));
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}>
-      {glow(330, 120, 190, dark ? '#7FEDC4' : '#4FC3A8', dark ? 0.028 : 0.06)}
-      {glow(20, 560, 210, dark ? '#8B4FD1' : '#B79BF0', dark ? 0.08 : 0.08)}
     </View>
   );
 }
@@ -162,8 +148,8 @@ function Trend({ p, pct, what, inline }: { p: Pal; pct: number | null; what: str
 }
 
 // Barras de pasos del período con la línea de la meta; la del día más activo va resaltada.
-function Bars({ p, stats, height, goal, showLabels }: { p: Pal; stats: ShareStats; height: number; goal: number; showLabels: boolean }) {
-  const W = CARD_W - 44;
+function Bars({ p, stats, height, goal, showLabels, width }: { p: Pal; stats: ShareStats; height: number; goal: number; showLabels: boolean; width?: number }) {
+  const W = width ?? CARD_W - 44;
   const n = stats.bars.length;
   const gap = n > 12 ? 2 : 8;
   const bw = (W - gap * (n - 1)) / n;
@@ -268,16 +254,17 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   if (stats.period === 'day') {
     const pct = goal > 0 ? stats.steps / goal : 0;
     const done = pct >= 1;
-    const ringSize = story ? 210 : 140;
+    const ringSize = story ? 250 : 140;
     return (
       <CardFrame theme={theme} format={format} label={`Hoy · ${shortDay(stats.rangeEnd)}`}>
-        <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted }}>{name ? `El día de ${name}` : 'Mi día'}</Text>
-        <View style={{ alignItems: 'center', marginTop: story ? 10 : 2, marginBottom: story ? 12 : 6 }}>
+        <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: 30 } : undefined}>
+        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{name ? `El día de ${name}` : 'Mi día'}</Text>
+        <View style={{ alignItems: 'center', marginTop: story ? 0 : 2, marginBottom: story ? 0 : 6 }}>
           <Ring p={p} size={ringSize} pct={pct}>
-            <Text style={{ fontSize: story ? 44 : 32, fontWeight: '800', color: p.ink, letterSpacing: -1 }}>{fmtInt(stats.steps)}</Text>
+            <Text style={{ fontSize: story ? 54 : 32, fontWeight: '800', color: p.ink, letterSpacing: -1.5 }}>{fmtInt(stats.steps)}</Text>
             <Text style={{ fontSize: 12, fontWeight: '600', color: p.muted }}>pasos hoy</Text>
           </Ring>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: p.accent, marginTop: 8 }}>
+          <Text style={{ fontSize: story ? 14 : 12, fontWeight: '800', color: p.accent, marginTop: 14 }}>
             {done ? `¡Meta superada! ${Math.round(pct * 100)} % de ${fmtInt(goal)}` : `${Math.round(pct * 100)} % de tu meta de ${fmtInt(goal)}`}
           </Text>
         </View>
@@ -298,6 +285,7 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
           }
         />
         {story ? <Note p={p} /> : null}
+        </View>
       </CardFrame>
     );
   }
@@ -321,39 +309,44 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   ];
   const bigSize = fitSize(fmtInt(stats.steps), story ? 50 : 40, CARD_W - (story ? 44 : 36));
 
-  return (
-    <CardFrame theme={theme} format={format} label={label}>
-      <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted }}>{name ? `${week ? 'La semana' : 'El mes'} de ${name}` : week ? 'Mi semana' : 'Mi mes'}</Text>
-      <Text style={{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.12), flexShrink: 0, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1}>{fmtInt(stats.steps)}</Text>
-      {week ? (
-        <>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>pasos esta semana</Text>
-          {story ? <Trend p={p} pct={stats.trendPct} what="la anterior" /> : null}
-        </>
-      ) : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted }}>pasos este mes</Text>
-          {story ? <Trend p={p} pct={stats.trendPct} what="el mes pasado" inline /> : null}
-        </View>
-      )}
-      <View style={{ marginTop: story ? 12 : 8, marginBottom: story ? 10 : 6 }}>
-        {week ? (
-          <Bars p={p} stats={stats} height={story ? 84 : 62} goal={goal} showLabels />
-        ) : (
-          <CalendarDots p={p} stats={stats} cell={story ? 20 : 13} pitch={story ? 25 : 15} width={CARD_W - (story ? 44 : 36)} />
-        )}
+  const body = (
+    <>
+      <View>
+        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{name ? `${week ? 'La semana' : 'El mes'} de ${name}` : week ? 'Mi semana' : 'Mi mes'}</Text>
+        <Text style={{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.12), flexShrink: 0, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1}>{fmtInt(stats.steps)}</Text>
+        <Text style={{ fontSize: story ? 18 : 13, fontWeight: story ? '800' : '600', color: story ? p.ink : p.muted }}>{week ? 'pasos esta semana' : 'pasos este mes'}</Text>
+        {story ? <View style={{ marginTop: 8 }}><Trend p={p} pct={stats.trendPct} what={week ? 'la anterior' : 'el mes pasado'} inline /></View> : null}
       </View>
       {story ? (
-        <>
-          {/* En el mes el calendario ya cuenta la racha, así que van solo cuatro cuadros. */}
-          <TileGrid p={p} tiles={week ? tiles : [tiles[0], tiles[1], tiles[3], tiles[5]]} />
+        <Panel p={p} style={{ alignItems: week ? undefined : 'center' }}>
+          <PanelTitle p={p}>{week ? 'Tus pasos por día' : 'Tu mes, día por día'}</PanelTitle>
+          {week ? (
+            <Bars p={p} stats={stats} height={104} goal={goal} showLabels width={W_INNER - 30} />
+          ) : (
+            <CalendarDots p={p} stats={stats} cell={28} pitch={35} width={CARD_W - 44 - 30} />
+          )}
+        </Panel>
+      ) : (
+        <View style={{ marginTop: 8, marginBottom: 6 }}>
+          {week ? <Bars p={p} stats={stats} height={62} goal={goal} showLabels /> : <CalendarDots p={p} stats={stats} cell={13} pitch={15} width={CARD_W - 36} />}
+        </View>
+      )}
+      {story ? (
+        <View>
+          <TileGrid p={p} tiles={week ? [tiles[0], tiles[1], tiles[3], tiles[4]] : [tiles[0], tiles[1], tiles[3], tiles[5]]} />
           <Note p={p} />
-        </>
+        </View>
       ) : (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {squareTiles.map((t) => <Tile key={t.label} p={p} {...t} stack small />)}
         </View>
       )}
+    </>
+  );
+
+  return (
+    <CardFrame theme={theme} format={format} label={label}>
+      {story ? <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>{body}</View> : body}
     </CardFrame>
   );
 }
@@ -474,12 +467,15 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   const done = pct >= 1;
   return (
     <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
-      <Text style={{ fontSize: 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
-      <Text style={{ fontSize: story ? 28 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.6, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
+      <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: 30 } : undefined}>
+      <View>
+      <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
+      <Text style={{ fontSize: story ? 32 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
+      </View>
       {story ? (
         // Aro con el avance de la meta del grupo: llena el centro de la historia sin dibujos de relleno.
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 12 }}>
-          <Ring p={p} size={84} pct={pct}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 20, paddingVertical: 12, paddingHorizontal: 14 }}>
+          <Ring p={p} size={92} pct={pct}>
             <Text style={{ fontSize: done ? 14 : 20, fontWeight: '800', color: done ? p.accent : p.ink, letterSpacing: -0.5 }}>{done ? '¡Meta!' : `${Math.round(pct * 100)} %`}</Text>
           </Ring>
           <View style={{ flex: 1 }}>
@@ -488,7 +484,8 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
           </View>
         </View>
       ) : null}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 14 : 6, gap: 8 }}>
+      <View>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginTop: story ? 0 : 6, gap: 8 }}>
         {podium.map((m) => {
           const rank = members.findIndex((x) => x.id === m.id) + 1;
           return <Medal key={m.id} p={p} label={m.label} rank={rank} steps={m.steps} isMe={m.isMe} big={rank === 1} compact={!story} />;
@@ -510,6 +507,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
           ))}
         </View>
       ) : null}
+      </View>
       {story ? (
         // Comparativo corto, para que la historia se entienda sin abrir la app.
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
@@ -517,7 +515,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
           <Tile p={p} small stack label={gap > 0 ? 'Te faltan para el 1.º' : 'Líder del grupo'} value={gap > 0 ? fmtInt(gap) : leader?.label ?? '–'} />
         </View>
       ) : null}
-      <View style={{ flex: 1 }} />
+      {!story ? <View style={{ flex: 1 }} /> : null}
       {!story ? (
         <View style={{ marginTop: 10, marginBottom: 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: 16, padding: 9 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -530,6 +528,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
           <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted, marginTop: 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
         </View>
       ) : null}
+      </View>
     </CardFrame>
   );
 }
@@ -641,7 +640,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
   // Sin puesto en el ranking (ranking apagado o sin datos) la lámina 4 no existe y las demás se corren.
   const slide = !data.rank && index >= 3 ? index + 1 : index;
   const frame = (children: ReactNode) => (
-    <CardFrame theme={theme} format="story" label={`Tu ${data.monthName}`} progress={{ index, total }} rich>{children}</CardFrame>
+    <CardFrame theme={theme} format="story" label={`Tu ${data.monthName}`} progress={{ index, total }}>{children}</CardFrame>
   );
   const nm = data.name ? `, ${data.name}` : '';
   const { weeks, best: bw } = bestWeek(data);

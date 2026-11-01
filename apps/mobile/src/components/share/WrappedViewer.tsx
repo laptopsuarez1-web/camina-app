@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Image, Modal, View, useWindowDimensions } fro
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Press } from '@/components/ui/Press';
 import { Share2, X } from '@/components/icons';
 import { CARD_W, cardHeight, palette, WrappedOverlay, WrappedSlide, wrappedSlideCount, type CardTheme, type WrappedData } from '@/components/share/cards';
@@ -95,7 +96,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           // Fondo de ejemplo: el sticker va sobre tu foto, acá se ve sobre un color.
           <LinearGradient colors={['#5A4B8A', '#2E2547', '#1B1432']} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
         ) : (
-          <LinearGradient colors={[...p.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
+          <AmbientBackground dark={theme === 'dark'} />
         )}
 
         {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2, top: cardTop, width: CARD_W * scale, height: h * scale }} /> : null}
