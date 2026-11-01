@@ -43,7 +43,7 @@ import { Trash as Trash } from 'phosphor-react-native/src/icons/Trash';
 import { Key as Key } from 'phosphor-react-native/src/icons/Key';
 import { PencilSimple as PencilSimple } from 'phosphor-react-native/src/icons/PencilSimple';
 import { PaperPlaneTilt as PaperPlaneTilt } from 'phosphor-react-native/src/icons/PaperPlaneTilt';
-import { Trophy as Trophy_ } from 'phosphor-react-native/src/icons/Trophy';
+import { TrophyArt } from '@/components/share/art';
 import { Plus as Plus_ } from 'phosphor-react-native/src/icons/Plus';
 import { Star as Star_ } from 'phosphor-react-native/src/icons/Star';
 import { Coffee as Coffee_ } from 'phosphor-react-native/src/icons/Coffee';
@@ -138,7 +138,11 @@ export const Trash2 = make(Trash);
 export const KeyRound = make(Key);
 export const Pencil = make(PencilSimple);
 export const Send = make(PaperPlaneTilt);
-export const Trophy = make(Trophy_);
+// Trofeo propio de Camina (dorado, con las huellas del logo). Es un dibujo de colores fijos: ignora `color`. Va un poco más grande que
+// el tamaño pedido porque el dibujo ocupa menos del cuadro que un ícono de línea.
+export function Trophy({ size = 24 }: IconProps) {
+  return <TrophyArt size={Math.max(size * 1.25, 18)} />;
+}
 export const Plus = make(Plus_, 'bold');
 export const Star = make(Star_);
 export const Coffee = make(Coffee_);

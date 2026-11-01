@@ -231,8 +231,8 @@ export default function ActividadScreen() {
           className="mb-3"
         >
           <LinearGradient colors={['#3a2668', '#5B31A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 50, height: 52, alignItems: 'center', justifyContent: 'flex-end' }}>
-              <BaifoMascot pose="festeja" height={60} />
+            <View style={{ width: 56, height: 60, alignItems: 'center', justifyContent: 'center' }}>
+              <BaifoMascot pose="festeja" height={54} />
             </View>
             <View className="flex-1">
               <Text className="text-white font-extrabold text-[15.5px]">Tu {wrappedMonthName(wrappedStart.getMonth())} en Camina</Text>
