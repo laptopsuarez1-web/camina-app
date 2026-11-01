@@ -53,8 +53,8 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
       {/* El fondo es hermano de la hoja (no su padre): así la lista de la hoja recibe el gesto de desplazar sin que otro toque se lo quite. */}
       <Press accessibilityRole="button" accessibilityLabel="Cerrar detalle" feedback="none" onPress={onClose} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,10,30,0.5)' }} />
       <Animated.View style={{ maxHeight: '74%', transform: [{ translateY: dy }] }}>
-      {/* Opaca: con vidrio se veían las letras de la ficha que queda detrás. */}
-      <View className="rounded-t-[28px] px-5 pt-3" style={{ flexShrink: 1, backgroundColor: dark ? '#221933' : '#FFFFFF' }}>
+      {/* Casi opaca (95 %): se nota apenas lo de atrás, pero las letras de la ficha no se leen como pasaba con el vidrio. */}
+      <View className="rounded-t-[28px] px-5 pt-3" style={{ flexShrink: 1, backgroundColor: dark ? 'rgba(34,25,51,0.95)' : 'rgba(255,255,255,0.95)' }}>
         <View {...pan.panHandlers} accessible accessibilityRole="button" accessibilityLabel="Cerrar. Desliza hacia abajo o toca dos veces" accessibilityActions={[{ name: 'activate' }]} onAccessibilityAction={onClose} style={{ paddingTop: 4, paddingBottom: 16, marginTop: -4 }}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center" />
         </View>

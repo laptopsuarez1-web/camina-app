@@ -73,7 +73,7 @@ export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number 
   // La foto del premio va chica, a un costado (como en Pasito): no está pensada para ocupar todo el ancho. El costo, a la derecha.
   return (
     <View className="flex-row items-start justify-between">
-      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: 96, height: 96, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />
+      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: 168, height: 116, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />
       <CostPill cost={cost} />
     </View>
   );
