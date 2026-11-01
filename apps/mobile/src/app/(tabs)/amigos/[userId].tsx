@@ -120,7 +120,7 @@ export default function FriendProfileScreen() {
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-        <DarkHeader style={{ paddingBottom: 56 }}>
+        <DarkHeader style={{ paddingBottom: 28 }}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -146,7 +146,7 @@ export default function FriendProfileScreen() {
         </DarkHeader>
 
         {card && !showData && (
-          <Glass className="rounded-3xl p-4 mx-5 -mt-7" style={{ gap: 10 }}>
+          <Glass className="rounded-3xl p-4 mx-5 mt-5" style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
               {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
             </Text>
@@ -175,7 +175,7 @@ export default function FriendProfileScreen() {
 
         {card && showData && (
           <>
-            <Glass className="flex-row rounded-3xl mx-5 -mt-7 py-3.5">
+            <Glass className="flex-row rounded-3xl mx-5 mt-5 py-3.5">
               {[
                 { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
                 { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },

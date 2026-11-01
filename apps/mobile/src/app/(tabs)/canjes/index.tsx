@@ -42,6 +42,7 @@ import type { Redemption, OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
@@ -362,6 +363,8 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
 }
 
 // Ancho del borde de la tarjeta del comercio: 2 en dorado para los destacados, 1 para el resto.
+// Píldora de vidrio de la ficha (redes, favorito): velo blanco translúcido y canto de luz.
+const glassChip = (dark: boolean) => ({ backgroundColor: dark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.62)', borderColor: dark ? 'rgba(255,255,255,0.24)' : 'rgba(255,255,255,0.95)' });
 const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
 
 function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT; coordinate?: LatLng; onPress?: () => void }) {
@@ -1207,33 +1210,30 @@ export default function CanjesScreen() {
                 if (e.nativeEvent.actionName === 'favorite') favorites.toggle(g.business.id);
               }}
               onPress={() => setProfileBusinessId(g.business.id)}
-              className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4"
-              style={{
-                shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
-                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
-              }}
+              style={{ borderRadius: 24 }}
             >
-              {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
+              {/* Vidrio líquido: con portada, la foto ocupa toda la tarjeta y la información flota encima en un panel de vidrio
+                  (la foto se ve a través, desenfocada). Sin portada, la tarjeta entera es de vidrio. El dorado de los destacados es el borde. */}
+              <View
+                style={g.business.cover_url ? {
+                  borderRadius: 24, overflow: 'hidden', borderWidth: cardBorder(g.business),
+                  borderColor: isFeatured(g.business) ? GOLD : isDark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.9)',
+                  backgroundColor: isDark ? '#1d1b2e' : '#e9e2f7',
+                  shadowColor: isFeatured(g.business) ? GOLD : '#291C47', shadowOpacity: isFeatured(g.business) ? 0.3 : 0.14, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
+                } : undefined}
+              >
               {g.business.cover_url ? (
                 <Image
                   source={{ uri: g.business.cover_url }}
                   accessibilityIgnoresInvertColors
                   resizeMode="cover"
-                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                 />
               ) : null}
-              {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
-                  el borde se repite por encima de todo, del mismo ancho y color. */}
-              {g.business.cover_url ? (
-                <View
-                  pointerEvents="none"
-                  className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
-                  style={{
-                    position: 'absolute', zIndex: 1, top: -cardBorder(g.business), left: -cardBorder(g.business), right: -cardBorder(g.business), bottom: -cardBorder(g.business),
-                    borderRadius: 24, borderWidth: cardBorder(g.business), ...(isFeatured(g.business) ? { borderColor: GOLD } : {}),
-                  }}
-                />
-              ) : null}
+              <Glass
+                className="rounded-3xl p-4"
+                style={g.business.cover_url ? { margin: 8, marginTop: 130 } : isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.3 } : undefined}
+              >
               <View className="flex-row items-start" style={{ gap: 14 }}>
                 {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, isFeatured(g.business))}
                 <View className="flex-1">
@@ -1279,6 +1279,8 @@ export default function CanjesScreen() {
                 ))}
               </ScrollView>
               )}
+              </Glass>
+              </View>
             </Press>
           ))}
 
@@ -1430,6 +1432,7 @@ export default function CanjesScreen() {
         onDismiss={() => flushAfterClose(afterProfileClose)}>
         {profileGroup && (
           <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+            <AmbientBackground />
             <ScrollView contentContainerClassName="pb-12" showsVerticalScrollIndicator={false}>
               <View style={{ height: 232, backgroundColor: colors.purple }}>
                 {profileGroup.business.cover_url ? (
@@ -1475,7 +1478,7 @@ export default function CanjesScreen() {
                     </Text>
                     {isFeatured(profileGroup.business) && <GoldBadge size={24} />}
                   </View>
-                  <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full items-center justify-center" style={{ width: 40, height: 40 }}>
+                  <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(profileGroup.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(profileGroup.business.id)} hitSlop={10} className="border rounded-full items-center justify-center" style={{ width: 40, height: 40, ...glassChip(isDark) }}>
                     <Heart size={19} color={favorites.isFavorite(profileGroup.business.id) ? favorite : muted} fill={favorites.isFavorite(profileGroup.business.id) ? favorite : 'none'} />
                   </Press>
                 </View>
@@ -1488,7 +1491,9 @@ export default function CanjesScreen() {
                 ) : null}
 
                 {profileGroup.business.description ? (
-                  <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
+                  <Glass className="rounded-2xl px-4 py-3 mt-3">
+                    <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark">{profileGroup.business.description}</Text>
+                  </Glass>
                 ) : null}
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
@@ -1515,8 +1520,8 @@ export default function CanjesScreen() {
                       accessibilityRole="link"
                       accessibilityLabel={`Abrir el Instagram de ${profileGroup.business.name}`}
                       onPress={() => Linking.openURL(socialUrl(profileGroup.business.instagram!, 'https://instagram.com/'))}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
                     >
                       <Instagram size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Instagram</Text>
@@ -1525,8 +1530,8 @@ export default function CanjesScreen() {
                   {profileGroup.business.facebook ? (
                     <Press
                       onPress={() => Linking.openURL(socialUrl(profileGroup.business.facebook!, 'https://facebook.com/'))}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
                     >
                       <FacebookIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Facebook</Text>
@@ -1535,8 +1540,8 @@ export default function CanjesScreen() {
                   {profileGroup.business.tiktok ? (
                     <Press
                       onPress={() => Linking.openURL(socialUrl(profileGroup.business.tiktok!, 'https://tiktok.com/@'))}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
                     >
                       <TiktokIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">TikTok</Text>
@@ -1547,8 +1552,8 @@ export default function CanjesScreen() {
                       onPress={() => Linking.openURL(whatsappUrl(profileGroup.business.phone!))}
                       accessibilityRole="link"
                       accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
                     >
                       <WhatsappIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
@@ -1559,8 +1564,8 @@ export default function CanjesScreen() {
                       onPress={() => Linking.openURL(websiteUrl(profileGroup.business.website!))}
                       accessibilityRole="link"
                       accessibilityLabel={`Abrir la página web de ${profileGroup.business.name}`}
-                      className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full px-3.5 py-2"
-                      style={{ gap: 6 }}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
                     >
                       <GlobeIcon size={14} color={isDark ? colors.dark.text : colors.light.text} />
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">Sitio web</Text>

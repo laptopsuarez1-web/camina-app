@@ -219,6 +219,11 @@ export default function ActividadScreen() {
   const monthName = new Date().toLocaleDateString('es-BO', { month: 'long' });
 
   const fullHistory = useMemo(() => [...(history ?? [])].reverse(), [history]);
+  // Promedio de tus días anteriores (sin hoy, que todavía no terminó): cada día se compara con él, como "vs. promedio".
+  const pastAvg = useMemo(() => {
+    const past = fullHistory.filter((h) => h.day < todayKey && h.steps > 0);
+    return past.length >= 2 ? past.reduce((a, h) => a + h.steps, 0) / past.length : 0;
+  }, [fullHistory, todayKey]);
 
   return (
     <View className="flex-1">
@@ -484,12 +489,22 @@ export default function ActividadScreen() {
                   {h.steps.toLocaleString('es-BO')} pasos
                 </Text>
               </View>
-              <Text
-                className="text-[12px] font-bold"
-                style={{ color: met ? accentText : warnText }}
-              >
-                {met ? 'Meta cumplida' : 'Meta no cumplida'}
-              </Text>
+              <View className="items-end">
+                {pastAvg > 0 && h.day !== todayKey ? (
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+                    <Text className="font-extrabold" style={{ color: h.steps >= pastAvg ? accentText : warnText }}>
+                      {h.steps >= pastAvg ? '+' : '−'}{Math.abs(Math.round((h.steps / pastAvg - 1) * 100))}%
+                    </Text>
+                    {' '}vs. promedio
+                  </Text>
+                ) : null}
+                <Text
+                  className="text-[12px] font-bold mt-0.5"
+                  style={{ color: met ? accentText : warnText }}
+                >
+                  {met ? 'Meta cumplida' : h.day === todayKey ? 'Meta en progreso' : 'Meta no cumplida'}
+                </Text>
+              </View>
             </Glass>
           );
         })}
