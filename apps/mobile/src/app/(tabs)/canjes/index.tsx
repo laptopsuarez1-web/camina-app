@@ -490,6 +490,8 @@ function BusinessMarker({ business, coordinate, onPress }: { business: BusinessT
       anchor={{ x: 0.5, y: (h - PIN_PAD) / h }}
       // Los destacados quedan arriba si igual llegan a tocarse.
       zIndex={featured ? 2 : 1}
+      // El toque del pin sube (burbujea) hasta el MapView y dispara su onPress, que cerraba la vista previa al instante.
+      stopPropagation
       onPress={onPress}
     >
       <View style={{ width: w, height: h }}>
@@ -585,6 +587,7 @@ export default function CanjesScreen() {
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [previewBizId, setPreviewBizId] = useState<string | null>(null);
+  const lastPinPress = useRef(0);
   const [mapOpen, setMapOpen] = useState(false);
   const [fullMapReady, setFullMapReady] = useState(false);
   // Cerrado el mapa completo, se vuelve a esperar a que el panel termine de abrirse la próxima vez.
@@ -1448,7 +1451,11 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
               onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
-              onPress={() => setPreviewBizId(null)}
+              onPress={() => {
+                // Respaldo: si igual llega el toque de un pin, no cerrar la vista previa que ese mismo toque acaba de abrir.
+                if (Date.now() - lastPinPress.current < 400) return;
+                setPreviewBizId(null);
+              }}
               onRegionChangeComplete={(r) => {
                 fullCenter.current = r;
                 setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d));
@@ -1461,6 +1468,7 @@ export default function CanjesScreen() {
                   coordinate={fullPins.get(b.id)}
                   onPress={() => {
                     // Primero una vista previa; la ficha completa se abre solo al tocarla o deslizarla hacia arriba.
+                    lastPinPress.current = Date.now();
                     setPreviewBizId(b.id);
                     fullMapRef.current?.animateToRegion(
                       { latitude: b.lat!, longitude: b.lng!, latitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01, longitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01 },
