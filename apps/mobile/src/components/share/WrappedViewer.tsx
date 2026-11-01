@@ -38,6 +38,9 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
+  // Alto real de la barra de arriba y de los botones de abajo: la lámina se acomoda entre las dos para que nada se pise.
+  const [topH, setTopH] = useState(insets.top + 40 + 84);
+  const [botH, setBotH] = useState(insets.bottom + 90);
   const shotRef = useRef<View>(null);
   const stickerRef = useRef<View>(null);
 
@@ -55,8 +58,9 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const p = palette(theme);
 
   const h = cardHeight('story');
-  const scale = Math.min(width / CARD_W, height / h);
-  const cardTop = Math.max(0, (height - h * scale) / 2);
+  const avail = Math.max(200, height - topH - botH);
+  const scale = Math.min(width / CARD_W, avail / h);
+  const cardTop = topH + Math.max(0, (avail - h * scale) / 2);
   const chrome = overlay ? '#FFFFFF' : p.ink;
   const chipBg = overlay ? 'rgba(255,255,255,0.18)' : theme === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)';
 
@@ -130,7 +134,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
         </View>
 
         {/* Barra de arriba: cerrar y lo que se puede editar. */}
-        <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 40 }} pointerEvents="box-none">
+        <View onLayout={(e) => setTopH(e.nativeEvent.layout.y + e.nativeEvent.layout.height + 6)} style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 40 }} pointerEvents="box-none">
           <View className="flex-row items-center px-4" style={{ gap: 8 }} pointerEvents="box-none">
             <Press accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10} className="rounded-full items-center justify-center" style={{ width: 34, height: 34, backgroundColor: chipBg }}>
               <X size={15} color={chrome} weight="bold" />
@@ -150,11 +154,11 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
         </View>
 
         {/* Botón de abajo, a la altura del pulgar. */}
-        <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 14, gap: 8 }} pointerEvents="box-none">
+        <View onLayout={(e) => setBotH(height - e.nativeEvent.layout.y + 6)} style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 14, gap: 8 }} pointerEvents="box-none">
           {overlay ? (
             <>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', textAlign: 'center', opacity: 0.9 }}>
-                Copia el sticker y pégalo en tu historia de Instagram («Agregar sticker»), o carga una foto para ver cómo queda y guárdala o compártela.
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', textAlign: 'center', opacity: 0.9 }} numberOfLines={2}>
+                Copia el sticker y pégalo en tu historia («Agregar sticker»), o carga una foto para ver cómo queda.
               </Text>
               <View className="flex-row" style={{ gap: 8 }}>
                 <Press accessibilityRole="button" onPress={copy} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
