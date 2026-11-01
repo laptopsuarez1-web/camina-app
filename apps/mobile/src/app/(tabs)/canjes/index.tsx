@@ -1516,7 +1516,7 @@ export default function CanjesScreen() {
                 </Press>
               )}
             </View>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, marginLeft: -50 }}>
               {([
                 { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
                 { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
@@ -1533,7 +1533,7 @@ export default function CanjesScreen() {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, backgroundColor: c.on ? c.color : '#fff', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
                 >
                   {c.icon}
-                  <Text style={{ fontSize: 12.5, fontWeight: '700', color: c.on ? '#fff' : colors.light.text }}>{c.label}</Text>
+                  <Text numberOfLines={1} style={{ fontSize: 12.5, fontWeight: '700', color: c.on ? '#fff' : colors.light.text }}>{c.label}</Text>
                 </Press>
               ))}
             </View>
