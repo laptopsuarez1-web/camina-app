@@ -1781,7 +1781,7 @@ export default function CanjesScreen() {
                               ? (b.online_quota == null ? Infinity : Math.max(0, b.online_quota - (onlineInfo?.redeemed ?? 0)))
                               : (b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)));
                           // Si ya canjeó este premio online y el código sigue vigente, el botón vuelve a mostrar el código.
-                          // Con cupón propio de la tienda el canje sale confirmado y el cupón se puede volver a ver durante la espera de 7 días.
+                          // Con cupón propio de la tienda el canje sale confirmado y el cupón se puede volver a ver durante la espera de 14 días.
                           const myPending = b.online
                             ? (myRedemptions ?? []).find((r) => {
                                 if (r.benefit_id !== b.id) return false;
