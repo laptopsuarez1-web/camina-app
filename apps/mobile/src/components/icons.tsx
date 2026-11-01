@@ -68,6 +68,7 @@ import { ChartBar as ChartBar_ } from 'phosphor-react-native/src/icons/ChartBar'
 import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
 import { Barbell as Barbell_ } from 'phosphor-react-native/src/icons/Barbell';
 import { Sparkle as Sparkle_ } from 'phosphor-react-native/src/icons/Sparkle';
+import { DownloadSimple as DownloadSimple_ } from 'phosphor-react-native/src/icons/DownloadSimple';
 import { FirstAid as FirstAid_ } from 'phosphor-react-native/src/icons/FirstAid';
 import { Wrench as Wrench_ } from 'phosphor-react-native/src/icons/Wrench';
 import { Storefront as Storefront_ } from 'phosphor-react-native/src/icons/Storefront';
@@ -164,6 +165,7 @@ export const Crown = make(Crown_);
 export const Ticket = make(Ticket_);
 export const Barbell = make(Barbell_);
 export const Sparkle = make(Sparkle_);
+export const DownloadSimple = make(DownloadSimple_);
 export const FirstAid = make(FirstAid_);
 export const Wrench = make(Wrench_);
 export const Storefront = make(Storefront_);

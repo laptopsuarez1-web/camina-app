@@ -2,11 +2,11 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Share2, X } from '@/components/icons';
+import { DownloadSimple, Share2, X } from '@/components/icons';
 import { pickSharePhoto } from '@/lib/pick-share-photo';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
-import { copyCardImage, shareCard } from '@/lib/share-image';
+import { copyCardImage, saveCardToGallery, shareCard } from '@/lib/share-image';
 import { CARD_W, cardHeight, type CardFormat, type CardTheme } from '@/components/share/cards';
 
 // Selector de 2 o 3 opciones con el estilo de los filtros de la app (verde oscuro para la elegida).
@@ -74,6 +74,7 @@ export function CardShareSheet({
   const [format, setFormat] = useState<CardFormat>(defaultFormat);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState<'img' | null>(null);
+  const [saved, setSaved] = useState(false);
   // Foto de fondo para la versión transparente: sale en la imagen que se comparte, no en el sticker que se copia.
   const [photo, setPhoto] = useState<string | null>(null);
   const stickerRef = useRef<View>(null);
@@ -92,6 +93,20 @@ export function CardShareSheet({
       Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function save() {
+    try {
+      const ok = await saveCardToGallery(shotRef, { width: CARD_W, height: h }, filename);
+      if (!ok) {
+        Alert.alert('Falta el permiso', 'Para guardar la imagen, permite a Camina agregar fotos a tu galería desde los ajustes del teléfono.');
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2200);
+    } catch (e) {
+      Alert.alert('No pudimos guardar la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     }
   }
 
@@ -144,16 +159,22 @@ export function CardShareSheet({
               </View>
             </View>
 
-            <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="rounded-2xl py-4 flex-row items-center justify-center mt-2" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
-              {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
-              <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
-            </Press>
+            <View className="flex-row mt-2" style={{ gap: 8 }}>
+              <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
+                <DownloadSimple size={18} color="#8B4FD1" weight="bold" />
+                <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
+              </Press>
+              <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
+                {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
+                <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
+              </Press>
+            </View>
             {overlay ? (
               <View className="rounded-2xl mt-3 p-3.5 bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
                 <Text className="text-[13px] font-extrabold text-text-light dark:text-text-dark">Cómo usar la versión transparente</Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">1. Toca «Copiar para pegar como sticker».</Text>
                 <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">2. En Instagram, crea tu historia con tu foto o video, abre los stickers y toca «Agregar sticker». También funciona en WhatsApp y otras apps.</Text>
-                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">¿Prefieres una sola imagen? Elige una foto de fondo aquí abajo y toca «Compartir imagen».</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">¿Prefieres una sola imagen? Carga una foto aquí abajo para ver cómo queda y toca «Guardar» o «Compartir imagen».</Text>
               </View>
             ) : (
               <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
@@ -168,7 +189,7 @@ export function CardShareSheet({
                 </Press>
                 <View className="flex-row mt-2.5" style={{ gap: 8 }}>
                   <Press accessibilityRole="button" onPress={choosePhoto} className="flex-1 rounded-2xl py-3.5 items-center bg-purple-light-light dark:bg-purple-light-dark">
-                    <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Cambiar foto de fondo' : 'Elegir foto de fondo'}</Text>
+                    <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Cambiar foto' : 'Cargar foto para ver cómo queda'}</Text>
                   </Press>
                   {photo ? (
                     <Press accessibilityRole="button" accessibilityLabel="Quitar la foto de fondo" onPress={() => setPhoto(null)} className="rounded-2xl px-5 items-center justify-center bg-purple-light-light dark:bg-purple-light-dark">

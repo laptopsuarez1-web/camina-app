@@ -5,11 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Press } from '@/components/ui/Press';
-import { Share2, X } from '@/components/icons';
+import { DownloadSimple, Share2, X } from '@/components/icons';
 import { CARD_W, cardHeight, palette, WrappedOverlay, WrappedSlide, wrappedSlideCount, type CardTheme, type WrappedData } from '@/components/share/cards';
 import { friendlyError } from '@/lib/errors';
 import { pickSharePhoto } from '@/lib/pick-share-photo';
-import { copyCardImage, shareCard } from '@/lib/share-image';
+import { copyCardImage, saveCardToGallery, shareCard } from '@/lib/share-image';
 
 type Mode = CardTheme | 'overlay';
 
@@ -36,6 +36,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const [withRank, setWithRank] = useState(true);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const shotRef = useRef<View>(null);
   const stickerRef = useRef<View>(null);
@@ -67,6 +68,20 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
       Alert.alert('No pudimos compartir la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function save() {
+    try {
+      const ok = await saveCardToGallery(shotRef, { width: CARD_W, height: h }, `camina-${data!.monthName}-${i + 1}`);
+      if (!ok) {
+        Alert.alert('Falta el permiso', 'Para guardar la imagen, permite a Camina agregar fotos a tu galería desde los ajustes del teléfono.');
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2200);
+    } catch (e) {
+      Alert.alert('No pudimos guardar la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
     }
   }
 
@@ -139,22 +154,28 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           {overlay ? (
             <>
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', textAlign: 'center', opacity: 0.9 }}>
-                Copia el sticker y pégalo en tu historia de Instagram («Agregar sticker»), o elige una foto de fondo y compártela lista.
+                Copia el sticker y pégalo en tu historia de Instagram («Agregar sticker»), o carga una foto para ver cómo queda y guárdala o compártela.
               </Text>
               <View className="flex-row" style={{ gap: 8 }}>
                 <Press accessibilityRole="button" onPress={copy} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
                   <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{copied ? '¡Copiado!' : 'Copiar sticker'}</Text>
                 </Press>
                 <Press accessibilityRole="button" onPress={photo ? () => setPhoto(null) : choosePhoto} onLongPress={choosePhoto} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Foto de fondo'}</Text>
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Cargar foto'}</Text>
                 </Press>
               </View>
             </>
           ) : null}
-          <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
-            {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
-            <Text className="text-white font-bold text-[15px]">Compartir esta lámina</Text>
-          </Press>
+          <View className="flex-row" style={{ gap: 8 }}>
+            <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center" style={{ gap: 6, backgroundColor: 'rgba(255,255,255,0.2)' }}>
+              <DownloadSimple size={18} color="#fff" weight="bold" />
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
+            </Press>
+            <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
+              {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
+              <Text className="text-white font-bold text-[15px]">Compartir esta lámina</Text>
+            </Press>
+          </View>
         </View>
       </View>
 

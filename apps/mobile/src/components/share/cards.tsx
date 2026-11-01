@@ -1,9 +1,9 @@
 import React, { type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
-import { Crown, Flame, Trophy } from '@/components/icons';
+import { Crown } from '@/components/icons';
+import { FlameArt, TrophyArt } from '@/components/share/art';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
@@ -737,9 +737,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
     return frame(
       <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
-          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: p.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
-            <Flame size={34} color={p.flame} weight="fill" />
-          </View>
+          <View style={{ marginBottom: 4 }}><FlameArt size={64} /></View>
           <BigNumber p={p} value={String(n)} size={104} />
           <Text style={{ fontSize: 20, fontWeight: '800', color: p.ink }}>{n === 1 ? 'día seguido' : 'días seguidos'}, tu mejor racha</Text>
           <Text style={{ fontSize: 13, fontWeight: '600', color: p.muted, marginTop: 4 }}>
@@ -779,9 +777,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
     return frame(
       <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
-          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: p.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
-            <Trophy size={32} color={p.gold} weight="fill" />
-          </View>
+          <View style={{ marginBottom: 4 }}><TrophyArt size={64} /></View>
           <Kicker p={p}>Tu mejor puesto en el ranking global</Kicker>
           <BigNumber p={p} value={`${position}.º`} size={96} />
           <Text style={{ fontSize: 18, fontWeight: '800', color: p.ink }}>en la semana del {rangeLabel(data.rank.weekStart, data.rank.weekEnd)}</Text>

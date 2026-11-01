@@ -130,6 +130,14 @@
       ],
       "react-native-health-connect",
       [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Camina guarda en tu galería las imágenes de tu resumen que tú eliges guardar.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": []
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Camina usa tus fotos para tu foto de perfil y para la historia de lo que canjeaste.",
