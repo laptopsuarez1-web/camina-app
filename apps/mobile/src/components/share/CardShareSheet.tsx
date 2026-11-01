@@ -1,8 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Share2, X } from '@/components/icons';
+import { pickSharePhoto } from '@/lib/pick-share-photo';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
 import { copyCardImage, shareCard } from '@/lib/share-image';
@@ -58,7 +59,7 @@ export function Toggle({ label, hint, value, onChange, onDark }: { label: string
 // la hoja del sistema. `render` dibuja la tarjeta; la hoja la dibuja dos veces: chica para la vista previa y a tamaño real
 // fuera de pantalla para capturarla.
 export function CardShareSheet({
-  visible, onClose, title, filename, extras, render, defaultFormat = 'story', allowOverlay = false,
+  visible, onClose, title, filename, extras, render, defaultFormat = 'story',
 }: {
   visible: boolean;
   onClose: () => void;
@@ -67,14 +68,15 @@ export function CardShareSheet({
   extras?: ReactNode;
   render: (o: { theme: CardTheme; format: CardFormat }) => ReactNode;
   defaultFormat?: CardFormat;
-  // Suma la opción "Transparente" (solo texto, para pegar sobre tu propia foto).
-  allowOverlay?: boolean;
 }) {
   const { height: screenH, width: screenW } = useWindowDimensions();
   const [theme, setTheme] = useState<CardTheme>('light');
   const [format, setFormat] = useState<CardFormat>(defaultFormat);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState<'img' | null>(null);
+  // Foto de fondo para la versión transparente: sale en la imagen que se comparte, no en el sticker que se copia.
+  const [photo, setPhoto] = useState<string | null>(null);
+  const stickerRef = useRef<View>(null);
   const overlay = format === 'overlay';
   const shotRef = useRef<View>(null);
 
@@ -93,6 +95,15 @@ export function CardShareSheet({
     }
   }
 
+  async function choosePhoto() {
+    try {
+      const uri = await pickSharePhoto();
+      if (uri) setPhoto(uri);
+    } catch (e) {
+      Alert.alert('No pudimos abrir tus fotos', friendlyError(e, 'Revisa el permiso de fotos e intenta de nuevo.'));
+    }
+  }
+
   function flash(k: 'img') {
     setCopied(k);
     setTimeout(() => setCopied(null), 2200);
@@ -100,7 +111,7 @@ export function CardShareSheet({
 
   async function copyImage() {
     try {
-      await copyCardImage(shotRef, { width: CARD_W, height: h });
+      await copyCardImage(stickerRef, { width: CARD_W, height: h });
       flash('img');
     } catch (e) {
       Alert.alert('No pudimos copiar la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
@@ -120,13 +131,14 @@ export function CardShareSheet({
           </View>
           <ScrollView contentContainerClassName="px-5 pb-8" showsVerticalScrollIndicator={false}>
             {extras}
-            <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia' }, { value: 'square', label: 'Cuadrada' }, ...(allowOverlay ? [{ value: 'overlay' as CardFormat, label: 'Transparente' }] : [])]} />
+            <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia' }, { value: 'overlay', label: 'Transparente' }]} />
             {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />}
 
             {/* Vista previa: la misma tarjeta, achicada. */}
             <View accessible accessibilityLabel="Vista previa de la tarjeta" style={{ alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8, backgroundColor: overlay ? '#3B3552' : undefined }}>
               {/* Fondo de ejemplo detrás de la tarjeta transparente: ahí va tu foto. */}
-              {overlay ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, opacity: 0.5, backgroundColor: '#8F86B3' }} /> : null}
+              {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} /> : null}
+              {overlay && !photo ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, opacity: 0.5, backgroundColor: '#8F86B3' }} /> : null}
               <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }} pointerEvents="none">
                 {render({ theme, format })}
               </View>
@@ -136,14 +148,35 @@ export function CardShareSheet({
               {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
               <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
             </Press>
-            <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
-              La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.
-            </Text>
+            {overlay ? (
+              <View className="rounded-2xl mt-3 p-3.5 bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
+                <Text className="text-[13px] font-extrabold text-text-light dark:text-text-dark">Cómo usar la versión transparente</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">1. Toca «Copiar para pegar como sticker».</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">2. En Instagram, crea tu historia con tu foto o video, abre los stickers y toca «Agregar sticker». También funciona en WhatsApp y otras apps.</Text>
+                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">¿Prefieres una sola imagen? Elige una foto de fondo aquí abajo y toca «Compartir imagen».</Text>
+              </View>
+            ) : (
+              <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
+                La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.
+              </Text>
+            )}
 
             {overlay ? (
-              <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-3.5 items-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark">
-                <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
-              </Press>
+              <>
+                <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-3.5 items-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark">
+                  <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
+                </Press>
+                <View className="flex-row mt-2.5" style={{ gap: 8 }}>
+                  <Press accessibilityRole="button" onPress={choosePhoto} className="flex-1 rounded-2xl py-3.5 items-center bg-purple-light-light dark:bg-purple-light-dark">
+                    <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Cambiar foto de fondo' : 'Elegir foto de fondo'}</Text>
+                  </Press>
+                  {photo ? (
+                    <Press accessibilityRole="button" accessibilityLabel="Quitar la foto de fondo" onPress={() => setPhoto(null)} className="rounded-2xl px-5 items-center justify-center bg-purple-light-light dark:bg-purple-light-dark">
+                      <X size={14} color="#8B4FD1" />
+                    </Press>
+                  ) : null}
+                </View>
+              </>
             ) : null}
           </ScrollView>
         </Press>
@@ -152,8 +185,15 @@ export function CardShareSheet({
       {/* Tarjeta a tamaño real, fuera de pantalla, para capturarla en 1080 px. */}
       <View pointerEvents="none" style={{ position: 'absolute', left: -5000, top: 0 }}>
         <View ref={shotRef} collapsable={false} style={{ width: CARD_W, height: h }}>
+          {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h }} /> : null}
           {visible ? render({ theme, format }) : null}
         </View>
+        {/* Sin foto: es lo que se copia como sticker (fondo transparente). */}
+        {overlay ? (
+          <View ref={stickerRef} collapsable={false} style={{ width: CARD_W, height: h, position: 'absolute', top: h + 20 }}>
+            {visible ? render({ theme, format }) : null}
+          </View>
+        ) : null}
       </View>
     </Modal>
   );

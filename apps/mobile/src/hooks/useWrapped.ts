@@ -74,7 +74,10 @@ export function useWrapped(first: Date | null) {
         days: stats.days,
         daysMet: stats.daysMet,
         best: stats.best,
-        calendar: stats.bars.map((b, i) => ({ key: b.key, day: i + 1, met: b.met })),
+        calendar: stats.bars.map((b, i) => ({ key: b.key, day: i + 1, met: b.met, steps: b.steps })),
+        goal,
+        prevSteps: rows.filter((r) => r.day < startKey).reduce((a, r) => a + r.steps, 0) || null,
+        prevMonthName: monthName((start.getMonth() + 11) % 12),
         firstWeekday: (start.getDay() + 6) % 7,
         run: longestRun(stats.bars),
         rank: rankRow
