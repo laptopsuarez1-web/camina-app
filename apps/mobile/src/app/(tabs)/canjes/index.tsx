@@ -1519,7 +1519,7 @@ export default function CanjesScreen() {
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               {([
                 { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
-                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: <Coin size={16} /> },
+                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
                 { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), color: colors.dangerFill, icon: <Heart size={13} color={onlyFavs ? '#fff' : colors.light.text} fill={onlyFavs ? '#fff' : colors.light.text} /> },
               ]).map((c) => (
                 <Press
