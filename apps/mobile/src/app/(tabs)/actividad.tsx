@@ -500,7 +500,7 @@ export default function ActividadScreen() {
                 ) : null}
                 <Text
                   className="text-[12px] font-bold mt-0.5"
-                  style={{ color: met ? accentText : warnText }}
+                  style={{ color: met ? accentText : h.day === todayKey ? warnText : dangerText }}
                 >
                   {met ? 'Meta cumplida' : h.day === todayKey ? 'Meta en progreso' : 'Meta no cumplida'}
                 </Text>

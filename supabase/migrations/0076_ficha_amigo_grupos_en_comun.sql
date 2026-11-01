@@ -1,6 +1,5 @@
--- Ficha de amigo: sus Puntos y los grupos que tienen en común.
+-- Ficha de amigo: los grupos que tienen en común.
 -- friend_extras(p_user): solo para uno mismo o un amigo que aceptó (mismo criterio que los pasos en friend_card).
---   points: saldo de Puntos de esa persona.
 --   common_groups: grupos de los que son miembros las dos personas (id y nombre).
 -- Idempotente: sí.
 -- Cómo se revierte: drop function friend_extras(uuid);
@@ -13,7 +12,6 @@ begin
     return null;
   end if;
   return jsonb_build_object(
-    'points', user_points_balance(p_user),
     'common_groups', coalesce((
       select jsonb_agg(jsonb_build_object('id', g.id, 'name', g.name) order by g.name)
       from groups g

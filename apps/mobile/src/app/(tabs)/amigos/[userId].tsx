@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -8,7 +9,7 @@ import { DarkHeader } from '@/components/ui/DarkHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
-import { ChevronLeft, DotsThree, Check, X } from '@/components/icons';
+import { ChevronLeft, ChevronRight, DotsThree, Check, X } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { useFriendCard, useFriendActions, useFriendExtras } from '@/hooks/useFriends';
 import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration';
@@ -32,6 +33,12 @@ function DayDot({ cell, size }: { cell: DayCell; size: number }) {
       {cell.state === 'met' ? <Check size={Math.round(size * 0.42)} color="#fff" /> : cell.state === 'miss' ? <X size={Math.round(size * 0.36)} color={dark ? colors.dangerSoft : colors.dangerInk} /> : null}
     </View>
   );
+}
+
+// Promedio de pasos por día de los últimos `n` días (con el día de hoy ya contado).
+function periodAvg(days: { day: string; steps: number }[], n: number) {
+  const recent = [...days].sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, n);
+  return recent.length ? Math.round(recent.reduce((t, d) => t + d.steps, 0) / recent.length) : 0;
 }
 
 const STATE_TEXT: Record<DayCell['state'], string> = { met: 'llegó a la meta', miss: 'no llegó a la meta', idle: 'no abrió la app', none: 'sin datos' };
@@ -104,7 +111,6 @@ export default function FriendProfileScreen() {
   }));
 
   const first = card?.full_name?.split(' ')[0] ?? 'ella';
-  const topAvg = Math.max(1, myCard?.avg_week ?? 0, card?.avg_week ?? 0);
   const since = card?.friends_since ? new Date(card.friends_since).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' }) : null;
 
   if (!isLoading && !isError && !card) {
@@ -181,8 +187,11 @@ export default function FriendProfileScreen() {
         {card && showData && (
           <>
             <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
-              {/* En claro, el encabezado oscuro se transparentaba por el vidrio y tapaba los números: un velo blanco lo cubre (el vidrio sigue, solo más lechoso). */}
-              {!dark && <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.9)' }} />}
+              {/* En claro, el encabezado oscuro se transparentaba por el vidrio y tapaba los números: un velo lila-blanco, casi opaco, lo cubre.
+                  La tarjeta queda en el mismo lugar y con el mismo borde de vidrio. */}
+              {!dark && (
+                <LinearGradient pointerEvents="none" colors={['rgba(255,255,255,0.97)', 'rgba(243,239,255,0.93)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 23 }} />
+              )}
               <View className="flex-row">
                 {[
                   { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
@@ -195,43 +204,6 @@ export default function FriendProfileScreen() {
                   </View>
                 ))}
               </View>
-
-              {isFriend && (extras || (myCard && myCard.avg_week != null)) ? (
-                <View className="mx-4 mt-3.5 pt-3.5" style={{ borderTopWidth: 1, borderTopColor: line, gap: 12 }}>
-                  {myCard && myCard.avg_week != null ? (
-                    <View style={{ gap: 6 }}>
-                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Promedio diario: tú y {first}</Text>
-                      {[{ who: 'Tú', v: myCard.avg_week ?? 0, color: colors.aquaDeep }, { who: first, v: card.avg_week ?? 0, color: colors.purple }].map((r) => (
-                        <View key={r.who} className="flex-row items-center" style={{ gap: 8 }}>
-                          <Text className="text-[12px] text-muted-light dark:text-muted-dark" style={{ width: 54 }} numberOfLines={1}>{r.who}</Text>
-                          <View className="flex-1 rounded-full overflow-hidden" style={{ height: 8, backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(91,49,163,0.10)' }}>
-                            <View style={{ width: `${Math.max(4, Math.round((r.v / topAvg) * 100))}%`, height: 8, borderRadius: 4, backgroundColor: r.color }} />
-                          </View>
-                          <Text style={{ width: 50, textAlign: 'right', fontSize: 12.5, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  ) : null}
-                  {extras ? (
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Sus Puntos</Text>
-                      <Text style={{ fontSize: 15, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{extras.points.toLocaleString('es-BO')}</Text>
-                    </View>
-                  ) : null}
-                  {extras && extras.common_groups.length > 0 ? (
-                    <View style={{ gap: 6 }}>
-                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">Grupos en común · {extras.common_groups.length}</Text>
-                      <View className="flex-row flex-wrap" style={{ gap: 6 }}>
-                        {extras.common_groups.map((g) => (
-                          <Press key={g.id} accessibilityRole="button" accessibilityLabel={`Abrir el grupo ${g.name}`} onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })} className="rounded-full px-3 py-1.5" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.10)' : 'rgba(91,49,163,0.08)', borderWidth: 1, borderColor: line }}>
-                            <Text style={{ fontSize: 12, fontWeight: '600', color: text }} numberOfLines={1}>{g.name}</Text>
-                          </Press>
-                        ))}
-                      </View>
-                    </View>
-                  ) : null}
-                </View>
-              ) : null}
             </Glass>
 
             <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
@@ -281,6 +253,59 @@ export default function FriendProfileScreen() {
                 </View>
               )}
             </Glass>
+            {isFriend && myCard ? (
+              <>
+                <Text accessibilityRole="header" className="mx-5 mt-6 mb-2.5" style={[typo.section, { color: text }]}>Promedio diario</Text>
+                <Glass className="rounded-3xl mx-5 p-4" style={{ gap: 16 }}>
+                  {[
+                    { title: 'Semanal · 7 días', mine: myCard.avg_week ?? 0, theirs: card.avg_week ?? 0 },
+                    { title: 'Mensual · 30 días', mine: periodAvg(myCard.days ?? [], 30), theirs: periodAvg(card.days ?? [], 30) },
+                  ].map((row) => {
+                    const top = Math.max(1, row.mine, row.theirs);
+                    return (
+                      <View key={row.title} style={{ gap: 7 }}>
+                        <Text className="text-[12.5px] font-bold text-muted-light dark:text-muted-dark">{row.title}</Text>
+                        {[{ who: 'Tú', v: row.mine, color: colors.aquaDeep }, { who: first, v: row.theirs, color: colors.purple }].map((r) => (
+                          <View key={r.who} className="flex-row items-center" style={{ gap: 10 }}>
+                            <Text className="text-[12.5px] text-text-light dark:text-text-dark" style={{ width: 56 }} numberOfLines={1}>{r.who}</Text>
+                            <View className="flex-1 rounded-full overflow-hidden" style={{ height: 9, backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(91,49,163,0.10)' }}>
+                              <View style={{ width: `${Math.max(4, Math.round((r.v / top) * 100))}%`, height: 9, borderRadius: 5, backgroundColor: r.color }} />
+                            </View>
+                            <Text style={{ width: 54, textAlign: 'right', fontSize: 13, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })}
+                </Glass>
+              </>
+            ) : null}
+
+            {isFriend && extras && extras.common_groups.length > 0 ? (
+              <>
+                <Text accessibilityRole="header" className="mx-5 mt-6 mb-2.5" style={[typo.section, { color: text }]}>Grupos en común</Text>
+                <Glass className="rounded-3xl mx-5 overflow-hidden">
+                  {extras.common_groups.map((g, i) => (
+                    <Press
+                      key={g.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Abrir el grupo ${g.name}`}
+                      onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })}
+                      feedback="row"
+                      className="flex-row items-center px-4 py-3.5"
+                      style={{ gap: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: line }}
+                    >
+                      <View className="items-center justify-center rounded-full" style={{ width: 36, height: 36, backgroundColor: dark ? 'rgba(255,255,255,0.10)' : 'rgba(91,49,163,0.10)' }}>
+                        <Text style={{ fontSize: 15, fontWeight: '800', color: dark ? colors.purpleSoft : colors.purpleInk }}>{(g.name[0] ?? 'G').toUpperCase()}</Text>
+                      </View>
+                      <Text className="flex-1 text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{g.name}</Text>
+                      <ChevronRight size={18} color={muted} />
+                    </Press>
+                  ))}
+                </Glass>
+              </>
+            ) : null}
+
             <Text className="text-[12px] text-center mt-3 text-muted-light dark:text-muted-dark">
               {isSelf ? 'Tus amigos ven esto de ti.' : 'Solo la ven los amigos que aceptó.'}
             </Text>
