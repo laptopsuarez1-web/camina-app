@@ -58,7 +58,7 @@ export function Chip({ icon: Icon, label, tone }: { icon: Parameters<typeof Icon
 }
 
 // Título grande, local y dirección a la izquierda; costo en una pastilla arriba a la derecha.
-function CostPill({ cost }: { cost: number }) {
+export function CostPill({ cost }: { cost: number }) {
   return (
     <View className="flex-row items-center rounded-full bg-aqua-light-light dark:bg-aqua-light-dark" style={{ gap: 6, paddingHorizontal: 12, paddingVertical: 8 }}>
       <Coin size={20} />
@@ -68,12 +68,17 @@ function CostPill({ cost }: { cost: number }) {
 }
 
 // Foto del premio (la que sube el comercio para ese premio, no la del local), con el costo encima.
+// Foto del premio en cuadrado (no está pensada para ocupar todo el ancho).
+export function BenefitThumb({ url, size = 104 }: { url?: string | null; size?: number }) {
+  if (!url) return null;
+  return <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: size, height: size, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />;
+}
+
 export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number }) {
   if (!url) return null;
-  // La foto del premio va chica, a un costado (como en Pasito): no está pensada para ocupar todo el ancho. El costo, a la derecha.
   return (
     <View className="flex-row items-start justify-between">
-      <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: 168, height: 116, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />
+      <BenefitThumb url={url} size={104} />
       <CostPill cost={cost} />
     </View>
   );

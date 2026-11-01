@@ -5,7 +5,7 @@ import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import type { OpeningHours } from '@/components/BusinessHours';
-import { BenefitPhoto, HowToGetThere, BenefitHeader, ChannelChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un premio dentro de la ficha del local. Es una capa dentro de la ficha y NO otro Modal:
 // en iPhone un panel abierto encima de otro dejaba la pantalla sin responder (ver las fotos del local).
@@ -25,7 +25,7 @@ type Benefit = {
 };
 type Business = { name: string; lat?: number | null; lng?: number | null; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours; phone?: string | null };
 
-const STEPS_LOCAL = ['Acércate al mostrador.', 'Toca Canjear y muéstrale el código al local.', 'El local lo confirma y ¡disfruta tu premio!'];
+const STEPS_LOCAL = ['Acércate al mostrador.', 'Toca Canjear y pídele al local su código de 4 números.', 'Escríbelo en la app y ¡disfruta tu premio!'];
 const STEPS_ONLINE = ['Toca Canjear y guarda tu código.', 'Escríbele al local y dile el código.', '¡Disfruta tu premio!'];
 
 export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefit: Benefit; business: Business; onClose: () => void }) {
@@ -59,9 +59,20 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center" />
         </View>
         <ScrollView style={{ flexShrink: 1 }} showsVerticalScrollIndicator={false} bounces nestedScrollEnabled onScrollEndDrag={(e) => { if (e.nativeEvent.contentOffset.y < -70) dismiss(); }} scrollEventThrottle={16} contentContainerStyle={{ paddingBottom: 12, gap: 22 }}>
-          <BenefitPhoto url={b.image_url} cost={b.cost_points} />
-          <BenefitHeader hasPhoto={!!b.image_url} title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
-          <View className="flex-row flex-wrap" style={{ gap: 8 }}><ChannelChip b={b} /></View>
+          {b.image_url ? (
+            // Foto cuadrada a la derecha del título; el costo va debajo. (Dónde se puede usar el premio va en "Condiciones".)
+            <>
+              <View className="flex-row items-start" style={{ gap: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <BenefitHeader hasPhoto title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
+                </View>
+                <BenefitThumb url={b.image_url} size={108} />
+              </View>
+              <View className="flex-row"><CostPill cost={b.cost_points} /></View>
+            </>
+          ) : (
+            <BenefitHeader title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
+          )}
           <WhatIncludes text={b.description} />
           <HowToRedeem steps={b.online ? STEPS_ONLINE : STEPS_LOCAL} />
           <Conditions items={conditionsOf(b)} />
