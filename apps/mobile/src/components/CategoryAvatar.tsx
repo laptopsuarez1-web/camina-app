@@ -1,4 +1,5 @@
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GOLD } from '@/components/ui/Featured';
 import {
@@ -103,7 +104,7 @@ export function BusinessAvatar({
   }
   const radius = size * 0.28;
   if (logoUrl) {
-    return <Image source={{ uri: logoUrl }} style={{ width: size, height: size, borderRadius: radius }} />;
+    return <Image source={{ uri: logoUrl }} contentFit="cover" cachePolicy="memory-disk" transition={120} style={{ width: size, height: size, borderRadius: radius }} />;
   }
   const { icon: Icon, from, to } = categoryStyle(category);
   return (

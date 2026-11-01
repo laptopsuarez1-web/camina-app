@@ -1,4 +1,5 @@
-import { Image, Linking, Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Press } from '@/components/ui/Press';
 import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
@@ -71,7 +72,7 @@ export function CostPill({ cost }: { cost: number }) {
 // Foto del premio en cuadrado (no está pensada para ocupar todo el ancho).
 export function BenefitThumb({ url, size = 104 }: { url?: string | null; size?: number }) {
   if (!url) return null;
-  return <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: size, height: size, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} resizeMode="cover" />;
+  return <Image accessibilityIgnoresInvertColors source={{ uri: url }} style={{ width: size, height: size, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }} contentFit="cover" cachePolicy="memory-disk" transition={150} />;
 }
 
 export function BenefitPhoto({ url, cost }: { url?: string | null; cost: number }) {

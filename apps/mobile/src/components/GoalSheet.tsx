@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, View, Alert } from 'react-native';
+import { Modal, View, Alert, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { GoalWheel, GOAL_VALUES, nearestGoalIndex } from '@/components/GoalWheel';
@@ -52,8 +52,11 @@ function GoalSheetBody({ goal, isDark, onClose }: { goal: number; isDark: boolea
 
   return (
     <>
-      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.5)' }} onPress={onClose}>
-        <Press accessible={false} feedback="none" className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3 pb-9" onPress={() => {}}>
+      {/* El fondo que cierra la hoja es un hermano, no el padre: si la hoja fuera un Pressable, atraparía el
+          toque y la ruedita (ScrollView) no giraría en el iPhone. */}
+      <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.5)' }}>
+        <Press accessible={false} feedback="none" onPress={onClose} style={StyleSheet.absoluteFill} />
+        <View className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3 pb-9">
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-4" />
           <Text accessibilityRole="header" className="text-[20px] font-bold text-text-light dark:text-text-dark text-center">Tu meta diaria</Text>
           <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-1 mb-2">Cuántos pasos quieres hacer por día. Todos tus pasos suman, llegues o no.</Text>
@@ -65,8 +68,8 @@ function GoalSheetBody({ goal, isDark, onClose }: { goal: number; isDark: boolea
           <Press accessibilityRole="button" onPress={onClose} className="py-3.5 items-center mt-1">
             <Text className="text-[15px] text-muted-light dark:text-muted-dark">Cancelar</Text>
           </Press>
-        </Press>
-      </Press>
+        </View>
+      </View>
     </>
   );
 }

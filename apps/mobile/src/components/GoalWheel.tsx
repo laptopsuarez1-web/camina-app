@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { View, ScrollView, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
 import { buzz } from '@/lib/haptics';
 import { colors } from '@/theme/tokens';
 import { MIN_DAILY_GOAL } from '@/constants/business-rules';
@@ -37,6 +38,15 @@ export function GoalWheel({ index, onIndex, dark }: { index: number; onIndex: (i
     }
   }
 
+  // Tocar un valor lo elige y lleva la ruedita hasta ahí: además de deslizar, siempre hay otra forma de cambiarlo.
+  function jumpTo(i: number) {
+    if (i === last.current) return;
+    last.current = i;
+    onIndex(i);
+    buzz.selection();
+    wheel.current?.scrollTo({ y: i * ROW, animated: true });
+  }
+
   return (
     <View style={{ height: ROW * VISIBLE, overflow: 'hidden' }}>
       {/* Franja de la fila elegida, como en el reloj del teléfono */}
@@ -69,12 +79,12 @@ export function GoalWheel({ index, onIndex, dark }: { index: number; onIndex: (i
         {GOAL_VALUES.map((v, i) => {
           const d = Math.abs(i - index);
           return (
-            <View key={v} style={{ height: ROW, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Press key={v} accessible={false} feedback="none" onPress={() => jumpTo(i)} style={{ height: ROW, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <Text style={{ color: ink, opacity: d === 0 ? 1 : d === 1 ? 0.5 : 0.25, fontSize: d === 0 ? 34 : 26, fontWeight: d === 0 ? '800' : '600', fontVariant: ['tabular-nums'] }}>
                 {v.toLocaleString('es-BO')}
               </Text>
               {d === 0 ? <Text style={{ color: ink, fontSize: 17, fontWeight: '700' }}>pasos</Text> : null}
-            </View>
+            </Press>
           );
         })}
       </ScrollView>
