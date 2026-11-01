@@ -370,6 +370,7 @@ function MapPreviewCard({
 }: {
   business: BusinessT; benefits: { id: string; name: string; cost_points: number }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
 }) {
+  const isDarkCard = useColorScheme().colorScheme === 'dark';
   const dy = useRef(new Animated.Value(0)).current;
   const cb = useRef({ onOpen, onClose });
   cb.current = { onOpen, onClose };
@@ -390,48 +391,74 @@ function MapPreviewCard({
     })
   ).current;
   const shown = benefits.slice(0, 3);
+  const featured = isFeatured(business);
+  const cover = business.cover_url;
+  const km = distance != null && distance < MAX_SHOWN_DISTANCE_M ? formatDistance(distance) : null;
   return (
     <Animated.View
       {...pan.panHandlers}
       style={{ position: 'absolute', left: 12, right: 12, bottom: 12 + bottomInset, transform: [{ translateY: dy }] }}
     >
-      <Press
-        accessibilityRole="button"
-        accessibilityLabel={`${business.name}. Toca para ver el detalle completo`}
-        accessibilityHint="Desliza hacia abajo para cerrar"
-        onPress={onOpen}
-        className="bg-card-light dark:bg-card-dark rounded-[24px] px-4 pt-2.5 pb-4"
-        style={{ shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
+      <Glass
+        className="rounded-[28px]"
+        style={{ overflow: 'hidden', ...(featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD } : {}) }}
       >
-        <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-3" />
-        <View className="flex-row items-center" style={{ gap: 12 }}>
-          {businessIcon(business.name, 56, business.logo_url, business.category, isFeatured(business))}
-          <View className="flex-1">
-            <Text className="text-[17px] font-extrabold text-text-light dark:text-text-dark" numberOfLines={1}>{business.name}</Text>
-            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={1}>
-              {business.category}
-              {distance != null && distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(distance)}` : ''}
-              {benefits.length > 0 ? (openNow ? ' · Abierto ahora' : ' · Fuera de horario') : ''}
-            </Text>
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel={`${business.name}. Toca para ver el detalle completo`}
+          accessibilityHint="Desliza hacia abajo para cerrar"
+          onPress={onOpen}
+        >
+          {/* Foto del local arriba (como en la lista); sin foto, un degradé con la manija. */}
+          <View style={{ height: cover ? 118 : 30, backgroundColor: cover ? colors.purple : 'transparent' }}>
+            {cover ? <Image source={{ uri: cover }} accessibilityIgnoresInvertColors resizeMode="cover" style={{ width: '100%', height: '100%' }} /> : null}
+            <View pointerEvents="none" className="self-center rounded-full" style={{ position: 'absolute', top: 8, width: 38, height: 5, backgroundColor: cover ? 'rgba(255,255,255,0.85)' : colors.light.line }} />
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel="Cerrar vista previa"
+              onPress={onClose}
+              hitSlop={8}
+              className="absolute rounded-full items-center justify-center"
+              style={{ top: 8, right: 10, width: 32, height: 32, backgroundColor: 'rgba(18,10,30,0.55)' }}
+            >
+              <X size={15} color="#fff" />
+            </Press>
           </View>
-          <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={10} className="rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ width: 32, height: 32 }}>
-            <X size={15} color={colors.light.muted} />
-          </Press>
-        </View>
-        {shown.length > 0 ? (
-          <View className="flex-row flex-wrap mt-3" style={{ gap: 8 }}>
-            {shown.map((b) => (
-              <View key={b.id} className="rounded-full border border-line-light dark:border-line-dark px-3 py-1.5">
-                <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{b.name} · {b.cost_points}</Text>
+          <View className="px-4 pb-4" style={{ marginTop: cover ? -26 : 0 }}>
+            <View className="flex-row items-end" style={{ gap: 12 }}>
+              {businessIcon(business.name, 62, business.logo_url, business.category, featured)}
+              <View className="flex-1" style={{ paddingBottom: 2 }}>
+                <View className="flex-row items-center" style={{ gap: 6 }}>
+                  <Text className="text-text-light dark:text-text-dark shrink" style={typo.section} numberOfLines={1}>{business.name}</Text>
+                  {featured ? <GoldBadge size={20} /> : null}
+                </View>
+                <Text className="text-muted-light dark:text-muted-dark" style={typo.support} numberOfLines={1}>
+                  {business.category}{km ? ` · ${km}` : ''}
+                </Text>
               </View>
-            ))}
-            {benefits.length > shown.length ? (
-              <Text className="text-[12.5px] text-muted-light dark:text-muted-dark self-center">+{benefits.length - shown.length} más</Text>
-            ) : null}
+            </View>
+            <View className="flex-row items-center flex-wrap mt-3" style={{ gap: 8 }}>
+              {benefits.length > 0 ? (
+                <View className="rounded-full px-3 py-1.5" style={{ backgroundColor: openNow ? (isDarkCard ? colors.dark.aquaLight : colors.light.aquaLight) : (isDarkCard ? '#3A2C52' : '#EFE8FA') }}>
+                  <Text className="text-[12px] font-bold" style={{ color: openNow ? (isDarkCard ? colors.mint : colors.aquaDeep) : (isDarkCard ? '#CDC2EA' : '#55447A') }}>{openNow ? 'Abierto ahora' : 'Fuera de horario'}</Text>
+                </View>
+              ) : null}
+              {shown.map((b) => (
+                <View key={b.id} className="flex-row items-center rounded-full border border-line-light dark:border-line-dark px-3 py-1.5" style={{ gap: 6 }}>
+                  <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ width: 14, height: 14, borderRadius: 7 }} />
+                  <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{b.cost_points}</Text>
+                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark shrink" numberOfLines={1} style={{ maxWidth: 120 }}>{b.name}</Text>
+                </View>
+              ))}
+              {benefits.length > shown.length ? <Text className="text-muted-light dark:text-muted-dark" style={typo.support}>+{benefits.length - shown.length} más</Text> : null}
+            </View>
+            <View className="flex-row items-center justify-center mt-3.5 rounded-full" style={{ gap: 4, paddingVertical: 12, backgroundColor: colors.aquaDeep }}>
+              <Text className="text-white text-[14.5px] font-bold">Ver local y premios</Text>
+              <ChevronRight size={16} color="#fff" />
+            </View>
           </View>
-        ) : null}
-        <Text className="text-[12px] font-semibold text-aqua-ink dark:text-aqua text-center mt-3">Desliza hacia arriba o toca para ver todo</Text>
-      </Press>
+        </Press>
+      </Glass>
     </Animated.View>
   );
 }
@@ -1512,7 +1539,7 @@ export default function CanjesScreen() {
             accessibilityLabel="Centrar el mapa en dónde estás"
             onPress={centerOnMe}
             className="absolute items-center justify-center rounded-full bg-card-light"
-            style={{ bottom: previewGroup ? 230 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+            style={{ bottom: previewGroup ? 320 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
           >
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
