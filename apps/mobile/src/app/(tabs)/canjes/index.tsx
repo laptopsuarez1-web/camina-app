@@ -859,7 +859,7 @@ export default function CanjesScreen() {
   const quickChips = [
     chip('Abierto ahora', onlyOpen, () => setOnlyOpen((v) => !v)),
     chip('Te alcanza', onlyAfford, () => setOnlyAfford((v) => !v)),
-    chip('Favoritos', onlyFavs, () => setOnlyFavs((v) => !v), colors.dangerFill, <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />),
+    chip('Favoritos', onlyFavs, () => setOnlyFavs((v) => !v), colors.aquaDeep, <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />),
   ];
 
   const groups = useMemo(() => {
@@ -1520,7 +1520,7 @@ export default function CanjesScreen() {
               {([
                 { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
                 { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
-                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), color: colors.dangerFill, icon: <Heart size={13} color={onlyFavs ? '#fff' : colors.light.text} fill={onlyFavs ? '#fff' : colors.light.text} /> },
+                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), color: colors.aquaDeep, icon: <Heart size={13} color={onlyFavs ? '#fff' : colors.light.text} fill={onlyFavs ? '#fff' : colors.light.text} /> },
               ]).map((c) => (
                 <Press
                   key={c.label}
