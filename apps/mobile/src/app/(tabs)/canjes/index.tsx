@@ -365,7 +365,7 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
 const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
 
 // Vista previa al tocar un local en el mapa: tarjeta corta que se desliza. Hacia arriba (o tocarla) abre la ficha completa; hacia abajo la cierra.
-function MapPreviewCard({
+export function MapPreviewCard({
   business, benefits, openNow, distance, bottomInset, onOpen, onClose,
 }: {
   business: BusinessT; benefits: { id: string; name: string; cost_points: number; image_url?: string | null }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
@@ -400,7 +400,8 @@ function MapPreviewCard({
     >
       <Glass
         className="rounded-[28px]"
-        style={{ overflow: 'hidden', ...(featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD } : {}) }}
+        // Vidrio líquido con un respaldo casi opaco: sobre el mapa (calles y nombres) el texto tiene que leerse sin esfuerzo.
+        style={{ overflow: 'hidden', backgroundColor: isDarkCard ? 'rgba(22,16,31,0.80)' : 'rgba(255,255,255,0.84)', ...(featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD } : {}) }}
       >
         <Press
           accessibilityRole="button"
@@ -410,7 +411,7 @@ function MapPreviewCard({
           className="px-4 pt-2.5 pb-4"
         >
           <View className="self-center rounded-full bg-line-light dark:bg-line-dark" style={{ width: 38, height: 5, marginBottom: 12 }} />
-          <View className="flex-row items-center" style={{ gap: 14 }}>
+          <View className="flex-row items-center" style={{ gap: 14, paddingRight: 30 }}>
             {businessIcon(business.name, 72, business.logo_url, business.category, featured)}
             <View className="flex-1">
               <View className="flex-row items-center" style={{ gap: 6 }}>
@@ -432,9 +433,6 @@ function MapPreviewCard({
                 </Text>
               ) : null}
             </View>
-            <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={8} className="self-start rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ width: 30, height: 30 }}>
-              <X size={14} color={isDarkCard ? colors.dark.text : colors.light.text} />
-            </Press>
           </View>
           {shown.length > 0 ? (
             <View className="mt-3.5" style={{ gap: 8 }}>
@@ -459,6 +457,9 @@ function MapPreviewCard({
             <Text className="text-white text-[14.5px] font-bold">Ver local y premios</Text>
             <ChevronRight size={16} color="#fff" />
           </View>
+        </Press>
+        <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={8} className="absolute rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ top: 14, right: 14, width: 30, height: 30, zIndex: 2 }}>
+          <X size={14} color={isDarkCard ? colors.dark.text : colors.light.text} />
         </Press>
       </Glass>
     </Animated.View>
