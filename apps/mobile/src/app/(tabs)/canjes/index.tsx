@@ -512,8 +512,8 @@ function CoinPrice({ cost, was, dim }: { cost: number; was?: number; dim?: boole
   );
 }
 
-type SortBy = 'cerca' | 'destacados' | 'precio';
-const SORT_LABEL: Record<SortBy, string> = { cerca: 'Más cercanos', destacados: 'Recomendados', precio: 'Menor precio' };
+type SortBy = 'cerca' | 'destacados';
+const SORT_LABEL: Record<SortBy, string> = { cerca: 'Más cercanos', destacados: 'Recomendados' };
 
 // Fila de las hojas de Categoría y Ordenar por: texto a la izquierda y tilde en la opción elegida.
 function OptionRow({ label, selected, onPress, isDark }: { label: string; selected: boolean; onPress: () => void; isDark: boolean }) {
@@ -760,12 +760,23 @@ export default function CanjesScreen() {
     return [...map.values()];
   }, [benefits, sinPremios]);
 
-  // "Disponibles ahora": en el mapa solo quedan los comercios con algún premio canjeable en este momento.
+  // Filtros rápidos del mapa (Abierto ahora / Te alcanza / Favoritos): los pines siguen los mismos filtros que la lista.
   const mapBusinesses = useMemo(() => {
-    if (!onlyOpen) return businessesWithCoords;
-    const open = new Set((benefits ?? []).filter(isBenefitAvailableNow).map((b) => b.business.id));
-    return businessesWithCoords.filter((b) => open.has(b.id));
-  }, [onlyOpen, benefits, businessesWithCoords]);
+    if (!onlyOpen && !onlyAfford && !onlyFavs) return businessesWithCoords;
+    const byBiz = new Map<string, BenefitWithBusiness[]>();
+    for (const b of benefits ?? []) {
+      const arr = byBiz.get(b.business.id) ?? [];
+      arr.push(b);
+      byBiz.set(b.business.id, arr);
+    }
+    return businessesWithCoords.filter((biz) => {
+      const bs = byBiz.get(biz.id) ?? [];
+      if (onlyOpen && !bs.some(isBenefitAvailableNow)) return false;
+      if (onlyAfford && !bs.some((b) => b.cost_points <= (balance ?? 0))) return false;
+      if (onlyFavs && !favIds.includes(biz.id)) return false;
+      return true;
+    });
+  }, [onlyOpen, onlyAfford, onlyFavs, benefits, businessesWithCoords, balance, favIds]);
 
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
@@ -846,7 +857,7 @@ export default function CanjesScreen() {
     </Press>
   );
   const quickChips = [
-    chip('Disponibles ahora', onlyOpen, () => setOnlyOpen((v) => !v)),
+    chip('Abierto ahora', onlyOpen, () => setOnlyOpen((v) => !v)),
     chip('Te alcanza', onlyAfford, () => setOnlyAfford((v) => !v)),
     chip('Favoritos', onlyFavs, () => setOnlyFavs((v) => !v), colors.dangerFill, <Heart size={12} color={onlyFavs ? '#fff' : muted} fill={onlyFavs ? '#fff' : 'none'} />),
   ];
@@ -877,18 +888,29 @@ export default function CanjesScreen() {
     if (onlyFavs) list = list.filter((g) => favIds.includes(g.business.id));
     // "Te alcanza": el local tiene al menos un premio que se puede pagar con los Puntos de hoy.
     if (onlyAfford) list = list.filter((g) => g.benefits.some((b) => b.cost_points <= (balance ?? 0)));
-    const cheapest = (g: (typeof list)[number]) => Math.min(...g.benefits.map((b) => b.cost_points), Infinity);
     // Destacados siempre primero (también dentro de cada categoría); después, según "Ordenar por".
     list.sort(
       (a, b) =>
         Number(isFeatured(b.business)) - Number(isFeatured(a.business)) ||
-        (sortBy === 'precio' ? cheapest(a) - cheapest(b) || 0 : 0) ||
         (sortBy === 'cerca' ? (a.distance ?? Infinity) - (b.distance ?? Infinity) : 0) ||
         a.business.name.localeCompare(b.business.name)
     );
     return list;
   }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion]);
-  const previewGroup = useMemo(() => (mapOpen && previewBizId ? groups.find((g) => g.business.id === previewBizId) ?? null : null), [mapOpen, previewBizId, groups]);
+  // La vista previa no depende de los filtros de la lista (categoría, búsqueda): si el pin está en el mapa, la tarjeta tiene que abrirse.
+  const previewGroup = useMemo(() => {
+    if (!mapOpen || !previewBizId) return null;
+    const bs = (benefits ?? []).filter((b) => b.business.id === previewBizId);
+    const business = bs[0]?.business ?? sinPremios.find((b) => b.id === previewBizId);
+    if (!business) return null;
+    const hasGeo = hasGps && mapRegion && business.lat != null && business.lng != null;
+    return {
+      business,
+      benefits: bs,
+      openNow: bs.some(isBenefitAvailableNow),
+      distance: hasGeo ? distanceMeters(mapRegion!, business.lat!, business.lng!) : null,
+    };
+  }, [mapOpen, previewBizId, benefits, sinPremios, hasGps, mapRegion]);
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
@@ -1494,17 +1516,27 @@ export default function CanjesScreen() {
                 </Press>
               )}
             </View>
-            <Press
-              accessibilityRole="button"
-              accessibilityState={{ selected: onlyOpen }}
-              aria-pressed={onlyOpen}
-              haptic="selection"
-              onPress={() => setOnlyOpen((v) => !v)}
-              className="self-start rounded-full"
-              style={{ marginTop: 8, paddingHorizontal: 14, height: 32, justifyContent: 'center', backgroundColor: onlyOpen ? colors.aquaDeep : '#fff' }}
-            >
-              <Text style={{ fontSize: 12.5, fontWeight: '700', color: onlyOpen ? '#fff' : colors.light.text }}>Disponibles ahora</Text>
-            </Press>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              {([
+                { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
+                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: <Coin size={16} /> },
+                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), color: colors.dangerFill, icon: <Heart size={13} color={onlyFavs ? '#fff' : colors.light.text} fill={onlyFavs ? '#fff' : colors.light.text} /> },
+              ]).map((c) => (
+                <Press
+                  key={c.label}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: c.on }}
+                  aria-pressed={c.on}
+                  haptic="selection"
+                  onPress={c.toggle}
+                  className="rounded-full"
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, backgroundColor: c.on ? c.color : '#fff', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
+                >
+                  {c.icon}
+                  <Text style={{ fontSize: 12.5, fontWeight: '700', color: c.on ? '#fff' : colors.light.text }}>{c.label}</Text>
+                </Press>
+              ))}
+            </View>
             {mapResults.length > 0 && (
               <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
                 {mapResults.map((b) => (
