@@ -414,10 +414,10 @@ export type GroupCardData = {
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo y el @caminaapp no queden encimados.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
   const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
-  const crown = compact ? 24 : 30;
+  const crown = compact ? 36 : 44;
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      {rank === 1 ? <View style={{ marginBottom: 3 }}><CrownMark size={crown} color={p.gold} jewel={p === PAL.dark ? '#1B1530' : '#FFFFFF'} /></View> : <View style={{ height: crown * 0.8 + 3 }} />}
+      {rank === 1 ? <View style={{ marginBottom: 3 }}><CrownMark size={crown} /></View> : <View style={{ height: crown * 0.75 + 3 }} />}
       <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: isMe ? p.accent : p.tile, borderWidth: 1.5, borderColor: isMe ? p.accent : p.tileLine, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>

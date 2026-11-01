@@ -415,7 +415,7 @@ export default function GroupDetailScreen() {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
                 <View key={m.id} className="items-center" style={{ width: 92 }}>
-                  {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={30} color="#F5C645" jewel="#7A2F3E" /></View>}
+                  {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={44} /></View>}
                   <AvatarImage
                     uri={m.photoUrl}
                     style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }}
