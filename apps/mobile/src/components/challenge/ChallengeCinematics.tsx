@@ -12,7 +12,8 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Coin } from '@/components/ui/Coin';
-import { Crown, Trophy } from '@/components/icons';
+import { Trophy } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
 import { brandFontsReady, WORDMARK_FAMILY } from '@/theme/fonts';
 import { buzz } from '@/lib/haptics';
@@ -635,8 +636,8 @@ function PodiumColumn({ tl, delay, rank, entry, isMe, won }: { tl: Timeline; del
     <View style={{ width: 92, alignItems: 'center' }}>
       <Reveal tl={tl} delay={delay + 260} dy={-30} style={{ alignItems: 'center', marginBottom: 8 }}>
         {winner && (
-          <Reveal tl={tl} delay={won ? 1900 : delay + 400} dy={won ? -60 : -10} style={{ position: 'absolute', top: -28 }}>
-            <Crown size={26} color={GOLD} weight="fill" />
+          <Reveal tl={tl} delay={won ? 1900 : delay + 400} dy={won ? -60 : -10} style={{ position: 'absolute', top: -34 }}>
+            <CrownMark size={42} />
           </Reveal>
         )}
         <View>
