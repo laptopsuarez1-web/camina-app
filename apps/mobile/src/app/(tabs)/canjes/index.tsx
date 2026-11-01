@@ -368,7 +368,7 @@ const cardBorder = (b: BusinessT) => (isFeatured(b) ? 2 : 1);
 function MapPreviewCard({
   business, benefits, openNow, distance, bottomInset, onOpen, onClose,
 }: {
-  business: BusinessT; benefits: { id: string; name: string; cost_points: number }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
+  business: BusinessT; benefits: { id: string; name: string; cost_points: number; image_url?: string | null }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
 }) {
   const isDarkCard = useColorScheme().colorScheme === 'dark';
   const dy = useRef(new Animated.Value(0)).current;
@@ -392,7 +392,6 @@ function MapPreviewCard({
   ).current;
   const shown = benefits.slice(0, 3);
   const featured = isFeatured(business);
-  const cover = business.cover_url;
   const km = distance != null && distance < MAX_SHOWN_DISTANCE_M ? formatDistance(distance) : null;
   return (
     <Animated.View
@@ -408,54 +407,57 @@ function MapPreviewCard({
           accessibilityLabel={`${business.name}. Toca para ver el detalle completo`}
           accessibilityHint="Desliza hacia abajo para cerrar"
           onPress={onOpen}
+          className="px-4 pt-2.5 pb-4"
         >
-          {/* Foto del local arriba (como en la lista); sin foto, un degradé con la manija. */}
-          <View style={{ height: cover ? 118 : 30, backgroundColor: cover ? colors.purple : 'transparent' }}>
-            {cover ? <Image source={{ uri: cover }} accessibilityIgnoresInvertColors resizeMode="cover" style={{ width: '100%', height: '100%' }} /> : null}
-            <View pointerEvents="none" className="self-center rounded-full" style={{ position: 'absolute', top: 8, width: 38, height: 5, backgroundColor: cover ? 'rgba(255,255,255,0.85)' : colors.light.line }} />
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel="Cerrar vista previa"
-              onPress={onClose}
-              hitSlop={8}
-              className="absolute rounded-full items-center justify-center"
-              style={{ top: 8, right: 10, width: 32, height: 32, backgroundColor: 'rgba(18,10,30,0.55)' }}
-            >
-              <X size={15} color="#fff" />
-            </Press>
-          </View>
-          <View className="px-4 pb-4" style={{ marginTop: cover ? -26 : 0 }}>
-            <View className="flex-row items-end" style={{ gap: 12 }}>
-              {businessIcon(business.name, 62, business.logo_url, business.category, featured)}
-              <View className="flex-1" style={{ paddingBottom: 2 }}>
-                <View className="flex-row items-center" style={{ gap: 6 }}>
-                  <Text className="text-text-light dark:text-text-dark shrink" style={typo.section} numberOfLines={1}>{business.name}</Text>
-                  {featured ? <GoldBadge size={20} /> : null}
-                </View>
-                <Text className="text-muted-light dark:text-muted-dark" style={typo.support} numberOfLines={1}>
-                  {business.category}{km ? ` · ${km}` : ''}
-                </Text>
+          <View className="self-center rounded-full bg-line-light dark:bg-line-dark" style={{ width: 38, height: 5, marginBottom: 12 }} />
+          <View className="flex-row items-center" style={{ gap: 14 }}>
+            {businessIcon(business.name, 72, business.logo_url, business.category, featured)}
+            <View className="flex-1">
+              <View className="flex-row items-center" style={{ gap: 6 }}>
+                <Text className="text-text-light dark:text-text-dark shrink" style={typo.section} numberOfLines={1}>{business.name}</Text>
+                {featured ? <GoldBadge size={20} /> : null}
               </View>
-            </View>
-            <View className="flex-row items-center flex-wrap mt-3" style={{ gap: 8 }}>
-              {benefits.length > 0 ? (
-                <View className="rounded-full px-3 py-1.5" style={{ backgroundColor: openNow ? (isDarkCard ? colors.dark.aquaLight : colors.light.aquaLight) : (isDarkCard ? '#3A2C52' : '#EFE8FA') }}>
-                  <Text className="text-[12px] font-bold" style={{ color: openNow ? (isDarkCard ? colors.mint : colors.aquaDeep) : (isDarkCard ? '#CDC2EA' : '#55447A') }}>{openNow ? 'Abierto ahora' : 'Fuera de horario'}</Text>
+              <Text className="text-muted-light dark:text-muted-dark mt-0.5" style={typo.support} numberOfLines={1}>
+                {business.category}{km ? ` · ${km}` : ''}
+              </Text>
+              {business.address ? (
+                <View className="flex-row items-center mt-1" style={{ gap: 4 }}>
+                  <MapPin size={12} color={isDarkCard ? colors.mint : colors.aquaDeep} />
+                  <Text className="text-aqua-ink dark:text-mint shrink" style={typo.support} numberOfLines={1}>{business.address}</Text>
                 </View>
               ) : null}
+              {benefits.length > 0 ? (
+                <Text className="mt-1 font-bold" style={[typo.support, { color: openNow ? (isDarkCard ? colors.mint : colors.aquaDeep) : (isDarkCard ? '#CDC2EA' : '#55447A') }]}>
+                  {openNow ? 'Abierto ahora' : 'Fuera de horario'}
+                </Text>
+              ) : null}
+            </View>
+            <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={8} className="self-start rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ width: 30, height: 30 }}>
+              <X size={14} color={isDarkCard ? colors.dark.text : colors.light.text} />
+            </Press>
+          </View>
+          {shown.length > 0 ? (
+            <View className="mt-3.5" style={{ gap: 8 }}>
               {shown.map((b) => (
-                <View key={b.id} className="flex-row items-center rounded-full border border-line-light dark:border-line-dark px-3 py-1.5" style={{ gap: 6 }}>
-                  <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ width: 14, height: 14, borderRadius: 7 }} />
-                  <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{b.cost_points}</Text>
-                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark shrink" numberOfLines={1} style={{ maxWidth: 120 }}>{b.name}</Text>
+                <View key={b.id} className="flex-row items-center rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark px-2.5 py-2" style={{ gap: 10 }}>
+                  {b.image_url ? (
+                    <Image source={{ uri: b.image_url }} accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
+                  ) : (
+                    <View className="items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ width: 40, height: 40, borderRadius: 12 }}>
+                      <Gift size={18} color={colors.purple} />
+                    </View>
+                  )}
+                  <Text className="flex-1 text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{b.name}</Text>
+                  <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ width: 16, height: 16, borderRadius: 8 }} />
+                  <Text className="text-[14px] font-extrabold text-text-light dark:text-text-dark" style={{ fontVariant: ['tabular-nums'] }}>{b.cost_points}</Text>
                 </View>
               ))}
-              {benefits.length > shown.length ? <Text className="text-muted-light dark:text-muted-dark" style={typo.support}>+{benefits.length - shown.length} más</Text> : null}
+              {benefits.length > shown.length ? <Text className="text-muted-light dark:text-muted-dark text-center" style={typo.support}>+{benefits.length - shown.length} premios más</Text> : null}
             </View>
-            <View className="flex-row items-center justify-center mt-3.5 rounded-full" style={{ gap: 4, paddingVertical: 12, backgroundColor: colors.aquaDeep }}>
-              <Text className="text-white text-[14.5px] font-bold">Ver local y premios</Text>
-              <ChevronRight size={16} color="#fff" />
-            </View>
+          ) : null}
+          <View className="flex-row items-center justify-center mt-3.5 rounded-full" style={{ gap: 4, paddingVertical: 12, backgroundColor: colors.aquaDeep }}>
+            <Text className="text-white text-[14.5px] font-bold">Ver local y premios</Text>
+            <ChevronRight size={16} color="#fff" />
           </View>
         </Press>
       </Glass>
@@ -1539,7 +1541,7 @@ export default function CanjesScreen() {
             accessibilityLabel="Centrar el mapa en dónde estás"
             onPress={centerOnMe}
             className="absolute items-center justify-center rounded-full bg-card-light"
-            style={{ bottom: previewGroup ? 320 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+            style={{ bottom: previewGroup ? 360 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
           >
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
