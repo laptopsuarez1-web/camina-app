@@ -5,8 +5,9 @@ import { View, ScrollView, Modal, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Activity, IconBubble, ChevronUp, ChevronDown, ChevronRight, Share2, Sparkle } from '@/components/icons';
+import { Activity, IconBubble, ChevronUp, ChevronDown, ChevronRight, Share2 } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
@@ -230,8 +231,8 @@ export default function ActividadScreen() {
           className="mb-3"
         >
           <LinearGradient colors={['#3a2668', '#5B31A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 15, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkle size={22} color={colors.mintDark} weight="fill" />
+            <View style={{ width: 50, height: 52, alignItems: 'center', justifyContent: 'flex-end' }}>
+              <BaifoMascot pose="festeja" height={60} />
             </View>
             <View className="flex-1">
               <Text className="text-white font-extrabold text-[15.5px]">Tu {wrappedMonthName(wrappedStart.getMonth())} en Camina</Text>

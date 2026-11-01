@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { Image, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Path, Rect, Circle } from 'react-native-svg';
 
 // Ilustraciones propias para las láminas del mes (trofeo y llama). Son dibujos planos con degradé, sin bordes, para que se
@@ -26,7 +27,17 @@ export function FlameArt({ size = 64 }: { size?: number }) {
 
 export function TrophyArt({ size = 64 }: { size?: number }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const k = size / 64;
+  const foot = (x: number, y: number, src: number) => (
+    <Image
+      source={src === 0 ? require('@/../assets/pie-izq-mint.png') : require('@/../assets/pie-der-mint.png')}
+      accessible={false}
+      resizeMode="contain"
+      style={{ position: 'absolute', left: x * k, top: y * k, width: 9.5 * k, height: 19 * k, tintColor: '#FFF6D2', opacity: 0.95 }}
+    />
+  );
   return (
+    <View style={{ width: size, height: size }}>
     <Svg width={size} height={size} viewBox="0 0 64 64">
       <Defs>
         <LinearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
@@ -42,10 +53,13 @@ export function TrophyArt({ size = 64 }: { size?: number }) {
       <Path d="M47 14H55V19C55 26 50.5 30.5 44 31.5" stroke={`url(#${id}d)`} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
       <Path d="M16 7H48V26C48 36 41 42.5 32 42.5C23 42.5 16 36 16 26Z" fill={`url(#${id}g)`} />
       <Path d="M21 12H26V26C26 30 24.5 33 22.5 34.5C21.2 32.4 21 29 21 26Z" fill="#FFFFFF" opacity={0.35} />
-      <Path d="M32 15L34.4 20.2L40 20.9L35.9 24.7L37 30.3L32 27.5L27 30.3L28.1 24.7L24 20.9L29.6 20.2Z" fill="#FFF6D2" opacity={0.9} />
       <Rect x={28.5} y={42} width={7} height={8} fill={`url(#${id}d)`} />
       <Rect x={19} y={49} width={26} height={8} rx={3} fill={`url(#${id}d)`} />
       <Circle cx={32} cy={53} r={1.6} fill="#FFF6D2" opacity={0.8} />
     </Svg>
+    {/* Las huellas del logo de Camina, en lugar de la estrella. */}
+    {foot(22.5, 13, 0)}
+    {foot(32.5, 17, 1)}
+    </View>
   );
 }
