@@ -398,10 +398,10 @@ export function MapPreviewCard({
       {...pan.panHandlers}
       style={{ position: 'absolute', left: 12, right: 12, bottom: 12 + bottomInset, transform: [{ translateY: dy }] }}
     >
-      {/* Tarjeta sólida (sin transparencia): sobre el mapa se lee todo sin esfuerzo. */}
-      <View
-        className="rounded-[28px] bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark"
-        style={{ overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 10, ...(featured ? { borderWidth: 2, borderColor: GOLD } : {}) }}
+      {/* Vidrio líquido: se ve el mapa a través, con un velo suficiente para que el texto se lea bien. */}
+      <Glass
+        className="rounded-[28px]"
+        style={{ overflow: 'hidden', backgroundColor: isDarkCard ? 'rgba(22,16,31,0.55)' : 'rgba(255,255,255,0.55)', ...(featured ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD } : {}) }}
       >
         <Press
           accessibilityRole="button"
@@ -461,7 +461,7 @@ export function MapPreviewCard({
         <Press accessibilityRole="button" accessibilityLabel="Cerrar vista previa" onPress={onClose} hitSlop={8} className="absolute rounded-full items-center justify-center bg-line-light dark:bg-line-dark" style={{ top: 14, right: 14, width: 30, height: 30, zIndex: 2 }}>
           <X size={14} color={isDarkCard ? colors.dark.text : colors.light.text} />
         </Press>
-      </View>
+      </Glass>
     </Animated.View>
   );
 }

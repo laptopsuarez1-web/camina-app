@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { Animated, Linking, PanResponder, ScrollView, View } from 'react-native';
 import { WhatsappIcon } from '@/components/icons';
+import { Glass } from '@/components/ui/Glass';
+import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import type { OpeningHours } from '@/components/BusinessHours';
@@ -44,13 +46,15 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
       },
     })
   ).current;
+  const dark = useColorScheme().colorScheme === 'dark';
   const phoneDigits = (business.phone ?? '').replace(/\D/g, '');
   const canWhatsapp = phoneDigits.length >= 7;
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, elevation: 10, justifyContent: 'flex-end' }}>
       {/* El fondo es hermano de la hoja (no su padre): así la lista de la hoja recibe el gesto de desplazar sin que otro toque se lo quite. */}
       <Press accessibilityRole="button" accessibilityLabel="Cerrar detalle" feedback="none" onPress={onClose} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(18,10,30,0.5)' }} />
-      <Animated.View className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3" style={{ maxHeight: '88%', transform: [{ translateY: dy }] }}>
+      <Animated.View style={{ maxHeight: '88%', transform: [{ translateY: dy }] }}>
+      <Glass className="rounded-t-[28px] px-5 pt-3" style={{ flexShrink: 1, backgroundColor: dark ? 'rgba(22,16,31,0.72)' : 'rgba(255,255,255,0.74)' }}>
         <View {...pan.panHandlers} accessible accessibilityRole="button" accessibilityLabel="Cerrar. Desliza hacia abajo o toca dos veces" accessibilityActions={[{ name: 'activate' }]} onAccessibilityAction={onClose} style={{ paddingTop: 4, paddingBottom: 16, marginTop: -4 }}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center" />
         </View>
@@ -84,6 +88,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
             <Text className="text-white text-[15px] font-bold">Entendido</Text>
           </Press>
         </View>
+      </Glass>
       </Animated.View>
     </View>
   );
