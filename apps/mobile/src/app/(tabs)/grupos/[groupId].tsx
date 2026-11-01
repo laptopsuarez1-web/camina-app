@@ -21,6 +21,7 @@ import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration'
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
+import { GoalBar } from '@/components/ui/GoalBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
@@ -40,45 +41,6 @@ function weekKey() {
   const d = new Date();
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
-
-// Barra de la meta del grupo: se llena con animación al entrar, un brillo la recorre mientras falta y, al cumplirla, late.
-function GoalBar({ pct, accent }: { pct: number; accent: string }) {
-  const w = useRef(new Animated.Value(0)).current;
-  const shine = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.timing(w, { toValue: pct, duration: 1100, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
-  }, [pct, w]);
-  useEffect(() => {
-    const loop = Animated.loop(
-      pct >= 100
-        ? Animated.sequence([
-            Animated.timing(pulse, { toValue: 1.04, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-            Animated.timing(pulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-          ])
-        : Animated.sequence([
-            Animated.timing(shine, { toValue: 1, duration: 1600, delay: 600, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-            Animated.timing(shine, { toValue: 0, duration: 0, useNativeDriver: true }),
-          ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pct >= 100, shine, pulse]);
-  return (
-    <Animated.View style={{ transform: [{ scaleY: pulse }] }}>
-      <View className="h-2.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">
-        <Animated.View style={{ width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }), height: '100%', backgroundColor: pct >= 100 ? colors.mint : accent, overflow: 'hidden', borderRadius: 999 }}>
-          <Animated.View
-            style={{
-              position: 'absolute', top: 0, bottom: 0, width: 60, backgroundColor: 'rgba(255,255,255,0.45)',
-              transform: [{ translateX: shine.interpolate({ inputRange: [0, 1], outputRange: [-60, 320] }) }, { skewX: '-20deg' }],
-            }}
-          />
-        </Animated.View>
-      </View>
-    </Animated.View>
-  );
 }
 
 export default function GroupDetailScreen() {

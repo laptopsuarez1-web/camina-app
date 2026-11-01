@@ -68,7 +68,7 @@ const CAL_FG = { met: colors.mintDark, miss: '#7A1510', idle: '#45454F', none: c
 export default function ActividadScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   // Textos de color (estado de la meta, "Cerrar") con su par para oscuro.
-  const { accentText, warnText, purpleText } = useThemeColors();
+  const { accentText, warnText, purpleText, dangerText } = useThemeColors();
   const tabSpace = useTabBarSpace();
   const { steps: stepsToday } = useTodaySteps();
   const healthDaily = useHealthDailySteps(35);
@@ -216,6 +216,11 @@ export default function ActividadScreen() {
   const monthName = new Date().toLocaleDateString('es-BO', { month: 'long' });
 
   const fullHistory = useMemo(() => [...(history ?? [])].reverse(), [history]);
+  // Promedio de tus días anteriores (sin hoy, que todavía no terminó): cada día se compara con él, como "vs. promedio".
+  const pastAvg = useMemo(() => {
+    const past = fullHistory.filter((h) => h.day < todayKey && h.steps > 0);
+    return past.length >= 2 ? past.reduce((a, h) => a + h.steps, 0) / past.length : 0;
+  }, [fullHistory, todayKey]);
 
   return (
     <View className="flex-1">
@@ -481,12 +486,22 @@ export default function ActividadScreen() {
                   {h.steps.toLocaleString('es-BO')} pasos
                 </Text>
               </View>
-              <Text
-                className="text-[12px] font-bold"
-                style={{ color: met ? accentText : warnText }}
-              >
-                {met ? 'Meta cumplida' : 'Meta no cumplida'}
-              </Text>
+              <View className="items-end">
+                {pastAvg > 0 && h.day !== todayKey ? (
+                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+                    <Text className="font-extrabold" style={{ color: h.steps >= pastAvg ? accentText : dangerText }}>
+                      {h.steps >= pastAvg ? '+' : '−'}{Math.abs(Math.round((h.steps / pastAvg - 1) * 100))}%
+                    </Text>
+                    {' '}vs. promedio
+                  </Text>
+                ) : null}
+                <Text
+                  className="text-[12px] font-bold mt-0.5"
+                  style={{ color: met ? accentText : h.day === todayKey ? warnText : dangerText }}
+                >
+                  {met ? 'Meta cumplida' : h.day === todayKey ? 'Meta en progreso' : 'Meta no cumplida'}
+                </Text>
+              </View>
             </Glass>
           );
         })}

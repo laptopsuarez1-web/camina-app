@@ -7,10 +7,11 @@ import { Glass } from '@/components/ui/Glass';
 import { DarkHeader } from '@/components/ui/DarkHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
+import { GoalBar } from '@/components/ui/GoalBar';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
-import { ChevronLeft, DotsThree, Check, X } from '@/components/icons';
+import { ChevronLeft, ChevronRight, DotsThree, Check, X } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
-import { useFriendCard, useFriendActions } from '@/hooks/useFriends';
+import { useFriendCard, useFriendActions, useFriendExtras } from '@/hooks/useFriends';
 import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration';
 import { buildDayCells, compactSteps, WEEK_LABELS, type DayCell } from '@/lib/friend-week';
 import { localDay } from '@/lib/format';
@@ -34,6 +35,12 @@ function DayDot({ cell, size }: { cell: DayCell; size: number }) {
   );
 }
 
+// Promedio de pasos por día de los últimos `n` días (con el día de hoy ya contado).
+function periodAvg(days: { day: string; steps: number }[], n: number) {
+  const recent = [...days].sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, n);
+  return recent.length ? Math.round(recent.reduce((t, d) => t + d.steps, 0) / recent.length) : 0;
+}
+
 const STATE_TEXT: Record<DayCell['state'], string> = { met: 'llegó a la meta', miss: 'no llegó a la meta', idle: 'no abrió la app', none: 'sin datos' };
 
 export default function FriendProfileScreen() {
@@ -55,9 +62,13 @@ export default function FriendProfileScreen() {
       onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
     });
   };
-  const { text, muted, line } = useThemeColors();
+  const { text, muted, line, dark, accentText, purpleText } = useThemeColors();
+  // Para el comparativo: mi propia ficha (trae mi promedio) y, de ella, los Puntos y los grupos en común.
+  const { data: myCard } = useFriendCard(card?.relation === 'friend' ? meId : undefined);
+  const { data: extras } = useFriendExtras(userId, card?.relation === 'friend');
   const [span, setSpan] = useState<'semana' | 'mes'>('semana');
   const [menu, setMenu] = useState(false);
+  const [cmpSpan, setCmpSpan] = useState<'semana' | 'mes'>('semana');
   const [reasons, setReasons] = useState(false);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
@@ -100,6 +111,20 @@ export default function FriendProfileScreen() {
     },
   }));
 
+  const first = card?.full_name?.split(' ')[0] ?? 'ella';
+  // Comparativo de pasos por día: esta semana (7 días) o el último mes (30 días).
+  const cmp = (() => {
+    const mine = cmpSpan === 'semana' ? (myCard?.avg_week ?? 0) : periodAvg(myCard?.days ?? [], 30);
+    const theirs = cmpSpan === 'semana' ? (card?.avg_week ?? 0) : periodAvg(card?.days ?? [], 30);
+    const top = Math.max(1, mine, theirs);
+    const diff = mine > 0 && theirs > 0 ? Math.round((Math.abs(mine - theirs) / Math.min(mine, theirs)) * 100) : 0;
+    const same = diff < 2;
+    return {
+      mine, theirs, top,
+      verdict: same ? 'Van parejos' : mine > theirs ? `Vas ${diff}% por encima de ${first}` : `${first} va ${diff}% por encima de ti`,
+      verdictColor: same ? muted : mine > theirs ? accentText : purpleText,
+    };
+  })();
   const since = card?.friends_since ? new Date(card.friends_since).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' }) : null;
 
   if (!isLoading && !isError && !card) {
@@ -175,18 +200,42 @@ export default function FriendProfileScreen() {
 
         {card && showData && (
           <>
-            <Glass className="flex-row rounded-3xl mx-5 -mt-7 py-3.5">
-              {[
-                { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
-                { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
-                { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
-              ].map((s, i) => (
-                <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
-                  <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
-                  <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
-                </View>
-              ))}
-            </Glass>
+            {/* En claro la tarjeta NO usa el vidrio nativo: en iPhone el vidrio refracta el encabezado oscuro que tiene detrás y deja una banda oscura sobre los números.
+                Es una tarjeta de superficie lila-blanca (mismo borde, radio y sombra que el vidrio). En oscuro sigue el vidrio de siempre. */}
+            {dark ? (
+              <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              </Glass>
+            ) : (
+              <View
+                className="rounded-3xl mx-5 -mt-7 py-3.5"
+                style={{ borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backgroundColor: '#F7F4FF', shadowColor: colors.purpleDeep, shadowOpacity: 0.13, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
+              >
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              </View>
+            )}
 
             <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
               <Text accessibilityRole="header" style={[typo.section, { color: text }]}>{span === 'semana' ? 'Esta semana' : 'Último mes'}</Text>
@@ -235,6 +284,69 @@ export default function FriendProfileScreen() {
                 </View>
               )}
             </Glass>
+            {isFriend && myCard ? (
+              <>
+                <View className="flex-row items-center justify-between mx-5 mt-6 mb-2.5">
+                  <Text accessibilityRole="header" style={[typo.section, { color: text }]}>Tú vs. {first}</Text>
+                  <View className="flex-row" style={{ gap: 6 }}>
+                    {(['semana', 'mes'] as const).map((k) => (
+                      <Press
+                        key={k}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: cmpSpan === k }}
+                        haptic="selection"
+                        onPress={() => setCmpSpan(k)}
+                        className="rounded-full px-3 py-1.5"
+                        style={{ backgroundColor: cmpSpan === k ? colors.aquaDeep : 'transparent', borderWidth: 1, borderColor: cmpSpan === k ? colors.aquaDeep : line }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: cmpSpan === k ? '#fff' : text }}>{k === 'semana' ? '7 días' : 'Mes'}</Text>
+                      </Press>
+                    ))}
+                  </View>
+                </View>
+                <Glass className="rounded-3xl mx-5 p-4" style={{ gap: 14 }}>
+                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">
+                    Pasos por día · {cmpSpan === 'semana' ? 'esta semana' : 'último mes'}
+                  </Text>
+                  {[{ who: 'Tú', v: cmp.mine, color: colors.aquaDeep }, { who: first, v: cmp.theirs, color: colors.purple }].map((r) => (
+                    <View key={r.who} style={{ gap: 7 }}>
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-[14px] font-bold text-text-light dark:text-text-dark" numberOfLines={1} style={{ flex: 1 }}>{r.who}</Text>
+                        <Text style={{ fontSize: 15, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{r.v.toLocaleString('es-BO')}</Text>
+                      </View>
+                      <GoalBar pct={Math.max(3, Math.round((r.v / cmp.top) * 100))} accent={r.color} plain />
+                    </View>
+                  ))}
+                  <Text className="text-[13px] font-semibold" style={{ color: cmp.verdictColor }}>{cmp.verdict}</Text>
+                </Glass>
+              </>
+            ) : null}
+
+            {isFriend && extras && extras.common_groups.length > 0 ? (
+              <>
+                <Text accessibilityRole="header" className="mx-5 mt-6 mb-2.5" style={[typo.section, { color: text }]}>Grupos en común</Text>
+                <Glass className="rounded-3xl mx-5 overflow-hidden">
+                  {extras.common_groups.map((g, i) => (
+                    <Press
+                      key={g.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Abrir el grupo ${g.name}`}
+                      onPress={() => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: g.id } })}
+                      feedback="row"
+                      className="flex-row items-center px-4 py-3.5"
+                      style={{ gap: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: line }}
+                    >
+                      <View className="items-center justify-center rounded-full" style={{ width: 36, height: 36, backgroundColor: dark ? 'rgba(255,255,255,0.10)' : 'rgba(91,49,163,0.10)' }}>
+                        <Text style={{ fontSize: 15, fontWeight: '800', color: dark ? colors.purpleSoft : colors.purpleInk }}>{(g.name[0] ?? 'G').toUpperCase()}</Text>
+                      </View>
+                      <Text className="flex-1 text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{g.name}</Text>
+                      <ChevronRight size={18} color={muted} />
+                    </Press>
+                  ))}
+                </Glass>
+              </>
+            ) : null}
+
             <Text className="text-[12px] text-center mt-3 text-muted-light dark:text-muted-dark">
               {isSelf ? 'Tus amigos ven esto de ti.' : 'Solo la ven los amigos que aceptó.'}
             </Text>
