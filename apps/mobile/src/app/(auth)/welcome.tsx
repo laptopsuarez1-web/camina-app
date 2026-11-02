@@ -276,7 +276,7 @@ export default function WelcomeScreen() {
           <Text style={{ color: colors.authMuted, marginBottom: 28, textAlign: 'center', fontSize: 13, lineHeight: 19, maxWidth: 280 }}>
             {Platform.OS === 'web'
               ? `Te mandamos un link a ${awaitingConfirmation}. Ábrelo desde donde quieras para activar tu cuenta y deja esta pestaña abierta: apenas se confirma, entras solo.`
-              : `Te mandamos un link a ${awaitingConfirmation}. Ábrelo desde el teléfono para activar tu cuenta y vuelve a entrar aquí.`}
+              : `Te mandamos un link a ${awaitingConfirmation}. Ábrelo para activar tu cuenta. Si la página se queda en blanco no pasa nada: tu cuenta ya quedó confirmada. Vuelve a Camina y toca "Ya confirmé, entrar".`}
           </Text>
           <Press
             accessibilityRole="button"
