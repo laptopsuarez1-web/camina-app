@@ -130,7 +130,7 @@ export function AccountEmailCard() {
             <Text className="font-semibold text-[13.5px] text-text-light dark:text-text-dark">Vincular con Google</Text>
           </Press>
           <Text className="text-muted-light dark:text-muted-dark text-[11.5px] mt-1.5 text-center">
-            Para entrar sin contraseña y no perder tus pasos o puntos
+            Para entrar sin contraseña y no perder tus puntos
           </Text>
         </View>
       )}
