@@ -40,6 +40,7 @@
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
     "expo-task-manager": "~57.0.21",
+    "expo-updates": "~57.0.26",
     "expo-web-browser": "~57.0.3",
     "lucide-react-native": "^0.469.0",
     "nativewind": "^4.2.7",
@@ -75,7 +76,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "test": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --import ./tests/helpers/register.mjs --test \"tests/**/*.test.mts\""
+    "test": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --import ./tests/helpers/register.mjs --test \"tests/**/*.test.mts\"",
+    "ota": "eas update --channel production --message"
   },
   "private": true
 }
