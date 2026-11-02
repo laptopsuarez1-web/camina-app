@@ -125,7 +125,8 @@
       [
         "react-native-maps",
         {
-          "iosGoogleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
+          "iosGoogleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8",
+          "androidGoogleMapsApiKey": "AIzaSyCF6Z1N9XpgIlvGKX22z97XUaZw00Q5np8"
         }
       ],
       "react-native-health-connect",
