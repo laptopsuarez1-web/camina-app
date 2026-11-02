@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { DownloadSimple, Share2, X } from '@/components/icons';
+import { Copy, DownloadSimple, Share2, X } from '@/components/icons';
 import { CARD_W, cardHeight, palette, WrappedOverlay, WrappedSlide, wrappedSlideCount, type CardTheme, type WrappedData } from '@/components/share/cards';
 import { friendlyError } from '@/lib/errors';
 import { pickSharePhoto } from '@/lib/pick-share-photo';
@@ -163,17 +163,16 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           </View>
           {overlay ? (
             <>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', textAlign: 'center', opacity: 0.9 }} numberOfLines={2}>
-                Copia el sticker y pégalo en tu historia («Agregar sticker»), o carga una foto para ver cómo queda.
+              <Press accessibilityRole="button" onPress={copy} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: copied ? '#16604F' : '#1F7A66' }}>
+                <Copy size={19} color="#fff" weight="bold" />
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{copied ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
+              </Press>
+              <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '600', textAlign: 'center', opacity: 0.85 }} numberOfLines={3}>
+                En Instagram, crea tu historia, abre los stickers y toca «Agregar sticker». También funciona en WhatsApp. ¿Prefieres una sola imagen? Carga una foto y toca «Guardar» o «Compartir».
               </Text>
-              <View className="flex-row" style={{ gap: 8 }}>
-                <Press accessibilityRole="button" onPress={copy} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{copied ? '¡Copiado!' : 'Copiar sticker'}</Text>
-                </Press>
-                <Press accessibilityRole="button" onPress={photo ? () => setPhoto(null) : choosePhoto} onLongPress={choosePhoto} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Cargar foto'}</Text>
-                </Press>
-              </View>
+              <Press accessibilityRole="button" onPress={photo ? () => setPhoto(null) : choosePhoto} onLongPress={choosePhoto} className="rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Cargar foto para ver cómo queda'}</Text>
+              </Press>
             </>
           ) : null}
           <View className="flex-row" style={{ gap: 8 }}>

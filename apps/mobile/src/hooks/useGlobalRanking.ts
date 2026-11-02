@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -6,11 +6,14 @@ import { useAuthStore } from '@/store/useAuthStore';
 // las funciones security definer de supabase/migrations/0006_terms_global_ranking.sql (y 0056: abierto siempre)
 // porque steps_daily es select-own y el cliente no puede agregar pasos ajenos
 // directo. Solo entran quienes activaron "Aparecer en el ranking" en Perfil.
-export function useGlobalRanking() {
+// `limit`: cuántas personas traer (la pantalla pide de 15 en 15; el servidor topa en 100).
+export function useGlobalRanking(limit = 15) {
   return useQuery({
-    queryKey: ['global-ranking'],
+    queryKey: ['global-ranking', limit],
+    // Al pedir más, se sigue mostrando la lista anterior mientras llega la nueva (sin parpadeo).
+    placeholderData: keepPreviousData,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: 20 });
+      const { data, error } = await supabase.rpc('global_weekly_ranking', { p_limit: limit });
       if (error) throw error;
       return data;
     },
