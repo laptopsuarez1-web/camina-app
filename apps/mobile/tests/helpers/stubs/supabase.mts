@@ -19,6 +19,8 @@ export const db = {
 export const authEvents = {
   session: null as any,
   listener: null as null | ((event: string, session: any) => void | Promise<void>),
+  setSessionCalls: [] as any[],
+  setSessionResult: (_t: any): any => ({ data: { session: null }, error: { message: 'x', status: 400 } }),
 };
 
 export function resetDb() {
@@ -84,6 +86,11 @@ export const supabase = {
   auth: {
     async getUser() { return { data: { user: db.user }, error: null }; },
     async getSession() { return { data: { session: authEvents.session }, error: null }; },
+    async setSession(tokens: any) {
+      authEvents.setSessionCalls.push(tokens);
+      return authEvents.setSessionResult(tokens);
+    },
+    async signOut() { return { error: null }; },
     onAuthStateChange(cb: (event: string, session: any) => void | Promise<void>) {
       authEvents.listener = cb;
       return { data: { subscription: { unsubscribe() {} } } };

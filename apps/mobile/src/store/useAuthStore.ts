@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/query-client';
 import { Sentry } from '@/lib/monitoring';
+import { authStorage } from '@/lib/auth-storage';
 import type { Profile } from '@/lib/database.types';
 
 interface AuthState {
@@ -81,6 +82,93 @@ async function publishSession(session: Session | null) {
   useAuthStore.setState({ session, ...profilePatch(read, userId, useAuthStore.getState().profile), initializing: false });
 }
 
+
+// ── Red de seguridad contra "me sacó de la sesión" ───────────────────────────────────────────────────────────────────
+// Regla: solo se muestra el login si la persona toca "Cerrar sesión" (signOutUser) o si el servidor rechaza de verdad la
+// renovación. Cualquier otro "sin sesión" (storage que responde mal, evento SIGNED_OUT inesperado) se intenta recuperar
+// con una copia aparte de la última sesión buena. Los logs de Supabase (2/11) mostraron una sesión viva, renovada y con
+// el perfil leído, y aun así la app mostró el login: lo que pasa dentro del teléfono no dejaba rastro, ahora sí.
+const BACKUP_KEY = 'camina.auth.backup';
+let backup: { access_token: string; refresh_token: string } | null = null;
+let intentionalSignOut = false;
+let recovering = false;
+// Últimos eventos de sesión (con hora), para mandarlos a Sentry si la sesión se pierde sola.
+const authLog: string[] = [];
+function logAuth(msg: string) {
+  authLog.push(`${new Date().toISOString().slice(11, 19)}Z ${msg}`);
+  if (authLog.length > 30) authLog.shift();
+}
+
+function saveBackup(session: Session) {
+  if (!session.access_token || !session.refresh_token) return;
+  backup = { access_token: session.access_token, refresh_token: session.refresh_token };
+  authStorage.setItem(BACKUP_KEY, JSON.stringify(backup)).catch(() => {});
+}
+
+async function readBackup(): Promise<typeof backup> {
+  if (backup) return backup;
+  try {
+    const raw = await authStorage.getItem(BACKUP_KEY);
+    const v = raw ? JSON.parse(raw) : null;
+    if (v?.access_token && v?.refresh_token) backup = { access_token: v.access_token, refresh_token: v.refresh_token };
+  } catch {
+    // sin copia
+  }
+  return backup;
+}
+
+function clearBackup() {
+  backup = null;
+  return authStorage.removeItem(BACKUP_KEY).catch(() => {});
+}
+
+// Única forma de cerrar sesión a propósito. Marca la salida como intencional (si no, se tomaría por una pérdida y se
+// recuperaría) y borra la copia de respaldo.
+export async function signOutUser(scope: 'local' | 'global' = 'local') {
+  intentionalSignOut = true;
+  await clearBackup();
+  try {
+    return await supabase.auth.signOut({ scope });
+  } finally {
+    setTimeout(() => {
+      intentionalSignOut = false;
+    }, 3000);
+  }
+}
+
+type Recovery = 'recovered' | 'rejected' | 'offline' | 'none';
+
+// Intenta volver a abrir la sesión con la copia de respaldo. 'offline': no hubo respuesta del servidor, no se cierra nada.
+async function recoverSession(reason: string): Promise<Recovery> {
+  if (intentionalSignOut || recovering) return 'none';
+  const b = await readBackup();
+  if (!b) return 'none';
+  recovering = true;
+  try {
+    const { data, error } = await supabase.auth.setSession(b);
+    if (data?.session) {
+      logAuth(`recuperada (${reason})`);
+      return 'recovered';
+    }
+    const status = (error as { status?: number } | null)?.status;
+    const retryable = !error || (error as { name?: string }).name === 'AuthRetryableFetchError' || status === undefined || status >= 500;
+    logAuth(`recuperación falló (${reason}): ${error?.message ?? 'sin detalle'} [${status ?? 'sin estado'}]`);
+    return retryable ? 'offline' : 'rejected';
+  } catch (e) {
+    logAuth(`recuperación con error (${reason}): ${String(e)}`);
+    return 'offline';
+  } finally {
+    recovering = false;
+  }
+}
+
+function reportLostSession(reason: string, result: Recovery) {
+  Sentry.captureMessage(`Sesión perdida sin que la persona cerrara sesión (${reason}) → ${result}`, {
+    level: result === 'recovered' ? 'warning' : 'error',
+    extra: { eventos: authLog.join('\n') },
+  } as never);
+}
+
 let initialized = false;
 // Id de la última persona con sesión: sirve para vaciar la caché al cambiar de cuenta.
 let lastUserId: string | null = null;
@@ -102,7 +190,15 @@ export function initAuthListener() {
   }
 
   readStoredSession()
-    .then(async (session) => {
+    .then(async (read) => {
+      let session = read;
+      if (!session && (await readBackup())) {
+        // El teléfono dice "sin sesión" pero hay copia de respaldo: no es un cierre a propósito.
+        logAuth('arranque sin sesión pero con respaldo');
+        const result = await recoverSession('arranque');
+        reportLostSession('arranque', result);
+        if (result === 'recovered') session = (await supabase.auth.getSession()).data.session;
+      }
       if (lastUserId === null) lastUserId = session?.user.id ?? null;
       await publishSession(session);
     })
@@ -114,6 +210,24 @@ export function initAuthListener() {
   supabase.auth.onAuthStateChange(async (event, session) => {
     // Rastro para Sentry: si la app vuelve a mostrar el login sola, queda qué pasó con la sesión justo antes.
     Sentry.addBreadcrumb({ category: 'auth', message: `${event}${session ? '' : ' (sin sesión)'}`, level: 'info' });
+    logAuth(`${event}${session ? '' : ' (sin sesión)'}`);
+    if (session) saveBackup(session);
+    if (event === 'SIGNED_OUT' && (recovering || (!intentionalSignOut && backup))) {
+      // Salida que la persona no pidió: no se muestra el login todavía. Se intenta recuperar fuera de este callback
+      // (llamar a supabase.auth desde aquí puede dejarlo esperando a sí mismo).
+      if (!recovering) {
+        setTimeout(async () => {
+          const result = await recoverSession('SIGNED_OUT inesperado');
+          reportLostSession('SIGNED_OUT inesperado', result);
+          if (result === 'offline') return; // sin red: se conserva lo que hay y se reintenta al volver a la app
+          if (result === 'rejected' || result === 'none') {
+            await clearBackup();
+            await publishSession(null);
+          }
+        }, 0);
+      }
+      return;
+    }
     // Al cerrar sesión o entrar con otra cuenta se vacía la caché de datos, para no mostrar lo de la persona anterior.
     // No se limpia con INITIAL_SESSION ni TOKEN_REFRESHED de la misma persona: vaciaría todo cada vez que vuelve la app.
     const nextId = session?.user.id ?? null;
@@ -124,7 +238,10 @@ export function initAuthListener() {
     lastUserId = nextId;
     // Se marca antes de publicar la sesión, así app/index.tsx ya sabe que tiene que pedir la contraseña nueva.
     if (event === 'PASSWORD_RECOVERY') useAuthStore.setState({ passwordRecovery: true });
-    if (event === 'SIGNED_OUT') useAuthStore.setState({ passwordRecovery: false });
+    if (event === 'SIGNED_OUT') {
+      useAuthStore.setState({ passwordRecovery: false });
+      clearBackup();
+    }
 
     await publishSession(session);
   });
@@ -132,9 +249,19 @@ export function initAuthListener() {
   // Si la app quedó mostrando el login pero en el teléfono sigue guardada la sesión, al volver a primer plano se recupera.
   if (Platform.OS !== 'web') {
     AppState.addEventListener('change', async (state) => {
-      if (state !== 'active' || useAuthStore.getState().session) return;
+      if (state !== 'active') return;
       const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-      if (data.session && !useAuthStore.getState().session) await publishSession(data.session);
+      if (data.session && !useAuthStore.getState().session) {
+        await publishSession(data.session);
+        return;
+      }
+      if (!data.session && (await readBackup())) {
+        const result = await recoverSession('volver a la app');
+        if (result === 'rejected') {
+          await clearBackup();
+          await publishSession(null);
+        }
+      }
     });
   }
 }
