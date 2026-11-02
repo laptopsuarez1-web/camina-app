@@ -160,8 +160,8 @@ export default function RankingScreen() {
             {average != null && average > 0 && (
               <View className="rounded-2xl p-4 mb-4" style={{ backgroundColor: dark ? 'rgba(183,166,240,0.16)' : '#F0EAFA' }}>
                 <Text className="text-[13px]" style={{ color: text }}>
-                  Cada semana, una persona de Camina da en promedio{' '}
-                  <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text>.
+                  La comunidad de Camina promedia{' '}
+                  <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text> por semana.
                 </Text>
               </View>
             )}
