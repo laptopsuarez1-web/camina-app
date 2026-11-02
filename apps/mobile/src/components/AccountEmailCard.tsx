@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Alert, ActivityIndicator } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -8,6 +8,7 @@ import { IconBubble, Mail, GoogleIcon, AppleIcon, CheckCircle2 } from '@/compone
 import { supabase } from '@/lib/supabase';
 import { emailRedirectUrl } from '@/lib/auth-links';
 import { friendlyError } from '@/lib/errors';
+import { Google, googleClientIds, googleOAuthConfigured, linkGoogleIdentity } from '@/lib/oauth';
 import { useAuthStore } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 
@@ -25,6 +26,36 @@ export function AccountEmailCard() {
   const [newEmail, setNewEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest(googleClientIds);
+
+  useEffect(() => {
+    if (googleResponse?.type !== 'success') return;
+    const idToken = googleResponse.params.id_token;
+    if (!idToken) return;
+    (async () => {
+      setLinking(true);
+      const { error } = await linkGoogleIdentity(idToken);
+      if (error) {
+        const taken = /already|exists|linked/i.test(error.message ?? '');
+        Alert.alert(
+          'No pudimos vincular Google',
+          taken ? 'Esa cuenta de Google ya está usada en otra cuenta de Camina. Prueba con otra cuenta de Google.' : friendlyError(error, 'Intenta de nuevo.'),
+        );
+      } else {
+        await supabase.auth.refreshSession();
+      }
+      setLinking(false);
+    })();
+  }, [googleResponse]);
+
+  async function linkGoogle() {
+    if (!googleOAuthConfigured) {
+      Alert.alert('Google no está disponible ahora', 'Intenta más tarde.');
+      return;
+    }
+    await promptGoogleAsync();
+  }
 
   if (!user) return null;
   const email = user.email ?? '';
@@ -67,9 +98,6 @@ export function AccountEmailCard() {
           </View>
           <CheckCircle2 size={20} color={dark ? colors.mint : colors.aquaInk} weight="fill" />
         </View>
-        <Text className="text-muted-light dark:text-muted-dark text-[12px] mt-3">
-          Entras con tu cuenta de {PROVIDER_NAME[linked]}. Si quieres usar otro correo, cámbialo desde {PROVIDER_NAME[linked]}.
-        </Text>
       </Glass>
     );
   }
@@ -88,6 +116,24 @@ export function AccountEmailCard() {
           </Press>
         )}
       </View>
+
+      {!editing && googleOAuthConfigured && (
+        <View className="mt-3">
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel="Vincular con Google"
+            onPress={linkGoogle}
+            disabled={linking}
+            className="flex-row items-center justify-center gap-2 border border-line-light dark:border-line-dark rounded-xl py-3"
+          >
+            {linking ? <ActivityIndicator size="small" color={muted} /> : <GoogleIcon size={18} />}
+            <Text className="font-semibold text-[13.5px] text-text-light dark:text-text-dark">Vincular con Google</Text>
+          </Press>
+          <Text className="text-muted-light dark:text-muted-dark text-[11.5px] mt-1.5 text-center">
+            Para entrar sin contraseña y no perder tus pasos o puntos
+          </Text>
+        </View>
+      )}
 
       {pending && !editing && (
         <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3">
