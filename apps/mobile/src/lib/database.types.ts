@@ -42,6 +42,8 @@ export interface StoryShare {
 }
 
 export interface Business {
+  // Premio que el local ofrece a quienes completan la tarjeta de fidelidad de Camina (null = no participa).
+  loyalty_benefit_id?: string | null;
   id: string;
   owner_user_id: string | null;
   name: string;
@@ -170,20 +172,6 @@ export interface CaminaPastCard {
   category: string | null;
 }
 
-export interface LoyaltyCard {
-  business_id: string;
-  business_name: string;
-  logo_url: string | null;
-  benefit_id: string;
-  benefit_name: string;
-  benefit_cost: number;
-  stamps: number;
-  goal: number;
-  ready: boolean;
-  last_redeemed_at: string | null;
-  next_allowed_at: string | null;
-  history: string[];
-}
 
 // Respuesta de redeem_with_local_code: o se canjeó, o dice por qué no (las reglas del canje salen como error aparte).
 export type LocalCodeResult =
@@ -320,7 +308,6 @@ export type Database = {
       benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number; codes_left: number | null }[] };
       my_camina_card: { Args: Record<string, never>; Returns: CaminaCard };
       choose_camina_prize: { Args: { p_benefit_id: string }; Returns: CaminaCard };
-      my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };
       confirm_redemption_code: {
         Args: { p_business_id: string; p_code: string };

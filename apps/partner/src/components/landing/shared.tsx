@@ -739,19 +739,19 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   const local = LOCALES.find((l) => l.id === 'fripaps')!;
   const texto =
     para === 'gente'
-      ? 'Cada local que se suma a la tarjeta tiene su propio premio de fidelidad. Canjea 5 veces en el mismo local y ganas ese premio. Tus tarjetas aparecen cuando entras a verlas, sin tapar el resto de la app.'
-      : 'Eliges el premio de fidelidad de tu local. Tus clientes completan 5 canjes en tu local y lo ganan: más motivos para volver. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+      ? 'Una sola tarjeta para todos los comercios. Cada canje confirmado suma un sello, en el comercio que quieras. Con 5 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.'
+      : 'Eliges el premio que regalas a quienes completan su tarjeta de fidelidad de Camina. Tu premio aparece entre las opciones que ven los clientes de todos los locales: más visibilidad y más gente que llega a tu local. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
   const pasos =
     para === 'gente'
       ? [
-          ['Canjea en tu local favorito', 'Cada canje confirmado suma un sello a tu tarjeta de ese local.'],
-          ['Pasan 7 días entre canjes', 'Así pruebas otros lugares y todos los comercios tienen su oportunidad.'],
-          ['Al llegar a 5, ganas el premio', 'El premio de fidelidad lo elige cada local.'],
+          ['Canjea donde quieras', 'Cada canje confirmado suma un sello, en cualquier comercio.'],
+          ['Al llegar a 5, eliges tu premio', 'Entre los premios que ofrecen los comercios que participan.'],
+          ['Tienes 30 días', 'Lo canjeas en el local con su código y no gastas Puntos.'],
         ]
       : [
-          ['Activas la tarjeta', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
-          ['Eliges tu premio de fidelidad', 'El que quieras darle a tus clientes más constantes.'],
-          ['Tus clientes vuelven', 'Cada canje confirmado suma un sello; con 5 se llevan el premio.'],
+          ['Eliges tu premio de fidelidad', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
+          ['Apareces para todos', 'Quien completa su tarjeta de 5 canjes, en cualquier comercio, puede elegir tu premio.'],
+          ['Llegan a tu local', 'Tienen 30 días para canjearlo contigo, con tu código del local.'],
         ];
   return (
     <section className="lp-sec night" id="fidelidad">
@@ -777,10 +777,10 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
             <Image className="fid-logo" src={local.logo} alt="" width={64} height={64} />
           </div>
           <div className="fid-body">
-            <h3>{local.nombre}</h3>
+            <h3>Premio: Panchito gratis en {local.nombre}</h3>
             <div className="fid-real">
               <div className="fid-head">
-                <b>Tu tarjeta de fidelidad</b>
+                <b>Tarjeta de fidelidad</b>
                 <span className="fid-pill">3 de 5</span>
               </div>
               <div className="fid-row">
@@ -798,7 +798,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
                   </svg>
                 </span>
               </div>
-              <p>Te faltan 2 canjes para tu premio: Panchito gratis.</p>
+              <p>Te faltan 2 canjes para elegir un premio gratis. Cada canje cuenta, en cualquier comercio.</p>
             </div>
           </div>
         </InView>
