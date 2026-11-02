@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { router } from 'expo-router';
 import { useMyLastWeekRank } from '@/hooks/useGlobalRanking';
 import { localDay } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 import { celebrate } from '@/store/useCelebrationStore';
 import { STREAK_BONUS_DAYS, STREAK_BONUS_POINTS } from '@/constants/business-rules';
 
@@ -72,7 +73,7 @@ export function useHomeMoments(streak: number | undefined) {
   // Resultado del ranking global de la semana que cerró: 1.º, podio, Top 10 o Top 100. Una vez por semana.
   useEffect(() => {
     if (!userId || !lastWeek || lastWeek.position > 100) return;
-    const monday = new Date();
+    const monday = boliviaToday();
     monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
     const key = `camina_rank_wk_${userId}_${localDay(monday)}`;
     AsyncStorage.getItem(key).then((seen) => {

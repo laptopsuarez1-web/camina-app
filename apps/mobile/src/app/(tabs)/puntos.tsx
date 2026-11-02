@@ -16,6 +16,7 @@ import { referralLink } from '@/constants/sharing';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
 import { dayLabel, localDay, plural } from '@/lib/format';
+import { boliviaDay, boliviaToday } from '@/lib/bolivia';
 import { Glass } from '@/components/ui/Glass';
 import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
@@ -31,7 +32,7 @@ function useMovimientos() {
     queryKey: ['movimientos', userId],
     enabled: !!userId,
     queryFn: async () => {
-      const since = new Date();
+      const since = boliviaToday();
       since.setDate(since.getDate() - 30);
       const sinceISO = localDay(since);
 
@@ -72,7 +73,7 @@ function useMovimientos() {
       };
       const ledgerRows = (ledger ?? []).map((l) => ({
         id: l.id,
-        day: l.ref_day ?? localDay(new Date(l.earned_at)),
+        day: l.ref_day ?? boliviaDay(new Date(l.earned_at)),
         reason: l.reason as string,
         title: kindOf(l.reason, l.note, l.amount),
         subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,

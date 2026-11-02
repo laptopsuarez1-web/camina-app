@@ -1,3 +1,4 @@
+import { boliviaDay, boliviaStartOfDay } from '@/lib/bolivia';
 import { Platform } from 'react-native';
 import {
   queryStatisticsForQuantity,
@@ -13,14 +14,13 @@ export const STEP_COUNT_IDENTIFIER = 'HKQuantityTypeIdentifierStepCount';
 // Health Connect: RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY
 const HC_MANUAL_ENTRY = 3;
 
+// Medianoche de Bolivia (no la del celular): el día de pasos es el mismo que usa el servidor.
 export function startOfDay(d: Date) {
-  const s = new Date(d);
-  s.setHours(0, 0, 0, 0);
-  return s;
+  return boliviaStartOfDay(d);
 }
 
 export function dayISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return boliviaDay(d);
 }
 
 export async function readHealthKitSteps(startDate: Date, endDate: Date): Promise<number> {

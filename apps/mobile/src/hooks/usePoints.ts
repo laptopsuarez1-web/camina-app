@@ -2,6 +2,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { registerDevice } from '@/lib/device';
+import { boliviaDay, boliviaStartOfDay } from '@/lib/bolivia';
 
 // OJO: nunca uses Date.toISOString() aquí — eso da la fecha en UTC, no la del
 // dispositivo. Para un usuario en Bolivia (UTC-4), toISOString() ya muestra
@@ -9,18 +10,12 @@ import { registerDevice } from '@/lib/device';
 // servidor (que ahora fija America/La_Paz — ver supabase/migrations/0003_fixes.sql).
 // Se arma la fecha con los getters locales del dispositivo en su lugar.
 function todayISO() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return boliviaDay();
 }
 
 // Medianoche local del dispositivo como instante exacto (con zona), para filtrar "hoy" bien en la base.
 function startOfTodayISO() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
+  return boliviaStartOfDay().toISOString();
 }
 
 export function usePointsBalance() {

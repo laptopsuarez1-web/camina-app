@@ -25,6 +25,7 @@ import { Glass } from '@/components/ui/Glass';
 import { GoalBar } from '@/components/ui/GoalBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { localDay, plural } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
@@ -39,7 +40,7 @@ const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
 
 // Lunes de esta semana (hora local): identifica "la semana" para celebrar la meta una sola vez.
 function weekKey() {
-  const d = new Date();
+  const d = boliviaToday();
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
