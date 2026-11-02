@@ -320,7 +320,7 @@ export default function GroupDetailScreen() {
     setSheet({
       title: m.name,
       actions: [
-        { label: 'Ver perfil y agregar amigo', onPress: () => openProfile(m.id) },
+        { label: 'Ver perfil', onPress: () => openProfile(m.id) },
         { label: 'Reportar foto o perfil', onPress: () => askReason('photo', m.id, null) },
         { label: `Bloquear a ${m.name}`, danger: true, onPress: () => confirmBlock(m.id, m.name) },
       ],

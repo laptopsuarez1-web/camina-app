@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { DownloadSimple, Share2, X } from '@/components/icons';
+import { Copy, DownloadSimple, Share2, X } from '@/components/icons';
 import { CARD_W, cardHeight, palette, WrappedOverlay, WrappedSlide, wrappedSlideCount, type CardTheme, type WrappedData } from '@/components/share/cards';
 import { friendlyError } from '@/lib/errors';
 import { pickSharePhoto } from '@/lib/pick-share-photo';
@@ -41,8 +41,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const [saved, setSaved] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   // Alto real de la barra de arriba y de los botones de abajo: la lámina se acomoda entre las dos para que nada se pise.
-  const [topH, setTopH] = useState(insets.top + 40 + 40);
-  const [botH, setBotH] = useState(insets.bottom + 150);
+    const [botH, setBotH] = useState(insets.bottom + 150);
   const shotRef = useRef<View>(null);
   const stickerRef = useRef<View>(null);
 
@@ -59,6 +58,8 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
   const theme: CardTheme = overlay ? 'dark' : mode;
   const p = palette(theme);
 
+  // La lámina arranca casi al borde de arriba: el cerrar y las barras de página van encima, en la franja libre de la lámina.
+  const topH = insets.top + 6;
   const h = cardHeight('story');
   const avail = Math.max(200, height - topH - botH);
   const scale = Math.min(width / CARD_W, avail / h);
@@ -137,12 +138,15 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           <Press accessibilityRole="button" accessibilityLabel="Lámina siguiente" feedback="none" disabled={i === total - 1} onPress={() => setIndex(Math.min(total - 1, i + 1))} style={[{ flex: 1 }, NO_RING]} />
         </View>
 
-        {/* Arriba: solo cerrar. Lo que se puede cambiar va abajo, junto a Guardar y Compartir. */}
-        <View onLayout={(e) => setTopH(e.nativeEvent.layout.y + e.nativeEvent.layout.height + 6)} style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 40 }} pointerEvents="box-none">
-          <View className="flex-row items-center px-4" pointerEvents="box-none">
-            <Press accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10} className="rounded-full items-center justify-center" style={{ width: 34, height: 34, backgroundColor: chipBg }}>
-              <X size={15} color={chrome} weight="bold" />
-            </Press>
+        {/* Arriba, sobre la franja libre de la lámina: cerrar y las barras de página (la actual resaltada, el resto visibles para que se vea que hay más). */}
+        <View pointerEvents="box-none" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2 + 14, right: (width - CARD_W * scale) / 2 + 14, top: cardTop + 8, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10} className="rounded-full items-center justify-center" style={{ width: 30, height: 30, backgroundColor: chipBg }}>
+            <X size={14} color={chrome} weight="bold" />
+          </Press>
+          <View pointerEvents="none" accessibilityLabel={`Lámina ${i + 1} de ${total}`} style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
+            {Array.from({ length: total }, (_, k) => (
+              <View key={k} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: chrome, opacity: k === i ? 1 : k < i ? 0.6 : 0.3 }} />
+            ))}
           </View>
         </View>
 
@@ -159,17 +163,16 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           </View>
           {overlay ? (
             <>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', textAlign: 'center', opacity: 0.9 }} numberOfLines={2}>
-                Copia el sticker y pégalo en tu historia («Agregar sticker»), o carga una foto para ver cómo queda.
+              <Press accessibilityRole="button" onPress={copy} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: copied ? '#16604F' : '#1F7A66' }}>
+                <Copy size={19} color="#fff" weight="bold" />
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{copied ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
+              </Press>
+              <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '600', textAlign: 'center', opacity: 0.85 }} numberOfLines={3}>
+                En Instagram, crea tu historia, abre los stickers y toca «Agregar sticker». También funciona en WhatsApp. ¿Prefieres una sola imagen? Carga una foto y toca «Guardar» o «Compartir».
               </Text>
-              <View className="flex-row" style={{ gap: 8 }}>
-                <Press accessibilityRole="button" onPress={copy} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{copied ? '¡Copiado!' : 'Copiar sticker'}</Text>
-                </Press>
-                <Press accessibilityRole="button" onPress={photo ? () => setPhoto(null) : choosePhoto} onLongPress={choosePhoto} className="flex-1 rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Cargar foto'}</Text>
-                </Press>
-              </View>
+              <Press accessibilityRole="button" onPress={photo ? () => setPhoto(null) : choosePhoto} onLongPress={choosePhoto} className="rounded-2xl py-3 items-center" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{photo ? 'Quitar foto' : 'Cargar foto para ver cómo queda'}</Text>
+              </Press>
             </>
           ) : null}
           <View className="flex-row" style={{ gap: 8 }}>

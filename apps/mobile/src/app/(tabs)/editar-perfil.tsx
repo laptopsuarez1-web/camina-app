@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator, BackHandler } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -109,6 +110,42 @@ export default function EditarPerfilScreen() {
   const passwordTitle = recovering ? 'Elegir contraseña nueva' : hasPassword ? 'Cambiar contraseña' : 'Crear contraseña';
 
   const passwordFormOpen = changingPassword || recovering;
+
+  // ¿Hay cambios sin guardar? Se compara cada campo con lo que tiene el perfil guardado.
+  const insets = useSafeAreaInsets();
+  const sameList = (a: string[], c: string[]) => a.length === c.length && [...a].sort().join('|') === [...c].sort().join('|');
+  const dirty =
+    !!profile &&
+    (nameInput.trim() !== (profile.full_name ?? '').trim() ||
+      bioInput.trim() !== (profile.bio ?? '').trim() ||
+      bgKey !== (profile.profile_bg ?? 'violeta') ||
+      city !== (profile.city ?? 'Tarija') ||
+      zone !== (profile.zone ?? null) ||
+      !sameList(interests, profile.interests ?? []) ||
+      photoUri !== null ||
+      bYear !== (b ? b.slice(0, 4) : '') ||
+      bMonth !== (b ? String(parseInt(b.slice(5, 7), 10)) : '') ||
+      bDay !== (b ? String(parseInt(b.slice(8, 10), 10)) : ''));
+
+  // Salir: si hay cambios sin guardar, se pregunta qué hacer con ellos.
+  function leave() {
+    if (!dirty || saving) {
+      router.back();
+      return true;
+    }
+    Alert.alert('¿Guardar los cambios?', 'Hiciste cambios en tu perfil que todavía no se guardaron.', [
+      { text: 'Seguir editando', style: 'cancel' },
+      { text: 'Descartar', style: 'destructive', onPress: () => router.back() },
+      { text: 'Guardar', onPress: () => { save(); } },
+    ]);
+    return true;
+  }
+  const leaveRef = useRef(leave);
+  leaveRef.current = leave;
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => leaveRef.current());
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (recovering) useAuthStore.setState({ passwordRecovery: false });
@@ -265,10 +302,10 @@ export default function EditarPerfilScreen() {
 
   return (
     <KeyboardSafe className="flex-1">
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 96 }}>
         <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
-            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={leave} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
               <ChevronLeft size={16} color="#fff" />
             </Press>
             <Text accessibilityRole="header" className="text-white text-[17px] font-bold flex-1">Editar perfil</Text>
@@ -448,6 +485,14 @@ export default function EditarPerfilScreen() {
           </Press>
         </View>
       </ScrollView>
+      {/* Con cambios sin guardar, "Guardar" queda siempre a la vista (antes estaba al final de la pantalla). */}
+      {dirty ? (
+        <View pointerEvents="box-none" style={{ position: 'absolute', left: 20, right: 20, bottom: Math.max(insets.bottom, 12) + 8 }}>
+          <Press accessibilityRole="button" accessibilityState={{ busy: saving }} onPress={save} disabled={saving} className="rounded-2xl py-4 items-center" style={{ backgroundColor: '#1F7A66', opacity: saving ? 0.7 : 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 }}>
+            {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
+          </Press>
+        </View>
+      ) : null}
       <GoalSheet visible={goalOpen} goal={goal} isDark={isDark} onClose={() => setGoalOpen(false)} />
     </KeyboardSafe>
   );

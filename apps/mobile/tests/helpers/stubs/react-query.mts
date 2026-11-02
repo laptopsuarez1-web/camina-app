@@ -30,6 +30,8 @@ export class QueryClient {
   invalidateQueries(arg: any) { rq.invalidated.push(arg); }
 }
 
+export const keepPreviousData = (prev: unknown) => prev;
+
 export function useQuery(options: any) {
   rq.lastQuery = options;
   rq.queries.push(options);

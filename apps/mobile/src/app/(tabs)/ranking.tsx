@@ -54,9 +54,12 @@ export default function RankingScreen() {
   const params = useLocalSearchParams<{ view?: string }>();
   const [view, setView] = useState<'global' | 'amigos'>(params.view === 'amigos' ? 'amigos' : 'global');
   const [options, setOptions] = useState(false);
+  // De 15 en 15: así la lista no es un montón de gente de golpe.
+  const PAGE = 15;
+  const [shown, setShown] = useState(PAGE);
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { data: global, isLoading: globalLoading, isError: globalError, refetch: refetchGlobal } = useGlobalRanking();
+  const { data: global, isLoading: globalLoading, isError: globalError, refetch: refetchGlobal } = useGlobalRanking(shown);
   const { data: myRank } = useMyWeeklyRank();
   const { data: average } = useCommunityAverage();
   const { data: friends, isLoading: friendsLoading, isError: friendsError, refetch: refetchFriends } = useFriendsRanking();
@@ -82,6 +85,14 @@ export default function RankingScreen() {
     sub: r.streak > 0 ? `Racha de ${r.streak} ${r.streak === 1 ? 'día' : 'días'}` : undefined,
   }));
 
+  const myFriendRow = friendRows.find((r) => r.me);
+  const myName = profile?.full_name?.trim() || 'Tú';
+  // Hay más para mostrar si la lista llegó llena (global) o si quedan amigos sin mostrar.
+  const moreGlobal = (global?.length ?? 0) >= shown && shown < 100;
+  const moreFriends = friendRows.length > shown;
+  const myPosition = view === 'global' ? (myRank ? myRank.position : null) : myFriendRow ? myFriendRow.position : null;
+  const myScope = view === 'global' ? 'de toda Camina' : `de ${friendRows.length} en tu círculo`;
+
   const chip = (key: 'global' | 'amigos', label: string) => (
     <Press
       key={key}
@@ -89,11 +100,18 @@ export default function RankingScreen() {
       accessibilityState={{ selected: view === key }}
       aria-pressed={view === key}
       haptic="selection"
-      onPress={() => setView(key)}
+      onPress={() => { setView(key); setShown(PAGE); }}
       className="rounded-full px-[18px] py-2.5"
       style={{ backgroundColor: view === key ? colors.aquaDeep : dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: view === key ? colors.aquaDeep : dark ? colors.dark.line : colors.light.line }}
     >
       <Text style={{ fontSize: 14, fontWeight: '600', color: view === key ? '#fff' : text }}>{label}</Text>
+    </Press>
+  );
+
+
+  const verMas = (
+    <Press accessibilityRole="button" accessibilityLabel="Ver más personas" onPress={() => setShown((n) => n + PAGE)} className="rounded-full py-3 items-center mt-3" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: dark ? colors.dark.line : colors.light.line }}>
+      <Text style={{ fontSize: 14, fontWeight: '700', color: text }}>Ver más</Text>
     </Press>
   );
 
@@ -117,6 +135,18 @@ export default function RankingScreen() {
             <Text style={{ fontSize: 13, fontWeight: '600', color: text }}>Opciones</Text>
           </Press>
         </View>
+
+        <Glass className="rounded-3xl p-4 mb-4">
+          <View className="flex-row items-center" style={{ gap: 14 }}>
+            <PersonAvatar name={myName} photoUrl={profile?.photo_url ?? null} size={52} />
+            <View className="flex-1">
+              <Text className="text-[17px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{myName}</Text>
+              <Text className="text-[14px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+                {myPosition ? `#${myPosition.toLocaleString('es-BO')} ${myScope}` : 'Camina para entrar al ranking de la semana'}
+              </Text>
+            </View>
+          </View>
+        </Glass>
 
         <View className="flex-row mb-4" style={{ gap: 8 }}>
           {chip('global', 'Global')}
@@ -144,6 +174,7 @@ export default function RankingScreen() {
                 {myExtra && <RankingRow r={myExtra} last />}
               </Glass>
             )}
+            {moreGlobal ? verMas : null}
             <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mx-1" style={{ lineHeight: 17 }}>
               {visible ? 'Apareces en el ranking global por defecto. Puedes desactivarlo en Opciones.' : 'Ahora no apareces en el ranking global. Puedes activarlo en Opciones.'}
             </Text>
@@ -164,9 +195,10 @@ export default function RankingScreen() {
             )}
             {friendRows.length > 1 && (
               <Glass className="rounded-3xl overflow-hidden">
-                {friendRows.map((r, i) => <RankingRow key={r.id} r={r} last={i === friendRows.length - 1} />)}
+                {friendRows.slice(0, shown).map((r, i, arr) => <RankingRow key={r.id} r={r} last={i === arr.length - 1} />)}
               </Glass>
             )}
+            {friendRows.length > 1 && moreFriends ? verMas : null}
             <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mx-1" style={{ lineHeight: 17 }}>
               Tus pasos los ven solo los amigos que aceptaste.
             </Text>

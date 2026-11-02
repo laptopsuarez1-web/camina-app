@@ -1470,13 +1470,10 @@ export default function CanjesScreen() {
                   business={b}
                   coordinate={fullPins.get(b.id)}
                   onPress={() => {
+                    // El mapa no se mueve ni cambia de zoom al tocar un local.
                     // Primero una vista previa; la ficha completa se abre solo al tocarla o deslizarla hacia arriba.
                     lastPinPress.current = Date.now();
                     setPreviewBizId(b.id);
-                    fullMapRef.current?.animateToRegion(
-                      { latitude: b.lat!, longitude: b.lng!, latitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01, longitudeDelta: fullCenter.current?.latitudeDelta ?? 0.01 },
-                      300
-                    );
                   }}
                 />
               ))}
@@ -1582,15 +1579,18 @@ export default function CanjesScreen() {
             }}
             style={{ position: 'absolute', left: 0, bottom: 0, width: 130, height: 34 + bottomInset }}
           />
+          {/* Con un local seleccionado se oculta: la hoja de vista previa ocupa ese lugar. */}
+          {previewGroup ? null : (
           <Press
             accessibilityRole="button"
             accessibilityLabel="Centrar el mapa en dónde estás"
             onPress={centerOnMe}
             className="absolute items-center justify-center rounded-full bg-card-light"
-            style={{ bottom: previewGroup ? 360 + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+            style={{ bottom: 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
           >
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
+          )}
         </View>
       </Modal>
 
