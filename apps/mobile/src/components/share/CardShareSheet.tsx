@@ -2,7 +2,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { DownloadSimple, Share2, X } from '@/components/icons';
+import { Copy, DownloadSimple, Share2, X } from '@/components/icons';
 import { pickSharePhoto } from '@/lib/pick-share-photo';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
@@ -135,8 +135,10 @@ export function CardShareSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
-        <Press accessible={false} feedback="none" className="bg-card-light dark:bg-card-dark rounded-t-[28px] pt-3" style={{ maxHeight: screenH * 0.94 }} onPress={() => {}}>
+      <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
+        {/* Tocar fuera de la hoja la cierra. La hoja NO es un Press: así el contenido se puede deslizar. */}
+        <Press accessible={false} feedback="none" onPress={onClose} style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} />
+        <View className="bg-card-light dark:bg-card-dark rounded-t-[28px] pt-3" style={{ maxHeight: screenH * 0.94 }}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-3" />
           <View className="flex-row items-center justify-between px-5 mb-2">
             <Text accessibilityRole="header" className="text-[19px] font-extrabold text-text-light dark:text-text-dark">{title}</Text>
@@ -144,7 +146,7 @@ export function CardShareSheet({
               <X size={14} color="#8B4FD1" />
             </Press>
           </View>
-          <ScrollView contentContainerClassName="px-5 pb-8" showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="px-5 pb-10" showsVerticalScrollIndicator={false} bounces keyboardShouldPersistTaps="handled">
             {extras}
             <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia' }, { value: 'overlay', label: 'Transparente' }]} />
             {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />}
@@ -159,12 +161,18 @@ export function CardShareSheet({
               </View>
             </View>
 
-            <View className="flex-row mt-2" style={{ gap: 8 }}>
+            {overlay ? (
+              <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-4 flex-row items-center justify-center mt-2" style={{ gap: 8, backgroundColor: copied === 'img' ? '#16604F' : '#1F7A66' }}>
+                <Copy size={19} color="#fff" weight="bold" />
+                <Text className="text-white font-bold text-[15.5px]">{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
+              </Press>
+            ) : null}
+            <View className="flex-row mt-2.5" style={{ gap: 8 }}>
               <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
                 <DownloadSimple size={18} color="#8B4FD1" weight="bold" />
                 <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
               </Press>
-              <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
+              <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: overlay ? '#8B4FD1' : '#1F7A66', opacity: busy ? 0.7 : 1 }}>
                 {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
                 <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
               </Press>
@@ -184,9 +192,6 @@ export function CardShareSheet({
 
             {overlay ? (
               <>
-                <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-3.5 items-center mt-2.5 bg-purple-light-light dark:bg-purple-light-dark">
-                  <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
-                </Press>
                 <View className="flex-row mt-2.5" style={{ gap: 8 }}>
                   <Press accessibilityRole="button" onPress={choosePhoto} className="flex-1 rounded-2xl py-3.5 items-center bg-purple-light-light dark:bg-purple-light-dark">
                     <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Cambiar foto' : 'Cargar foto para ver cómo queda'}</Text>
@@ -200,8 +205,8 @@ export function CardShareSheet({
               </>
             ) : null}
           </ScrollView>
-        </Press>
-      </Press>
+        </View>
+      </View>
 
       {/* Tarjeta a tamaño real, fuera de pantalla, para capturarla en 1080 px. */}
       <View pointerEvents="none" style={{ position: 'absolute', left: -5000, top: 0 }}>

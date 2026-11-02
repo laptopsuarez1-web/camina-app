@@ -78,13 +78,6 @@ export function CardFrame({
       />}
       {/* Zona segura de Instagram: arriba y abajo queda libre lo que tapan la barra y la caja de respuesta. */}
       <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 50 : 14, paddingHorizontal: story ? 22 : 18 }}>
-        {progress ? (
-          <View style={{ position: 'absolute', top: 30, left: 22, right: 22, flexDirection: 'row', gap: 4 }}>
-            {Array.from({ length: progress.total }, (_, i) => (
-              <View key={i} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: i <= progress.index ? p.accent : p.track }} />
-            ))}
-          </View>
-        ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: story ? 18 : 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 22, height: 22, borderRadius: 11 }} />
@@ -621,11 +614,10 @@ function bestWeek(data: WrappedData) {
 
 export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: WrappedData; index: number }) {
   const p = PAL[theme];
-  const total = wrappedSlideCount(data);
   // Sin puesto en el ranking (ranking apagado o sin datos) la lámina 4 no existe y las demás se corren.
   const slide = !data.rank && index >= 3 ? index + 1 : index;
   const frame = (children: ReactNode) => (
-    <CardFrame theme={theme} format="story" label={`Tu ${data.monthName}`} progress={{ index, total }}>{children}</CardFrame>
+    <CardFrame theme={theme} format="story" label={`Tu ${data.monthName}`}>{children}</CardFrame>
   );
   const nm = data.name ? `, ${data.name}` : '';
   const { weeks, best: bw } = bestWeek(data);

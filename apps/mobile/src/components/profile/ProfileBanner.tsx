@@ -8,6 +8,9 @@ import { profileBg } from '@/lib/profile-bg';
 // anclado abajo: lo importante queda en la parte baja y el nombre y la foto quedan sobre el cielo, sin chocar con el dibujo.
 const W = 400;
 const H = 300;
+// El dibujo se baja SHIFT unidades dentro de una caja más alta, así queda COMPLETO (con su suelo) y el cielo sobra arriba
+// cuando el banner es más alto; antes se bajaba sin agrandar la caja y se cortaba el suelo.
+const SHIFT = 105;
 
 // Números repetibles (así los dibujos no cambian entre pantallas ni entre aperturas).
 function rng(seed: number) {
@@ -235,16 +238,16 @@ function Cielo() {
 const SCENES = { bosque: Bosque, ciudad: Ciudad, sendero: Sendero, pista: Pista, cielo: Cielo } as const;
 
 // Solo el dibujo (para banners y miniaturas). 'violeta' no dibuja nada: es el degradé de siempre.
-// El dibujo baja 105 unidades para que lo alto (edificios, árboles, nubes) quede debajo del nombre y la foto; el cielo queda libre arriba.
+// El dibujo baja SHIFT unidades (y la caja crece lo mismo) para que se vea entero; en banners altos sobra cielo arriba.
 // El dibujo llena la caja (banner o miniatura), anclado abajo.
 export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   const key = profileBg(bg).key;
   if (key === 'violeta') return null;
   const Scene = SCENES[key];
   return (
-    <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
-      {key !== 'sendero' ? <Stars n={34} seed={3} maxY={170} /> : null}
-      <G transform="translate(0 105)">
+    <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H + SHIFT}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
+      {key !== 'sendero' ? <Stars n={48} seed={3} maxY={H} /> : null}
+      <G transform={`translate(0 ${SHIFT})`}>
         <Scene />
       </G>
     </Svg>

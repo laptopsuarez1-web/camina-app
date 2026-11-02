@@ -212,17 +212,28 @@ export function initAuthListener() {
     Sentry.addBreadcrumb({ category: 'auth', message: `${event}${session ? '' : ' (sin sesión)'}`, level: 'info' });
     logAuth(`${event}${session ? '' : ' (sin sesión)'}`);
     if (session) saveBackup(session);
-    if (event === 'SIGNED_OUT' && (recovering || (!intentionalSignOut && backup))) {
-      // Salida que la persona no pidió: no se muestra el login todavía. Se intenta recuperar fuera de este callback
+    // Cualquier evento SIN sesión que la persona no pidió (SIGNED_OUT, pero también un INITIAL_SESSION vacío porque el
+    // almacén del teléfono no respondió a tiempo) se trata como pérdida: antes solo se cubría SIGNED_OUT, y un
+    // INITIAL_SESSION vacío publicaba "sin sesión" directo y mostraba el login con la sesión viva.
+    const lostByItself = !session && !intentionalSignOut && (event !== 'SIGNED_OUT' || recovering || !!backup);
+    if (lostByItself) {
+      // No se muestra el login todavía. Se intenta recuperar fuera de este callback
       // (llamar a supabase.auth desde aquí puede dejarlo esperando a sí mismo).
       if (!recovering) {
         setTimeout(async () => {
-          const result = await recoverSession('SIGNED_OUT inesperado');
-          reportLostSession('SIGNED_OUT inesperado', result);
+          const result = await recoverSession(`${event} sin sesión`);
+          if (result !== 'none') reportLostSession(`${event} sin sesión`, result);
           if (result === 'offline') return; // sin red: se conserva lo que hay y se reintenta al volver a la app
-          if (result === 'rejected' || result === 'none') {
+          if (result === 'rejected') {
             await clearBackup();
             await publishSession(null);
+            return;
+          }
+          if (result === 'none') {
+            // Sin copia de respaldo: se vuelve a leer el almacén una vez más antes de dar por hecho que no hay sesión.
+            const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+            if (data.session) logAuth(`${event} vacío, pero el almacén tenía sesión`);
+            await publishSession(data.session);
           }
         }, 0);
       }

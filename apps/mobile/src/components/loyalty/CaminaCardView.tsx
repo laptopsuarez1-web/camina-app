@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -36,18 +36,18 @@ export function Countdown({ days, label }: { days: number; label?: string }) {
   );
 }
 
-// Un sello: la moneda dorada de Camina. Al aparecer cae con un golpe (resorte); los vacíos son un círculo punteado.
+// Un sello: la moneda dorada de Camina. Al aparecer entra con un toque corto y suave; los vacíos son un círculo punteado.
 function StampCoin({ index, size, fresh }: { index: number; size: number; fresh: boolean }) {
   const reduced = useReducedMotion();
-  const scale = useSharedValue(reduced || !fresh ? 1 : 2.4);
+  const scale = useSharedValue(reduced || !fresh ? 1 : 1.25);
   const opacity = useSharedValue(reduced || !fresh ? 1 : 0);
-  const tilt = useSharedValue(reduced || !fresh ? 0 : -24);
+  const tilt = useSharedValue(reduced || !fresh ? 0 : -6);
   useEffect(() => {
     if (reduced || !fresh) return;
-    const d = index * 120;
-    opacity.value = withDelay(d, withTiming(1, { duration: 120 }));
-    scale.value = withDelay(d, withSpring(1, { damping: 7, stiffness: 190 }));
-    tilt.value = withDelay(d, withSpring(0, { damping: 9, stiffness: 160 }));
+    const d = index * 50;
+    opacity.value = withDelay(d, withTiming(1, { duration: 90 }));
+    scale.value = withDelay(d, withTiming(1, { duration: 180, easing: Easing.out(Easing.cubic) }));
+    tilt.value = withDelay(d, withTiming(0, { duration: 180, easing: Easing.out(Easing.cubic) }));
   }, [fresh, index, opacity, reduced, scale, tilt]);
   const style = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ scale: scale.value }, { rotate: `${tilt.value}deg` }] }));
   return (
@@ -83,7 +83,8 @@ function Shine() {
   const x = useSharedValue(-1);
   useEffect(() => {
     if (reduced) return;
-    x.value = withRepeat(withSequence(withTiming(-1, { duration: 0 }), withDelay(900, withTiming(1.2, { duration: 1700, easing: Easing.inOut(Easing.ease) }))), -1);
+    // Una sola pasada corta, sin repetirse.
+    x.value = withSequence(withTiming(-1, { duration: 0 }), withDelay(300, withTiming(1.2, { duration: 800, easing: Easing.inOut(Easing.ease) })));
   }, [reduced, x]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value * 360 }, { skewX: '-20deg' }] }));
   if (reduced) return null;
