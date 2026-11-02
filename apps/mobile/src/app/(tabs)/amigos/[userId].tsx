@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
-import { DarkHeader } from '@/components/ui/DarkHeader';
+import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { GoalBar } from '@/components/ui/GoalBar';
@@ -145,7 +145,7 @@ export default function FriendProfileScreen() {
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-        <DarkHeader style={{ paddingBottom: 56 }}>
+        <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg} style={{ paddingBottom: 56 }} artPad={42}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -168,7 +168,7 @@ export default function FriendProfileScreen() {
             <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" numberOfLines={2}>{card?.full_name ?? ' '}</Text>
             {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: colors.authMuted, lineHeight: 19, maxWidth: 300 }}>{card.bio}</Text> : null}
           </View>
-        </DarkHeader>
+        </ProfileBanner>
 
         {card && !showData && (
           <Glass className="rounded-3xl p-4 mx-5 -mt-7" style={{ gap: 10 }}>

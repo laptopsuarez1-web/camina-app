@@ -23,6 +23,7 @@ export interface Profile {
   push_servicio?: boolean;
   city?: string;
   bio?: string | null;
+  profile_bg?: string | null;
   created_at: string;
 }
 

@@ -23,6 +23,7 @@ export interface FriendCard {
   photo_url: string | null;
   relation: FriendRelation;
   bio: string | null;
+  profile_bg?: string | null;
   // Solo si es uno mismo o un amigo:
   friends_since?: string | null;
   streak?: number;
