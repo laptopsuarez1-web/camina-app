@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
 import { BusinessHours, type OpeningHours } from '@/components/BusinessHours';
-import { IconBubble, MapPin, Storefront, ShoppingBag, GlobeIcon } from '@/components/icons';
+import { IconBubble, Calendar, MapPin, Storefront, ShoppingBag, GlobeIcon } from '@/components/icons';
 import { plural } from '@/lib/format';
 
 // Lo que muestran juntos el detalle de un canje y el detalle de un premio de la ficha: costo, cuándo y dónde vale, qué incluye.
@@ -19,6 +19,8 @@ export type BenefitFacts = {
   valid_days_mask?: number;
   online?: boolean;
   online_channel?: string | null;
+  requires_booking?: boolean;
+  booking_note?: string | null;
   image_url?: string | null;
 };
 export type PlaceFacts = { name?: string; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours; lat?: number | null; lng?: number | null };
@@ -134,6 +136,7 @@ export function conditionsOf(b: BenefitFacts): string[] {
   else {
     out.push(b.dine_in_only ? 'Válido solo para consumo en el local' : 'Válido en el local, para llevar o consumir');
     out.push(validityText(b));
+    if (b.requires_booking) out.push(b.booking_note ? `Requiere reserva por WhatsApp: ${b.booking_note}` : 'Requiere reserva: coordina por WhatsApp antes de ir');
   }
   if (b.discount_detail) out.push(b.discount_detail);
   else if (b.discount_percent) out.push(`${b.discount_percent}% de descuento`);
@@ -209,6 +212,10 @@ export function WhatIncludes({ text }: { text?: string | null }) {
       <Text className="text-[14.5px] text-text-light dark:text-text-dark" style={{ lineHeight: 22 }}>{text}</Text>
     </View>
   );
+}
+
+export function BookingChip({ b }: { b: BenefitFacts }) {
+  return b.requires_booking && !b.online ? <Chip icon={Calendar} tone="orange" label="Con reserva" /> : null;
 }
 
 export function ChannelChip({ b }: { b: BenefitFacts }) {
