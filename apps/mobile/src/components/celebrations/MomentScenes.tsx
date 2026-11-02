@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Linking, Share, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
@@ -552,7 +553,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
 
 function tierOf(position: number) {
   if (position === 1) return { key: 'oro', title: '¡Ganaste el ranking!', sub: 'Nadie en Camina caminó más que tú esta semana.', badge: '1.º' };
-  if (position <= 3) return { key: 'podio', title: '¡Subiste al podio!', sub: `Fuiste ${position === 2 ? 'la segunda' : 'la tercera'} persona que más caminó en toda Camina.`, badge: `${position}.º` };
+  if (position <= 3) return { key: 'podio', title: '¡Subiste al podio!', sub: `Fuiste ${position === 2 ? 'la segunda' : 'la tercera'} persona que más caminó en todo Camina.`, badge: `${position}.º` };
   if (position <= 10) return { key: 'top10', title: '¡Estás en el Top 10!', sub: 'Quedaste entre las 10 personas que más caminaron esta semana.', badge: 'Top 10' };
   return { key: 'top100', title: '¡Estás en el Top 100!', sub: 'Quedaste entre las 100 personas que más caminaron esta semana.', badge: 'Top 100' };
 }
@@ -667,6 +668,7 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
       <Reveal tl={tl} delay={podium ? 2900 : 2200} dy={20} style={{ alignSelf: 'stretch', marginTop: 18 }}>
         <MainButton gold={podium} label="Compartir" onPress={share} />
         <LinkButton label="Ver el ranking" onPress={() => { onDone(); c.onRanking?.(); }} color={p.accent} />
+        <LinkButton label="Ir a inicio" onPress={() => { onDone(); router.replace('/(tabs)'); }} color={p.muted} />
       </Reveal>
     </Stage>
   );

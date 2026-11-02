@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Glass } from '@/components/ui/Glass';
 import { ActionSheet } from '@/components/ActionSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -23,7 +24,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 type Row = { id: string; name: string; photoUrl: string | null; steps: number; sub?: string; position: number; me: boolean };
 
 function RankingRow({ r, last }: { r: Row; last: boolean }) {
-  const { line, accentText } = useThemeColors();
+  const { line, accentText, text, muted } = useThemeColors();
   return (
     <Press
       accessibilityRole="button"
@@ -33,15 +34,15 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
       className="flex-row items-center p-3.5"
       style={{ gap: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: line }}
     >
-      <Text className="w-6 text-center text-[13px] font-semibold text-muted-light dark:text-muted-dark">{r.position}</Text>
+      <Text className="w-6 text-center text-[13px] font-semibold" style={{ color: muted }}>{r.position}</Text>
       <PersonAvatar name={r.name} photoUrl={r.photoUrl} size={40} />
       <View className="flex-1">
-        <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{r.me ? `${r.name} (tú)` : r.name}</Text>
-        {r.sub ? <Text className="text-[12.5px] text-muted-light dark:text-muted-dark" numberOfLines={1}>{r.sub}</Text> : null}
+        <Text className="text-[14.5px] font-semibold" style={{ color: text }} numberOfLines={1}>{r.me ? `${r.name} (tú)` : r.name}</Text>
+        {r.sub ? <Text className="text-[12.5px]" style={{ color: muted }} numberOfLines={1}>{r.sub}</Text> : null}
       </View>
       <View className="items-end">
         <Text style={{ fontSize: 15, fontWeight: '800', color: accentText, fontVariant: ['tabular-nums'] }}>{r.steps.toLocaleString('es-BO')}</Text>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark">{plural(r.steps, 'paso', 'pasos')}</Text>
+        <Text className="text-[12px]" style={{ color: muted }}>{plural(r.steps, 'paso', 'pasos')}</Text>
       </View>
     </Press>
   );
@@ -50,7 +51,7 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
 export default function RankingScreen() {
   const insets = useSafeAreaInsets();
   const tabSpace = useTabBarSpace();
-  const { dark, text, muted, accentIcon } = useThemeColors();
+  const { dark, text, muted, accentIcon, bg } = useThemeColors();
   const params = useLocalSearchParams<{ view?: string }>();
   const [view, setView] = useState<'global' | 'amigos'>(params.view === 'amigos' ? 'amigos' : 'global');
   const [options, setOptions] = useState(false);
@@ -91,7 +92,7 @@ export default function RankingScreen() {
   const moreGlobal = (global?.length ?? 0) >= shown && shown < 100;
   const moreFriends = friendRows.length > shown;
   const myPosition = view === 'global' ? (myRank ? myRank.position : null) : myFriendRow ? myFriendRow.position : null;
-  const myScope = view === 'global' ? 'de toda Camina' : `de ${friendRows.length} en tu círculo`;
+  const myScope = view === 'global' ? 'de todo Camina' : `de ${friendRows.length} en tu círculo`;
 
   const chip = (key: 'global' | 'amigos', label: string) => (
     <Press
@@ -116,7 +117,8 @@ export default function RankingScreen() {
   );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" style={{ backgroundColor: bg }}>
+      <AmbientBackground />
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="px-5" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabSpace }}>
         <View className="flex-row items-center justify-between mb-5">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)' }}>
@@ -140,8 +142,8 @@ export default function RankingScreen() {
           <View className="flex-row items-center" style={{ gap: 14 }}>
             <PersonAvatar name={myName} photoUrl={profile?.photo_url ?? null} size={52} />
             <View className="flex-1">
-              <Text className="text-[17px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{myName}</Text>
-              <Text className="text-[14px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+              <Text className="text-[17px] font-bold" style={{ color: text }} numberOfLines={1}>{myName}</Text>
+              <Text className="text-[14px]" style={{ color: muted }} numberOfLines={1}>
                 {myPosition ? `#${myPosition.toLocaleString('es-BO')} ${myScope}` : 'Camina para entrar al ranking de la semana'}
               </Text>
             </View>
@@ -156,9 +158,9 @@ export default function RankingScreen() {
         {view === 'global' ? (
           <>
             {average != null && average > 0 && (
-              <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-4">
-                <Text className="text-[13px] text-text-light dark:text-text-dark">
-                  La comunidad de Camina camina en promedio{' '}
+              <View className="rounded-2xl p-4 mb-4" style={{ backgroundColor: dark ? 'rgba(183,166,240,0.16)' : '#F0EAFA' }}>
+                <Text className="text-[13px]" style={{ color: text }}>
+                  La comunidad de Camina promedia{' '}
                   <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text> por semana.
                 </Text>
               </View>
@@ -175,7 +177,7 @@ export default function RankingScreen() {
               </Glass>
             )}
             {moreGlobal ? verMas : null}
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mx-1" style={{ lineHeight: 17 }}>
+            <Text className="text-[12px] mt-3.5 mx-1" style={{ lineHeight: 17, color: muted }}>
               {visible ? 'Apareces en el ranking global por defecto. Puedes desactivarlo en Opciones.' : 'Ahora no apareces en el ranking global. Puedes activarlo en Opciones.'}
             </Text>
           </>
@@ -199,7 +201,7 @@ export default function RankingScreen() {
               </Glass>
             )}
             {friendRows.length > 1 && moreFriends ? verMas : null}
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-3.5 mx-1" style={{ lineHeight: 17 }}>
+            <Text className="text-[12px] mt-3.5 mx-1" style={{ lineHeight: 17, color: muted }}>
               Tus pasos los ven solo los amigos que aceptaste.
             </Text>
           </>
