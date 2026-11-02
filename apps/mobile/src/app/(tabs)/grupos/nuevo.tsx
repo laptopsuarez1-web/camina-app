@@ -58,7 +58,7 @@ export default function NuevoGrupoScreen() {
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder="Los del gym"
+            placeholder="Ej: Caminata de la familia"
             placeholderTextColor={muted}
             accessibilityLabel="Nombre del grupo"
             maxLength={40}

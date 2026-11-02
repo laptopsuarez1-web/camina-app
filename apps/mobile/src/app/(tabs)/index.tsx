@@ -557,6 +557,19 @@ export default function HomeScreen() {
               Toca aquí para abrir Salud. Ahí toca tu foto (arriba a la derecha) &gt; Apps &gt; Camina y activa Pasos.
             </Text>
           </Press>
+        ) : Platform.OS === 'android' && healthConnectStatus === 'ok' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
+          // Health Connect solo guarda los pasos que le pasa otra app (Google Fit, Samsung Health...). Si no hay ninguna, lee 0 sin error.
+          <Press
+            accessibilityRole="button"
+            onPress={() => openHealthConnectSettings()}
+            className="mx-5 mt-4 rounded-2xl p-3.5"
+            style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+          >
+            <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
+            <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
+              Camina los lee de Health Connect, que los recibe de una app que los cuente (Google Fit o Samsung Health). Toca aquí para revisar que Camina tenga permiso y que haya una app guardando tus pasos.
+            </Text>
+          </Press>
         ) : available === false ? (
           <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.

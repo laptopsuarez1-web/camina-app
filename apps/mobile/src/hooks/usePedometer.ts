@@ -14,6 +14,7 @@ import {
   aggregateGroupByPeriod,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
+import { Sentry } from '@/lib/monitoring';
 import { syncYesterdayOnOpen } from '@/lib/steps-sync';
 import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
 
@@ -92,9 +93,12 @@ function useHealthConnectSteps(enabled: boolean) {
     async function readToday() {
       try {
         const value = await readHealthConnectSteps(startOfToday(), new Date());
-        if (!cancelled) setSteps(value);
-      } catch {
-        if (!cancelled) setSteps(null);
+        if (!cancelled) { setSteps(value); setStatus('ok'); }
+      } catch (e) {
+        // Antes un fallo de lectura se tragaba en silencio y la pantalla mostraba 0 pasos como si fuera verdad.
+        // Ahora se avisa (Reintentar) y queda registrado para saber la causa real.
+        Sentry.captureException(e, { tags: { flujo: 'health_connect_lectura' } });
+        if (!cancelled) { setSteps(null); setStatus('error'); }
       }
     }
 
