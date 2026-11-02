@@ -8,7 +8,7 @@ import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, ChevronDown, Camera, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
+import { ChevronLeft, ChevronDown, Camera, ImageIcon, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { supabase } from '@/lib/supabase';
@@ -23,6 +23,8 @@ import { BIO_MAX_LENGTH } from '@/constants/business-rules';
 import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { ProfileBanner } from '@/components/profile/ProfileBanner';
+import { ProfileBgSheet } from '@/components/profile/ProfileBgSheet';
 import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { getAppleAuthorizationCode } from '@/lib/oauth';
 
@@ -77,6 +79,8 @@ export default function EditarPerfilScreen() {
   const b = profile?.birth_date;
   const [nameInput, setNameInput] = useState(profile?.full_name ?? '');
   const [bioInput, setBioInput] = useState(profile?.bio ?? '');
+  const [bgKey, setBgKey] = useState<string>(profile?.profile_bg ?? 'violeta');
+  const [bgSheet, setBgSheet] = useState(false);
   const [city, setCity] = useState(profile?.city ?? 'Tarija');
   const [zone, setZone] = useState<string | null>(profile?.zone ?? null);
   const [bYear, setBYear] = useState(b ? b.slice(0, 4) : '');
@@ -142,8 +146,10 @@ export default function EditarPerfilScreen() {
     try {
       const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri, photoB64) : undefined;
       // La descripción se manda solo si cambió: así guardar el perfil sigue andando aunque la base todavía no tenga la columna (migración 0056).
+      // El fondo, igual: solo si cambió (migración 0079).
+      const bgChanged = bgKey !== (profile.profile_bg ?? 'violeta');
       const bioChanged = bioInput.trim() !== (profile.bio ?? '');
-      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}) };
+      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}), ...(bgChanged ? { profile_bg: bgKey === 'violeta' ? null : bgKey } : {}) };
       let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
       if (error && /birth_date|city/i.test(error.message)) {
         const { city: _city, ...rest } = update;
@@ -260,17 +266,18 @@ export default function EditarPerfilScreen() {
   return (
     <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
-        <View className="bg-auth-bg pt-14 pb-5 px-5" style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+        <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
               <ChevronLeft size={16} color="#fff" />
             </Press>
-            <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Editar perfil</Text>
+            <Text accessibilityRole="header" className="text-white text-[17px] font-bold flex-1">Editar perfil</Text>
+            <Press accessibilityRole="button" accessibilityLabel="Cambiar fondo del perfil" onPress={() => setBgSheet(true)} className="flex-row items-center rounded-full px-3 py-1.5" style={{ gap: 6, backgroundColor: 'rgba(0,0,0,0.42)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }}>
+              <ImageIcon size={14} color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Cambiar fondo</Text>
+            </Press>
           </View>
-        </View>
-
-        <View className="px-5 pt-5">
-          <Press accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={pickPhoto} className="self-center mb-5 items-center">
+          <Press accessibilityRole="button" accessibilityLabel="Cambiar foto de perfil" onPress={pickPhoto} className="self-center mt-5 items-center">
             <View className="w-24 h-24 rounded-full bg-mint items-center justify-center">
               <View className="w-full h-full rounded-full overflow-hidden items-center justify-center">
                 <AvatarImage
@@ -279,13 +286,16 @@ export default function EditarPerfilScreen() {
                   fallback={<Text className="font-bold text-mint-dark text-3xl">{(nameInput || 'C')[0]?.toUpperCase()}</Text>}
                 />
               </View>
-              <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-aqua-deep items-center justify-center border-2 border-bg-light dark:border-bg-dark">
+              <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-aqua-deep items-center justify-center border-2 border-white/80">
                 <Camera size={15} color="#fff" weight="fill" />
               </View>
             </View>
-            <Text className="text-[12.5px] font-semibold mt-2 text-purple-ink dark:text-purple-soft">Cambiar foto</Text>
+            <Text className="text-[12.5px] font-semibold mt-2" style={{ color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6 }}>Cambiar foto</Text>
           </Press>
+        </ProfileBanner>
+        <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} />
 
+        <View className="px-5 pt-5">
           <Glass className="rounded-3xl p-4 mb-4">
             <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-1">Nombre</Text>
             <TextInput
