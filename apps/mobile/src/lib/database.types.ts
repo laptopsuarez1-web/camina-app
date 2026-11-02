@@ -119,6 +119,44 @@ export interface PointsLedgerEntry {
 }
 
 // Tarjeta de fidelidad de una persona en un local (RPC my_loyalty_cards).
+// Tarjeta general de Camina (reemplaza a la tarjeta por local): 5 canjes confirmados en cualquier comercio = 1 premio a elegir.
+export interface CaminaPrizeOption {
+  benefit_id: string;
+  benefit_name: string;
+  description: string | null;
+  image_url: string | null;
+  discount_detail: string | null;
+  discount_percent: number | null;
+  dine_in_only: boolean;
+  valid_from: string | null;
+  valid_to: string | null;
+  valid_days_mask: number;
+  online: boolean;
+  online_channel: string | null;
+  business: {
+    id: string;
+    name: string;
+    logo_url: string | null;
+    category: string;
+    address: string | null;
+    lat: number | null;
+    lng: number | null;
+    hours_text: string | null;
+    opening_hours: unknown;
+  };
+}
+
+export interface CaminaCard {
+  stamps: number;
+  goal: number;
+  // Cuándo se completó y cuándo vence el premio (30 días después). Nulos mientras la tarjeta no está completa.
+  completed_at: string | null;
+  expires_at: string | null;
+  chosen_benefit_id: string | null;
+  options: CaminaPrizeOption[];
+  history: { business_name: string; at: string }[];
+}
+
 export interface LoyaltyCard {
   business_id: string;
   business_name: string;
@@ -267,6 +305,8 @@ export type Database = {
       };
       reset_local_code: { Args: { p_business_id: string }; Returns: string };
       benefits_online_redeemed: { Args: Record<string, never>; Returns: { benefit_id: string; redeemed: number; codes_left: number | null }[] };
+      my_camina_card: { Args: Record<string, never>; Returns: CaminaCard };
+      choose_camina_prize: { Args: { p_benefit_id: string }; Returns: CaminaCard };
       my_loyalty_cards: { Args: { p_business_id?: string | null }; Returns: LoyaltyCard[] };
       regenerate_redemption_code: { Args: { p_redemption_id: string }; Returns: Redemption };
       confirm_redemption_code: {
