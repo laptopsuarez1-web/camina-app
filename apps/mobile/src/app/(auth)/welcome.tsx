@@ -67,16 +67,34 @@ export default function WelcomeScreen() {
       .catch(() => {});
   }, [initializing]);
 
+  // Vigía del login con Google: si Google devolvió "éxito" pero el canje del código por el token nunca termina
+  // (expo-auth-session no avisa cuando falla), a los 20 s se avisa en vez de dejar el botón girando para siempre.
+  const googleWatchdog = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const googleAnswered = useRef(false);
+  function clearGoogleWatchdog() {
+    if (googleWatchdog.current) clearTimeout(googleWatchdog.current);
+    googleWatchdog.current = null;
+  }
+  useEffect(() => clearGoogleWatchdog, []);
+
   useEffect(() => {
     if (googleResponse?.type !== 'success') return;
+    googleAnswered.current = true;
+    clearGoogleWatchdog();
     const idToken = googleResponse.params.id_token;
-    if (!idToken) return;
+    if (!idToken) {
+      setOauthLoading(false);
+      Sentry.captureMessage('Google: respuesta sin id_token', 'error');
+      Alert.alert('No pudimos iniciar sesión con Google', 'Google no devolvió tus datos. Intenta de nuevo o usa tu correo.');
+      return;
+    }
     (async () => {
       setOauthLoading(true);
       setOauthProvider('google');
       try {
         const { error } = await completeGoogleSignIn(idToken);
         if (error) {
+          Sentry.captureException(error, { tags: { flujo: 'google_id_token' } });
           Alert.alert('No pudimos iniciar sesión con Google', friendlyError(error));
           return;
         }
@@ -92,7 +110,24 @@ export default function WelcomeScreen() {
       Alert.alert('Google no está disponible ahora', 'Usa tu correo para continuar.');
       return;
     }
-    await promptGoogleAsync();
+    googleAnswered.current = false;
+    const result = await promptGoogleAsync();
+    if (result.type === 'error') {
+      Sentry.captureMessage(`Google: error ${result.error?.code ?? ''} ${result.error?.message ?? ''}`.trim(), 'error');
+      Alert.alert('No pudimos iniciar sesión con Google', result.error?.description || result.error?.message || 'Intenta de nuevo.');
+      return;
+    }
+    // La persona cerró la ventana de Google, o la respuesta ya llegó y se está procesando arriba.
+    if (result.type !== 'success' || googleAnswered.current) return;
+    setOauthProvider('google');
+    setOauthLoading(true);
+    clearGoogleWatchdog();
+    googleWatchdog.current = setTimeout(() => {
+      googleWatchdog.current = null;
+      setOauthLoading(false);
+      Sentry.captureMessage('Google: el canje del código no terminó en 20 s', 'error');
+      Alert.alert('No pudimos iniciar sesión con Google', 'Google tardó demasiado en responder. Intenta de nuevo o usa tu correo.');
+    }, 20000);
   }
 
   async function handleApple() {
