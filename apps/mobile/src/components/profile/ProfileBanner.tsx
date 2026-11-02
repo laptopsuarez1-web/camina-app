@@ -235,7 +235,7 @@ function Cielo() {
 const SCENES = { bosque: Bosque, ciudad: Ciudad, sendero: Sendero, pista: Pista, cielo: Cielo } as const;
 
 // Solo el dibujo (para banners y miniaturas). 'violeta' no dibuja nada: es el degradé de siempre.
-// El dibujo baja 80 unidades para que lo alto (edificios, árboles, nubes) quede debajo del nombre y la foto; el cielo queda libre arriba.
+// El dibujo baja 105 unidades para que lo alto (edificios, árboles, nubes) quede debajo del nombre y la foto; el cielo queda libre arriba.
 // El dibujo llena la caja (banner o miniatura), anclado abajo.
 export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   const key = profileBg(bg).key;
@@ -244,7 +244,7 @@ export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   return (
     <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
       {key !== 'sendero' ? <Stars n={34} seed={3} maxY={170} /> : null}
-      <G transform="translate(0 80)">
+      <G transform="translate(0 105)">
         <Scene />
       </G>
     </Svg>
@@ -265,7 +265,7 @@ export function ProfileBanner({ bg, children, style, artPad = 0 }: { bg: string 
       style={[{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 56, paddingBottom: 28, paddingHorizontal: 20, overflow: 'hidden' }, style, { paddingBottom: padBottom }]}
     >
       <ProfileBgArt bg={bg} />
-      {drawn ? <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.3)']} start={{ x: 0, y: 0.5 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} /> : null}
+      {drawn ? <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.42)']} start={{ x: 0, y: 0.4 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} /> : null}
       {children}
     </LinearGradient>
   );

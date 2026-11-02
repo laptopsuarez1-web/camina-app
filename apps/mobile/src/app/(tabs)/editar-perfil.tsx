@@ -266,7 +266,7 @@ export default function EditarPerfilScreen() {
   return (
     <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
-        <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={80}>
+        <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
               <ChevronLeft size={16} color="#fff" />
