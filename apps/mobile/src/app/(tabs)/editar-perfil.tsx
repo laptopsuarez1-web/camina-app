@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Alert, ActivityIndicator, BackHandler } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator, BackHandler, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -143,6 +143,8 @@ export default function EditarPerfilScreen() {
   const leaveRef = useRef(leave);
   leaveRef.current = leave;
   useEffect(() => {
+    // El botón físico "atrás" existe solo en Android; en web da un error visible.
+    if (Platform.OS !== 'android') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => leaveRef.current());
     return () => sub.remove();
   }, []);
@@ -302,7 +304,9 @@ export default function EditarPerfilScreen() {
 
   return (
     <KeyboardSafe className="flex-1">
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 96 }}>
+      {/* Fondo liso: las ondas del fondo general se veían a través de la tarjeta del formulario y quitaban legibilidad a los campos. */}
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: isDark ? colors.dark.bg : colors.light.bg }} />
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={leave} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
@@ -424,10 +428,6 @@ export default function EditarPerfilScreen() {
             </View>
           </Glass>
 
-          <Press accessibilityRole="button" onPress={save} disabled={saving} className="bg-aqua-deep rounded-2xl py-4 items-center mb-6">
-            {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
-          </Press>
-
           {!!email && (
             <Glass className="rounded-3xl p-4 mb-4">
               {!passwordFormOpen ? (
@@ -485,10 +485,10 @@ export default function EditarPerfilScreen() {
           </Press>
         </View>
       </ScrollView>
-      {/* Con cambios sin guardar, "Guardar" queda siempre a la vista (antes estaba al final de la pantalla). */}
+      {/* Con cambios sin guardar, "Guardar" queda abajo SIN flotar sobre el formulario: es una franja propia debajo de la lista, así nunca tapa un campo. */}
       {dirty ? (
-        <View pointerEvents="box-none" style={{ position: 'absolute', left: 20, right: 20, bottom: Math.max(insets.bottom, 12) + 8 }}>
-          <Press accessibilityRole="button" accessibilityState={{ busy: saving }} onPress={save} disabled={saving} className="rounded-2xl py-4 items-center" style={{ backgroundColor: '#1F7A66', opacity: saving ? 0.7 : 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 4, borderTopWidth: 1, borderTopColor: isDark ? colors.dark.line : colors.light.line, backgroundColor: isDark ? colors.dark.bg : colors.light.bg }}>
+          <Press accessibilityRole="button" accessibilityState={{ busy: saving }} onPress={save} disabled={saving} className="rounded-2xl py-4 items-center" style={{ backgroundColor: '#1F7A66', opacity: saving ? 0.7 : 1 }}>
             {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
           </Press>
         </View>

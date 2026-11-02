@@ -165,8 +165,8 @@ export default function FriendProfileScreen() {
             <View style={{ padding: 4, borderRadius: 52, borderWidth: 3, borderColor: colors.mint }}>
               <PersonAvatar name={card?.full_name ?? ''} photoUrl={card?.photo_url} size={84} />
             </View>
-            <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" numberOfLines={2}>{card?.full_name ?? ' '}</Text>
-            {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: colors.authMuted, lineHeight: 19, maxWidth: 300 }}>{card.bio}</Text> : null}
+            <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 8, textShadowOffset: { width: 0, height: 1 } }} numberOfLines={2}>{card?.full_name ?? ' '}</Text>
+            {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: '#fff', opacity: 0.92, lineHeight: 19, maxWidth: 300, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 8, textShadowOffset: { width: 0, height: 1 } }}>{card.bio}</Text> : null}
           </View>
         </ProfileBanner>
 
