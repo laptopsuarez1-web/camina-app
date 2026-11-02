@@ -10,7 +10,7 @@ import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { PlacePicker } from '@/components/PlacePicker';
 import { friendlyError } from '@/lib/errors';
@@ -59,7 +59,7 @@ export default function CompletarPerfilScreen() {
     }
     if (ageFromISO(birth) < MIN_AGE) {
       Alert.alert('Camina es para personas de 13 años o más', 'Por ahora no puedes usar la app. ¡Te esperamos cuando cumplas 13!');
-      await supabase.auth.signOut({ scope: 'local' });
+      await signOutUser('local');
       router.replace('/(auth)/welcome');
       return;
     }

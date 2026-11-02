@@ -10,3 +10,4 @@ export function useAuthStore<T>(selector: (s: typeof authState) => T): T {
   return selector(authState);
 }
 useAuthStore.getState = () => authState;
+export async function signOutUser() { return { error: null }; }

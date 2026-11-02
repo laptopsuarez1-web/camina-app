@@ -12,7 +12,7 @@ import { ChevronLeft, ChevronDown, Camera, ImageIcon, Trash2, KeyRound, Eye, Eye
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { colors } from '@/theme/tokens';
 import { INTERESTS_OPTIONS } from '@/constants/catalog';
 import { SUPPORT_EMAIL } from '@/constants/contact';
@@ -256,7 +256,7 @@ export default function EditarPerfilScreen() {
       Alert.alert('No pudimos eliminar tu cuenta', `Intenta de nuevo en un rato o escríbenos a ${SUPPORT_EMAIL}.`);
       return;
     }
-    await supabase.auth.signOut();
+    await signOutUser('global');
     // La cuenta ya no existe: la bienvenida abre en "Crear cuenta", no en "Iniciar sesión".
     router.replace('/(auth)/welcome');
   }

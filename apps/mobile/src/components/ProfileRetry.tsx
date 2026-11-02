@@ -3,8 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { colors } from '@/theme/tokens';
 
@@ -25,7 +24,7 @@ export function ProfileRetry() {
 
   async function logout() {
     // Solo en este teléfono: el cierre global también sacaba a la persona de la web y de sus otros teléfonos.
-    await supabase.auth.signOut({ scope: 'local' });
+    await signOutUser('local');
     router.replace('/(auth)/welcome');
   }
 

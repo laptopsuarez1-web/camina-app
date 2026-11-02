@@ -9,7 +9,7 @@ import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthori
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
 import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
 import { useFriendRequests } from '@/hooks/useFriends';
@@ -210,7 +210,7 @@ export default function PerfilScreen() {
   async function handleLogout() {
     await unregisterPushToken();
     // Solo en este teléfono: el cierre global también sacaba a la persona de la web y de sus otros teléfonos.
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    const { error } = await signOutUser('local');
     // Sin red, signOut devuelve error aunque la sesión local ya se cerró: ahí no hay nada que avisar.
     if (error && (await supabase.auth.getSession()).data.session) {
       Alert.alert('No pudimos cerrar sesión', friendlyError(error, 'Intenta de nuevo.'));
