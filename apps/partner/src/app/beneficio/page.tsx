@@ -214,6 +214,9 @@ function BeneficioForm({
   const [validTo, setValidTo] = useState(benefit?.valid_to?.slice(0, 5) ?? '');
   const [diasMask, setDiasMask] = useState(benefit?.valid_days_mask ?? 127);
   const [dineInOnly, setDineInOnly] = useState(benefit?.dine_in_only ?? false);
+  // Premio con reserva (migración 0078): solo informa a la persona que debe coordinar por WhatsApp antes de ir.
+  const [requiresBooking, setRequiresBooking] = useState(benefit?.requires_booking ?? false);
+  const [bookingNote, setBookingNote] = useState(benefit?.booking_note ?? '');
   // Premio online: sin horario ni días, cupos totales y código de 7 días que la persona manda por el canal elegido.
   const [online, setOnline] = useState(benefit?.online ?? (benefit == null && business.is_virtual));
   const [onlineChannel, setOnlineChannel] = useState<OnlineChannel | ''>(
@@ -299,6 +302,8 @@ function BeneficioForm({
       valid_to: validTo || null,
       valid_days_mask: diasMask,
       dine_in_only: online ? false : dineInOnly,
+      requires_booking: !online && requiresBooking,
+      booking_note: !online && requiresBooking && bookingNote.trim() ? bookingNote.trim().slice(0, 120) : null,
       online,
       online_channel: online ? onlineChannel || null : null,
       // Con cupones propios (web) los cupos son los cupones cargados.
@@ -754,6 +759,30 @@ function BeneficioForm({
             <input type="checkbox" checked={dineInOnly} onChange={(e) => setDineInOnly(e.target.checked)} />
             <span className="text-[13px]">Solo para consumir en el local</span>
           </label>
+        )}
+
+        {!online && (
+          <div className="mb-5">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={requiresBooking} onChange={(e) => setRequiresBooking(e.target.checked)} />
+              <span className="text-[13px]">Requiere reserva (coordinar por WhatsApp antes de ir)</span>
+            </label>
+            {requiresBooking && (
+              <>
+                <input
+                  type="text"
+                  value={bookingNote}
+                  maxLength={120}
+                  onChange={(e) => setBookingNote(e.target.value)}
+                  placeholder="Ej.: Solo con confirmación"
+                  className="w-full mt-2 rounded-xl border border-line px-3.5 py-2.5 text-[13px]"
+                />
+                <p className="text-[11px] text-muted mt-1">
+                  Se avisa a la persona en el premio. Necesitas tener tu WhatsApp en el perfil del comercio para que pueda escribirte.
+                </p>
+              </>
+            )}
+          </div>
         )}
 
         <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-5">

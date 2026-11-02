@@ -130,12 +130,13 @@ function isBenefitAvailableNow(b: { valid_from: string | null; valid_to: string 
 
 const DIAS_ABREV = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-function benefitConditions(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number; dine_in_only: boolean }) {
+function benefitConditions(b: { valid_from: string | null; valid_to: string | null; valid_days_mask: number; dine_in_only: boolean; requires_booking?: boolean; booking_note?: string | null; online?: boolean }) {
   const lines: string[] = [];
   const activeDays = DIAS_ABREV.filter((_, i) => b.valid_days_mask & (1 << i));
   if (activeDays.length > 0 && activeDays.length < 7) lines.push(`Válido: ${activeDays.join(' ')}`);
   if (b.valid_from && b.valid_to) lines.push(`Horario: ${b.valid_from.slice(0, 5)} a ${b.valid_to.slice(0, 5)}`);
   if (b.dine_in_only) lines.push('Solo consumiendo en el local');
+  if (b.requires_booking && !b.online) lines.push(b.booking_note ? `Requiere reserva por WhatsApp: ${b.booking_note}` : 'Requiere reserva: coordina por WhatsApp antes de ir');
   return lines;
 }
 

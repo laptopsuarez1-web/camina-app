@@ -94,6 +94,9 @@ export interface Benefit {
   online?: boolean;
   online_channel?: OnlineChannel | null;
   online_quota?: number | null;
+  // Migración 0078: hay que reservar o coordinar por WhatsApp antes de ir (nota opcional).
+  requires_booking?: boolean;
+  booking_note?: string | null;
   created_at: string;
 }
 

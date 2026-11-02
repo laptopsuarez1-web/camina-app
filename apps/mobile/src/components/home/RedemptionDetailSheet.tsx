@@ -5,7 +5,7 @@ import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { type OpeningHours } from '@/components/BusinessHours';
 import { Glass } from '@/components/ui/Glass';
 import { CheckCircle2, Clock, IconBubble, X } from '@/components/icons';
-import { BenefitPhoto, HowToGetThere, BenefitHeader, ChannelChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BenefitPhoto, HowToGetThere, BenefitHeader, ChannelChip, BookingChip, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un canje ya hecho (Inicio > Tus canjes): qué premio es, dónde, cuándo vale y en qué estado está.
 // Los datos salen de la misma consulta de useMyRedemptions (benefit:benefits(*), business:businesses(*)).
@@ -28,6 +28,8 @@ export type RedemptionDetail = {
     valid_days_mask?: number;
     online?: boolean;
     online_channel?: string | null;
+    requires_booking?: boolean;
+    booking_note?: string | null;
     image_url?: string | null;
   } | null;
   business: {
@@ -110,7 +112,7 @@ export function RedemptionDetailSheet({
                   </View>
                 ) : null}
 
-                {b ? <View className="flex-row flex-wrap" style={{ gap: 8 }}><ChannelChip b={b} /></View> : null}
+                {b ? <View className="flex-row flex-wrap" style={{ gap: 8 }}><ChannelChip b={b} /><BookingChip b={b} /></View> : null}
                 <WhatIncludes text={b?.description} />
                 {r.status === 'pending' ? <HowToRedeem steps={steps} /> : null}
                 {b ? <Conditions items={conditionsOf(b)} /> : null}

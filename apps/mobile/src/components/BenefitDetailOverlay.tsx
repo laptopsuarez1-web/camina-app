@@ -5,7 +5,7 @@ import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import type { OpeningHours } from '@/components/BusinessHours';
-import { BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BookingChip, BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un premio dentro de la ficha del local. Es una capa dentro de la ficha y NO otro Modal:
 // en iPhone un panel abierto encima de otro dejaba la pantalla sin responder (ver las fotos del local).
@@ -21,6 +21,8 @@ type Benefit = {
   valid_days_mask?: number;
   online?: boolean;
   online_channel?: string | null;
+  requires_booking?: boolean;
+  booking_note?: string | null;
   image_url?: string | null;
 };
 type Business = { name: string; lat?: number | null; lng?: number | null; address?: string | null; hours_text?: string | null; opening_hours?: OpeningHours; phone?: string | null };
@@ -73,16 +75,21 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
           ) : (
             <BenefitHeader title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
           )}
+          {b.requires_booking && !b.online ? <View className="flex-row"><BookingChip b={b} /></View> : null}
           <WhatIncludes text={b.description} />
           <HowToRedeem steps={b.online ? STEPS_ONLINE : STEPS_LOCAL} />
           <Conditions items={conditionsOf(b)} />
           {canWhatsapp ? (
             <View>
-              <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-2">¿Necesita reserva o coordinar horario? Eso lo define el local: escríbele por WhatsApp.</Text>
+              <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-2">
+                {b.requires_booking && !b.online
+                  ? 'Este premio requiere reserva. Escribe al local por WhatsApp para coordinar antes de ir.'
+                  : '¿Necesita reserva o coordinar horario? Eso lo define el local: escríbele por WhatsApp.'}
+              </Text>
               <Press
                 accessibilityRole="link"
                 accessibilityLabel={`Escribir por WhatsApp a ${business.name}`}
-                onPress={() => Linking.openURL(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Hola, quiero coordinar mi premio "${b.name}" de Camina.`)}`)}
+                onPress={() => Linking.openURL(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Hola, quiero ${b.requires_booking ? 'reservar' : 'coordinar'} mi premio "${b.name}" de Camina.`)}`)}
                 className="flex-row items-center justify-center rounded-full border border-line-light dark:border-line-dark"
                 style={{ gap: 8, paddingVertical: 13 }}
               >
