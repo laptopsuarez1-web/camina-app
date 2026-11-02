@@ -774,7 +774,7 @@ function BeneficioForm({
                   value={bookingNote}
                   maxLength={120}
                   onChange={(e) => setBookingNote(e.target.value)}
-                  placeholder="Ej.: Reservar con 24 h de anticipación"
+                  placeholder="Ej.: Solo con confirmación"
                   className="w-full mt-2 rounded-xl border border-line px-3.5 py-2.5 text-[13px]"
                 />
                 <p className="text-[11px] text-muted mt-1">
