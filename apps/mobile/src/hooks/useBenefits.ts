@@ -85,8 +85,7 @@ export function useRedeemBenefit() {
       queryClient.invalidateQueries({ queryKey: ['redemptions'] });
       queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
       queryClient.invalidateQueries({ queryKey: ['benefits-online-redeemed'] });
-      queryClient.invalidateQueries({ queryKey: ['loyalty-card'] });
-      queryClient.invalidateQueries({ queryKey: ['loyalty-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['camina-card'] });
     },
   });
 }
@@ -107,7 +106,7 @@ export function useRedeemWithLocalCode() {
     },
     onSuccess: (result) => {
       if (!result.ok) return;
-      for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions', 'benefits-remaining-today', 'new-place-bonus', 'loyalty-card', 'loyalty-cards']) {
+      for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions', 'benefits-remaining-today', 'new-place-bonus', 'camina-card']) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
     },

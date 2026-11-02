@@ -46,6 +46,7 @@ test('contrato con SQL: vigencia de Puntos, tope diario, cooldown y vencimiento 
   assert.equal(sqlConstant('business_redemption_cooldown_days'), R.BUSINESS_REDEMPTION_COOLDOWN_DAYS);
   assert.equal(sqlConstant('redemption_code_ttl_minutes'), R.REDEMPTION_CODE_TTL_MINUTES);
   assert.equal(sqlConstant('loyalty_goal'), R.LOYALTY_STAMPS_GOAL);
+  assert.equal(sqlConstant('loyalty_card_days'), R.LOYALTY_CARD_DAYS);
 });
 
 test('contrato con SQL: 1 Punto cada POINTS_PER_STEP_UNIT pasos (última versión de earn_points_from_steps)', () => {

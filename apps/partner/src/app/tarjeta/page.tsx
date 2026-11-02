@@ -7,36 +7,25 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
 
-interface Close {
+interface Waiting {
   name: string;
-  stamps: number;
-  last_at: string | null;
-  can_return_at: string | null;
+  benefit_name: string;
+  expires_at: string;
 }
 
 interface Overview {
   plan_ok: boolean;
   goal: number;
+  days: number;
   benefit_id?: string | null;
   benefit_name?: string;
-  customers?: number;
-  missing_one?: number;
-  ready_unused?: number;
+  waiting?: Waiting[];
   delivered_month?: number;
-  close?: Close[];
+  delivered_total?: number;
 }
 
 const dia = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('es-BO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'America/La_Paz' }) : '—';
-
-function Sellos({ n, goal }: { n: number; goal: number }) {
-  return (
-    <span aria-label={`${n} de ${goal} sellos`} className="tracking-[2px]">
-      {'●'.repeat(Math.min(n, goal))}
-      {'○'.repeat(Math.max(0, goal - n))}
-    </span>
-  );
-}
 
 export default function TarjetaPage() {
   const { business, role } = useBusinessAuth();
@@ -49,7 +38,6 @@ export default function TarjetaPage() {
   const esDueno = role === 'owner';
 
   const [recarga, setRecarga] = useState(0);
-  const [ahora] = useState(() => Date.now());
 
   useEffect(() => {
     if (!business || locked) return;
@@ -87,14 +75,14 @@ export default function TarjetaPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Tarjeta de fidelidad" subtitle={`Cada cliente suma un sello por canje confirmado. Con ${goal} sellos, su próximo canje del premio que elijas le sale gratis.`} />
+      <TopBar title="Tarjeta de fidelidad" subtitle={`Camina tiene una tarjeta de fidelidad general: cada canje confirmado, en cualquier comercio, suma un sello. Con ${goal} sellos la persona elige un premio gratis entre los comercios que participan. Tú eliges el tuyo y aparece entre sus opciones.`} />
 
       {locked ? (
         <div className="bg-card border border-line rounded-2xl p-6 max-w-[520px]">
           <p className="font-bold text-[15px] mb-1.5">La tarjeta de fidelidad es de Paso Firme y Paso Adelante</p>
           <p className="text-muted text-[13px] leading-5 mb-4">
-            Con Paso Firme (Bs 100/mes) o Paso Adelante (Bs 300/mes) tus clientes juntan {goal} canjes en tu local y el siguiente premio
-            que elijas va gratis. Eso los hace volver.
+            Con Paso Firme (Bs 100/mes) o Paso Adelante (Bs 300/mes) tu premio aparece entre las opciones de quienes completan su tarjeta de {goal} canjes
+            en cualquier comercio. Más visibilidad y más gente que llega a tu local.
           </p>
           <Link href="/plan" className="inline-block bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px]">
             Ver planes
@@ -104,10 +92,10 @@ export default function TarjetaPage() {
         <div className="max-w-[860px]">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4 mb-5">
             <div className="bg-card border border-line rounded-2xl p-5">
-              <p className="font-bold text-[16px] mb-1">¿Qué premio regalas al completar la tarjeta?</p>
+              <p className="font-bold text-[16px] mb-1">¿Qué premio regalas a quienes completan su tarjeta?</p>
               <p className="text-muted text-[12.5px] mb-3.5 leading-[18px]">
-                Elige uno de tus premios activos. El premio lo pones tú, como siempre; Camina no le descuenta Puntos al cliente en ese canje.
-                Si lo cambias, quienes ya completaron su tarjeta usan el nuevo.
+                Elige uno de tus premios activos: es el que verán todos los clientes de Camina al completar su tarjeta. El premio lo pones tú, como siempre; Camina no le descuenta Puntos al cliente en ese canje.
+                Si lo cambias, quienes ya lo eligieron conservan el anterior hasta que venza su tarjeta.
               </p>
               {benefits.length === 0 ? (
                 <p className="text-[13px] text-muted">
@@ -143,7 +131,7 @@ export default function TarjetaPage() {
                   )}
                   {msg && <p className={`text-[12.5px] mt-1 ${msg.ok ? 'text-[#1A6555]' : 'text-warn'}`}>{msg.text}</p>}
                   <p className="text-muted text-[12px] mt-2">
-                    Sellos para completar: <b>{goal}</b> · Espera entre canjes en tu local: <b>14 días (dos semanas)</b> (igual para todos).
+                    Sellos para completar: <b>{goal}</b> · Días para canjear el premio: <b>{overview?.days ?? 30}</b> desde que se completa la tarjeta. La persona lo canjea en tu local con tu código del local.
                   </p>
                 </div>
               )}
@@ -151,10 +139,9 @@ export default function TarjetaPage() {
 
             <div className="grid grid-cols-2 gap-3 content-start">
               {[
-                ['Clientes con tarjeta', overview?.customers ?? 0],
-                ['Les falta 1 sello', overview?.missing_one ?? 0],
-                ['Tarjetas completas sin usar', overview?.ready_unused ?? 0],
+                ['Esperan su premio', overview?.waiting?.length ?? 0],
                 ['Premios entregados este mes', overview?.delivered_month ?? 0],
+                ['Premios entregados en total', overview?.delivered_total ?? 0],
               ].map(([label, n]) => (
                 <div key={label as string} className="bg-card border border-line rounded-2xl p-4">
                   <p className="text-muted text-[12px] leading-4">{label}</p>
@@ -166,42 +153,32 @@ export default function TarjetaPage() {
 
           <div className="bg-card border border-line rounded-2xl p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
-              <p className="font-bold text-[16px]">Clientes cerca de completar</p>
+              <p className="font-bold text-[16px]">Clientes que eligieron tu premio</p>
               <p className="text-muted text-[12px]">Solo nombre de pila: no mostramos teléfonos ni correos.</p>
             </div>
-            {overview?.close && overview.close.length > 0 ? (
+            {overview?.waiting && overview.waiting.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-[13.5px]">
                   <thead>
                     <tr className="text-muted text-[11.5px] text-left">
                       <th className="py-2 pr-3 font-semibold">Cliente</th>
-                      <th className="py-2 pr-3 font-semibold">Sellos</th>
-                      <th className="py-2 pr-3 font-semibold">Último canje</th>
-                      <th className="py-2 font-semibold">Puede volver</th>
+                      <th className="py-2 pr-3 font-semibold">Premio</th>
+                      <th className="py-2 font-semibold">Puede canjearlo hasta</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {overview.close.map((c, i) => {
-                      const completa = c.stamps >= goal;
-                      const yaPuede = !c.can_return_at || new Date(c.can_return_at).getTime() <= ahora;
-                      return (
-                        <tr key={i} className="border-t border-line">
-                          <td className="py-2.5 pr-3 font-semibold">{c.name}</td>
-                          <td className="py-2.5 pr-3 whitespace-nowrap">
-                            <Sellos n={c.stamps} goal={goal} /> {completa ? 'Completa' : `${c.stamps} de ${goal}`}
-                          </td>
-                          <td className="py-2.5 pr-3">{dia(c.last_at)}</td>
-                          <td className="py-2.5" style={{ color: completa ? '#8F6307' : yaPuede ? '#1A6555' : undefined, fontWeight: completa || yaPuede ? 700 : 400 }}>
-                            {completa ? 'Viene por su premio' : yaPuede ? 'Ya puede' : dia(c.can_return_at)}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {overview.waiting.map((c, i) => (
+                      <tr key={i} className="border-t border-line">
+                        <td className="py-2.5 pr-3 font-semibold">{c.name}</td>
+                        <td className="py-2.5 pr-3">{c.benefit_name}</td>
+                        <td className="py-2.5">{dia(c.expires_at)}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <p className="text-muted text-[13px] py-3">Todavía no hay clientes cerca de completar. Aparecen aquí cuando les faltan 1 o 2 sellos.</p>
+              <p className="text-muted text-[13px] py-3">Todavía nadie eligió tu premio. Cuando alguien lo elija con su tarjeta completa, aparece aquí con la fecha límite para canjearlo.</p>
             )}
           </div>
         </div>

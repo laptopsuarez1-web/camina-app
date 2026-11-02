@@ -10,7 +10,8 @@ export const POINTS_TTL_DAYS = 90; // vigencia de un lote de Puntos
 export const BUSINESS_REDEMPTION_COOLDOWN_DAYS = 14; // cooldown por comercio (una vez cada dos semanas)
 export const REDEMPTION_CODE_TTL_MINUTES = 15; // vigencia del código de canje
 export const ONLINE_CODE_TTL_DAYS = 7; // vigencia del código de un premio online (migración 0060)
-export const LOYALTY_STAMPS_GOAL = 5; // sellos de la tarjeta de fidelidad de un local (el valor real lo manda la base)
+export const LOYALTY_STAMPS_GOAL = 5; // sellos de la tarjeta de fidelidad general de Camina (el valor real lo manda la base)
+export const LOYALTY_CARD_DAYS = 30; // días para canjear el premio desde que se completa la tarjeta
 
 // Solo para mostrar Km/Calorías estimados en Actividad — no hay wearable que
 // mida esto de verdad, es una aproximación estándar de la industria fitness.

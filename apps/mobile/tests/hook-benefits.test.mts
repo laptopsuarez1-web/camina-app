@@ -76,7 +76,7 @@ test('canjear: al terminar refresca saldo, movimientos, vencimientos, canjes, cu
   useRedeemBenefit();
   rq.lastMutation.onSuccess();
   assert.deepEqual(rq.invalidated.map((i: any) => i.queryKey[0]).sort(),
-    ['benefits-online-redeemed', 'benefits-remaining-today', 'loyalty-card', 'loyalty-cards', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
+    ['benefits-online-redeemed', 'benefits-remaining-today', 'camina-card', 'points-balance', 'points-expiring-soon', 'points-ledger', 'redemptions']);
 });
 
 test('cupos de premios online: mapa premio → canjes usados y cupones propios que quedan', async () => {

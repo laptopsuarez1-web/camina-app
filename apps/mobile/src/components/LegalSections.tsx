@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SUPPORT_EMAIL } from '@/constants/contact';
-import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL } from '@/constants/business-rules';
+import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL, LOYALTY_CARD_DAYS } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
 export const LEGAL_UPDATED = 'octubre de 2026';
@@ -58,7 +58,7 @@ Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar p
   },
   {
     title: 'Canjes',
-    body: `El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Puedes canjear una vez por comercio cada ${BUSINESS_REDEMPTION_COOLDOWN_DAYS} días, y cada beneficio puede tener cupos diarios y horarios. Los comercios con plan de pago pueden tener una tarjeta de fidelidad: cada canje confirmado en ese comercio suma un sello y, al completar los ${LOYALTY_STAMPS_GOAL} sellos, el siguiente canje del premio de fidelidad que el comercio eligió es gratis (no se descuentan Puntos) y la tarjeta vuelve a empezar. Si el comercio confirmó el canje y no te entregó el premio, escríbenos a ${SUPPORT_EMAIL} y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor.`,
+    body: `El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Puedes canjear una vez por comercio cada ${BUSINESS_REDEMPTION_COOLDOWN_DAYS} días, y cada beneficio puede tener cupos diarios y horarios. Camina tiene una tarjeta de fidelidad general: cada canje confirmado, en cualquier comercio, suma un sello y, al completar los ${LOYALTY_STAMPS_GOAL} sellos, eliges un premio gratis entre los que ofrecen los comercios que participan (el comercio pone el premio y no se descuentan Puntos). Tienes ${LOYALTY_CARD_DAYS} días desde que completas la tarjeta para canjear el premio en el local; si no lo canjeas, la tarjeta vence y empiezas una nueva. Si el comercio confirmó el canje y no te entregó el premio, escríbenos a ${SUPPORT_EMAIL} y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor.`,
   },
   {
     title: 'Puntos y cambios de las reglas',

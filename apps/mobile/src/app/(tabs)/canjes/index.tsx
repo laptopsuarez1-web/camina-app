@@ -48,8 +48,8 @@ import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
-import { useLoyaltyCard, useNewPlaceBonus } from '@/hooks/useLoyalty';
-import { LoyaltyCardView } from '@/components/LoyaltyCardView';
+import { useNewPlaceBonus } from '@/hooks/useLoyalty';
+import { useCaminaCard } from '@/hooks/useCaminaCard';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Image as CachedImage } from 'expo-image';
@@ -642,7 +642,9 @@ export default function CanjesScreen() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
-  const { data: activeLoyalty } = useLoyaltyCard(activeBenefit?.business.id);
+  const { data: caminaCard } = useCaminaCard();
+  // Premio gratis de la tarjeta de fidelidad: la tarjeta está completa y la persona ya eligió este premio.
+  const cardPrizeId = caminaCard && caminaCard.stamps >= caminaCard.goal ? caminaCard.chosen_benefit_id : null;
   const [bonusById, setBonusById] = useState<Record<string, number>>({});
 
   // Seguimiento del canje: cuando el comercio confirma el código, se pregunta si compró algo más.
@@ -667,7 +669,7 @@ export default function CanjesScreen() {
         queryClient.invalidateQueries({ queryKey: ['new-place-bonus'] });
         // Los Puntos se descuentan al confirmar el local: se actualiza el saldo y los movimientos.
         for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions']) queryClient.invalidateQueries({ queryKey: [key] });
-        for (const key of ['loyalty-card', 'loyalty-cards']) queryClient.invalidateQueries({ queryKey: [key] });
+        queryClient.invalidateQueries({ queryKey: ['camina-card'] });
       }
     };
     check();
@@ -930,7 +932,6 @@ export default function CanjesScreen() {
   }, [profileGroup]);
   const [detailBenefitId, setDetailBenefitId] = useState<string | null>(null);
   const detailBenefit = profileGroup?.benefits.find((x) => x.id === detailBenefitId) ?? null;
-  const { data: loyalty } = useLoyaltyCard(profileGroup?.business.id);
   const { data: newPlaceBonus } = useNewPlaceBonus(profileGroup?.business.id);
 
   // Portada primero y después las demás fotos del local.
@@ -944,7 +945,7 @@ export default function CanjesScreen() {
 
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
-    const free = loyalty?.benefit_id === benefit.id && loyalty.ready;
+    const free = cardPrizeId === benefit.id;
     if (benefit.online && benefit.online_channel === 'web') {
       Alert.alert(
         `¿Canjear ${benefit.name}?`,
@@ -1749,12 +1750,6 @@ export default function CanjesScreen() {
                   </View>
                 ) : null}
 
-                {loyalty ? (
-                  <View className="mt-6">
-                    <LoyaltyCardView card={loyalty} />
-                  </View>
-                ) : null}
-
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
                     Este local todavía no tiene premios para canjear. Cuando los cargue, los vas a ver aquí.
@@ -1791,9 +1786,9 @@ export default function CanjesScreen() {
                               })
                             : undefined;
                           const outOfStock = !unlimited && remaining <= 0;
-                          // Con la tarjeta completa, el premio de fidelidad sale gratis (0 Puntos).
-                          const isLoyaltyPrize = loyalty?.benefit_id === b.id;
-                          const freeByCard = isLoyaltyPrize && loyalty!.ready;
+                          // Premio de la tarjeta de fidelidad de Camina (el local participa) y, si la persona lo eligió con su tarjeta completa, sale gratis (0 Puntos).
+                          const isLoyaltyPrize = profileGroup.business.loyalty_benefit_id === b.id;
+                          const freeByCard = cardPrizeId === b.id;
                           const cost = freeByCard ? 0 : b.cost_points;
                           const canAfford = (balance ?? 0) >= cost;
                           const canRedeem = !!myPending || (canAfford && available && !outOfStock);
@@ -1822,7 +1817,7 @@ export default function CanjesScreen() {
                                 <View className="flex-1">
                                   <Text className="text-[16px] font-bold text-text-light dark:text-text-dark" numberOfLines={2}>{b.name}</Text>
                                   {isLoyaltyPrize ? (
-                                    <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>Premio de tu tarjeta</Text>
+                                    <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
                                     {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
@@ -2000,7 +1995,7 @@ export default function CanjesScreen() {
         category={localCodeFor?.business.category}
         benefitName={localCodeFor?.name ?? ''}
         costPoints={localCodeFor?.cost_points ?? 0}
-        free={!!localCodeFor && loyalty?.benefit_id === localCodeFor.id && !!loyalty.ready}
+        free={!!localCodeFor && cardPrizeId === localCodeFor.id}
         onClose={() => setLocalCodeFor(null)}
         onSubmit={(code) => (localCodeFor ? submitLocalCode(localCodeFor, code) : Promise.resolve(null))}
         onSuccess={() => {
@@ -2102,13 +2097,15 @@ export default function CanjesScreen() {
                         {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
                       </Text>
                     ) : null}
-                    {activeLoyalty ? (
+                    {activeRedemption?.loyalty_free ? (
                       <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
-                        {activeLoyalty.stamps === 0
-                          ? 'Usaste el premio de tu tarjeta: empieza de nuevo.'
-                          : activeLoyalty.ready
-                            ? '¡Tarjeta completa! Tu próximo premio sale gratis.'
-                            : `Sumaste un sello: ${activeLoyalty.stamps} de ${activeLoyalty.goal}.`}
+                        Usaste el premio de tu tarjeta: empieza de nuevo.
+                      </Text>
+                    ) : caminaCard ? (
+                      <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
+                        {caminaCard.stamps >= caminaCard.goal
+                          ? '¡Completaste tu tarjeta de fidelidad! Elige tu premio en Puntos.'
+                          : `Sumaste un sello: ${caminaCard.stamps} de ${caminaCard.goal}.`}
                       </Text>
                     ) : null}
                   </View>

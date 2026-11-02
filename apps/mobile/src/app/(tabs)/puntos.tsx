@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Share2, Users, Trophy, Activity, Gift, IconBubble } from '@/components/icons';
-import { useLoyaltyCards } from '@/hooks/useLoyalty';
+import { useCaminaCard } from '@/hooks/useCaminaCard';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks/usePoints';
@@ -93,8 +93,8 @@ export default function PuntosScreen() {
   const { data: earnedToday } = usePointsToday();
   const { data: expiring } = usePointsExpiringSoon();
   const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
-  const { data: tarjetas } = useLoyaltyCards();
-  const tarjetasListas = (tarjetas ?? []).filter((c) => c.ready).length;
+  const { data: caminaCard } = useCaminaCard();
+  const caminaListo = !!caminaCard && caminaCard.stamps >= caminaCard.goal;
   const [copied, setCopied] = useState(false);
 
   const link = useMemo(() => (profile ? referralLink(profile.id) : ''), [profile]);
@@ -149,24 +149,24 @@ export default function PuntosScreen() {
       </DarkHeader>
 
       <Press
-          accessibilityRole="button"
-          onPress={() => router.push('/(tabs)/tarjetas')}
-          className="mx-5 mt-3 flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-2xl p-3.5"
-          style={tarjetasListas > 0 ? { borderWidth: 2, borderColor: '#E2B33C' } : undefined}
-        >
-          <IconBubble icon={Gift} tone="gold" size={40} />
-          <View className="flex-1">
-            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-              {tarjetasListas > 0
-                ? `${tarjetasListas} ${plural(tarjetasListas, 'premio te espera', 'premios te esperan')}`
-                : tarjetas && tarjetas.length > 0
-                  ? `${tarjetas.length} ${plural(tarjetas.length, 'local', 'locales')}`
-                  : 'Suma sellos en cada local y gana su premio'}
-            </Text>
-          </View>
-          <ChevronRight size={18} color={colors.light.muted} />
-        </Press>
+        accessibilityRole="button"
+        onPress={() => router.push('/(tabs)/tarjetas')}
+        className="mx-5 mt-3 flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-2xl p-3.5"
+        style={caminaListo ? { borderWidth: 2, borderColor: '#E2B33C' } : undefined}
+      >
+        <IconBubble icon={Gift} tone="gold" size={40} />
+        <View className="flex-1">
+          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+            {!caminaCard
+              ? 'Junta 5 canjes y elige un premio gratis'
+              : caminaCard.stamps >= caminaCard.goal
+                ? caminaCard.chosen_benefit_id ? 'Tu premio te espera en el local' : '¡Completa! Elige tu premio'
+                : `${caminaCard.stamps} de ${caminaCard.goal} canjes`}
+          </Text>
+        </View>
+        <ChevronRight size={18} color={colors.light.muted} />
+      </Press>
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
         <View className="flex-row items-center gap-3 mb-2">

@@ -1,114 +1,142 @@
--- Tarjeta de fidelidad por local (0057): sellos, canje gratis, planes de pago, panel y espera de 14 días.
+-- Tarjeta de fidelidad GENERAL (0080): 5 canjes confirmados en cualquier comercio = un premio gratis a elegir, 30 días para canjearlo.
 begin;
 
 do $$
 declare
-  u uuid; u2 uuid; owner uuid; stranger uuid; b uuid; b2 uuid; bz uuid; red redemptions; r2 redemptions;
-  c record; n integer; ov jsonb; i integer;
+  u uuid; u2 uuid; stranger uuid; owners uuid[] := '{}'; bens uuid[] := '{}'; bizs uuid[] := '{}';
+  b uuid; bz uuid; o uuid; red redemptions; c jsonb; i integer; before_bal integer; card_id uuid; ov jsonb;
 begin
-  -- ===== Armado: local Paso Firme con su premio de fidelidad =====
-  owner := tt.mk_user(); stranger := tt.mk_user(); u := tt.mk_user(6000, 'Marcos Tapia'); b := tt.mk_benefit(20, 99);
-  perform tt.give(u, 500, 60);
-  select business_id into bz from benefits where id = b;
-  update businesses set owner_user_id = owner where id = bz;
-  insert into benefits (business_id, name, type, cost_points, daily_quota) values (bz, 'Otro premio', 'gratis', 30, 99) returning id into b2;
+  u := tt.mk_user(6000, 'Marcos Tapia'); u2 := tt.mk_user(); stranger := tt.mk_user();
+  perform tt.give(u, 1000, 60);
 
-  perform tt.t_eq('la espera entre canjes en un mismo local es de 14 días', business_redemption_cooldown_days(), 14);
+  -- Cinco comercios, cada uno con su dueño y su premio.
+  for i in 1..5 loop
+    o := tt.mk_user(); b := tt.mk_benefit(20, 99);
+    select business_id into bz from benefits where id = b;
+    update businesses set owner_user_id = o where id = bz;
+    update businesses set approved = true where id = bz;
+    owners := owners || o; bens := bens || b; bizs := bizs || bz;
+  end loop;
+
   perform tt.t_eq('la tarjeta es de 5 sellos', loyalty_goal(), 5);
+  perform tt.t_eq('la tarjeta completa vence a los 30 días', loyalty_card_days(), 30);
 
   perform tt.t_as(u);
-  perform tt.t_eq('sin premio elegido no hay tarjeta', (select count(*) from my_loyalty_cards(bz))::int, 0);
+  c := my_camina_card();
+  perform tt.t_eq('la tarjeta nueva está en 0', (c->>'stamps')::int, 0);
+  perform tt.t_true('sin tarjeta completa no hay vencimiento', c->>'expires_at' is null);
+  perform tt.t_raises('sin tarjeta completa no se elige premio', format('select choose_camina_prize(%L)', bens[1]), 'Todavía no tienes una tarjeta completa');
 
+  -- ===== Sellos: uno por canje confirmado, en cualquier comercio =====
+  for i in 1..4 loop
+    perform tt.t_as(u); red := redeem_benefit(bens[i]);
+    perform tt.t_as(owners[i]); perform confirm_redemption_code(bizs[i], red.code);
+    perform tt.t_as(u);
+    if i = 1 then
+      perform tt.t_eq('un canje pendiente no pone sello, el confirmado sí', (my_camina_card()->>'stamps')::int, 1);
+    end if;
+  end loop;
+  c := my_camina_card();
+  perform tt.t_eq('4 canjes en 4 comercios distintos: 4 sellos', (c->>'stamps')::int, 4);
+  perform tt.t_eq('el historial guarda dónde canjeó', jsonb_array_length(c->'history'), 4);
+  perform tt.t_true('con 4 sellos todavía no hay vencimiento', c->>'completed_at' is null);
+
+  -- El quinto sello completa la tarjeta (en el mismo comercio donde canjeó el primero: pasaron 14 días).
+  update redemptions set created_at = created_at - interval '15 days' where user_id = u and business_id = bizs[1];
+  perform tt.t_as(u); red := redeem_benefit(bens[1]);
+  perform tt.t_as(owners[1]); perform confirm_redemption_code(bizs[1], red.code);
+  perform tt.t_as(u);
+  c := my_camina_card();
+  perform tt.t_eq('5 canjes: tarjeta completa', (c->>'stamps')::int, 5);
+  perform tt.t_true('la tarjeta tiene fecha de completada', c->>'completed_at' is not null);
+  perform tt.t_true('vence 30 días después de completarse',
+    (c->>'expires_at')::timestamptz between (c->>'completed_at')::timestamptz + interval '29 days 23 hours' and (c->>'completed_at')::timestamptz + interval '30 days 1 hour');
+  perform tt.t_eq('aparece un aviso de tarjeta completa', (select count(*) from notifications_outbox where user_id = u and data->>'type' = 'camina_card_ready')::int, 1);
+  perform tt.t_eq('sin comercios participando no hay premios para elegir', jsonb_array_length(c->'options'), 0);
+
+  -- ===== Los comercios eligen participar =====
   perform tt.t_as(stranger);
-  perform tt.t_raises('solo el dueño elige el premio', format('select set_loyalty_benefit(%L, %L)', bz, b), 'No autorizado');
-  perform tt.t_as(owner);
-  perform tt.t_raises('el premio tiene que ser del local', format('select set_loyalty_benefit(%L, %L)', bz, tt.mk_benefit(5)), 'Ese premio no está disponible');
-  perform set_loyalty_benefit(bz, b);
-  perform tt.t_eq('el local elige su premio de fidelidad', (select loyalty_benefit_id from businesses where id = bz), b);
-
-  -- ===== Sellos: uno por canje confirmado, no por canje pendiente =====
-  perform tt.t_as(u);
-  select * into c from my_loyalty_cards(bz);
-  perform tt.t_eq('la tarjeta nueva está en 0', c.stamps, 0);
-  perform tt.t_eq('la meta es 5', c.goal, 5);
-  perform tt.t_eq('todavía no está lista', c.ready, false);
-  perform tt.t_eq('la tarjeta nueva no aparece en "mis tarjetas" (sin sellos)', (select count(*) from my_loyalty_cards())::int, 0);
-
-  red := redeem_benefit(b);
-  perform tt.t_eq('un canje pendiente no pone sello', (select stamps from my_loyalty_cards(bz)), 0);
-  perform tt.t_as(owner); perform confirm_redemption_code(bz, red.code);
-  perform tt.t_as(u);
-  perform tt.t_eq('al confirmar el local, hay 1 sello', (select stamps from my_loyalty_cards(bz)), 1);
-  perform tt.t_eq('con un sello aparece en "mis tarjetas"', (select count(*) from my_loyalty_cards())::int, 1);
-  perform tt.t_eq('el historial guarda la fecha del canje', (select cardinality(history) from my_loyalty_cards(bz)), 1);
-  perform tt.t_true('próximo canje permitido a los 14 días', (select next_allowed_at from my_loyalty_cards(bz)) between now() + interval '13 days 23 hours' and now() + interval '14 days 1 hour');
-  perform tt.t_raises('dentro de los 14 días no se vuelve a canjear', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
-
-  for i in 2..5 loop
-    update redemptions set created_at = created_at - interval '15 days' where user_id = u;
-    perform tt.t_as(u); red := redeem_benefit(b);
-    perform tt.t_as(owner); perform confirm_redemption_code(bz, red.code);
+  perform tt.t_raises('solo el dueño elige el premio de fidelidad', format('select set_loyalty_benefit(%L, %L)', bizs[1], bens[1]), 'No autorizado');
+  for i in 1..3 loop
+    perform tt.t_as(owners[i]); perform set_loyalty_benefit(bizs[i], bens[i]);
   end loop;
   perform tt.t_as(u);
-  select * into c from my_loyalty_cards(bz);
-  perform tt.t_eq('5 canjes confirmados: 5 sellos', c.stamps, 5);
-  perform tt.t_eq('la tarjeta está lista', c.ready, true);
-  perform tt.t_eq('se cobraron los 5 canjes (500 - 5 × 20 + 5 de bono por local nuevo)', user_points_balance(u), 405);
+  c := my_camina_card();
+  perform tt.t_eq('participan 3 comercios: 3 premios para elegir', jsonb_array_length(c->'options'), 3);
+  perform tt.t_true('cada premio trae su comercio', (c->'options'->0->'business'->>'name') is not null);
 
-  -- ===== Premio gratis: 0 Puntos, la tarjeta vuelve a cero =====
-  update redemptions set created_at = created_at - interval '15 days' where user_id = u;
-  red := redeem_benefit(b2);
-  perform tt.t_eq('otro premio del local con la tarjeta completa cuesta lo normal', red.cost_points, 30);
-  perform tt.t_eq('y no es gratis de tarjeta', red.loyalty_free, false);
-  update redemptions set status = 'cancelled' where id = red.id;
-
-  red := redeem_benefit(b);
-  perform tt.t_eq('el premio de fidelidad sale gratis', red.cost_points, 0);
-  perform tt.t_eq('queda marcado como gratis de tarjeta', red.loyalty_free, true);
-  perform tt.t_eq('mientras está pendiente la tarjeta ya volvió a cero', (select stamps from my_loyalty_cards(bz)), 0);
-  perform tt.t_as(owner); r2 := confirm_redemption_code(bz, red.code);
+  -- ===== Elegir y cambiar el premio =====
+  perform tt.t_raises('no se elige un premio de un comercio que no participa', format('select choose_camina_prize(%L)', bens[4]), 'Ese premio no está disponible');
+  perform tt.t_as(u2);
+  perform tt.t_raises('otra persona sin tarjeta no puede elegir', format('select choose_camina_prize(%L)', bens[1]), 'Todavía no tienes una tarjeta completa');
   perform tt.t_as(u);
-  perform tt.t_eq('confirmar el canje gratis no mueve Puntos', user_points_balance(u), 405);
-  select count(*) into n from points_ledger where user_id = u and amount = 0;
-  perform tt.t_eq('y no deja un asiento en 0', n, 0);
-  perform tt.t_eq('el canje gratis no cuenta como sello', (select stamps from my_loyalty_cards(bz)), 0);
+  c := choose_camina_prize(bens[2]);
+  perform tt.t_eq('elige su premio', (c->>'chosen_benefit_id')::uuid, bens[2]);
+  c := choose_camina_prize(bens[1]);
+  perform tt.t_eq('puede cambiarlo mientras no lo canjeó', (c->>'chosen_benefit_id')::uuid, bens[1]);
 
-  -- ===== Si el código gratis vence, la tarjeta vuelve a estar completa =====
-  update redemptions set created_at = created_at - interval '15 days' where user_id = u;
-  update redemptions set status = 'expired', confirmed_at = null where id = r2.id;
-  perform tt.t_eq('un canje gratis vencido devuelve la tarjeta completa', (select stamps from my_loyalty_cards(bz)), 5);
+  -- ===== Canje gratis: 0 Puntos, sin espera aunque haya canjeado ahí hace poco =====
+  before_bal := user_points_balance(u);
+  perform tt.t_as(u); red := redeem_benefit(bens[1]);
+  perform tt.t_eq('el premio de la tarjeta cuesta 0 Puntos', red.cost_points, 0);
+  perform tt.t_true('el canje queda marcado como gratis por tarjeta', red.loyalty_free and red.loyalty_card_id is not null);
+  perform tt.t_raises('mientras se canjea no se cambia el premio', format('select choose_camina_prize(%L)', bens[2]), 'Ya estás canjeando');
+  perform tt.t_as(owners[1]); perform confirm_redemption_code(bizs[1], red.code);
+  perform tt.t_as(u);
+  perform tt.t_eq('no se descontaron Puntos', user_points_balance(u), before_bal);
+  select id into card_id from loyalty_cards where user_id = u;
+  perform tt.t_eq('la tarjeta queda usada', (select status from loyalty_cards where id = card_id), 'used');
+  c := my_camina_card();
+  perform tt.t_eq('la tarjeta vuelve a 0', (c->>'stamps')::int, 0);
+  perform tt.t_eq('la tarjeta usada pasa a "anteriores"', jsonb_array_length(c->'past'), 1);
+  perform tt.t_eq('... como canjeada', c->'past'->0->>'status', 'used');
+  perform tt.t_eq('el canje gratis no cuenta como sello', (select count(*) from redemptions where user_id = u and loyalty_free)::int, 1);
 
   -- ===== Panel del comercio =====
-  perform tt.t_as(stranger);
-  perform tt.t_raises('un extraño no ve el resumen', format('select business_loyalty_overview(%L)', bz), 'No autorizado');
-  perform tt.t_as(owner);
-  ov := business_loyalty_overview(bz);
-  perform tt.t_eq('el panel reconoce el plan', (ov->>'plan_ok')::boolean, true);
-  perform tt.t_eq('el panel cuenta 1 cliente con tarjeta', (ov->>'customers')::int, 1);
-  perform tt.t_eq('el panel cuenta 1 tarjeta completa sin usar', (ov->>'ready_unused')::int, 1);
-  perform tt.t_eq('el panel muestra solo nombre de pila e inicial', ov->'close'->0->>'name', 'Marcos T.');
-  perform tt.t_true('el panel no devuelve teléfonos ni correos', not (ov::text ~* '@|phone|email'));
+  perform tt.t_as(owners[1]);
+  ov := business_loyalty_overview(bizs[1]);
+  perform tt.t_eq('el panel cuenta 1 premio entregado', (ov->>'delivered_total')::int, 1);
+  perform tt.t_eq('nadie espera su premio', jsonb_array_length(ov->'waiting'), 0);
 
-  -- ===== Solo planes de pago =====
-  perform tt.t_as(null);   -- el cambio de plan lo hace el equipo de Camina (no un cliente)
-  update businesses set plan = 'primer_paso' where id = bz;
+  -- ===== Segunda tarjeta: vence sin canjear =====
   perform tt.t_as(u);
-  perform tt.t_eq('Primer Paso: la tarjeta se apaga', (select count(*) from my_loyalty_cards(bz))::int, 0);
-  perform tt.t_as(owner);
-  perform tt.t_eq('Primer Paso: el panel avisa que no corresponde', (business_loyalty_overview(bz)->>'plan_ok')::boolean, false);
-  perform tt.t_raises('Primer Paso: no se puede elegir premio', format('select set_loyalty_benefit(%L, %L)', bz, b), 'Paso Firme');
+  for i in 1..5 loop
+    update redemptions set created_at = created_at - interval '15 days' where user_id = u;
+    perform tt.t_as(u); red := redeem_benefit(bens[i]);
+    perform tt.t_as(owners[i]); perform confirm_redemption_code(bizs[i], red.code);
+  end loop;
+  perform tt.t_as(u);
+  c := my_camina_card();
+  perform tt.t_eq('otros 5 canjes: segunda tarjeta completa', (c->>'stamps')::int, 5);
+  c := choose_camina_prize(bens[3]);
+  perform tt.t_as(owners[3]);
+  ov := business_loyalty_overview(bizs[3]);
+  perform tt.t_eq('el comercio ve quién eligió su premio', jsonb_array_length(ov->'waiting'), 1);
+  perform tt.t_eq('... solo con nombre de pila e inicial', ov->'waiting'->0->>'name', 'Marcos T.');
+
+  -- Aviso a los 7 días.
+  update loyalty_cards set expires_at = now() + interval '6 days' where user_id = u and status = 'open';
+  perform queue_camina_card_notifications();
+  perform queue_camina_card_notifications();
+  perform tt.t_eq('avisa que el premio vence (una sola vez)', (select count(*) from notifications_outbox where user_id = u and data->>'type' = 'camina_card_expiring')::int, 1);
+  update loyalty_cards set expires_at = now() + interval '1 day' where user_id = u and status = 'open';
+  perform queue_camina_card_notifications();
+  perform tt.t_eq('avisa de nuevo a los 2 días', (select count(*) from notifications_outbox where user_id = u and data->>'type' = 'camina_card_expiring')::int, 2);
+
+  -- Vence.
+  update loyalty_cards set expires_at = now() - interval '1 hour' where user_id = u and status = 'open';
+  perform tt.t_as(u);
+  c := my_camina_card();
+  perform tt.t_eq('vencida: la tarjeta empieza de nuevo', (c->>'stamps')::int, 0);
+  perform tt.t_eq('... y queda en "anteriores"', jsonb_array_length(c->'past'), 2);
+  perform tt.t_eq('... como vencida', c->'past'->0->>'status', 'expired');
+  red := redeem_benefit(bens[3]);
+  perform tt.t_eq('una tarjeta vencida no regala nada: el premio sale a su precio', red.cost_points, 20);
+  perform tt.t_true('... y no queda marcado como gratis', not red.loyalty_free);
+
+  -- ===== Privilegios =====
   perform tt.t_as(null);
-  update businesses set plan = 'paso_adelante' where id = bz;
-  perform tt.t_as(u);
-  perform tt.t_eq('Paso Adelante: la tarjeta funciona', (select stamps from my_loyalty_cards(bz)), 5);
-
-  -- ===== Otra persona, tarjeta propia y completa sin pasar por el premio =====
-  u2 := tt.mk_user(); perform tt.give(u2, 100, 60);
-  perform tt.t_as(u2);
-  perform tt.t_eq('cada persona tiene su propia tarjeta', (select stamps from my_loyalty_cards(bz)), 0);
-
-  -- ===== Subida ×1,25 de premios: una sola vez =====
-  perform tt.t_true('la subida de premios queda marcada para no repetirse', exists (select 1 from app_config where key = 'points_scale_2_5'));
+  perform tt.t_raises('sin sesión no hay tarjeta', 'select my_camina_card()', 'No autorizado');
 end $$;
 
 rollback;
