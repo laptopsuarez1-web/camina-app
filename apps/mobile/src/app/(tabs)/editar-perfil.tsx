@@ -309,8 +309,8 @@ export default function EditarPerfilScreen() {
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
-            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={leave} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
-              <ChevronLeft size={16} color="#fff" />
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={leave} hitSlop={8} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.42)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }}>
+              <ChevronLeft size={18} color="#fff" />
             </Press>
             <Text accessibilityRole="header" className="text-white text-[17px] font-bold flex-1">Editar perfil</Text>
             <Press accessibilityRole="button" accessibilityLabel="Cambiar fondo del perfil" onPress={() => setBgSheet(true)} className="flex-row items-center rounded-full px-3 py-1.5" style={{ gap: 6, backgroundColor: 'rgba(0,0,0,0.42)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }}>
@@ -331,7 +331,9 @@ export default function EditarPerfilScreen() {
                 <Camera size={15} color="#fff" weight="fill" />
               </View>
             </View>
-            <Text className="text-[12.5px] font-semibold mt-2" style={{ color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6 }}>Cambiar foto</Text>
+            <View className="mt-2 rounded-full px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.42)' }}>
+              <Text className="text-[12.5px] font-semibold" style={{ color: '#fff' }}>Cambiar foto</Text>
+            </View>
           </Press>
         </ProfileBanner>
         <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} />
