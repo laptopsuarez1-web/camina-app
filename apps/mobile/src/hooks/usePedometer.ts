@@ -15,6 +15,7 @@ import {
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import { syncYesterdayOnOpen } from '@/lib/steps-sync';
+import { boliviaDay } from '@/lib/bolivia';
 import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
@@ -169,8 +170,7 @@ function useIosSensorSteps(enabled: boolean) {
 export type StepSource = 'healthkit' | 'health-connect' | 'sensor' | null;
 
 function todayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return boliviaDay();
 }
 
 export function useTodaySteps() {
@@ -249,7 +249,7 @@ export function useTodaySteps() {
 // Salud ya tiene los pasos de los días en que no abriste la app. Se muestran en Actividad pero NO
 // suman Puntos: los Puntos solo se cargan con la app abierta (earn_points_from_steps).
 function dayKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return boliviaDay(d);
 }
 
 export function useHealthDailySteps(days = 35) {

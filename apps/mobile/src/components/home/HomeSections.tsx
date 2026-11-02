@@ -10,7 +10,8 @@ import { Glass } from '@/components/ui/Glass';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { BusinessAvatar } from '@/components/CategoryAvatar';
-import { dayLabel, localDay, plural } from '@/lib/format';
+import { dayLabel, plural } from '@/lib/format';
+import { boliviaDay } from '@/lib/bolivia';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
@@ -274,7 +275,7 @@ export function MyRedemptionsSection({
           {list.map((r, i) => {
             const c = statusColors(r.status, dark);
             // Día LOCAL del canje (no el de UTC); se recortan los decimales extra por si Hermes no los acepta.
-            const when = dayLabel(localDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
+            const when = dayLabel(boliviaDay(new Date(r.created_at.replace(/(\.\d{3})\d+/, '$1'))));
             const story = storyFor?.(r) ?? null;
             return (
               <View key={r.id} className={i > 0 ? 'border-t border-line-light dark:border-line-dark' : ''}>

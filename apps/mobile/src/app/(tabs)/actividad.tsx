@@ -18,7 +18,8 @@ import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
-import { dayLabel } from '@/lib/format';
+import { dayLabel, localDay } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_BONUS_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
@@ -35,8 +36,9 @@ import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
 
+// Los días de Actividad son días de Bolivia; las fechas "de calendario" (hoy menos N días) se arman con boliviaToday().
 function localKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return localDay(d);
 }
 
 function useStepsHistory() {
@@ -45,7 +47,7 @@ function useStepsHistory() {
     queryKey: ['steps-history-full', userId],
     enabled: !!userId,
     queryFn: async () => {
-      const since = new Date();
+      const since = boliviaToday();
       since.setDate(since.getDate() - 34);
       const { data, error } = await supabase
         .from('steps_daily')
@@ -107,7 +109,7 @@ export default function ActividadScreen() {
     for (const h of history ?? []) map.set(h.day, h.steps);
     // Salud guarda los pasos de los días en que no abriste la app: se muestran aquí, pero no suman Puntos.
     for (const [k, v] of Object.entries(healthDaily)) map.set(k, Math.max(map.get(k) ?? 0, v));
-    map.set(localKey(new Date()), stepsToday);
+    map.set(localDay(), stepsToday);
     return map;
   }, [history, stepsToday, healthDaily]);
 
@@ -122,14 +124,14 @@ export default function ActividadScreen() {
   const goalByDay = useMemo(() => {
     const map = new Map<string, number>();
     for (const h of history ?? []) if (h.goal) map.set(h.day, Math.max(h.goal, MIN_DAILY_GOAL));
-    map.set(localKey(new Date()), goal);
+    map.set(localDay(), goal);
     return map;
   }, [history, goal]);
   const goalFor = (key: string) => goalByDay.get(key) ?? goal;
   // Días en que la app abrió y sincronizó pasos: solo esos cuentan para la meta y los Puntos.
   const openedDays = useMemo(() => new Set((history ?? []).map((h) => h.day)), [history]);
-  const firstDay = (history ?? []).reduce<string>((min, h) => (h.day < min ? h.day : min), localKey(new Date()));
-  const todayKey = localKey(new Date());
+  const firstDay = (history ?? []).reduce<string>((min, h) => (h.day < min ? h.day : min), localDay());
+  const todayKey = localDay();
   const [selected, setSelected] = useState<string | null>(null);
 
   const km = (stepsToday * STEP_LENGTH_METERS) / 1000;
@@ -139,7 +141,7 @@ export default function ActividadScreen() {
   const weekDays = useMemo(() => {
     const days: { key: string; steps: number; label: string }[] = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
+      const d = boliviaToday();
       d.setDate(d.getDate() - i);
       const key = localKey(d);
       days.push({ key, steps: byDay.get(key) ?? 0, label: DIAS_CORTO[(d.getDay() + 6) % 7] });
@@ -151,7 +153,7 @@ export default function ActividadScreen() {
   const prevWeekTotal = useMemo(() => {
     let total = 0;
     for (let i = 13; i >= 7; i--) {
-      const d = new Date();
+      const d = boliviaToday();
       d.setDate(d.getDate() - i);
       total += byDay.get(localKey(d)) ?? 0;
     }
@@ -165,7 +167,7 @@ export default function ActividadScreen() {
   const chartDays = useMemo(() => {
     const days: { key: string; steps: number; label: string; isToday: boolean }[] = [];
     for (let i = range - 1; i >= 0; i--) {
-      const d = new Date();
+      const d = boliviaToday();
       d.setDate(d.getDate() - i);
       const key = localKey(d);
       days.push({
@@ -183,7 +185,7 @@ export default function ActividadScreen() {
   const rangeTotal = chartDays.reduce((a, d) => a + d.steps, 0);
 
   const calendarWeeks = useMemo(() => {
-    const now = new Date();
+    const now = boliviaToday();
     const year = now.getFullYear();
     const month = now.getMonth();
     const firstOfMonth = new Date(year, month, 1);
@@ -213,7 +215,7 @@ export default function ActividadScreen() {
     return weeks;
   }, [byDay, goal, goalByDay, firstDay, todayKey, openedDays]);
 
-  const monthName = new Date().toLocaleDateString('es-BO', { month: 'long' });
+  const monthName = boliviaToday().toLocaleDateString('es-BO', { month: 'long' });
 
   const fullHistory = useMemo(() => [...(history ?? [])].reverse(), [history]);
   // Promedio de tus días anteriores (sin hoy, que todavía no terminó): cada día se compara con él, como "vs. promedio".

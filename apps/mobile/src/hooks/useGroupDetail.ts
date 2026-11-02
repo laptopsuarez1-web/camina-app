@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { localDay } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 import { fetchMemberSteps } from '@/lib/group-steps';
 import type { GroupNote } from '@/lib/database.types';
 
 function startOfWeekLocal() {
-  const d = new Date();
+  const d = boliviaToday();
   const day = d.getDay();
   const diffToMonday = day === 0 ? 6 : day - 1;
   d.setDate(d.getDate() - diffToMonday);

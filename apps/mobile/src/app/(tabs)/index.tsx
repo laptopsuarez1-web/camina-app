@@ -32,6 +32,7 @@ import { useFriends, useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
+import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
@@ -47,12 +48,11 @@ import { Coin } from '@/components/ui/Coin';
 const POINTS_COLOR = '#2CFFAE';
 
 function localDayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return boliviaDay();
 }
 
 function greeting(name: string) {
-  const h = new Date().getHours();
+  const h = boliviaHour();
   const label = name.trim().split(/\s+/)[0] || 'caminante';
   if (h < 6) return `¿Todavía despierto, ${label}?`;
   if (h < 12) return `Buen día, ${label}`;
@@ -543,7 +543,7 @@ export default function HomeScreen() {
               </Text>
             </Press>
           </View>
-        ) : Platform.OS === 'ios' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
+        ) : Platform.OS === 'ios' && deviceSteps === 0 && boliviaHour() >= 9 ? (
           // Recién pasada la medianoche los pasos de hoy son 0 de verdad: el aviso aparece desde las 9.
           // El permiso de Salud no está en los Ajustes de la app sino dentro de la app Salud, así que el botón abre Salud.
           <Press

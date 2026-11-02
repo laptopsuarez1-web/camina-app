@@ -19,6 +19,7 @@ import { RULE_LABEL, type ChallengeRule } from '@/hooks/useChallenges';
 import { ChallengeCreatedScene } from '@/components/challenge/ChallengeCinematics';
 import { friendlyServerError } from '@/lib/errors';
 import { localDay } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 import { Coin } from '@/components/ui/Coin';
 
 const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Activity; tone: 'aqua' | 'gold' | 'orange' }[] = [
@@ -76,7 +77,7 @@ export default function NuevoDesafioScreen() {
       [],
     ),
   );
-  const start = new Date();
+  const start = boliviaToday();
   const end = addDays(start, days - 1);
   const fmtShort = (d: Date) => d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit' });
 

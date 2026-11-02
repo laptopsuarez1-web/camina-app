@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_MIN_STEPS } from '@/constants/business-rules';
 import { localDay } from '@/lib/format';
+import { boliviaToday } from '@/lib/bolivia';
 
 export interface Streaks {
   /** Racha: días seguidos con al menos STREAK_MIN_STEPS pasos (5.000). Es la que da el bono semanal. */
@@ -35,7 +36,7 @@ export function useStreaks() {
     queryKey: ['streak', userId, goal],
     enabled: !!userId,
     queryFn: async (): Promise<Streaks> => {
-      const since = new Date();
+      const since = boliviaToday();
       since.setDate(since.getDate() - 400);
       const { data, error } = await supabase
         .from('steps_daily')
