@@ -92,7 +92,7 @@ export default function RankingScreen() {
   const moreGlobal = (global?.length ?? 0) >= shown && shown < 100;
   const moreFriends = friendRows.length > shown;
   const myPosition = view === 'global' ? (myRank ? myRank.position : null) : myFriendRow ? myFriendRow.position : null;
-  const myScope = view === 'global' ? 'de toda Camina' : `de ${friendRows.length} en tu círculo`;
+  const myScope = view === 'global' ? 'de todo Camina' : `de ${friendRows.length} en tu círculo`;
 
   const chip = (key: 'global' | 'amigos', label: string) => (
     <Press
@@ -160,8 +160,8 @@ export default function RankingScreen() {
             {average != null && average > 0 && (
               <View className="rounded-2xl p-4 mb-4" style={{ backgroundColor: dark ? 'rgba(183,166,240,0.16)' : '#F0EAFA' }}>
                 <Text className="text-[13px]" style={{ color: text }}>
-                  La comunidad de Camina camina en promedio{' '}
-                  <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text> por semana.
+                  Cada semana, una persona de Camina da en promedio{' '}
+                  <Text className="font-bold">{Math.round(average).toLocaleString('es-BO')} pasos</Text>.
                 </Text>
               </View>
             )}
