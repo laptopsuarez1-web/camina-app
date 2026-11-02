@@ -244,13 +244,18 @@ export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   const key = profileBg(bg).key;
   if (key === 'violeta') return null;
   const Scene = SCENES[key];
+  // El Svg va dentro de un contenedor que llena el banner SIN relleno: en iPhone, width/height "100%" directamente sobre un hijo
+  // absoluto del banner se calculaban contra el área interior (sin los 20 de margen lateral ni el relleno de arriba y abajo),
+  // y el dibujo salía más chico y cortado a la derecha con una franja oscura.
   return (
-    <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H + SHIFT}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
-      {key !== 'sendero' ? <Stars n={48} seed={3} maxY={H} /> : null}
-      <G transform={`translate(0 ${SHIFT})`}>
-        <Scene />
-      </G>
-    </Svg>
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H + SHIFT}`} preserveAspectRatio="xMidYMax slice">
+        {key !== 'sendero' ? <Stars n={48} seed={3} maxY={H} /> : null}
+        <G transform={`translate(0 ${SHIFT})`}>
+          <Scene />
+        </G>
+      </Svg>
+    </View>
   );
 }
 
