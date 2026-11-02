@@ -30,6 +30,8 @@ export const CAP = {
   rachas: '/web/cap/rachas.jpg',
   ranking: '/web/cap/ranking.jpg',
   perfil: '/web/cap/perfil.jpg',
+  fichaAmigo: '/web/cap/ficha-amigo.jpg',
+  fondoPerfil: '/web/cap/fondo-perfil.jpg',
   resenaHistoria: '/web/cap/resena-historia.jpg',
   historia: '/web/cap/historia.jpg',
 };
@@ -248,6 +250,8 @@ export function Galeria() {
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.ficha],
     ['Tus Puntos', 'Tu saldo, tus movimientos y cómo invitar amigos.', CAP.puntos],
     ['Perfil', 'Tus datos, tus amigos y tus permisos.', CAP.perfil],
+    ['La ficha de un amigo', 'Su semana, su racha y cómo vas tú comparado con él.', CAP.fichaAmigo],
+    ['Elige el fondo de tu perfil', 'Seis fondos dibujados para tu perfil y para la ficha que ven tus amigos.', CAP.fondoPerfil],
   ] as const;
   return (
     <section className="lp-sec alt" id="app" data-modo="oscuro">
