@@ -111,7 +111,7 @@ export function CaminaCardView({ card, onOpen, animate }: { card: CaminaCard; on
     >
       {ready ? <Shine /> : null}
       <View className="flex-row items-center justify-between mb-3.5">
-        <Text accessibilityRole="header" className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>Tu tarjeta Camina</Text>
+        <Text accessibilityRole="header" className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>Tarjeta de fidelidad</Text>
         <View className="rounded-full px-2.5 py-0.5" style={{ backgroundColor: ready ? GOLD : t.dark ? colors.dark.purpleLight : colors.light.purpleLight }}>
           <Text style={{ fontSize: 12, fontWeight: '800', color: ready ? GOLD_TEXT : t.purpleText }}>{Math.min(card.stamps, card.goal)} de {card.goal}</Text>
         </View>

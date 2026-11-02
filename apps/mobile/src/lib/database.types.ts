@@ -152,6 +152,19 @@ export interface CaminaCard {
   chosen_benefit_id: string | null;
   options: CaminaPrizeOption[];
   history: { business_name: string; at: string }[];
+  // Tarjetas anteriores: las que ya se completaron y se canjearon (used) o se vencieron sin canjear (expired).
+  past: CaminaPastCard[];
+}
+
+export interface CaminaPastCard {
+  completed_at: string;
+  status: 'used' | 'expired';
+  // Cuándo se canjeó (used) o cuándo venció (expired).
+  closed_at: string;
+  benefit_name: string | null;
+  business_name: string | null;
+  logo_url: string | null;
+  category: string | null;
 }
 
 export interface LoyaltyCard {
