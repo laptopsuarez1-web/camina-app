@@ -40,6 +40,12 @@ export async function completeGoogleSignIn(idToken: string) {
   return supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
 }
 
+// Agrega Google a una cuenta que ya existe (la sesión actual). Si ese Google ya está en otra cuenta, Supabase
+// devuelve un error y no junta nada. Requiere "Allow manual linking" activo en Supabase Auth.
+export async function linkGoogleIdentity(idToken: string) {
+  return supabase.auth.linkIdentity({ provider: 'google', token: idToken });
+}
+
 export async function isAppleSignInAvailable() {
   if (Platform.OS !== 'ios') return false;
   return AppleAuthentication.isAvailableAsync();
