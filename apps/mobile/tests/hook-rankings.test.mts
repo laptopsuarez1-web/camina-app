@@ -19,12 +19,12 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------- ranking global (abierto desde el primer usuario)
-test('ranking global: pide los 20 primeros; el promedio de la comunidad cae a 0 si no hay dato', async () => {
+test('ranking global: pide los 15 primeros (de 15 en 15); el promedio de la comunidad cae a 0 si no hay dato', async () => {
   db.rpc.global_weekly_ranking = () => [{ user_id: 'a', total_steps: 1 }];
   useGlobalRanking();
-  assert.deepEqual(rq.lastQuery.queryKey, ['global-ranking']);
+  assert.deepEqual(rq.lastQuery.queryKey, ['global-ranking', 15]);
   assert.equal((await rq.lastQuery.queryFn()).length, 1);
-  assert.deepEqual(db.rpcLog[0], { name: 'global_weekly_ranking', args: { p_limit: 20 } });
+  assert.deepEqual(db.rpcLog[0], { name: 'global_weekly_ranking', args: { p_limit: 15 } });
   db.rpc.global_weekly_ranking = () => ({ error: new Error('boom') });
   await assert.rejects(() => rq.lastQuery.queryFn(), /boom/);
 
