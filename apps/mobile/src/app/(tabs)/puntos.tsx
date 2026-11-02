@@ -7,10 +7,8 @@ import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Share2, Users, Trophy, Activity, Gift, IconBubble } from '@/components/icons';
-import { useCaminaCard, useChooseCaminaPrize } from '@/hooks/useCaminaCard';
-import { CaminaCardView } from '@/components/loyalty/CaminaCardView';
-import { PrizeSheet } from '@/components/loyalty/PrizeSheet';
+import { ChevronLeft, ChevronRight, Share2, Users, Trophy, Activity, Gift, IconBubble } from '@/components/icons';
+import { useCaminaCard } from '@/hooks/useCaminaCard';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePointsBalance, usePointsToday, usePointsExpiringSoon } from '@/hooks/usePoints';
@@ -96,8 +94,7 @@ export default function PuntosScreen() {
   const { data: expiring } = usePointsExpiringSoon();
   const { data: movimientos, isLoading, isError, refetch } = useMovimientos();
   const { data: caminaCard } = useCaminaCard();
-  const choose = useChooseCaminaPrize();
-  const [prizeOpen, setPrizeOpen] = useState(false);
+  const caminaListo = !!caminaCard && caminaCard.stamps >= caminaCard.goal;
   const [copied, setCopied] = useState(false);
 
   const link = useMemo(() => (profile ? referralLink(profile.id) : ''), [profile]);
@@ -151,19 +148,25 @@ export default function PuntosScreen() {
         )}
       </DarkHeader>
 
-      {caminaCard ? (
-        <View className="mx-5 mt-3">
-          <CaminaCardView card={caminaCard} onOpen={() => setPrizeOpen(true)} animate />
-          <PrizeSheet
-            card={caminaCard}
-            visible={prizeOpen}
-            onClose={() => setPrizeOpen(false)}
-            choosing={choose.isPending}
-            onChoose={(id) => choose.mutate(id, { onSuccess: () => setPrizeOpen(false) })}
-            onGoToBusiness={() => router.push('/(tabs)/canjes')}
-          />
+      <Press
+        accessibilityRole="button"
+        onPress={() => router.push('/(tabs)/tarjetas')}
+        className="mx-5 mt-3 flex-row items-center gap-3 bg-card-light dark:bg-card-dark rounded-2xl p-3.5"
+        style={caminaListo ? { borderWidth: 2, borderColor: '#E2B33C' } : undefined}
+      >
+        <IconBubble icon={Gift} tone="gold" size={40} />
+        <View className="flex-1">
+          <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
+          <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+            {!caminaCard
+              ? 'Junta 5 canjes y elige un premio gratis'
+              : caminaCard.stamps >= caminaCard.goal
+                ? caminaCard.chosen_benefit_id ? 'Tu premio te espera en el local' : '¡Completa! Elige tu premio'
+                : `${caminaCard.stamps} de ${caminaCard.goal} canjes`}
+          </Text>
         </View>
-      ) : null}
+        <ChevronRight size={18} color={colors.light.muted} />
+      </Press>
 
       <View className="bg-purple-light-light dark:bg-purple-light-dark mx-5 mt-3 rounded-2xl p-4">
         <View className="flex-row items-center gap-3 mb-2">
