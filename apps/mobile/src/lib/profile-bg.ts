@@ -1,6 +1,6 @@
 import { colors } from '@/theme/tokens';
 
-// Fondos del perfil (banner de arriba). Se guarda la clave en profiles.profile_bg (migración 0078); null = Violeta, el de siempre.
+// Fondos del perfil (banner de arriba). Se guarda la clave en profiles.profile_bg (migración 0079); null = Violeta, el de siempre.
 // El dibujo de cada uno está en components/profile/ProfileBanner.tsx.
 export const PROFILE_BGS = [
   { key: 'violeta', label: 'Violeta', colors: colors.headerGradient },

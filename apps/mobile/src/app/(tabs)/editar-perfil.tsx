@@ -146,7 +146,7 @@ export default function EditarPerfilScreen() {
     try {
       const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri, photoB64) : undefined;
       // La descripción se manda solo si cambió: así guardar el perfil sigue andando aunque la base todavía no tenga la columna (migración 0056).
-      // El fondo, igual: solo si cambió (migración 0078).
+      // El fondo, igual: solo si cambió (migración 0079).
       const bgChanged = bgKey !== (profile.profile_bg ?? 'violeta');
       const bioChanged = bioInput.trim() !== (profile.bio ?? '');
       const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}), ...(bgChanged ? { profile_bg: bgKey === 'violeta' ? null : bgKey } : {}) };
