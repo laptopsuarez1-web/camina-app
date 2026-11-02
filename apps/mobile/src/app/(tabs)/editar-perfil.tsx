@@ -102,7 +102,10 @@ export default function EditarPerfilScreen() {
   const yearRef = useRef<TextInput>(null);
   const email = session?.user.email ?? '';
   // Las cuentas de Google o Apple no tienen contraseña propia hasta que crean una aquí (queda marcado en has_password).
-  const hasPassword = session?.user.user_metadata?.has_password === true || (session?.user.app_metadata?.provider ?? 'email') === 'email';
+  // Si la cuenta tiene Google/Apple vinculado y nunca marcó que creó una contraseña, se ofrece "Crear contraseña":
+  // cuenta nueva por Google que después se enlazó con el correo no tiene contraseña, y pedir la "actual" la dejaba sin salida.
+  const providers = (session?.user.app_metadata?.providers as string[] | undefined) ?? [session?.user.app_metadata?.provider ?? 'email'];
+  const hasPassword = session?.user.user_metadata?.has_password === true || (providers.includes('email') && !providers.some((p) => p === 'google' || p === 'apple'));
   const linkedProvider = ((session?.user.app_metadata?.providers as string[] | undefined) ?? []).includes('apple') ? 'Apple' : 'Google';
   // Con el link del correo ya se comprobó que es la persona: no se pide la actual.
   const askCurrent = hasPassword && !recovering;
@@ -206,7 +209,8 @@ export default function EditarPerfilScreen() {
     setRepeatPassword('');
     setChangingPassword(false);
     Alert.alert('Listo', hasPassword ? 'Tu contraseña se actualizó.' : `Ya puedes entrar con ${email} y tu contraseña, además de ${linkedProvider}.`);
-    if (recovering) router.setParams({ nueva: undefined });
+    // Se sale de esta pantalla hacia Inicio: así "atrás" no vuelve al login ni al link del correo.
+    if (recovering) router.replace('/(tabs)');
   }
 
   // Si no se acuerda de la actual: se manda un link al correo de la cuenta y desde ahí elige una nueva.
