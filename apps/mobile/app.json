@@ -2,7 +2,10 @@
   "expo": {
     "name": "Camina",
     "slug": "camina",
-    "scheme": ["camina", "bo.camina.app"],
+    "scheme": [
+      "camina",
+      "bo.camina.app"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -165,6 +168,14 @@
         "projectId": "8b0cfd55-9922-4731-b971-f614435ac781"
       }
     },
-    "owner": "marcos2114"
+    "owner": "marcos2114",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8b0cfd55-9922-4731-b971-f614435ac781",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }
