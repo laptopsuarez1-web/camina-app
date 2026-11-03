@@ -1,49 +1,45 @@
 ---
 name: camina-publicaciones
-description: Reglas de marca para diseñar publicaciones, flyers, stories y videos de Camina (Instagram y otras redes). Úsala siempre que se pida una pieza gráfica o de video para Camina.
+description: Reglas de marca para piezas de publicidad de Camina (posts, carruseles, historias). Copia fiel del paquete TRASPASO-PUBLICIDAD de Marcos. Si algo no está aquí, preguntar; no inventar.
 ---
 
 # Publicaciones de Camina
 
-Camina es una app de Bolivia (piloto en Tarija): la gente camina, gana Puntos y los canjea en comercios locales.
+Fuente de verdad: `TRASPASO-PUBLICIDAD.md` (3 nov 2026) y las decisiones de Marcos. Si hay duda, manda el traspaso.
 
-## Reglas obligatorias
-- Español, sin voseo. Se dice "zona", no "barrio".
-- **Sin personas** por ahora (ni fotos ni ilustraciones de gente).
-- **Sin la mascota Baifo**, en ninguna pieza.
-- **Nunca redibujar la moneda de Puntos.** Usar `apps/mobile/assets/camina-coin.png`.
-- Moneda dorada (`camina-coin-gold.png`) y borde dorado: solo para el plan Paso Adelante.
-- Íconos simples, no brillantes. Pasito (otra app) es solo inspiración, no se copia.
-- No inventar premios, comercios, precios ni cifras. Si falta un dato, preguntar.
-- Look: vidrio, anillo aqua, monedas, fondo perlado. Mantener el estilo actual de la app.
+## Regla 0
+Esta etapa es solo creativa. No tocar `apps/`, `supabase/`, ni hacer builds, migraciones o merges a `main` sin OK explícito de Marcos.
 
-## Colores (de `apps/mobile/src/theme/tokens.ts`)
-- Aqua `#4FC3A8`, aqua oscuro `#1F7A66`, mint `#7FEDC4`
-- Morado `#8B4FD1`, morado suave `#C9ADF5`, morado oscuro `#5B31A3`
-- Claro: fondo `#F7F3FC`, tarjeta `#FFFFFF`, texto `#291C47`
-- Oscuro: fondo `#16101F`, tarjeta `#221933`, texto `#F0EBFA`
-- Degradé de cabecera: `#3a2668` → `#1c1030` → `#120a1e`
-- El texto debe tener contraste suficiente (mínimo 4,5:1).
+## Marca
+- Paleta: fondo noche `#200A52` → `#2F1E5C` → `#3B2577`; único acento menta `#62F0B6`; texto secundario lila `#C4B8E8`; morado `#8B4FD1`. Dorado `#F7CF55` SOLO para el plan Paso Adelante. Nada de fondo blanco, rojo, azul eléctrico ni degradados arcoíris.
+- Tipografía: titulares Montserrat Black MAYÚSCULAS (interlineado ~1,0) con UNA palabra clave en menta; el resto Plus Jakarta Sans. Máximo 2 fuentes.
+- Logo: solo el oficial, `logo-solo-transparente.png` (en `apps/partner/public/marca/`). Huellas: `pie-izq-mint.png`, `pie-der-mint.png`. Moneda de Puntos: `camina-coin.png`. Nunca redibujarlos ni usar huellas de internet.
+- Estilo: modo oscuro, vidrio (tarjetas translúcidas, radios grandes), aro de pasos menta, mucho aire. Íconos simples; sin emoji como ícono ni corazón.
+- Baifo (mascota): NO usarlo (decisión actual de Marcos).
+- Personas: no usar por ahora.
 
-## Tipografía
-- Títulos: Montserrat Black (`apps/mobile/assets/fonts/Montserrat_900Black.ttf`)
-- Texto: Plus Jakarta Sans (400 a 800, misma carpeta)
-
-## Recursos
-- **Logo oficial (usar SIEMPRE, sin pedir permiso):** `apps/partner/public/marca/logo-con-nombre-transparente.png` (círculo con pies + palabra CAMINA, transparente, 1400×1500). Variantes: `logo-solo-transparente.png`, `logo-solo-morado.png`, `nombre-camina-transparente.png`.
-- `logo-mint.png` y `camina-coin.png` son la moneda de Puntos, NO el logo oficial. La moneda solo se usa para representar Puntos.
-- Pies: `pie-izq-aqua.png`, `pie-der-aqua.png`, `pie-izq-mint.png`, `pie-der-mint.png`
-- Capturas reales de la app: preferirlas a maquetas inventadas.
+## Texto
+- Español neutro SIN voseo (camina, suma, canjea; nunca caminá, sumá, tenés, vos).
+- "Puntos" con mayúscula; "zona", no "barrio"; números con punto de miles (1.000).
+- Camina es de toda Bolivia (hora de La Paz, Bs). Nombrar Tarija SOLO en piezas locales.
+- Tiendas: escribir "Próximamente en Google Play / App Store". Sin fecha, sin "disponible", sin "descarga ya" hasta que Marcos avise.
+- CTA: caminaapp.com. NUNCA el @ de Instagram en las piezas.
+- No inventar cifras, comercios, premios, precios ni testimonios. Datos de demostración: rotular "DATOS DE EJEMPLO".
+- Comercios autorizados: Bloom, Coco Barber, Fripap's (sus premios exactos los confirma Marcos).
+- Datos reales permitidos: 1.000 pasos = 1 Punto; tope 20 Puntos/día; los Puntos duran 90 días; hay ranking, grupos, desafíos y eventos; planes de comercios: Primer Paso (gratis), Paso Firme Bs 100/mes, Paso Adelante Bs 300/mes.
+- Frases aprobadas: "Caminar ahora tiene premio" (campaña vigente), "Cada paso cuenta", "Yo camino con Camina", "Tus pasos valen Puntos".
+- No prometer dinero ni salud.
 
 ## Formatos
-- Feed de Instagram: 1080×1350 (4:5)
-- Stories y Reels: 1080×1920 (9:16)
-- Margen de seguridad en stories: 250 px arriba y abajo.
-- Una idea por pieza, poco texto, un solo llamado a la acción.
+- Post 1080×1350 (o 1080×1080). Historia/reel 1080×1920 con 250 px libres arriba y abajo.
+- Texto mínimo 28 px; máximo 3 líneas por bloque.
+- Usar capturas reales de la app (modo oscuro, teléfonos completos). No rotar, inclinar ni cortar teléfonos o textos; no solapar texto con teléfonos; no usar capturas viejas.
+- Fotos: solo con permiso o propias. No publicar fotos con marca de agua.
+- Pasito y otras apps: solo inspiración, no copiar.
 
-## Proceso
-1. Mostrar la propuesta en modo oscuro antes de darla por final.
-2. Entregar PNG (y video MP4 si aplica), más el texto del caption.
-3. Después de cada ronda, un PDF antes/después (claro y oscuro).
-4. Nunca decir "listo" sin verificar el resultado. Si algo no se pudo probar, decirlo.
-5. Herramientas: conectores de Canva y Figma si están activos; si no, HTML renderizado con Playwright.
+## Cómo trabajar con Marcos
+- Español, mensajes cortos, empezar llamándolo por su nombre, una instrucción por vez.
+- Antes de decir "listo", mostrar la imagen renderizada; nunca decir "listo" sin verificar.
+- Cambios visuales: prueba en modo oscuro; tras cada ronda, PDF antes/después (claro y oscuro).
+- Si falta un dato, preguntar antes de inventar.
+- Builds EAS: jamás lanzar uno sin avisar cuántos van usados y esperar su OK.
