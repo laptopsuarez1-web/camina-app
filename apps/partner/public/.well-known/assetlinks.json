@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "bo.camina.app",
+      "sha256_cert_fingerprints": [
+        "DD:5B:73:6C:70:26:97:4E:00:C8:B8:D1:D0:F4:BD:26:B5:A9:B5:E1:7D:EF:00:B4:35:B6:4C:91:EE:14:14:E0"
+      ]
+    }
+  }
+]
