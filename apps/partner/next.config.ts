@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       // iPhone lee este archivo para abrir la app directo al tocar caminaapp.com/r/... o /join-group/... (universal links).
       { source: "/.well-known/apple-app-site-association", headers: [{ key: "Content-Type", value: "application/json" }] },
+      // Android lee este archivo para verificar los vínculos directos (App Links) de la app.
+      { source: "/.well-known/assetlinks.json", headers: [{ key: "Content-Type", value: "application/json" }] },
     ];
   },
 };
