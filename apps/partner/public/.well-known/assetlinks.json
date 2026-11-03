@@ -1,11 +1,16 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "bo.camina.app",
       "sha256_cert_fingerprints": [
-        "DD:5B:73:6C:70:26:97:4E:00:C8:B8:D1:D0:F4:BD:26:B5:A9:B5:E1:7D:EF:00:B4:35:B6:4C:91:EE:14:14:E0"
+        "03:3C:21:64:55:43:03:05:4B:87:88:4A:14:A3:B0:8D:3A:95:08:C2:24:99:36:A7:7D:36:DD:60:BD:C2:17:19",
+        "B6:73:43:62:8F:62:B3:E3:2B:8D:8C:05:43:0B:CF:D2:92:23:B3:8C:6F:3E:2A:E0:F4:AB:EF:6A:A1:78:21:2B",
+        "E4:CB:73:B9:DC:69:9E:5F:A6:A9:51:1F:AD:FE:C2:2C:A4:C8:05:BA:58:39:4D:0B:AF:10:26:D6:AC:E1:43:1E"
       ]
     }
   }
