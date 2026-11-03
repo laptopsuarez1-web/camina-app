@@ -30,7 +30,8 @@ Camina es una app de Bolivia (piloto en Tarija): la gente camina, gana Puntos y 
 - Texto: Plus Jakarta Sans (400 a 800, misma carpeta)
 
 ## Recursos
-- Logo: `apps/mobile/assets/logo-mint.png`, `icon.png`
+- **Logo oficial (usar SIEMPRE, sin pedir permiso):** `apps/partner/public/marca/logo-con-nombre-transparente.png` (círculo con pies + palabra CAMINA, transparente, 1400×1500). Variantes: `logo-solo-transparente.png`, `logo-solo-morado.png`, `nombre-camina-transparente.png`.
+- `logo-mint.png` y `camina-coin.png` son la moneda de Puntos, NO el logo oficial. La moneda solo se usa para representar Puntos.
 - Pies: `pie-izq-aqua.png`, `pie-der-aqua.png`, `pie-izq-mint.png`, `pie-der-mint.png`
 - Capturas reales de la app: preferirlas a maquetas inventadas.
 
