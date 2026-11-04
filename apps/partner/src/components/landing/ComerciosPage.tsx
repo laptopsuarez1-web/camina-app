@@ -19,7 +19,7 @@ export default function ComerciosPage() {
             <div className="copy">
               <Kinetic as="h1" text="Tus próximos clientes ya están *caminando.*" />
               <p className="sub">
-                Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo y elige qué premio dar.
+                Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo y elige qué dar: un descuento o un regalo.
               </p>
               <div className="lp-cta">
                 <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>

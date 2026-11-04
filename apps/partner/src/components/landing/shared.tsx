@@ -416,7 +416,7 @@ export function DescargaGente() {
 
 export function PasosComercio() {
   const pasos = [
-    ['Creas tu perfil en el panel', 'Es gratis con cualquier plan. Cargas tu local, tu logo, tus fotos y tu primer premio.'],
+    ['Creas tu perfil en el panel', 'Es gratis con cualquier plan. Cargas tu local, tu logo, tus fotos y tu primer descuento o regalo.'],
     ['Eliges tu plan al terminar', 'Empiezas gratis, o eliges Paso Firme o Paso Adelante y pagas con el QR. Si eres de los primeros 20, pides tu cupo fundador por WhatsApp y te habilitamos.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
     ['Apareces en el mapa', 'La gente de tu zona te encuentra y canjea. Les dices el código de tu local y listo.'],
@@ -483,7 +483,7 @@ export function PanelComercio() {
       <div className="wrap panel-row">
         <div>
           <Kinetic text="Todo desde *tu* *panel.*" as="h2" />
-          <p className="lead">Cargas tu local y tus premios, tienes el código de tu local y miras tus canjes. Sin instalar nada.</p>
+          <p className="lead">Cargas tu local y tus descuentos, tienes el código de tu local y miras tus canjes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
             <Link className="lp-btn line" href="/login">Ya tengo cuenta</Link>
@@ -1035,14 +1035,14 @@ export function CierreGente() {
 
 // Comercios: lo que gana el local al entrar.
 const GANA = [
-  ['Horas tranquilas', 'El premio vale cuando entra menos gente.'],
+  ['Horas tranquilas', 'Tu descuento vale cuando entra menos gente.'],
   ['Clientes nuevos', 'Te descubren en el mapa.'],
-  ['Venden más', 'Quien viene por su premio suele llevar algo más.'],
-  ['Más margen', 'Premia con lo que más te conviene vender.'],
-  ['Vuelven', 'Premios por visitas recurrentes.'],
+  ['Venden más', 'Quien viene por su descuento suele llevar algo más.'],
+  ['Más margen', 'Haz descuentos en lo que más te conviene vender.'],
+  ['Vuelven', 'Beneficios por visitas recurrentes.'],
   ['Te recomiendan', 'Reseñas en Google Maps e historias.'],
 ];
-const REGLAS = ['Tu premio', 'Cupos por día', 'Días y horarios', 'Solo en el local'];
+const REGLAS = ['Descuento o regalo', 'Cupos por día', 'Días y horarios', 'Solo en el local'];
 export function GanaLocal() {
   return (
     <section className="lp-sec" id="beneficios">
@@ -1051,7 +1051,7 @@ export function GanaLocal() {
         <Kinetic text="Lo que gana *tu* *local.*" />
         <InView className="gana-hero">
           <h3>Gente que llega caminando.</h3>
-          <p>Cada canje es una persona que caminó hasta tu puerta, con ganas de conocerte.</p>
+          <p>Cada canje es una persona que caminó hasta tu puerta, con ganas de conocerte. Tú eliges qué darle: un descuento o un regalo.</p>
         </InView>
         <InView className="gana-reglas" delay={100}>
           <h3>Tú decides.</h3>
@@ -1071,7 +1071,7 @@ export function GanaLocal() {
 }
 
 const MARCA = [
-  { t: 'Desafío de pasos', d: 'Una meta de pasos con tu marca y un premio para quienes la cumplen.', img: CAP.desafios, big: true },
+  { t: 'Desafío de pasos', d: 'Una meta de pasos con tu marca y un beneficio para quienes la cumplen.', img: CAP.desafios, big: true },
   { t: 'Eventos y sorteos', d: 'Caminatas y sorteos dentro de la app.', img: CAP.eventos },
   { t: 'Banner en Inicio', d: 'Tu logo y tu mensaje en la primera pantalla.', img: CAP.inicio },
 ];
@@ -1081,7 +1081,7 @@ export function TuMarca() {
       <div className="wrap">
         <p className="kick">Tu marca en movimiento</p>
         <Kinetic text="Más formas de llegar *a* *la* *gente.*" />
-        <p className="lead">Además de tu premio en el mapa, puedes hacer que la gente camine por tu marca.</p>
+        <p className="lead">Además de tu descuento en el mapa, puedes hacer que la gente camine por tu marca.</p>
         <div className="marca-grid">
           {MARCA.map((m, i) => (
             <InView as="article" key={m.t} className={`marca-card${m.big ? ' big' : ''}`} delay={i * 100}>
@@ -1101,7 +1101,7 @@ export function TuMarca() {
 
 export function Contigo() {
   const pasos = [
-    ['Antes', 'Hablamos de tu local', 'Te ayudamos a elegir un premio que te convenga y los horarios en que más lo necesitas.'],
+    ['Antes', 'Hablamos de tu local', 'Te ayudamos a elegir un descuento que te convenga y los horarios en que más lo necesitas.'],
     ['Durante', 'Armamos tu ficha juntos', 'Fotos, horarios y redes, revisados antes de publicarse.'],
     ['Después', 'Miras tus resultados', 'Canjes confirmados y estadísticas en tu panel. Ajustamos lo que haga falta.'],
   ];
@@ -1205,10 +1205,10 @@ export function AsiTeVen() {
         id="gal-local"
         nota="Pantallas reales de la app; los datos de las personas son de ejemplo."
         pant={[
-          ['Te encuentran', 'Tu local y tus premios en la lista de canjes.', CAP.canjes],
-          ['Tu ficha', 'Fotos, horarios, dirección, redes, tus premios y cómo llegar.', CAP.fichaLocal],
+          ['Te encuentran', 'Tu local y tus descuentos en la lista de canjes.', CAP.canjes],
+          ['Tu ficha', 'Fotos, horarios, dirección, redes, tus descuentos y cómo llegar.', CAP.fichaLocal],
           ['Canje confirmado', 'Con tu código de 4 números, al instante. Luego, la invitación a calificarte.', CAP.resenaHistoria],
-          ['Su historia', 'Suben tu premio a Instagram con el nombre de tu local.', CAP.historia],
+          ['Su historia', 'Suben lo que canjearon a Instagram con el nombre de tu local.', CAP.historia],
         ]}
       />
     </section>
