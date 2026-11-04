@@ -383,3 +383,17 @@ html,body{background:#0f0722}
 .lp .gana-nota{margin-top:12px;font-size:12.5px;color:var(--muted);max-width:70ch}
 .lp .gana-nota a{color:var(--muted);text-underline-offset:3px}
 @media (min-width:760px){.lp .gana{grid-template-columns:repeat(5,1fr)}}
+
+/* Lo que gana tu local: destacado + reglas + cuadrícula compacta */
+.lp .gana-hero{margin-top:28px;border-radius:28px;padding:30px 26px;background:linear-gradient(150deg,#7fedc4,#62F0B6);color:#14093a}
+.lp .gana-hero h3{font-size:clamp(28px,6vw,40px);line-height:1.05;color:#14093a}
+.lp .gana-hero p{margin-top:12px;font-size:17px;color:#2a1660;max-width:40ch}
+.lp .gana-reglas{margin-top:12px;border-radius:24px;padding:22px 24px;background:var(--g-fill);border:1px solid var(--g-edge);box-shadow:var(--g-shadow)}
+.lp .gana-reglas h3{font-size:20px}
+.lp .gana-reglas .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.lp .gana-reglas .chips span{padding:8px 14px;border-radius:999px;background:rgba(127,237,196,.12);border:1px solid rgba(127,237,196,.3);color:var(--mint);font-weight:700;font-size:14px}
+.lp ul.gana{margin-top:12px;grid-template-columns:1fr 1fr;gap:10px}
+.lp ul.gana li{padding:16px 16px 18px}
+.lp ul.gana h3{margin-top:0;font-size:16px}
+.lp ul.gana p{font-size:13.5px}
+@media (min-width:760px){.lp ul.gana{grid-template-columns:repeat(3,1fr)}}
