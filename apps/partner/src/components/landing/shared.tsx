@@ -5,6 +5,8 @@ import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
 import ModoToggle from './ModoToggle';
+import Menu from './Menu';
+import Trail from './Trail';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
@@ -33,6 +35,7 @@ export const CAP = {
   fichaAmigo: '/web/cap/ficha-amigo.jpg',
   fondoPerfil: '/web/cap/fondo-perfil.jpg',
   resenaHistoria: '/web/cap/resena-historia.jpg',
+  fichaLocal: '/web/cap/ficha-local.jpg',
   historia: '/web/cap/historia.jpg',
 };
 
@@ -59,6 +62,7 @@ export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {
           <Link href="/comercios" aria-current={activo === 'comercios' ? 'page' : undefined}>Para comercios</Link>
         </nav>
         <Link href="/login" className="lp-login">Ingresar al panel</Link>
+        <Menu />
       </div>
     </header>
   );
@@ -411,14 +415,14 @@ export function DescargaGente() {
 export function PasosComercio() {
   const pasos = [
     ['Creas tu perfil en el panel', 'Es gratis con cualquier plan. Cargas tu local, tu logo, tus fotos y tu primer premio.'],
-    ['Eliges tu plan al terminar', 'Empiezas gratis, o eliges Paso Firme o Paso Adelante y pagas con el QR. Si sos de los primeros 20, pides tu cupo fundador por WhatsApp y te habilitamos.'],
+    ['Eliges tu plan al terminar', 'Empiezas gratis, o eliges Paso Firme o Paso Adelante y pagas con el QR. Si eres de los primeros 20, pides tu cupo fundador por WhatsApp y te habilitamos.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
     ['Apareces en el mapa', 'La gente de tu zona te encuentra y canjea. Les dices el código de tu local y listo.'],
   ];
   return (
     <section className="lp-sec" id="como-sumarte">
       <div className="wrap">
-        <Kinetic text="Cómo sumas tu comercio." />
+        <Kinetic text="Cómo sumas *tu* *comercio.*" />
         <ol className="flow">
           {pasos.map(([t, d], i) => (
             <InView as="li" key={t} delay={i * 110}>
@@ -476,7 +480,7 @@ export function PanelComercio() {
     <section className="lp-sec alt" id="panel">
       <div className="wrap panel-row">
         <div>
-          <Kinetic text="Todo desde tu panel." as="h2" />
+          <Kinetic text="Todo desde *tu* *panel.*" as="h2" />
           <p className="lead">Cargas tu local y tus premios, tienes el código de tu local y miras tus canjes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
@@ -495,7 +499,7 @@ export function Planes() {
   return (
     <section className="lp-sec" id="planes">
       <div className="wrap">
-        <Kinetic text="Los planes." />
+        <Kinetic text="Los *planes.*" />
         <p className="lead">Te registras y creas tu perfil con cualquier plan. Al terminar eliges el plan (con QR si es pago). ¿Dudas? Escríbenos por WhatsApp.</p>
         <div className="planes">
           {PLANS.map((p, i) => (
@@ -543,8 +547,8 @@ export function SoyComercio() {
   return (
     <section className="lp-sec alt soy">
       <div className="wrap">
-        <Kinetic text="¿Tienes un comercio?" />
-        <p className="lead">Suma tu local a Camina gratis y recibe personas que ya van caminando por tu zona.</p>
+        <Kinetic text="¿Tienes un *comercio?*" />
+        <p className="lead">Suma tu local a Camina y recibe personas que ya van caminando por tu zona.</p>
         <div className="lp-cta">
           <Link className="lp-btn dark" href="/comercios">Ver cómo sumarme</Link>
           <Link className="lp-btn line" href="/registro">Registrar mi comercio</Link>
@@ -849,6 +853,355 @@ export function MasParaGente() {
         </ul>
         <p className="bento-nota">Los pasos, los puntos, los eventos y los desafíos de las capturas son ejemplos de lo que puede haber.</p>
       </div>
+    </section>
+  );
+}
+
+// Deslizable con pantallas reales (mismo formato que "Así se ve Camina").
+function Deslizable({ id, pant, nota }: { id: string; pant: readonly (readonly [string, string, string])[]; nota?: string }) {
+  return (
+    <>
+      <div className="gal" id={id} tabIndex={0} aria-label="Pantallas de la app (desliza para ver más)">
+        {pant.map(([t, d, src]) => (
+          <figure key={t}>
+            <div className="phone">
+              <Image src={CAP_DARK[src] ?? src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="260px" />
+            </div>
+            <figcaption><b>{t}</b>{d}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="wrap gal-nota">Desliza para ver más →{nota ? ` ${nota}` : ''}</p>
+    </>
+  );
+}
+
+// Para ti: portada con las tiendas y "gratis" debajo.
+export function HeroGente() {
+  return (
+    <section className="lp-hero hero-solo">
+      <Trail className="hero-trail" n={22} flat />
+      <div className="wrap">
+        <div className="copy">
+          <Kinetic as="h1" text="Tu caminata de todos los días ahora vale *Puntos.*" />
+          <p className="sub">Camina cuenta tus pasos y los convierte en premios en los comercios de tu ciudad. Tú solo camina.</p>
+          <div className="stores">
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
+          </div>
+          <p className="free-line">Gratis para todos</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const MENSAJES = ['Cada paso cuenta', '10 minutos ya suman', 'Hoy también cuenta', 'Tus pasos valen Puntos', 'Tu racha te espera', 'Caminar ahora tiene premio'];
+export function Mensajes() {
+  const fila = [...MENSAJES, ...MENSAJES];
+  return (
+    <div className="cinta mensajes" aria-label="Cada paso cuenta">
+      <div className="cinta-in">
+        {fila.map((t, i) => <span key={i} aria-hidden={i >= MENSAJES.length}>{t}</span>)}
+      </div>
+    </div>
+  );
+}
+
+const DATOS_SALUD = [
+  { v: '47% menos', t: 'riesgo de morir por cualquier causa', d: 'Con 7.000 pasos al día, frente a 2.000. Revisión de 57 estudios.', f: 'The Lancet Public Health, 2025', u: 'https://doi.org/10.1016/S2468-2667(25)00164-1' },
+  { v: '22% menos', t: 'síntomas de depresión', d: 'Con 7.000 pasos al día, frente a 2.000, en la misma revisión.', f: 'The Lancet Public Health, 2025', u: 'https://doi.org/10.1016/S2468-2667(25)00164-1' },
+  { v: '+60%', t: 'más ideas creativas mientras caminas', d: 'En promedio, en un experimento de la Universidad de Stanford.', f: 'Stanford, 2014', u: 'https://news.stanford.edu/stories/2014/04/walking-vs-sitting-042414' },
+  { v: '150 min', t: 'por semana recomienda la OMS', d: 'Unos 20 minutos al día de actividad moderada. Caminar a paso vivo cuenta.', f: 'OPS/OMS, 2020', u: 'https://www.paho.org/es/noticias/26-11-2020-cada-movimiento-cuenta-para-mejorar-salud-dice-oms' },
+];
+export function SaludGente() {
+  return (
+    <section className="lp-sec" id="salud">
+      <div className="wrap">
+        <p className="kick">Tu salud</p>
+        <Kinetic text="Caminar es lo más simple que puedes hacer *por* *ti.*" />
+        <p className="lead">Sin gimnasio, sin equipo y sin horarios. Esto dice la ciencia:</p>
+        <div className="salud-grid">
+          {DATOS_SALUD.map((x, i) => (
+            <InView as="article" key={x.v + x.t} className="fact" delay={(i % 2) * 120}>
+              <b>{x.v}</b>
+              <h3>{x.t}</h3>
+              <p>{x.d}</p>
+              <a href={x.u} target="_blank" rel="noopener noreferrer">Fuente: {x.f}</a>
+            </InView>
+          ))}
+        </div>
+        <p className="salud-nota">Son estudios que muestran asociaciones, no garantías. Camina no reemplaza el consejo de un médico.</p>
+      </div>
+    </section>
+  );
+}
+
+export function ComoFunciona() {
+  return (
+    <section className="lp-sec alt" id="como-funciona" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Así funciona</p>
+        <Kinetic text="Caminas, sumas, *canjeas.*" />
+        <p className="lead">1.000 pasos = 1 Punto. Hasta 20 Puntos por día, y cada Punto dura 90 días.</p>
+        <div className="trio">
+          {([['1', 'Camina', CAP.actividad], ['2', 'Suma', CAP.inicio], ['3', 'Canjea', CAP.canjes]] as const).map(([n, t, src], i) => (
+            <InView as="figure" key={t} className={`trio-it${i === 1 ? ' mid' : ''}`} delay={i * 120}>
+              <div className="phone"><Image src={CAP_DARK[src] ?? src} alt={`Pantalla: ${t}`} width={780} height={1688} sizes="(max-width:760px) 40vw, 260px" priority={i === 1} /></div>
+              <figcaption><span>{n}.</span> {t}</figcaption>
+            </InView>
+          ))}
+        </div>
+        <p className="kick" style={{ marginTop: 44 }}>Y además</p>
+      </div>
+      <Deslizable
+        id="gal-funciona"
+        pant={[
+          ['Tu racha', 'Cada día seguido cuenta.', CAP.rachas],
+          ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
+          ['Eventos y desafíos', 'Caminatas y premios de comercios de tu ciudad.', CAP.desafios],
+        ]}
+      />
+    </section>
+  );
+}
+
+export function Gratis() {
+  return (
+    <section className="lp-sec">
+      <div className="wrap">
+        <InView className="gratis-card">
+          <p className="kick">Cero costo</p>
+          <h2>No cuesta nada. <span>Solo tus pasos.</span></h2>
+          <ul>
+            <li>Descargar y usar Camina es gratis</li>
+            <li>No te pedimos datos de pago</li>
+            <li>Tus pasos se cuentan solos desde tu teléfono</li>
+          </ul>
+        </InView>
+      </div>
+    </section>
+  );
+}
+
+export function GruposGente() {
+  return (
+    <section className="lp-sec" id="grupos" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Juntos es mejor</p>
+        <Kinetic text="Arma tu grupo y *no* *aflojes.*" />
+        <p className="lead">Cuando tu grupo te espera, es más fácil salir a caminar.</p>
+      </div>
+      <Deslizable
+        id="gal-grupos"
+        nota="El grupo y sus integrantes son de ejemplo."
+        pant={[
+          ['Tus grupos', 'Con amigos, familia o compañeros.', CAP.grupos],
+          ['Meta semanal', 'Caminan juntos hacia un mismo número.', CAP.grupoMeta],
+          ['Ranking', 'Mira quién va adelante esta semana.', CAP.grupoRanking],
+          ['Retos', 'Pongan Puntos en juego entre ustedes.', CAP.grupoReto],
+          ['Chat', 'Se animan sin salir de la app.', CAP.grupoChat],
+        ]}
+      />
+    </section>
+  );
+}
+
+export function CierreGente() {
+  return (
+    <section className="lp-final" id="descargar">
+      <div className="wrap final-grid">
+        <div>
+          <Kinetic text="Cada paso cuenta. *Empieza* *hoy.*" as="h2" />
+          <p>Camina está por llegar a App Store y Google Play. Te avisamos apenas esté lista.</p>
+          <div className="stores">
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
+            <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
+          </div>
+          <p className="free-line">Gratis para todos</p>
+          <div className="lp-cta">
+            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
+            <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
+          </div>
+        </div>
+        <MarcaFinal />
+      </div>
+    </section>
+  );
+}
+
+// Comercios: lo que gana el local al entrar.
+const GANA = [
+  ['Horas tranquilas', 'El premio vale cuando entra menos gente.'],
+  ['Clientes nuevos', 'Te descubren en el mapa.'],
+  ['Tus reglas', 'Premio, cupos y horarios.'],
+  ['Más margen', 'Premia con lo que más te conviene vender.'],
+  ['Canjes seguros', 'Código de 4 números de tu local.'],
+  ['Te recomiendan', 'Reseñas en Google Maps e historias.'],
+];
+export function GanaLocal() {
+  return (
+    <section className="lp-sec" id="beneficios">
+      <div className="wrap">
+        <p className="kick">Por qué sumarte</p>
+        <Kinetic text="Lo que gana *tu* *local.*" />
+        <p className="lead">Cada canje es alguien que entra por la puerta. Esto es lo que te deja:</p>
+        <ol className="gana">
+          {GANA.map(([t, d], i) => (
+            <InView as="li" key={t} delay={(i % 2) * 100}>
+              <span className="num">{i + 1}</span>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </InView>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+const MARCA = [
+  { t: 'Desafío de pasos', d: 'Una meta de pasos con tu marca y un premio para quienes la cumplen.', img: CAP.desafios, big: true },
+  { t: 'Eventos y sorteos', d: 'Caminatas y sorteos dentro de la app.', img: CAP.eventos },
+  { t: 'Banner en Inicio', d: 'Tu logo y tu mensaje en la primera pantalla.', img: CAP.inicio },
+];
+export function TuMarca() {
+  return (
+    <section className="lp-sec alt" id="marca">
+      <div className="wrap">
+        <p className="kick">Tu marca en movimiento</p>
+        <Kinetic text="Más formas de llegar *a* *la* *gente.*" />
+        <p className="lead">Además de tu premio en el mapa, puedes hacer que la gente camine por tu marca.</p>
+        <div className="marca-grid">
+          {MARCA.map((m, i) => (
+            <InView as="article" key={m.t} className={`marca-card${m.big ? ' big' : ''}`} delay={i * 100}>
+              <div>
+                {m.big && <span className="pill-mint">El favorito</span>}
+                <h3>{m.t}</h3>
+                <p>{m.d}</p>
+              </div>
+              <div className="phone"><Image src={CAP_DARK[m.img] ?? m.img} alt={`Pantalla: ${m.t}`} width={780} height={1688} sizes="200px" /></div>
+            </InView>
+          ))}
+        </div>
+        <p className="fmt-nota">Eventos, sorteos y desafíos: Bs 200 cada uno con tu plan de local, o Bs 400 si solo quieres publicidad. Todo se publica con aprobación del equipo de Camina.</p>
+      </div>
+    </section>
+  );
+}
+
+export function Contigo() {
+  const pasos = [
+    ['Antes', 'Hablamos de tu local', 'Te ayudamos a elegir un premio que te convenga y los horarios en que más lo necesitas.'],
+    ['Durante', 'Armamos tu ficha juntos', 'Fotos, horarios y redes, revisados antes de publicarse.'],
+    ['Después', 'Miras tus resultados', 'Canjes confirmados y estadísticas en tu panel. Ajustamos lo que haga falta.'],
+  ];
+  return (
+    <section className="lp-sec" id="contigo">
+      <div className="wrap">
+        <p className="kick">No estás solo</p>
+        <Kinetic text="Contigo en *cada* *paso.*" />
+        <ol className="road">
+          {pasos.map(([k, t, d], i) => (
+            <InView as="li" key={k} delay={i * 120}>
+              <b>{k}</b>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </InView>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+export function EnMente() {
+  return (
+    <section className="lp-final idea">
+      <div className="wrap">
+        <div className="idea-card">
+          <p className="kick">Hablemos</p>
+          <Kinetic text="¿Tienes algo *en* *mente?*" />
+          <p>Escríbenos y lo pensamos contigo: un lanzamiento, más movimiento en tu local o un desafío con tu marca.</p>
+          <div className="lp-cta">
+            <a className="lp-btn mint" href={WA('Hola! Tengo una idea para mi comercio en Camina y quiero conversarla.')}>Escribir por WhatsApp</a>
+            <Link className="lp-btn ghost" href="/registro">Registrar mi comercio</Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Proposito() {
+  return (
+    <section className="lp-sec proposito">
+      <div className="wrap">
+        <InView className="prop-card">
+          <p className="prop-big">No caminas por los Puntos.<br /><span>Caminas por ti.</span></p>
+          <p className="prop-small">Los Puntos son el empujón que te faltaba para salir hoy, y mañana también.</p>
+        </InView>
+      </div>
+    </section>
+  );
+}
+
+export function TarijaCamina() {
+  return (
+    <section className="tarija">
+      <div className="tarija-img" aria-hidden="true" />
+      <div className="wrap tarija-in">
+        <p className="kick">Hecha en Bolivia</p>
+        <Kinetic text="Tu ciudad se recorre *a* *pie.*" />
+        <p className="lead">Plazas, calles y miradores de Tarija. Ahora cada vuelta que das también suma Puntos.</p>
+      </div>
+    </section>
+  );
+}
+
+const DUDAS = [
+  ['¿Tengo que pagar algo?', 'No. Camina es gratis para todos y no te pedimos datos de pago.'],
+  ['¿Necesito ir al gimnasio?', 'No. Cuentan los pasos de tu día: al trabajo, a la tienda, a la plaza.'],
+  ['¿Cómo cuenta mis pasos?', 'Con Salud en iPhone o Health Connect en Android. Solo abre la app una vez al día.'],
+  ['¿Dónde canjeo mis Puntos?', 'En los comercios aliados que ves en el mapa de la app. Pides el código del local y listo.'],
+];
+export function Dudas() {
+  return (
+    <section className="lp-sec" id="dudas">
+      <div className="wrap">
+        <p className="kick">Dudas rápidas</p>
+        <Kinetic text="Lo que todos *preguntan.*" />
+        <div className="dudas">
+          {DUDAS.map(([q, a]) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function AsiTeVen() {
+  return (
+    <section className="lp-sec alt" id="asi-te-ven" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Dentro de la app</p>
+        <Kinetic text="Así se ve *tu* *local.*" />
+        <p className="lead">Desde que te encuentran en el mapa hasta que te recomiendan.</p>
+      </div>
+      <Deslizable
+        id="gal-local"
+        nota="Pantallas reales de la app; los datos de las personas son de ejemplo."
+        pant={[
+          ['Te encuentran', 'Tu local y tus premios en la lista de canjes.', CAP.canjes],
+          ['Tu ficha', 'Fotos, horarios, dirección, redes, tus premios y cómo llegar.', CAP.fichaLocal],
+          ['Canje confirmado', 'Con tu código de 4 números, al instante. Luego, la invitación a calificarte.', CAP.resenaHistoria],
+          ['Su historia', 'Suben tu premio a Instagram con el nombre de tu local.', CAP.historia],
+        ]}
+      />
     </section>
   );
 }
