@@ -958,6 +958,7 @@ export function ComoFunciona() {
       <Deslizable
         id="gal-funciona"
         pant={[
+          ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
           ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: cada 5 canjes, un premio gratis donde quieras.', CAP.puntosNuevo],
           ['Tu racha', 'Cada día seguido cuenta.', CAP.rachas],
           ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
@@ -1000,8 +1001,6 @@ export function GruposGente() {
         pant={[
           ['Tus grupos', 'Con amigos, familia o compañeros.', CAP.grupos],
           ['Meta semanal', 'Caminan juntos hacia un mismo número.', CAP.grupoMeta],
-          ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
-          ['Ranking del grupo', 'Mira quién va adelante esta semana.', CAP.grupoRanking],
           ['Retos', 'Pongan Puntos en juego entre ustedes.', CAP.grupoReto],
           ['Chat', 'Se animan sin salir de la app.', CAP.grupoChat],
         ]}
