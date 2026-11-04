@@ -38,11 +38,11 @@ export default function ComerciosPage() {
         <GanaLocal />
         <AsiTeVen />
         <TuMarca />
+        <EnMente />
         <Contigo />
         <PasosComercio />
         <PanelComercio />
         <Planes />
-        <EnMente />
       </main>
       <Footer />
     </div>
