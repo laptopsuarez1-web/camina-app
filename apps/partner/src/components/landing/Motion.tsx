@@ -42,10 +42,11 @@ export function Kinetic({ text, className = '', as: Tag = 'h2' }: { text: string
   }, []);
   const T = Tag as 'h2';
   return (
-    <T ref={ref as React.RefObject<HTMLHeadingElement>} className={`kin ${on ? 'in' : ''} ${className}`} aria-label={text}>
+    <T ref={ref as React.RefObject<HTMLHeadingElement>} className={`kin ${on ? 'in' : ''} ${className}`} aria-label={text.replace(/\*/g, '')}>
+      {/* Las palabras entre *asteriscos* van en el color de acento. */}
       {text.split(' ').map((w, i) => (
-        <span className="kw" key={i} aria-hidden="true">
-          <span style={{ ['--i' as string]: i }}>{w}</span>
+        <span className={`kw${w.includes('*') ? ' acc' : ''}`} key={i} aria-hidden="true">
+          <span style={{ ['--i' as string]: i }}>{w.replace(/\*/g, '')}</span>
         </span>
       ))}
     </T>

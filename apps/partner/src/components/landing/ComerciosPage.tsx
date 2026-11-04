@@ -4,7 +4,7 @@ import './glass.css';
 import GlassFx from './GlassFx';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Fidelidad, Nav, Footer, FloatCards, Cinta, Mapa, Locales, PasosComercio, BeneficiosComercio, PanelComercio, PublicidadComercio, CanjeResena, AppsSimilares, Planes, CierreComercio, CAP, Shot, WA_COMERCIO } from './shared';
+import { Nav, Footer, FloatCards, Cinta, GanaLocal, AsiTeVen, TuMarca, Contigo, PasosComercio, PanelComercio, Planes, EnMente, CAP, Shot, WA_COMERCIO } from './shared';
 
 export default function ComerciosPage() {
   return (
@@ -17,9 +17,9 @@ export default function ComerciosPage() {
           <Trail className="hero-trail" n={13} />
           <div className="wrap hero-grid">
             <div className="copy">
-              <Kinetic as="h1" text="Tus próximos clientes ya están caminando." />
+              <Kinetic as="h1" text="Tus próximos clientes ya están *caminando.*" />
               <p className="sub">
-                Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo gratis y elige qué premio dar.
+                Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo y elige qué premio dar.
               </p>
               <div className="lp-cta">
                 <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
@@ -28,24 +28,21 @@ export default function ComerciosPage() {
             </div>
             <div className="stage">
               <Parallax speed={0.06}>
-                <div className="phone hero-phone"><Shot src={CAP.canjes} alt="Pantalla de canjes con comercios y premios" width={780} height={1688} priority sizes="280px" /></div>
+                <div className="phone hero-phone"><Shot src={CAP.canjes.replace(".jpg", "-dark.jpg")} alt="Pantalla de canjes con comercios y premios" width={780} height={1688} priority sizes="280px" /></div>
               </Parallax>
               <FloatCards para="comercios" />
             </div>
           </div>
         </section>
         <Cinta para="comercios" />
-        <Mapa titulo="Así te encuentran." texto="Una persona camina por tu zona, ve tu local en el mapa y llega a canjear. Este es el mapa real de Tarija con locales que ya están en Camina." />
-        <Locales />
-        <BeneficiosComercio />
-        <CanjeResena />
-        <Fidelidad para="comercios" />
+        <GanaLocal />
+        <AsiTeVen />
+        <TuMarca />
+        <Contigo />
         <PasosComercio />
         <PanelComercio />
-        <PublicidadComercio />
-        <AppsSimilares />
         <Planes />
-        <CierreComercio />
+        <EnMente />
       </main>
       <Footer />
     </div>
