@@ -1036,43 +1036,35 @@ export function CierreGente() {
 // Comercios: lo que gana el local al entrar.
 const GANA = [
   ['Horas tranquilas', 'El premio vale cuando entra menos gente.'],
-  ['Clientes nuevos', 'Te descubren en el mapa mientras caminan.'],
+  ['Clientes nuevos', 'Te descubren en el mapa.'],
   ['Venden más', 'Quien viene por su premio suele llevar algo más.'],
-  ['Tus reglas', 'Premio, cupos por día, días y horarios.'],
   ['Más margen', 'Premia con lo que más te conviene vender.'],
-  ['Vuelven', 'Cada 5 canjes, la persona elige un premio gratis: tu local puede ser el elegido.'],
-  ['Canjes seguros', 'Código de 4 números de tu local.'],
-  ['Reseñas', 'Tras el canje, la app invita a calificarte en Google Maps.'],
-  ['Historias', 'Suben tu premio a Instagram con el nombre de tu local.'],
-  ['Visibilidad', 'Ficha con fotos, horarios, redes y pin en el mapa.'],
+  ['Vuelven', 'Premios por visitas recurrentes.'],
+  ['Te recomiendan', 'Reseñas en Google Maps e historias.'],
 ];
+const REGLAS = ['Tu premio', 'Cupos por día', 'Días y horarios', 'Solo en el local'];
 export function GanaLocal() {
   return (
     <section className="lp-sec" id="beneficios">
       <div className="wrap">
         <p className="kick">Por qué sumarte</p>
         <Kinetic text="Lo que gana *tu* *local.*" />
-        <p className="lead">Cada canje es alguien que entra por la puerta. Esto es lo que te deja:</p>
-        <ol className="gana">
+        <InView className="gana-hero">
+          <h3>Gente que llega caminando.</h3>
+          <p>Cada canje es una persona que caminó hasta tu puerta, con ganas de conocerte.</p>
+        </InView>
+        <InView className="gana-reglas" delay={100}>
+          <h3>Tú decides.</h3>
+          <div className="chips">{REGLAS.map((r) => <span key={r}>{r}</span>)}</div>
+        </InView>
+        <ul className="gana">
           {GANA.map(([t, d], i) => (
-            <InView as="li" key={t} delay={(i % 2) * 100}>
-              <span className="num">{i + 1}</span>
+            <InView as="li" key={t} delay={(i % 2) * 90}>
               <h3>{t}</h3>
               <p>{d}</p>
             </InView>
           ))}
-        </ol>
-        <div className="gana-stats">
-          <InView className="gstat"><b>+70%</b><span>de quienes canjean compran algo más en el local</span></InView>
-          <InView className="gstat" delay={120}><b>5 de 10</b><span>canjes terminan con una compra extra</span></InView>
-        </div>
-        <p className="gana-nota">
-          Datos de Pasito, una app argentina que también premia caminar: +70% según su fundador (
-          <a href="https://www.infobae.com/tendencias/2026/05/18/caminar-y-sumar-puntos-como-funciona-la-app-que-permite-canjear-pasos-por-productos-en-buenos-aires/" target="_blank" rel="noopener noreferrer">Infobae, 18/05/2026</a>
-          ) y 5 de cada 10 (
-          <a href="https://www.lanacion.com.ar/tecnologia/la-aplicacion-argentina-pasito-supero-el-millon-de-usuarios-en-cuatro-meses-nid16102026/" target="_blank" rel="noopener noreferrer">La Nación, 16/10/2026</a>
-          ). Son datos de otra app, no una promesa de resultados de Camina.
-        </p>
+        </ul>
       </div>
     </section>
   );
