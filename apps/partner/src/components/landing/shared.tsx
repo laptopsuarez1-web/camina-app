@@ -36,6 +36,8 @@ export const CAP = {
   fondoPerfil: '/web/cap/fondo-perfil.jpg',
   resenaHistoria: '/web/cap/resena-historia.jpg',
   fichaLocal: '/web/cap/ficha-local.jpg',
+  rankingNuevo: '/web/cap/ranking-nuevo.jpg',
+  puntosNuevo: '/web/cap/puntos-nuevo.jpg',
   historia: '/web/cap/historia.jpg',
 };
 
@@ -884,12 +886,11 @@ export function HeroGente() {
       <div className="wrap">
         <div className="copy">
           <Kinetic as="h1" text="Tu caminata de todos los días ahora vale *Puntos.*" />
-          <p className="sub">Camina cuenta tus pasos y los convierte en premios en los comercios de tu ciudad. Tú solo camina.</p>
+          <p className="sub">Camina cuenta tus pasos y los convierte en premios en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
           <div className="stores">
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
             <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
           </div>
-          <p className="free-line">Gratis para todos</p>
         </div>
       </div>
     </section>
@@ -957,6 +958,7 @@ export function ComoFunciona() {
       <Deslizable
         id="gal-funciona"
         pant={[
+          ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: cada 5 canjes, un premio gratis donde quieras.', CAP.puntosNuevo],
           ['Tu racha', 'Cada día seguido cuenta.', CAP.rachas],
           ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
           ['Eventos y desafíos', 'Caminatas y premios de comercios de tu ciudad.', CAP.desafios],
@@ -998,7 +1000,8 @@ export function GruposGente() {
         pant={[
           ['Tus grupos', 'Con amigos, familia o compañeros.', CAP.grupos],
           ['Meta semanal', 'Caminan juntos hacia un mismo número.', CAP.grupoMeta],
-          ['Ranking', 'Mira quién va adelante esta semana.', CAP.grupoRanking],
+          ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
+          ['Ranking del grupo', 'Mira quién va adelante esta semana.', CAP.grupoRanking],
           ['Retos', 'Pongan Puntos en juego entre ustedes.', CAP.grupoReto],
           ['Chat', 'Se animan sin salir de la app.', CAP.grupoChat],
         ]}
@@ -1033,11 +1036,15 @@ export function CierreGente() {
 // Comercios: lo que gana el local al entrar.
 const GANA = [
   ['Horas tranquilas', 'El premio vale cuando entra menos gente.'],
-  ['Clientes nuevos', 'Te descubren en el mapa.'],
-  ['Tus reglas', 'Premio, cupos y horarios.'],
+  ['Clientes nuevos', 'Te descubren en el mapa mientras caminan.'],
+  ['Venden más', 'Quien viene por su premio suele llevar algo más.'],
+  ['Tus reglas', 'Premio, cupos por día, días y horarios.'],
   ['Más margen', 'Premia con lo que más te conviene vender.'],
+  ['Vuelven', 'Cada 5 canjes, la persona elige un premio gratis: tu local puede ser el elegido.'],
   ['Canjes seguros', 'Código de 4 números de tu local.'],
-  ['Te recomiendan', 'Reseñas en Google Maps e historias.'],
+  ['Reseñas', 'Tras el canje, la app invita a calificarte en Google Maps.'],
+  ['Historias', 'Suben tu premio a Instagram con el nombre de tu local.'],
+  ['Visibilidad', 'Ficha con fotos, horarios, redes y pin en el mapa.'],
 ];
 export function GanaLocal() {
   return (
@@ -1055,6 +1062,17 @@ export function GanaLocal() {
             </InView>
           ))}
         </ol>
+        <div className="gana-stats">
+          <InView className="gstat"><b>+70%</b><span>de quienes canjean compran algo más en el local</span></InView>
+          <InView className="gstat" delay={120}><b>5 de 10</b><span>canjes terminan con una compra extra</span></InView>
+        </div>
+        <p className="gana-nota">
+          Datos de Pasito, una app argentina que también premia caminar: +70% según su fundador (
+          <a href="https://www.infobae.com/tendencias/2026/05/18/caminar-y-sumar-puntos-como-funciona-la-app-que-permite-canjear-pasos-por-productos-en-buenos-aires/" target="_blank" rel="noopener noreferrer">Infobae, 18/05/2026</a>
+          ) y 5 de cada 10 (
+          <a href="https://www.lanacion.com.ar/tecnologia/la-aplicacion-argentina-pasito-supero-el-millon-de-usuarios-en-cuatro-meses-nid16102026/" target="_blank" rel="noopener noreferrer">La Nación, 16/10/2026</a>
+          ). Son datos de otra app, no una promesa de resultados de Camina.
+        </p>
       </div>
     </section>
   );
@@ -1084,7 +1102,6 @@ export function TuMarca() {
             </InView>
           ))}
         </div>
-        <p className="fmt-nota">Eventos, sorteos y desafíos: Bs 200 cada uno con tu plan de local, o Bs 400 si solo quieres publicidad. Todo se publica con aprobación del equipo de Camina.</p>
       </div>
     </section>
   );

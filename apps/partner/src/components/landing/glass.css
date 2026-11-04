@@ -322,7 +322,7 @@ html,body{background:#0f0722}
 .lp .idea-card .kin{margin:0 auto;max-width:14ch}
 .lp .idea-card>p:not(.kick){margin:16px auto 0}
 .lp .idea-card .lp-cta{justify-content:center}
-@media (min-width:760px){.salud-grid{grid-template-columns:1fr 1fr}.gana{grid-template-columns:repeat(3,1fr)}.marca-grid{grid-template-columns:2fr 1fr 1fr}.lp .marca-card.big{grid-column:auto}}
+@media (min-width:760px){.salud-grid{grid-template-columns:1fr 1fr}.gana{grid-template-columns:repeat(5,1fr)}.marca-grid{grid-template-columns:2fr 1fr 1fr}.lp .marca-card.big{grid-column:auto}}
 
 /* portada sin teléfono y trío de pantallas en "Así funciona" */
 .lp .hero-solo .copy{max-width:720px;margin:0 auto;text-align:center;padding:40px 0 30px}
@@ -371,3 +371,15 @@ html,body{background:#0f0722}
 .lp .tarija .kin{max-width:20ch}
 .lp .plan .plan-cta{white-space:normal;text-align:center;justify-content:center;line-height:1.25;padding-inline:18px}
 @media (min-width:900px){.lp .plan .plan-cta{font-size:14px}}
+
+/* ajustes: portada más arriba, acento sin cortar letras, cifras de ventas */
+.lp .lp-hero.hero-solo{padding:96px 0 34px}
+.lp .hero-solo .copy{padding:24px 0 70px}
+.lp .kw.acc>span{padding-bottom:.14em;margin-bottom:-.14em}
+.lp .gana-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.lp .gstat{border-radius:22px;padding:18px;background:linear-gradient(150deg,rgba(127,237,196,.2),rgba(127,237,196,.05));border:1px solid rgba(127,237,196,.35)}
+.lp .gstat b{display:block;font-size:clamp(30px,6vw,44px);font-weight:800;color:var(--mint);line-height:1.05}
+.lp .gstat span{display:block;margin-top:6px;font-size:14px;color:#e6defa;line-height:1.35}
+.lp .gana-nota{margin-top:12px;font-size:12.5px;color:var(--muted);max-width:70ch}
+.lp .gana-nota a{color:var(--muted);text-underline-offset:3px}
+@media (min-width:760px){.lp .gana{grid-template-columns:repeat(5,1fr)}}
