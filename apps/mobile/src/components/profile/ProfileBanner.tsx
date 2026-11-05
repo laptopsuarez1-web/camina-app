@@ -10,8 +10,8 @@ import { profileBg } from '@/lib/profile-bg';
 // Sin máscaras nativas: se apilan franjas de la misma foto cada vez más borrosas (la franja recorta la foto en su lugar exacto).
 function PhotoBg({ uri }: { uri: string }) {
   const [h, setH] = useState(0);
-  const STRIPS = 5;
-  const from = 0.4; // el desenfoque empieza al 40% de la altura
+  const STRIPS = 9; // muchas capas con poco salto entre una y otra: el desenfoque crece de a poco y no se notan los cortes
+  const from = 0.5; // el desenfoque empieza a la mitad de la altura
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none" onLayout={(e) => setH(e.nativeEvent.layout.height)}>
       <Image source={{ uri }} cachePolicy="memory-disk" priority="high" transition={150} style={StyleSheet.absoluteFill} contentFit="cover" />
@@ -20,11 +20,11 @@ function PhotoBg({ uri }: { uri: string }) {
           const top = h * (from + ((1 - from) * i) / STRIPS);
           return (
             <View key={i} style={{ position: 'absolute', left: 0, right: 0, top, bottom: 0, overflow: 'hidden' }}>
-              <Image source={{ uri }} cachePolicy="memory-disk" blurRadius={4 + i * 4} contentFit="cover" style={{ position: 'absolute', left: 0, right: 0, top: -top, height: h }} />
+              <Image source={{ uri }} cachePolicy="memory-disk" blurRadius={1 + i * 1.5} contentFit="cover" style={{ position: 'absolute', left: 0, right: 0, top: -top, height: h }} />
             </View>
           );
         })}
-      <LinearGradient colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0)', 'rgba(22,16,31,0.55)', 'rgba(22,16,31,0.92)']} locations={[0, 0.32, 0.7, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)', 'rgba(22,16,31,0.3)', 'rgba(22,16,31,0.82)']} locations={[0, 0.3, 0.68, 1]} style={StyleSheet.absoluteFill} />
     </View>
   );
 }
