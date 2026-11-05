@@ -21,6 +21,8 @@ import { celebrate } from '@/store/useCelebrationStore';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { BadgesCard } from '@/components/badges/BadgesCard';
+import { useUserBadges } from '@/hooks/useBadges';
 
 // Círculo de un día: verde con tilde = llegó a la meta, rojo = abrió la app y no llegó, gris = no abrió la app, vacío = todavía no.
 function DayDot({ cell, size }: { cell: DayCell; size: number }) {
@@ -47,6 +49,7 @@ export default function FriendProfileScreen() {
   const tabSpace = useTabBarSpace();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { data: card, isLoading, isError, refetch } = useFriendCard(userId);
+  const { data: badges } = useUserBadges(userId);
   const { send, respond, remove } = useFriendActions();
   const blocks = useBlocks();
   const meId = useAuthStore((s) => s.session?.user.id);
@@ -142,10 +145,11 @@ export default function FriendProfileScreen() {
     );
   }
 
+  const hasBadges = !!(badges?.routes.length || badges?.locals.length);
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-        <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg} style={{ paddingBottom: 56 }} artPad={42}>
+        <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg ?? (badges?.banner_url ? 'foto' : null)} photoUrl={isSelf ? profile?.profile_banner_url : badges?.banner_url} style={{ paddingBottom: 56 }} artPad={42}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -170,8 +174,13 @@ export default function FriendProfileScreen() {
           </View>
         </ProfileBanner>
 
+        {/* Insignias: son públicas, las ve cualquiera (amigo o no). Van primero, montadas sobre el banner. */}
+        {hasBadges ? (
+          <View className="mx-5 -mt-7 mb-1"><BadgesCard badges={badges} own={!!isSelf} userId={userId} /></View>
+        ) : null}
+
         {card && !showData && (
-          <Glass className="rounded-3xl p-4 mx-5 -mt-7" style={{ gap: 10 }}>
+          <Glass className={`rounded-3xl p-4 mx-5 ${hasBadges ? 'mt-2' : '-mt-7'}`} style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
               {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
             </Text>
@@ -203,7 +212,7 @@ export default function FriendProfileScreen() {
             {/* En claro la tarjeta NO usa el vidrio nativo: en iPhone el vidrio refracta el encabezado oscuro que tiene detrás y deja una banda oscura sobre los números.
                 Es una tarjeta de superficie lila-blanca (mismo borde, radio y sombra que el vidrio). En oscuro sigue el vidrio de siempre. */}
             {dark ? (
-              <Glass className="rounded-3xl mx-5 -mt-7 py-3.5">
+              <Glass className={`rounded-3xl mx-5 ${hasBadges ? 'mt-2' : '-mt-7'} py-3.5`}>
               <View className="flex-row">
                 {[
                   { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
@@ -219,7 +228,7 @@ export default function FriendProfileScreen() {
               </Glass>
             ) : (
               <View
-                className="rounded-3xl mx-5 -mt-7 py-3.5"
+                className={`rounded-3xl mx-5 ${hasBadges ? 'mt-2' : '-mt-7'} py-3.5`}
                 style={{ borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backgroundColor: '#F7F4FF', shadowColor: colors.purpleDeep, shadowOpacity: 0.13, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
               >
               <View className="flex-row">

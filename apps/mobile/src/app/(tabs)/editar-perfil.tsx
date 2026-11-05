@@ -10,7 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, ChevronDown, Camera, ImageIcon, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
-import { uploadAvatar } from '@/lib/avatar';
+import { uploadAvatar, uploadBanner } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, signOutUser } from '@/store/useAuthStore';
@@ -26,6 +26,7 @@ import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { ProfileBgSheet } from '@/components/profile/ProfileBgSheet';
+import { useBadgesReady } from '@/hooks/useBadges';
 import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { getAppleAuthorizationCode } from '@/lib/oauth';
 
@@ -82,6 +83,11 @@ export default function EditarPerfilScreen() {
   const [bioInput, setBioInput] = useState(profile?.bio ?? '');
   const [bgKey, setBgKey] = useState<string>(profile?.profile_bg ?? 'violeta');
   const [bgSheet, setBgSheet] = useState(false);
+  // Foto propia de fondo: la que ya tiene guardada o una nueva elegida ahora (se sube al guardar).
+  const [bannerUri, setBannerUri] = useState<string | null>(null);
+  const [bannerB64, setBannerB64] = useState<string | null>(null);
+  const bannerShown = bannerUri ?? profile?.profile_banner_url ?? null;
+  const bannerReady = useBadgesReady();
   const [city, setCity] = useState(profile?.city ?? 'Tarija');
   const [zone, setZone] = useState<string | null>(profile?.zone ?? null);
   const [bYear, setBYear] = useState(b ? b.slice(0, 4) : '');
@@ -119,6 +125,7 @@ export default function EditarPerfilScreen() {
     (nameInput.trim() !== (profile.full_name ?? '').trim() ||
       bioInput.trim() !== (profile.bio ?? '').trim() ||
       bgKey !== (profile.profile_bg ?? 'violeta') ||
+      bannerUri !== null ||
       city !== (profile.city ?? 'Tarija') ||
       zone !== (profile.zone ?? null) ||
       !sameList(interests, profile.interests ?? []) ||
@@ -182,11 +189,12 @@ export default function EditarPerfilScreen() {
     setSaving(true);
     try {
       const photoUrl = photoUri ? await uploadAvatar(profile.id, photoUri, photoB64) : undefined;
+      const bannerUrl = bannerUri ? await uploadBanner(profile.id, bannerUri, bannerB64) : undefined;
       // La descripción se manda solo si cambió: así guardar el perfil sigue andando aunque la base todavía no tenga la columna (migración 0056).
       // El fondo, igual: solo si cambió (migración 0079).
       const bgChanged = bgKey !== (profile.profile_bg ?? 'violeta');
       const bioChanged = bioInput.trim() !== (profile.bio ?? '');
-      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}), ...(bgChanged ? { profile_bg: bgKey === 'violeta' ? null : bgKey } : {}) };
+      const update = { full_name: nameInput.trim(), zone, city, interests, ...(photoUrl ? { photo_url: photoUrl } : {}), ...(bioChanged ? { bio: bioInput.trim() || null } : {}), ...(bgChanged ? { profile_bg: bgKey === 'violeta' ? null : bgKey } : {}), ...(bannerUrl ? { profile_banner_url: bannerUrl } : {}) };
       let { error } = await supabase.from('profiles').update({ ...update, ...(birth ? { birth_date: birth } : {}) }).eq('id', profile.id);
       if (error && /birth_date|city/i.test(error.message)) {
         const { city: _city, ...rest } = update;
@@ -197,6 +205,8 @@ export default function EditarPerfilScreen() {
       // La pantalla sigue montada: sin esto el próximo guardado volvería a subir la misma foto.
       setPhotoUri(null);
       setPhotoB64(null);
+      setBannerUri(null);
+      setBannerB64(null);
       router.back();
     } catch (e) {
       Alert.alert('No pudimos guardar', friendlyError(e, 'Intenta de nuevo.'));
@@ -303,7 +313,7 @@ export default function EditarPerfilScreen() {
   return (
     <KeyboardSafe className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 96 }}>
-        <ProfileBanner bg={bgKey} style={{ paddingBottom: 22 }} artPad={20}>
+        <ProfileBanner bg={bgKey} photoUrl={bannerShown} style={{ paddingBottom: 22 }} artPad={20}>
           <View className="flex-row items-center gap-3">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={leave} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
               <ChevronLeft size={16} color="#fff" />
@@ -330,7 +340,14 @@ export default function EditarPerfilScreen() {
             <Text className="text-[12.5px] font-semibold mt-2" style={{ color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6 }}>Cambiar foto</Text>
           </Press>
         </ProfileBanner>
-        <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} />
+        <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} photoUrl={bannerShown}
+          onPickPhoto={!bannerReady ? undefined : async () => {
+            const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85, allowsEditing: true, aspect: [4, 3], base64: true });
+            if (r.canceled) return;
+            setBannerUri(r.assets[0].uri);
+            setBannerB64(r.assets[0].base64 ?? null);
+            setBgKey('foto');
+          }} />
 
         <View className="px-5 pt-5">
           <Glass className="rounded-3xl p-4 mb-4">

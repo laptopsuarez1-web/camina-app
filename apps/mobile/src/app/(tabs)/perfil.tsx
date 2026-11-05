@@ -28,6 +28,8 @@ import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { NotificationPrefs } from '@/components/NotificationPrefs';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
+import { BadgesCard } from '@/components/badges/BadgesCard';
+import { useMyBadges } from '@/hooks/useBadges';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -74,6 +76,7 @@ export default function PerfilScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const isDark = useColorScheme().colorScheme === 'dark';
+  const { data: badges } = useMyBadges();
   const { data: balance } = usePointsBalance();
   const { data: friendRequests } = useFriendRequests();
   const blocks = useBlocks();
@@ -249,6 +252,8 @@ export default function PerfilScreen() {
           <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
         </Press>
       </Glass>
+
+      <BadgesCard badges={badges} />
 
       <Glass className="rounded-2xl overflow-hidden mb-3">
         <Press

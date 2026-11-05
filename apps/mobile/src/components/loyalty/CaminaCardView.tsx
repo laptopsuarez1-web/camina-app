@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -36,24 +36,31 @@ export function Countdown({ days, label }: { days: number; label?: string }) {
   );
 }
 
-// Un sello: la moneda dorada de Camina. Al aparecer entra con un toque corto y suave; los vacíos son un círculo punteado.
-function StampCoin({ index, size, fresh }: { index: number; size: number; fresh: boolean }) {
+// Un sello: la moneda dorada de Camina. Aparece suave, bajando un poco y creciendo, y deja una onda dorada muy leve.
+// Los vacíos son un círculo punteado.
+function StampCoin({ index, size, fresh, last }: { index: number; size: number; fresh: boolean; last: boolean }) {
   const reduced = useReducedMotion();
-  const scale = useSharedValue(reduced || !fresh ? 1 : 1.25);
-  const opacity = useSharedValue(reduced || !fresh ? 1 : 0);
-  const tilt = useSharedValue(reduced || !fresh ? 0 : -6);
+  const anim = !reduced && fresh;
+  const drop = useSharedValue(anim ? 0 : 1);
+  const ring = useSharedValue(anim ? 0 : 1);
   useEffect(() => {
-    if (reduced || !fresh) return;
-    const d = index * 50;
-    opacity.value = withDelay(d, withTiming(1, { duration: 90 }));
-    scale.value = withDelay(d, withTiming(1, { duration: 180, easing: Easing.out(Easing.cubic) }));
-    tilt.value = withDelay(d, withTiming(0, { duration: 180, easing: Easing.out(Easing.cubic) }));
-  }, [fresh, index, opacity, reduced, scale, tilt]);
-  const style = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ scale: scale.value }, { rotate: `${tilt.value}deg` }] }));
+    if (!anim) return;
+    const d = 200 + index * 180 + (last ? 160 : 0);
+    drop.value = withDelay(d, withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) }));
+    ring.value = withDelay(d + 380, withTiming(1, { duration: 900, easing: Easing.out(Easing.quad) }));
+  }, [anim, index, last, drop, ring]);
+  const style = useAnimatedStyle(() => ({
+    opacity: drop.value,
+    transform: [{ translateY: (1 - drop.value) * -12 }, { scale: 0.7 + 0.3 * drop.value }],
+  }));
+  const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value <= 0 || ring.value >= 1 ? 0 : (1 - ring.value) * (last ? 0.5 : 0.3), transform: [{ scale: 0.9 + ring.value * (last ? 0.5 : 0.3) }] }));
   return (
-    <Animated.View style={style}>
-      <Coin size={size} gold />
-    </Animated.View>
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: '#E2B33C' }, ringStyle]} />
+      <Animated.View style={style}>
+        <Coin size={size} gold />
+      </Animated.View>
+    </View>
   );
 }
 
@@ -63,7 +70,7 @@ export function CaminaStamps({ card, size = 46, animate = false }: { card: Camin
     <View className="flex-row items-center justify-between">
       {Array.from({ length: card.goal }, (_, i) =>
         i < card.stamps ? (
-          <StampCoin key={i} index={i} size={size} fresh={animate} />
+          <StampCoin key={i} index={i} size={size} fresh={animate} last={i === card.stamps - 1} />
         ) : (
           <View
             key={i}
@@ -83,8 +90,8 @@ function Shine() {
   const x = useSharedValue(-1);
   useEffect(() => {
     if (reduced) return;
-    // Una sola pasada corta, sin repetirse.
-    x.value = withSequence(withTiming(-1, { duration: 0 }), withDelay(300, withTiming(1.2, { duration: 800, easing: Easing.inOut(Easing.ease) })));
+    // Un brillo que cruza la tarjeta y vuelve a pasar cada tanto, mientras el premio espera.
+    x.value = withRepeat(withSequence(withTiming(-1, { duration: 0 }), withDelay(600, withTiming(1.2, { duration: 900, easing: Easing.inOut(Easing.ease) })), withDelay(2600, withTiming(1.2, { duration: 0 }))), -1, false);
   }, [reduced, x]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value * 360 }, { skewX: '-20deg' }] }));
   if (reduced) return null;

@@ -6,6 +6,9 @@ export const PROVIDER_GOOGLE = 'google';
 export function Marker(_props: unknown) {
   return null;
 }
+export function Polyline(_props: unknown) {
+  return null;
+}
 export default function MapView({ style, children }: { style?: object; children?: React.ReactNode }) {
   return (
     <View style={[{ backgroundColor: '#1d1b2e', alignItems: 'center', justifyContent: 'center' }, style]}>

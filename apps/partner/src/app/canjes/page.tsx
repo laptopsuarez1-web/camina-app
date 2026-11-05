@@ -6,6 +6,7 @@ import { supabase, type Redemption } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
+import { RutaVisitas } from '@/components/RutaVisitas';
 
 export default function CanjesPage() {
   const { business } = useBusinessAuth();
@@ -94,6 +95,8 @@ export default function CanjesPage() {
   return (
     <DashboardShell>
       <TopBar title="Canjes" subtitle="Cada canje queda aquí, con su premio y cómo se confirmó." />
+
+      {business && <RutaVisitas businessId={business.id} />}
 
       <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="text-white font-semibold text-sm mb-1">Confirmar código de 6 dígitos</p>

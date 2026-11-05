@@ -5,6 +5,7 @@ import { Ticket } from 'lucide-react';
 import { supabase, type Redemption, type BusinessNotification } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
+import { ClientesFieles } from '@/components/ClientesFieles';
 
 const PLAN_LABEL: Record<string, string> = {
   primer_paso: 'Primer Paso · Gratis',
@@ -135,6 +136,7 @@ export default function InicioPage() {
           {redemptions.length === 0 && <p className="text-muted text-[13px] py-2">Todavía no hay canjes.</p>}
         </div>
       </div>
+      {business && <ClientesFieles businessId={business.id} />}
     </DashboardShell>
   );
 }

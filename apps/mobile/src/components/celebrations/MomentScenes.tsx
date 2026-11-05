@@ -396,7 +396,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   }, []);
   const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
+    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.warn, '#FFD97A', '#FFF1B8', '#62F0B6'] }} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
       <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
@@ -503,7 +503,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
+    <Stage tl={tl} confetti={{ at: 1950, palette: GOLD_SPARKS }} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Meta del grupo · ${c.name}`}</Eyebrow></Reveal>
       <Reveal tl={tl} delay={1950} pop from={0.3} style={{ marginTop: 12 }}>
         <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
@@ -560,31 +560,39 @@ function tierOf(position: number) {
 
 const RANK_H = [124, 88, 60];
 
+// Colores del podio: oro, plata y bronce.
+const MEDAL: [string, string][] = [['#FFE7A3', '#E2B33C'], ['#EEF1F6', '#AEB6C4'], ['#F3C9A4', '#C9824E']];
+const MEDAL_INK = ['#5a3d00', '#3a4150', '#5a2d0c'];
+
 function MyStep({ tl, delay, rank, me, mine }: { tl: Timeline; delay: number; rank: number; me: CinePerson; mine: boolean }) {
   const p = usePalette();
   const grow = useBeat(tl, delay, { duration: 560 });
   const g = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - Math.min(1, grow.value)) * RANK_H[rank - 1] }] }));
   const winner = rank === 1;
-  const fill = mine ? (winner ? p.podWin : p.podMine) : null;
   return (
     <View style={{ width: 96, alignItems: 'center' }}>
       <View style={{ height: 78, justifyContent: 'flex-end', alignItems: 'center' }}>
         {mine ? (
           <Reveal tl={tl} delay={delay + 380} dy={-40} style={{ alignItems: 'center' }}>
             {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -36 }}><CrownMark size={44} /></Reveal> : null}
-            <Avatar p={me} size={54} ring={winner ? GOLD : colors.aqua} />
+            <Avatar p={me} size={54} ring={MEDAL[rank - 1][1]} />
             <Text style={{ fontSize: 11.5, fontWeight: '800', color: p.text, marginTop: 3 }}>Tú</Text>
           </Reveal>
-        ) : null}
+        ) : (
+          // Los demás puestos: un lugar vacío, para que el podio no se vea cortado.
+          <Reveal tl={tl} delay={delay + 300} style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
+          </Reveal>
+        )}
       </View>
       <View style={{ width: '100%', height: RANK_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14, marginTop: 6 }}>
         <Animated.View style={[{ flex: 1 }, g]}>
-          {fill ? (
-            <LinearGradient colors={fill} style={{ flex: 1, alignItems: 'center', paddingTop: 8 }}>
-              <Text style={{ ...display(24), color: winner ? p.gold : p.accent }}>{rank}</Text>
+          {mine ? (
+            <LinearGradient colors={MEDAL[rank - 1]} style={{ flex: 1, alignItems: 'center', paddingTop: 8 }}>
+              <Text style={{ ...display(24), color: MEDAL_INK[rank - 1] }}>{rank}</Text>
             </LinearGradient>
           ) : (
-            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8 }}>
+            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8, opacity: 0.75 }}>
               <Text style={{ ...display(24), color: p.muted }}>{rank}</Text>
             </View>
           )}
@@ -630,7 +638,7 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
   };
   const steps = [2, 1, 3];
   return (
-    <Stage tl={tl} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
+    <Stage tl={tl} confetti={podium ? { at: 2100, palette: [GOLD, '#FFD97A', '#FFF1B8', colors.aqua] } : undefined} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Ranking semanal global · ${c.weekLabel}`}</Eyebrow></Reveal>
 
       {podium ? (

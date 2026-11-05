@@ -24,6 +24,8 @@ export interface Profile {
   city?: string;
   bio?: string | null;
   profile_bg?: string | null;
+  profile_banner_url?: string | null;
+  featured_badge?: string | null;
   created_at: string;
 }
 

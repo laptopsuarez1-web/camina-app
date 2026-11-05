@@ -8,8 +8,9 @@ export type BenefitWithBusiness = Benefit & { business: Business };
 // Solo se muestran los comercios de la ciudad de la persona (por defecto Tarija).
 export function useBenefits() {
   const city = useAuthStore((s) => s.profile?.city ?? 'Tarija');
+  const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
-    queryKey: ['benefits', city],
+    queryKey: ['benefits', city, userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('benefits')
@@ -18,7 +19,12 @@ export function useBenefits() {
         .select('*, business:businesses!benefits_business_id_fkey(*)')
         .eq('active', true);
       if (error) throw error;
-      return (data as unknown as BenefitWithBusiness[]).filter((b) => (b.business?.city ?? 'Tarija') === city);
+      const all = (data as unknown as (BenefitWithBusiness & { fans_only?: boolean })[]).filter((b) => (b.business?.city ?? 'Tarija') === city);
+      // Premios solo para Fans (0083): se muestran solo a quien es Fan de ese local. El servidor igual lo vuelve a revisar al canjear.
+      if (!all.some((b) => b.fans_only)) return all;
+      const { data: mine } = await supabase.rpc('user_badges', { p_user: userId });
+      const fanOf = new Set(((mine as { locals?: { business_id: string; level: string }[] } | null)?.locals ?? []).filter((l) => l.level === 'fan').map((l) => l.business_id));
+      return all.filter((b) => !b.fans_only || fanOf.has(b.business_id));
     },
   });
 }

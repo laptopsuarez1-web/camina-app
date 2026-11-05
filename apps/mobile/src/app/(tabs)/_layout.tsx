@@ -89,6 +89,9 @@ export default function TabsLayout() {
       <Tabs.Screen name="grupos/nuevo-meta" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="grupos/agregar" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="ranking" options={{ href: null }} />
+      <Tabs.Screen name="ruta" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="ruta-mes" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="insignias" options={{ href: null }} />
       <Tabs.Screen name="amigos/index" options={{ href: null }} />
       <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
