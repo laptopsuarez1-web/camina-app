@@ -30,6 +30,8 @@ type Props = {
   // Se llama cuando termina la animación de "listo": ahí el padre abre la pantalla de canje confirmado.
   onSuccess: () => void;
   onDismiss?: () => void;
+  // Textos para usar la misma hoja en otros flujos (la Ruta del mes). Sin esto se ve igual que siempre (canje).
+  copy?: { tag: string; title: string; body: string; action: string; done: string };
 };
 
 type Phase = 'typing' | 'busy' | 'error' | 'done';
@@ -83,7 +85,7 @@ function Cell({ char, active, phase, index }: { char: string; active: boolean; p
 
 // Hoja para canjear con el código de 4 números que el local le dice a la persona en la caja.
 export function LocalCodeSheet({
-  visible, businessName, logoUrl, category, benefitName, costPoints, free, onClose, onSubmit, onSuccess, onDismiss,
+  visible, businessName, logoUrl, category, benefitName, costPoints, free, onClose, onSubmit, onSuccess, onDismiss, copy,
 }: Props) {
   const theme = useThemeColors();
   const dark = useColorScheme().colorScheme === 'dark';
@@ -136,7 +138,7 @@ export function LocalCodeSheet({
     setTimeout(onSuccess, reduced ? 150 : 650);
   }
 
-  const cost = free ? 'Gratis con tu tarjeta' : `${costPoints} ${costPoints === 1 ? 'Punto' : 'Puntos'}`;
+  const cost = copy ? copy.tag : free ? 'Gratis con tu tarjeta' : `${costPoints} ${costPoints === 1 ? 'Punto' : 'Puntos'}`;
   const ready = code.length === DIGITS;
 
   return (
@@ -156,14 +158,14 @@ export function LocalCodeSheet({
                 <Text className="text-xs text-muted-light dark:text-muted-dark" numberOfLines={1}>{benefitName}</Text>
               </View>
               <View className="flex-row items-center gap-1.5 bg-purple-light-light dark:bg-purple-light-dark rounded-full pl-2 pr-3 py-1.5">
-                {!free && <Coin size={14} />}
+                {!free && !copy && <Coin size={14} />}
                 <Text className="text-[12px] font-bold text-purple-ink dark:text-purple-soft">{cost}</Text>
               </View>
             </View>
 
-            <Text className="text-[22px] leading-7 font-extrabold text-text-light dark:text-text-dark mb-1">Pídele al local su código</Text>
+            <Text className="text-[22px] leading-7 font-extrabold text-text-light dark:text-text-dark mb-1">{copy?.title ?? 'Pídele al local su código'}</Text>
             <Text className="text-[13.5px] leading-5 text-muted-light dark:text-muted-dark mb-5">
-              Son 4 números. Escríbelos aquí y tu canje se confirma al instante.
+              {copy?.body ?? 'Son 4 números. Escríbelos aquí y tu canje se confirma al instante.'}
             </Text>
 
             <Press accessible={false} feedback="none" onPress={() => input.current?.focus()}>
@@ -218,10 +220,10 @@ export function LocalCodeSheet({
               ) : phase === 'done' ? (
                 <>
                   <Check size={18} color="#fff" />
-                  <Text className="text-[15px] font-bold text-white">¡Canjeado!</Text>
+                  <Text className="text-[15px] font-bold text-white">{copy?.done ?? '¡Canjeado!'}</Text>
                 </>
               ) : (
-                <Text className="text-[15px] font-bold text-white">Canjear</Text>
+                <Text className="text-[15px] font-bold text-white">{copy?.action ?? 'Canjear'}</Text>
               )}
             </Press>
             <Press accessibilityRole="button" hitSlop={8} onPress={onClose} disabled={phase === 'busy' || phase === 'done'} className="py-2.5 items-center">

@@ -102,6 +102,9 @@ begin
     'prev_completed', v_prev.user_id is not null,
     'double_day', v_prev.double_day,
     'eligible_count', (select count(*) from businesses b where route_eligible(b.id)),
+    -- Los locales que participan (para el fondo de la tarjeta: no dice cuáles te tocaron).
+    'locales', coalesce((select jsonb_agg(jsonb_build_object('name', x.name, 'logo_url', x.logo_url, 'lat', x.lat, 'lng', x.lng))
+                         from (select b.name, b.logo_url, b.lat, b.lng from businesses b where route_eligible(b.id) order by b.name limit 12) x), '[]'::jsonb),
     'stops', coalesce((
       select jsonb_agg(jsonb_build_object(
         'business_id', b.id, 'name', b.name, 'category', b.category, 'logo_url', b.logo_url,

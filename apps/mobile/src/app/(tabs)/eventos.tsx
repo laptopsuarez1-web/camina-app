@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -18,6 +18,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/promos/PromoCards';
+import { useRuta } from '@/hooks/useRuta';
+import { RutaEventCard } from '@/components/ruta/RutaEventCard';
 
 export default function EventosScreen() {
   const tabSpace = useTabBarSpace();
@@ -36,6 +38,9 @@ export default function EventosScreen() {
   const cardSize = Math.min(width - 40, 380);
   const events = (promos ?? []).filter((p) => p.kind === 'evento');
   const challenges = (promos ?? []).filter((p) => p.kind === 'desafio' || p.kind === 'sorteo');
+  // Ruta del mes: tarjeta grande arriba de los eventos. Solo aparece si hay al menos 3 locales que participan.
+  const { data: ruta } = useRuta();
+  const showRuta = !!ruta && (ruta.joined || ruta.eligible_count >= 3);
 
   async function handleJoin(p: PromotionItem) {
     try {
@@ -117,6 +122,9 @@ export default function EventosScreen() {
       </Text>
       {tab === 'eventos' && (
         <View className="gap-4 mb-7 items-center">
+          {showRuta && (
+            <RutaEventCard state={ruta} width={cardSize} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push('/(tabs)/ruta')} />
+          )}
           {events.map((p) => <EventCard key={p.id} p={p} size={cardSize} onPress={() => setOpen(p)} />)}
         </View>
       )}
@@ -137,7 +145,7 @@ export default function EventosScreen() {
           />
         </View>
       )}
-      {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 : challenges.length === 0) && (
+      {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 && !showRuta : challenges.length === 0) && (
         <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
           <BaifoMascot pose="camina" />
           <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
