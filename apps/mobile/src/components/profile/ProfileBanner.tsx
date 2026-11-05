@@ -23,7 +23,7 @@ function PhotoBg({ uri }: { uri: string }) {
             </View>
           );
         })}
-      <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(22,16,31,0.55)', 'rgba(22,16,31,0.92)']} locations={[0, 0.3, 0.7, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0)', 'rgba(22,16,31,0.55)', 'rgba(22,16,31,0.92)']} locations={[0, 0.32, 0.7, 1]} style={StyleSheet.absoluteFill} />
     </View>
   );
 }

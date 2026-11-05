@@ -151,10 +151,10 @@ export default function FriendProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
         <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg ?? (badges?.banner_url ? 'foto' : null)} photoUrl={isSelf ? profile?.profile_banner_url : badges?.banner_url} style={{ paddingBottom: 56 }} artPad={42}>
           <View className="flex-row items-center justify-between">
-            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.28)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
-            <Text className="text-[13px] font-semibold" style={{ color: colors.authMuted }}>
+            <Text className="text-[13px] font-semibold" style={{ color: '#fff', textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 6 }}>
               {isFriend ? (since ? `Amigos desde el ${since}` : 'Amigos') : isSelf ? 'Así te ven tus amigos' : ''}
             </Text>
             {isSelf || !card ? (
