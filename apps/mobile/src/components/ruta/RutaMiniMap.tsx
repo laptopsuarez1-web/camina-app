@@ -7,7 +7,8 @@ import { MysteryPin, RutaPin } from './RutaPin';
 type Place = { name: string; logo_url: string | null; lat: number | null; lng: number | null };
 
 // Lugares de respaldo para la vista previa web (ahí no hay mapa).
-const SPOTS = [[0.18, 0.12], [0.6, 0.08], [0.4, 0.3], [0.76, 0.36], [0.12, 0.44], [0.55, 0.52], [0.3, 0.04], [0.84, 0.1], [0.86, 0.5]];
+// Lejos de las esquinas de arriba (ahí van los botones de volver y ?).
+const SPOTS = [[0.22, 0.22], [0.5, 0.12], [0.4, 0.38], [0.74, 0.3], [0.08, 0.46], [0.58, 0.5], [0.3, 0.6], [0.66, 0.08], [0.86, 0.52]];
 // Pines sorpresa que siempre se ven en la tarjeta del evento (aunque haya menos locales).
 const MYSTERY_COUNT = 9;
 

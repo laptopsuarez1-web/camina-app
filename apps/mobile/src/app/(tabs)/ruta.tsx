@@ -110,6 +110,9 @@ export default function RutaScreen() {
   const options = useRutaSwapOptions(swapOpen);
   const mapRef = useRef<MapView>(null);
   // Animación de llegada: la cámara va a cada local, cae su pin y al final se ven los 3 unidos.
+  // `intro` es local (no depende de que el parámetro de la URL llegue a tiempo): desde que se toca Participar,
+  // no se muestra ningún local hasta que cae su pin en el mapa.
+  const [intro, setIntro] = useState(!!params.nueva);
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
   const [lineOn, setLineOn] = useState(!params.nueva);
   const [tracks, setTracks] = useState(true);
@@ -127,14 +130,14 @@ export default function RutaScreen() {
 
   // Seguro: si el mapa no llega a cargar (sin red o sin coordenadas), los locales igual se muestran después de la animación.
   useEffect(() => {
-    if (!params.nueva || !stops.length) return;
-    const t = setTimeout(() => { setShown(stops.length); setLineOn(true); }, 300 + stops.length * 2300 + 2500);
+    if (!intro || !stops.length) return;
+    const t = setTimeout(() => { setShown(stops.length); setLineOn(true); setIntro(false); }, 300 + stops.length * 2300 + 4000);
     return () => clearTimeout(t);
-  }, [params.nueva, stops.length]);
+  }, [intro, stops.length]);
 
   function fitAll(animated = true) {
     const coords = stops.filter((s) => s.lat != null).map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
-    if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 140, right: 60, bottom: 60, left: 60 }, animated });
+    if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
   // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
@@ -178,17 +181,23 @@ export default function RutaScreen() {
     setTimeout(() => {
       fitAll();
       setTimeout(drawLine, 700);
+      setTimeout(() => { setShown(stops.length); setIntro(false); }, 900);
       router.setParams({ nueva: undefined });
     }, 300 + steps.length * STEP);
   }
 
   async function participate() {
+    // Primero se esconden los locales y recién después llega la ruta del servidor: así nunca se ven antes de la animación.
+    setIntro(true);
+    setShown(0);
+    setLineOn(false);
     try {
       await join.mutateAsync(undefined as never);
-      setShown(0);
-      setLineOn(false);
       router.setParams({ nueva: '1' });
     } catch (e) {
+      setIntro(false);
+      setShown(3);
+      setLineOn(true);
       Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
@@ -298,7 +307,7 @@ export default function RutaScreen() {
     const few = state.eligible_count < 3;
     return (
       <View style={{ flex: 1, backgroundColor: BG }}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           <View style={{ height: 250 + insets.top }}>
             <RutaMiniMap places={state.locales} pinSize={30} padBottom={60} mystery />
             <LinearGradient pointerEvents="none" colors={['rgba(22,17,31,0.35)', 'rgba(22,17,31,0)', 'rgba(22,17,31,0.7)', BG]} locations={[0, 0.3, 0.75, 1]} style={{ position: 'absolute', inset: 0 }} />
@@ -330,10 +339,9 @@ export default function RutaScreen() {
           </Press>
           </View>
         </ScrollView>
-        {/* El botón va sobre un fondo que tapa el texto de atrás (antes flotaba encima de las condiciones). */}
-        <LinearGradient pointerEvents="none" colors={['rgba(22,17,31,0)', BG, BG]} locations={[0, 0.35, 1]} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: insets.bottom + 110 }} />
         {rulesModal}
-        <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
+        {/* El botón va en su propia barra al pie, debajo del contenido (nunca encima del texto). */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 12, backgroundColor: BG, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' }}>
           <Press accessibilityRole="button" disabled={few || join.isPending} onPress={participate} haptic="light"
             style={{ borderRadius: 16, paddingVertical: 15, alignItems: 'center', backgroundColor: MINT, opacity: few ? 0.5 : 1 }}>
             {join.isPending ? <ActivityIndicator color="#14093a" /> : (
@@ -359,7 +367,7 @@ export default function RutaScreen() {
             style={{ flex: 1 }}
             customMapStyle={DARK_MAP_STYLE}
             initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
-            onMapReady={() => (params.nueva ? runIntro() : fitAll(false))}
+            onMapReady={() => (intro ? runIntro() : fitAll(false))}
             toolbarEnabled={false}
             pitchEnabled={false}
             rotateEnabled={false}
@@ -389,7 +397,9 @@ export default function RutaScreen() {
         </Press>
       </View>
 
-      <View style={{ position: 'absolute', left: 12, right: 12, bottom: insets.bottom + 12, maxHeight: height * 0.46, borderRadius: 26, backgroundColor: 'rgba(26,20,38,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', overflow: 'hidden' }}>
+      {/* Mientras caen los pines el panel no se muestra: el mapa queda libre para la animación. */}
+      {!intro && (
+      <View style={{ position: 'absolute', left: 12, right: 12, bottom: insets.bottom + 12, maxHeight: height * 0.4, borderRadius: 26, backgroundColor: 'rgba(26,20,38,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', overflow: 'hidden' }}>
         {/* Se pliega tocando la barrita: así se ve todo el mapa. */}
         <Press accessibilityRole="button" accessibilityLabel={panelOpen ? 'Bajar el panel' : 'Subir el panel'} onPress={() => setPanelOpen((v) => !v)} feedback="none"
           style={{ alignItems: 'center', paddingTop: 8, paddingBottom: panelOpen ? 2 : 10 }}>
@@ -406,7 +416,7 @@ export default function RutaScreen() {
               const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.35)';
               return (
                 <Press key={s.business_id} accessibilityRole="button" disabled={hidden || st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
-                  <View style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
                     {hidden ? (
                       <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
                     ) : s.logo_url ? (
@@ -416,7 +426,7 @@ export default function RutaScreen() {
                     )}
                   </View>
                   {!hidden && st === 'ok' ? (
-                    <View style={{ position: 'absolute', top: 0, right: '50%', marginRight: -32, width: 20, height: 20, borderRadius: 10, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
+                    <View style={{ position: 'absolute', top: 0, right: '50%', marginRight: -28, width: 20, height: 20, borderRadius: 10, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
                       <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 11 }}>✓</Text>
                     </View>
                   ) : null}
@@ -451,6 +461,7 @@ export default function RutaScreen() {
         </ScrollView>
         ) : null}
       </View>
+      )}
 
       {rulesModal}
 

@@ -67,3 +67,57 @@ export async function uploadBanner(userId: string, uri: string, base64?: string 
   if (error) throw error;
   return `${supabase.storage.from('profile-banners').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
 }
+
+// Fotos viejas: antes del 1 de noviembre las fotos se subían en tamaño completo (varios MB) y por eso tardaban en
+// abrir en todas las pantallas. Al entrar, si mi foto o mi banner pesan de más, se achican y se vuelven a subir una vez.
+// Solo toca las fotos de la propia persona; si algo falla, se deja como está y se intenta en otra sesión.
+const HEAL_KEY = 'camina.photoHeal.';
+async function contentLength(url: string): Promise<number | null> {
+  try {
+    const r = await fetch(url, { method: 'HEAD' });
+    const n = Number(r.headers.get('content-length'));
+    return r.ok && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}
+async function shrinkRemote(url: string, max: number): Promise<string | null> {
+  try {
+    const ctx = ImageManipulator.manipulate(url);
+    const first = await ctx.renderAsync();
+    if (first.width > max || first.height > max) ctx.resize(first.width >= first.height ? { width: max } : { height: max });
+    const out = await (await ctx.renderAsync()).saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
+    return out.base64 ?? null;
+  } catch {
+    return null;
+  }
+}
+export async function healOldPhotos(profile: { id: string; photo_url?: string | null; profile_banner_url?: string | null }): Promise<Record<string, string> | null> {
+  const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+  const jobs = [
+    { col: 'photo_url', url: profile.photo_url, bucket: 'avatars', path: `${profile.id}/avatar.jpg`, limit: 220_000, max: MAX_SIDE },
+    { col: 'profile_banner_url', url: profile.profile_banner_url, bucket: 'profile-banners', path: `${profile.id}/banner.jpg`, limit: 450_000, max: 1280 },
+  ] as const;
+  const patch: Record<string, string> = {};
+  for (const j of jobs) {
+    if (!j.url || !j.url.includes(`/object/public/${j.bucket}/`)) continue;
+    const key = HEAL_KEY + j.url;
+    try {
+      if (await AsyncStorage.getItem(key)) continue;
+    } catch {
+      continue;
+    }
+    const size = await contentLength(j.url);
+    if (size != null && size > j.limit) {
+      const data = await shrinkRemote(j.url, j.max);
+      if (!data) continue;
+      const { error } = await supabase.storage.from(j.bucket).upload(j.path, decode(data), { contentType: 'image/jpeg', upsert: true });
+      if (error) continue;
+      patch[j.col] = `${supabase.storage.from(j.bucket).getPublicUrl(j.path).data.publicUrl}?v=${Date.now()}`;
+    }
+    if (size != null) AsyncStorage.setItem(key, '1').catch(() => {});
+  }
+  if (!Object.keys(patch).length) return null;
+  const { error } = await supabase.from('profiles').update(patch).eq('id', profile.id);
+  return error ? null : patch;
+}

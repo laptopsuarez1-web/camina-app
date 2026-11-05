@@ -10,6 +10,7 @@ import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
+import { healOldPhotos } from '@/lib/avatar';
 
 // Íconos de la barra: el mismo dibujo en todos los teléfonos, y cada uno hace un gesto corto al tocarlo (ver TabGlyph).
 // Son componentes fijos (no se crean en cada render) para que la animación no se reinicie.
@@ -42,6 +43,20 @@ export default function TabsLayout() {
       });
     }
   }, [session]);
+
+  // Fotos subidas antes del achicado (pesadas): se achican una vez para que abran rápido en todas las pantallas.
+  const profileId = useAuthStore((s) => s.profile?.id);
+  useEffect(() => {
+    const p = useAuthStore.getState().profile;
+    if (!profileId || !p) return;
+    const t = setTimeout(() => {
+      healOldPhotos(p).then((patch) => {
+        const cur = useAuthStore.getState().profile;
+        if (patch && cur?.id === p.id) useAuthStore.getState().setProfile({ ...cur, ...patch });
+      }).catch(() => {});
+    }, 4000);
+    return () => clearTimeout(t);
+  }, [profileId]);
 
   // Entró con el link de "olvidé mi contraseña": se abre directo el formulario para elegir la nueva.
   useEffect(() => {

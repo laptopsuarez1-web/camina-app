@@ -8,17 +8,17 @@ import { Glass } from '@/components/ui/Glass';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { LocalBadge } from './LocalBadge';
 import { rutaMonthShort } from '@/hooks/useRuta';
-import type { LocalBadgeT, UserBadges } from '@/hooks/useBadges';
+import { profileBadges, type LocalBadgeT, type UserBadges } from '@/hooks/useBadges';
 
-// "Mis insignias" en el Perfil: una sola fila con las rutas del mes completadas y los locales. "Ver todas" abre el resto.
+// "Mis insignias" en el Perfil: una sola fila con las insignias que la persona eligió (o las más recientes). "Ver todas" abre el resto.
 // `own` = es mi perfil (se puede tocar para ver todas; en el de un amigo es solo para mirar).
 export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges | undefined; own?: boolean; userId?: string }) {
   const [sheet, setSheet] = useState<LocalBadgeT | null>(null);
   // Sin datos (cargando o el servidor todavía sin 0083): no se muestra nada.
   if (!badges) return null;
-  const routes = (badges?.routes ?? []).slice(0, 2);
-  const locals = (badges?.locals ?? []).slice(0, 5 - routes.length);
-  const empty = routes.length === 0 && locals.length === 0;
+  // Las que la persona eligió mostrar (hasta 5) o, si no eligió, las más recientes.
+  const shownBadges = profileBadges(badges);
+  const empty = shownBadges.length === 0;
   if (!own && empty) return null;
   const openAll = () => router.push(own ? '/(tabs)/insignias' : { pathname: '/(tabs)/insignias', params: { u: userId } });
   return (
@@ -34,14 +34,13 @@ export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges 
       ) : (
         // Todo en una sola fila: primero las rutas del mes y después los locales (máximo 5, sin separador).
         <View className="flex-row justify-center items-center mt-3" style={{ gap: 14 }}>
-          {routes.map((r) => (
-            <Press key={r.month} accessibilityRole="button" onPress={() => own && router.push({ pathname: '/(tabs)/ruta-mes', params: { m: r.month } })}>
-              <RutaRing size={54} done={3} month={rutaMonthShort(r.month)} glow={false} />
+          {shownBadges.map((b) => b.kind === 'ruta' ? (
+            <Press key={b.key} accessibilityRole="button" onPress={() => own && router.push({ pathname: '/(tabs)/ruta-mes', params: { m: b.month } })}>
+              <RutaRing size={54} done={3} month={rutaMonthShort(b.month)} glow={false} />
             </Press>
-          ))}
-          {locals.map((l) => (
-            <Press key={l.business_id} accessibilityRole="button" accessibilityHint="Ver cómo va" onPress={() => setSheet(l)} hitSlop={4}>
-              <LocalBadge logoUrl={l.logo_url} name={l.name} level={l.level} size={48} />
+          ) : (
+            <Press key={b.key} accessibilityRole="button" accessibilityHint="Ver cómo va" onPress={() => setSheet(b.local)} hitSlop={4}>
+              <LocalBadge logoUrl={b.local.logo_url} name={b.local.name} level={b.local.level} size={48} />
             </Press>
           ))}
         </View>
