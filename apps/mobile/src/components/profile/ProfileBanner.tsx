@@ -49,6 +49,38 @@ function Glow({ id, cx, cy, r, color, opacity = 0.5 }: { id: string; cx: number;
   );
 }
 
+
+// Capa con degradé vertical (cerros, edificios): arriba más clara y abajo más oscura, da profundidad.
+function Layer({ id, d, top, bottom, o = 1 }: { id: string; d: string; top: string; bottom: string; o?: number }) {
+  return (
+    <>
+      <Defs>
+        <SvgLinear id={id} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={top} />
+          <Stop offset="1" stopColor={bottom} />
+        </SvgLinear>
+      </Defs>
+      <Path d={d} fill={`url(#${id})`} opacity={o} />
+    </>
+  );
+}
+
+// Huellas de Camina: un pie y el otro, alternados, a lo largo de un camino.
+function Footsteps({ pts, color = '#62F0B6', o = 0.9, s = 1 }: { pts: [number, number, number][]; color?: string; o?: number; s?: number }) {
+  return (
+    <G opacity={o}>
+      {pts.map(([x, y, a], i) => (
+        <G key={i} transform={`translate(${x} ${y}) rotate(${a}) translate(${i % 2 ? 4 * s : -4 * s} 0) scale(${s})`}>
+          <Ellipse cx={0} cy={0} rx={3.2} ry={5.2} fill={color} />
+          <Circle cx={-1.6} cy={-7.4} r={1.3} fill={color} />
+          <Circle cx={0.6} cy={-8.2} r={1.2} fill={color} />
+          <Circle cx={2.4} cy={-7.2} r={1} fill={color} />
+        </G>
+      ))}
+    </G>
+  );
+}
+
 function Bird({ x, y, s = 1, color = '#fff', o = 0.7 }: { x: number; y: number; s?: number; color?: string; o?: number }) {
   return <Path d={`M${x} ${y} q${5 * s} ${-6 * s} ${10 * s} 0 q${5 * s} ${-6 * s} ${10 * s} 0`} stroke={color} strokeWidth={1.8} strokeLinecap="round" fill="none" opacity={o} />;
 }
@@ -78,7 +110,8 @@ function Bosque() {
       <Circle cx={318} cy={100} r={17} fill="#ecfccb" />
       <Circle cx={312} cy={96} r={3} fill="#bef264" opacity={0.45} />
       <Circle cx={324} cy={106} r={2.2} fill="#bef264" opacity={0.4} />
-      <Path d="M0 210 Q70 168 140 196 T270 180 T400 200 V300 H0Z" fill="#0d4a44" opacity={0.85} />
+      <Path d="M318 100 L250 300 L390 300Z" fill="#d9f99d" opacity={0.05} />
+      <Layer id="bq-hill" d="M0 210 Q70 168 140 196 T270 180 T400 200 V300 H0Z" top="#136459" bottom="#0b3b37" o={0.9} />
       <Path d={back.join(' ')} fill="#0b3b37" />
       <Defs>
         <SvgLinear id="bq-mist" x1="0" y1="0" x2="0" y2="1">
@@ -130,35 +163,59 @@ function Ciudad() {
       {far.map(([x, w, top], i) => (
         <Rect key={`f${i}`} x={x} y={top} width={w} height={H - top} fill="#2a1b66" />
       ))}
+      <Defs>
+        <SvgLinear id="cd-near" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#22164a" />
+          <Stop offset="1" stopColor="#0f0a24" />
+        </SvgLinear>
+      </Defs>
       {near.map(([x, w, top], i) => (
-        <Rect key={`n${i}`} x={x} y={top} width={w} height={H - top} fill="#150e30" />
+        <G key={`n${i}`}>
+          <Rect x={x} y={top} width={w} height={H - top} fill="url(#cd-near)" />
+          <Rect x={x} y={top} width={w} height={2} fill="#3a2a78" opacity={0.8} />
+        </G>
       ))}
       <Rect x={207} y={118} width={2} height={34} fill="#150e30" />
       <Circle cx={208} cy={118} r={2.4} fill="#f87171" />
       <Circle cx={208} cy={118} r={7} fill="#f87171" opacity={0.25} />
       {windows}
       <Rect x={0} y={282} width={W} height={18} fill="#0a0618" />
+      {[60, 200, 340].map((x) => (
+        <G key={`lamp${x}`}>
+          <Glow id={`cd-l${x}`} cx={x} cy={270} r={26} color="#ffd166" opacity={0.35} />
+          <Rect x={x - 1} y={268} width={2} height={16} fill="#0a0618" />
+          <Circle cx={x} cy={268} r={2.6} fill="#ffe7a0" />
+        </G>
+      ))}
       <Path d="M0 290 H400" stroke="#ffd166" strokeWidth={1.4} strokeDasharray="10 14" opacity={0.5} />
     </>
   );
 }
 
 function Sendero() {
+  // Amanecer en los cerros: sol con halo y rayos, cerros con degradé y un sendero con huellas que sube hacia el sol.
+  const rays = Array.from({ length: 9 }, (_, i) => {
+    const ang = (-160 + i * 17.5) * (Math.PI / 180);
+    return `M290 176 L${290 + Math.cos(ang) * 260} ${176 + Math.sin(ang) * 260}`;
+  });
   return (
     <>
-      <Glow id="sd-sun" cx={290} cy={170} r={150} color="#fde68a" opacity={0.65} />
-      <Circle cx={290} cy={170} r={26} fill="#fff1c2" />
-      <Path d="M0 200 Q60 150 130 178 T250 168 T400 186 V300 H0Z" fill="#8a2f7a" opacity={0.75} />
-      <Path d="M0 226 Q90 186 190 214 T400 204 V300 H0Z" fill="#5a2078" />
-      <Path d="M0 258 Q110 226 220 250 T400 240 V300 H0Z" fill="#33124f" />
-      <Path d="M0 300 V280 Q120 262 260 276 T400 270 V300Z" fill="#1d0a34" />
-      <Path d="M168 300 Q176 268 210 252 Q246 238 238 214 Q232 198 262 190 L270 192 Q246 202 252 218 Q262 246 222 262 Q196 274 206 300 Z" fill="#ffd9a0" opacity={0.5} />
+      <Glow id="sd-sun" cx={290} cy={176} r={170} color="#fde68a" opacity={0.7} />
+      <Path d={rays.join(' ')} stroke="#fff1c2" strokeWidth={10} opacity={0.08} strokeLinecap="round" />
+      <Circle cx={290} cy={176} r={28} fill="#fff1c2" />
+      <Circle cx={290} cy={176} r={20} fill="#fff8e1" />
+      <Layer id="sd-1" d="M0 196 Q60 146 130 174 T250 162 T400 182 V300 H0Z" top="#a2408d" bottom="#6d2a78" o={0.85} />
+      <Layer id="sd-2" d="M0 224 Q90 182 190 210 T400 200 V300 H0Z" top="#6a2a86" bottom="#3d1660" />
+      <Layer id="sd-3" d="M0 256 Q110 222 220 246 T400 236 V300 H0Z" top="#3e1760" bottom="#230c3e" />
+      <Path d="M0 300 V278 Q120 260 260 274 T400 268 V300Z" fill="#170828" />
+      <Path d="M170 300 Q180 266 212 250 Q246 236 240 214 Q234 198 262 190 L270 192 Q248 202 254 218 Q262 246 224 262 Q198 274 208 300 Z" fill="#ffd9a0" opacity={0.35} />
+      <Footsteps pts={[[190, 288, -10], [198, 272, -18], [212, 258, -40], [228, 248, -40], [242, 234, -10], [246, 220, 5], [252, 206, -20], [262, 196, -50]]} color="#fff1c2" o={0.75} s={0.8} />
       <G opacity={0.9}>
         <Bird x={70} y={90} s={1.1} color="#2b1048" />
         <Bird x={96} y={76} s={0.8} color="#2b1048" />
         <Bird x={118} y={96} s={0.7} color="#2b1048" />
       </G>
-      <G fill="#1d0a34">
+      <G fill="#170828">
         <Path d="M36 292 q2 -16 6 -22 q1 12 5 22Z" />
         <Path d="M48 294 q2 -12 6 -16 q0 10 4 16Z" />
         <Path d="M344 290 q2 -18 6 -24 q2 12 6 24Z" />
@@ -229,6 +286,7 @@ function Cielo() {
         <Cloud x={338} y={258} s={1.5} o={0.95} shade="#a5a8ff" />
       </G>
       <Path d="M0 292 Q100 270 200 288 T400 280 V300 H0Z" fill="#fff" opacity={0.92} />
+      <Footsteps pts={[[120, 292, 70], [140, 288, 75], [160, 287, 85], [180, 288, 95], [200, 289, 95], [220, 287, 80]]} color="#8b8cf5" o={0.55} s={0.7} />
       <Bird x={96} y={120} s={1} />
       <Bird x={122} y={108} s={0.75} />
     </>
@@ -242,7 +300,16 @@ const SCENES = { bosque: Bosque, ciudad: Ciudad, sendero: Sendero, pista: Pista,
 // El dibujo llena la caja (banner o miniatura), anclado abajo.
 export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   const key = profileBg(bg).key;
-  if (key === 'violeta') return null;
+  if (key === 'violeta') {
+    // Violeta: el degradé de siempre con dos luces suaves y un camino de huellas que cruza.
+    return (
+      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Glow id="vi-a" cx={330} cy={60} r={170} color="#8B4FD1" opacity={0.45} />
+        <Glow id="vi-b" cx={60} cy={260} r={150} color="#62F0B6" opacity={0.16} />
+        <Footsteps pts={[[18, 286, 60], [48, 270, 62], [80, 258, 70], [114, 250, 78], [150, 246, 84], [186, 246, 92], [222, 250, 98], [256, 258, 104], [290, 268, 110]]} color="#62F0B6" o={0.22} s={1} />
+      </Svg>
+    );
+  }
   const Scene = SCENES[key];
   return (
     <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H + SHIFT}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
