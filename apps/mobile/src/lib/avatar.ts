@@ -5,13 +5,13 @@ import { supabase } from '@/lib/supabase';
 // Las fotos del celular pesan varios MB y se muestran en círculos de 30-100 px. Se achican a 640 px (JPEG 0,8, ~60-100 KB)
 // antes de subir, así abren rápido en cualquier pantalla. Si no se puede achicar, se sube tal cual.
 const MAX_SIDE = 640;
-async function shrinkToBase64(uri: string, base64?: string | null): Promise<string> {
+async function shrinkToBase64(uri: string, base64?: string | null, MAX = MAX_SIDE): Promise<string> {
   try {
     const ctx = ImageManipulator.manipulate(uri);
     const first = await ctx.renderAsync();
     // Solo se achica si es más grande; el lado mayor queda en MAX_SIDE.
-    if (first.width > MAX_SIDE || first.height > MAX_SIDE) {
-      ctx.resize(first.width >= first.height ? { width: MAX_SIDE } : { height: MAX_SIDE });
+    if (first.width > MAX || first.height > MAX) {
+      ctx.resize(first.width >= first.height ? { width: MAX } : { height: MAX });
     }
     const out = await (await ctx.renderAsync()).saveAsync({ format: SaveFormat.JPEG, compress: 0.8, base64: true });
     if (out.base64) return out.base64;
@@ -56,4 +56,14 @@ export async function uploadGroupPhoto(groupId: string, uri: string, base64?: st
   const { error } = await supabase.storage.from('group-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;
   return `${supabase.storage.from('group-photos').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
+}
+
+// Foto de fondo del perfil (0083): bucket público "profile-banners", más grande que el avatar (1280 px) porque va a lo ancho.
+export async function uploadBanner(userId: string, uri: string, base64?: string | null): Promise<string> {
+  const data = await shrinkToBase64(uri, base64, 1280);
+  if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
+  const path = `${userId}/banner.jpg`;
+  const { error } = await supabase.storage.from('profile-banners').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
+  if (error) throw error;
+  return `${supabase.storage.from('profile-banners').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
 }

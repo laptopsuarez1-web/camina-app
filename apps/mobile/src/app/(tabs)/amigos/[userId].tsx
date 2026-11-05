@@ -149,7 +149,7 @@ export default function FriendProfileScreen() {
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
-        <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg} style={{ paddingBottom: 56 }} artPad={42}>
+        <ProfileBanner bg={isSelf ? profile?.profile_bg : card?.profile_bg ?? (badges?.banner_url ? 'foto' : null)} photoUrl={isSelf ? profile?.profile_banner_url : badges?.banner_url} style={{ paddingBottom: 56 }} artPad={42}>
           <View className="flex-row items-center justify-between">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={back} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />

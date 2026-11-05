@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Defs, Ellipse, G, LinearGradient as SvgLinear, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { profileBg } from '@/lib/profile-bg';
@@ -254,10 +254,35 @@ export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
   );
 }
 
+// Foto propia de fondo: nítida arriba y abajo se va desenfocando y oscureciendo, para que el nombre y las insignias se lean.
+// Sin máscaras nativas: se apilan franjas de la misma foto cada vez más borrosas (la franja recorta la foto en su lugar exacto).
+function PhotoBg({ uri }: { uri: string }) {
+  const [h, setH] = useState(0);
+  const STRIPS = 7;
+  const from = 0.4; // el desenfoque empieza al 40% de la altura
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none" onLayout={(e) => setH(e.nativeEvent.layout.height)}>
+      <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      {h > 0 &&
+        Array.from({ length: STRIPS }, (_, i) => {
+          const top = h * (from + ((1 - from) * i) / STRIPS);
+          return (
+            <View key={i} style={{ position: 'absolute', left: 0, right: 0, top, bottom: 0, overflow: 'hidden' }}>
+              <Image source={{ uri }} blurRadius={3 + i * 3} resizeMode="cover" style={{ position: 'absolute', left: 0, right: 0, top: -top, height: h }} />
+            </View>
+          );
+        })}
+      <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(22,16,31,0.55)', 'rgba(22,16,31,0.92)']} locations={[0, 0.3, 0.7, 1]} style={StyleSheet.absoluteFill} />
+    </View>
+  );
+}
+
 // artPad: espacio extra abajo cuando el fondo tiene dibujo, para que se vea el paisaje debajo del nombre.
-export function ProfileBanner({ bg, children, style, artPad = 0 }: { bg: string | null | undefined; children: ReactNode; style?: StyleProp<ViewStyle>; artPad?: number }) {
-  const theme = profileBg(bg);
-  const drawn = theme.key !== 'violeta';
+// photoUrl: si el fondo es 'foto', la foto propia de la persona.
+export function ProfileBanner({ bg, children, style, artPad = 0, photoUrl }: { bg: string | null | undefined; children: ReactNode; style?: StyleProp<ViewStyle>; artPad?: number; photoUrl?: string | null }) {
+  const photo = bg === 'foto' && !!photoUrl;
+  const theme = profileBg(photo ? 'ciudad' : bg);
+  const drawn = photo || theme.key !== 'violeta';
   const base = StyleSheet.flatten(style) ?? {};
   const padBottom = Number(base.paddingBottom ?? 28) + (drawn ? artPad : 0);
   return (
@@ -267,8 +292,8 @@ export function ProfileBanner({ bg, children, style, artPad = 0 }: { bg: string 
       end={{ x: drawn ? 0.2 : 0.8, y: 1 }}
       style={[{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 56, paddingBottom: 28, paddingHorizontal: 20, overflow: 'hidden' }, style, { paddingBottom: padBottom }]}
     >
-      <ProfileBgArt bg={bg} />
-      {drawn ? <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.42)']} start={{ x: 0, y: 0.4 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} /> : null}
+      {photo ? <PhotoBg uri={photoUrl!} /> : <ProfileBgArt bg={bg} />}
+      {drawn && !photo ? <LinearGradient pointerEvents="none" colors={['rgba(22,16,31,0)', 'rgba(22,16,31,0.5)', 'rgba(22,16,31,0.88)']} locations={[0.35, 0.75, 1]} style={StyleSheet.absoluteFill} /> : null}
       {children}
     </LinearGradient>
   );
