@@ -54,7 +54,7 @@ export function ResumenMes({ businessId }: { businessId: string }) {
         </p>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
         {[
           ['Canjes', r.canjes, r.canjes_prev],
           ['Visitas de la Ruta', r.ruta, r.ruta_prev],

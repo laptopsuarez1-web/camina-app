@@ -21,7 +21,11 @@ function cityCenter(places: Place[]) {
 }
 
 // Vista previa web: el mapa de la ciudad con teselas de OpenStreetMap oscurecidas (en el celular es el mapa de Google).
-function WebCityMap({ center, zoom = 15 }: { center: { lat: number; lng: number }; zoom?: number }) {
+export function WebCityMap({ center, zoom = 15, overlay }: {
+  center: { lat: number; lng: number }; zoom?: number;
+  // Dibuja encima (pines, línea): recibe una función que pasa de lat/lng a píxeles del mapa.
+  overlay?: (project: (lat: number, lng: number) => { x: number; y: number }) => React.ReactNode;
+}) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const n = 2 ** zoom;
   const fx = ((center.lng + 180) / 360) * n;
@@ -42,6 +46,14 @@ function WebCityMap({ center, zoom = 15 }: { center: { lat: number; lng: number 
       {tiles.map((t) => (
         <Image key={`${t.x}-${t.y}`} source={{ uri: `https://tile.openstreetmap.org/${zoom}/${t.x}/${t.y}.png` }} style={{ position: 'absolute', left: t.left, top: t.top, width: 256, height: 256, filter: 'invert(1) hue-rotate(200deg) brightness(0.62) saturate(0.6)' } as never} />
       ))}
+      {size.w && overlay
+        ? overlay((lat, lng) => {
+            const r = (lat * Math.PI) / 180;
+            const x = ((lng + 180) / 360) * n;
+            const y = ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * n;
+            return { x: size.w / 2 + (x - fx) * 256, y: size.h / 2 + (y - fy) * 256 };
+          })
+        : null}
     </View>
   );
 }

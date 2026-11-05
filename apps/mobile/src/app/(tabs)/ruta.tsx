@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
@@ -10,7 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Polyline as SvgLine } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
@@ -18,7 +18,7 @@ import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { RutaPin } from '@/components/ruta/RutaPin';
-import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
+import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
@@ -363,7 +363,30 @@ export default function RutaScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <View style={{ position: 'absolute', inset: 0 }}>
-        {first ? (
+        {first && Platform.OS === 'web' ? (
+          // Vista web: mismo mapa de la ciudad con teselas, los pines y la línea de la ruta.
+          <WebCityMap
+            zoom={16}
+            center={{ lat: stops.filter((s) => s.lat != null).reduce((a, s, _, l) => a + s.lat! / l.length, 0) - 0.0016, lng: stops.filter((s) => s.lng != null).reduce((a, s, _, l) => a + s.lng! / l.length, 0) }}
+            overlay={(project) => (
+              <>
+                {linePath.length > 1 ? (
+                  <Svg style={{ position: 'absolute', inset: 0 } as never} width="100%" height="100%">
+                    <SvgLine points={linePath.map((c) => { const q = project(c.latitude, c.longitude); return `${q.x},${q.y}`; }).join(' ')} fill="none" stroke={MINT} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                ) : null}
+                {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => {
+                  const q = project(s.lat!, s.lng!);
+                  return (
+                    <View key={s.business_id} style={{ position: 'absolute', left: q.x - 23, top: q.y - 58 }}>
+                      <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
+                    </View>
+                  );
+                })}
+              </>
+            )}
+          />
+        ) : first ? (
           <MapView
             ref={mapRef}
             provider={PROVIDER_GOOGLE}

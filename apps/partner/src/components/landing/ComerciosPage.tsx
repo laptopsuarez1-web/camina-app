@@ -4,7 +4,7 @@ import './glass.css';
 import GlassFx from './GlassFx';
 import Trail from './Trail';
 import { Kinetic, Parallax } from './Motion';
-import { Nav, Footer, FloatCards, Cinta, GanaLocal, AsiTeVen, TuMarca, Contigo, PasosComercio, PanelComercio, Planes, EnMente, CAP, Shot, WA_COMERCIO } from './shared';
+import { Nav, Footer, FloatCards, Cinta, GanaLocal, AsiTeVen, TuMarca, Contigo, PasosComercio, PanelComercio, Planes, EnMente, CAP, Shot, WA_COMERCIO, RutaComercio, FielesComercio } from './shared';
 
 export default function ComerciosPage() {
   return (
@@ -35,8 +35,10 @@ export default function ComerciosPage() {
           </div>
         </section>
         <Cinta para="comercios" />
+        <RutaComercio />
         <GanaLocal />
         <AsiTeVen />
+        <FielesComercio />
         <TuMarca />
         <EnMente />
         <Contigo />

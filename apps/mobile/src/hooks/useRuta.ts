@@ -140,7 +140,9 @@ export function useRutaPrize(month?: string | null) {
     queryFn: async (): Promise<RutaPrize | null> => {
       const { data, error } = await supabase.rpc('route_prize', month ? { p_month: month } : {});
       if (error) return null;
-      return (data as RutaPrize | null) ?? null;
+      const p = data as RutaPrize | null;
+      // Solo vale si trae título (si el servidor responde otra cosa, no se muestra nada).
+      return p && typeof p.title === 'string' && p.title ? p : null;
     },
   });
 }
