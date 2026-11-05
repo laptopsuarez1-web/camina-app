@@ -40,10 +40,10 @@ export function ProfileBgSheet({ visible, value, onChange, onClose, photoUrl, on
                   </Press>
                 ) : null}
               </View>
-              <Text className="text-[11.5px] font-bold tracking-wider text-aqua-ink dark:text-aqua mb-2">ILUSTRACIONES</Text>
+              <Text className="text-[11.5px] font-bold tracking-wider text-aqua-ink dark:text-aqua mb-2">COLORES</Text>
             </>
           )}
-          <View className="flex-row flex-wrap justify-between" style={{ rowGap: 14 }}>
+          <View className="flex-row flex-wrap" style={{ rowGap: 14, columnGap: 10 }}>
             {PROFILE_BGS.map((b) => {
               const on = current === b.key;
               return (

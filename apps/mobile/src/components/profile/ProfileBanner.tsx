@@ -1,27 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { G } from 'react-native-svg';
 import { profileBg } from '@/lib/profile-bg';
-import { H, SCENES, STARRY, Stars, W } from './ProfileScenes';
 
-// Banner de arriba del perfil. Los dibujos (paisajes de Bolivia y uno de Camina) están en ProfileScenes.tsx.
-// El dibujo se baja SHIFT unidades dentro de una caja más alta: queda completo, anclado abajo, y sobra cielo arriba.
-const SHIFT = 105;
-
-// Solo el dibujo (para banners y miniaturas): llena la caja, anclado abajo.
-export function ProfileBgArt({ bg }: { bg: string | null | undefined }) {
-  const key = profileBg(bg).key;
-  const Scene = SCENES[key];
-  return (
-    <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H + SHIFT}`} preserveAspectRatio="xMidYMax slice" style={StyleSheet.absoluteFill} pointerEvents="none">
-      {STARRY[key] ? <Stars n={48} seed={3} maxY={H} /> : null}
-      <G transform={`translate(0 ${SHIFT})`}>
-        <Scene />
-      </G>
-    </Svg>
-  );
-}
+// Banner de arriba del perfil: un color sólido de la marca (morado o verde) o la foto propia de la persona.
 
 // Foto propia de fondo: nítida arriba y abajo se va desenfocando y oscureciendo, para que el nombre y las insignias se lean.
 // Sin máscaras nativas: se apilan franjas de la misma foto cada vez más borrosas (la franja recorta la foto en su lugar exacto).
@@ -46,40 +28,26 @@ function PhotoBg({ uri }: { uri: string }) {
   );
 }
 
-// artPad: espacio extra abajo cuando el fondo tiene dibujo, para que se vea el paisaje debajo del nombre.
+// artPad: espacio extra abajo cuando el fondo es una foto, para que se vea la foto debajo del nombre.
 // photoUrl: si el fondo es 'foto', la foto propia de la persona.
 export function ProfileBanner({ bg, children, style, artPad = 0, photoUrl }: { bg: string | null | undefined; children: ReactNode; style?: StyleProp<ViewStyle>; artPad?: number; photoUrl?: string | null }) {
   const photo = bg === 'foto' && !!photoUrl;
-  const theme = profileBg(photo ? 'ciudad' : bg);
+  const color = profileBg(bg).colors[0];
   const base = StyleSheet.flatten(style) ?? {};
-  const padBottom = Number(base.paddingBottom ?? 28) + artPad;
+  const padBottom = Number(base.paddingBottom ?? 28) + (photo ? artPad : 0);
   return (
-    <LinearGradient
-      colors={theme.colors}
-      start={{ x: 0.15, y: -0.1 }}
-      end={{ x: 0.2, y: 1 }}
-      style={[{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 56, paddingBottom: 28, paddingHorizontal: 20, overflow: 'hidden' }, style, { paddingBottom: padBottom }]}
+    <View
+      style={[{ backgroundColor: color, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 56, paddingBottom: 28, paddingHorizontal: 20, overflow: 'hidden' }, style, { paddingBottom: padBottom }]}
     >
-      {photo ? <PhotoBg uri={photoUrl!} /> : <ProfileBgArt bg={bg} />}
-      {!photo ? <LinearGradient pointerEvents="none" colors={['rgba(22,16,31,0)', 'rgba(22,16,31,0.5)', 'rgba(22,16,31,0.88)']} locations={[0.35, 0.75, 1]} style={StyleSheet.absoluteFill} /> : null}
+      {photo ? <PhotoBg uri={photoUrl!} /> : null}
       {children}
-    </LinearGradient>
+    </View>
   );
 }
 
 // Miniatura del selector.
 export function ProfileBgThumb({ bg, selected, width, height = 68 }: { bg: string; selected: boolean; width?: number; height?: number }) {
-  const theme = profileBg(bg);
   return (
-    <LinearGradient
-      colors={theme.colors}
-      start={{ x: 0.15, y: -0.1 }}
-      end={{ x: 0.2, y: 1 }}
-      style={{ width: width ?? '100%', height, borderRadius: 14, overflow: 'hidden', borderWidth: selected ? 2.5 : 1, borderColor: selected ? '#fff' : 'rgba(255,255,255,0.18)' }}
-    >
-      <View style={StyleSheet.absoluteFill}>
-        <ProfileBgArt bg={bg} />
-      </View>
-    </LinearGradient>
+    <View style={{ width: width ?? '100%', height, borderRadius: 14, backgroundColor: profileBg(bg).colors[0], borderWidth: selected ? 2.5 : 1, borderColor: selected ? '#fff' : 'rgba(255,255,255,0.18)' }} />
   );
 }
