@@ -12,7 +12,7 @@ import { Press } from '@/components/ui/Press';
 import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
-import { RutaPin } from '@/components/ruta/RutaPin';
+import { RutaBadge, RutaPin } from '@/components/ruta/RutaPin';
 import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
@@ -340,6 +340,7 @@ export default function RutaScreen() {
                   <View style={{ width: 46, height: 46, borderRadius: 13, borderWidth: 2.5, borderColor: st === 'ok' ? MINT : st === 'wait' ? MUTED : 'rgba(255,255,255,0.25)', overflow: 'hidden', backgroundColor: '#fff' }}>
                     {s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
                   </View>
+                  <RutaBadge size={20} style={{ top: -4, right: '50%', marginRight: -32 }} />
                   <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12, marginTop: 6 }} numberOfLines={1}>{s.name}</Text>
                   <Text style={{ color: st === 'ok' ? MINT : st === 'wait' ? MUTED : MINT, fontWeight: '800', fontSize: 10.5, marginTop: 1 }}>
                     {st === 'ok' ? '✓ Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}

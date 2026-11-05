@@ -5,8 +5,7 @@ import { heavy } from '@/components/ruta/heavy';
 
 const MINT = '#62F0B6';
 const OFF = '#3a2d63';
-const PIE_IZQ = require('@/../assets/pie-izq-mint.png');
-const PIE_DER = require('@/../assets/pie-der-mint.png');
+const HUELLAS = require('@/../assets/ruta-huellas.png');
 
 // Insignia de la Ruta del mes (temática de noviembre: anillo de 3 tramos). Cada local confirmado llena un tramo.
 export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { size?: number; done?: number; month?: string; glow?: boolean }) {
@@ -51,10 +50,7 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { si
         })}
       </Svg>
       <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ flexDirection: 'row', gap: size * 0.02, alignItems: 'flex-start' }}>
-          <Image source={PIE_IZQ} style={{ width: size * 0.12, height: size * 0.25 }} resizeMode="contain" />
-          <Image source={PIE_DER} style={{ width: size * 0.13, height: size * 0.24, marginTop: size * 0.03 }} resizeMode="contain" />
-        </View>
+        <Image source={HUELLAS} style={{ width: size * 0.27, height: size * 0.3 }} resizeMode="contain" />
         {!!month && (
           <Text style={{ ...heavy(), fontSize: size * 0.11, color: MINT, marginTop: size * 0.02 }}>{month}</Text>
         )}
