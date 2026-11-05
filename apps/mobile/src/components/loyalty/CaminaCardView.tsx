@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -36,7 +36,7 @@ export function Countdown({ days, label }: { days: number; label?: string }) {
   );
 }
 
-// Un sello: la moneda dorada de Camina. Cae desde arriba girando como moneda, rebota al tocar su lugar y deja una onda dorada.
+// Un sello: la moneda dorada de Camina. Aparece suave, bajando un poco y creciendo, y deja una onda dorada muy leve.
 // Los vacíos son un círculo punteado.
 function StampCoin({ index, size, fresh, last }: { index: number; size: number; fresh: boolean; last: boolean }) {
   const reduced = useReducedMotion();
@@ -45,15 +45,15 @@ function StampCoin({ index, size, fresh, last }: { index: number; size: number; 
   const ring = useSharedValue(anim ? 0 : 1);
   useEffect(() => {
     if (!anim) return;
-    const d = 150 + index * 140 + (last ? 220 : 0);
-    drop.value = withDelay(d, withSpring(1, { damping: 8, stiffness: 160, mass: 0.7 }));
-    ring.value = withDelay(d + 260, withTiming(1, { duration: 600, easing: Easing.out(Easing.cubic) }));
+    const d = 200 + index * 180 + (last ? 160 : 0);
+    drop.value = withDelay(d, withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) }));
+    ring.value = withDelay(d + 380, withTiming(1, { duration: 900, easing: Easing.out(Easing.quad) }));
   }, [anim, index, last, drop, ring]);
   const style = useAnimatedStyle(() => ({
-    opacity: Math.min(1, drop.value * 3),
-    transform: [{ translateY: (1 - drop.value) * -60 }, { scaleX: Math.cos((1 - Math.min(1, drop.value)) * Math.PI * 3) }, { scale: last ? 1 + Math.max(0, 1 - drop.value) * 0.4 : 1 }],
+    opacity: drop.value,
+    transform: [{ translateY: (1 - drop.value) * -12 }, { scale: 0.7 + 0.3 * drop.value }],
   }));
-  const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value <= 0 || ring.value >= 1 ? 0 : (1 - ring.value) * 0.9, transform: [{ scale: 0.8 + ring.value * (last ? 1.2 : 0.7) }] }));
+  const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value <= 0 || ring.value >= 1 ? 0 : (1 - ring.value) * (last ? 0.5 : 0.3), transform: [{ scale: 0.9 + ring.value * (last ? 0.5 : 0.3) }] }));
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: '#E2B33C' }, ringStyle]} />

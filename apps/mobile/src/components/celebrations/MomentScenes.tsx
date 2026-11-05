@@ -88,7 +88,7 @@ export function TicketBoughtScene({ c, onDone }: { c: TicketBoughtCinematic; onD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} confetti={{ at: 2650 }} announce={`Tienes tu entrada para ${c.title}. Se descontaron ${c.points} Puntos.`}>
+    <Stage tl={tl} announce={`Tienes tu entrada para ${c.title}. Se descontaron ${c.points} Puntos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.business ? `${c.title} · ${c.business}` : c.title}</Eyebrow></Reveal>
       <Reveal tl={tl} delay={350} pop from={0.8} style={{ marginTop: 14 }}>
         <View accessible accessibilityLabel={`Saldo ${balance} Puntos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }}>
@@ -165,7 +165,7 @@ export function EventJoinedScene({ c, onDone }: { c: EventJoinedCinematic; onDon
     if (c.placeUrl && /^https?:\/\//i.test(c.placeUrl)) Linking.openURL(c.placeUrl).catch(() => {});
   };
   return (
-    <Stage tl={tl} confetti={{ at: 1950 }} announce={`Ya estás anotado en ${c.title}. ${c.day} de ${c.month}, ${c.when}.${c.place ? ` ${c.place}.` : ''}`}>
+    <Stage tl={tl} announce={`Ya estás anotado en ${c.title}. ${c.day} de ${c.month}, ${c.when}.${c.place ? ` ${c.place}.` : ''}`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Ya estás anotado</Eyebrow></Reveal>
       <Reveal tl={tl} delay={300} pop from={0.8} style={{ alignSelf: 'stretch', marginTop: 18 }}>
         <View style={{ height: CARD_H }}>
@@ -228,7 +228,7 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} confetti={{ at: 1600 }} announce={`Ya eres parte de ${c.name}. ${c.total} caminantes.`}>
+    <Stage tl={tl} announce={`Ya eres parte de ${c.name}. ${c.total} caminantes.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.name}</Eyebrow></Reveal>
       <View style={{ marginTop: 22 }}>
         <GroupOrbit
@@ -273,7 +273,7 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} confetti={{ at: 2450 }} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
+    <Stage tl={tl} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
       <View style={{ marginTop: 8 }}>
         <Letters tl={tl} text={c.name} delay={350} size={30} color={p.text} />
@@ -348,7 +348,7 @@ export function FriendMadeScene({ c, onDone }: { c: FriendMadeCinematic; onDone:
   }, []);
   const SIZE = 92;
   return (
-    <Stage tl={tl} confetti={{ at: 800 }} announce={`Ahora ${name} y tú son amigos.`}>
+    <Stage tl={tl} announce={`Ahora ${name} y tú son amigos.`}>
       <View style={{ width: SIZE * 2 - 20, height: SIZE + 10, alignItems: 'center', justifyContent: 'center' }}>
         <Pulse tl={tl} delay={800} size={SIZE * 2} />
         <Animated.View style={[{ position: 'absolute', left: 0 }, aStyle]}>
@@ -442,7 +442,7 @@ export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone:
   }, []);
   const share = () => { Share.share({ message: `Completé ${c.weeks === 1 ? 'una semana' : `${c.weeks} semanas`} seguidas cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.warn, '#FFD97A', '#FFF1B8', colors.aqua] }} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
+    <Stage tl={tl} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha semanal</Eyebrow></Reveal>
       <Reveal tl={tl} delay={300} pop from={0.4} style={{ marginTop: 18 }}>
         <IllArt kind="flame" size={104} />
@@ -630,7 +630,7 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
   };
   const steps = [2, 1, 3];
   return (
-    <Stage tl={tl} confetti={{ at: podium ? 2100 : 1500, palette: podium ? [GOLD, '#FFD97A', '#FFF1B8', colors.aqua] : undefined }} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
+    <Stage tl={tl} confetti={podium ? { at: 2100, palette: [GOLD, '#FFD97A', '#FFF1B8', colors.aqua] } : undefined} announce={`${t.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Ranking semanal global · ${c.weekLabel}`}</Eyebrow></Reveal>
 
       {podium ? (

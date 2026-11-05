@@ -328,23 +328,23 @@ function ConfettiPiece({ k, x, delay, color, w, h, sway, spin, speed }: { k: Sha
   });
   return <Animated.View style={[{ position: 'absolute', top: 0, left: `${x * 100}%`, width: w, height: h, borderRadius: h < 6 ? 3 : 2, backgroundColor: color }, a]} />;
 }
-export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 46 }: { tl: Timeline; delay: number; palette?: string[]; count?: number }) {
+export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 22 }: { tl: Timeline; delay: number; palette?: string[]; count?: number }) {
   const k = useSharedValue(0);
   useEffect(() => {
     if (tl.reduced) return;
-    k.value = withDelay(delay, withTiming(1, { duration: 2600, easing: Easing.linear }));
+    k.value = withDelay(delay, withTiming(1, { duration: 3400, easing: Easing.linear }));
     tl.onSkip(() => { cancelAnimation(k); k.value = 1; });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (tl.reduced) return null;
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: '15%', right: '15%', bottom: '35%', overflow: 'hidden' }}>
       {Array.from({ length: count }, (_, i) => {
         const r = ((i * 7919) % 1000) / 1000;
         const dot = i % 4 === 0;
         return (
           <ConfettiPiece key={i} k={k} x={((i * 0.618) % 1)} delay={r * 0.35} color={palette[i % palette.length]}
-            w={dot ? 7 : 6 + (i % 3) * 2} h={dot ? 7 : 11 + (i % 3) * 3} sway={12 + r * 22} spin={(i % 2 ? 1 : -1) * (360 + r * 540)} speed={700 + r * 380} />
+            w={dot ? 6 : 5 + (i % 3) * 1.5} h={dot ? 6 : 9 + (i % 3) * 2} sway={10 + r * 16} spin={(i % 2 ? 1 : -1) * (180 + r * 240)} speed={380 + r * 220} />
         );
       })}
     </View>
@@ -464,7 +464,7 @@ export function ChallengeCreatedScene({
     transform: [{ translateY: (1 - ticket.value) * 60 }, { scale: 0.86 + 0.14 * ticket.value }, { rotate: `${(1 - ticket.value) * -3}deg` }],
   }));
   return (
-    <Stage tl={tl} confetti={{ at: 2750 }} announce={`${name} está en marcha. ${dates}`}>
+    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`}>
       <Reveal tl={tl} delay={250}><Eyebrow color={p.muted}>{groupName ? `Nuevo desafío · ${groupName}` : 'Nuevo desafío'}</Eyebrow></Reveal>
       <Animated.View style={[{ alignSelf: 'stretch', marginTop: 16, borderRadius: 28, paddingVertical: 20, paddingHorizontal: 16, alignItems: 'center', gap: 12, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }, ticketStyle]}>
         <DrawRing tl={tl} delay={300} size={128} stroke={8} track={p.track}>
@@ -713,7 +713,7 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
     </View>
   );
   return (
-    <Stage tl={tl} confetti={{ at: 1800 }} announce={`Estás dentro de ${c.name}. ${c.subtitle}`}>
+    <Stage tl={tl} announce={`Estás dentro de ${c.name}. ${c.subtitle}`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.name}</Eyebrow></Reveal>
       <View style={{ marginTop: 22 }}>
         <GroupOrbit tl={tl} size={RING} slot={SLOT} delay={300} people={shown} extra={extra} me={c.me} meDelay={900} center={center} />
