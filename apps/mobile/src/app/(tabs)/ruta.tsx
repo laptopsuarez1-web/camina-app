@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadRoutePhoto } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import Svg, { Path } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
@@ -282,7 +283,7 @@ export default function RutaScreen() {
           <Text style={{ color: MUTED, fontSize: 14, lineHeight: 20, marginTop: 12 }}>Te tocan 3 locales de tu ciudad al azar. Visítalos, compra lo que quieras y gana:</Text>
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 16 }}>x2</Text></Bubble>} title="Día doble" body="Eliges un día del mes que viene y tus pasos valen el doble: hasta 40 Puntos ese día." />
           <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Exclusiva: solo la tiene quien completa esta ruta." />
-          <Premio icon={<Bubble><Text style={{ color: MINT, fontWeight: '800', fontSize: 11 }}>BOLETO</Text></Bubble>} title="Boleto del sorteo" body="Entras al sorteo del mes. El premio se anuncia en Eventos." />
+          <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body="Entras al sorteo del mes. El premio se anuncia en Eventos." />
           {showRules ? rules : (
             <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
               <View>
