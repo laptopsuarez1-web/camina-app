@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, Image, Platform, Share, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, Platform, Share, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, {
   Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming,
   type SharedValue,
@@ -671,7 +672,7 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
     // Sin bote (desafíos de comercios): el logo del local, o el trofeo si no tiene.
     <Reveal tl={tl} delay={600} pop>
       {c.logoUrl ? (
-        <Image source={{ uri: c.logoUrl }} style={{ width: 84, height: 84, borderRadius: 20 }} />
+        <Image cachePolicy="memory-disk" source={{ uri: c.logoUrl }} style={{ width: 84, height: 84, borderRadius: 20 }} />
       ) : (
         <View style={{ width: 84, height: 84, borderRadius: 42, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
           <Trophy size={42} color={GOLD} />

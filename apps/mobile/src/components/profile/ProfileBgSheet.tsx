@@ -1,4 +1,5 @@
-import { ActivityIndicator, Image, Modal, View } from 'react-native';
+import { ActivityIndicator, Modal, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Camera, Check } from '@/components/icons';
@@ -30,7 +31,7 @@ export function ProfileBgSheet({ visible, value, onChange, onClose, photoUrl, on
                 </Press>
                 {photoUrl ? (
                   <Press accessibilityRole="button" accessibilityLabel="Usar tu foto" accessibilityState={{ selected: current === 'foto' }} onPress={() => onChange('foto')} style={{ width: '31.5%' }}>
-                    <Image source={{ uri: photoUrl }} style={{ height: 72, borderRadius: 14, borderWidth: current === 'foto' ? 2.5 : 1, borderColor: current === 'foto' ? '#fff' : 'rgba(255,255,255,0.18)' }} />
+                    <Image cachePolicy="memory-disk" source={{ uri: photoUrl }} style={{ height: 72, borderRadius: 14, borderWidth: current === 'foto' ? 2.5 : 1, borderColor: current === 'foto' ? '#fff' : 'rgba(255,255,255,0.18)' }} />
                     {current === 'foto' ? (
                       <View style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
                         <Check size={11} color="#111" weight="bold" />

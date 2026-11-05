@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { FriendDay } from '@/lib/friend-week';
@@ -35,6 +36,12 @@ export interface GroupInvite { group_id: string; group_name: string; inviter_nam
 
 const num = (v: unknown) => Number(v ?? 0);
 
+// Baja las fotos de una lista al teléfono de una vez, así al entrar a un perfil ya están.
+export function prefetchPhotos(urls: (string | null | undefined)[]) {
+  const ok = urls.filter((u): u is string => !!u);
+  if (ok.length) Image.prefetch(ok, 'memory-disk').catch(() => {});
+}
+
 export function useFriends() {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
@@ -43,7 +50,10 @@ export function useFriends() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('my_friends');
       if (error) throw error;
-      return ((data ?? []) as Friend[]).map((f) => ({ ...f, week_steps: num(f.week_steps), streak: num(f.streak) }));
+      const list = ((data ?? []) as Friend[]).map((f) => ({ ...f, week_steps: num(f.week_steps), streak: num(f.streak) }));
+      // Se bajan las fotos de una vez: al abrir el perfil de un amigo la foto ya está en el teléfono.
+      prefetchPhotos(list.map((f) => f.photo_url));
+      return list;
     },
   });
 }
@@ -70,7 +80,9 @@ export function useFriendsRanking() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('friends_weekly_ranking');
       if (error) throw error;
-      return ((data ?? []) as FriendRank[]).map((r) => ({ ...r, total_steps: num(r.total_steps), streak: num(r.streak) }));
+      const rows = ((data ?? []) as FriendRank[]).map((r) => ({ ...r, total_steps: num(r.total_steps), streak: num(r.streak) }));
+      prefetchPhotos(rows.map((r) => r.photo_url));
+      return rows;
     },
   });
 }

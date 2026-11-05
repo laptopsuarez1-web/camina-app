@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, View } from 'react-native';
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -99,7 +100,7 @@ export default function RutaMesScreen() {
           {route.stops.map((s, i) => (
             <View key={s.business_id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: 'rgba(255,255,255,0.08)' }}>
               <View style={{ width: 42, height: 42, borderRadius: 12, overflow: 'hidden', backgroundColor: '#fff' }}>
-                {s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                {s.logo_url ? <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }} numberOfLines={1}>{s.name}</Text>
@@ -107,7 +108,7 @@ export default function RutaMesScreen() {
               </View>
               {s.photo_path ? (
                 <Press onPress={() => addPhoto(s.business_id)} accessibilityLabel={`Cambiar la foto de ${s.name}`}>
-                  <Image source={{ uri: s.photo_path }} style={{ width: 60, height: 60, borderRadius: 14, borderWidth: 2.5, borderColor: '#fff' }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: s.photo_path }} style={{ width: 60, height: 60, borderRadius: 14, borderWidth: 2.5, borderColor: '#fff' }} />
                 </Press>
               ) : s.visited_at ? (
                 <Press onPress={() => addPhoto(s.business_id)} style={{ width: 60, height: 60, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(98,240,182,0.55)', alignItems: 'center', justifyContent: 'center' }}>
@@ -144,10 +145,10 @@ export default function RutaMesScreen() {
               {route.stops.map((s, i) => (
                 <View key={s.business_id} style={{ transform: [{ rotate: `${[-6, 3, -2][i] ?? 0}deg` }], marginTop: i === 1 ? 16 : 0 }}>
                   <View style={{ width: 92, height: 116, borderRadius: 16, borderWidth: 3, borderColor: '#fff', overflow: 'hidden', backgroundColor: '#2F1E5C' }}>
-                    {s.photo_path ? <Image source={{ uri: s.photo_path }} style={{ width: '100%', height: '100%' }} /> : s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                    {s.photo_path ? <Image cachePolicy="memory-disk" source={{ uri: s.photo_path }} style={{ width: '100%', height: '100%' }} /> : s.logo_url ? <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
                   </View>
                   <View style={{ position: 'absolute', right: -8, bottom: -8, width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: MINT, overflow: 'hidden', backgroundColor: '#fff' }}>
-                    {s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                    {s.logo_url ? <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
                   </View>
                 </View>
               ))}

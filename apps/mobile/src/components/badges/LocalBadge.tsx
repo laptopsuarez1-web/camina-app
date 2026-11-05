@@ -1,4 +1,5 @@
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import { levelLabel, type LocalLevel } from '@/hooks/useBadges';
 
@@ -22,7 +23,7 @@ export function LocalBadge({ logoUrl, name, level, size = 62, label = true }: {
         shadowColor: MINT, shadowOpacity: fan ? 0.7 : 0, shadowRadius: size / 4, shadowOffset: { width: 0, height: 0 }, elevation: fan ? 8 : 0,
       }}>
         <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: b, borderColor: ring, overflow: 'hidden', backgroundColor: '#fff' }}>
-          {logoUrl ? <Image source={{ uri: logoUrl }} style={{ width: '100%', height: '100%' }} /> : (
+          {logoUrl ? <Image cachePolicy="memory-disk" source={{ uri: logoUrl }} style={{ width: '100%', height: '100%' }} /> : (
             <View style={{ flex: 1, backgroundColor: '#1F7A66', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{(name.trim()[0] ?? '·').toUpperCase()}</Text>
             </View>
