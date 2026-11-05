@@ -169,15 +169,15 @@ export function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { 
   }, []);
   const glow = useAnimatedStyle(() => {
     const t = k.value;
-    return { opacity: t <= 0 || t >= 0.6 ? 0 : t < 0.1 ? t * 9 : (0.6 - t) * 1.8, transform: [{ scale: 0.4 + t * 1.6 }] };
+    return { opacity: t <= 0 || t >= 0.5 ? 0 : t < 0.1 ? t * 3 : (0.5 - t) * 0.75, transform: [{ scale: 0.4 + t * 1.4 }] };
   });
   if (tl.reduced) return null;
   const n = Math.round(count * 1.75);
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: 0, height: 0 }, style]}>
       <Animated.View style={[{ position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0], opacity: 0 }, glow]} />
-      <Shock k={k} radius={radius * 0.9} color={palette[0]} lag={0} />
-      <Shock k={k} radius={radius * 1.2} color={palette[1 % palette.length]} lag={0.12} />
+      <Shock k={k} radius={radius * 0.6} color={palette[0]} lag={0} />
+      <Shock k={k} radius={radius * 0.85} color={palette[1 % palette.length]} lag={0.12} />
       {Array.from({ length: n }, (_, i) => {
         const r = ((i * 7919) % 100) / 100;
         return (
@@ -284,7 +284,7 @@ export const display = (size: number) =>
   brandFontsReady() ? { fontFamily: WORDMARK_FAMILY, fontWeight: 'normal' as const, fontSize: size } : { fontWeight: '900' as const, fontSize: size };
 
 // Fondo de la escena: tapa la pantalla, se funde al entrar y un toque salta al final.
-export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top' }) {
+export function Stage({ tl, children, announce, align = 'center', confetti }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top'; confetti?: { at: number; palette?: string[] } }) {
   const p = usePalette();
   const insets = useSafeAreaInsets();
   const fade = useSharedValue(0);
@@ -298,6 +298,7 @@ export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeli
     <Animated.View accessibilityViewIsModal style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, a]}>
       <LinearGradient colors={p.bg} locations={[0, 0.55, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={{ flex: 1 }}>
         <Ambient reduced={tl.reduced} dark={p.dark} />
+        {confetti ? <Confetti tl={tl} delay={confetti.at} palette={confetti.palette} /> : null}
         <Press
           accessible={false}
           feedback="none"
@@ -307,6 +308,66 @@ export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeli
           {children}
         </Press>
       </LinearGradient>
+    </Animated.View>
+  );
+}
+
+// Lluvia de confeti a lo ancho de la pantalla (el momento de festejo). Rectángulos y puntos que caen balanceándose y girando.
+function ConfettiPiece({ k, x, delay, color, w, h, sway, spin, speed }: { k: SharedValue<number>; x: number; delay: number; color: string; w: number; h: number; sway: number; spin: number; speed: number }) {
+  const a = useAnimatedStyle(() => {
+    const t = Math.max(0, Math.min(1, (k.value - delay) / (1 - delay)));
+    return {
+      opacity: t <= 0 ? 0 : t > 0.85 ? (1 - t) / 0.15 : 1,
+      transform: [
+        { translateY: -40 + t * speed },
+        { translateX: Math.sin(t * Math.PI * 3 + x) * sway },
+        { rotate: `${t * spin}deg` },
+        { scaleX: Math.cos(t * Math.PI * 4 + x) },
+      ],
+    };
+  });
+  return <Animated.View style={[{ position: 'absolute', top: 0, left: `${x * 100}%`, width: w, height: h, borderRadius: h < 6 ? 3 : 2, backgroundColor: color }, a]} />;
+}
+export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 46 }: { tl: Timeline; delay: number; palette?: string[]; count?: number }) {
+  const k = useSharedValue(0);
+  useEffect(() => {
+    if (tl.reduced) return;
+    k.value = withDelay(delay, withTiming(1, { duration: 2600, easing: Easing.linear }));
+    tl.onSkip(() => { cancelAnimation(k); k.value = 1; });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (tl.reduced) return null;
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      {Array.from({ length: count }, (_, i) => {
+        const r = ((i * 7919) % 1000) / 1000;
+        const dot = i % 4 === 0;
+        return (
+          <ConfettiPiece key={i} k={k} x={((i * 0.618) % 1)} delay={r * 0.35} color={palette[i % palette.length]}
+            w={dot ? 7 : 6 + (i % 3) * 2} h={dot ? 7 : 11 + (i % 3) * 3} sway={12 + r * 22} spin={(i % 2 ? 1 : -1) * (360 + r * 540)} speed={700 + r * 380} />
+        );
+      })}
+    </View>
+  );
+}
+
+// Rayos de luz que giran lento detrás del protagonista de la escena (siempre centrados en su caja).
+export function SceneRays({ tl, delay, size, color }: { tl: Timeline; delay: number; size: number; color: string }) {
+  const k = useSharedValue(0);
+  const fade = useBeat(tl, delay, { duration: 600 });
+  useEffect(() => {
+    if (tl.reduced) return;
+    k.value = withRepeat(withTiming(1, { duration: 16000, easing: Easing.linear }), -1, false);
+    return () => cancelAnimation(k);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const a = useAnimatedStyle(() => ({ opacity: fade.value, transform: [{ rotate: `${k.value * 360}deg` }] }));
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, left: '50%', top: '50%', marginLeft: -size / 2, marginTop: -size / 2 }, a]}>
+      {Array.from({ length: 6 }, (_, i) => (
+        <LinearGradient key={i} colors={['rgba(0,0,0,0)', color, 'rgba(0,0,0,0)']}
+          style={{ position: 'absolute', width: 10, height: size, left: size / 2 - 5, top: 0, opacity: 0.16, borderRadius: 5, transform: [{ rotate: `${i * 30}deg` }] }} />
+      ))}
     </Animated.View>
   );
 }
@@ -403,7 +464,7 @@ export function ChallengeCreatedScene({
     transform: [{ translateY: (1 - ticket.value) * 60 }, { scale: 0.86 + 0.14 * ticket.value }, { rotate: `${(1 - ticket.value) * -3}deg` }],
   }));
   return (
-    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`}>
+    <Stage tl={tl} confetti={{ at: 2750 }} announce={`${name} está en marcha. ${dates}`}>
       <Reveal tl={tl} delay={250}><Eyebrow color={p.muted}>{groupName ? `Nuevo desafío · ${groupName}` : 'Nuevo desafío'}</Eyebrow></Reveal>
       <Animated.View style={[{ alignSelf: 'stretch', marginTop: 16, borderRadius: 28, paddingVertical: 20, paddingHorizontal: 16, alignItems: 'center', gap: 12, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }, ticketStyle]}>
         <DrawRing tl={tl} delay={300} size={128} stroke={8} track={p.track}>
@@ -652,7 +713,7 @@ export function ChallengeJoinedScene({ c, onDone }: { c: JoinedCinematic; onDone
     </View>
   );
   return (
-    <Stage tl={tl} announce={`Estás dentro de ${c.name}. ${c.subtitle}`}>
+    <Stage tl={tl} confetti={{ at: 1800 }} announce={`Estás dentro de ${c.name}. ${c.subtitle}`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.name}</Eyebrow></Reveal>
       <View style={{ marginTop: 22 }}>
         <GroupOrbit tl={tl} size={RING} slot={SLOT} delay={300} people={shown} extra={extra} me={c.me} meDelay={900} center={center} />
@@ -787,7 +848,7 @@ export function ChallengeEndedScene({ c, onDone }: { c: EndedCinematic; onDone: 
   };
 
   return (
-    <Stage tl={tl} announce={`${c.name} terminó. ${title}. ${sub}${paid ? `. Ganaste ${c.payout} Puntos` : ''}`} align="top">
+    <Stage tl={tl} confetti={won ? { at: 2250, palette: [GOLD, '#FFD97A', '#FFF1B8', colors.aqua] } : undefined} announce={`${c.name} terminó. ${title}. ${sub}${paid ? `. Ganaste ${c.payout} Puntos` : ''}`} align="top">
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.groupName ? `${c.name} terminó · ${c.groupName}` : `${c.name} terminó`}</Eyebrow></Reveal>
       <Reveal tl={tl} delay={won ? 2350 : 1600} pop={won} from={0.6} style={{ marginTop: 10 }}>
         <Text style={{ ...display(won ? 30 : 28), color: p.text, textAlign: 'center' }} numberOfLines={2}>{title}</Text>

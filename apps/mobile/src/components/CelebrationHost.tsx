@@ -45,12 +45,12 @@ function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | 
       <Animated.View
         style={{
           position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0],
-          opacity: t.interpolate({ inputRange: [0, 0.08, 0.55, 1], outputRange: [0, 0.55, 0, 0] }),
+          opacity: t.interpolate({ inputRange: [0, 0.08, 0.5, 1], outputRange: [0, 0.3, 0, 0] }),
           transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2] }) }],
         }}
       />
-      {ring(radius * 0.9, palette[0], 0)}
-      {ring(radius * 1.2, palette[1 % palette.length], 0.12)}
+      {ring(radius * 0.6, palette[0], 0)}
+      {ring(radius * 0.85, palette[1 % palette.length], 0.12)}
       {Array.from({ length: n }, (_, i) => {
         const r0 = ((i * 7919) % 100) / 100;
         const a = (i / n) * Math.PI * 2 + r0 * 0.5;
@@ -346,7 +346,7 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
           >
             <Trophy size={52} color="#FFD97A" />
           </Animated.View>
-          <Sparks x={52} y={52} radius={120} palette={GOLD_SPARKS} delay={350} count={16} />
+          <Sparks x={52} y={52} radius={95} palette={GOLD_SPARKS} delay={350} count={16} />
         </View>
         <Text ref={titleRef} accessibilityRole="header" style={{ color: '#fff', ...wordmark(24), marginTop: 30, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ color: '#B9B0D4', fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>{c.body}</Text> : null}
