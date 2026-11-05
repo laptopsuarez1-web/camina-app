@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
+import { BadgeSheet } from '@/components/badges/BadgeSheet';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
@@ -8,7 +10,7 @@ import { ChevronLeft } from '@/components/icons';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { LocalBadge } from '@/components/badges/LocalBadge';
 import { useAuthStore } from '@/store/useAuthStore';
-import { levelLabel, nextLevel, useSetFeaturedBadge, useUserBadges, LEVELS } from '@/hooks/useBadges';
+import { levelLabel, nextLevel, useSetFeaturedBadge, useUserBadges, LEVELS, type LocalBadgeT } from '@/hooks/useBadges';
 import { rutaMonthName, rutaMonthShort } from '@/hooks/useRuta';
 import { friendlyServerError } from '@/lib/errors';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -25,6 +27,7 @@ export default function InsigniasScreen() {
   const setFeatured = useSetFeaturedBadge();
   const routes = data?.routes ?? [];
   const locals = data?.locals ?? [];
+  const [sheet, setSheet] = useState<LocalBadgeT | null>(null);
 
   async function feature(key: string) {
     if (!own) return;
@@ -47,7 +50,7 @@ export default function InsigniasScreen() {
 
       {own && (
         <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-4 leading-5 text-center">
-          Mantén presionada una insignia para destacarla: es la que ven tus amigos primero.
+          Toca una insignia para ver cómo vas. Mantenla presionada para destacarla: es la que ven tus amigos primero.
         </Text>
       )}
 
@@ -85,7 +88,7 @@ export default function InsigniasScreen() {
             const key = `local:${l.business_id}`;
             const next = nextLevel(l.points);
             return (
-              <Press key={l.business_id} accessibilityRole="button" accessibilityHint={own ? 'Mantén presionado para destacarla' : undefined} onLongPress={() => feature(key)} style={{ width: '47.5%' }}>
+              <Press key={l.business_id} accessibilityRole="button" accessibilityHint={own ? 'Toca para ver cómo sumaste; mantén presionado para destacarla' : undefined} onPress={() => setSheet(l)} onLongPress={() => feature(key)} style={{ width: '47.5%' }}>
                 <Glass className="rounded-3xl items-center" style={{ paddingVertical: 16, paddingHorizontal: 10, borderWidth: data?.featured === key ? 1.5 : 0, borderColor: '#62F0B6' }}>
                   <LocalBadge logoUrl={l.logo_url} name={l.name} level={l.level} size={60} />
                   <Text className="text-[14px] font-bold mt-3 text-text-light dark:text-text-dark" numberOfLines={1}>{l.name}</Text>
@@ -116,6 +119,7 @@ export default function InsigniasScreen() {
           {LEVELS.map((l) => `${l.label}: ${l.from === 1 ? 'primer canje' : `${l.from} puntos`}`).join(' · ')}
         </Text>
       </Glass>
+      {sheet ? <BadgeSheet badge={sheet} own={own} onClose={() => setSheet(null)} /> : null}
     </ScrollView>
   );
 }

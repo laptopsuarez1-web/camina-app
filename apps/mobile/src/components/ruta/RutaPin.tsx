@@ -43,3 +43,21 @@ export function RutaBadge({ size = 22, style }: { size?: number; style?: object 
     </View>
   );
 }
+
+// Pin sorpresa: misma forma que el pin del mapa, pero con un "?" en vez del logo. Va en la tarjeta del evento,
+// así no se sabe qué locales te van a tocar hasta que participas.
+export function MysteryPin({ size = 34 }: { size?: number }) {
+  const b = 3;
+  const inner = size - b * 2;
+  return (
+    <View style={{ width: size + 16, height: size + 26, alignItems: 'center', paddingTop: 8 }}>
+      <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center',
+        shadowColor: MINT, shadowOpacity: 0.45, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
+        <View style={{ width: inner, height: inner, borderRadius: inner * 0.28, backgroundColor: '#2F1E5C', alignItems: 'center', justifyContent: 'center' }}>
+          <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: size * 0.55, lineHeight: size * 0.66 }}>?</Text>
+        </View>
+      </View>
+      <View style={{ marginTop: -2, width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 8, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: MINT }} />
+    </View>
+  );
+}

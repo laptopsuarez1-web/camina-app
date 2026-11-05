@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { View } from 'react-native';
+import { BadgeSheet } from './BadgeSheet';
 import { router } from 'expo-router';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -6,11 +8,12 @@ import { Glass } from '@/components/ui/Glass';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { LocalBadge } from './LocalBadge';
 import { rutaMonthShort } from '@/hooks/useRuta';
-import type { UserBadges } from '@/hooks/useBadges';
+import type { LocalBadgeT, UserBadges } from '@/hooks/useBadges';
 
 // "Mis insignias" en el Perfil: una sola fila con las rutas del mes completadas y los locales. "Ver todas" abre el resto.
 // `own` = es mi perfil (se puede tocar para ver todas; en el de un amigo es solo para mirar).
 export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges | undefined; own?: boolean; userId?: string }) {
+  const [sheet, setSheet] = useState<LocalBadgeT | null>(null);
   // Sin datos (cargando o el servidor todavía sin 0083): no se muestra nada.
   if (!badges) return null;
   const routes = (badges?.routes ?? []).slice(0, 2);
@@ -36,9 +39,14 @@ export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges 
               <RutaRing size={54} done={3} month={rutaMonthShort(r.month)} glow={false} />
             </Press>
           ))}
-          {locals.map((l) => <LocalBadge key={l.business_id} logoUrl={l.logo_url} name={l.name} level={l.level} size={48} />)}
+          {locals.map((l) => (
+            <Press key={l.business_id} accessibilityRole="button" accessibilityHint="Ver cómo va" onPress={() => setSheet(l)} hitSlop={4}>
+              <LocalBadge logoUrl={l.logo_url} name={l.name} level={l.level} size={48} />
+            </Press>
+          ))}
         </View>
       )}
+      {sheet ? <BadgeSheet badge={sheet} own={own} onClose={() => setSheet(null)} /> : null}
     </Glass>
   );
 }

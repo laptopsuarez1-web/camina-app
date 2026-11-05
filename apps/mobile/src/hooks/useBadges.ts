@@ -118,3 +118,25 @@ export async function uploadRoutePhoto(userId: string, month: string, businessId
   const { error: e2 } = await supabase.rpc('set_route_photo', { p_month: month, p_business: businessId, p_path: path });
   if (e2) throw e2;
 }
+
+// Cómo fue sumando la persona en un local (cada canje, reseña, historia o visita de la Ruta). Solo las propias:
+// la base deja leer únicamente tus filas.
+export type LevelEvent = { source: 'canje' | 'visita' | 'resena' | 'historia'; points: number; created_at: string };
+export function useLevelHistory(businessId: string | null | undefined, enabled = true) {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['level-history', userId, businessId],
+    enabled: !!userId && !!businessId && enabled,
+    queryFn: async (): Promise<LevelEvent[]> => {
+      const { data, error } = await supabase
+        .from('business_level_points')
+        .select('source, points, created_at')
+        .eq('user_id', userId!)
+        .eq('business_id', businessId!)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as LevelEvent[];
+    },
+  });
+}

@@ -2,30 +2,49 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
-import { RutaPin } from './RutaPin';
+import { MysteryPin, RutaPin } from './RutaPin';
 
 type Place = { name: string; logo_url: string | null; lat: number | null; lng: number | null };
 
 // Lugares de respaldo para la vista previa web (ahí no hay mapa).
-const SPOTS = [[0.18, 0.12], [0.6, 0.08], [0.4, 0.3], [0.76, 0.36], [0.12, 0.44], [0.55, 0.52], [0.3, 0.04], [0.84, 0.1]];
+const SPOTS = [[0.18, 0.12], [0.6, 0.08], [0.4, 0.3], [0.76, 0.36], [0.12, 0.44], [0.55, 0.52], [0.3, 0.04], [0.84, 0.1], [0.86, 0.5]];
+// Pines sorpresa que siempre se ven en la tarjeta del evento (aunque haya menos locales).
+const MYSTERY_COUNT = 9;
+
+// Completa hasta 9 lugares con puntos alrededor de los locales reales (repetibles, sin azar).
+function withDecoys(pts: { lat: number; lng: number }[]) {
+  if (pts.length === 0) return pts;
+  const lat = pts.reduce((a, p) => a + p.lat, 0) / pts.length;
+  const lng = pts.reduce((a, p) => a + p.lng, 0) / pts.length;
+  const out = [...pts];
+  for (let i = 0; out.length < MYSTERY_COUNT; i++) {
+    const a = i * 2.39996; // ángulo de oro: los reparte parejo
+    const r = 0.0035 + (i % 3) * 0.0022;
+    out.push({ lat: lat + Math.sin(a) * r, lng: lng + Math.cos(a) * r * 1.2 });
+  }
+  return out.slice(0, MYSTERY_COUNT);
+}
 
 // Mapa quieto de fondo con los locales que participan (pines blancos, como en Canjes). No dice cuáles te tocaron.
 // `padBottom` deja libre la parte de abajo, donde va el texto de la tarjeta.
-export function RutaMiniMap({ places, padBottom = 0, pinSize = 34, route = false }: { places: Place[]; padBottom?: number; pinSize?: number; route?: boolean }) {
+// `mystery`: en vez de los logos van 9 pines con "?" (la tarjeta del evento no dice qué locales te tocan).
+export function RutaMiniMap({ places, padBottom = 0, pinSize = 34, route = false, mystery = false }: { places: Place[]; padBottom?: number; pinSize?: number; route?: boolean; mystery?: boolean }) {
   const ref = useRef<MapView>(null);
   const [tracks, setTracks] = useState(true);
-  const pts = places.filter((p) => p.lat != null && p.lng != null);
+  const real = places.filter((p) => p.lat != null && p.lng != null);
+  const pts = mystery ? withDecoys(real.map((p) => ({ lat: p.lat!, lng: p.lng! }))).map((p) => ({ name: '?', logo_url: null, lat: p.lat, lng: p.lng })) : real;
   useEffect(() => {
     const t = setTimeout(() => setTracks(false), 2500);
     return () => clearTimeout(t);
   }, []);
 
   if (Platform.OS === 'web' || pts.length === 0) {
+    const list = mystery ? SPOTS.map(() => null) : places.slice(0, SPOTS.length);
     return (
       <View pointerEvents="none" style={{ position: 'absolute', inset: 0, backgroundColor: '#17112a' }}>
-        {places.slice(0, SPOTS.length).map((l, i) => (
+        {list.map((l, i) => (
           <View key={i} style={{ position: 'absolute', left: `${SPOTS[i][0] * 100}%`, top: `${SPOTS[i][1] * 100}%` }}>
-            <RutaPin name={l.name} logoUrl={l.logo_url} size={pinSize} route={route} />
+            {l ? <RutaPin name={l.name} logoUrl={l.logo_url} size={pinSize} route={route} /> : <MysteryPin size={pinSize} />}
           </View>
         ))}
       </View>
@@ -57,7 +76,7 @@ export function RutaMiniMap({ places, padBottom = 0, pinSize = 34, route = false
       >
         {pts.map((p, i) => (
           <Marker key={i} coordinate={{ latitude: p.lat!, longitude: p.lng! }} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}>
-            <RutaPin name={p.name} logoUrl={p.logo_url} size={pinSize} route={route} />
+            {mystery ? <MysteryPin size={pinSize} /> : <RutaPin name={p.name} logoUrl={p.logo_url} size={pinSize} route={route} />}
           </Marker>
         ))}
       </MapView>
