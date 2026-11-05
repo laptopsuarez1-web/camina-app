@@ -27,6 +27,8 @@ import {
 } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
+import { rewardReview } from '@/hooks/useBadges';
+import { LevelCard } from '@/components/badges/LevelCard';
 import { FollowupQuestion, ReviewStep, StoryStep } from '@/components/story/StoryShare';
 import { useStoryFlow } from '@/components/story/StoryFlow';
 import { BellButton } from '@/components/ui/BellButton';
@@ -1663,6 +1665,8 @@ export default function CanjesScreen() {
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
+                <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
+
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
                   {profileGroup.business.address ? (
                     <Press
@@ -2134,6 +2138,8 @@ export default function CanjesScreen() {
                     businessName={activeBenefit?.business.name ?? 'el local'}
                     onReview={() => {
                       if (reviewUrl) Linking.openURL(reviewUrl);
+                      // +1 a tu nivel en el local (una vez por canje).
+                      if (activeRedemption?.id) rewardReview(activeRedemption.id).catch(() => {});
                       setPaso('historia');
                     }}
                     onSkip={() => setPaso('historia')}

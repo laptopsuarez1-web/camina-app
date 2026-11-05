@@ -11,7 +11,7 @@ const SPOTS = [[0.18, 0.12], [0.6, 0.08], [0.4, 0.3], [0.76, 0.36], [0.12, 0.44]
 
 // Mapa quieto de fondo con los locales que participan (pines blancos, como en Canjes). No dice cuáles te tocaron.
 // `padBottom` deja libre la parte de abajo, donde va el texto de la tarjeta.
-export function RutaMiniMap({ places, padBottom = 0, pinSize = 34 }: { places: Place[]; padBottom?: number; pinSize?: number }) {
+export function RutaMiniMap({ places, padBottom = 0, pinSize = 34, route = false }: { places: Place[]; padBottom?: number; pinSize?: number; route?: boolean }) {
   const ref = useRef<MapView>(null);
   const [tracks, setTracks] = useState(true);
   const pts = places.filter((p) => p.lat != null && p.lng != null);
@@ -25,7 +25,7 @@ export function RutaMiniMap({ places, padBottom = 0, pinSize = 34 }: { places: P
       <View pointerEvents="none" style={{ position: 'absolute', inset: 0, backgroundColor: '#17112a' }}>
         {places.slice(0, SPOTS.length).map((l, i) => (
           <View key={i} style={{ position: 'absolute', left: `${SPOTS[i][0] * 100}%`, top: `${SPOTS[i][1] * 100}%` }}>
-            <RutaPin name={l.name} logoUrl={l.logo_url} size={pinSize} route={false} />
+            <RutaPin name={l.name} logoUrl={l.logo_url} size={pinSize} route={route} />
           </View>
         ))}
       </View>
@@ -57,7 +57,7 @@ export function RutaMiniMap({ places, padBottom = 0, pinSize = 34 }: { places: P
       >
         {pts.map((p, i) => (
           <Marker key={i} coordinate={{ latitude: p.lat!, longitude: p.lng! }} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}>
-            <RutaPin name={p.name} logoUrl={p.logo_url} size={pinSize} route={false} />
+            <RutaPin name={p.name} logoUrl={p.logo_url} size={pinSize} route={route} />
           </Marker>
         ))}
       </MapView>

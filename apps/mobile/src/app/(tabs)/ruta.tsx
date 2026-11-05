@@ -5,6 +5,9 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequ
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadRoutePhoto } from '@/hooks/useBadges';
+import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
@@ -90,6 +93,7 @@ export default function RutaScreen() {
   const { height } = useWindowDimensions();
   const params = useLocalSearchParams<{ nueva?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
+  const userId = useAuthStore((st) => st.session?.user.id);
   const join = useJoinRuta();
   const swap = useSwapRuta();
   const mark = useMarkRutaVisit();
@@ -205,6 +209,18 @@ export default function RutaScreen() {
       }
     } catch (e) {
       return friendlyServerError(e, 'No se pudo marcar tu visita. Intenta de nuevo.');
+    }
+  }
+
+  async function addVisitPhoto(businessId: string) {
+    if (!userId || !state) return;
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5], base64: true });
+    if (r.canceled) return;
+    try {
+      await uploadRoutePhoto(userId, state.month, businessId, r.assets[0].uri, r.assets[0].base64);
+      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada en tu ruta' });
+    } catch (e) {
+      Alert.alert('No se pudo subir la foto', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
 
@@ -394,8 +410,15 @@ export default function RutaScreen() {
         onClose={() => setVisitFor(null)}
         onSubmit={submitVisit}
         onSuccess={() => {
+          const stop = visitFor;
           setVisitFor(null);
-          celebrate({ kind: 'sheet', title: '¡Visita marcada!', body: 'Cuando el local confirme tu compra, se llena tu anillo.' });
+          // Foto de la visita (opcional): se ve al tocar tu insignia de la ruta en el perfil.
+          setTimeout(() => {
+            Alert.alert('¡Visita marcada!', 'Cuando el local confirme tu compra, se llena tu anillo. ¿Guardas una foto de tu visita?', [
+              { text: 'Ahora no', style: 'cancel' },
+              { text: 'Agregar foto', onPress: () => stop && addVisitPhoto(stop.business_id) },
+            ]);
+          }, 450);
         }}
       />
 

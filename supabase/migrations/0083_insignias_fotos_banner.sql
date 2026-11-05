@@ -114,11 +114,13 @@ select user_id, business_id, 'canje', id, 2, coalesce(confirmed_at, created_at) 
 on conflict (source, ref) do nothing;
 
 -- ---------- 2) Insignias públicas y destacada ----------
-alter table profiles add column if not exists featured_badge text;  -- 'ruta:<YYYY-MM-01>' o 'local:<business_id>'
+alter table profiles add column if not exists featured_badge text;
+alter table profiles add column if not exists profile_banner_url text;  -- 'ruta:<YYYY-MM-01>' o 'local:<business_id>'
 
 create or replace function user_badges(p_user uuid) returns jsonb as $f$
   select jsonb_build_object(
     'featured', (select featured_badge from profiles where id = p_user),
+    'banner_url', (select case when profile_bg = 'foto' then profile_banner_url end from profiles where id = p_user),
     'routes', coalesce((select jsonb_agg(jsonb_build_object('month', month, 'completed_at', completed_at) order by month desc)
                         from route_participants where user_id = p_user and completed_at is not null), '[]'::jsonb),
     'locals', coalesce((select jsonb_agg(x order by x->>'points' desc) from (
@@ -235,6 +237,9 @@ $f$ language sql stable security definer set search_path = public;
 
 -- ---------- 5) Banner del perfil con foto ----------
 alter table profiles add column if not exists profile_banner_url text;
+-- 'foto' = la foto propia de profile_banner_url (las demás claves son las ilustraciones de 0079).
+alter table profiles drop constraint if exists profiles_bg_key;
+alter table profiles add constraint profiles_bg_key check (profile_bg is null or profile_bg in ('violeta','bosque','ciudad','sendero','pista','cielo','foto'));
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('profile-banners', 'profile-banners', true, 8388608, array['image/jpeg', 'image/png', 'image/webp'])
