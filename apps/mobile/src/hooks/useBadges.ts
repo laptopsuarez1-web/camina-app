@@ -44,6 +44,12 @@ export function useMyBadges() {
   return useUserBadges(useAuthStore((s) => s.session?.user.id));
 }
 
+// true cuando el servidor ya tiene la migración 0083 (insignias, foto de banner, fotos de la ruta). Mientras no esté,
+// esas opciones no se muestran: así la app se puede publicar antes de aplicar la migración sin que nada falle.
+export function useBadgesReady() {
+  return useMyBadges().isSuccess;
+}
+
 export function useSetFeaturedBadge() {
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.session?.user.id);

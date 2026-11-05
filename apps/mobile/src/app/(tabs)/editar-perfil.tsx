@@ -26,6 +26,7 @@ import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { ProfileBgSheet } from '@/components/profile/ProfileBgSheet';
+import { useBadgesReady } from '@/hooks/useBadges';
 import { AccountEmailCard } from '@/components/AccountEmailCard';
 import { getAppleAuthorizationCode } from '@/lib/oauth';
 
@@ -86,6 +87,7 @@ export default function EditarPerfilScreen() {
   const [bannerUri, setBannerUri] = useState<string | null>(null);
   const [bannerB64, setBannerB64] = useState<string | null>(null);
   const bannerShown = bannerUri ?? profile?.profile_banner_url ?? null;
+  const bannerReady = useBadgesReady();
   const [city, setCity] = useState(profile?.city ?? 'Tarija');
   const [zone, setZone] = useState<string | null>(profile?.zone ?? null);
   const [bYear, setBYear] = useState(b ? b.slice(0, 4) : '');
@@ -339,7 +341,7 @@ export default function EditarPerfilScreen() {
           </Press>
         </ProfileBanner>
         <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} photoUrl={bannerShown}
-          onPickPhoto={async () => {
+          onPickPhoto={!bannerReady ? undefined : async () => {
             const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85, allowsEditing: true, aspect: [4, 3], base64: true });
             if (r.canceled) return;
             setBannerUri(r.assets[0].uri);

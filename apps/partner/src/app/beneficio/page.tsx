@@ -243,6 +243,11 @@ function BeneficioForm({
   const [active, setActive] = useState(benefit?.active ?? true);
   // Premio solo para Fans (0083): opcional, solo lo ven y lo canjean quienes son Fans del local.
   const [fansOnly, setFansOnly] = useState(!!benefit?.fans_only);
+  // La opción aparece recién cuando el servidor tiene la columna (migración 0083); antes, guardar no la manda.
+  const [fansReady, setFansReady] = useState(false);
+  useEffect(() => {
+    supabase.from('benefits').select('fans_only').limit(1).then(({ error }) => setFansReady(!error));
+  }, []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -299,7 +304,7 @@ function BeneficioForm({
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
       active,
-      fans_only: fansOnly,
+      ...(fansReady ? { fans_only: fansOnly } : {}),
       image_url: imageUrl,
       valid_from: validFrom || null,
       valid_to: validTo || null,
@@ -788,7 +793,7 @@ function BeneficioForm({
           </div>
         )}
 
-        <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-3">
+        {fansReady && <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-3">
           <div>
             <p className="text-[13px] font-semibold">Solo para tus Fans</p>
             <p className="text-[11px] text-muted">
@@ -805,7 +810,7 @@ function BeneficioForm({
           >
             <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: fansOnly ? '22px' : '2px' }} />
           </button>
-        </div>
+        </div>}
 
         <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-5">
           <div>

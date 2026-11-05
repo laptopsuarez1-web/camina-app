@@ -11,6 +11,8 @@ import type { UserBadges } from '@/hooks/useBadges';
 // "Mis insignias" en el Perfil: arriba las rutas del mes completadas y abajo los locales. Todo centrado, sin huecos.
 // `own` = es mi perfil (se puede tocar para ver todas; en el de un amigo es solo para mirar).
 export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges | undefined; own?: boolean; userId?: string }) {
+  // Sin datos (cargando o el servidor todavía sin 0083): no se muestra nada.
+  if (!badges) return null;
   const routes = (badges?.routes ?? []).slice(0, 4);
   const locals = (badges?.locals ?? []).slice(0, 4);
   const empty = routes.length === 0 && locals.length === 0;

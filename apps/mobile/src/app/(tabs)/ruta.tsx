@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadRoutePhoto } from '@/hooks/useBadges';
+import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
@@ -95,6 +95,7 @@ export default function RutaScreen() {
   const params = useLocalSearchParams<{ nueva?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
   const userId = useAuthStore((st) => st.session?.user.id);
+  const photosReady = useBadgesReady();
   const join = useJoinRuta();
   const swap = useSwapRuta();
   const mark = useMarkRutaVisit();
@@ -416,6 +417,10 @@ export default function RutaScreen() {
           setVisitFor(null);
           // Foto de la visita (opcional): se ve al tocar tu insignia de la ruta en el perfil.
           setTimeout(() => {
+            if (!photosReady) {
+              Alert.alert('¡Visita marcada!', 'Cuando el local confirme tu compra, se llena tu anillo.');
+              return;
+            }
             Alert.alert('¡Visita marcada!', 'Cuando el local confirme tu compra, se llena tu anillo. ¿Guardas una foto de tu visita?', [
               { text: 'Ahora no', style: 'cancel' },
               { text: 'Agregar foto', onPress: () => stop && addVisitPhoto(stop.business_id) },
