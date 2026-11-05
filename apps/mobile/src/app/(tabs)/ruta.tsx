@@ -17,7 +17,7 @@ import { Press } from '@/components/ui/Press';
 import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
-import { RutaBadge, RutaPin } from '@/components/ruta/RutaPin';
+import { RutaPin } from '@/components/ruta/RutaPin';
 import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
@@ -102,6 +102,7 @@ export default function RutaScreen() {
   const mark = useMarkRutaVisit();
   const pickDay = usePickDoubleDay();
   const [showRules, setShowRules] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [visitFor, setVisitFor] = useState<RutaStop | null>(null);
   const [swapOpen, setSwapOpen] = useState(false);
   const [swapOut, setSwapOut] = useState<string | null>(null);
@@ -109,6 +110,9 @@ export default function RutaScreen() {
   const options = useRutaSwapOptions(swapOpen);
   const mapRef = useRef<MapView>(null);
   // Animación de llegada: la cámara va a cada local, cae su pin y al final se ven los 3 unidos.
+  // `intro` es local (no depende de que el parámetro de la URL llegue a tiempo): desde que se toca Participar,
+  // no se muestra ningún local hasta que cae su pin en el mapa.
+  const [intro, setIntro] = useState(!!params.nueva);
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
   const [lineOn, setLineOn] = useState(!params.nueva);
   const [tracks, setTracks] = useState(true);
@@ -124,9 +128,16 @@ export default function RutaScreen() {
     return () => clearTimeout(t);
   }, [shown, stops.length]);
 
+  // Seguro: si el mapa no llega a cargar (sin red o sin coordenadas), los locales igual se muestran después de la animación.
+  useEffect(() => {
+    if (!intro || !stops.length) return;
+    const t = setTimeout(() => { setShown(stops.length); setLineOn(true); setIntro(false); }, 300 + stops.length * 2300 + 4000);
+    return () => clearTimeout(t);
+  }, [intro, stops.length]);
+
   function fitAll(animated = true) {
     const coords = stops.filter((s) => s.lat != null).map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
-    if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 140, right: 60, bottom: 60, left: 60 }, animated });
+    if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
   // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
@@ -170,17 +181,23 @@ export default function RutaScreen() {
     setTimeout(() => {
       fitAll();
       setTimeout(drawLine, 700);
+      setTimeout(() => { setShown(stops.length); setIntro(false); }, 900);
       router.setParams({ nueva: undefined });
     }, 300 + steps.length * STEP);
   }
 
   async function participate() {
+    // Primero se esconden los locales y recién después llega la ruta del servidor: así nunca se ven antes de la animación.
+    setIntro(true);
+    setShown(0);
+    setLineOn(false);
     try {
       await join.mutateAsync(undefined as never);
-      setShown(0);
-      setLineOn(false);
       router.setParams({ nueva: '1' });
     } catch (e) {
+      setIntro(false);
+      setShown(3);
+      setLineOn(true);
       Alert.alert('No pudimos anotarte', friendlyServerError(e, 'Intenta de nuevo.'));
     }
   }
@@ -263,16 +280,42 @@ export default function RutaScreen() {
     </>
   );
 
+  // Cómo funciona: se abre con el "?" de arriba.
+  const rulesModal = (
+      <Modal visible={showRules} transparent animationType="slide" onRequestClose={() => setShowRules(false)}>
+        <Press accessible={false} feedback="none" style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={() => setShowRules(false)}>
+          <Press accessible={false} feedback="none" onPress={() => {}} style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, maxHeight: height * 0.85, paddingBottom: insets.bottom + 12 }}>
+            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 10 }}>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 19, textAlign: 'center' }}>Cómo funciona tu Ruta</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 10 }}>
+                <Chip>En el orden que quieras</Chip>
+                <Chip>Sin Puntos ni descuentos</Chip>
+              </View>
+              {rules}
+              <Press accessibilityRole="button" onPress={() => setShowRules(false)} style={{ marginTop: 16, borderRadius: 16, paddingVertical: 14, alignItems: 'center', backgroundColor: '#1F7A66' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Entendido</Text>
+              </Press>
+            </ScrollView>
+          </Press>
+        </Press>
+      </Modal>
+  );
+
   // ---------- Antes de participar: detalle, premios y condiciones ----------
   if (!state.joined) {
     const few = state.eligible_count < 3;
     return (
       <View style={{ flex: 1, backgroundColor: BG }}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           <View style={{ height: 250 + insets.top }}>
-            <RutaMiniMap places={state.locales} pinSize={30} padBottom={60} />
+            <RutaMiniMap places={state.locales} pinSize={30} padBottom={60} mystery />
             <LinearGradient pointerEvents="none" colors={['rgba(22,17,31,0.35)', 'rgba(22,17,31,0)', 'rgba(22,17,31,0.7)', BG]} locations={[0, 0.3, 0.75, 1]} style={{ position: 'absolute', inset: 0 }} />
             <View style={{ position: 'absolute', left: 20, top: insets.top + 8 }}><Back /></View>
+            <Press accessibilityRole="button" accessibilityLabel="Cómo funciona la Ruta" onPress={() => setShowRules(true)} hitSlop={8}
+              style={{ position: 'absolute', right: 20, top: insets.top + 8, width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(22,17,31,0.75)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+              <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 18 }}>?</Text>
+            </Press>
           </View>
           <View style={{ paddingHorizontal: 20, marginTop: -40 }}>
           <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
@@ -287,18 +330,18 @@ export default function RutaScreen() {
           <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Exclusiva: solo la tiene quien completa esta ruta." />
           <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body="Entras al sorteo del mes. El premio se anuncia en Eventos." />
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 17 }}>↻2</Text></Bubble>} title="2 cambios de local" body="El mes que viene puedes cambiar 2 de tus 3 locales, en vez de 1." />
-          {showRules ? rules : (
-            <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
-              <View>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Condiciones del evento</Text>
-                <Text style={{ color: MUTED, fontSize: 12 }}>Cómo cuenta una visita, plazos y cambios</Text>
-              </View>
-              <Text style={{ color: MINT, fontWeight: '800' }}>Ver ›</Text>
-            </Press>
-          )}
+          <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+            <View>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Cómo funciona</Text>
+              <Text style={{ color: MUTED, fontSize: 12 }}>Cómo cuenta una visita, plazos y cambios</Text>
+            </View>
+            <Text style={{ color: MINT, fontWeight: '800' }}>Ver ›</Text>
+          </Press>
           </View>
         </ScrollView>
-        <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
+        {rulesModal}
+        {/* El botón va en su propia barra al pie, debajo del contenido (nunca encima del texto). */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 12, backgroundColor: BG, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' }}>
           <Press accessibilityRole="button" disabled={few || join.isPending} onPress={participate} haptic="light"
             style={{ borderRadius: 16, paddingVertical: 15, alignItems: 'center', backgroundColor: MINT, opacity: few ? 0.5 : 1 }}>
             {join.isPending ? <ActivityIndicator color="#14093a" /> : (
@@ -324,7 +367,7 @@ export default function RutaScreen() {
             style={{ flex: 1 }}
             customMapStyle={DARK_MAP_STYLE}
             initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
-            onMapReady={() => (params.nueva ? runIntro() : fitAll(false))}
+            onMapReady={() => (intro ? runIntro() : fitAll(false))}
             toolbarEnabled={false}
             pitchEnabled={false}
             rotateEnabled={false}
@@ -348,32 +391,54 @@ export default function RutaScreen() {
           <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
         </View>
+        <Press accessibilityRole="button" accessibilityLabel="Cómo funciona la Ruta" onPress={() => setShowRules(true)} hitSlop={8}
+          style={{ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.14)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+          <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 18 }}>?</Text>
+        </Press>
       </View>
 
-      <View style={{ position: 'absolute', left: 12, right: 12, bottom: insets.bottom + 12, maxHeight: height * 0.55, borderRadius: 26, backgroundColor: 'rgba(26,20,38,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)' }}>
-        <ScrollView contentContainerStyle={{ padding: 14 }} showsVerticalScrollIndicator={false}>
+      {/* Mientras caen los pines el panel no se muestra: el mapa queda libre para la animación. */}
+      {!intro && (
+      <View style={{ position: 'absolute', left: 12, right: 12, bottom: insets.bottom + 12, maxHeight: height * 0.4, borderRadius: 26, backgroundColor: 'rgba(26,20,38,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', overflow: 'hidden' }}>
+        {/* Se pliega tocando la barrita: así se ve todo el mapa. */}
+        <Press accessibilityRole="button" accessibilityLabel={panelOpen ? 'Bajar el panel' : 'Subir el panel'} onPress={() => setPanelOpen((v) => !v)} feedback="none"
+          style={{ alignItems: 'center', paddingTop: 8, paddingBottom: panelOpen ? 2 : 10 }}>
+          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80' }} />
+          {!panelOpen ? <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13.5, marginTop: 8 }}>Tus 3 locales · {done} de 3 ▴</Text> : null}
+        </Press>
+        {panelOpen ? (
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 14, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
           <View style={{ flexDirection: 'row' }}>
-            {stops.map((s) => {
+            {stops.map((s, i) => {
+              // Mientras cae cada pin, los locales que todavía no salieron se ven como sorpresa.
+              const hidden = i >= shown;
               const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
+              const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.35)';
               return (
-                <Press key={s.business_id} accessibilityRole="button" disabled={st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
-                  <View style={{ width: 46, height: 46, borderRadius: 13, borderWidth: 2.5, borderColor: st === 'ok' ? MINT : st === 'wait' ? MUTED : 'rgba(255,255,255,0.25)', overflow: 'hidden', backgroundColor: '#fff' }}>
-                    {s.logo_url ? <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                <Press key={s.business_id} accessibilityRole="button" disabled={hidden || st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                    {hidden ? (
+                      <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
+                    ) : s.logo_url ? (
+                      <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 22 }}>{s.name.trim()[0]?.toUpperCase()}</Text>
+                    )}
                   </View>
-                  <RutaBadge size={20} style={{ top: -4, right: '50%', marginRight: -32 }} />
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12, marginTop: 6 }} numberOfLines={1}>{s.name}</Text>
-                  <Text style={{ color: st === 'ok' ? MINT : st === 'wait' ? MUTED : MINT, fontWeight: '800', fontSize: 10.5, marginTop: 1 }}>
-                    {st === 'ok' ? '✓ Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}
+                  {!hidden && st === 'ok' ? (
+                    <View style={{ position: 'absolute', top: 0, right: '50%', marginRight: -28, width: 20, height: 20, borderRadius: 10, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
+                      <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 11 }}>✓</Text>
+                    </View>
+                  ) : null}
+                  <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '96%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
+                  <Text style={{ color: hidden ? MUTED : st === 'wait' ? '#C4B8E8' : MINT, fontWeight: '800', fontSize: 11, marginTop: 1 }}>
+                    {hidden ? '...' : st === 'ok' ? 'Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}
                   </Text>
                 </Press>
               );
             })}
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-            <Chip>En el orden que quieras</Chip>
-            <Chip>Sin Puntos ni descuentos</Chip>
-          </View>
-          {canSwap && (
+          {canSwap && shown >= stops.length && (
             <Press onPress={() => setSwapOpen(true)} style={{ alignItems: 'center', paddingTop: 12 }}>
               <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local · {state.swaps_left === 1 ? 'te queda 1 cambio' : `te quedan ${state.swaps_left} cambios`}</Text>
             </Press>
@@ -393,14 +458,12 @@ export default function RutaScreen() {
             try { await pickDay.mutateAsync(d); celebrate({ kind: 'sheet', title: '¡Día doble elegido!', body: 'Ese día tus pasos valen el doble.' }); }
             catch (e) { Alert.alert('No se pudo elegir', friendlyServerError(e, 'Intenta de nuevo.')); }
           }} />}
-
-          {showRules ? rules : (
-            <Press onPress={() => setShowRules(true)} style={{ paddingTop: 12, alignItems: 'center' }}>
-              <Text style={{ color: MUTED, fontWeight: '800', fontSize: 12.5 }}>Condiciones del evento ›</Text>
-            </Press>
-          )}
         </ScrollView>
+        ) : null}
       </View>
+      )}
+
+      {rulesModal}
 
       <LocalCodeSheet
         visible={!!visitFor}
@@ -444,11 +507,9 @@ export default function RutaScreen() {
             </View>
             <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.2, fontSize: 11, marginTop: 16, textAlign: 'center' }}>ELIGE EL NUEVO</Text>
             {options.isLoading ? <ActivityIndicator color={MINT} style={{ marginTop: 10 }} /> : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginTop: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, flexGrow: 0 }} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
                 {(options.data ?? []).map((o) => (
-                  <View key={o.business_id} style={{ width: 104 }}>
-                    <Choice name={o.name} logo={o.logo_url} on={swapIn === o.business_id} onPress={() => setSwapIn(o.business_id)} />
-                  </View>
+                  <Choice key={o.business_id} fill={false} name={o.name} logo={o.logo_url} on={swapIn === o.business_id} onPress={() => setSwapIn(o.business_id)} />
                 ))}
                 {(options.data ?? []).length === 0 && <Text style={{ color: MUTED, fontSize: 13 }}>No hay otros locales para elegir por ahora.</Text>}
               </ScrollView>
@@ -468,10 +529,10 @@ export default function RutaScreen() {
   );
 }
 
-function Choice({ name, logo, on, onPress }: { name: string; logo: string | null; on: boolean; onPress: () => void }) {
+function Choice({ name, logo, on, onPress, fill = true }: { name: string; logo: string | null; on: boolean; onPress: () => void; fill?: boolean }) {
   return (
     <Press accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress} haptic="selection"
-      style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 16, borderWidth: 1.5, borderColor: on ? MINT : 'transparent', backgroundColor: on ? 'rgba(98,240,182,0.12)' : 'rgba(255,255,255,0.05)' }}>
+      style={{ ...(fill ? { flex: 1 } : { width: 104 }), alignItems: 'center', paddingVertical: 10, borderRadius: 16, borderWidth: 1.5, borderColor: on ? MINT : 'transparent', backgroundColor: on ? 'rgba(98,240,182,0.12)' : 'rgba(255,255,255,0.05)' }}>
       <RutaPin name={name} logoUrl={logo} size={36} route={false} />
       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 11.5 }} numberOfLines={1}>{name}</Text>
     </Press>

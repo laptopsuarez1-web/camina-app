@@ -37,6 +37,8 @@ import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
+import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
+import { useRuta } from '@/hooks/useRuta';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -164,6 +166,7 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- los pasos reprograman de a 250 para que el "te faltan" no quede viejo.
   }, [streak, goal, goalMet, Math.floor(steps / 250), prefRacha, prefAliento]);
   const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+  const { data: ruta } = useRuta();
   // Celebraciones suaves (una sola vez por Punto nuevo y por meta del día):
   // - cada Punto nuevo: el chip "+N Puntos" late;
   // - al llegar a la meta del día: dos ondas verdes salen del aro y aparece "Meta cumplida".
@@ -578,6 +581,8 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        {/* El evento del mes, siempre a mano en Inicio. */}
+        {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} /> : null}
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
           <Press
             accessibilityRole="button"

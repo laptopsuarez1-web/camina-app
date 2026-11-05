@@ -54,6 +54,15 @@ begin
   perform set_featured_badge('local:' || biz);
   perform tt.t_eq('elige su insignia destacada', user_badges(u)->>'featured', 'local:' || biz);
   perform tt.t_raises('no acepta cualquier texto', 'select set_featured_badge(''hola'')', 'inválida');
+  -- Hasta 5 insignias elegidas para el perfil, en orden.
+  perform set_featured_badge('local:' || biz || ',ruta:2026-11-01');
+  perform tt.t_eq('elige 2 insignias para su perfil', user_badges(u)->>'featured', 'local:' || biz || ',ruta:2026-11-01');
+  perform tt.t_raises('no acepta repetidas', format('select set_featured_badge(%L)', 'local:' || biz || ',local:' || biz), 'inválida');
+  perform tt.t_raises('no acepta más de 5', 'select set_featured_badge(''ruta:2026-01-01,ruta:2026-02-01,ruta:2026-03-01,ruta:2026-04-01,ruta:2026-05-01,ruta:2026-06-01'')', 'Máximo 5');
+  perform tt.t_raises('una mala en la lista invalida todo', format('select set_featured_badge(%L)', 'local:' || biz || ',hola'), 'inválida');
+  perform set_featured_badge(null);
+  perform tt.t_eq('puede volver a automático', user_badges(u)->>'featured', null);
+  perform set_featured_badge('local:' || biz);
 
   -- Panel: cuenta Fans; otra persona no lo ve.
   perform tt.t_as(owner);

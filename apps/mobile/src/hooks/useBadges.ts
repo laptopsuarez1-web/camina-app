@@ -28,6 +28,27 @@ export function nextLevel(points: number) {
   return next ? { label: next.label, missing: next.from - points, target: next.from } : null;
 }
 
+// Insignias elegidas para el perfil (0088): hasta 5, separadas por coma, en el orden elegido.
+export const MAX_PROFILE_BADGES = 5;
+export function chosenKeys(featured: string | null | undefined): string[] {
+  return (featured ?? '').split(',').map((k) => k.trim()).filter(Boolean);
+}
+export type ProfileBadge = { kind: 'ruta'; key: string; month: string } | { kind: 'local'; key: string; local: LocalBadgeT };
+// Lo que se ve en el perfil: las elegidas (las que todavía existen) o, si no eligió ninguna, las 2 rutas más
+// recientes y los locales con más puntos, hasta 5.
+export function profileBadges(b: UserBadges | undefined): ProfileBadge[] {
+  if (!b) return [];
+  const all: ProfileBadge[] = [
+    ...(b.routes ?? []).map((r) => ({ kind: 'ruta' as const, key: `ruta:${r.month}`, month: r.month })),
+    ...(b.locals ?? []).map((l) => ({ kind: 'local' as const, key: `local:${l.business_id}`, local: l })),
+  ];
+  const chosen = chosenKeys(b.featured).map((k) => all.find((x) => x.key === k)).filter((x): x is ProfileBadge => !!x);
+  if (chosen.length) return chosen.slice(0, MAX_PROFILE_BADGES);
+  const routes = all.filter((x) => x.kind === 'ruta').slice(0, 2);
+  const locals = all.filter((x) => x.kind === 'local').slice(0, MAX_PROFILE_BADGES - routes.length);
+  return [...routes, ...locals];
+}
+
 export function useUserBadges(userId?: string | null) {
   return useQuery({
     queryKey: ['badges', userId],
@@ -117,4 +138,26 @@ export async function uploadRoutePhoto(userId: string, month: string, businessId
   if (error) throw error;
   const { error: e2 } = await supabase.rpc('set_route_photo', { p_month: month, p_business: businessId, p_path: path });
   if (e2) throw e2;
+}
+
+// Cómo fue sumando la persona en un local (cada canje, reseña, historia o visita de la Ruta). Solo las propias:
+// la base deja leer únicamente tus filas.
+export type LevelEvent = { source: 'canje' | 'visita' | 'resena' | 'historia'; points: number; created_at: string };
+export function useLevelHistory(businessId: string | null | undefined, enabled = true) {
+  const userId = useAuthStore((s) => s.session?.user.id);
+  return useQuery({
+    queryKey: ['level-history', userId, businessId],
+    enabled: !!userId && !!businessId && enabled,
+    queryFn: async (): Promise<LevelEvent[]> => {
+      const { data, error } = await supabase
+        .from('business_level_points')
+        .select('source, points, created_at')
+        .eq('user_id', userId!)
+        .eq('business_id', businessId!)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as LevelEvent[];
+    },
+  });
 }
