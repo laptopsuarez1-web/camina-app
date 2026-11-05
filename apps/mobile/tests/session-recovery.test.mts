@@ -53,3 +53,24 @@ test('cerrar sesión a propósito (signOutUser) no se recupera', async () => {
   assert.equal(authEvents.setSessionCalls.length, antes);
   assert.equal(useAuthStore.getState().session, null);
 });
+
+test('SIGNED_OUT justo al abrir la app (la copia está en el teléfono pero todavía no en memoria): se recupera', async () => {
+  // Así se perdía la sesión: con la app recién abierta, la librería no pudo renovar y cerró la sesión antes de que la
+  // copia de respaldo estuviera cargada en memoria; la app lo tomaba como un cierre a propósito y mostraba el login.
+  const mod = await import('../src/store/useAuthStore.ts');
+  await new Promise((r) => setTimeout(r, 3100)); // pasa la ventana del cierre a propósito de la prueba anterior
+  await emit('SIGNED_IN', sess('B'));
+  await flush();
+  assert.equal(mod.useAuthStore.getState().session?.user.id, 'B');
+  mod.__forgetBackupInMemoryForTests();
+  const antes = authEvents.setSessionCalls.length;
+  authEvents.setSessionResult = () => {
+    setTimeout(() => authEvents.listener!('SIGNED_IN', sess('B')), 0);
+    return { data: { session: sess('B') }, error: null };
+  };
+  await emit('SIGNED_OUT', null);
+  await flush();
+  assert.equal(authEvents.setSessionCalls.length, antes + 1, 'intentó recuperar con la copia del teléfono');
+  assert.equal(authEvents.setSessionCalls.at(-1).refresh_token, 'r-B');
+  assert.equal(mod.useAuthStore.getState().session?.user.id, 'B', 'no se mostró el login');
+});
