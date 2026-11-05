@@ -11,7 +11,8 @@ import { GoalBar } from '@/components/ui/GoalBar';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
 import { ChevronLeft, ChevronRight, DotsThree, Check, X } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
-import { useFriendCard, useFriendActions, useFriendExtras } from '@/hooks/useFriends';
+import { useFriendCard, useFriendActions, useFriendExtras, type Friend } from '@/hooks/useFriends';
+import { useQueryClient } from '@tanstack/react-query';
 import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration';
 import { buildDayCells, compactSteps, WEEK_LABELS, type DayCell } from '@/lib/friend-week';
 import { localDay } from '@/lib/format';
@@ -50,6 +51,8 @@ export default function FriendProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { data: card, isLoading, isError, refetch } = useFriendCard(userId);
   const { data: badges } = useUserBadges(userId);
+  // Mientras llega la ficha, el nombre y la foto salen de la lista de amigos (ya está en el teléfono).
+  const listed = useQueryClient().getQueryData<Friend[]>(['friends', useAuthStore.getState().session?.user.id])?.find((f) => f.user_id === userId);
   const { send, respond, remove } = useFriendActions();
   const blocks = useBlocks();
   const meId = useAuthStore((s) => s.session?.user.id);
@@ -167,9 +170,9 @@ export default function FriendProfileScreen() {
           </View>
           <View className="items-center mt-5">
             <View style={{ padding: 4, borderRadius: 52, borderWidth: 3, borderColor: colors.mint }}>
-              <PersonAvatar name={card?.full_name ?? ''} photoUrl={card?.photo_url} size={84} />
+              <PersonAvatar name={card?.full_name ?? listed?.full_name ?? ''} photoUrl={card ? card.photo_url : listed?.photo_url} size={84} />
             </View>
-            <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" numberOfLines={2}>{card?.full_name ?? ' '}</Text>
+            <Text accessibilityRole="header" className="text-[22px] font-extrabold text-white mt-3 text-center" numberOfLines={2}>{card?.full_name ?? listed?.full_name ?? ' '}</Text>
             {card?.bio ? <Text className="text-[13.5px] text-center mt-1.5" style={{ color: colors.authMuted, lineHeight: 19, maxWidth: 300 }}>{card.bio}</Text> : null}
           </View>
         </ProfileBanner>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -357,7 +358,7 @@ export default function RutaScreen() {
               return (
                 <Press key={s.business_id} accessibilityRole="button" disabled={st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
                   <View style={{ width: 46, height: 46, borderRadius: 13, borderWidth: 2.5, borderColor: st === 'ok' ? MINT : st === 'wait' ? MUTED : 'rgba(255,255,255,0.25)', overflow: 'hidden', backgroundColor: '#fff' }}>
-                    {s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                    {s.logo_url ? <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
                   </View>
                   <RutaBadge size={20} style={{ top: -4, right: '50%', marginRight: -32 }} />
                   <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12, marginTop: 6 }} numberOfLines={1}>{s.name}</Text>

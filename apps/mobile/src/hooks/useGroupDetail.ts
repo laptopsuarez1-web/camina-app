@@ -5,6 +5,7 @@ import { localDay } from '@/lib/format';
 import { boliviaToday } from '@/lib/bolivia';
 import { fetchMemberSteps } from '@/lib/group-steps';
 import type { GroupNote } from '@/lib/database.types';
+import { prefetchPhotos } from '@/hooks/useFriends';
 
 function startOfWeekLocal() {
   const d = boliviaToday();
@@ -50,6 +51,7 @@ export function useGroupDetail(groupId: string | undefined) {
         }))
         .sort((a, b) => b.steps - a.steps);
 
+      prefetchPhotos(ranked.map((m) => m.photoUrl));
       return { group: group!, members: ranked };
     },
   });
