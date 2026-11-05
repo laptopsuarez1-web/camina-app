@@ -492,7 +492,7 @@ export function ChallengeCreatedScene({
       </Animated.View>
       <Reveal tl={tl} delay={2900}>
         <Text style={{ fontSize: 13, color: p.muted, textAlign: 'center', marginTop: 14, lineHeight: 19, maxWidth: 280 }}>
-          {dates}. Invita a tu grupo: quienes cumplan la meta se reparten los Puntos.
+          {dates}. Invita a tu grupo: el primero en cumplir la meta se lleva la mitad del pozo y el resto se reparte entre los demás que cumplan.
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={3050} dy={20} style={{ alignSelf: 'stretch', marginTop: 28 }}>
