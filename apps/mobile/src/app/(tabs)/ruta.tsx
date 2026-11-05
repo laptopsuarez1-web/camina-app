@@ -255,9 +255,9 @@ export default function RutaScreen() {
 
   const rules = (
     <>
-      <Section title="CÓMO PARTICIPAR" items={['Toca Participar y abre tu mapa: te tocan 3 locales al azar.', 'Tu ruta es solo tuya. Puedes cambiar 1 local, antes de visitarlo.']} />
+      <Section title="CÓMO PARTICIPAR" items={['Toca Participar y abre tu mapa: te tocan 3 locales al azar.', 'Tu ruta es solo tuya. Puedes cambiar 1 local antes de visitarlo (2 si completaste la ruta del mes pasado).']} />
       <Section title="CÓMO CUENTA UNA VISITA" items={['Compra lo que quieras en el local. No necesitas Puntos ni descuentos.', 'Al pagar, escribe el código del local. El local confirma tu compra.', '1 visita por local, en el orden que quieras.']} />
-      <Section title="PLAZO Y PREMIOS" items={[`Tienes hasta el ${Number(state.ends_on.slice(8, 10))} de ${month}.`, 'Al completar los 3: Día doble el mes que viene, insignia exclusiva y boleto del sorteo.']} />
+      <Section title="PLAZO Y PREMIOS" items={[`Tienes hasta el ${Number(state.ends_on.slice(8, 10))} de ${month}.`, 'Al completar los 3: Día doble y 2 cambios el mes que viene, insignia exclusiva y boleto del sorteo.']} />
     </>
   );
 
@@ -284,6 +284,7 @@ export default function RutaScreen() {
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 16 }}>x2</Text></Bubble>} title="Día doble" body="Eliges un día del mes que viene y tus pasos valen el doble: hasta 40 Puntos ese día." />
           <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Exclusiva: solo la tiene quien completa esta ruta." />
           <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body="Entras al sorteo del mes. El premio se anuncia en Eventos." />
+          <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 17 }}>↻2</Text></Bubble>} title="2 cambios de local" body="El mes que viene puedes cambiar 2 de tus 3 locales, en vez de 1." />
           {showRules ? rules : (
             <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
               <View>
@@ -372,7 +373,7 @@ export default function RutaScreen() {
           </View>
           {canSwap && (
             <Press onPress={() => setSwapOpen(true)} style={{ alignItems: 'center', paddingTop: 12 }}>
-              <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local · te queda 1 cambio</Text>
+              <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local · {state.swaps_left === 1 ? 'te queda 1 cambio' : `te quedan ${state.swaps_left} cambios`}</Text>
             </Press>
           )}
 
@@ -381,7 +382,7 @@ export default function RutaScreen() {
               <RutaRing size={84} done={3} month={rutaMonthShort(state.month)} />
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16, marginTop: 10 }}>¡Completaste tu Ruta de {month}!</Text>
               <Text style={{ color: MUTED, fontSize: 12.5, textAlign: 'center', marginTop: 4 }}>
-                Ganaste tu insignia{state.ticket_no ? ` y el boleto N.º ${state.ticket_no} del sorteo` : ''}. El mes que viene eliges tu Día doble.
+                Ganaste tu insignia{state.ticket_no ? ` y el boleto N.º ${state.ticket_no} del sorteo` : ''}. El mes que viene eliges tu Día doble y tienes 2 cambios de local.
               </Text>
             </View>
           )}
@@ -428,7 +429,7 @@ export default function RutaScreen() {
           <View style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 18, paddingBottom: insets.bottom + 24 }}>
             <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginBottom: 14 }} />
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18, textAlign: 'center' }}>Cambiar un local</Text>
-            <Text style={{ color: MUTED, fontSize: 13, textAlign: 'center' }}>Tienes 1 cambio este mes</Text>
+            <Text style={{ color: MUTED, fontSize: 13, textAlign: 'center' }}>{state.swaps_left === 1 ? 'Te queda 1 cambio este mes' : `Te quedan ${state.swaps_left} cambios este mes`}</Text>
             <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.2, fontSize: 11, marginTop: 16, textAlign: 'center' }}>¿CUÁL QUITAS?</Text>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               {stops.filter((s) => !s.visit).map((s) => (

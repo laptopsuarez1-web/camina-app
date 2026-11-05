@@ -19,6 +19,7 @@ export type RutaState = {
   ends_on: string;
   joined: boolean;
   swaps_left: number;
+  swaps_total?: number;
   completed_at: string | null;
   ticket_no: number | null;
   prev_completed: boolean;
