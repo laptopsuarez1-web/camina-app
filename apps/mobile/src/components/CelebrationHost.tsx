@@ -101,7 +101,7 @@ function Rays({ size, color }: { size: number; color: string }) {
   return (
     <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}>
       {Array.from({ length: 12 }, (_, i) => (
-        <View key={i} style={{ position: 'absolute', width: 16, height: size / 2, top: 0, left: size / 2 - 8, opacity: 0.18, backgroundColor: color, borderRadius: 8, transform: [{ translateY: size / 4 }, { rotate: `${i * 30}deg` }, { translateY: -size / 4 }] }} />
+        <View key={i} style={{ position: 'absolute', width: 8, height: size / 2, top: 0, left: size / 2 - 4, opacity: 0.07, backgroundColor: color, borderRadius: 8, transform: [{ translateY: size / 4 }, { rotate: `${i * 30}deg` }, { translateY: -size / 4 }] }} />
       ))}
     </Animated.View>
   );
@@ -285,8 +285,8 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
     <Animated.View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, opacity: fade }}>
       <LinearGradient colors={['#2A1F4D', '#15112A']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
         <CoinRain count={12} />
-        <View style={{ position: 'absolute', top: '50%', marginTop: -230, alignItems: 'center', width: '100%' }} pointerEvents="none">
-          <Rays size={300} color="#FFD97A" />
+        <View style={{ position: 'absolute', top: '50%', marginTop: -210, alignItems: 'center', width: '100%' }} pointerEvents="none">
+          <Rays size={240} color="#FFD97A" />
         </View>
         <Animated.View
           style={{

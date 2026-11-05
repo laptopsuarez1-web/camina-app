@@ -4,7 +4,7 @@ import Animated, {
   Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -312,9 +312,22 @@ export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeli
 }
 
 // Luces suaves que flotan detrás de la escena (menta y violeta) y unas motitas que suben. Quieto con reducir movimiento.
-function Glow({ k, color, size, x, y, dx, dy }: { k: SharedValue<number>; color: string; size: number; x: string; y: string; dx: number; dy: number }) {
+function Glow({ k, color, size, x, y, dx, dy, id }: { k: SharedValue<number>; color: string; size: number; x: string; y: string; dx: number; dy: number; id: string }) {
   const a = useAnimatedStyle(() => ({ transform: [{ translateX: Math.sin(k.value * Math.PI * 2) * dx }, { translateY: Math.cos(k.value * Math.PI * 2) * dy }, { scale: 1 + 0.08 * Math.sin(k.value * Math.PI * 4) }] }));
-  return <Animated.View style={[{ position: 'absolute', left: x as `${number}%`, top: y as `${number}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2, borderRadius: size / 2, backgroundColor: color }, a]} />;
+  // Degradé radial: el color se apaga hacia el borde, sin círculos marcados.
+  return (
+    <Animated.View style={[{ position: 'absolute', left: x as `${number}%`, top: y as `${number}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2 }, a]}>
+      <Svg width={size} height={size}>
+        <Defs>
+          <RadialGradient id={id} cx="50%" cy="50%" r="50%">
+            <Stop offset="0" stopColor={color} stopOpacity={1} />
+            <Stop offset="1" stopColor={color} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id})`} />
+      </Svg>
+    </Animated.View>
+  );
 }
 function Mote({ k, x, delay, color }: { k: SharedValue<number>; x: number; delay: number; color: string }) {
   const a = useAnimatedStyle(() => {
@@ -331,13 +344,13 @@ function Ambient({ reduced, dark }: { reduced: boolean; dark: boolean }) {
     return () => cancelAnimation(k);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const mint = dark ? 'rgba(98,240,182,0.12)' : 'rgba(79,195,168,0.12)';
-  const lila = dark ? 'rgba(139,79,209,0.22)' : 'rgba(139,79,209,0.1)';
+  const mint = dark ? 'rgba(98,240,182,0.16)' : 'rgba(79,195,168,0.14)';
+  const lila = dark ? 'rgba(139,79,209,0.32)' : 'rgba(139,79,209,0.14)';
   return (
     <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
-      <Glow k={k} color={lila} size={360} x="20%" y="22%" dx={30} dy={20} />
-      <Glow k={k} color={mint} size={300} x="85%" y="62%" dx={24} dy={34} />
-      <Glow k={k} color={lila} size={220} x="60%" y="95%" dx={18} dy={12} />
+      <Glow id="amb1" k={k} color={lila} size={460} x="18%" y="22%" dx={30} dy={20} />
+      <Glow id="amb2" k={k} color={mint} size={400} x="88%" y="62%" dx={24} dy={34} />
+      <Glow id="amb3" k={k} color={lila} size={320} x="55%" y="100%" dx={18} dy={12} />
       {!reduced && [12, 28, 47, 63, 79, 91].map((x, i) => <Mote key={x} k={k} x={x} delay={i * 0.17} color={i % 2 ? '#62F0B6' : '#C4B8E8'} />)}
     </View>
   );
