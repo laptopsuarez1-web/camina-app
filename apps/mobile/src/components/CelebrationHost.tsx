@@ -98,27 +98,6 @@ function Halo({ size, color }: { size: number; color: string }) {
   );
 }
 
-// Rayos de luz que giran lento detrás del ícono. Cada rayo es una barra que cruza el centro, así quedan siempre centrados.
-function Rays({ size, color }: { size: number; color: string }) {
-  const t = useState(() => new Animated.Value(0))[0];
-  useEffect(() => {
-    const loop = Animated.loop(Animated.timing(t, { toValue: 1, duration: 16000, easing: Easing.linear, useNativeDriver: true }));
-    loop.start();
-    return () => loop.stop();
-  }, [t]);
-  return (
-    <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, transform: [{ rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}>
-      {Array.from({ length: 6 }, (_, i) => (
-        <LinearGradient
-          key={i}
-          colors={['rgba(0,0,0,0)', color, 'rgba(0,0,0,0)']}
-          style={{ position: 'absolute', width: 10, height: size, left: size / 2 - 5, top: 0, opacity: 0.16, borderRadius: 5, transform: [{ rotate: `${i * 30}deg` }] }}
-        />
-      ))}
-    </Animated.View>
-  );
-}
-
 // Monedas que caen desde arriba cuando hay Puntos.
 function CoinRain({ count = 10 }: { count?: number }) {
   const t = useState(() => new Animated.Value(0))[0];
@@ -293,9 +272,6 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
           </Svg>
           {c.points ? <CoinRain count={8} /> : null}
           <View style={{ width: 96, height: 96, alignItems: 'center', justifyContent: 'center' }}>
-            <View pointerEvents="none" style={{ position: 'absolute', width: 240, height: 240, left: -72, top: -72 }}>
-              <Rays size={240} color="#62F0B6" />
-            </View>
             <Halo size={96} color="#62F0B6" />
             <DrawnRing size={96} color="#62F0B6" delay={200} />
             <Animated.View style={{ width: 66, height: 66, borderRadius: 33, backgroundColor: '#62F0B6', alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
@@ -334,9 +310,6 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
         <CoinRain count={12} />
         {/* Trofeo, rayos y destello comparten el mismo centro. */}
         <View style={{ width: 104, height: 104, alignItems: 'center', justifyContent: 'center' }}>
-          <View pointerEvents="none" style={{ position: 'absolute', width: 300, height: 300, left: -98, top: -98 }}>
-            <Rays size={300} color="#FFD97A" />
-          </View>
           <Halo size={104} color={GOLD} />
           <Animated.View
             style={{

@@ -15,7 +15,7 @@ import { buzz } from '@/lib/haptics';
 import { participantsLabel } from '@/lib/promo';
 import {
   type Timeline, Burst, CAMINA_SPARKS, display, Eyebrow, FlyingCoin, GOLD, GOLD_SPARKS, GroupOrbit, LinkButton, MainButton, Avatar, Reveal, ringPeople, Stage, Stamp,
-  useBeat, useCount, usePalette, useTimeline, DrawRing, EASE, SceneRays, type CinePerson,
+  useBeat, useCount, usePalette, useTimeline, DrawRing, EASE, type CinePerson,
 } from '@/components/challenge/ChallengeCinematics';
 
 // Escenas de momentos grandes (no son desafíos): comprar entrada con Puntos, anotarse a un evento, unirse a un grupo o crearlo,
@@ -560,31 +560,39 @@ function tierOf(position: number) {
 
 const RANK_H = [124, 88, 60];
 
+// Colores del podio: oro, plata y bronce.
+const MEDAL: [string, string][] = [['#FFE7A3', '#E2B33C'], ['#EEF1F6', '#AEB6C4'], ['#F3C9A4', '#C9824E']];
+const MEDAL_INK = ['#5a3d00', '#3a4150', '#5a2d0c'];
+
 function MyStep({ tl, delay, rank, me, mine }: { tl: Timeline; delay: number; rank: number; me: CinePerson; mine: boolean }) {
   const p = usePalette();
   const grow = useBeat(tl, delay, { duration: 560 });
   const g = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - Math.min(1, grow.value)) * RANK_H[rank - 1] }] }));
   const winner = rank === 1;
-  const fill = mine ? (winner ? p.podWin : p.podMine) : null;
   return (
     <View style={{ width: 96, alignItems: 'center' }}>
       <View style={{ height: 78, justifyContent: 'flex-end', alignItems: 'center' }}>
         {mine ? (
           <Reveal tl={tl} delay={delay + 380} dy={-40} style={{ alignItems: 'center' }}>
             {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -36 }}><CrownMark size={44} /></Reveal> : null}
-            <Avatar p={me} size={54} ring={winner ? GOLD : colors.aqua} />
+            <Avatar p={me} size={54} ring={MEDAL[rank - 1][1]} />
             <Text style={{ fontSize: 11.5, fontWeight: '800', color: p.text, marginTop: 3 }}>Tú</Text>
           </Reveal>
-        ) : null}
+        ) : (
+          // Los demás puestos: un lugar vacío, para que el podio no se vea cortado.
+          <Reveal tl={tl} delay={delay + 300} style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
+          </Reveal>
+        )}
       </View>
       <View style={{ width: '100%', height: RANK_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14, marginTop: 6 }}>
         <Animated.View style={[{ flex: 1 }, g]}>
-          {fill ? (
-            <LinearGradient colors={fill} style={{ flex: 1, alignItems: 'center', paddingTop: 8 }}>
-              <Text style={{ ...display(24), color: winner ? p.gold : p.accent }}>{rank}</Text>
+          {mine ? (
+            <LinearGradient colors={MEDAL[rank - 1]} style={{ flex: 1, alignItems: 'center', paddingTop: 8 }}>
+              <Text style={{ ...display(24), color: MEDAL_INK[rank - 1] }}>{rank}</Text>
             </LinearGradient>
           ) : (
-            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8 }}>
+            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8, opacity: 0.75 }}>
               <Text style={{ ...display(24), color: p.muted }}>{rank}</Text>
             </View>
           )}
@@ -635,13 +643,11 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
 
       {podium ? (
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 8, marginTop: 20 }}>
-          <SceneRays tl={tl} delay={1900} size={340} color={GOLD} />
           {steps.map((r, i) => <MyStep key={r} tl={tl} delay={[900, 500, 300][i === 0 ? 1 : i === 1 ? 0 : 2] + (c.position === 1 ? 600 : 0)} rank={r} me={c.me} mine={r === c.position} />)}
           {c.position === 1 ? <Burst tl={tl} delay={2100} palette={GOLD_SPARKS} count={22} radius={120} style={{ left: '50%', top: 10 }} /> : <Burst tl={tl} delay={2100} palette={[colors.aqua, GOLD, '#B7A6F0']} count={14} radius={90} style={{ left: '50%', top: 20 }} />}
         </View>
       ) : (
         <View style={{ marginTop: 22 }}>
-          <SceneRays tl={tl} delay={1300} size={320} color={tone} />
           <DrawRing tl={tl} delay={400} size={196} stroke={10} track={p.track} color={tone} to={Math.max(0.04, 1 - (c.position - 1) / limit)} duration={1100}>
             <Reveal tl={tl} delay={500} pop from={0.5}><Avatar p={c.me} size={128} ring={p.dark ? '#1c1030' : '#fff'} /></Reveal>
           </DrawRing>

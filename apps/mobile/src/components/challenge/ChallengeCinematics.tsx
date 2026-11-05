@@ -351,27 +351,6 @@ export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 22 }: { t
   );
 }
 
-// Rayos de luz que giran lento detrás del protagonista de la escena (siempre centrados en su caja).
-export function SceneRays({ tl, delay, size, color }: { tl: Timeline; delay: number; size: number; color: string }) {
-  const k = useSharedValue(0);
-  const fade = useBeat(tl, delay, { duration: 600 });
-  useEffect(() => {
-    if (tl.reduced) return;
-    k.value = withRepeat(withTiming(1, { duration: 16000, easing: Easing.linear }), -1, false);
-    return () => cancelAnimation(k);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const a = useAnimatedStyle(() => ({ opacity: fade.value, transform: [{ rotate: `${k.value * 360}deg` }] }));
-  return (
-    <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, left: '50%', top: '50%', marginLeft: -size / 2, marginTop: -size / 2 }, a]}>
-      {Array.from({ length: 6 }, (_, i) => (
-        <LinearGradient key={i} colors={['rgba(0,0,0,0)', color, 'rgba(0,0,0,0)']}
-          style={{ position: 'absolute', width: 10, height: size, left: size / 2 - 5, top: 0, opacity: 0.16, borderRadius: 5, transform: [{ rotate: `${i * 30}deg` }] }} />
-      ))}
-    </Animated.View>
-  );
-}
-
 // Luces suaves que flotan detrás de la escena (menta y violeta) y unas motitas que suben. Quieto con reducir movimiento.
 function Glow({ k, color, size, x, y, dx, dy, id }: { k: SharedValue<number>; color: string; size: number; x: string; y: string; dx: number; dy: number; id: string }) {
   const a = useAnimatedStyle(() => ({ transform: [{ translateX: Math.sin(k.value * Math.PI * 2) * dx }, { translateY: Math.cos(k.value * Math.PI * 2) * dy }, { scale: 1 + 0.08 * Math.sin(k.value * Math.PI * 4) }] }));
