@@ -34,9 +34,12 @@ import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
 import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
+import { AguinaldoCard } from '@/components/season/AguinaldoCard';
+import { letItSnow } from '@/components/season/Snowfall';
+import { pointsForSteps, useChristmas, useDoubleToday } from '@/hooks/useSeason';
 import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -163,7 +166,23 @@ export default function HomeScreen() {
     syncStreakReminders({ streak, stepsToday: steps, goal, racha: prefRacha, aliento: prefAliento });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- los pasos reprograman de a 250 para que el "te faltan" no quede viejo.
   }, [streak, goal, goalMet, Math.floor(steps / 250), prefRacha, prefAliento]);
-  const pointsToday = Math.min(Math.floor(steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+  // En un Día doble (el Aguinaldo o el que se ganó en la Ruta) cada 500 pasos dan 1 Punto y el tope es 40, igual que en el servidor.
+  const doubleToday = useDoubleToday();
+  const { points: pointsToday, per: pointsPer, cap: pointsCap } = pointsForSteps(steps, doubleToday);
+  const christmas = useChristmas();
+  // Navidad: la nieve cae unos segundos la primera vez que abres la app cada día (no todo el rato).
+  useEffect(() => {
+    if (!christmas || !userId) return;
+    const key = `camina_snow_day_${userId}`;
+    const day = localDayKey();
+    AsyncStorage.getItem(key)
+      .then((v) => {
+        if (v === day) return;
+        AsyncStorage.setItem(key, day).catch(() => {});
+        setTimeout(() => letItSnow(8000), 600);
+      })
+      .catch(() => {});
+  }, [christmas, userId]);
   // Celebraciones suaves (una sola vez por Punto nuevo y por meta del día):
   // - cada Punto nuevo: el chip "+N Puntos" late;
   // - al llegar a la meta del día: dos ondas verdes salen del aro y aparece "Meta cumplida".
@@ -239,6 +258,7 @@ export default function HomeScreen() {
       Animated.timing(chipPop, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     }
     if (newGoal) {
+      if (christmas) letItSnow(6500);
       [wave1, wave2].forEach((w) => w.setValue(0));
       celebrating.current = true;
       buzz.success();
@@ -382,7 +402,7 @@ export default function HomeScreen() {
             strokeWidth={26}
             radius={108}
             progress={pct}
-            innerProgress={pointsToday >= DAILY_POINTS_CAP ? 1 : (steps % POINTS_PER_STEP_UNIT) / POINTS_PER_STEP_UNIT}
+            innerProgress={pointsToday >= pointsCap ? 1 : (steps % pointsPer) / pointsPer}
             innerColor={POINTS_COLOR}
           >
             <View className="items-center">
@@ -414,8 +434,13 @@ export default function HomeScreen() {
               >
                 <Coin size={14} />
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '700' }}>+{pointsToday} {plural(pointsToday, 'Punto', 'Puntos')}</Text>
+                {doubleToday ? (
+                  <View accessibilityLabel="Hoy es Día doble" style={{ marginLeft: 2, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, backgroundColor: '#FFD166' }}>
+                    <Text style={{ color: '#3B1450', fontSize: 11, fontWeight: '900' }}>x2</Text>
+                  </View>
+                ) : null}
               </Animated.View>
-              {pointsToday >= DAILY_POINTS_CAP && (
+              {pointsToday >= pointsCap && (
                 <Text style={{ color: POINTS_COLOR, fontSize: 12, fontWeight: '600', marginTop: 5 }}>Tope de hoy</Text>
               )}
             </View>
@@ -578,6 +603,7 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        <AguinaldoCard />
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
           <Press
             accessibilityRole="button"

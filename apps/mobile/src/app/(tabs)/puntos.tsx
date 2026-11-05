@@ -36,7 +36,7 @@ function useMovimientos() {
       since.setDate(since.getDate() - 30);
       const sinceISO = localDay(since);
 
-      const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }] = await Promise.all([
+      const [{ data: steps, error: stepsError }, { data: ledger, error: ledgerError }, { data: earned }] = await Promise.all([
         supabase
           .from('steps_daily')
           .select('day, steps')
@@ -50,18 +50,34 @@ function useMovimientos() {
           .neq('reason', 'steps')
           .order('earned_at', { ascending: false })
           .limit(40),
+        // Lo que de verdad dio el servidor por los pasos de cada día (en un Día doble es el doble de la cuenta normal).
+        supabase
+          .from('points_ledger')
+          .select('ref_day, amount')
+          .eq('user_id', userId!)
+          .eq('reason', 'steps')
+          .gte('ref_day', sinceISO),
       ]);
       if (stepsError) throw stepsError;
       if (ledgerError) throw ledgerError;
 
-      const stepRows = (steps ?? []).map((s) => ({
-        id: `steps-${s.day}`,
-        day: s.day,
-        reason: 'steps',
-        title: 'Actividad diaria',
-        subtitle: `Hiciste ${s.steps.toLocaleString('es-BO')} pasos`,
-        amount: Math.min(Math.floor(s.steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP),
-      }));
+      const earnedByDay = new Map<string, number>();
+      for (const e of (earned ?? []) as { ref_day: string | null; amount: number }[]) {
+        if (e.ref_day) earnedByDay.set(e.ref_day, (earnedByDay.get(e.ref_day) ?? 0) + e.amount);
+      }
+      const stepRows = (steps ?? []).map((s) => {
+        const estimate = Math.min(Math.floor(s.steps / POINTS_PER_STEP_UNIT), DAILY_POINTS_CAP);
+        const real = earnedByDay.get(s.day);
+        const amount = real ?? estimate;
+        return {
+          id: `steps-${s.day}`,
+          day: s.day,
+          reason: 'steps',
+          title: amount > estimate ? 'Actividad diaria · Día doble' : 'Actividad diaria',
+          subtitle: `Hiciste ${s.steps.toLocaleString('es-BO')} pasos`,
+          amount,
+        };
+      });
 
       // Categoría corta + detalle ("Ana se sumó", "Canje en Bloom", "Pusiste en «Gym bro»"...).
       const kindOf = (reason: string, note: string | null, amount: number) => {

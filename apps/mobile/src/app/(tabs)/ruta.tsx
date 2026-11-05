@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
+import { useChristmas } from '@/hooks/useSeason';
+import { letItSnow } from '@/components/season/Snowfall';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
@@ -123,6 +125,13 @@ export default function RutaScreen() {
     const t = setTimeout(() => setTracks(false), 2500);
     return () => clearTimeout(t);
   }, [shown, stops.length]);
+
+  // Navidad: al abrir el mapa de la ruta cae nieve unos segundos (mientras bajan los pines), no todo el rato.
+  const christmas = useChristmas();
+  const hasRoute = !!state?.joined && stops.length > 0;
+  useEffect(() => {
+    if (christmas && hasRoute) letItSnow(params.nueva ? 9000 : 6000);
+  }, [christmas, hasRoute, params.nueva]);
 
   function fitAll(animated = true) {
     const coords = stops.filter((s) => s.lat != null).map((s) => ({ latitude: s.lat!, longitude: s.lng! }));

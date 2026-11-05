@@ -8,6 +8,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
+import { CaminaLogo } from '@/components/season/CaminaLogo';
 import { Instagram, Clock, CheckCircle2, X, Star, Camera } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
@@ -195,7 +196,7 @@ export function StoryComposer({
           {/* Marca arriba: el logo de Camina con su nombre. */}
           <View style={{ position: 'absolute', top: 16, left: 0, right: 0, alignItems: 'center' }}>
             <View className="flex-row items-center" style={{ gap: 7, backgroundColor: 'rgba(18,10,30,0.55)', paddingVertical: 6, paddingLeft: 6, paddingRight: 12, borderRadius: 999 }}>
-              <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 22, height: 22 }} />
+              <CaminaLogo size={24} />
               <Text style={{ color: '#62F0B6', fontSize: 13, letterSpacing: 1.2, ...wordmark() }}>CAMINA</Text>
             </View>
           </View>
@@ -204,7 +205,7 @@ export function StoryComposer({
             <View style={{ transform: [{ rotate: '-2deg' }], borderRadius: 22, borderWidth: 1.5, borderColor: '#62F0B6', overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
               <LinearGradient colors={['#3B2577', '#200A52']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingLeft: 10, paddingRight: 16, gap: 10 }}>
                 <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(98,240,182,0.14)', alignItems: 'center', justifyContent: 'center' }}>
-                  <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 34, height: 34 }} />
+                  <CaminaLogo size={38} />
                 </View>
                 <View style={{ maxWidth: 210 }}>
                   <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>{benefitName}</Text>

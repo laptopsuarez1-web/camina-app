@@ -12,6 +12,7 @@ import { ChevronLeft } from '@/components/icons';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
 import { heavy } from '@/components/ruta/heavy';
+import { CaminaLogo } from '@/components/season/CaminaLogo';
 import { rutaMonthName, rutaMonthShort } from '@/hooks/useRuta';
 import { uploadRoutePhoto, useMyRoute } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -22,7 +23,6 @@ const MINT = '#62F0B6';
 const MUTED = '#C4B8E8';
 const BG = '#16111f';
 const STORY = { width: 360, height: 640 };
-const LOGO = require('@/../assets/logo-mint.png');
 
 function fecha(iso: string | null) {
   if (!iso) return 'Pendiente';
@@ -134,7 +134,7 @@ export default function RutaMesScreen() {
           <LinearGradient colors={['#3B2577', '#200A52']} style={{ position: 'absolute', inset: 0 }} />
           <View style={{ alignItems: 'center', paddingTop: 44 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Image source={LOGO} style={{ width: 26, height: 26 }} />
+              <CaminaLogo size={30} />
               <Text style={{ color: MINT, ...heavy(), fontSize: 16, letterSpacing: 1 }}>CAMINA</Text>
             </View>
             <View style={{ marginTop: 26 }}><RutaRing size={140} done={3} month={rutaMonthShort(route.month)} /></View>

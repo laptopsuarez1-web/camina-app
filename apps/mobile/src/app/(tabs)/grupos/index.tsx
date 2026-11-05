@@ -19,6 +19,8 @@ import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
+import { TreeChip } from '@/components/season/GroupTree';
+import { useChristmas, useMyGroupTrees } from '@/hooks/useSeason';
 import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -67,6 +69,8 @@ export default function GruposScreen() {
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const { data: week } = useMyGroupsWeek(my, userId);
+  const christmas = useChristmas();
+  const { data: trees } = useMyGroupTrees(christmas);
 
   return (
     <KeyboardSafe className="flex-1">
@@ -228,9 +232,12 @@ export default function GruposScreen() {
                           <Text className="text-auth-muted text-xs self-center ml-1.5">+{count - w.avatars.length}</Text>
                         )}
                       </View>
-                      {target > 0 && progress >= 1 && (
-                        <Text className="text-xs font-bold" style={{ color: colors.mint }}>¡Meta cumplida!</Text>
-                      )}
+                      <View className="flex-row items-center" style={{ gap: 8 }}>
+                        {target > 0 && progress >= 1 && (
+                          <Text className="text-xs font-bold" style={{ color: colors.mint }}>¡Meta cumplida!</Text>
+                        )}
+                        {christmas && trees?.[g.id] ? <TreeChip tree={trees[g.id]} /> : null}
+                      </View>
                     </View>
                   )}
                 </Press>

@@ -10,6 +10,7 @@ import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
+import { SnowHost } from '@/components/season/Snowfall';
 
 // Íconos de la barra: el mismo dibujo en todos los teléfonos, y cada uno hace un gesto corto al tocarlo (ver TabGlyph).
 // Son componentes fijos (no se crean en cada render) para que la animación no se reinicie.
@@ -95,6 +96,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="amigos/index" options={{ href: null }} />
       <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
+    <SnowHost />
     <CelebrationHost />
     </View>
   );

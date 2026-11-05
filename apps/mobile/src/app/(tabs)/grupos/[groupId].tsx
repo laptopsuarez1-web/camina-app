@@ -33,6 +33,9 @@ import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupPhoto } from '@/lib/avatar';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
+import { AvatarHat } from '@/components/season/SantaHat';
+import { GroupTreeCard } from '@/components/season/GroupTree';
+import { useChristmas } from '@/hooks/useSeason';
 import * as ImagePicker from 'expo-image-picker';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
@@ -51,6 +54,7 @@ export default function GroupDetailScreen() {
   const { groupId, nuevo, bienvenida } = useLocalSearchParams<{ groupId: string; nuevo?: string; bienvenida?: string }>();
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
+  const christmas = useChristmas();
   const { data, isLoading, refetch } = useGroupDetail(groupId);
   const { data: notes } = useGroupNotes(groupId);
   const postNote = usePostGroupNote(groupId);
@@ -416,7 +420,9 @@ export default function GroupDetailScreen() {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
                 <View key={m.id} className="items-center" style={{ width: 92 }}>
-                  {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={44} /></View>}
+                  {rank === 0 && !christmas && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={44} /></View>}
+                  {rank === 0 && christmas && <View style={{ height: 30 }} />}
+                  <View style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46 }}>
                   <AvatarImage
                     uri={m.photoUrl}
                     style={{ width: rank === 0 ? 54 : 46, height: rank === 0 ? 54 : 46, borderRadius: 27, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' }}
@@ -426,6 +432,8 @@ export default function GroupDetailScreen() {
                       </View>
                     }
                   />
+                  {christmas ? <AvatarHat size={rank === 0 ? 54 : 46} tone={rank === 0 ? 'gold' : 'red'} /> : null}
+                  </View>
                   <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Tú' : m.name}</Text>
                   <Text className="text-[12px]" style={{ color: colors.authMuted }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
                   <View
@@ -468,6 +476,8 @@ export default function GroupDetailScreen() {
           <Share2 size={17} color="#fff" weight="bold" />
           <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
         </Press>
+
+        {christmas ? <GroupTreeCard groupId={data.group.id} members={data.members} /> : null}
 
         <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
           <View className="flex-row items-center justify-between mb-2">

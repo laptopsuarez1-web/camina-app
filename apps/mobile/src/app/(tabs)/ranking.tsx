@@ -10,6 +10,8 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
+import { AvatarHat } from '@/components/season/SantaHat';
+import { useChristmas } from '@/hooks/useSeason';
 import { ChevronLeft, Sliders } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { useGlobalRanking, useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
@@ -25,6 +27,8 @@ type Row = { id: string; name: string; photoUrl: string | null; steps: number; s
 
 function RankingRow({ r, last }: { r: Row; last: boolean }) {
   const { line, accentText, text, muted } = useThemeColors();
+  // Navidad: los 3 primeros llevan gorro (el 1.º, dorado).
+  const hat = useChristmas() && r.position <= 3;
   return (
     <Press
       accessibilityRole="button"
@@ -35,7 +39,10 @@ function RankingRow({ r, last }: { r: Row; last: boolean }) {
       style={{ gap: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: line }}
     >
       <Text className="w-6 text-center text-[13px] font-semibold" style={{ color: muted }}>{r.position}</Text>
-      <PersonAvatar name={r.name} photoUrl={r.photoUrl} size={40} />
+      <View style={{ width: 40, height: 40 }}>
+        <PersonAvatar name={r.name} photoUrl={r.photoUrl} size={40} />
+        {hat ? <AvatarHat size={40} tone={r.position === 1 ? 'gold' : 'red'} /> : null}
+      </View>
       <View className="flex-1">
         <Text className="text-[14.5px] font-semibold" style={{ color: text }} numberOfLines={1}>{r.me ? `${r.name} (tú)` : r.name}</Text>
         {r.sub ? <Text className="text-[12.5px]" style={{ color: muted }} numberOfLines={1}>{r.sub}</Text> : null}
