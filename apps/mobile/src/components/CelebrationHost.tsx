@@ -16,27 +16,118 @@ const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
 const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];
 const coin = require('@/../assets/camina-coin.png');
 
-// Chispas chicas que salen de un punto y se apagan (nada de confeti cayendo por toda la pantalla).
+// Destello: brillo, dos ondas y partículas de varias formas (puntos, rayitas, confeti) que salen, giran y caen un poco.
 function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | string; y: number; radius: number; palette: string[]; delay?: number; count?: number }) {
-  const t = useRef(new Animated.Value(0)).current;
+  const t = useState(() => new Animated.Value(0))[0];
   useEffect(() => {
-    Animated.timing(t, { toValue: 1, duration: 1100, delay, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(t, { toValue: 1, duration: 1300, delay, easing: Easing.linear, useNativeDriver: true }).start();
   }, [t, delay]);
+  const n = Math.round(count * 1.75);
+  const ring = (r: number, color: string, lag: number) => (
+    <Animated.View
+      style={{
+        position: 'absolute', width: r * 2, height: r * 2, left: -r, top: -r, borderRadius: r, borderWidth: 2.5, borderColor: color,
+        opacity: t.interpolate({ inputRange: [0, lag, lag + 0.05, 1], outputRange: [0, 0, 0.8, 0] }),
+        transform: [{ scale: t.interpolate({ inputRange: [0, lag, 1], outputRange: [0.15, 0.15, 1.15] }) }],
+      }}
+    />
+  );
   return (
     <View pointerEvents="none" style={{ position: 'absolute', left: x as number, top: y, width: 0, height: 0 }}>
-      {Array.from({ length: count }, (_, i) => {
-        const a = (i / count) * Math.PI * 2 + 0.3;
-        const r = radius * (0.75 + ((i * 37) % 10) / 25);
+      <Animated.View
+        style={{
+          position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0],
+          opacity: t.interpolate({ inputRange: [0, 0.08, 0.55, 1], outputRange: [0, 0.55, 0, 0] }),
+          transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2] }) }],
+        }}
+      />
+      {ring(radius * 0.9, palette[0], 0)}
+      {ring(radius * 1.2, palette[1 % palette.length], 0.12)}
+      {Array.from({ length: n }, (_, i) => {
+        const r0 = ((i * 7919) % 100) / 100;
+        const a = (i / n) * Math.PI * 2 + r0 * 0.5;
+        const r = radius * (0.7 + r0 * 0.75);
+        const shape = i % 3;
+        const size = 4 + (i % 4) * 1.6;
+        const dims = shape === 1 ? { width: size * 2.6, height: Math.max(2, size * 0.42), borderRadius: 2 } : shape === 2 ? { width: size, height: size * 0.62, borderRadius: 1.5 } : { width: size, height: size, borderRadius: size / 2 };
+        const fall = 30 + r0 * 50;
         return (
           <Animated.View
             key={i}
             style={{
-              position: 'absolute', width: 7, height: 7, borderRadius: 4, backgroundColor: palette[i % palette.length],
-              opacity: t.interpolate({ inputRange: [0, 0.1, 0.75, 1], outputRange: [0, 1, 1, 0] }),
+              position: 'absolute', left: -dims.width / 2, top: -dims.height / 2, ...dims, backgroundColor: palette[i % palette.length],
+              opacity: t.interpolate({ inputRange: [0, 0.08, 0.7, 1], outputRange: [0, 1, 1, 0] }),
               transform: [
-                { translateX: t.interpolate({ inputRange: [0, 1], outputRange: [0, Math.cos(a) * r] }) },
-                { translateY: t.interpolate({ inputRange: [0, 1], outputRange: [0, Math.sin(a) * r] }) },
-                { scale: t.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+                { translateX: t.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, Math.cos(a) * r * 0.78, Math.cos(a) * r] }) },
+                { translateY: t.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, Math.sin(a) * r * 0.78 + fall * 0.25, Math.sin(a) * r + fall] }) },
+                { rotate: t.interpolate({ inputRange: [0, 1], outputRange: [`${(a * 180) / Math.PI}deg`, `${(a * 180) / Math.PI + (i % 2 ? 1 : -1) * (180 + r0 * 360)}deg`] }) },
+              ],
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+// Halo que late detrás del ícono principal.
+function Halo({ size, color }: { size: number; color: string }) {
+  const t = useState(() => new Animated.Value(0))[0];
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(t, { toValue: 1, duration: 1600, easing: Easing.out(Easing.cubic), useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [t]);
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: color,
+        opacity: t.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0] }),
+        transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [1, 1.7] }) }],
+      }}
+    />
+  );
+}
+
+// Rayos de luz que giran lento detrás del trofeo.
+function Rays({ size, color }: { size: number; color: string }) {
+  const t = useState(() => new Animated.Value(0))[0];
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(t, { toValue: 1, duration: 14000, easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [t]);
+  return (
+    <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}>
+      {Array.from({ length: 12 }, (_, i) => (
+        <View key={i} style={{ position: 'absolute', width: 16, height: size / 2, top: 0, left: size / 2 - 8, opacity: 0.18, backgroundColor: color, borderRadius: 8, transform: [{ translateY: size / 4 }, { rotate: `${i * 30}deg` }, { translateY: -size / 4 }] }} />
+      ))}
+    </Animated.View>
+  );
+}
+
+// Monedas que caen desde arriba cuando hay Puntos.
+function CoinRain({ count = 10 }: { count?: number }) {
+  const t = useState(() => new Animated.Value(0))[0];
+  useEffect(() => {
+    Animated.timing(t, { toValue: 1, duration: 1800, delay: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }).start();
+  }, [t]);
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 0 }}>
+      {Array.from({ length: count }, (_, i) => {
+        const x = ((i * 37) % 100) / 100;
+        const d = ((i * 53) % 40) / 100;
+        return (
+          <Animated.Image
+            key={i}
+            source={coin}
+            style={{
+              position: 'absolute', left: `${6 + x * 86}%`, top: -40, width: 22 + (i % 3) * 4, height: 22 + (i % 3) * 4, borderRadius: 14,
+              opacity: t.interpolate({ inputRange: [0, d, d + 0.05, 0.92, 1], outputRange: [0, 0, 1, 1, 0] }),
+              transform: [
+                { translateY: t.interpolate({ inputRange: [0, d, 1], outputRange: [0, 0, 640 + (i % 4) * 60] }) },
+                { rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${(i % 2 ? 1 : -1) * 280}deg`] }) },
               ],
             }}
           />
@@ -66,7 +157,7 @@ const messageOf = (c: { title: string; body?: string; points?: number }) =>
   [c.title, c.body, c.points ? `${c.points} Puntos` : null].filter(Boolean).join('. ');
 
 function PointsPill({ points, big }: { points: number; big?: boolean }) {
-  const t = useRef(new Animated.Value(0)).current;
+  const t = useState(() => new Animated.Value(0))[0];
   const [shown, setShown] = useState(0);
   useEffect(() => {
     t.addListener(({ value }) => setShown(Math.round(points * value)));
@@ -97,7 +188,7 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
   const insets = useSafeAreaInsets();
   // Abajo se usa cuando el aviso taparía el título de la pantalla (p. ej. en un grupo).
   const sign = c.at === 'bottom' ? 1 : -1;
-  const y = useRef(new Animated.Value(sign * 120)).current;
+  const y = useState(() => new Animated.Value(sign * 120))[0];
   useEffect(() => {
     buzz.light();
     // En iOS se anuncia a mano; en Android y web lo anuncia la live region del aviso.
@@ -132,9 +223,9 @@ function Toast({ c, onDone }: { c: Extract<Celebration, { kind: 'toast' }>; onDo
 }
 
 function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDone: () => void }) {
-  const y = useRef(new Animated.Value(320)).current;
-  const fade = useRef(new Animated.Value(0)).current;
-  const check = useRef(new Animated.Value(0)).current;
+  const y = useState(() => new Animated.Value(320))[0];
+  const fade = useState(() => new Animated.Value(0))[0];
+  const check = useState(() => new Animated.Value(0))[0];
   const titleRef = useAnnounce(messageOf(c), true);
   useEffect(() => {
     buzz.success();
@@ -161,9 +252,12 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
           paddingTop: 24, paddingBottom: 30, paddingHorizontal: 24,
         }}
       >
-        <Animated.View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: colors.light.aquaLight, alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
-          <Check size={30} color={colors.aqua} />
-        </Animated.View>
+        <View style={{ width: 58, height: 58, alignItems: 'center', justifyContent: 'center' }}>
+          <Halo size={58} color={colors.aqua} />
+          <Animated.View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: colors.light.aquaLight, alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
+            <Check size={30} color={colors.aqua} />
+          </Animated.View>
+        </View>
         {c.sparks !== false && <Sparks x="50%" y={52} radius={78} palette={SPARKS} delay={250} />}
         <Text ref={titleRef} accessibilityRole="header" style={{ fontWeight: '800', fontSize: 19, color: colors.light.text, marginTop: 12, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ fontSize: 13.5, color: colors.light.muted, marginTop: 4, textAlign: 'center', lineHeight: 19 }}>{c.body}</Text> : null}
@@ -177,8 +271,8 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
 }
 
 function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: () => void }) {
-  const fade = useRef(new Animated.Value(0)).current;
-  const pop = useRef(new Animated.Value(0)).current;
+  const fade = useState(() => new Animated.Value(0))[0];
+  const pop = useState(() => new Animated.Value(0))[0];
   const titleRef = useAnnounce(messageOf(c), true);
   useEffect(() => {
     buzz.success();
@@ -190,6 +284,10 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
   return (
     <Animated.View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, opacity: fade }}>
       <LinearGradient colors={['#2A1F4D', '#15112A']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
+        <CoinRain count={12} />
+        <View style={{ position: 'absolute', top: '50%', marginTop: -230, alignItems: 'center', width: '100%' }} pointerEvents="none">
+          <Rays size={300} color="#FFD97A" />
+        </View>
         <Animated.View
           style={{
             width: 104, height: 104, borderRadius: 52, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD,

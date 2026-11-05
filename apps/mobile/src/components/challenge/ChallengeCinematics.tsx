@@ -127,32 +127,71 @@ export function Stamp({ tl, delay, rotate = 0, style, children }: { tl: Timeline
   return <Animated.View style={[style, a]}>{children}</Animated.View>;
 }
 
-function SparkDot({ k, angle, radius, color }: { k: SharedValue<number>; angle: number; radius: number; color: string }) {
+// Una partícula del destello: puede ser punto, rayita o confeti cuadrado. Sale disparada, cae un poco por gravedad,
+// gira y se apaga. Todo en el hilo de la UI (Reanimated).
+function SparkDot({ k, angle, radius, color, shape, size, spin, fall }: {
+  k: SharedValue<number>; angle: number; radius: number; color: string; shape: 0 | 1 | 2; size: number; spin: number; fall: number;
+}) {
   const a = useAnimatedStyle(() => {
     const t = k.value;
+    const out = 1 - Math.pow(1 - t, 2.2);
     return {
-      opacity: t <= 0 || t >= 1 ? 0 : t < 0.1 ? t * 10 : t > 0.75 ? (1 - t) * 4 : 1,
-      transform: [{ translateX: Math.cos(angle) * radius * t }, { translateY: Math.sin(angle) * radius * t }, { scale: 0.4 + 0.6 * t }],
+      opacity: t <= 0 || t >= 1 ? 0 : t < 0.08 ? t * 12 : t > 0.7 ? (1 - t) / 0.3 : 1,
+      transform: [
+        { translateX: Math.cos(angle) * radius * out },
+        { translateY: Math.sin(angle) * radius * out + fall * t * t },
+        { rotate: `${spin * t + (angle * 180) / Math.PI}deg` },
+        { scale: shape === 1 ? 1 : 0.5 + 0.7 * (1 - Math.abs(0.4 - t)) },
+      ],
     };
   });
-  return <Animated.View style={[{ position: 'absolute', width: 7, height: 7, borderRadius: 4, backgroundColor: color, left: -3.5, top: -3.5 }, a]} />;
+  const dims = shape === 1 ? { width: size * 2.6, height: Math.max(2, size * 0.42), borderRadius: 2 } : shape === 2 ? { width: size, height: size * 0.62, borderRadius: 1.5 } : { width: size, height: size, borderRadius: size / 2 };
+  return <Animated.View style={[{ position: 'absolute', backgroundColor: color, left: -dims.width / 2, top: -dims.height / 2 }, dims, a]} />;
 }
 
-// Chispas chicas que salen de un punto y se apagan. Con reducir movimiento no se dibujan.
+// Onda que se abre desde el centro del destello.
+function Shock({ k, radius, color, lag }: { k: SharedValue<number>; radius: number; color: string; lag: number }) {
+  const a = useAnimatedStyle(() => {
+    const t = Math.max(0, Math.min(1, (k.value - lag) / (1 - lag)));
+    return { opacity: t <= 0 || t >= 1 ? 0 : (1 - t) * 0.8, transform: [{ scale: 0.15 + t * 1.0 }] };
+  });
+  return <Animated.View style={[{ position: 'absolute', width: radius * 2, height: radius * 2, left: -radius, top: -radius, borderRadius: radius, borderWidth: 2.5, borderColor: color }, a]} />;
+}
+
+// Destello: brillo central, dos ondas y partículas de varias formas que salen, giran y caen. Con reducir movimiento no se dibuja.
 export function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { tl: Timeline; delay: number; palette: string[]; count?: number; radius?: number; style?: ViewStyle }) {
   const k = useSharedValue(0);
   useEffect(() => {
     if (tl.reduced) return;
-    k.value = withDelay(delay, withTiming(1, { duration: 1100, easing: EASE }));
+    k.value = withDelay(delay, withTiming(1, { duration: 1300, easing: Easing.linear }));
     tl.onSkip(() => { cancelAnimation(k); k.value = 1; });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const glow = useAnimatedStyle(() => {
+    const t = k.value;
+    return { opacity: t <= 0 || t >= 0.6 ? 0 : t < 0.1 ? t * 9 : (0.6 - t) * 1.8, transform: [{ scale: 0.4 + t * 1.6 }] };
+  });
   if (tl.reduced) return null;
+  const n = Math.round(count * 1.75);
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: 0, height: 0 }, style]}>
-      {Array.from({ length: count }, (_, i) => (
-        <SparkDot key={i} k={k} angle={(i / count) * Math.PI * 2 + 0.3} radius={radius * (0.75 + ((i * 37) % 10) / 25)} color={palette[i % palette.length]} />
-      ))}
+      <Animated.View style={[{ position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0], opacity: 0 }, glow]} />
+      <Shock k={k} radius={radius * 0.9} color={palette[0]} lag={0} />
+      <Shock k={k} radius={radius * 1.2} color={palette[1 % palette.length]} lag={0.12} />
+      {Array.from({ length: n }, (_, i) => {
+        const r = ((i * 7919) % 100) / 100;
+        return (
+          <SparkDot key={i} k={k}
+            angle={(i / n) * Math.PI * 2 + r * 0.5}
+            radius={radius * (0.7 + r * 0.75)}
+            color={palette[i % palette.length]}
+            shape={(i % 3) as 0 | 1 | 2}
+            size={4 + (i % 4) * 1.6}
+            spin={(i % 2 ? 1 : -1) * (180 + r * 360)}
+            fall={30 + r * 50}
+          />
+        );
+      })}
     </View>
   );
 }
@@ -258,6 +297,7 @@ export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeli
   return (
     <Animated.View accessibilityViewIsModal style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, a]}>
       <LinearGradient colors={p.bg} locations={[0, 0.55, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={{ flex: 1 }}>
+        <Ambient reduced={tl.reduced} dark={p.dark} />
         <Press
           accessible={false}
           feedback="none"
@@ -268,6 +308,38 @@ export function Stage({ tl, children, announce, align = 'center' }: { tl: Timeli
         </Press>
       </LinearGradient>
     </Animated.View>
+  );
+}
+
+// Luces suaves que flotan detrás de la escena (menta y violeta) y unas motitas que suben. Quieto con reducir movimiento.
+function Glow({ k, color, size, x, y, dx, dy }: { k: SharedValue<number>; color: string; size: number; x: string; y: string; dx: number; dy: number }) {
+  const a = useAnimatedStyle(() => ({ transform: [{ translateX: Math.sin(k.value * Math.PI * 2) * dx }, { translateY: Math.cos(k.value * Math.PI * 2) * dy }, { scale: 1 + 0.08 * Math.sin(k.value * Math.PI * 4) }] }));
+  return <Animated.View style={[{ position: 'absolute', left: x as `${number}%`, top: y as `${number}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2, borderRadius: size / 2, backgroundColor: color }, a]} />;
+}
+function Mote({ k, x, delay, color }: { k: SharedValue<number>; x: number; delay: number; color: string }) {
+  const a = useAnimatedStyle(() => {
+    const t = (k.value * 2 + delay) % 1;
+    return { opacity: t < 0.15 ? t / 0.15 : t > 0.8 ? (1 - t) / 0.2 : 1, transform: [{ translateY: -t * 260 }, { translateX: Math.sin(t * Math.PI * 2) * 8 }] };
+  });
+  return <Animated.View style={[{ position: 'absolute', left: `${x}%`, bottom: '18%', width: 4, height: 4, borderRadius: 2, backgroundColor: color, opacity: 0.7 }, a]} />;
+}
+function Ambient({ reduced, dark }: { reduced: boolean; dark: boolean }) {
+  const k = useSharedValue(0);
+  useEffect(() => {
+    if (reduced) return;
+    k.value = withRepeat(withTiming(1, { duration: 9000, easing: Easing.linear }), -1, false);
+    return () => cancelAnimation(k);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const mint = dark ? 'rgba(98,240,182,0.12)' : 'rgba(79,195,168,0.12)';
+  const lila = dark ? 'rgba(139,79,209,0.22)' : 'rgba(139,79,209,0.1)';
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      <Glow k={k} color={lila} size={360} x="20%" y="22%" dx={30} dy={20} />
+      <Glow k={k} color={mint} size={300} x="85%" y="62%" dx={24} dy={34} />
+      <Glow k={k} color={lila} size={220} x="60%" y="95%" dx={18} dy={12} />
+      {!reduced && [12, 28, 47, 63, 79, 91].map((x, i) => <Mote key={x} k={k} x={x} delay={i * 0.17} color={i % 2 ? '#62F0B6' : '#C4B8E8'} />)}
+    </View>
   );
 }
 
