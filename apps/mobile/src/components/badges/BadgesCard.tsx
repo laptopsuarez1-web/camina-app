@@ -8,13 +8,13 @@ import { LocalBadge } from './LocalBadge';
 import { rutaMonthShort } from '@/hooks/useRuta';
 import type { UserBadges } from '@/hooks/useBadges';
 
-// "Mis insignias" en el Perfil: arriba las rutas del mes completadas y abajo los locales. Todo centrado, sin huecos.
+// "Mis insignias" en el Perfil: una sola fila con las rutas del mes completadas y los locales. "Ver todas" abre el resto.
 // `own` = es mi perfil (se puede tocar para ver todas; en el de un amigo es solo para mirar).
 export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges | undefined; own?: boolean; userId?: string }) {
   // Sin datos (cargando o el servidor todavía sin 0083): no se muestra nada.
   if (!badges) return null;
-  const routes = (badges?.routes ?? []).slice(0, 4);
-  const locals = (badges?.locals ?? []).slice(0, 4);
+  const routes = (badges?.routes ?? []).slice(0, 2);
+  const locals = (badges?.locals ?? []).slice(0, 5 - routes.length);
   const empty = routes.length === 0 && locals.length === 0;
   if (!own && empty) return null;
   const openAll = () => router.push(own ? '/(tabs)/insignias' : { pathname: '/(tabs)/insignias', params: { u: userId } });
@@ -29,23 +29,15 @@ export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges 
           Completa tu Ruta del mes o canjea en un local para ganar tu primera insignia.
         </Text>
       ) : (
-        <>
-          {routes.length > 0 && (
-            <View className="flex-row justify-center mt-3" style={{ gap: 18 }}>
-              {routes.map((r) => (
-                <Press key={r.month} accessibilityRole="button" onPress={() => own && router.push({ pathname: '/(tabs)/ruta-mes', params: { m: r.month } })}>
-                  <RutaRing size={62} done={3} month={rutaMonthShort(r.month)} glow={false} />
-                </Press>
-              ))}
-            </View>
-          )}
-          {routes.length > 0 && locals.length > 0 && <View className="h-px bg-line-light dark:bg-line-dark my-3.5" />}
-          {locals.length > 0 && (
-            <View className="flex-row justify-center" style={{ gap: 16, marginTop: routes.length ? 0 : 12 }}>
-              {locals.map((l) => <LocalBadge key={l.business_id} logoUrl={l.logo_url} name={l.name} level={l.level} size={52} />)}
-            </View>
-          )}
-        </>
+        // Todo en una sola fila: primero las rutas del mes y después los locales (máximo 5, sin separador).
+        <View className="flex-row justify-center items-center mt-3" style={{ gap: 14 }}>
+          {routes.map((r) => (
+            <Press key={r.month} accessibilityRole="button" onPress={() => own && router.push({ pathname: '/(tabs)/ruta-mes', params: { m: r.month } })}>
+              <RutaRing size={54} done={3} month={rutaMonthShort(r.month)} glow={false} />
+            </Press>
+          ))}
+          {locals.map((l) => <LocalBadge key={l.business_id} logoUrl={l.logo_url} name={l.name} level={l.level} size={48} />)}
+        </View>
       )}
     </Glass>
   );
