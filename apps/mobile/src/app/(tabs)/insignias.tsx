@@ -80,12 +80,12 @@ export default function InsigniasScreen() {
           <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center">Canjea en un local para ganar tu primera insignia de Visitante.</Text>
         </Glass>
       ) : (
-        <View className="flex-row flex-wrap justify-between" style={{ rowGap: 10 }}>
+        <View className="flex-row flex-wrap justify-center" style={{ gap: 10 }}>
           {locals.map((l) => {
             const key = `local:${l.business_id}`;
             const next = nextLevel(l.points);
             return (
-              <Press key={l.business_id} accessibilityRole="button" accessibilityHint={own ? 'Mantén presionado para destacarla' : undefined} onLongPress={() => feature(key)} style={{ width: '48.5%' }}>
+              <Press key={l.business_id} accessibilityRole="button" accessibilityHint={own ? 'Mantén presionado para destacarla' : undefined} onLongPress={() => feature(key)} style={{ width: '47.5%' }}>
                 <Glass className="rounded-3xl items-center" style={{ paddingVertical: 16, paddingHorizontal: 10, borderWidth: data?.featured === key ? 1.5 : 0, borderColor: '#62F0B6' }}>
                   <LocalBadge logoUrl={l.logo_url} name={l.name} level={l.level} size={60} />
                   <Text className="text-[14px] font-bold mt-3 text-text-light dark:text-text-dark" numberOfLines={1}>{l.name}</Text>
