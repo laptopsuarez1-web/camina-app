@@ -22,6 +22,7 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { si
       style={{
         width: size,
         height: size,
+        borderRadius: size / 2,
         shadowColor: MINT,
         shadowOpacity: glow && full ? 0.55 : 0,
         shadowRadius: size / 7,

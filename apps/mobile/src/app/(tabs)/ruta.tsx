@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -7,10 +9,11 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
-import { ChevronLeft, Check } from '@/components/icons';
+import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { RutaPin } from '@/components/ruta/RutaPin';
+import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -102,6 +105,7 @@ export default function RutaScreen() {
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
   const [lineOn, setLineOn] = useState(!params.nueva);
   const [tracks, setTracks] = useState(true);
+  const [drop, setDrop] = useState<{ stop: RutaStop; x: number; y: number; key: number } | null>(null);
 
   const stops = useMemo(() => state?.stops ?? [], [state]);
   const done = rutaDone(state);
@@ -118,16 +122,49 @@ export default function RutaScreen() {
     if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 140, right: 60, bottom: 60, left: 60 }, animated });
   }
 
+  // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
+  const [linePts, setLinePts] = useState<{ latitude: number; longitude: number }[] | null>(null);
+  function drawLine() {
+    const pts = ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
+    if (pts.length < 2) return;
+    // Se interpola cada tramo en pasos chicos para que la línea "crezca" de un local al otro.
+    const dense: { latitude: number; longitude: number }[] = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      for (let k = 0; k < 12; k++) {
+        const t = k / 12;
+        dense.push({ latitude: pts[i].latitude + (pts[i + 1].latitude - pts[i].latitude) * t, longitude: pts[i].longitude + (pts[i + 1].longitude - pts[i].longitude) * t });
+      }
+    }
+    dense.push(pts[pts.length - 1]);
+    let n = 2;
+    setLinePts(dense.slice(0, n));
+    const id = setInterval(() => {
+      n += 1;
+      setLinePts(dense.slice(0, n));
+      if (n >= dense.length) { clearInterval(id); setLinePts(null); setLineOn(true); }
+    }, 45);
+  }
+
   function runIntro() {
     if (!stops.length) return;
     const steps = stops.filter((s) => s.lat != null);
+    const STEP = 2300;
     steps.forEach((s, i) => {
       setTimeout(() => {
         mapRef.current?.animateCamera({ center: { latitude: s.lat!, longitude: s.lng! }, zoom: 17 }, { duration: 900 });
-        setTimeout(() => { setShown(i + 1); setTracks(true); }, 700);
-      }, 400 + i * 2200);
+        setTimeout(async () => {
+          const pt = await mapRef.current?.pointForCoordinate({ latitude: s.lat!, longitude: s.lng! });
+          if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i });
+          setTimeout(() => { setShown(i + 1); setTracks(true); }, 650);
+          setTimeout(() => setDrop(null), 1700);
+        }, 950);
+      }, 300 + i * STEP);
     });
-    setTimeout(() => { fitAll(); setLineOn(true); router.setParams({ nueva: undefined }); }, 400 + steps.length * 2200);
+    setTimeout(() => {
+      fitAll();
+      setTimeout(drawLine, 700);
+      router.setParams({ nueva: undefined });
+    }, 300 + steps.length * STEP);
   }
 
   async function participate() {
@@ -212,9 +249,14 @@ export default function RutaScreen() {
     const few = state.eligible_count < 3;
     return (
       <View style={{ flex: 1, backgroundColor: BG }}>
-        <ScrollView contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 120 }}>
-          <Back />
-          <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center', marginTop: 16 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+          <View style={{ height: 250 + insets.top }}>
+            <RutaMiniMap places={state.locales} pinSize={30} padBottom={60} />
+            <LinearGradient pointerEvents="none" colors={['rgba(22,17,31,0.35)', 'rgba(22,17,31,0)', 'rgba(22,17,31,0.7)', BG]} locations={[0, 0.3, 0.75, 1]} style={{ position: 'absolute', inset: 0 }} />
+            <View style={{ position: 'absolute', left: 20, top: insets.top + 8 }}><Back /></View>
+          </View>
+          <View style={{ paddingHorizontal: 20, marginTop: -40 }}>
+          <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
             <RutaRing size={64} done={3} month={rutaMonthShort(state.month)} />
             <View style={{ flex: 1 }}>
               <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.4, fontSize: 11 }}>EVENTO DEL MES · HASTA EL {Number(state.ends_on.slice(8, 10))}</Text>
@@ -234,6 +276,7 @@ export default function RutaScreen() {
               <Text style={{ color: MINT, fontWeight: '800' }}>Ver ›</Text>
             </Press>
           )}
+          </View>
         </ScrollView>
         <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
           <Press accessibilityRole="button" disabled={few || join.isPending} onPress={participate} haptic="light"
@@ -249,95 +292,94 @@ export default function RutaScreen() {
 
   // ---------- Con ruta: mapa, mis 3 locales, visita y premios ----------
   const first = stops.find((s) => s.lat != null);
+  const linePath = linePts ?? (lineOn ? ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! })) : []);
   const canSwap = state.swaps_left > 0 && !state.completed_at && stops.some((s) => !s.visit);
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
-      <View style={{ height: Math.round(height * 0.5) }}>
+      <View style={{ position: 'absolute', inset: 0 }}>
         {first ? (
           <MapView
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={{ flex: 1 }}
             customMapStyle={DARK_MAP_STYLE}
-            initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
+            initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
             onMapReady={() => (params.nueva ? runIntro() : fitAll(false))}
             toolbarEnabled={false}
             pitchEnabled={false}
             rotateEnabled={false}
           >
-            {lineOn && ordered.length > 1 && (
-              <Polyline coordinates={ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! }))} strokeColor={MINT} strokeWidth={4} lineDashPattern={[2, 10]} />
-            )}
+            {linePath.length > 1 && <Polyline coordinates={linePath} strokeColor={MINT} strokeWidth={5} />}
             {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => (
               <Marker key={s.business_id} coordinate={{ latitude: s.lat!, longitude: s.lng! }} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
                 onPress={() => !s.visit && setVisitFor(s)}>
-                <RutaPin name={s.name} logoUrl={s.logo_url} size={44} />
+                <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
               </Marker>
             ))}
           </MapView>
         ) : <View style={{ flex: 1, backgroundColor: '#1d1b2e' }} />}
-        <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 8, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22, backgroundColor: 'rgba(22,17,31,0.85)' }}>
-          <Back />
-          <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
-            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
-          </View>
+        {drop && <DropPin key={drop.key} stop={drop.stop} x={drop.x} y={drop.y} />}
+      </View>
+
+      <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 8, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22, backgroundColor: 'rgba(22,17,31,0.86)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+        <Back />
+        <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} glow={false} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 40 }}>
-        <View style={{ alignSelf: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)', marginBottom: 12 }}>
-          <Text style={{ color: MINT, fontWeight: '800', fontSize: 12.5 }}>Sin orden: visítalos como quieras</Text>
-        </View>
-        <View style={[CARD, { paddingHorizontal: 14, paddingVertical: 4 }]}>
-          {stops.map((s, i) => (
-            <View key={s.business_id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: 'rgba(255,255,255,0.08)' }}>
-              <RutaPin name={s.name} logoUrl={s.logo_url} size={38} route={!!s.visit} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }} numberOfLines={1}>{s.name}</Text>
-                <Text style={{ color: MUTED, fontSize: 12 }} numberOfLines={1}>{s.address ?? s.category ?? ''}</Text>
-              </View>
-              {s.visit === 'confirmed' ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Check size={14} color={MINT} /><Text style={{ color: MINT, fontWeight: '800', fontSize: 12.5 }}>Visitado</Text></View>
-              ) : s.visit === 'pending' ? (
-                <Text style={{ color: MUTED, fontWeight: '800', fontSize: 12.5 }}>Por confirmar</Text>
-              ) : (
-                <Press accessibilityRole="button" onPress={() => setVisitFor(s)} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: '#1F7A66' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }}>Marcar visita</Text>
+      <View style={{ position: 'absolute', left: 12, right: 12, bottom: insets.bottom + 12, maxHeight: height * 0.55, borderRadius: 26, backgroundColor: 'rgba(26,20,38,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)' }}>
+        <ScrollView contentContainerStyle={{ padding: 14 }} showsVerticalScrollIndicator={false}>
+          <View style={{ flexDirection: 'row' }}>
+            {stops.map((s) => {
+              const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
+              return (
+                <Press key={s.business_id} accessibilityRole="button" disabled={st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
+                  <View style={{ width: 46, height: 46, borderRadius: 13, borderWidth: 2.5, borderColor: st === 'ok' ? MINT : st === 'wait' ? MUTED : 'rgba(255,255,255,0.25)', overflow: 'hidden', backgroundColor: '#fff' }}>
+                    {s.logo_url ? <Image source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} /> : null}
+                  </View>
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12, marginTop: 6 }} numberOfLines={1}>{s.name}</Text>
+                  <Text style={{ color: st === 'ok' ? MINT : st === 'wait' ? MUTED : MINT, fontWeight: '800', fontSize: 10.5, marginTop: 1 }}>
+                    {st === 'ok' ? '✓ Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}
+                  </Text>
                 </Press>
-              )}
-            </View>
-          ))}
-        </View>
-        {canSwap && (
-          <Press onPress={() => setSwapOpen(true)} style={{ alignItems: 'center', paddingVertical: 12 }}>
-            <Text style={{ color: MINT, fontWeight: '800', fontSize: 13.5 }}>↻ Cambiar un local · te queda 1 cambio</Text>
-          </Press>
-        )}
-
-        {state.completed_at && (
-          <View style={[CARD, { padding: 16, marginTop: 12, alignItems: 'center' }]}>
-            <RutaRing size={92} done={3} month={rutaMonthShort(state.month)} />
-            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17, marginTop: 10 }}>¡Completaste tu Ruta de {month}!</Text>
-            <Text style={{ color: MUTED, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
-              Ganaste tu insignia{state.ticket_no ? ` y el boleto N.º ${state.ticket_no} del sorteo` : ''}. El mes que viene eliges tu Día doble.
-            </Text>
+              );
+            })}
           </View>
-        )}
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+            <Chip>En el orden que quieras</Chip>
+            <Chip>Sin Puntos ni descuentos</Chip>
+          </View>
+          {canSwap && (
+            <Press onPress={() => setSwapOpen(true)} style={{ alignItems: 'center', paddingTop: 12 }}>
+              <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local · te queda 1 cambio</Text>
+            </Press>
+          )}
 
-        {state.prev_completed && <DoubleDayPicker value={state.double_day} busy={pickDay.isPending} onPick={async (d) => {
-          try { await pickDay.mutateAsync(d); celebrate({ kind: 'sheet', title: '¡Día doble elegido!', body: 'Ese día tus pasos valen el doble.' }); }
-          catch (e) { Alert.alert('No se pudo elegir', friendlyServerError(e, 'Intenta de nuevo.')); }
-        }} />}
+          {state.completed_at && (
+            <View style={[CARD, { padding: 16, marginTop: 12, alignItems: 'center' }]}>
+              <RutaRing size={84} done={3} month={rutaMonthShort(state.month)} />
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16, marginTop: 10 }}>¡Completaste tu Ruta de {month}!</Text>
+              <Text style={{ color: MUTED, fontSize: 12.5, textAlign: 'center', marginTop: 4 }}>
+                Ganaste tu insignia{state.ticket_no ? ` y el boleto N.º ${state.ticket_no} del sorteo` : ''}. El mes que viene eliges tu Día doble.
+              </Text>
+            </View>
+          )}
 
-        {showRules ? rules : (
-          <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between' }]}>
-            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Condiciones del evento</Text>
-            <Text style={{ color: MINT, fontWeight: '800' }}>Ver ›</Text>
-          </Press>
-        )}
-      </ScrollView>
+          {state.prev_completed && <DoubleDayPicker value={state.double_day} busy={pickDay.isPending} onPick={async (d) => {
+            try { await pickDay.mutateAsync(d); celebrate({ kind: 'sheet', title: '¡Día doble elegido!', body: 'Ese día tus pasos valen el doble.' }); }
+            catch (e) { Alert.alert('No se pudo elegir', friendlyServerError(e, 'Intenta de nuevo.')); }
+          }} />}
+
+          {showRules ? rules : (
+            <Press onPress={() => setShowRules(true)} style={{ paddingTop: 12, alignItems: 'center' }}>
+              <Text style={{ color: MUTED, fontWeight: '800', fontSize: 12.5 }}>Condiciones del evento ›</Text>
+            </Press>
+          )}
+        </ScrollView>
+      </View>
 
       <LocalCodeSheet
         visible={!!visitFor}
@@ -440,3 +482,41 @@ function DoubleDayPicker({ value, busy, onPick }: { value: string | null; busy: 
   );
 }
 
+
+function Chip({ children }: { children: string }) {
+  return (
+    <View style={{ paddingHorizontal: 11, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+      <Text style={{ color: MINT, fontWeight: '800', fontSize: 11.5 }}>{children}</Text>
+    </View>
+  );
+}
+
+// Pin que cae desde arriba con rebote, deja una onda en el piso y muestra "Te tocó …". Después lo reemplaza el pin del mapa.
+function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
+  const fall = useSharedValue(-520);
+  const ring = useSharedValue(0);
+  const label = useSharedValue(0);
+  useEffect(() => {
+    fall.value = withSpring(0, { damping: 9, stiffness: 140, mass: 0.9 });
+    ring.value = withDelay(330, withTiming(1, { duration: 650, easing: Easing.out(Easing.cubic) }));
+    label.value = withDelay(450, withSequence(withTiming(1, { duration: 260 }), withDelay(800, withTiming(0, { duration: 220 }))));
+  }, [fall, ring, label]);
+  const pinStyle = useAnimatedStyle(() => ({ transform: [{ translateY: fall.value }] }));
+  const ringStyle = useAnimatedStyle(() => ({ opacity: (1 - ring.value) * 0.9, transform: [{ scale: 0.5 + ring.value * 1.8 }] }));
+  const labelStyle = useAnimatedStyle(() => ({ opacity: label.value, transform: [{ translateY: (1 - label.value) * 10 }] }));
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', inset: 0 }}>
+      <Animated.View style={[{ position: 'absolute', left: x - 30, top: y - 12, width: 60, height: 24, borderRadius: 30, borderWidth: 2, borderColor: MINT }, ringStyle]} />
+      <Animated.View style={[{ position: 'absolute', left: x - 31, top: y - 72 }, pinStyle]}>
+        <RutaPin name={stop.name} logoUrl={stop.logo_url} size={46} />
+      </Animated.View>
+      <Animated.View style={[{ position: 'absolute', left: x - 90, width: 180, top: y + 16, alignItems: 'center' }, labelStyle]}>
+        <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(26,20,38,0.95)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center' }}>
+          <Text style={{ color: MINT, fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>TE TOCÓ</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{stop.name}</Text>
+          {!!stop.category && <Text style={{ color: MUTED, fontSize: 11.5 }}>{stop.category}</Text>}
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
