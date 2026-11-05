@@ -58,6 +58,7 @@ export interface Business {
 }
 
 export interface Benefit {
+  fans_only?: boolean;
   id: string;
   business_id: string;
   name: string;
