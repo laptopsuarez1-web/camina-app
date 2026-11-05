@@ -25,6 +25,7 @@ const REPLACED = {
   'expo-application': 'expo-application.mts',
   '@/lib/monitoring': 'monitoring.mts',
   'expo-secure-store': 'secure-store.mts',
+  'expo-image': 'expo-image.mts',
 };
 
 registerHooks({

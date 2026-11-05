@@ -20,11 +20,11 @@ const row = (id: string, city: string | undefined) => ({ id, active: true, busin
 test('beneficios: solo los de la ciudad de la persona', async () => {
   db.tables.benefits = [row('1', 'Tarija'), row('2', 'La Paz'), row('3', 'Tarija')];
   useBenefits();
-  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'Tarija']);
+  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'Tarija', 'u-1']);
   assert.deepEqual((await rq.lastQuery.queryFn()).map((b: any) => b.id), ['1', '3']);
   setAuth('u-1', { city: 'La Paz' });
   useBenefits();
-  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'La Paz']);
+  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'La Paz', 'u-1']);
   assert.deepEqual((await rq.lastQuery.queryFn()).map((b: any) => b.id), ['2']);
 });
 
@@ -32,7 +32,7 @@ test('beneficios: sin perfil o sin ciudad se asume Tarija; un comercio sin ciuda
   setAuth('u-1', null);
   db.tables.benefits = [row('1', 'Tarija'), row('2', 'La Paz'), row('3', undefined)];
   useBenefits();
-  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'Tarija']);
+  assert.deepEqual(rq.lastQuery.queryKey, ['benefits', 'Tarija', 'u-1']);
   assert.deepEqual((await rq.lastQuery.queryFn()).map((b: any) => b.id), ['1', '3']);
 });
 

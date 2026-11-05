@@ -117,6 +117,11 @@ async function readBackup(): Promise<typeof backup> {
   return backup;
 }
 
+// Solo para pruebas: simula la app recién abierta (la copia de respaldo está guardada en el teléfono pero no en memoria).
+export function __forgetBackupInMemoryForTests() {
+  backup = null;
+}
+
 function clearBackup() {
   backup = null;
   return authStorage.removeItem(BACKUP_KEY).catch(() => {});
@@ -139,8 +144,19 @@ export async function signOutUser(scope: 'local' | 'global' = 'local') {
 type Recovery = 'recovered' | 'rejected' | 'offline' | 'none';
 
 // Intenta volver a abrir la sesión con la copia de respaldo. 'offline': no hubo respuesta del servidor, no se cierra nada.
+let inflight: Promise<Recovery> | null = null;
 async function recoverSession(reason: string): Promise<Recovery> {
-  if (intentionalSignOut || recovering) return 'none';
+  if (intentionalSignOut) return 'none';
+  // Si ya hay una recuperación en curso (por ejemplo la del arranque y la del evento SIGNED_OUT a la vez), se espera esa
+  // misma: antes la segunda devolvía 'none' y el arranque publicaba "sin sesión" mientras la otra todavía recuperaba.
+  if (inflight) return inflight;
+  inflight = doRecover(reason).finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+async function doRecover(reason: string): Promise<Recovery> {
   const b = await readBackup();
   if (!b) return 'none';
   recovering = true;
@@ -189,6 +205,32 @@ export function initAuthListener() {
     return null;
   }
 
+  // Sin conexión no se puede saber si la sesión sigue viva: en vez de mostrar el login, se reintenta cada pocos segundos
+  // (y al volver a la app) hasta que el servidor conteste. Mientras tanto la app sigue en la pantalla de carga.
+  let waitingNetwork = false;
+  async function retryUntilOnline() {
+    if (waitingNetwork) return;
+    waitingNetwork = true;
+    try {
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        if (useAuthStore.getState().session) return;
+        const result = await recoverSession('reintento sin red');
+        if (result === 'recovered') {
+          await publishSession((await supabase.auth.getSession()).data.session);
+          return;
+        }
+        if (result === 'rejected' || result === 'none') {
+          if (result === 'rejected') await clearBackup();
+          await publishSession(null);
+          return;
+        }
+      }
+    } finally {
+      waitingNetwork = false;
+    }
+  }
+
   readStoredSession()
     .then(async (read) => {
       let session = read;
@@ -198,6 +240,10 @@ export function initAuthListener() {
         const result = await recoverSession('arranque');
         reportLostSession('arranque', result);
         if (result === 'recovered') session = (await supabase.auth.getSession()).data.session;
+        if (result === 'offline') {
+          retryUntilOnline();
+          return 'waiting' as const;
+        }
       }
       if (lastUserId === null) lastUserId = session?.user.id ?? null;
       await publishSession(session);
@@ -205,7 +251,9 @@ export function initAuthListener() {
     .catch(() => {
       // Si falla la lectura local seguimos sin sesión, en vez de dejar el spinner para siempre.
     })
-    .finally(() => useAuthStore.setState({ initializing: false }));
+    .then((r) => {
+      if (r !== 'waiting') useAuthStore.setState({ initializing: false });
+    });
 
   supabase.auth.onAuthStateChange(async (event, session) => {
     // Rastro para Sentry: si la app vuelve a mostrar el login sola, queda qué pasó con la sesión justo antes.
@@ -215,15 +263,27 @@ export function initAuthListener() {
     // Cualquier evento SIN sesión que la persona no pidió (SIGNED_OUT, pero también un INITIAL_SESSION vacío porque el
     // almacén del teléfono no respondió a tiempo) se trata como pérdida: antes solo se cubría SIGNED_OUT, y un
     // INITIAL_SESSION vacío publicaba "sin sesión" directo y mostraba el login con la sesión viva.
-    const lostByItself = !session && !intentionalSignOut && (event !== 'SIGNED_OUT' || recovering || !!backup);
+    // La copia de respaldo se busca también en el teléfono: recién abierta la app todavía no está en memoria, y justo
+    // ahí es cuando la librería puede cerrar la sesión (al renovarla con la app recién despertada). Antes ese SIGNED_OUT
+    // se tomaba como un cierre a propósito: se borraba la copia y aparecía el login sin avisar.
+    const hasBackup = !session && !intentionalSignOut ? !!backup || !!(await readBackup()) : false;
+    const lostByItself = !session && !intentionalSignOut && (event !== 'SIGNED_OUT' || recovering || hasBackup);
     if (lostByItself) {
       // No se muestra el login todavía. Se intenta recuperar fuera de este callback
       // (llamar a supabase.auth desde aquí puede dejarlo esperando a sí mismo).
-      if (!recovering) {
+      {
         setTimeout(async () => {
           const result = await recoverSession(`${event} sin sesión`);
           if (result !== 'none') reportLostSession(`${event} sin sesión`, result);
-          if (result === 'offline') return; // sin red: se conserva lo que hay y se reintenta al volver a la app
+          if (result === 'recovered') {
+            await publishSession((await supabase.auth.getSession()).data.session);
+            return;
+          }
+          if (result === 'offline') {
+            // Sin red: no se muestra el login; se reintenta hasta que vuelva la conexión.
+            retryUntilOnline();
+            return;
+          }
           if (result === 'rejected') {
             await clearBackup();
             await publishSession(null);
@@ -268,7 +328,9 @@ export function initAuthListener() {
       }
       if (!data.session && (await readBackup())) {
         const result = await recoverSession('volver a la app');
-        if (result === 'rejected') {
+        if (result === 'recovered') {
+          await publishSession((await supabase.auth.getSession()).data.session);
+        } else if (result === 'rejected') {
           await clearBackup();
           await publishSession(null);
         }
