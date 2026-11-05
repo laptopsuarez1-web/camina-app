@@ -6,6 +6,7 @@ import { supabase, type Redemption, type BusinessNotification } from '@/lib/supa
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ClientesFieles } from '@/components/ClientesFieles';
+import { ResumenMes } from '@/components/ResumenMes';
 
 const PLAN_LABEL: Record<string, string> = {
   primer_paso: 'Primer Paso · Gratis',
@@ -102,6 +103,8 @@ export default function InicioPage() {
           ))}
         </div>
       )}
+
+      {business && <ResumenMes businessId={business.id} />}
 
       <div className="flex flex-col sm:flex-row gap-3.5 mb-5">
         {todayQuotaTotal != null && (

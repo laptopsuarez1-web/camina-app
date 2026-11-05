@@ -5,7 +5,7 @@ import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
 import { RutaRing } from './RutaRing';
 import { RutaMiniMap } from './RutaMiniMap';
-import { rutaDone, rutaMonthName, rutaMonthShort, type RutaState } from '@/hooks/useRuta';
+import { rutaDone, rutaMonthName, rutaMonthShort, useRutaPrize, type RutaState } from '@/hooks/useRuta';
 
 // Tarjeta grande del evento del mes, arriba de todo en Eventos.
 export function RutaEventCard({ state, width, onParticipate, onOpen }: {
@@ -15,6 +15,7 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
   const month = rutaMonthName(state.month);
   const done = rutaDone(state);
   const end = Number(state.ends_on.slice(8, 10));
+  const { data: prize } = useRutaPrize(state.month);
   return (
     <Press accessibilityRole="button" accessibilityLabel={`Evento del mes: tu Ruta de ${month}`} onPress={onOpen} haptic="light"
       style={{ width, height, borderRadius: 30, overflow: 'hidden', backgroundColor: '#1a1330', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
@@ -23,6 +24,13 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
       <View style={{ position: 'absolute', left: 16, top: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: '#62F0B6' }}>
         <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 11.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
       </View>
+      {prize && !prize.drawn_at ? (
+        // El premio del sorteo, a la vista desde la tarjeta.
+        <View style={{ position: 'absolute', right: 16, top: 16, maxWidth: width * 0.48, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: 'rgba(26,20,38,0.88)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.5)' }}>
+          <Text style={{ color: '#62F0B6', fontWeight: '800', fontSize: 9.5, letterSpacing: 1 }}>SORTEO</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{prize.title}</Text>
+        </View>
+      ) : null}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 86, alignItems: 'center', paddingHorizontal: 16 }}>
         <RutaRing size={80} done={state.joined ? done : 3} month={rutaMonthShort(state.month)} />
         <Text style={{ ...heavy(), fontSize: 24, color: '#fff', marginTop: 12, textAlign: 'center' }}>
