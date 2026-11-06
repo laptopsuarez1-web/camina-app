@@ -1235,7 +1235,7 @@ export function RutaGente() {
   const pasos = [
     ['Toca Participar', 'Cada mes hay una Ruta nueva en Eventos.'],
     ['Te tocan 3 locales sorpresa', 'Salen al azar entre los comercios de tu ciudad y caen en tu mapa uno por uno.'],
-    ['Visítalos y compra lo que quieras', 'En el orden que quieras, hasta fin de mes. Al pagar escribes el código del local.'],
+    ['Visítalos y compra lo que quieras', 'En el orden que quieras, hasta fin de mes. Al pagar escribes el código de la Ruta que te da el local.'],
     ['Completas tu Ruta y ganas', 'Con los 3 confirmados se llena tu aro y te llevas los premios.'],
   ];
   return (
@@ -1303,7 +1303,7 @@ export function RutaComercio() {
     ['Tu local entra a la Ruta', 'Participan los locales con dirección y código del local, en cualquier plan. No configuras nada.'],
     ['Le tocas a gente nueva', 'Cada persona que participa recibe 3 locales al azar. Muchos nunca habían entrado al tuyo.'],
     ['Vienen y compran', 'Compran como cualquier cliente: sin descuento, sin regalo y sin Puntos de por medio.'],
-    ['Confirmas con un toque', 'Escriben tu código al pagar y en tu panel tocas "Compró". Así cuenta para su Ruta.'],
+    ['Confirmas con un toque', 'Al pagar les das tu código de la Ruta (distinto del de canjes) y en tu panel tocas "Compró".'],
   ];
   return (
     <section className="lp-sec alt" id="ruta" data-modo="oscuro">

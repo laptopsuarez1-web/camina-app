@@ -3,6 +3,7 @@ import type { EndedCinematic, JoinedCinematic } from '@/components/challenge/Cha
 import type {
   EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic, TicketBoughtCinematic,
 } from '@/components/celebrations/MomentScenes';
+import type { RutaDoneCinematic } from '@/components/ruta/RutaDoneScene';
 
 // Celebraciones y avisos de logros. Hay tres tamaños, de menor a mayor:
 //  - toast: aviso corto arriba (o abajo, con at: 'bottom') que se va solo (racha, "se unió un amigo");
@@ -25,7 +26,8 @@ export type Celebration =
   | StreakCinematic
   | StreakWeekCinematic
   | GroupGoalCinematic
-  | RankingResultCinematic;
+  | RankingResultCinematic
+  | RutaDoneCinematic;
 
 interface CelebrationState {
   queue: (Celebration & { id: number })[];

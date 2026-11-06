@@ -44,7 +44,7 @@ export function WebCityMap({ center, zoom = 15, overlay }: {
   return (
     <View style={{ position: 'absolute', inset: 0, overflow: 'hidden', backgroundColor: '#17112a' }} onLayout={(e: LayoutChangeEvent) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
       {tiles.map((t) => (
-        <Image key={`${t.x}-${t.y}`} source={{ uri: `https://tile.openstreetmap.org/${zoom}/${t.x}/${t.y}.png` }} style={{ position: 'absolute', left: t.left, top: t.top, width: 256, height: 256, filter: 'invert(1) hue-rotate(200deg) brightness(0.62) saturate(0.6)' } as never} />
+        <Image key={`${t.x}-${t.y}`} source={{ uri: `https://tile.openstreetmap.org/${zoom}/${t.x}/${t.y}.png` }} style={{ position: 'absolute', left: t.left, top: t.top, width: 256, height: 256, filter: 'grayscale(1) brightness(0.42) contrast(1.15) sepia(1) hue-rotate(215deg) saturate(2.6)' } as never} />
       ))}
       {size.w && overlay
         ? overlay((lat, lng) => {

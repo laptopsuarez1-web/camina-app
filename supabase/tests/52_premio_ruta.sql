@@ -23,10 +23,10 @@ begin
   insert into route_prizes (month, title, detail, winners_count) values (past, 'Premio de prueba', 'Detalle', 5);
   insert into route_prizes (month, title) values (cur, 'Premio de este mes');
 
-  -- Cualquiera lo ve (también sin sesión, para la web).
-  perform tt.as_admin(); execute 'set local role anon';
+  -- Cualquier persona con sesión lo ve.
+  perform tt.as_client(u3);
   res := route_prize(past);
-  perform tt.t_eq('se ve el título sin sesión', res->>'title', 'Premio de prueba');
+  perform tt.t_eq('cualquier persona ve el premio', res->>'title', 'Premio de prueba');
   perform tt.t_eq('cuenta los boletos', (res->>'tickets')::int, 2);
   perform tt.as_admin();
 

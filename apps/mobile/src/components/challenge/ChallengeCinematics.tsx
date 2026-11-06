@@ -5,11 +5,12 @@ import Animated, {
   Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Coin } from '@/components/ui/Coin';
@@ -286,7 +287,6 @@ export const display = (size: number) =>
 
 // Fondo de la escena: tapa la pantalla, se funde al entrar y un toque salta al final.
 export function Stage({ tl, children, announce, align = 'center', confetti }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top'; confetti?: { at: number; palette?: string[] } }) {
-  const p = usePalette();
   const insets = useSafeAreaInsets();
   const fade = useSharedValue(0);
   useEffect(() => {
@@ -297,8 +297,9 @@ export function Stage({ tl, children, announce, align = 'center', confetti }: { 
   const a = useAnimatedStyle(() => ({ opacity: fade.value }));
   return (
     <Animated.View accessibilityViewIsModal style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, a]}>
-      <LinearGradient colors={p.bg} locations={[0, 0.55, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={{ flex: 1 }}>
-        <Ambient reduced={tl.reduced} dark={p.dark} />
+      <View style={{ flex: 1 }}>
+        {/* El mismo fondo de la app (degradé y olas). */}
+        <AmbientBackground />
         {confetti ? <Confetti tl={tl} delay={confetti.at} palette={confetti.palette} /> : null}
         <Press
           accessible={false}
@@ -308,7 +309,7 @@ export function Stage({ tl, children, announce, align = 'center', confetti }: { 
         >
           {children}
         </Press>
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 }
@@ -348,51 +349,6 @@ export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 22 }: { t
             w={dot ? 6 : 5 + (i % 3) * 1.5} h={dot ? 6 : 9 + (i % 3) * 2} sway={10 + r * 16} spin={(i % 2 ? 1 : -1) * (180 + r * 240)} speed={380 + r * 220} />
         );
       })}
-    </View>
-  );
-}
-
-// Luces suaves que flotan detrás de la escena (menta y violeta) y unas motitas que suben. Quieto con reducir movimiento.
-function Glow({ k, color, size, x, y, dx, dy, id }: { k: SharedValue<number>; color: string; size: number; x: string; y: string; dx: number; dy: number; id: string }) {
-  const a = useAnimatedStyle(() => ({ transform: [{ translateX: Math.sin(k.value * Math.PI * 2) * dx }, { translateY: Math.cos(k.value * Math.PI * 2) * dy }, { scale: 1 + 0.08 * Math.sin(k.value * Math.PI * 4) }] }));
-  // Degradé radial: el color se apaga hacia el borde, sin círculos marcados.
-  return (
-    <Animated.View style={[{ position: 'absolute', left: x as `${number}%`, top: y as `${number}%`, width: size, height: size, marginLeft: -size / 2, marginTop: -size / 2 }, a]}>
-      <Svg width={size} height={size}>
-        <Defs>
-          <RadialGradient id={id} cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor={color} stopOpacity={1} />
-            <Stop offset="1" stopColor={color} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id})`} />
-      </Svg>
-    </Animated.View>
-  );
-}
-function Mote({ k, x, delay, color }: { k: SharedValue<number>; x: number; delay: number; color: string }) {
-  const a = useAnimatedStyle(() => {
-    const t = (k.value * 2 + delay) % 1;
-    return { opacity: t < 0.15 ? t / 0.15 : t > 0.8 ? (1 - t) / 0.2 : 1, transform: [{ translateY: -t * 260 }, { translateX: Math.sin(t * Math.PI * 2) * 8 }] };
-  });
-  return <Animated.View style={[{ position: 'absolute', left: `${x}%`, bottom: '18%', width: 4, height: 4, borderRadius: 2, backgroundColor: color, opacity: 0.7 }, a]} />;
-}
-function Ambient({ reduced, dark }: { reduced: boolean; dark: boolean }) {
-  const k = useSharedValue(0);
-  useEffect(() => {
-    if (reduced) return;
-    k.value = withRepeat(withTiming(1, { duration: 9000, easing: Easing.linear }), -1, false);
-    return () => cancelAnimation(k);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const mint = dark ? 'rgba(98,240,182,0.16)' : 'rgba(79,195,168,0.14)';
-  const lila = dark ? 'rgba(139,79,209,0.32)' : 'rgba(139,79,209,0.14)';
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
-      <Glow id="amb1" k={k} color={lila} size={460} x="18%" y="22%" dx={30} dy={20} />
-      <Glow id="amb2" k={k} color={mint} size={400} x="88%" y="62%" dx={24} dy={34} />
-      <Glow id="amb3" k={k} color={lila} size={320} x="55%" y="100%" dx={18} dy={12} />
-      {!reduced && [12, 28, 47, 63, 79, 91].map((x, i) => <Mote key={x} k={k} x={x} delay={i * 0.17} color={i % 2 ? '#62F0B6' : '#C4B8E8'} />)}
     </View>
   );
 }
@@ -507,7 +463,7 @@ export function ChallengeCreatedScene({
 
 // Posición de un lugar del círculo (centrada en el círculo): el 0 es arriba y siguen en sentido horario.
 export function orbitSlot(i: number, n: number, size: number, slot: number) {
-  const r = (size - 10) / 2 - 6;
+  const r = (size - 8) / 2; // sobre la línea del aro (trazo de 8)
   const a = -Math.PI / 2 + (i / Math.max(1, n)) * Math.PI * 2;
   return { left: size / 2 + Math.cos(a) * r - slot / 2, top: size / 2 + Math.sin(a) * r - slot / 2, dx: Math.cos(a) * r, dy: Math.sin(a) * r };
 }
@@ -542,10 +498,12 @@ function SlowSpin({ tl, size, color }: { tl: Timeline; size: number; color: stri
 // El círculo del grupo: halo suave, aro que se dibuja, aro fino que gira, fotos en el borde (hasta 7 + burbuja "+N"),
 // lugares vacíos punteados y, si se pasa `me`, tu foto que sube desde abajo y cierra el aro.
 export function GroupOrbit({
-  tl, size = 244, slot = 48, delay = 300, people, extra = 0, me, emptySlots = 0, meDelay = 1000, center, hopAt, closeRing = true,
+  tl, size = 244, slot = 48, delay = 300, people, extra = 0, me, emptySlots = 0, meDelay = 1000, center, hopAt, closeRing = true, onSlotPress,
 }: {
   tl: Timeline; size?: number; slot?: number; delay?: number; people: CinePerson[]; extra?: number; me?: CinePerson | null; emptySlots?: number;
   meDelay?: number; center: ReactNode; hopAt?: number; closeRing?: boolean;
+  // Si se pasa, los lugares vacíos "+" se pueden tocar (por ejemplo, para invitar amigos).
+  onSlotPress?: () => void;
 }) {
   const p = usePalette();
   const { height } = useWindowDimensions();
@@ -583,9 +541,10 @@ export function GroupOrbit({
           )}
           {Array.from({ length: emptySlots }, (_, i) => (
             <Reveal key={`e${i}`} tl={tl} delay={delay + 700 + i * 110} pop style={{ position: 'absolute', ...orbitSlot(first + people.length + (extra > 0 ? 1 : 0) + i, n, size, slot) }}>
-              <View style={{ width: slot - 5, height: slot - 5, margin: 2.5, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: p.dark ? 'rgba(127,237,196,0.5)' : colors.aquaDeep, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 18, fontWeight: '700', color: p.dark ? 'rgba(127,237,196,0.7)' : colors.aquaDeep }}>+</Text>
-              </View>
+              <Press accessibilityRole="button" accessibilityLabel="Invitar a un amigo" disabled={!onSlotPress} onPress={onSlotPress} hitSlop={6}
+                style={{ width: slot - 5, height: slot - 5, margin: 2.5, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: p.dark ? 'rgba(127,237,196,0.6)' : colors.aquaDeep, backgroundColor: p.dark ? 'rgba(28,16,48,0.85)' : 'rgba(255,255,255,0.9)', alignItems: 'center', justifyContent: 'center' }}>
+                <Text allowFontScaling={false} style={{ fontSize: 20, lineHeight: 22, fontWeight: '800', color: p.dark ? colors.mint : colors.aquaDeep, textAlign: 'center' }}>+</Text>
+              </Press>
             </Reveal>
           ))}
           {hasMe && (

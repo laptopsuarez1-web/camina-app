@@ -110,7 +110,9 @@ export default function NuevoDesafioScreen() {
   }
 
   if (done) {
-    const toGroup = () => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } });
+    // Volver al grupo sacando esta pantalla del historial: si no, la flecha "atrás" del grupo traía de nuevo
+    // el paso del nombre del desafío.
+    const toGroup = () => (router.canGoBack() ? router.back() : router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } }));
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
         <ChallengeCreatedScene

@@ -85,7 +85,9 @@ end;
 $f$ language plpgsql security definer set search_path = public;
 
 revoke execute on function route_prize(date), route_draw(date), short_name(text) from public;
-grant execute on function route_prize(date) to anon, authenticated;
+-- Como todo en Camina (0034), sin sesión no se ejecuta nada: la app lo lee con la sesión de la persona.
+revoke execute on function route_prize(date) from anon;
+grant execute on function route_prize(date) to authenticated;
 grant execute on function route_draw(date) to authenticated;
 grant execute on function short_name(text) to authenticated;
 

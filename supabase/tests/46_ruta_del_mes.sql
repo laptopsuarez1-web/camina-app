@@ -41,12 +41,20 @@ begin
 
   -- ===== Marcar visita =====
   perform tt.as_admin();
-  select c.code into code from business_local_codes c where c.business_id = stops[1];
+  select c.code into code from business_route_codes c where c.business_id = stops[1];
   perform tt.t_as(u);
   res := route_mark_visit(stops[1], code, -21.80, -64.90);
   perform tt.t_eq('lejos del local: no cuenta', res->>'reason', 'lejos');
   res := route_mark_visit(stops[1], 'xxxx', -21.5341, -64.7371);
   perform tt.t_eq('código incorrecto: no cuenta', res->>'reason', 'codigo_incorrecto');
+  -- La Ruta tiene su propio código: el de canjes no sirve (y se le avisa).
+  perform tt.as_admin();
+  perform tt.t_true('el código de la Ruta es distinto del de canjes',
+    (select r.code from business_route_codes r where r.business_id = stops[1]) is distinct from (select l.code from business_local_codes l where l.business_id = stops[1]));
+  perform tt.t_eq('los 4 locales nuevos tienen código de Ruta', (select count(*) from business_route_codes r join businesses b on b.id = r.business_id where not b.route_opt_out)::int, 4);
+  perform tt.t_as(u);
+  res := route_mark_visit(stops[1], (select l.code from business_local_codes l where l.business_id = stops[1]), -21.5341, -64.7371);
+  perform tt.t_eq('con el código de canjes: le avisa que es otro código', res->>'reason', 'codigo_de_canjes');
   res := route_mark_visit(outb, code, -21.5341, -64.7371);
   perform tt.t_eq('un local fuera de su ruta no cuenta', res->>'reason', 'no_en_ruta');
   res := route_mark_visit(stops[1], code, -21.5341, -64.7371);
@@ -70,7 +78,7 @@ begin
   perform tt.t_eq('después de un rechazo puede volver a marcar', (res->>'ok')::boolean, true);
   for n in 2..3 loop
     perform tt.as_admin();
-    select c.code into code from business_local_codes c where c.business_id = stops[n];
+    select c.code into code from business_route_codes c where c.business_id = stops[n];
     perform tt.t_as(u);
     perform route_mark_visit(stops[n], code, -21.5341, -64.7371);
   end loop;
@@ -84,6 +92,15 @@ begin
     exists (select 1 from route_participants where user_id = u and completed_at is not null and ticket_no is not null));
   perform tt.t_true('le llega el aviso', exists (select 1 from notifications_outbox where user_id = u and title like '%Completaste%'));
   perform tt.t_eq('no se usaron Puntos', user_points_balance(u), 0);
+  perform tt.t_eq('cada visita confirmada suma +2 de nivel en ese local (para llegar a Fan)', user_level_points(u, stops[2]), 2);
+
+  -- ===== Código de la Ruta en el panel =====
+  perform tt.t_as(owner);
+  code := my_route_code(stops[1]);
+  perform tt.t_true('el local ve su código de la Ruta', code ~ '^[0-9]{4}$');
+  perform tt.t_true('puede cambiarlo', reset_route_code(stops[1]) ~ '^[0-9]{4}$');
+  perform tt.t_as(u);
+  perform tt.t_raises('otra persona no ve el código de la Ruta', format('select my_route_code(%L)', stops[1]), 'No autorizado');
 
   -- ===== Día doble =====
   u2 := tt.mk_user();

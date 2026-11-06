@@ -20,6 +20,8 @@ import { RutaRing } from '@/components/ruta/RutaRing';
 import { RutaPin } from '@/components/ruta/RutaPin';
 import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
+import { RutaStopSheet } from '@/components/ruta/RutaStopSheet';
+import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -97,6 +99,7 @@ export default function RutaScreen() {
   const params = useLocalSearchParams<{ nueva?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
   const { data: prize } = useRutaPrize(state?.month);
+  useRutaDoneCelebration(state);
   const userId = useAuthStore((st) => st.session?.user.id);
   const photosReady = useBadgesReady();
   const join = useJoinRuta();
@@ -124,6 +127,10 @@ export default function RutaScreen() {
   const done = rutaDone(state);
   const month = state ? rutaMonthName(state.month) : '';
   const ordered = useMemo(() => lineOrder(stops), [stops]);
+  // Dónde se dibuja cada pin: si dos locales están casi en la misma cuadra, se separan un poco para que no se tapen.
+  const disp = useMemo(() => spreadPins(stops), [stops]);
+  const P = (s: RutaStop) => disp.get(s.business_id) ?? { latitude: s.lat!, longitude: s.lng! };
+  const [infoFor, setInfoFor] = useState<RutaStop | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setTracks(false), 2500);
@@ -138,14 +145,14 @@ export default function RutaScreen() {
   }, [intro, stops.length]);
 
   function fitAll(animated = true) {
-    const coords = stops.filter((s) => s.lat != null).map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
+    const coords = stops.filter((s) => s.lat != null).map(P);
     if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
   // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
   const [linePts, setLinePts] = useState<{ latitude: number; longitude: number }[] | null>(null);
   function drawLine() {
-    const pts = ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
+    const pts = ordered.map(P);
     if (pts.length < 2) return;
     // Se interpola cada tramo en pasos chicos para que la línea "crezca" de un local al otro.
     const dense: { latitude: number; longitude: number }[] = [];
@@ -171,9 +178,9 @@ export default function RutaScreen() {
     const STEP = 2300;
     steps.forEach((s, i) => {
       setTimeout(() => {
-        mapRef.current?.animateCamera({ center: { latitude: s.lat!, longitude: s.lng! }, zoom: 17 }, { duration: 900 });
+        mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 900 });
         setTimeout(async () => {
-          const pt = await mapRef.current?.pointForCoordinate({ latitude: s.lat!, longitude: s.lng! });
+          const pt = await mapRef.current?.pointForCoordinate(P(s));
           if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i });
           setTimeout(() => { setShown(i + 1); setTracks(true); }, 650);
           setTimeout(() => setDrop(null), 1700);
@@ -223,6 +230,7 @@ export default function RutaScreen() {
       if (r.ok) return null;
       switch (r.reason) {
         case 'codigo_incorrecto': return 'Ese código no es. Revísalo con el local.';
+        case 'codigo_de_canjes': return 'Ese es el código de canjes. Para la Ruta, pídele al local el código de la Ruta.';
         case 'lejos': return `Estás a ${r.distance_m ?? 'más de 300'} m del local. Acércate y vuelve a probar.`;
         case 'sin_ubicacion': return 'Necesitamos tu ubicación para confirmar que estás en el local. Actívala en los ajustes del teléfono.';
         case 'ya_marcada': return 'Ya marcaste tu visita en este local.';
@@ -277,7 +285,7 @@ export default function RutaScreen() {
   const rules = (
     <>
       <Section title="CÓMO PARTICIPAR" items={['Toca Participar y abre tu mapa: te tocan 3 locales al azar.', 'Tu ruta es solo tuya. Puedes cambiar 1 local antes de visitarlo (2 si completaste la ruta del mes pasado).']} />
-      <Section title="CÓMO CUENTA UNA VISITA" items={['Compra lo que quieras en el local. No necesitas Puntos ni descuentos.', 'Al pagar, escribe el código del local. El local confirma tu compra.', '1 visita por local, en el orden que quieras.']} />
+      <Section title="CÓMO CUENTA UNA VISITA" items={['Compra lo que quieras en el local. No necesitas Puntos ni descuentos.', 'Al pagar, pídele al local el código de la Ruta (es distinto del de canjes) y escríbelo. El local confirma tu compra.', '1 visita por local, en el orden que quieras.']} />
       <Section title="PLAZO Y PREMIOS" items={[`Tienes hasta el ${Number(state.ends_on.slice(8, 10))} de ${month}.`, 'Al completar los 3: Día doble y 2 cambios el mes que viene, insignia exclusiva y boleto del sorteo.']} />
     </>
   );
@@ -358,7 +366,7 @@ export default function RutaScreen() {
 
   // ---------- Con ruta: mapa, mis 3 locales, visita y premios ----------
   const first = stops.find((s) => s.lat != null);
-  const linePath = linePts ?? (lineOn ? ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! })) : []);
+  const linePath = linePts ?? (lineOn ? ordered.map(P) : []);
   const canSwap = state.swaps_left > 0 && !state.completed_at && stops.some((s) => !s.visit);
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -376,11 +384,11 @@ export default function RutaScreen() {
                   </Svg>
                 ) : null}
                 {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => {
-                  const q = project(s.lat!, s.lng!);
+                  const q = project(P(s).latitude, P(s).longitude);
                   return (
-                    <View key={s.business_id} style={{ position: 'absolute', left: q.x - 23, top: q.y - 58 }}>
+                    <Press key={s.business_id} accessibilityRole="button" accessibilityLabel={`Ver ${s.name}`} onPress={() => setInfoFor(s)} style={{ position: 'absolute', left: q.x - 23, top: q.y - 58 }}>
                       <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
-                    </View>
+                    </Press>
                   );
                 })}
               </>
@@ -400,8 +408,8 @@ export default function RutaScreen() {
           >
             {linePath.length > 1 && <Polyline coordinates={linePath} strokeColor={MINT} strokeWidth={5} />}
             {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => (
-              <Marker key={s.business_id} coordinate={{ latitude: s.lat!, longitude: s.lng! }} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
-                onPress={() => !s.visit && setVisitFor(s)}>
+              <Marker key={s.business_id} coordinate={P(s)} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
+                onPress={() => setInfoFor(s)}>
                 <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
               </Marker>
             ))}
@@ -441,7 +449,7 @@ export default function RutaScreen() {
               const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
               const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.35)';
               return (
-                <Press key={s.business_id} accessibilityRole="button" disabled={hidden || st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
+                <Press key={s.business_id} accessibilityRole="button" disabled={hidden} onPress={() => setInfoFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
                   <View style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
                     {hidden ? (
                       <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
@@ -458,7 +466,7 @@ export default function RutaScreen() {
                   ) : null}
                   <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '96%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
                   <Text style={{ color: hidden ? MUTED : st === 'wait' ? '#C4B8E8' : MINT, fontWeight: '800', fontSize: 11, marginTop: 1 }}>
-                    {hidden ? '...' : st === 'ok' ? 'Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}
+                    {hidden ? '...' : st === 'ok' ? 'Visitado ›' : st === 'wait' ? 'Por confirmar ›' : 'Ver local ›'}
                   </Text>
                 </Press>
               );
@@ -493,6 +501,8 @@ export default function RutaScreen() {
 
       {rulesModal}
 
+      <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }} />
+
       <LocalCodeSheet
         visible={!!visitFor}
         businessName={visitFor?.name ?? ''}
@@ -501,7 +511,7 @@ export default function RutaScreen() {
         benefitName={`Ruta de ${month}`}
         costPoints={0}
         free
-        copy={{ tag: 'Sin Puntos', title: 'Pídele al local su código', body: 'Compra lo que quieras y escribe los 4 números. El local confirma tu compra y tu visita cuenta.', action: 'Marcar mi visita', done: '¡Visita marcada!' }}
+        copy={{ tag: 'Sin Puntos', title: 'Pídele el código de la Ruta', body: 'Compra lo que quieras y escribe los 4 números del código de la Ruta (no el de canjes). El local confirma tu compra y tu visita cuenta.', action: 'Marcar mi visita', done: '¡Visita marcada!' }}
         onClose={() => setVisitFor(null)}
         onSubmit={submitVisit}
         onSuccess={() => {
@@ -640,4 +650,26 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
       </Animated.View>
     </View>
   );
+}
+
+// Separa los pines que quedarían uno encima del otro (locales a menos de ~200 m): los aleja desde su punto medio
+// hasta esa distancia. Solo cambia dónde se dibujan; "Cómo llegar" usa la ubicación real.
+function spreadPins(stops: RutaStop[]) {
+  const MIN = 0.002;
+  const pts = stops.filter((s) => s.lat != null && s.lng != null).map((s) => ({ id: s.business_id, lat: s.lat!, lng: s.lng! }));
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], b = pts[j];
+        let dx = b.lng - a.lng, dy = b.lat - a.lat;
+        const d = Math.hypot(dx, dy);
+        if (d >= MIN) continue;
+        if (d < 1e-7) { dx = 1; dy = 0; } else { dx /= d; dy /= d; }
+        const push = (MIN - Math.max(d, 1e-7)) / 2;
+        a.lng -= dx * push; a.lat -= dy * push;
+        b.lng += dx * push; b.lat += dy * push;
+      }
+    }
+  }
+  return new Map(pts.map((p) => [p.id, { latitude: p.lat, longitude: p.lng }]));
 }

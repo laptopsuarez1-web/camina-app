@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { Linking, Share, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
+import { Press } from '@/components/ui/Press';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
@@ -264,6 +266,7 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
 
 export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onDone: () => void }) {
   const p = usePalette();
+  const [copied, setCopied] = useState(false);
   const tl = useTimeline(3400);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
@@ -287,6 +290,7 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
           emptySlots={5}
           closeRing={false}
           meDelay={1300}
+          onSlotPress={() => { onDone(); c.onInvite?.(); }}
           center={
             <View style={{ alignItems: 'center' }}>
               <Users size={30} color={p.accent} />
@@ -302,9 +306,13 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 4, lineHeight: 20, maxWidth: 280 }}>Invita a tus amigos: caminar juntos suma más.</Text>
       </Reveal>
       <Reveal tl={tl} delay={2400} pop from={0.8} style={{ marginTop: 12 }}>
-        <View accessible accessibilityLabel={`Código ${Array.from(c.code).join(' ')}`} style={{ paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }}>
+        {/* Tocar el código lo copia. */}
+        <Press accessibilityRole="button" accessibilityLabel={`Código ${Array.from(c.code).join(' ')}. Toca para copiarlo`}
+          onPress={async () => { await Clipboard.setStringAsync(c.code); buzz.success(); setCopied(true); }}
+          style={{ paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: p.glass, borderWidth: 1, borderColor: copied ? colors.mint : p.glassLine, alignItems: 'center' }}>
           <Text style={{ ...display(18), color: p.text, letterSpacing: 5 }}>{c.code}</Text>
-        </View>
+          <Text style={{ fontSize: 11, fontWeight: '700', color: copied ? p.accent : p.muted, marginTop: 1 }}>{copied ? '¡Código copiado!' : 'Toca para copiar'}</Text>
+        </Press>
         <Burst tl={tl} delay={2450} palette={CAMINA_SPARKS} count={14} radius={90} style={{ left: '50%', top: '50%' }} />
       </Reveal>
       <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
