@@ -159,7 +159,8 @@
 .lp-sec .lead+.bento{margin-top:32px}
 .bento-nota{margin-top:26px}
 .lp-sec .wrap>.lead{margin-bottom:0}
-@media (max-width:640px){.lp .lp-nav{position:absolute}}
+/* La barra queda fija arriba también en el celular (antes se iba con el scroll). */
+@media (max-width:640px){.lp .lp-nav{position:fixed;top:8px}}
 
 /* huellas del inicio: una fila pareja pegada al borde de abajo, que se desvanece a los costados y no pasa por detrás de los textos */
 .lp .hero-trail{inset:auto 0 18px 0;height:96px;opacity:.7;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);filter:drop-shadow(0 0 10px rgba(127,237,196,.45))}

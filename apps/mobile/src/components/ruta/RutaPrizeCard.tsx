@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
-import type { RutaPrize } from '@/hooks/useRuta';
+import { rutaMonthName, type RutaPrize } from '@/hooks/useRuta';
 
 const MINT = '#62F0B6';
 
@@ -24,7 +24,7 @@ export function RutaPrizeCard({ prize, compact = false }: { prize: RutaPrize; co
           <Image source={{ uri: prize.image_url }} cachePolicy="memory-disk" contentFit="cover" style={{ width: 52, height: 52, borderRadius: 14 }} />
         ) : null}
         <View style={{ flex: 1 }}>
-          <Text style={{ color: MINT, fontWeight: '800', fontSize: 11, letterSpacing: 1.3 }}>{drawn ? 'GANADORES DEL SORTEO' : 'PREMIO DEL SORTEO'}</Text>
+          <Text style={{ color: MINT, fontWeight: '800', fontSize: 11, letterSpacing: 1.3 }}>{drawn ? `GANADORES DEL SORTEO DE ${rutaMonthName(prize.month).toUpperCase()}` : 'PREMIO DEL SORTEO'}</Text>
           <Text style={{ ...heavy(), color: '#fff', fontSize: compact ? 15 : 18, lineHeight: compact ? 19 : 22, marginTop: 2 }} numberOfLines={2}>{prize.title}</Text>
           {drawn ? (
             <Text style={{ color: '#C4B8E8', fontSize: 12.5, marginTop: 3 }}>

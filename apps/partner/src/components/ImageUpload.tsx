@@ -23,13 +23,15 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleFile(file: File) {
+  async function handleFile(original: File) {
     setUploading(true);
     setError(null);
+    // Las fotos del celular pesan varios MB y en la app se ven chicas: se achican antes de subir para que carguen rápido.
+    const file = await shrink(original, shape === 'circle' ? 600 : shape === 'wide' ? 1600 : 1200);
     const ext = file.name.split('.').pop() || 'jpg';
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(`${path}.${ext}`, file, { upsert: true, contentType: file.type });
+      .upload(`${path}.${ext}`, file, { upsert: true, contentType: file.type, cacheControl: '31536000' });
     setUploading(false);
     if (uploadError) {
       setError('No pudimos subir la foto. Intenta de nuevo.');
@@ -79,4 +81,26 @@ export function ImageUpload({
       {error && <p className="text-warn text-[11.5px] mt-1">{error}</p>}
     </div>
   );
+}
+
+// Achica la foto en el navegador: el lado mayor queda en `max` px. PNG sigue en PNG (puede tener transparencia, como un
+// logo); lo demás va a JPEG 0,85. Si algo falla o la foto ya es chica, se sube la original.
+async function shrink(file: File, max: number): Promise<File> {
+  try {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    if (scale === 1 && file.size < 400_000) return file;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bmp.width * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const png = file.type === 'image/png';
+    const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, png ? 'image/png' : 'image/jpeg', 0.85));
+    if (!blob || blob.size >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, '') + (png ? '.png' : '.jpg');
+    return new File([blob], name, { type: blob.type });
+  } catch {
+    return file;
+  }
 }

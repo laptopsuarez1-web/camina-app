@@ -146,3 +146,16 @@ export function useRutaPrize(month?: string | null) {
     },
   });
 }
+
+// Mes anterior ("2026-11-01" → "2026-10-01"), para mostrar los ganadores del sorteo pasado.
+export function prevRutaMonth(month: string) {
+  const [y, m] = month.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 2, 1));
+  return d.toISOString().slice(0, 10);
+}
+
+// Ganadores del sorteo del mes pasado (solo si ya se sorteó).
+export function useLastRutaWinners(month?: string | null) {
+  const q = useRutaPrize(month ? prevRutaMonth(month) : null);
+  return q.data && q.data.drawn_at ? q.data : null;
+}
