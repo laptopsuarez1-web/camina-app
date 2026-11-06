@@ -18,7 +18,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/promos/PromoCards';
-import { useRuta } from '@/hooks/useRuta';
+import { useLastRutaWinners, useRuta } from '@/hooks/useRuta';
+import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaEventCard } from '@/components/ruta/RutaEventCard';
 
 export default function EventosScreen() {
@@ -40,6 +41,7 @@ export default function EventosScreen() {
   const challenges = (promos ?? []).filter((p) => p.kind === 'desafio' || p.kind === 'sorteo');
   // Ruta del mes: tarjeta grande arriba de los eventos. Solo aparece si hay al menos 3 locales que participan.
   const { data: ruta } = useRuta();
+  const lastWinners = useLastRutaWinners(ruta?.month);
   const showRuta = !!ruta && (ruta.joined || ruta.eligible_count >= 3);
 
   async function handleJoin(p: PromotionItem) {
@@ -125,6 +127,8 @@ export default function EventosScreen() {
           {showRuta && (
             <RutaEventCard state={ruta} width={cardSize} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push('/(tabs)/ruta')} />
           )}
+          {/* Ganadores del sorteo de la Ruta del mes pasado (cuando ya se sorteó). */}
+          {lastWinners ? <View style={{ width: cardSize, marginTop: -12 }}><RutaPrizeCard prize={lastWinners} compact /></View> : null}
           {events.map((p) => <EventCard key={p.id} p={p} size={cardSize} onPress={() => setOpen(p)} />)}
         </View>
       )}
