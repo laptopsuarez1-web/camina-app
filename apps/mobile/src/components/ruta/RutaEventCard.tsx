@@ -5,8 +5,7 @@ import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
 import { RutaRing } from './RutaRing';
 import { RutaMiniMap } from './RutaMiniMap';
-import { MysteryPin } from './RutaPin';
-import { rutaDone, rutaMonthName, rutaMonthShort, type RutaState } from '@/hooks/useRuta';
+import { rutaDone, rutaMonthName, rutaMonthShort, useRutaPrize, type RutaState } from '@/hooks/useRuta';
 
 // Tarjeta grande del evento del mes, arriba de todo en Eventos.
 export function RutaEventCard({ state, width, onParticipate, onOpen }: {
@@ -16,6 +15,7 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
   const month = rutaMonthName(state.month);
   const done = rutaDone(state);
   const end = Number(state.ends_on.slice(8, 10));
+  const { data: prize } = useRutaPrize(state.month);
   return (
     <Press accessibilityRole="button" accessibilityLabel={`Evento del mes: tu Ruta de ${month}`} onPress={onOpen} haptic="light"
       style={{ width, height, borderRadius: 30, overflow: 'hidden', backgroundColor: '#1a1330', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
@@ -24,6 +24,13 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
       <View style={{ position: 'absolute', left: 16, top: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: '#62F0B6' }}>
         <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 11.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
       </View>
+      {prize && !prize.drawn_at ? (
+        // El premio del sorteo, a la vista desde la tarjeta.
+        <View style={{ position: 'absolute', right: 16, top: 16, maxWidth: width * 0.48, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: 'rgba(26,20,38,0.88)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.5)' }}>
+          <Text style={{ color: '#62F0B6', fontWeight: '800', fontSize: 9.5, letterSpacing: 1 }}>SORTEO</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{prize.title}</Text>
+        </View>
+      ) : null}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 86, alignItems: 'center', paddingHorizontal: 16 }}>
         <RutaRing size={80} done={state.joined ? done : 3} month={rutaMonthShort(state.month)} />
         <Text style={{ ...heavy(), fontSize: 24, color: '#fff', marginTop: 12, textAlign: 'center' }}>
@@ -59,20 +66,22 @@ export function RutaHomeCard({ state, onOpen }: { state: RutaState; onOpen: () =
   const end = Number(state.ends_on.slice(8, 10));
   return (
     <Press accessibilityRole="button" accessibilityLabel={`Evento del mes: tu Ruta de ${month}`} onPress={onOpen} haptic="light"
-      className="mx-5 mb-4" style={{ borderRadius: 26, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(98,240,182,0.28)' }}>
-      <LinearGradient colors={['#3B2577', '#200A52']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', inset: 0 }} />
-      {/* Un pin sorpresa de fondo, detrás del aro (no tapa el texto ni el botón). */}
-      <View pointerEvents="none" style={{ position: 'absolute', left: 52, top: -10, opacity: 0.35 }}><MysteryPin size={22} /></View>
-      <View className="flex-row items-center" style={{ padding: 14, gap: 14 }}>
-        <RutaRing size={62} done={state.joined ? done : 3} month={rutaMonthShort(state.month)} glow={false} />
+      className="mx-5 mb-4" style={{ height: 176, borderRadius: 26, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(98,240,182,0.28)', backgroundColor: '#17112a' }}>
+      {/* El centro de la ciudad de fondo con los pines sorpresa, igual que la foto del evento. */}
+      <RutaMiniMap places={state.locales} pinSize={24} padBottom={98} mystery />
+      <LinearGradient pointerEvents="none" colors={['rgba(32,10,82,0.05)', 'rgba(32,10,82,0.55)', '#200A52']} locations={[0, 0.45, 0.72]} style={{ position: 'absolute', inset: 0 }} />
+      <View style={{ position: 'absolute', left: 12, top: 10, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: '#62F0B6' }}>
+        <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 10.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
+      </View>
+      <View className="flex-row items-center" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: 12, gap: 12 }}>
+        <RutaRing size={54} done={state.joined ? done : 3} month={rutaMonthShort(state.month)} glow={false} />
         <View className="flex-1">
-          <Text style={{ color: '#62F0B6', fontWeight: '800', fontSize: 11, letterSpacing: 1.2 }}>EVENTO DEL MES</Text>
-          <Text style={{ ...heavy(), color: '#fff', fontSize: 16, lineHeight: 19, marginTop: 2 }}>TU RUTA DE {month.toUpperCase()}</Text>
-          <Text style={{ color: '#C4B8E8', fontSize: 12.5, lineHeight: 16, marginTop: 3 }} numberOfLines={2}>
+          <Text style={{ ...heavy(), color: '#fff', fontSize: 16, lineHeight: 19 }}>TU RUTA DE {month.toUpperCase()}</Text>
+          <Text style={{ color: '#C4B8E8', fontSize: 12.5, lineHeight: 16, marginTop: 2 }} numberOfLines={2}>
             {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 locales · hasta el ${end}` : `3 locales sorpresa · hasta el ${end}`}
           </Text>
         </View>
-        <View style={{ paddingHorizontal: 12, paddingVertical: 9, borderRadius: 14, backgroundColor: '#62F0B6' }}>
+        <View style={{ paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14, backgroundColor: '#62F0B6' }}>
           <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 13 }}>{state.joined ? 'Ver' : 'Participar'}</Text>
         </View>
       </View>

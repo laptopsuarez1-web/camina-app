@@ -6,6 +6,7 @@ import { supabase, type Redemption, type BusinessNotification } from '@/lib/supa
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ClientesFieles } from '@/components/ClientesFieles';
+import { ResumenMes } from '@/components/ResumenMes';
 
 const PLAN_LABEL: Record<string, string> = {
   primer_paso: 'Primer Paso · Gratis',
@@ -16,7 +17,6 @@ const PLAN_LABEL: Record<string, string> = {
 export default function InicioPage() {
   const { business } = useBusinessAuth();
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
-  const [monthCount, setMonthCount] = useState<number | null>(null);
   const [todayQuotaLeft, setTodayQuotaLeft] = useState<number | null>(null);
   const [todayQuotaTotal, setTodayQuotaTotal] = useState<number | null>(null);
   const [news, setNews] = useState<BusinessNotification[]>([]);
@@ -40,15 +40,6 @@ export default function InicioPage() {
       .limit(10)
       .then(({ data }) => setRedemptions((data as unknown as Redemption[]) ?? []));
 
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    supabase
-      .from('redemptions')
-      .select('id', { count: 'exact', head: true })
-      .eq('business_id', business.id)
-      .gte('created_at', monthStart.toISOString())
-      .then(({ count }) => setMonthCount(count ?? 0));
 
     supabase
       .from('benefits')
@@ -103,11 +94,12 @@ export default function InicioPage() {
         </div>
       )}
 
+      {business && <ResumenMes businessId={business.id} />}
+
       <div className="flex flex-col sm:flex-row gap-3.5 mb-5">
         {todayQuotaTotal != null && (
           <StatCard label="Cupones que quedan hoy" value={`${todayQuotaLeft ?? 0} de ${todayQuotaTotal}`} accent="#4FC3A8" />
         )}
-        <StatCard label="Canjes este mes" value={monthCount ?? '—'} accent="#8B4FD1" />
         <StatCard label="Plan actual" value={PLAN_LABEL[business?.plan ?? 'primer_paso']} accent="#291C47" />
       </div>
 

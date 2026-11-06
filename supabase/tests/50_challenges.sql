@@ -85,16 +85,19 @@ begin
   perform tt.t_eq('c: mejor racha 2 (días 0 y 1)', r.best_streak, 2);
 
   -- ===== Reparto al terminar (settle_group_challenges) =====
-  -- Puesta total 10 + 10 + 5 = 25; ganan a y b: 12 cada uno y el sobrante (1) para quien quedó primero.
+  -- Puesta total 10 + 10 + 5 = 25; terminan a (4.º día con meta: el día 3) y b (el día 4). El primero en terminar se lleva
+  -- la mitad (13, redondeada hacia arriba) y el resto (12) va para b.
   perform tt.t_as(null);
   select user_points_balance(a) into bal;
   n := settle_group_challenges();
   perform tt.t_eq('se liquida 1 desafío vencido', n, 1);
   select * into r from group_challenge_results where challenge_id = ch and user_id = a;
   perform tt.t_eq('a: puesto 1', r.rank, 1);
-  perform tt.t_eq('a: cobra 13 (12 + sobrante de 1)', r.payout, 13);
+  perform tt.t_eq('a: llegó primero y cobra la mitad del pozo (13)', r.payout, 13);
+  perform tt.t_eq('a: orden de llegada 1', r.finish_pos, 1);
   select * into r from group_challenge_results where challenge_id = ch and user_id = b;
-  perform tt.t_eq('b: cobra 12', r.payout, 12);
+  perform tt.t_eq('b: cobra el resto (12)', r.payout, 12);
+  perform tt.t_eq('b: orden de llegada 2', r.finish_pos, 2);
   select * into r from group_challenge_results where challenge_id = ch and user_id = c;
   perform tt.t_eq('c: no cumplió, cobra 0', r.payout, 0);
   select sum(payout) into pot from group_challenge_results where challenge_id = ch;
@@ -139,6 +142,28 @@ begin
   perform settle_group_challenges();
   select payout into n from group_challenge_results where challenge_id = ch and user_id = a;
   perform tt.t_eq('un solo ganador se lleva el pozo completo (30)', n, 30);
+
+  -- Llegar primero vale más que sumar pasos: 5 días (hay que cumplir 4), puesta 10 + 10 + 10 = 30, regla 'steps'.
+  -- a cumple los días 0-3 (termina el día 3); b cumple 0, 1, 2 y 4 con muchos más pasos (termina el día 4); c cumple 1-4 (termina el día 4).
+  update group_challenges set status = 'finished' where group_id = g;
+  insert into group_challenges (group_id, created_by, name, rule, daily_goal, start_day, end_day, stake)
+  values (g, a, 'Llega primero', 'steps', 5000, today - 5, today - 1, 10) returning id into ch;
+  insert into group_challenge_entries (challenge_id, user_id, stake_paid) values (ch, a, 10), (ch, b, 10), (ch, c, 10);
+  for n in 0..4 loop perform tt.seed_steps(a, today - 5 + n, case when n = 4 then 0 else 5000 end, 1200); end loop;
+  for n in 0..4 loop perform tt.seed_steps(b, today - 5 + n, case when n = 3 then 0 else 20000 end, 1200); end loop;
+  for n in 0..4 loop perform tt.seed_steps(c, today - 5 + n, case when n = 0 then 0 else 5000 end, 1200); end loop;
+  perform settle_group_challenges();
+  select payout, finish_pos into n, bal from group_challenge_results where challenge_id = ch and user_id = a;
+  perform tt.t_eq('llega primero (aunque camine menos): se lleva la mitad (15)', n, 15);
+  perform tt.t_eq('a: orden de llegada 1', bal, 1);
+  select payout into n from group_challenge_results where challenge_id = ch and user_id = b;
+  perform tt.t_eq('b: segundo en llegar, el resto se reparte: 7 + sobrante 1', n, 8);
+  select payout into n from group_challenge_results where challenge_id = ch and user_id = c;
+  perform tt.t_eq('c: tercero, cobra 7', n, 7);
+  select sum(payout) into pot from group_challenge_results where challenge_id = ch;
+  perform tt.t_eq('se reparte exactamente la puesta total (30)', pot, 30);
+  select count(*) into n from notifications_outbox where body like '¡Llegaste primero!%' and dedupe_key like 'gchend:' || ch || ':%';
+  perform tt.t_eq('se avisa a quien llegó primero', n, 1);
 end $$;
 
 rollback;

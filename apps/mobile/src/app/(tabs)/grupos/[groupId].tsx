@@ -82,10 +82,11 @@ export default function GroupDetailScreen() {
   const { data: lastResult } = useMyChallengeResult(groupId);
   const groupName = data?.group.name;
   // Recién creado o recién unido: escena de bienvenida, una vez. "Invitar amigos" abre la hoja para compartir.
-  const welcomed = useRef(false);
+  // Se recuerda POR GRUPO: la pantalla queda montada entre grupos, y con un sí/no la escena no salía al crear otro grupo.
+  const welcomed = useRef<string | null>(null);
   useEffect(() => {
-    if (welcomed.current || !data || !userId || (nuevo !== '1' && bienvenida !== '1')) return;
-    welcomed.current = true;
+    if (!data || !userId || (nuevo !== '1' && bienvenida !== '1') || welcomed.current === data.group.id) return;
+    welcomed.current = data.group.id;
     Keyboard.dismiss();
     setEditingGoal(false);
     const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };

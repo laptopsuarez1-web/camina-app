@@ -30,7 +30,7 @@ Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar p
   },
   {
     title: 'Desafíos de grupo y Puntos en juego',
-    body: `Dentro de un grupo puedes crear un desafío y elegir cuántos de tus propios Puntos poner en juego (hasta 50). Los Puntos de Camina solo se ganan caminando: no se compran ni se venden. Los Puntos de todos los que se suman forman un pozo que se reparte en partes iguales entre quienes cumplan la meta diaria en al menos el 80% de los días del desafío; si nadie cumple, cada persona recupera los suyos. Camina no se queda con ninguna parte del pozo. Los resultados se calculan automáticamente con los pasos registrados en la app y Camina puede anular un resultado si detecta trampa, como pasos falsos o varias cuentas de una misma persona.`,
+    body: `Dentro de un grupo puedes crear un desafío y elegir cuántos de tus propios Puntos poner en juego (hasta 50). Los Puntos de Camina solo se ganan caminando: no se compran ni se venden. Los Puntos de todos los que se suman forman un pozo: quien termina primero (cumpliendo la meta diaria en al menos el 80% de los días del desafío) se lleva la mitad y la otra mitad se reparte en partes iguales entre los demás que terminan; si termina una sola persona, se lleva todo el pozo, y si nadie termina, cada persona recupera los suyos. Camina no se queda con ninguna parte del pozo. Los resultados se calculan automáticamente con los pasos registrados en la app y Camina puede anular un resultado si detecta trampa, como pasos falsos o varias cuentas de una misma persona.`,
   },
   {
     title: 'Eventos y sorteos',

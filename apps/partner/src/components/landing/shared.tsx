@@ -483,14 +483,14 @@ export function PanelComercio() {
       <div className="wrap panel-row">
         <div>
           <Kinetic text="Todo desde *tu* *panel.*" as="h2" />
-          <p className="lead">Cargas tu local y tus descuentos, tienes el código de tu local y miras tus canjes. Sin instalar nada.</p>
+          <p className="lead">Cargas tu local y tus descuentos, tienes el código de tu local, confirmas las visitas de la Ruta y ves tu resumen del mes. Sin instalar nada.</p>
           <div className="lp-cta">
             <Link className="lp-btn dark" href="/registro">Crear mi cuenta</Link>
             <Link className="lp-btn line" href="/login">Ya tengo cuenta</Link>
           </div>
         </div>
         <Parallax speed={0.05}>
-          <div className="laptop"><Image src="/web/panel.jpg" alt="Panel de comercios con el perfil de un local" width={1100} height={1000} /></div>
+          <div className="laptop"><Image src="/web/panel-resumen.jpg" alt="Panel de comercios con el resumen del mes (datos de ejemplo)" width={1280} height={900} /></div>
         </Parallax>
       </div>
     </section>
@@ -1034,12 +1034,14 @@ export function CierreGente() {
 
 // Comercios: lo que gana el local al entrar.
 const GANA = [
+  ['Te mandamos gente', 'Con la Ruta del mes, personas nuevas llegan a comprar sin que des descuento.'],
   ['Horas tranquilas', 'Tu descuento vale cuando entra menos gente.'],
   ['Clientes nuevos', 'Te descubren en el mapa.'],
   ['Venden más', 'Quien viene por su descuento suele llevar algo más.'],
   ['Más margen', 'Haz descuentos en lo que más te conviene vender.'],
   ['Vuelven', 'Beneficios por visitas recurrentes.'],
   ['Te recomiendan', 'Reseñas en Google Maps e historias.'],
+  ['Sabes cómo te va', 'Tu resumen del mes: nuevos, los que vuelven, tu mejor día y hora.'],
 ];
 const REGLAS = ['Descuento o regalo', 'Cupos por día', 'Días y horarios', 'Solo en el local'];
 export function GanaLocal() {
@@ -1171,6 +1173,7 @@ const DUDAS = [
   ['¿Tengo que pagar algo?', 'No. Camina es gratis para todos y no te pedimos datos de pago.'],
   ['¿Necesito ir al gimnasio?', 'No. Cuentan los pasos de tu día: al trabajo, a la tienda, a la plaza.'],
   ['¿Cómo cuenta mis pasos?', 'Con Salud en iPhone o Health Connect en Android. Solo abre la app una vez al día.'],
+  ['¿Qué es la Ruta del mes?', 'Un evento mensual: te tocan 3 locales sorpresa, los visitas y compras lo que quieras. Al completarla ganas un Día doble, la insignia del mes y un boleto para el sorteo.'],
   ['¿Dónde canjeo mis Puntos?', 'En los comercios aliados que ves en el mapa de la app. Pides el código del local y listo.'],
 ];
 export function Dudas() {
@@ -1210,6 +1213,156 @@ export function AsiTeVen() {
           ['Su historia', 'Suben lo que canjearon a Instagram con el nombre de tu local.', CAP.historia],
         ]}
       />
+    </section>
+  );
+}
+
+// Capturas nuevas (solo en oscuro): Ruta del mes e insignias.
+const CAP_RUTA = {
+  sorpresa: '/web/cap/ruta-sorpresa-dark.jpg',
+  mapa: '/web/cap/ruta-mapa-dark.jpg',
+  completa: '/web/cap/ruta-completa-dark.jpg',
+  evento: '/web/cap/eventos-ruta-dark.jpg',
+  insignias: '/web/cap/insignias-dark.jpg',
+  insignia: '/web/cap/insignia-detalle-dark.jpg',
+  perfil: '/web/cap/perfil-insignias-dark.jpg',
+};
+
+const PREMIOS_RUTA = ['Día doble: tus pasos valen el doble un día', 'Insignia exclusiva del mes', 'Boleto para el sorteo del mes', '2 cambios de local el mes siguiente'];
+
+// Para ti: la Ruta del mes.
+export function RutaGente() {
+  const pasos = [
+    ['Toca Participar', 'Cada mes hay una Ruta nueva en Eventos.'],
+    ['Te tocan 3 locales sorpresa', 'Salen al azar entre los comercios de tu ciudad y caen en tu mapa uno por uno.'],
+    ['Visítalos y compra lo que quieras', 'En el orden que quieras, hasta fin de mes. Al pagar escribes el código de la Ruta que te da el local.'],
+    ['Completas tu Ruta y ganas', 'Con los 3 confirmados se llena tu aro y te llevas los premios.'],
+  ];
+  return (
+    <section className="lp-sec alt" id="ruta" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Evento del mes</p>
+        <Kinetic text="Tu Ruta *del* *mes.*" />
+        <p className="lead">Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa y premios por completarla.</p>
+        <ol className="flow">
+          {pasos.map(([t, d], i) => (
+            <InView as="li" key={t} delay={i * 110}>
+              <span className="num">{i + 1}</span>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </InView>
+          ))}
+        </ol>
+        <InView className="gana-reglas" delay={100}>
+          <h3>Lo que ganas al completarla</h3>
+          <div className="chips">{PREMIOS_RUTA.map((r) => <span key={r}>{r}</span>)}</div>
+        </InView>
+      </div>
+      <Deslizable
+        id="gal-ruta"
+        nota="Pantallas reales de la app; los locales y la ruta son de ejemplo. El premio del sorteo se anuncia cada mes en la app."
+        pant={[
+          ['El evento del mes', 'Tu Ruta en Eventos, con los locales en sorpresa.', CAP_RUTA.evento],
+          ['Antes de participar', 'Qué ganas y cómo funciona, sin saber todavía qué te toca.', CAP_RUTA.sorpresa],
+          ['Tu ruta en el mapa', 'Tus 3 locales unidos por la línea de tu recorrido.', CAP_RUTA.mapa],
+          ['Ruta completada', 'Tu insignia del mes, tu boleto y tu Día doble.', CAP_RUTA.completa],
+        ]}
+      />
+    </section>
+  );
+}
+
+// Para ti: insignias de locales.
+export function InsigniasGente() {
+  return (
+    <section className="lp-sec" id="insignias" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Tus insignias</p>
+        <Kinetic text="Tus locales *favoritos,* *en* *tu* *perfil.*" />
+        <p className="lead">
+          Cada canje, cada visita de la Ruta, cada calificación y cada historia te suben de nivel en ese local: Visitante, Habitual y Fan.
+          Eliges hasta 5 insignias para mostrar en tu perfil.
+        </p>
+      </div>
+      <Deslizable
+        id="gal-insignias"
+        nota="Pantallas reales de la app; los datos son de ejemplo."
+        pant={[
+          ['Mis insignias', 'Las rutas que completaste y tu nivel en cada local.', CAP_RUTA.insignias],
+          ['Cómo vas', 'Tocas una insignia y ves cuánto te falta y cómo sumaste.', CAP_RUTA.insignia],
+          ['En tu perfil', 'Tus amigos ven las que elegiste.', CAP_RUTA.perfil],
+        ]}
+      />
+    </section>
+  );
+}
+
+// Comercios: la Ruta del mes como lo principal.
+export function RutaComercio() {
+  const pasos = [
+    ['Tu local entra a la Ruta', 'Participan los locales con dirección y código del local, en cualquier plan. No configuras nada.'],
+    ['Le tocas a gente nueva', 'Cada persona que participa recibe 3 locales al azar. Muchos nunca habían entrado al tuyo.'],
+    ['Vienen y compran', 'Compran como cualquier cliente: sin descuento, sin regalo y sin Puntos de por medio.'],
+    ['Confirmas con un toque', 'Al pagar les das tu código de la Ruta (distinto del de canjes) y en tu panel tocas "Compró".'],
+  ];
+  return (
+    <section className="lp-sec alt" id="ruta" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Nuevo · La Ruta del mes</p>
+        <Kinetic text="Gente nueva en tu local, *sin* *regalar* *nada.*" />
+        <p className="lead">
+          Cada mes Camina arma una ruta sorpresa de 3 locales para cada persona. Quien la completa gana premios de Camina, no tuyos:
+          tú solo recibes clientes que vienen a comprar.
+        </p>
+        <ol className="flow">
+          {pasos.map(([t, d], i) => (
+            <InView as="li" key={t} delay={i * 110}>
+              <span className="num">{i + 1}</span>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </InView>
+          ))}
+        </ol>
+        <InView className="gana-reglas" delay={100}>
+          <h3>Lo pone Camina, no tu local</h3>
+          <div className="chips">{['Día doble de pasos', 'Insignia del mes', 'Boleto del sorteo', 'Más cambios de local'].map((r) => <span key={r}>{r}</span>)}</div>
+        </InView>
+      </div>
+      <Deslizable
+        id="gal-ruta-local"
+        nota="Pantallas reales de la app; los locales y la ruta son de ejemplo."
+        pant={[
+          ['El evento del mes', 'Lo primero que ven en Eventos.', CAP_RUTA.evento],
+          ['Tu local en su mapa', 'Con tu logo, como una de sus 3 paradas.', CAP_RUTA.mapa],
+          ['Ruta completada', 'Para ganar, tienen que comprar en los 3 locales.', CAP_RUTA.completa],
+        ]}
+      />
+    </section>
+  );
+}
+
+// Comercios: clientes fieles e insignias.
+export function FielesComercio() {
+  const items = [
+    ['Visitante, Habitual y Fan', 'Cada canje, visita de la Ruta, calificación e historia suma puntos de nivel en tu local.'],
+    ['Tu insignia en su perfil', 'Tus clientes muestran tu logo en su perfil y sus amigos lo ven.'],
+    ['Un premio solo para tus Fans', 'Si quieres, creas un premio que solo pueden canjear tus clientes más fieles.'],
+    ['Tu resumen del mes', 'Cuánta gente te trajo Camina, cuántos son nuevos, cuántos volvieron, tu mejor día y tu mejor hora.'],
+  ];
+  return (
+    <section className="lp-sec night" id="fieles">
+      <div className="wrap">
+        <Kinetic text="Clientes que *vuelven.*" />
+        <p className="lead">Camina no solo te trae gente: te muestra quién vuelve y te ayuda a cuidarlos.</p>
+        <ul className="ben">
+          {items.map(([t, d], i) => (
+            <InView as="li" key={t} delay={(i % 2) * 100}>
+              <b>{t}</b>
+              <span>{d}</span>
+            </InView>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

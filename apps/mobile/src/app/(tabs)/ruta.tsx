@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
@@ -10,7 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Polyline as SvgLine } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
@@ -18,12 +18,15 @@ import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { RutaPin } from '@/components/ruta/RutaPin';
-import { RutaMiniMap } from '@/components/ruta/RutaMiniMap';
+import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
+import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
+import { RutaStopSheet } from '@/components/ruta/RutaStopSheet';
+import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
 import {
-  rutaDone, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useRuta, useRutaSwapOptions, useSwapRuta,
+  rutaDone, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useRuta, useRutaPrize, useRutaSwapOptions, useSwapRuta,
   type RutaStop,
 } from '@/hooks/useRuta';
 
@@ -95,6 +98,8 @@ export default function RutaScreen() {
   const { height } = useWindowDimensions();
   const params = useLocalSearchParams<{ nueva?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
+  const { data: prize } = useRutaPrize(state?.month);
+  useRutaDoneCelebration(state);
   const userId = useAuthStore((st) => st.session?.user.id);
   const photosReady = useBadgesReady();
   const join = useJoinRuta();
@@ -122,6 +127,10 @@ export default function RutaScreen() {
   const done = rutaDone(state);
   const month = state ? rutaMonthName(state.month) : '';
   const ordered = useMemo(() => lineOrder(stops), [stops]);
+  // Dónde se dibuja cada pin: si dos locales están casi en la misma cuadra, se separan un poco para que no se tapen.
+  const disp = useMemo(() => spreadPins(stops), [stops]);
+  const P = (s: RutaStop) => disp.get(s.business_id) ?? { latitude: s.lat!, longitude: s.lng! };
+  const [infoFor, setInfoFor] = useState<RutaStop | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setTracks(false), 2500);
@@ -136,14 +145,14 @@ export default function RutaScreen() {
   }, [intro, stops.length]);
 
   function fitAll(animated = true) {
-    const coords = stops.filter((s) => s.lat != null).map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
+    const coords = stops.filter((s) => s.lat != null).map(P);
     if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
   // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
   const [linePts, setLinePts] = useState<{ latitude: number; longitude: number }[] | null>(null);
   function drawLine() {
-    const pts = ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! }));
+    const pts = ordered.map(P);
     if (pts.length < 2) return;
     // Se interpola cada tramo en pasos chicos para que la línea "crezca" de un local al otro.
     const dense: { latitude: number; longitude: number }[] = [];
@@ -169,9 +178,9 @@ export default function RutaScreen() {
     const STEP = 2300;
     steps.forEach((s, i) => {
       setTimeout(() => {
-        mapRef.current?.animateCamera({ center: { latitude: s.lat!, longitude: s.lng! }, zoom: 17 }, { duration: 900 });
+        mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 900 });
         setTimeout(async () => {
-          const pt = await mapRef.current?.pointForCoordinate({ latitude: s.lat!, longitude: s.lng! });
+          const pt = await mapRef.current?.pointForCoordinate(P(s));
           if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i });
           setTimeout(() => { setShown(i + 1); setTracks(true); }, 650);
           setTimeout(() => setDrop(null), 1700);
@@ -221,6 +230,7 @@ export default function RutaScreen() {
       if (r.ok) return null;
       switch (r.reason) {
         case 'codigo_incorrecto': return 'Ese código no es. Revísalo con el local.';
+        case 'codigo_de_canjes': return 'Ese es el código de canjes. Para la Ruta, pídele al local el código de la Ruta.';
         case 'lejos': return `Estás a ${r.distance_m ?? 'más de 300'} m del local. Acércate y vuelve a probar.`;
         case 'sin_ubicacion': return 'Necesitamos tu ubicación para confirmar que estás en el local. Actívala en los ajustes del teléfono.';
         case 'ya_marcada': return 'Ya marcaste tu visita en este local.';
@@ -275,7 +285,7 @@ export default function RutaScreen() {
   const rules = (
     <>
       <Section title="CÓMO PARTICIPAR" items={['Toca Participar y abre tu mapa: te tocan 3 locales al azar.', 'Tu ruta es solo tuya. Puedes cambiar 1 local antes de visitarlo (2 si completaste la ruta del mes pasado).']} />
-      <Section title="CÓMO CUENTA UNA VISITA" items={['Compra lo que quieras en el local. No necesitas Puntos ni descuentos.', 'Al pagar, escribe el código del local. El local confirma tu compra.', '1 visita por local, en el orden que quieras.']} />
+      <Section title="CÓMO CUENTA UNA VISITA" items={['Compra lo que quieras en el local. No necesitas Puntos ni descuentos.', 'Al pagar, pídele al local el código de la Ruta (es distinto del de canjes) y escríbelo. El local confirma tu compra.', '1 visita por local, en el orden que quieras.']} />
       <Section title="PLAZO Y PREMIOS" items={[`Tienes hasta el ${Number(state.ends_on.slice(8, 10))} de ${month}.`, 'Al completar los 3: Día doble y 2 cambios el mes que viene, insignia exclusiva y boleto del sorteo.']} />
     </>
   );
@@ -326,9 +336,10 @@ export default function RutaScreen() {
             </View>
           </View>
           <Text style={{ color: MUTED, fontSize: 14, lineHeight: 20, marginTop: 12 }}>Te tocan 3 locales de tu ciudad al azar. Visítalos, compra lo que quieras y gana:</Text>
+          {prize ? <RutaPrizeCard prize={prize} /> : null}
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 16 }}>x2</Text></Bubble>} title="Día doble" body="Eliges un día del mes que viene y tus pasos valen el doble: hasta 40 Puntos ese día." />
           <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Exclusiva: solo la tiene quien completa esta ruta." />
-          <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body="Entras al sorteo del mes. El premio se anuncia en Eventos." />
+          <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body={prize ? `Entras al sorteo de: ${prize.title}.` : 'Entras al sorteo del mes. El premio se anuncia en Eventos.'} />
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 17 }}>↻2</Text></Bubble>} title="2 cambios de local" body="El mes que viene puedes cambiar 2 de tus 3 locales, en vez de 1." />
           <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
             <View>
@@ -355,12 +366,35 @@ export default function RutaScreen() {
 
   // ---------- Con ruta: mapa, mis 3 locales, visita y premios ----------
   const first = stops.find((s) => s.lat != null);
-  const linePath = linePts ?? (lineOn ? ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! })) : []);
+  const linePath = linePts ?? (lineOn ? ordered.map(P) : []);
   const canSwap = state.swaps_left > 0 && !state.completed_at && stops.some((s) => !s.visit);
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <View style={{ position: 'absolute', inset: 0 }}>
-        {first ? (
+        {first && Platform.OS === 'web' ? (
+          // Vista web: mismo mapa de la ciudad con teselas, los pines y la línea de la ruta.
+          <WebCityMap
+            zoom={16}
+            center={{ lat: stops.filter((s) => s.lat != null).reduce((a, s, _, l) => a + s.lat! / l.length, 0) - 0.0016, lng: stops.filter((s) => s.lng != null).reduce((a, s, _, l) => a + s.lng! / l.length, 0) }}
+            overlay={(project) => (
+              <>
+                {linePath.length > 1 ? (
+                  <Svg style={{ position: 'absolute', inset: 0 } as never} width="100%" height="100%">
+                    <SvgLine points={linePath.map((c) => { const q = project(c.latitude, c.longitude); return `${q.x},${q.y}`; }).join(' ')} fill="none" stroke={MINT} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                ) : null}
+                {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => {
+                  const q = project(P(s).latitude, P(s).longitude);
+                  return (
+                    <Press key={s.business_id} accessibilityRole="button" accessibilityLabel={`Ver ${s.name}`} onPress={() => setInfoFor(s)} style={{ position: 'absolute', left: q.x - 23, top: q.y - 58 }}>
+                      <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
+                    </Press>
+                  );
+                })}
+              </>
+            )}
+          />
+        ) : first ? (
           <MapView
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
@@ -374,8 +408,8 @@ export default function RutaScreen() {
           >
             {linePath.length > 1 && <Polyline coordinates={linePath} strokeColor={MINT} strokeWidth={5} />}
             {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => (
-              <Marker key={s.business_id} coordinate={{ latitude: s.lat!, longitude: s.lng! }} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
-                onPress={() => !s.visit && setVisitFor(s)}>
+              <Marker key={s.business_id} coordinate={P(s)} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
+                onPress={() => setInfoFor(s)}>
                 <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
               </Marker>
             ))}
@@ -415,7 +449,7 @@ export default function RutaScreen() {
               const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
               const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.35)';
               return (
-                <Press key={s.business_id} accessibilityRole="button" disabled={hidden || st !== 'go'} onPress={() => setVisitFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
+                <Press key={s.business_id} accessibilityRole="button" disabled={hidden} onPress={() => setInfoFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
                   <View style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
                     {hidden ? (
                       <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
@@ -432,7 +466,7 @@ export default function RutaScreen() {
                   ) : null}
                   <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '96%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
                   <Text style={{ color: hidden ? MUTED : st === 'wait' ? '#C4B8E8' : MINT, fontWeight: '800', fontSize: 11, marginTop: 1 }}>
-                    {hidden ? '...' : st === 'ok' ? 'Visitado' : st === 'wait' ? 'Por confirmar' : 'Marcar visita ›'}
+                    {hidden ? '...' : st === 'ok' ? 'Visitado ›' : st === 'wait' ? 'Por confirmar ›' : 'Ver local ›'}
                   </Text>
                 </Press>
               );
@@ -454,6 +488,8 @@ export default function RutaScreen() {
             </View>
           )}
 
+          {prize ? <RutaPrizeCard prize={prize} compact /> : null}
+
           {state.prev_completed && <DoubleDayPicker value={state.double_day} busy={pickDay.isPending} onPick={async (d) => {
             try { await pickDay.mutateAsync(d); celebrate({ kind: 'sheet', title: '¡Día doble elegido!', body: 'Ese día tus pasos valen el doble.' }); }
             catch (e) { Alert.alert('No se pudo elegir', friendlyServerError(e, 'Intenta de nuevo.')); }
@@ -465,6 +501,8 @@ export default function RutaScreen() {
 
       {rulesModal}
 
+      <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }} />
+
       <LocalCodeSheet
         visible={!!visitFor}
         businessName={visitFor?.name ?? ''}
@@ -473,7 +511,7 @@ export default function RutaScreen() {
         benefitName={`Ruta de ${month}`}
         costPoints={0}
         free
-        copy={{ tag: 'Sin Puntos', title: 'Pídele al local su código', body: 'Compra lo que quieras y escribe los 4 números. El local confirma tu compra y tu visita cuenta.', action: 'Marcar mi visita', done: '¡Visita marcada!' }}
+        copy={{ tag: 'Sin Puntos', title: 'Pídele el código de la Ruta', body: 'Compra lo que quieras y escribe los 4 números del código de la Ruta (no el de canjes). El local confirma tu compra y tu visita cuenta.', action: 'Marcar mi visita', done: '¡Visita marcada!' }}
         onClose={() => setVisitFor(null)}
         onSubmit={submitVisit}
         onSuccess={() => {
@@ -612,4 +650,26 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
       </Animated.View>
     </View>
   );
+}
+
+// Separa los pines que quedarían uno encima del otro (locales a menos de ~200 m): los aleja desde su punto medio
+// hasta esa distancia. Solo cambia dónde se dibujan; "Cómo llegar" usa la ubicación real.
+function spreadPins(stops: RutaStop[]) {
+  const MIN = 0.002;
+  const pts = stops.filter((s) => s.lat != null && s.lng != null).map((s) => ({ id: s.business_id, lat: s.lat!, lng: s.lng! }));
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], b = pts[j];
+        let dx = b.lng - a.lng, dy = b.lat - a.lat;
+        const d = Math.hypot(dx, dy);
+        if (d >= MIN) continue;
+        if (d < 1e-7) { dx = 1; dy = 0; } else { dx /= d; dy /= d; }
+        const push = (MIN - Math.max(d, 1e-7)) / 2;
+        a.lng -= dx * push; a.lat -= dy * push;
+        b.lng += dx * push; b.lat += dy * push;
+      }
+    }
+  }
+  return new Map(pts.map((p) => [p.id, { latitude: p.lat, longitude: p.lng }]));
 }

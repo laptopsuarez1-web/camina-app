@@ -29,6 +29,8 @@ export function friendlyServerError(error: unknown, fallback: string = GENERIC):
 export function friendlyError(error: unknown, fallback: string = GENERIC): string {
   const e = (error ?? {}) as { code?: unknown; message?: unknown; name?: unknown };
   const code = typeof e.code === 'string' ? e.code : '';
+  // Mensajes que el servidor escribe para la persona (raise exception), p. ej. el filtro de malas palabras.
+  if (code === 'P0001' && typeof e.message === 'string' && e.message) return e.message;
   if (code && BY_CODE[code]) return BY_CODE[code];
   const message = typeof e.message === 'string' ? e.message : '';
   if (e.name === 'AuthRetryableFetchError' || /network request failed|failed to fetch|network error|timed? ?out/i.test(message)) {

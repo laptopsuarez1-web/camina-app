@@ -119,3 +119,30 @@ export function rutaMonthShort(month: string) {
 export function rutaDone(s?: RutaState | null) {
   return (s?.stops ?? []).filter((x) => x.visit === 'confirmed').length;
 }
+
+// Premio del sorteo del mes (0089). Lo carga el admin; si no hay (o el servidor todavía no lo tiene), es null.
+export type RutaPrize = {
+  month: string;
+  title: string;
+  detail: string | null;
+  image_url: string | null;
+  sponsor: { id: string; name: string; logo_url: string | null } | null;
+  winners_count: number;
+  drawn_at: string | null;
+  winners: { name: string; ticket_no: number }[];
+  tickets: number;
+};
+
+export function useRutaPrize(month?: string | null) {
+  return useQuery({
+    queryKey: ['ruta-prize', month ?? 'actual'],
+    staleTime: 10 * 60_000,
+    queryFn: async (): Promise<RutaPrize | null> => {
+      const { data, error } = await supabase.rpc('route_prize', month ? { p_month: month } : {});
+      if (error) return null;
+      const p = data as RutaPrize | null;
+      // Solo vale si trae título (si el servidor responde otra cosa, no se muestra nada).
+      return p && typeof p.title === 'string' && p.title ? p : null;
+    },
+  });
+}

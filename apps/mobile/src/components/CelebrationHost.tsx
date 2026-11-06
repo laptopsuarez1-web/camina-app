@@ -11,6 +11,7 @@ import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
+import { RutaDoneScene } from '@/components/ruta/RutaDoneScene';
 import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
 const GOLD = '#E2B33C';
@@ -358,6 +359,7 @@ export function CelebrationHost() {
       {current.kind === 'streak-week' && <StreakWeekScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'group-goal' && <GroupGoalScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ranking-result' && <RankingResultScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'ruta-done' && <RutaDoneScene key={current.id} c={current} onDone={dismiss} />}
     </View>
   );
 }

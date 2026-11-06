@@ -110,7 +110,9 @@ export default function NuevoDesafioScreen() {
   }
 
   if (done) {
-    const toGroup = () => router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } });
+    // Volver al grupo sacando esta pantalla del historial: si no, la flecha "atrás" del grupo traía de nuevo
+    // el paso del nombre del desafío.
+    const toGroup = () => (router.canGoBack() ? router.back() : router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } }));
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
         <ChallengeCreatedScene
@@ -281,7 +283,7 @@ export default function NuevoDesafioScreen() {
             <Glass className="rounded-2xl p-3.5 mt-4">
               <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">Cómo se reparte</Text>
               <Text className="text-[12px] leading-[17px] text-muted-light dark:text-muted-dark mt-1">
-                Los puntos de todos forman un pozo. Lo reparten en partes iguales quienes cumplan la meta diaria en al menos el 80% de los días. Si nadie cumple, cada uno recupera los suyos. Camina no se queda con nada. Los puntos no se compran: solo se ganan caminando.
+                Los puntos de todos forman un pozo. Terminan quienes cumplen la meta diaria en al menos el 80% de los días. El primero en terminar se lleva la mitad del pozo y la otra mitad se reparte entre los demás que terminan. Si termina uno solo, se lleva todo. Si nadie termina, cada uno recupera los suyos. Camina no se queda con nada. Los puntos no se compran: solo se ganan caminando.
               </Text>
             </Glass>
           </>
