@@ -44,7 +44,7 @@ export default function RutaMesScreen() {
 
   async function addPhoto(businessId: string) {
     if (!userId || !m) return;
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5], base64: true });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5] });
     if (r.canceled) return;
     setUploading(businessId);
     try {
