@@ -1,11 +1,12 @@
 import { decode } from 'base64-arraybuffer';
+import { Image } from 'expo-image';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabase';
 
 // Las fotos del celular pesan varios MB y se muestran en círculos de 30-100 px. Se achican a 640 px (JPEG 0,8, ~60-100 KB)
 // antes de subir, así abren rápido en cualquier pantalla. Si no se puede achicar, se sube tal cual.
 const MAX_SIDE = 640;
-async function shrinkToBase64(uri: string, base64?: string | null, MAX = MAX_SIDE): Promise<string> {
+export async function shrinkToBase64(uri: string, base64?: string | null, MAX = MAX_SIDE): Promise<string> {
   try {
     const ctx = ImageManipulator.manipulate(uri);
     const first = await ctx.renderAsync();
@@ -19,6 +20,13 @@ async function shrinkToBase64(uri: string, base64?: string | null, MAX = MAX_SID
     // sigue con la foto original
   }
   return toBase64(uri, base64);
+}
+
+// Deja la foto recién subida ya guardada en el teléfono antes de mostrarla: así, al volver al perfil, aparece al instante
+// (sin esto se veían las iniciales hasta que bajaba de nuevo). Espera como mucho 4 segundos.
+async function warm(url: string) {
+  await Promise.race([Image.prefetch(url, 'memory-disk').catch(() => false), new Promise((r) => setTimeout(r, 4000))]);
+  return url;
 }
 
 // Lee la foto como base64: usa el que ya dio el selector de imágenes y, si no hay, la lee del archivo.
@@ -42,10 +50,10 @@ export async function uploadAvatar(userId: string, uri: string, base64?: string 
   const data = await shrinkToBase64(uri, base64);
   if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
   const path = `${userId}/avatar.jpg`;
-  const { error } = await supabase.storage.from('avatars').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
+  const { error } = await supabase.storage.from('avatars').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
   if (error) throw error;
   // ?v= evita que la app siga mostrando la foto anterior en caché
-  return `${supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
+  return warm(`${supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`);
 }
 
 // Foto del grupo: bucket "group-photos", carpeta = id del grupo (solo quien creó el grupo puede escribir).
@@ -53,9 +61,9 @@ export async function uploadGroupPhoto(groupId: string, uri: string, base64?: st
   const data = await shrinkToBase64(uri, base64);
   if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
   const path = `${groupId}/foto.jpg`;
-  const { error } = await supabase.storage.from('group-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
+  const { error } = await supabase.storage.from('group-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
   if (error) throw error;
-  return `${supabase.storage.from('group-photos').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
+  return warm(`${supabase.storage.from('group-photos').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`);
 }
 
 // Foto de fondo del perfil (0083): bucket público "profile-banners", más grande que el avatar (1280 px) porque va a lo ancho.
@@ -63,9 +71,9 @@ export async function uploadBanner(userId: string, uri: string, base64?: string 
   const data = await shrinkToBase64(uri, base64, 1280);
   if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
   const path = `${userId}/banner.jpg`;
-  const { error } = await supabase.storage.from('profile-banners').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
+  const { error } = await supabase.storage.from('profile-banners').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
   if (error) throw error;
-  return `${supabase.storage.from('profile-banners').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
+  return warm(`${supabase.storage.from('profile-banners').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`);
 }
 
 // Fotos viejas: antes del 1 de noviembre las fotos se subían en tamaño completo (varios MB) y por eso tardaban en

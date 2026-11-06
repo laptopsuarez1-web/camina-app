@@ -33,7 +33,6 @@ export default function CompletarPerfilScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.7,
-      base64: true,
       allowsEditing: true,
       aspect: [1, 1],
     });

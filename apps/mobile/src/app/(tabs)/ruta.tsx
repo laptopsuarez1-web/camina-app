@@ -245,7 +245,7 @@ export default function RutaScreen() {
 
   async function addVisitPhoto(businessId: string) {
     if (!userId || !state) return;
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5], base64: true });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5] });
     if (r.canceled) return;
     try {
       await uploadRoutePhoto(userId, state.month, businessId, r.assets[0].uri, r.assets[0].base64);

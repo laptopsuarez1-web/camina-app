@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { decode } from 'base64-arraybuffer';
 import { supabase } from '@/lib/supabase';
-import { toBase64 } from '@/lib/avatar';
+import { shrinkToBase64 } from '@/lib/avatar';
 import { useAuthStore } from '@/store/useAuthStore';
 
 // Insignias (migración 0083). Las insignias de una persona son públicas: las ve cualquiera en su perfil.
@@ -132,7 +132,8 @@ export function useMyRoute(month?: string | null) {
 
 // Sube la foto de una visita de la Ruta (una por local; la nueva reemplaza a la anterior).
 export async function uploadRoutePhoto(userId: string, month: string, businessId: string, uri: string, base64?: string | null) {
-  const data = await toBase64(uri, base64);
+  // Achicada a 1280 px antes de subir (una foto del celular pesa varios MB).
+  const data = await shrinkToBase64(uri, base64, 1280);
   const path = `${userId}/${month}-${businessId}.jpg`;
   const { error } = await supabase.storage.from('route-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;

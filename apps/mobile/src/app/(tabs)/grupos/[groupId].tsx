@@ -172,7 +172,7 @@ export default function GroupDetailScreen() {
   // Foto y fondo los cambia solo quien creó el grupo (policies de la migración 0069).
   async function pickGroupPhoto() {
     if (!groupId) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1], base64: true });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1] });
     if (result.canceled) return;
     setLookBusy(true);
     try {
