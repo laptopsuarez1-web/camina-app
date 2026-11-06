@@ -109,21 +109,25 @@ export async function healOldPhotos(profile: { id: string; photo_url?: string | 
   const patch: Record<string, string> = {};
   for (const j of jobs) {
     if (!j.url || !j.url.includes(`/object/public/${j.bucket}/`)) continue;
-    const key = HEAL_KEY + j.url;
+    // La marca es por archivo (bucket + ruta), NO por link: el link cambia en cada subida (?v=), y con la marca por link
+    // la foto recién achicada se volvía a bajar, achicar y subir en CADA arranque (6/11: el banner se resubía una y otra
+    // vez justo cuando se abría Perfil o Ranking, y la app se cerraba). Se marca ANTES de empezar: si algo falla o la app
+    // se cierra a mitad, no se reintenta en bucle.
+    const key = `${HEAL_KEY}${j.bucket}/${j.path}`;
     try {
       if (await AsyncStorage.getItem(key)) continue;
+      await AsyncStorage.setItem(key, '1');
     } catch {
       continue;
     }
     const size = await contentLength(j.url);
-    if (size != null && size > j.limit) {
-      const data = await shrinkRemote(j.url, j.max);
-      if (!data) continue;
-      const { error } = await supabase.storage.from(j.bucket).upload(j.path, decode(data), { contentType: 'image/jpeg', upsert: true });
-      if (error) continue;
-      patch[j.col] = `${supabase.storage.from(j.bucket).getPublicUrl(j.path).data.publicUrl}?v=${Date.now()}`;
-    }
-    if (size != null) AsyncStorage.setItem(key, '1').catch(() => {});
+    if (size == null || size <= j.limit) continue;
+    const data = await shrinkRemote(j.url, j.max);
+    // Solo se sube si de verdad quedó más liviana (base64 pesa ~4/3 del archivo).
+    if (!data || (data.length * 3) / 4 >= size) continue;
+    const { error } = await supabase.storage.from(j.bucket).upload(j.path, decode(data), { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
+    if (error) continue;
+    patch[j.col] = `${supabase.storage.from(j.bucket).getPublicUrl(j.path).data.publicUrl}?v=${Date.now()}`;
   }
   if (!Object.keys(patch).length) return null;
   const { error } = await supabase.from('profiles').update(patch).eq('id', profile.id);

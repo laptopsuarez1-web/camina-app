@@ -54,7 +54,7 @@ export default function TabsLayout() {
         const cur = useAuthStore.getState().profile;
         if (patch && cur?.id === p.id) useAuthStore.getState().setProfile({ ...cur, ...patch });
       }).catch(() => {});
-    }, 4000);
+    }, 15000);
     return () => clearTimeout(t);
   }, [profileId]);
 

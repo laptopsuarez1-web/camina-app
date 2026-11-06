@@ -67,6 +67,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 // Cuenta cuántas veces cambió la sesión: una respuesta lenta de una lectura anterior no pisa a la más nueva.
 let sessionSeq = 0;
+// Cuántas publicaciones de sesión siguen leyendo el perfil. Mientras haya alguna, la app NO puede darse por
+// "inicializada sin sesión": al abrir, la lectura del arranque y el evento INITIAL_SESSION publican a la vez, y si la
+// más vieja terminaba primero, se marcaba "ya no inicializando" con la sesión todavía vacía y salía el login con la
+// sesión viva (en los logs de Supabase: sesión y perfil leídos bien, y ningún pedido más hasta que la persona volvía a entrar).
+let publishing = 0;
 
 // Publica sesión y perfil JUNTOS. Si se publicara la sesión primero, hay un instante con sesión y sin perfil en que
 // la app creería que la persona es nueva y la mandaría al alta de cuenta (que pisa nombre, ciudad y zona).
@@ -77,9 +82,14 @@ async function publishSession(session: Session | null) {
     return;
   }
   const userId = session.user.id;
-  const read = await readProfile(userId);
-  if (seq !== sessionSeq) return;
-  useAuthStore.setState({ session, ...profilePatch(read, userId, useAuthStore.getState().profile), initializing: false });
+  publishing++;
+  try {
+    const read = await readProfile(userId);
+    if (seq !== sessionSeq) return;
+    useAuthStore.setState({ session, ...profilePatch(read, userId, useAuthStore.getState().profile), initializing: false });
+  } finally {
+    publishing--;
+  }
 }
 
 
@@ -252,7 +262,8 @@ export function initAuthListener() {
       // Si falla la lectura local seguimos sin sesión, en vez de dejar el spinner para siempre.
     })
     .then((r) => {
-      if (r !== 'waiting') useAuthStore.setState({ initializing: false });
+      // Si otra publicación sigue leyendo el perfil, ella marca el fin de la carga cuando termine (con la sesión puesta).
+      if (r !== 'waiting' && publishing === 0) useAuthStore.setState({ initializing: false });
     });
 
   supabase.auth.onAuthStateChange(async (event, session) => {
