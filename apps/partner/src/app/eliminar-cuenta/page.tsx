@@ -49,7 +49,7 @@ export default function EliminarCuentaPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="font-bold text-[15px] mb-2">Si sos un comercio</h2>
+        <h2 className="font-bold text-[15px] mb-2">Si eres un comercio</h2>
         <p className="text-[13.5px] leading-6 text-muted">
           Entra al panel, abre Perfil y elige Eliminar cuenta y negocio de Camina, o escríbenos al mismo correo.
         </p>

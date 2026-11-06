@@ -96,7 +96,7 @@ export function RutaStopSheet({ stop, onClose, onMark }: { stop: RutaStop | null
               {!visited && !waiting ? (
                 <Press accessibilityRole="button" onPress={() => onMark(stop)}
                   style={{ marginTop: 10, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
-                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 15 }}>Ya estoy acá: marcar visita</Text>
+                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 15 }}>Ya estoy aquí: marcar visita</Text>
                 </Press>
               ) : null}
               <Text style={{ color: '#8E82AE', fontSize: 12, textAlign: 'center', marginTop: 10 }}>En la Ruta compras lo que quieras: no se usan Puntos ni descuentos.</Text>
