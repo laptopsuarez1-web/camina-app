@@ -16,7 +16,7 @@ begin
   perform tt.t_eq('Ana le manda una solicitud a Beto', r, 'sent');
   select send_friend_request(b) into r;
   perform tt.t_eq('repetirla no duplica: sigue pendiente', r, 'pending');
-  perform tt.t_raises('no se puede agregar a uno mismo', format('select send_friend_request(%L)', a), 'vos mismo');
+  perform tt.t_raises('no se puede agregar a uno mismo', format('select send_friend_request(%L)', a), 'ti mismo');
   select count(*) into n from my_friends();
   perform tt.t_eq('mientras no acepta, Ana no tiene amigos', n, 0);
   select count(*) into n from friends_weekly_ranking();

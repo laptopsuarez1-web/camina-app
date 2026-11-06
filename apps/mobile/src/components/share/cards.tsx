@@ -871,7 +871,8 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
 // Versión transparente de cada lámina (sin fondo, texto blanco): se pega como sticker sobre la foto o el video de la historia.
 export function WrappedOverlay({ data, index }: { data: WrappedData; index: number }) {
   const slide = !data.rank && index >= 3 ? index + 1 : index;
-  const nm = data.name ? ` de ${data.name}` : '';
+  // Con nombre: "El octubre de Marcos" (no "Mi octubre de Marcos"). Sin nombre: "Mi octubre".
+  const mesDe = data.name ? `El ${data.monthName} de ${data.name}` : `Mi ${data.monthName}`;
   const big = (v: string, size = 76) => {
     const fs = fitSize(v, size, CARD_W - 52);
     return <Text style={[{ fontSize: fs, lineHeight: Math.round(fs * 1.1), fontWeight: '800', color: '#FFFFFF', letterSpacing: -2 }, SHADOW]} numberOfLines={1}>{v}</Text>;
@@ -883,7 +884,7 @@ export function WrappedOverlay({ data, index }: { data: WrappedData; index: numb
   );
   let body: ReactNode;
   if (slide === 0) {
-    body = (<>{kick(`Mi ${data.monthName}${nm} en Camina`)}{big(fmtInt(data.steps))}{sub('pasos')}
+    body = (<>{kick(`${mesDe} en Camina`)}{big(fmtInt(data.steps))}{sub('pasos')}
       {stats([{ label: 'Promedio', value: fmtInt(data.avgPerDay), unit: 'pasos/día' }, { label: 'Distancia', value: fmtKm(data.km), unit: 'km' }, { label: 'Meta', value: `${data.daysMet}/${data.days}`, unit: 'días' }])}</>);
   } else if (slide === 1) {
     body = (<>{kick('Mi día más activo')}{big(data.best ? shortDay(data.best.key) : '–', 60)}{sub(data.best ? `${fmtInt(data.best.steps)} pasos` : '')}</>);
@@ -895,7 +896,7 @@ export function WrappedOverlay({ data, index }: { data: WrappedData; index: numb
     body = (<>{kick(`Puntos ganados en ${data.monthName}`)}{big(fmtInt(data.points.total), 90)}{sub('Puntos')}
       {stats([{ label: 'Por pasos', value: `+${fmtInt(data.points.steps)}` }, ...(data.points.bonus > 0 ? [{ label: 'Bonos', value: `+${fmtInt(data.points.bonus)}` }] : [])])}</>);
   } else {
-    body = (<>{kick(`Mi ${data.monthName}${nm} en resumen`)}{big(fmtInt(data.steps), 60)}{sub('pasos')}
+    body = (<>{kick(`${mesDe} en resumen`)}{big(fmtInt(data.steps), 60)}{sub('pasos')}
       {stats([{ label: 'Promedio', value: fmtInt(data.avgPerDay), unit: 'pasos/día' }, { label: 'Distancia', value: fmtKm(data.km), unit: 'km' }, { label: 'Meta', value: `${data.daysMet}/${data.days}`, unit: 'días' }])}</>);
   }
   return <CardFrame theme="dark" format="overlay" label="">{body}</CardFrame>;

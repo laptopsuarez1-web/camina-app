@@ -445,8 +445,8 @@ export function PasosComercio() {
 
 const BENEFICIOS = [
   ['Apareces en el mapa', 'La gente de tu zona te encuentra cuando elige dónde canjear.'],
-  ['Vos eliges el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
-  ['Vos pones el cupo', 'Defines cuántos cupones das por día, o ilimitados.'],
+  ['Tú eliges el premio', 'Un regalo o un descuento, con tus horarios y tus condiciones.'],
+  ['Tú pones el cupo', 'Defines cuántos cupones das por día, o ilimitados.'],
   ['Se valida en segundos', 'Le dices a tu cliente el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado al instante.'],
   ['Todos los locales tienen su oportunidad', 'Nadie puede volver a canjear en el mismo local hasta pasados 14 días (dos semanas). Los canjes se reparten entre todos los comercios y ningún cliente acapara tu cupo.'],
   ['Reseñas en Google Maps', 'Después de cada canje confirmado, la app invita a la persona a calificar tu local en Google Maps, con el link que cargas en tu ficha.'],

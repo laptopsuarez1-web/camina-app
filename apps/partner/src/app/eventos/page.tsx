@@ -275,7 +275,7 @@ export default function EventosPage() {
                 </div>
               )}
               <label className="flex items-center gap-2 text-[13.5px] font-semibold">
-                <input type="checkbox" checked={usePaid} onChange={(e) => setUsePaid(e.target.checked)} /> Se compran con plata
+                <input type="checkbox" checked={usePaid} onChange={(e) => setUsePaid(e.target.checked)} /> Se compran con dinero
               </label>
               {usePaid && (
                 <div className="pl-6">
@@ -293,7 +293,7 @@ export default function EventosPage() {
                 <input value={ticketContact} maxLength={300} onChange={(e) => setTicketContact(e.target.value)} placeholder={ticketMode === 'whatsapp' ? 'Tu número. Ej: 70000000' : 'https://… (web, Instagram, Facebook, TikTok)'} className={field} aria-label="Contacto para entradas" />
                 <p className="text-muted text-[12px] mt-1">{usePaid ? 'A donde va la persona para comprar.' : usePoints ? 'Quien canjea puede hablarte por aquí.' : 'Si lo dejas vacío, la gente toca “Anotarme”. Si lo pones, en la app aparece un botón para contactarte.'}</p>
               </div>
-              {badTicket && <p className="text-warn text-[12.5px]">Revisa las entradas: con plata hace falta precio y contacto; el link empieza con https:// o un número válido.</p>}
+              {badTicket && <p className="text-warn text-[12.5px]">Revisa las entradas: con dinero hace falta precio y contacto; el link empieza con https:// o un número válido.</p>}
             </div>
           )}
 

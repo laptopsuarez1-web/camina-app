@@ -109,7 +109,7 @@ export default function AdminRutaPage() {
     <AdminShell>
       <h1 className="text-[22px] font-bold text-text mb-1">Premio de la Ruta del mes</h1>
       <p className="text-muted text-[13.5px] mb-5 max-w-[620px]">
-        Quien completa su Ruta (3 locales) recibe un boleto. Carga acá el premio de cada mes: se muestra en la app y en la web.
+        Quien completa su Ruta (3 locales) recibe un boleto. Carga aquí el premio de cada mes: se muestra en la app y en la web.
         Cuando termina el mes, toca Sortear: salen al azar entre los boletos y les llega un aviso.
       </p>
 

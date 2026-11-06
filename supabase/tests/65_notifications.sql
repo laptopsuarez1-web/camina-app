@@ -41,7 +41,7 @@ begin
   perform tt.give(c, 8, 30);                                  -- vencen lejos
   perform queue_expiring_points_notifications();
   select o.body into msg from notifications_outbox o where o.user_id = a and o.data->>'type' = 'points_expiring';
-  perform tt.t_true('avisa cuántos Puntos se vencen en los próximos 5 días', msg like 'Tenés 8 Puntos que se vencen%');
+  perform tt.t_true('avisa cuántos Puntos se vencen en los próximos 5 días', msg like 'Tienes 8 Puntos que se vencen%');
   select count(*) into n from notifications_outbox where user_id in (b, c) and data->>'type' = 'points_expiring';
   perform tt.t_eq('no avisa si ya los gastó o si vencen lejos', n, 0);
   perform queue_expiring_points_notifications();
@@ -50,7 +50,7 @@ begin
   d := tt.mk_user(); perform tt.give(d, 1, 2);
   perform queue_expiring_points_notifications();
   select o.body into msg from notifications_outbox o where o.user_id = d and o.data->>'type' = 'points_expiring';
-  perform tt.t_true('singular: "1 Punto que se vence"', msg like 'Tenés 1 Punto que se vence%');
+  perform tt.t_true('singular: "1 Punto que se vence"', msg like 'Tienes 1 Punto que se vence%');
 end $$;
 
 rollback;

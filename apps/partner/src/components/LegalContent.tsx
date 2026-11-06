@@ -107,7 +107,7 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Menores de edad</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Camina es para personas de 13 años o más. Si sos menor de edad, usa la app con el conocimiento de tu madre, padre o tutor."}
+          {"Camina es para personas de 13 años o más. Si eres menor de edad, usa la app con el conocimiento de tu madre, padre o tutor."}
         </p>
       </section>
 

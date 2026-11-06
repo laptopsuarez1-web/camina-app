@@ -80,7 +80,7 @@ begin
   t := redeem_event_ticket(ev);
   perform tt.t_eq('canje: descuenta 30 Puntos', user_points_balance(u1), 70);
   perform tt.t_true('canje: queda anotado', exists (select 1 from promotion_entries where promotion_id = ev and user_id = u1));
-  perform tt.t_raises('no se canjea dos veces', format('select redeem_event_ticket(%L)', ev), 'Ya tenés');
+  perform tt.t_raises('no se canjea dos veces', format('select redeem_event_ticket(%L)', ev), 'Ya tienes');
   perform tt.t_as(u2);
   t := redeem_event_ticket(ev);
   perform tt.t_eq('cupo: 2 canjeadas', (select taken from promotion_ticket_counts() where promotion_id = ev), 2);
