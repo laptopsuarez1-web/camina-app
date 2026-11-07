@@ -133,6 +133,7 @@ export default function NuevoDesafioScreen() {
           chips={[RULE_LABEL[rule], rule === 'ruta' ? 'Gana quien visita más locales' : `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
           stake={stake}
           dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
+          days={days}
           me={meP}
           others={othersP}
           onInvite={() =>

@@ -1180,7 +1180,7 @@ const DUDAS = [
   ['¿Tengo que pagar algo?', 'No. Camina es gratis para todos y no te pedimos datos de pago.'],
   ['¿Necesito ir al gimnasio?', 'No. Cuentan los pasos de tu día: al trabajo, a la tienda, a la plaza.'],
   ['¿Cómo cuenta mis pasos?', 'Con Salud en iPhone o Health Connect en Android. Solo abre la app una vez al día.'],
-  ['¿Qué es la Ruta del mes?', 'Un evento mensual en Eventos: te tocan 3 locales sorpresa, los visitas y compras lo que quieras (no se usan Puntos). Al completarla ganas un Día doble, la insignia del mes y un boleto para el sorteo del premio del mes.'],
+  ['¿Qué es la Ruta del mes?', 'Un evento mensual en Eventos: te tocan 3 locales sorpresa, los visitas y compras lo que quieras (no se usan Puntos). Al completarla ganas un Día doble y la insignia del mes.'],
   ['¿Cómo cuenta una visita de la Ruta?', 'Al pagar, le pides al local el código de la Ruta y lo escribes en la app estando ahí. El local confirma tu compra y se suma a tu Ruta.'],
   ['¿Dónde canjeo mis Puntos?', 'En los comercios aliados que ves en el mapa de la app. Pides el código del local y listo.'],
 ];
@@ -1238,47 +1238,40 @@ const VID_RUTA = {
   participar: VID('ruta-participar'),
   local: VID('ruta-local-sumado'),
   album: VID('ruta-album'),
-  completa: VID('ruta-completada'),
-  protagonista: VID('ruta-protagonista'),
   desafio: VID('ruta-desafio-grupo'),
+  inicio: VID('ruta-inicio'),
 };
 
 // Para ti: la Ruta del mes.
 export function RutaGente() {
-  const pasos = [
-    ['Toca Participar', 'Cada mes hay una Ruta nueva en Eventos, con el premio del sorteo a la vista.'],
-    ['Te tocan 3 locales sorpresa', 'Caen en tu mapa con el camino a pie por las calles. Si uno no te convence, lo cambias.'],
-    ['Visítalos y compra lo que quieras', 'Sin Puntos ni descuentos, hasta fin de mes. Al pagar escribes el código de la Ruta que te da el local.'],
-    ['Completas tu Ruta y ganas', 'Día doble de pasos, la insignia del mes, un boleto del sorteo y 2 cambios de local el mes siguiente.'],
-  ];
+  // Los pasos van abajo y chiquitos: primero se ven las pantallas.
+  const pasos = ['Toca Participar', 'Te tocan 3 locales sorpresa', 'Visítalos y compra lo que quieras', 'Completa tu Ruta'];
   return (
     <section className="lp-sec alt" id="ruta" data-modo="oscuro">
       <div className="wrap">
         <p className="kick">Evento del mes</p>
         <Kinetic text="Tu Ruta *del* *mes.*" />
-        <p className="lead">Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa con tu recorrido y premios por completarla.</p>
-        <ol className="flow">
-          {pasos.map(([t, d], i) => (
-            <InView as="li" key={t} delay={i * 110}>
-              <span className="num">{i + 1}</span>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </InView>
-          ))}
-        </ol>
+        <p className="lead">Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa con tu recorrido y tu álbum de fotos del mes.</p>
       </div>
       <Deslizable
         id="gal-ruta"
-        nota="Videos de la app real; los locales, el premio y las fotos son de ejemplo."
+        nota="Videos de la app real; los locales y las fotos son de ejemplo."
         pant={[
-          ['Toca Participar', 'Ves el premio y tus 3 locales caen en el mapa.', ...VID_RUTA.participar],
-          ['Sumaste un local', 'El local confirmó tu compra y se llena tu Ruta.', ...VID_RUTA.local],
-          ['Tu álbum', 'Una foto por local, para compartir en historias.', ...VID_RUTA.album],
-          ['Ruta completada', 'Tu insignia, tu boleto y tu Día doble.', ...VID_RUTA.completa],
+          ['Toca Participar', 'Tus 3 locales caen en el mapa, uno por uno.', ...VID_RUTA.participar],
+          ['Siempre en Inicio', 'Tu Ruta del mes, a un toque.', ...VID_RUTA.inicio],
+          ['Visita confirmada', 'El local confirma y se llena tu aro.', ...VID_RUTA.local],
+          ['Tu álbum', 'Tocas la insignia y ves tus fotos de cada local.', ...VID_RUTA.album],
           ['Con tu grupo', 'Desafío "Ruta del mes": gana quien visita más locales.', ...VID_RUTA.desafio],
-          ['En Eventos', 'Tu Ruta del mes, siempre a mano.', CAP_RUTA.evento],
         ]}
       />
+      <div className="wrap">
+        <ol className="pasitos" aria-label="Cómo funciona">
+          {pasos.map((t, i) => (
+            <li key={t}><span>{i + 1}</span>{t}</li>
+          ))}
+        </ol>
+        <p className="pasitos-nota">Compras lo que quieras: en la Ruta no se usan Puntos ni descuentos. Al completarla ganas la insignia del mes y un Día doble de pasos.</p>
+      </div>
     </section>
   );
 }
@@ -1315,7 +1308,7 @@ const GANA_RUTA = [
   ['Un código solo para la Ruta', 'Sabes por qué vinieron y confirmas con un toque.'],
   ['Te recomiendan', 'En historias, en su álbum y en desafíos de grupos.'],
   ['Todo en tu resumen', 'Visitas, clientes nuevos y cuántos te tienen en su Ruta.'],
-  ['Sin costo ni configurar', 'En cualquier plan. Los premios los pone Camina.'],
+  ['Sin costo ni configurar', 'En cualquier plan. No pones premios ni descuentos.'],
 ];
 export function RutaComercio() {
   return (
@@ -1324,9 +1317,21 @@ export function RutaComercio() {
         <p className="kick">La Ruta del mes</p>
         <Kinetic text="Gente nueva en tu local, *sin* *regalar* *nada.*" />
         <p className="lead">
-          Cada mes cada persona recibe 3 locales sorpresa para visitar y comprar. Quien completa su Ruta gana premios de Camina, no tuyos:
-          tú recibes clientes que vienen a comprar.
+          Cada mes cada persona recibe 3 locales sorpresa para visitar y comprar. Tú no regalas nada: recibes clientes que vienen a comprar.
         </p>
+      </div>
+      <Deslizable
+        id="gal-ruta-local"
+        nota="Videos de la app real; los locales y las fotos son de ejemplo. No entran gimnasios, canchas, tiendas online, ópticas, joyerías, tecnología ni lavanderías."
+        pant={[
+          ['Tu local en su mapa', 'Sus 3 locales caen en el mapa con el camino a pie.', ...VID_RUTA.participar],
+          ['Compró en tu local', 'Confirmas con un toque y lo festejan con tu logo.', ...VID_RUTA.local],
+          ['Su álbum del mes', 'Tu local queda en sus fotos y en sus historias.', ...VID_RUTA.album],
+          ['En sus grupos', 'Desafíos de grupo para visitar locales de la Ruta.', ...VID_RUTA.desafio],
+        ]}
+      />
+      {/* Lo que gana el local, debajo de las pantallas. */}
+      <div className="wrap">
         <ul className="gana">
           {GANA_RUTA.map(([t, d], i) => (
             <InView as="li" key={t} delay={(i % 2) * 90}>
@@ -1335,25 +1340,7 @@ export function RutaComercio() {
             </InView>
           ))}
         </ul>
-        <InView className="protagonista" delay={100}>
-          <div>
-            <p className="kick">Local protagonista del mes</p>
-            <h3>Regala el premio del sorteo y tu local brilla en dorado en toda la Ruta.</h3>
-            <p>Pin y ficha con marco dorado, y tu logo en la tarjeta del premio que todos ven en Eventos.</p>
-          </div>
-          <a className="lp-btn gold" href={WA('Hola! Quiero que mi local sea el protagonista de la Ruta del mes.')}>Quiero ser protagonista</a>
-        </InView>
       </div>
-      <Deslizable
-        id="gal-ruta-local"
-        nota="Videos de la app real; los locales, el premio y las fotos son de ejemplo. No entran gimnasios, canchas, tiendas online, ópticas, joyerías, tecnología ni lavanderías."
-        pant={[
-          ['Tu local en su mapa', 'Sus 3 locales caen en el mapa con el camino a pie.', ...VID_RUTA.participar],
-          ['Local protagonista', 'Marco dorado y tu premio a la vista.', ...VID_RUTA.protagonista],
-          ['Compró en tu local', 'Lo festejan con tu logo y lo comparten.', ...VID_RUTA.local],
-          ['Su álbum del mes', 'Tu local queda en sus recuerdos.', ...VID_RUTA.album],
-        ]}
-      />
     </section>
   );
 }

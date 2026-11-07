@@ -158,11 +158,6 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
               : <Text style={{ color: '#fff', fontWeight: '900', fontSize: L * 0.42 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
           </View>
         </Reveal>
-        <Stamp tl={tl} delay={900} style={{ position: 'absolute', right: R / 2 - L / 2 - 12, bottom: R / 2 - L / 2 - 12 }}>
-          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#62F0B6', borderWidth: 3, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 16 }}>✓</Text>
-          </View>
-        </Stamp>
       </View>
       <Reveal tl={tl} delay={1050} style={{ marginTop: 20 }}>
         <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>¡Visita confirmada!</Text>

@@ -183,6 +183,16 @@ export default function RutaScreen() {
     return () => clearTimeout(t);
   }, [shown, stops.length]);
 
+  // Vista web (sin cámara que viaje): los pines caen uno por uno en el mapa fijo y después se dibuja la línea.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !intro || !stops.length) return;
+    const ts: ReturnType<typeof setTimeout>[] = [];
+    stops.forEach((_, i) => ts.push(setTimeout(() => setShown(i + 1), 500 + i * 1900)));
+    ts.push(setTimeout(() => { setLineOn(true); setIntro(false); router.setParams({ nueva: undefined }); }, 500 + stops.length * 1900 + 300));
+    return () => ts.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intro, stops.length]);
+
   // Seguro: si el mapa no llega a cargar (sin red o sin coordenadas), los locales igual se muestran después de la animación.
   useEffect(() => {
     if (!intro || !stops.length) return;
@@ -447,6 +457,10 @@ export default function RutaScreen() {
                   {vis.map((s) => {
                     const q = project(P(s).latitude, P(s).longitude);
                     const dx = webOffs.get(s.business_id) ?? 0;
+                    // Durante la llegada, el último local que apareció cae con su animación.
+                    if (intro && s === vis[vis.length - 1]) {
+                      return <DropPin key={`drop-${s.business_id}`} stop={s} n={vis.length} total={stops.length} hidePin={false} x={q.x + dx} y={q.y} />;
+                    }
                     return (
                       <View key={s.business_id} style={{ position: 'absolute', left: 0, top: 0 }}>
                         {dx ? <View pointerEvents="none" style={{ position: 'absolute', left: q.x - 5, top: q.y - 5, width: 10, height: 10, borderRadius: 5, backgroundColor: MINT, borderWidth: 2, borderColor: '#16111f' }} /> : null}
