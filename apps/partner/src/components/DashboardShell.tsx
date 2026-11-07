@@ -8,6 +8,7 @@ import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellR
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { faltantesParaPublicar, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
@@ -112,7 +113,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
         <div>
           <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-          <p className="text-auth-muted text-[10.5px] mt-0.5">Panel de comercios</p>
+          <p className="text-[#D9D0F2] text-[11px] mt-0.5">Panel de comercios</p>
         </div>
       </div>
 
@@ -131,7 +132,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => setMasAbierto(!masAbierto)}
               aria-expanded={masAbierto}
-              className="flex items-center justify-between px-3 pt-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9385B5]"
+              className="flex items-center justify-between px-3 pt-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#C4B8E8]"
             >
               Más
               <ChevronDown size={14} className={masAbierto ? 'rotate-180 transition-transform' : 'transition-transform'} />
@@ -147,15 +148,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <div className="mt-auto pt-5">
         {role === 'owner' && (
           <Link href="/plan" className="block bg-auth-bg-soft rounded-xl p-3 mb-2.5">
-            <p className="text-auth-muted text-[10.5px] mb-1">Plan actual</p>
-            <p className="text-mint text-[13px] font-semibold">{PLAN_NOMBRE[business.plan]}</p>
+            <p className="text-[#E4DDF7] text-[12px] mb-1">Plan actual</p>
+            <p className="text-mint text-[15px] font-bold">{PLAN_NOMBRE[business.plan]}</p>
             {vence && (
-              <p className="text-auth-muted text-[10.5px] mt-0.5">
+              <p className="text-[#E4DDF7] text-[12px] mt-0.5">
                 {vence.fecha ? `${vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} ${fechaCorta(vence.fecha)}` : 'Gratis: empieza cuando salga la app'}
               </p>
             )}
           </Link>
         )}
+        <ThemeToggle />
         <a
           href={`https://wa.me/59162714286?text=${encodeURIComponent('Hola! Soy de ' + (business.name ?? 'un comercio') + ' y necesito ayuda con el panel de Camina.')}`}
           target="_blank"
@@ -167,7 +169,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </a>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"
+          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#D9D0F2] text-[13px] md:text-[12.5px]"
         >
           <LogOut size={15} />
           Cerrar sesión
@@ -259,10 +261,10 @@ function NavLink({ item, active, plan }: { item: NavItem; active: boolean; plan:
     <Link
       href={item.href}
       className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
-        active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
+        active ? 'bg-mint/10 text-white font-semibold' : 'text-[#D9D0F2]'
       }`}
     >
-      <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
+      <Icon size={16} color={active ? '#7FEDC4' : '#C4B8E8'} />
       <span className="flex-1">{item.label}</span>
       {bloqueado && <Lock size={12} color="#9385B5" aria-label="No incluido en tu plan" />}
     </Link>
