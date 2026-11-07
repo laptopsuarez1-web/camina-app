@@ -1227,7 +1227,7 @@ export function AsiTeVen() {
 
 // Capturas nuevas (solo en oscuro): Ruta del mes e insignias.
 const CAP_RUTA = {
-  evento: '/web/cap/eventos-ruta-dark.jpg',
+  evento: '/web/cap/eventos-ruta-v2-dark.jpg',
   insignias: '/web/cap/insignias-dark.jpg',
   insignia: '/web/cap/insignia-detalle-dark.jpg',
   perfil: '/web/cap/perfil-insignias-dark.jpg',
@@ -1243,15 +1243,13 @@ const VID_RUTA = {
   desafio: VID('ruta-desafio-grupo'),
 };
 
-const PREMIOS_RUTA = ['Día doble: tus pasos valen el doble un día', 'Insignia exclusiva del mes', 'Boleto para el sorteo del mes', '2 cambios de local el mes siguiente'];
-
 // Para ti: la Ruta del mes.
 export function RutaGente() {
   const pasos = [
     ['Toca Participar', 'Cada mes hay una Ruta nueva en Eventos, con el premio del sorteo a la vista.'],
     ['Te tocan 3 locales sorpresa', 'Caen en tu mapa con el camino a pie por las calles. Si uno no te convence, lo cambias.'],
     ['Visítalos y compra lo que quieras', 'Sin Puntos ni descuentos, hasta fin de mes. Al pagar escribes el código de la Ruta que te da el local.'],
-    ['Completas tu Ruta y ganas', 'Guardas una foto de cada visita en tu álbum y te llevas los premios.'],
+    ['Completas tu Ruta y ganas', 'Día doble de pasos, la insignia del mes, un boleto del sorteo y 2 cambios de local el mes siguiente.'],
   ];
   return (
     <section className="lp-sec alt" id="ruta" data-modo="oscuro">
@@ -1268,10 +1266,6 @@ export function RutaGente() {
             </InView>
           ))}
         </ol>
-        <InView className="gana-reglas" delay={100}>
-          <h3>Lo que ganas al completarla</h3>
-          <div className="chips">{PREMIOS_RUTA.map((r) => <span key={r}>{r}</span>)}</div>
-        </InView>
       </div>
       <Deslizable
         id="gal-ruta"
@@ -1317,17 +1311,11 @@ export function InsigniasGente() {
 // Comercios: la Ruta del mes como lo principal.
 const GANA_RUTA = [
   ['Compran sin gastar Puntos', 'Pagan como cualquier cliente. Sin descuento ni regalo.'],
-  ['Clientes nuevos cada mes', 'Los locales se reparten al azar entre la gente.'],
-  ['Tu logo en su mapa', 'Con el camino a pie hasta tu puerta.'],
-  ['Tu ficha a la vista', 'Fotos, dirección, horario y redes.'],
-  ['Un código solo para la Ruta', 'Sabes al instante por qué vinieron.'],
-  ['Confirmas con un toque', '"Compró" o "No compró" desde tu panel.'],
-  ['Te recomiendan', 'Comparten tu local en historias y en su álbum.'],
-  ['Vuelven', 'Cada visita sube su nivel: Visitante, Habitual, Fan.'],
-  ['Grupos que te buscan', 'Desafíos de amigos por visitar más locales.'],
-  ['Todo en tu resumen', 'Visitas, nuevos y cuánta gente te tiene en su Ruta.'],
-  ['Sin costo para ti', 'En cualquier plan. Los premios los pone Camina.'],
-  ['Sin configurar nada', 'Con tu dirección y tu código ya participas.'],
+  ['Clientes nuevos cada mes', 'Tu logo en su mapa, con el camino a pie hasta tu puerta.'],
+  ['Un código solo para la Ruta', 'Sabes por qué vinieron y confirmas con un toque.'],
+  ['Te recomiendan', 'En historias, en su álbum y en desafíos de grupos.'],
+  ['Todo en tu resumen', 'Visitas, clientes nuevos y cuántos te tienen en su Ruta.'],
+  ['Sin costo ni configurar', 'En cualquier plan. Los premios los pone Camina.'],
 ];
 export function RutaComercio() {
   return (
