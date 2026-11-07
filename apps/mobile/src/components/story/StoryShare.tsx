@@ -8,7 +8,8 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
-import { Instagram, Clock, CheckCircle2, X, Star, Camera } from '@/components/icons';
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
 
@@ -108,48 +109,68 @@ export function FollowupQuestion({ businessName, onAnswer }: { businessName: str
   );
 }
 
-export function ReviewStep({ businessName, onReview, onSkip }: { businessName: string; onReview: () => void; onSkip: () => void }) {
+// Cinco estrellas que se encienden una por una (Google Maps pide de 1 a 5).
+function StarRow() {
   return (
-    <View className="w-full">
-      <View className="rounded-3xl px-5 py-5 items-center" style={{ backgroundColor: '#FFF3D1' }}>
-        <View className="items-center justify-center rounded-full mb-2.5" style={{ width: 46, height: 46, backgroundColor: '#FFE08A' }}>
-          <Star size={24} color="#C98A0B" weight="fill" />
-        </View>
-        <Text className="text-[16px] font-bold text-center" style={{ color: '#5E4205' }}>¿Dejarías una reseña en Google Maps?</Text>
-        <Text className="text-[12.5px] text-center mt-1 mb-4" style={{ color: '#6B4C08' }}>Es opcional. A {businessName} le ayuda mucho.</Text>
-        <Press accessibilityRole="link" onPress={onReview} className="w-full rounded-2xl py-3 items-center" style={{ backgroundColor: '#8F6307' }}>
-          <Text className="text-white font-bold text-[14px]">Dejar reseña</Text>
-        </Press>
-      </View>
-      <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
-        <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
-      </Press>
+    <View className="flex-row items-center justify-center" style={{ gap: 6 }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Animated.View key={i} entering={ZoomIn.delay(350 + i * 130).springify().damping(9)}>
+          <Star size={30} color="#F2B01E" weight="fill" />
+        </Animated.View>
+      ))}
     </View>
   );
 }
 
-export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: () => void }) {
+export function ReviewStep({ businessName, onReview, onSkip }: { businessName: string; onReview: () => void; onSkip: () => void }) {
+  const dark = useColorScheme().colorScheme === 'dark';
   return (
-    <View className="w-full">
-      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 20, alignItems: 'center' }}>
-        <View className="flex-row items-center mb-1.5" style={{ gap: 6 }}>
-          <Instagram size={18} color={colors.purple} weight="bold" />
-          <Text className="text-[16px] font-bold text-text-light dark:text-text-dark">Sube una historia y gana</Text>
-          <Coin size={18} />
-          <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark">{STORY_REWARD}</Text>
-        </View>
-        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center mb-4" style={{ lineHeight: 18 }}>
-          Sácale una foto a lo que canjeaste, súbela a tu historia y etiqueta a {CAMINA_INSTAGRAM}.
-        </Text>
-        <Press accessibilityRole="button" onPress={onStory} className="w-full bg-aqua-deep rounded-2xl py-3 flex-row items-center justify-center" style={{ gap: 7 }}>
-          <Camera size={16} color="#fff" weight="bold" />
-          <Text className="text-white font-bold text-[14px]">Sacar o elegir foto</Text>
+    <Animated.View entering={FadeInDown.duration(380)} style={{ width: '100%' }}>
+      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
+        <StarRow />
+        <Animated.View entering={FadeInUp.delay(1050).duration(350)} style={{ alignItems: 'center' }}>
+          <Text className="text-[17px] font-extrabold text-center text-text-light dark:text-text-dark mt-4">¿Qué tal te fue en {businessName}?</Text>
+          <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark mt-1.5 mb-5" style={{ lineHeight: 19 }}>
+            Cuéntalo en Google Maps. Es opcional y {businessName} lo agradece, y tú sumas +1 a tu nivel en el local.
+          </Text>
+        </Animated.View>
+        <Press accessibilityRole="link" haptic="light" onPress={onReview} className="w-full rounded-2xl py-3.5 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: dark ? colors.mint : colors.aquaDeep }}>
+          <MapPin size={17} color={dark ? colors.mintDark : '#fff'} />
+          <Text className="font-bold text-[14.5px]" style={{ color: dark ? colors.mintDark : '#fff' }}>Calificar en Google Maps</Text>
         </Press>
       </Glass>
       <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
         <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
       </Press>
-    </View>
+    </Animated.View>
+  );
+}
+
+export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: () => void }) {
+  const dark = useColorScheme().colorScheme === 'dark';
+  return (
+    <Animated.View entering={FadeInDown.duration(380)} style={{ width: '100%' }}>
+      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
+        <Animated.View entering={ZoomIn.delay(150).springify().damping(10)}>
+          <InstagramLogo size={64} />
+        </Animated.View>
+        <Text className="text-[17px] font-extrabold text-center text-text-light dark:text-text-dark mt-4">Sube una historia y gana</Text>
+        <Animated.View entering={ZoomIn.delay(500).springify().damping(9)} style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 999, marginTop: 10, gap: 6, paddingVertical: 5, paddingHorizontal: 12, backgroundColor: dark ? 'rgba(98,240,182,0.14)' : 'rgba(31,122,102,0.10)' }}>
+          <Coin size={18} />
+          <Text className="text-[15px] font-extrabold text-aqua-ink dark:text-mint">+{STORY_REWARD} Puntos</Text>
+        </Animated.View>
+        <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-3 mb-5" style={{ lineHeight: 19 }}>
+          Sácale una foto a lo que canjeaste, súbela a tu historia y etiqueta a {CAMINA_INSTAGRAM}.
+        </Text>
+        <Press accessibilityRole="button" haptic="light" onPress={onStory} className="w-full rounded-2xl py-3.5 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: dark ? colors.mint : colors.aquaDeep }}>
+          <Camera size={18} color={dark ? colors.mintDark : '#fff'} />
+          <Text className="font-bold text-[14.5px]" style={{ color: dark ? colors.mintDark : '#fff' }}>Sacar o elegir foto</Text>
+        </Press>
+      </Glass>
+      <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
+        <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
+      </Press>
+    </Animated.View>
   );
 }
 

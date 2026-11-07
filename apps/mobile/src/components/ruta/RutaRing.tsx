@@ -7,8 +7,18 @@ const MINT = '#62F0B6';
 const OFF = '#3a2d63';
 const HUELLAS = require('@/../assets/ruta-huellas.png');
 
-// Insignia de la Ruta del mes (temática de noviembre: anillo de 3 tramos). Cada local confirmado llena un tramo.
-export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { size?: number; done?: number; month?: string; glow?: boolean }) {
+// La insignia ganada es igual al logo de la Ruta (anillo menta con las huellas), todos los meses: sin colores por mes.
+type Theme = { ring: string; inner: [string, string]; label: string };
+const BASE: Theme = { ring: MINT, inner: ['#3B2577', '#200A52'], label: MINT };
+
+// Insignia de la Ruta del mes: anillo de 3 tramos; cada local confirmado llena un tramo.
+// `themeMonth` queda por compatibilidad (ya no cambia el color). `mystery`: insignia sorpresa ("?").
+export function RutaRing({ size = 120, done = 0, month = '', glow = true, themeMonth, mystery = false }: {
+  size?: number; done?: number; month?: string; glow?: boolean; themeMonth?: string | null; mystery?: boolean;
+}) {
+  void themeMonth;
+  const t = BASE;
+  const ON = mystery ? '#5c4f80' : t.ring;
   const r = 100;
   const C = 2 * Math.PI * r;
   const gap = 48;
@@ -17,12 +27,12 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { si
   return (
     <View
       accessible
-      accessibilityLabel={`Ruta de ${month}: ${Math.min(done, 3)} de 3 locales`}
+      accessibilityLabel={mystery ? 'Insignia sorpresa' : `Ruta de ${month}: ${Math.min(done, 3)} de 3 locales`}
       style={{
         width: size,
         height: size,
         borderRadius: size / 2,
-        shadowColor: MINT,
+        shadowColor: ON,
         shadowOpacity: glow && full ? 0.55 : 0,
         shadowRadius: size / 7,
         shadowOffset: { width: 0, height: 0 },
@@ -31,8 +41,8 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { si
       <Svg width={size} height={size} viewBox="0 0 240 240">
         <Defs>
           <RadialGradient id="rr" cx="0.3" cy="0.25" r="0.9">
-            <Stop offset="0" stopColor="#3B2577" />
-            <Stop offset="1" stopColor="#200A52" />
+            <Stop offset="0" stopColor={t.inner[0]} />
+            <Stop offset="1" stopColor={t.inner[1]} />
           </RadialGradient>
         </Defs>
         <Circle cx={120} cy={120} r={88} fill="url(#rr)" />
@@ -42,17 +52,21 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true }: { si
           const on = i < done;
           return (
             <G key={i}>
-              <Circle cx={120} cy={120} r={r} fill="none" stroke={on ? MINT : OFF} strokeWidth={16} strokeLinecap="round"
+              <Circle cx={120} cy={120} r={r} fill="none" stroke={on ? ON : OFF} strokeWidth={16} strokeLinecap="round"
                 strokeDasharray={`${seg} ${C}`} rotation={rot} origin="120, 120" />
-              <Circle cx={120 + r * Math.cos(a)} cy={120 + r * Math.sin(a)} r={7} fill={on ? MINT : OFF} />
+              <Circle cx={120 + r * Math.cos(a)} cy={120 + r * Math.sin(a)} r={7} fill={on ? ON : OFF} />
             </G>
           );
         })}
       </Svg>
       <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Image source={HUELLAS} style={{ width: size * 0.27, height: size * 0.3 }} resizeMode="contain" />
-        {!!month && (
-          <Text style={{ ...heavy(), fontSize: size * 0.11, color: MINT, marginTop: size * 0.02 }}>{month}</Text>
+        {mystery ? (
+          <Text allowFontScaling={false} style={{ ...heavy(), fontSize: size * 0.4, lineHeight: size * 0.48, color: MINT }}>?</Text>
+        ) : (
+          <Image source={HUELLAS} style={{ width: size * 0.27, height: size * 0.3 }} resizeMode="contain" />
+        )}
+        {!!month && !mystery && (
+          <Text style={{ ...heavy(), fontSize: size * 0.11, color: t.label, marginTop: size * 0.02 }}>{month}</Text>
         )}
       </View>
     </View>

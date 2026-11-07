@@ -223,6 +223,9 @@ export interface GroupNote {
   user_id: string;
   text: string;
   created_at: string;
+  // 'challenge' = tarjeta del sistema cuando alguien crea un desafío (lleva challenge_id).
+  kind?: 'text' | 'challenge';
+  challenge_id?: string | null;
 }
 
 export interface RetoRow {

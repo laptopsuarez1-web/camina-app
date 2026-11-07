@@ -159,3 +159,75 @@ export function useLastRutaWinners(month?: string | null) {
   const q = useRutaPrize(month ? prevRutaMonth(month) : null);
   return q.data && q.data.drawn_at ? q.data : null;
 }
+
+// Cuántas personas participan en la Ruta del mes (0094). Si el servidor todavía no lo tiene, null y no se muestra.
+export type RutaParticipation = { participants: number; completed: number };
+export function useRutaParticipation(month?: string | null) {
+  return useQuery({
+    queryKey: ['ruta-participation', month ?? 'actual'],
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<RutaParticipation | null> => {
+      const { data, error } = await supabase.rpc('route_participation', month ? { p_month: month } : {});
+      if (error || !data) return null;
+      const d = data as RutaParticipation;
+      return typeof d.participants === 'number' ? d : null;
+    },
+  });
+}
+
+// El número de participantes recién se muestra cuando pasa de 100 (con pocos queda feo); antes no se ve en ningún lado.
+export const PARTICIPATION_MIN = 100;
+export function showParticipation(p?: RutaParticipation | null): p is RutaParticipation {
+  return !!p && p.participants > PARTICIPATION_MIN;
+}
+
+// "128 personas ya están en la Ruta": el número redondo para que se lea fácil.
+export function participationLabel(n: number) {
+  if (n <= 0) return 'Sé de los primeros en sumarte';
+  if (n === 1) return '1 persona ya está participando';
+  return `${n.toLocaleString('es-BO')} personas ya están participando`;
+}
+
+// Números de la ficha de un local (0094): visitas de la Ruta este mes, gente que lo conoce por Camina, Fans y tu nivel.
+export type RutaStopStats = { ruta_month: number; people: number; fans: number; my_points: number; my_level: string | null };
+export function useRutaStopStats(businessId?: string | null) {
+  return useQuery({
+    queryKey: ['ruta-stop-stats', businessId],
+    enabled: !!businessId,
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<RutaStopStats | null> => {
+      const { data, error } = await supabase.rpc('route_stop_stats', { p_business: businessId! });
+      if (error || !data) return null;
+      return data as RutaStopStats;
+    },
+  });
+}
+
+// Recorrido caminando por las calles entre los locales (en el orden del dibujo). Lo calcula OSRM (OpenStreetMap, perfil
+// a pie). Si no responde, la línea va recta entre los locales. Se guarda en memoria: un recorrido no cambia.
+export type LatLng = { latitude: number; longitude: number };
+export function useWalkingPath(points: LatLng[]) {
+  const key = points.map((p) => `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`).join(';');
+  return useQuery({
+    queryKey: ['ruta-walk', key],
+    enabled: points.length >= 2,
+    staleTime: Infinity,
+    gcTime: 24 * 3600_000,
+    retry: 1,
+    queryFn: async (): Promise<LatLng[]> => {
+      const coords = points.map((p) => `${p.longitude},${p.latitude}`).join(';');
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      try {
+        const res = await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coords}?overview=full&geometries=geojson`, { signal: ctrl.signal });
+        const j = await res.json();
+        const line: [number, number][] | undefined = j?.routes?.[0]?.geometry?.coordinates;
+        if (!line || line.length < 2) throw new Error('sin recorrido');
+        // Empieza y termina justo en los locales (OSRM lo pega a la calle más cercana).
+        return [points[0], ...line.map(([lng, lat]) => ({ latitude: lat, longitude: lng })), points[points.length - 1]];
+      } finally {
+        clearTimeout(t);
+      }
+    },
+  });
+}

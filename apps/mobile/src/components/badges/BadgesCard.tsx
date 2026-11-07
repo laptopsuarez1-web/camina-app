@@ -36,7 +36,7 @@ export function BadgesCard({ badges, own = true, userId }: { badges: UserBadges 
         <View className="flex-row justify-center items-center mt-3" style={{ gap: 14 }}>
           {shownBadges.map((b) => b.kind === 'ruta' ? (
             <Press key={b.key} accessibilityRole="button" onPress={() => own && router.push({ pathname: '/(tabs)/ruta-mes', params: { m: b.month } })}>
-              <RutaRing size={54} done={3} month={rutaMonthShort(b.month)} glow={false} />
+              <RutaRing size={54} done={3} month={rutaMonthShort(b.month)} glow={false} themeMonth={b.month} />
             </Press>
           ) : (
             <Press key={b.key} accessibilityRole="button" accessibilityHint="Ver cómo va" onPress={() => setSheet(b.local)} hitSlop={4}>

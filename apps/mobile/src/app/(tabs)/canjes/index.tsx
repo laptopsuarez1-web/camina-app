@@ -4,6 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
+import Reanimated, { FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -282,8 +283,9 @@ function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string; logoUr
         }}
       />
       {featured && (
-        <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 7 }}>
-          <Coin size={20} gold />
+        // Moneda dorada sola, sin círculo blanco atrás (se veía como un marco blanco alrededor).
+        <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}>
+          <Coin size={24} gold />
         </View>
       )}
     </View>
@@ -315,10 +317,17 @@ function useLogoReady(logoUrl?: string | null) {
 // quedan pegados y medio superpuestos (como en Pasito), sin desparramarse. Se recalcula con el zoom: al acercarse
 // vuelven a su lugar real.
 const PIN_GAP_PX = 30;
+const MAX_SPREAD_DELTA = 0.06; // zoom máximo (latitudeDelta) hasta donde se separan pines encimados
+const MAX_RING = 5; // grupos más grandes no se abren en ronda: quedan en su lugar real
 type LatLng = { latitude: number; longitude: number };
 export function spreadPins(items: { id: string; lat: number; lng: number }[], latitudeDelta: number, mapHeightPx: number) {
   const out = new Map<string, LatLng>();
   if (!items.length || !mapHeightPx) {
+    for (const b of items) out.set(b.id, { latitude: b.lat, longitude: b.lng });
+    return out;
+  }
+  // De lejos los pines quedan juntos como en cualquier mapa; separarlos en ronda los dejaba "abiertos" y fuera de su lugar al volver a acercar.
+  if (latitudeDelta > MAX_SPREAD_DELTA) {
     for (const b of items) out.set(b.id, { latitude: b.lat, longitude: b.lng });
     return out;
   }
@@ -345,8 +354,8 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
     groups.push(group);
   }
   for (const group of groups) {
-    if (group.length === 1) {
-      out.set(group[0].id, { latitude: group[0].lat, longitude: group[0].lng });
+    if (group.length === 1 || group.length > MAX_RING) {
+      for (const g of group) out.set(g.id, { latitude: g.lat, longitude: g.lng });
       continue;
     }
     const lat = group.reduce((a, b) => a + b.lat, 0) / group.length;
@@ -445,7 +454,7 @@ export function MapPreviewCard({
               {shown.map((b) => (
                 <View key={b.id} className="flex-row items-center rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark px-2.5 py-2" style={{ gap: 10 }}>
                   {b.image_url ? (
-                    <CachedImage source={{ uri: b.image_url }} accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
+                    <CachedImage source={{ uri: b.image_url }} cachePolicy="memory-disk" accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
                   ) : (
                     <View className="items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ width: 40, height: 40, borderRadius: 12 }}>
                       <Gift size={18} color={colors.purple} />
@@ -795,6 +804,22 @@ export default function CanjesScreen() {
     const lng = businessesWithCoords.reduce((acc, b) => acc + b.lng!, 0) / businessesWithCoords.length;
     return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
   }, [hasGps, businessesWithCoords, baseRegion]);
+
+  // Las fotos (logos, portadas y premios) se bajan de a una cuando se tocan y tardaban en salir:
+  // apenas llega la lista se precargan todas en segundo plano, así al abrir un local ya están.
+  useEffect(() => {
+    const urls = new Set<string>();
+    for (const b of benefits ?? []) {
+      if (b.business.logo_url) urls.add(b.business.logo_url);
+      if (b.business.cover_url) urls.add(b.business.cover_url);
+      if (b.image_url) urls.add(b.image_url);
+    }
+    for (const b of sinPremios) {
+      if (b.logo_url) urls.add(b.logo_url);
+      if (b.cover_url) urls.add(b.cover_url);
+    }
+    if (urls.size) CachedImage.prefetch([...urls], 'memory-disk').catch(() => {});
+  }, [benefits, sinPremios]);
 
   // Reparto de pines encimados: la vista previa mide 250 de alto; el mapa completo sigue el zoom actual.
   const [fullMapHeight, setFullMapHeight] = useState(0);
@@ -1354,6 +1379,7 @@ export default function CanjesScreen() {
               {g.business.cover_url ? (
                 <CachedImage
                   source={{ uri: g.business.cover_url }}
+                  cachePolicy="memory-disk"
                   accessibilityIgnoresInvertColors
                   contentFit="cover"
                   style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
@@ -1615,7 +1641,7 @@ export default function CanjesScreen() {
                     style={{ width: '100%', height: '100%' }}
                     accessibilityLabel="Ver las fotos del local"
                   >
-                    <CachedImage source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                    <CachedImage source={{ uri: profileGroup.business.cover_url }} cachePolicy="memory-disk" priority="high" style={{ width: '100%', height: '100%' }} contentFit="cover" />
                   </Press>
                 ) : (
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
@@ -2091,15 +2117,26 @@ export default function CanjesScreen() {
               <View className="items-center">
                 {paso === 'ok' ? (
                   <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
-                    <BaifoMascot pose="festeja" height={132} />
-                    <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
-                    <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
-                      {activeBenefit?.business.name} ya te entregó tu beneficio.
-                    </Text>
-                    {activeId && bonusById[activeId] ? (
-                      <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
-                        {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                      {[{ l: -64, t: 6, d: 500, c: '#F2B01E' }, { l: 70, t: 20, d: 650, c: colors.mint }, { l: -50, t: 90, d: 800, c: colors.mint }, { l: 62, t: 84, d: 950, c: '#F2B01E' }].map((sp, i) => (
+                        <Reanimated.Text key={i} entering={ZoomIn.delay(sp.d).springify().damping(7)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
+                      ))}
+                      <Reanimated.View entering={ZoomIn.delay(100).springify().damping(8)}>
+                        <BaifoMascot pose="festeja" height={132} />
+                      </Reanimated.View>
+                    </View>
+                    <Reanimated.View entering={FadeInUp.delay(450).duration(380)} style={{ alignItems: 'center' }}>
+                      <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[19px] mt-3">¡Canje confirmado!</Text>
+                      <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
+                        {activeBenefit?.business.name} ya te entregó tu beneficio.
                       </Text>
+                    </Reanimated.View>
+                    {activeId && bonusById[activeId] ? (
+                      <Reanimated.View entering={ZoomIn.delay(900).springify().damping(9)}>
+                        <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
+                          {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                        </Text>
+                      </Reanimated.View>
                     ) : null}
                     {activeRedemption?.loyalty_free ? (
                       <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">

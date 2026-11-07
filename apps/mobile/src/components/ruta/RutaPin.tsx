@@ -1,24 +1,31 @@
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
+import { Coin } from '@/components/ui/Coin';
+import { GOLD as FEATURED_GOLD } from '@/components/ui/Featured';
 
 const MINT = '#62F0B6';
+// Mismo dorado que los comercios Paso Adelante del mapa de Canjes.
+export const GOLD = FEATURED_GOLD;
 const HUELLAS = require('@/../assets/ruta-huellas.png');
 
 // Pin de la Ruta: misma forma que los pines del mapa de Canjes (cabeza cuadrada redondeada con el logo y punta abajo),
 // con borde menta y unas huellas arriba si el local es de tu ruta. Sin ruta va en blanco, igual que en Canjes.
-export function RutaPin({ name, logoUrl, size = 46, route = true, onLoaded }: {
-  name: string; logoUrl?: string | null; size?: number; route?: boolean; onLoaded?: () => void;
+// `star`: el local protagonista del mes (el que regala el premio del sorteo) se ve igual que un destacado Paso Adelante
+// en Canjes: marco dorado y la moneda dorada arriba a la derecha (en vez de las huellas menta).
+export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, onLoaded }: {
+  name: string; logoUrl?: string | null; size?: number; route?: boolean; star?: boolean; onLoaded?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
-  const ring = route ? MINT : '#fff';
+  // El protagonista del mes va con marco dorado (destacado); el resto, menta.
+  const ring = star ? GOLD : route ? MINT : '#fff';
   const b = route ? 4 : 3;
   const inner = size - b * 2;
   const showLogo = !!logoUrl && !failed;
   return (
     <View style={{ width: size + 16, height: size + 26, alignItems: 'center', paddingTop: 8 }}>
       <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: ring, alignItems: 'center', justifyContent: 'center',
-        shadowColor: route ? MINT : '#000', shadowOpacity: route ? 0.6 : 0.4, shadowRadius: route ? 8 : 4, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
+        shadowColor: star ? '#000' : route ? MINT : '#000', shadowOpacity: star ? 0.4 : route ? 0.6 : 0.4, shadowRadius: star ? 4 : route ? 8 : 4, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
         <View style={{ width: inner, height: inner, borderRadius: inner * 0.28, overflow: 'hidden', backgroundColor: showLogo ? '#fff' : '#1F7A66', alignItems: 'center', justifyContent: 'center' }}>
           {showLogo ? (
             <Image source={{ uri: logoUrl! }} fadeDuration={0} onLoad={onLoaded} onError={() => setFailed(true)} style={{ width: inner, height: inner }} resizeMode="cover" />
@@ -26,8 +33,13 @@ export function RutaPin({ name, logoUrl, size = 46, route = true, onLoaded }: {
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{(name.trim()[0] ?? '·').toUpperCase()}</Text>
           )}
         </View>
-        {route && (
+        {route && !star && (
           <RutaBadge />
+        )}
+        {star && (
+          <View style={{ position: 'absolute', top: -5, right: -7, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}>
+            <Coin size={24} gold />
+          </View>
         )}
       </View>
       <View style={{ marginTop: -2, width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 9, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: ring }} />

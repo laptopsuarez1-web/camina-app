@@ -161,7 +161,7 @@ export default function EditarPerfilScreen() {
   const placeholder = isDark ? colors.dark.muted : colors.light.muted;
 
   async function pickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1] });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
     if (!result.canceled) {
       setPhotoUri(result.assets[0].uri);
       setPhotoB64(result.assets[0].base64 ?? null);
@@ -342,7 +342,7 @@ export default function EditarPerfilScreen() {
         </ProfileBanner>
         <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} photoUrl={bannerShown}
           onPickPhoto={!bannerReady ? undefined : async () => {
-            const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85, allowsEditing: true, aspect: [4, 3] });
+            const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, exif: false, allowsEditing: true, aspect: [4, 3] });
             if (r.canceled) return;
             setBannerUri(r.assets[0].uri);
             setBannerB64(r.assets[0].base64 ?? null);

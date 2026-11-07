@@ -8,16 +8,18 @@ import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
 import { RutaRing } from '@/components/ruta/RutaRing';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { LocalBadge } from '@/components/badges/LocalBadge';
 import { useAuthStore } from '@/store/useAuthStore';
 import { chosenKeys, levelLabel, nextLevel, useSetFeaturedBadge, useUserBadges, LEVELS, MAX_PROFILE_BADGES, type LocalBadgeT } from '@/hooks/useBadges';
-import { rutaMonthName, rutaMonthShort } from '@/hooks/useRuta';
+import { rutaDone, rutaMonthName, rutaMonthShort, useRuta } from '@/hooks/useRuta';
 import { friendlyServerError } from '@/lib/errors';
 import { useThemeColors } from '@/theme/useThemeColors';
 
 // Todas las insignias de una persona (las mías o, con ?u=, las de otra persona: son públicas).
 export default function InsigniasScreen() {
   const insets = useSafeAreaInsets();
+  const tabSpace = useTabBarSpace();
   const theme = useThemeColors();
   const me = useAuthStore((s) => s.session?.user.id);
   const { u } = useLocalSearchParams<{ u?: string }>();
@@ -26,6 +28,9 @@ export default function InsigniasScreen() {
   const { data } = useUserBadges(userId);
   const setFeatured = useSetFeaturedBadge();
   const routes = data?.routes ?? [];
+  // La Ruta de este mes, mientras la recorres: su insignia ya aparece (a medio llenar) y abre tu álbum.
+  const { data: ruta } = useRuta();
+  const current = own && ruta?.joined && !routes.some((r) => r.month === ruta.month) ? ruta : null;
   const locals = data?.locals ?? [];
   const [sheet, setSheet] = useState<LocalBadgeT | null>(null);
 
@@ -46,7 +51,7 @@ export default function InsigniasScreen() {
   }
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}>
+    <ScrollView className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
       <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
         <Press accessibilityRole="button" accessibilityLabel="Volver" hitSlop={10} onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/perfil'))}
           className="w-10 h-10 rounded-full items-center justify-center bg-purple-light dark:bg-card-dark">
@@ -62,12 +67,24 @@ export default function InsigniasScreen() {
       )}
 
       <Text className="text-[16px] font-bold text-center text-text-light dark:text-text-dark mb-3">Rutas del mes</Text>
-      {routes.length === 0 ? (
+      {current ? (
+        <Press accessibilityRole="button" accessibilityLabel={`Tu Ruta de ${rutaMonthName(current.month)}: ver tu álbum`} onPress={() => router.push({ pathname: '/(tabs)/ruta-mes', params: { m: current.month } })}>
+          <Glass className="rounded-3xl p-4 mb-4 flex-row items-center" style={{ gap: 14, borderColor: 'rgba(98,240,182,0.45)', borderWidth: 1.5 }}>
+            <RutaRing size={70} done={rutaDone(current)} month={rutaMonthShort(current.month)} />
+            <View className="flex-1">
+              <Text className="text-[11px] font-extrabold" style={{ color: '#2FB98A', letterSpacing: 1.2 }}>EN CURSO</Text>
+              <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark">Ruta de {rutaMonthName(current.month)}</Text>
+              <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">{rutaDone(current)} de 3 locales · toca para ver tu álbum de fotos</Text>
+            </View>
+          </Glass>
+        </Press>
+      ) : null}
+      {routes.length === 0 ? (current ? null : (
         <Glass className="rounded-3xl p-4 mb-5 items-center">
           <RutaRing size={64} done={0} glow={false} />
           <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-2">Todavía no completaste una Ruta del mes. Cada mes tiene su insignia.</Text>
         </Glass>
-      ) : (
+      )) : (
         <View className="flex-row flex-wrap justify-center mb-5" style={{ gap: 18 }}>
           {routes.map((r) => {
             const key = `ruta:${r.month}`;
@@ -75,7 +92,7 @@ export default function InsigniasScreen() {
             return (
               <Press key={r.month} accessibilityRole="button" onPress={() => (own ? router.push({ pathname: '/(tabs)/ruta-mes', params: { m: r.month } }) : undefined)}
                 onLongPress={() => feature(key)} className="items-center">
-                <RutaRing size={78} done={3} month={rutaMonthShort(r.month)} />
+                <RutaRing size={78} done={3} month={rutaMonthShort(r.month)} themeMonth={r.month} />
                 <Text className="text-[12px] font-bold mt-1.5 text-text-light dark:text-text-dark" style={{ textTransform: 'capitalize' }}>{rutaMonthName(r.month)}</Text>
                 {pos > 0 && <OnProfile pos={pos} own={own} />}
               </Press>

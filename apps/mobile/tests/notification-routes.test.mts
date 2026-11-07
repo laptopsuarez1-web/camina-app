@@ -33,3 +33,10 @@ test('un tipo desconocido o sin tipo abre la bandeja de Avisos (la fila queda so
 test('el aviso del Wrapped del mes lleva a Actividad', () => {
   assert.equal(routeForNotification('wrapped'), '/(tabs)/actividad');
 });
+
+test('un mensaje del chat o un desafío nuevo llevan directo a ese grupo', () => {
+  assert.equal(routeForNotification('group_note', { group_id: 'g1' }), '/(tabs)/grupos/g1');
+  assert.equal(routeForNotification('group_challenge', { group_id: 'g1' }), '/(tabs)/grupos/g1');
+  // Sin grupo en el aviso: a la lista de Grupos.
+  assert.equal(routeForNotification('group_note'), '/(tabs)/grupos');
+});
