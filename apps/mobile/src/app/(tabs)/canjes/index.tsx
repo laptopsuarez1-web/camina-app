@@ -4,6 +4,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
+import Reanimated, { FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -2116,15 +2117,26 @@ export default function CanjesScreen() {
               <View className="items-center">
                 {paso === 'ok' ? (
                   <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
-                    <BaifoMascot pose="festeja" height={132} />
-                    <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[17px] mt-3">¡Canje confirmado!</Text>
-                    <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
-                      {activeBenefit?.business.name} ya te entregó tu beneficio.
-                    </Text>
-                    {activeId && bonusById[activeId] ? (
-                      <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
-                        {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                      {[{ l: -64, t: 6, d: 500, c: '#F2B01E' }, { l: 70, t: 20, d: 650, c: colors.mint }, { l: -50, t: 90, d: 800, c: colors.mint }, { l: 62, t: 84, d: 950, c: '#F2B01E' }].map((sp, i) => (
+                        <Reanimated.Text key={i} entering={ZoomIn.delay(sp.d).springify().damping(7)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
+                      ))}
+                      <Reanimated.View entering={ZoomIn.delay(100).springify().damping(8)}>
+                        <BaifoMascot pose="festeja" height={132} />
+                      </Reanimated.View>
+                    </View>
+                    <Reanimated.View entering={FadeInUp.delay(450).duration(380)} style={{ alignItems: 'center' }}>
+                      <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua font-extrabold text-[19px] mt-3">¡Canje confirmado!</Text>
+                      <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-1 text-center">
+                        {activeBenefit?.business.name} ya te entregó tu beneficio.
                       </Text>
+                    </Reanimated.View>
+                    {activeId && bonusById[activeId] ? (
+                      <Reanimated.View entering={ZoomIn.delay(900).springify().damping(9)}>
+                        <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
+                          {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
+                        </Text>
+                      </Reanimated.View>
                     ) : null}
                     {activeRedemption?.loyalty_free ? (
                       <Text className="text-text-light dark:text-text-dark text-[13px] font-semibold mt-2 text-center">
