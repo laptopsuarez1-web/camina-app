@@ -398,3 +398,19 @@ html,body{background:#0f0722}
 .lp ul.gana h3{margin-top:0;font-size:16px}
 .lp ul.gana p{font-size:13.5px}
 @media (min-width:760px){.lp ul.gana{grid-template-columns:repeat(3,1fr)}}
+
+/* Ruta del mes v2: videos de la app, beneficios para el local y local protagonista (dorado como Paso Adelante). */
+.lp .phone video.vid{display:block;width:100%;height:auto;aspect-ratio:540/1174;border-radius:32px;background:#16111f;object-fit:cover}
+.lp .ruta-sub{margin-top:48px;font-size:24px;line-height:1.25}
+.lp .ruta-sub + .ben{margin-top:20px}
+.lp #ruta .wrap > .ben{margin-top:28px}
+.lp .protagonista{margin-top:28px;border-radius:28px;padding:26px 24px;background:linear-gradient(150deg,rgba(226,179,60,.2),rgba(226,179,60,.05) 55%,rgba(255,255,255,.04));border:1.5px solid rgba(226,179,60,.65);box-shadow:0 0 0 1px rgba(226,179,60,.12),0 18px 50px -20px rgba(226,179,60,.45)}
+.lp .protagonista .kick{color:#F2C95A}
+.lp .protagonista h3{font-size:22px;line-height:1.25}
+.lp .protagonista p:not(.kick){color:var(--muted);margin-top:10px;line-height:1.5}
+.lp .protagonista ul{margin:14px 0 20px;display:grid;gap:8px}
+.lp .protagonista li{position:relative;padding-left:26px;line-height:1.45}
+.lp .protagonista li::before{content:'';position:absolute;left:0;top:4px;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a6,#E2B33C 60%,#b8862a)}
+.lp .lp-btn.gold{background:linear-gradient(180deg,#ffe29a,#E2B33C);color:#2a1a00;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 10px 30px -8px rgba(226,179,60,.6)}
+.lp .ruta-nota{margin-top:18px;font-size:13.5px;color:var(--muted)}
+@media (min-width:900px){.lp .protagonista ul{grid-template-columns:1fr 1fr;column-gap:24px}}
