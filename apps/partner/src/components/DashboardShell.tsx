@@ -179,7 +179,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <ResponsiveFrame sidebar={sidebar}>
       {!business.approved && role === 'owner' && business.rejected_at && (
-        <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: '#FDEEE2', color: '#8A3A2E' }}>
+        <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
           <p className="font-bold mb-1">Revisamos tu comercio y todavía no lo podemos publicar.</p>
           <p className="mb-2.5">
             <strong>Motivo:</strong> {business.rejection_reason}
@@ -204,7 +204,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       {!business.approved && role === 'owner' && !business.rejected_at && (
-        <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
+        <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: 'var(--c-warn-text)' }}>
           <p className="font-bold mb-1">Tu comercio todavía no está publicado.</p>
           {faltan.length > 0 ? (
             <>

@@ -1,8 +1,38 @@
 @import "tailwindcss";
 
+/* Colores del panel. Claro por defecto; oscuro cuando el teléfono o el navegador está en modo oscuro. */
 :root {
-  --background: #f7f3fc;
-  --foreground: #291c47;
+  --c-bg: #f7f3fc;
+  --c-card: #ffffff;
+  --c-line: #e1d2f5;
+  --c-muted: #7c6a9c;
+  --c-text: #291c47;
+  --c-aqua-light: #e3f5f0;
+  --c-purple-light: #f1ebfa;
+  --c-warn-light: #fdeee2;
+  --c-warn-text: #8a5a2e;
+  --c-auth-bg: #241748;
+  --c-auth-bg-soft: #2f1e5c;
+  --background: var(--c-bg);
+  --foreground: var(--c-text);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #150d2b;
+    --c-card: #21173f;
+    --c-line: #3a2c63;
+    --c-muted: #a99bcf;
+    --c-text: #f1ecfb;
+    --c-aqua-light: #16352f;
+    --c-purple-light: #2c2150;
+    --c-warn-light: #3b2a22;
+    --c-warn-text: #f0c39a;
+    --c-auth-bg: #2a1c55;
+    --c-auth-bg-soft: #34246a;
+    color-scheme: dark;
+  }
 }
 
 @theme inline {
@@ -12,19 +42,19 @@
   --font-mono: var(--font-geist-mono);
 
   /* Paleta portada 1:1 del prototipo camina-full.html / panel de comercios */
-  --color-bg: #f7f3fc;
-  --color-card: #ffffff;
-  --color-line: #e1d2f5;
-  --color-muted: #7c6a9c;
-  --color-text: #291c47;
+  --color-bg: var(--c-bg);
+  --color-card: var(--c-card);
+  --color-line: var(--c-line);
+  --color-muted: var(--c-muted);
+  --color-text: var(--c-text);
   --color-aqua: #4fc3a8;
-  --color-aqua-light: #e3f5f0;
+  --color-aqua-light: var(--c-aqua-light);
   --color-purple: #8b4fd1;
-  --color-purple-light: #f1ebfa;
+  --color-purple-light: var(--c-purple-light);
   --color-warn: #f2985c;
-  --color-warn-light: #fdeee2;
-  --color-auth-bg: #241748;
-  --color-auth-bg-soft: #2f1e5c;
+  --color-warn-light: var(--c-warn-light);
+  --color-auth-bg: var(--c-auth-bg);
+  --color-auth-bg-soft: var(--c-auth-bg-soft);
   --color-auth-muted: #c4b8e8;
   --color-mint: #7fedc4;
   --color-mint-dark: #12281f;
@@ -49,5 +79,21 @@ body {
   select,
   textarea {
     font-size: 16px !important;
+  }
+}
+
+/* Modo oscuro: lo que estaba en blanco fijo pasa al color de tarjeta. */
+@media (prefers-color-scheme: dark) {
+  .bg-white {
+    background-color: var(--c-card);
+  }
+  input,
+  select,
+  textarea {
+    color: var(--c-text);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--c-muted);
   }
 }

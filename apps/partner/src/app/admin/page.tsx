@@ -343,7 +343,7 @@ export default function AdminPage() {
           return (
             <>
               {pending.length > 0 && (
-                <div className="bg-warn-light rounded-2xl p-4 mb-5" style={{ color: '#8A5A2E' }}>
+                <div className="bg-warn-light rounded-2xl p-4 mb-5" style={{ color: 'var(--c-warn-text)' }}>
                   <p className="font-bold text-[13.5px] mb-2.5">Pendientes de aprobación ({pending.length})</p>
                   <div className="flex flex-col gap-2">
                     {pending.map((b) => (
@@ -461,7 +461,7 @@ export default function AdminPage() {
                             <p className="text-muted text-[11.5px]">
                               Rechazado el {new Date(b.rejected_at as string).toLocaleDateString('es-BO')}
                             </p>
-                            <p className="text-[12px] mt-1" style={{ color: '#8A5A2E' }}>
+                            <p className="text-[12px] mt-1" style={{ color: 'var(--c-warn-text)' }}>
                               Motivo: {b.rejection_reason}
                             </p>
                           </div>
