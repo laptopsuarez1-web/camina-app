@@ -13,6 +13,8 @@ export const db = {
   errors: {} as Record<string, any>,
   /** Persona devuelta por supabase.auth.getUser(). */
   user: null as null | { id: string },
+  /** Demora (ms) de las próximas lecturas de cada tabla, una por consulta, en orden. Sin entrada = sin demora. */
+  latency: {} as Record<string, number[]>,
 };
 
 /** Sesión y escucha de cambios de sesión (supabase.auth.getSession / onAuthStateChange). */
@@ -31,6 +33,7 @@ export function resetDb() {
   db.writes = [];
   db.errors = {};
   db.user = null;
+  db.latency = {};
 }
 
 class Query {
@@ -54,7 +57,9 @@ class Query {
   insert(row: any) { this.write = { op: 'insert', row }; return this; }
   update(row: any) { this.write = { op: 'update', row }; return this; }
   then(resolve: (v: any) => any, reject?: (e: any) => any) {
-    return Promise.resolve(this.run()).then(resolve, reject);
+    const wait = db.latency[this.table]?.shift() ?? 0;
+    if (!wait) return Promise.resolve(this.run()).then(resolve, reject);
+    return new Promise((r) => setTimeout(r, wait)).then(() => this.run()).then(resolve, reject);
   }
   private run() {
     if (this.write) {

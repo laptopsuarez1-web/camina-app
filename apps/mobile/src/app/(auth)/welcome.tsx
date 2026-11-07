@@ -59,9 +59,12 @@ export default function WelcomeScreen() {
     supabase.auth
       .getSession()
       .then(async ({ data }) => {
-        if (!data.session || useAuthStore.getState().session) return;
-        Sentry.captureMessage('Login abierto con sesión guardada en el teléfono', 'warning');
-        await useAuthStore.getState().refreshFromStorage();
+        if (!data.session) return;
+        // La app ya publicó la sesión mientras tanto: igual se sale del login (antes se quedaba aquí con la sesión viva).
+        if (!useAuthStore.getState().session) {
+          Sentry.captureMessage('Login abierto con sesión guardada en el teléfono', 'warning');
+          await useAuthStore.getState().refreshFromStorage();
+        }
         router.replace('/');
       })
       .catch(() => {});
