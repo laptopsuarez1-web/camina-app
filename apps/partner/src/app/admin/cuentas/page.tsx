@@ -91,7 +91,7 @@ export default function CuentasPage() {
                     {c.owns_business && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C]">Dueño de comercio</span>}
                   </p>
                   <p className="text-muted text-[12px]">{c.email} · creada el {new Date(c.created_at).toLocaleDateString('es-BO')}</p>
-                  {c.banned_at && c.ban_reason && <p className="text-[12px] mt-0.5" style={{ color: '#8A5A2E' }}>Motivo: {c.ban_reason}</p>}
+                  {c.banned_at && c.ban_reason && <p className="text-[12px] mt-0.5" style={{ color: 'var(--c-warn-text)' }}>Motivo: {c.ban_reason}</p>}
                 </div>
                 {!c.admin_account && (
                   <div className="flex gap-2">

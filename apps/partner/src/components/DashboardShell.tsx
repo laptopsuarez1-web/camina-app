@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog } from 'lucide-react';
+import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog, Route } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -28,6 +28,7 @@ const NAV_PRINCIPAL: NavItem[] = [
   { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/tarjeta', label: 'Tarjeta de fidelidad', icon: Stamp, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
+  { href: '/ruta', label: 'Ruta del mes', icon: Route },
 ];
 
 const NAV_MAS: NavItem[] = [
@@ -178,7 +179,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <ResponsiveFrame sidebar={sidebar}>
       {!business.approved && role === 'owner' && business.rejected_at && (
-        <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: '#FDEEE2', color: '#8A3A2E' }}>
+        <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
           <p className="font-bold mb-1">Revisamos tu comercio y todavía no lo podemos publicar.</p>
           <p className="mb-2.5">
             <strong>Motivo:</strong> {business.rejection_reason}
@@ -203,7 +204,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       {!business.approved && role === 'owner' && !business.rejected_at && (
-        <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: '#8A5A2E' }}>
+        <div className="bg-warn-light rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ color: 'var(--c-warn-text)' }}>
           <p className="font-bold mb-1">Tu comercio todavía no está publicado.</p>
           {faltan.length > 0 ? (
             <>

@@ -106,7 +106,7 @@ export default function EquipoPage() {
               <div key={s.id} className={`p-4 flex items-center justify-between gap-3 ${i < staff.length - 1 ? 'border-b border-line' : ''}`}>
                 <div className="min-w-0">
                   <p className="font-semibold text-[13.5px] truncate">{s.email}</p>
-                  <p className="text-[11.5px]" style={{ color: s.user_id ? '#2E9E7C' : '#8A5A2E' }}>
+                  <p className="text-[11.5px]" style={{ color: s.user_id ? '#2E9E7C' : 'var(--c-warn-text)' }}>
                     {s.user_id ? 'Activo' : 'Invitado · falta que cree su cuenta'}
                   </p>
                 </div>
