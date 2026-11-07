@@ -1,4 +1,4 @@
-import { Camera, Check } from '@/components/icons';
+import { Camera } from '@/components/icons';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
@@ -156,12 +156,6 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
           </View>
           <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 15, marginTop: 8, textAlign: 'center', maxWidth: 150 }} numberOfLines={1}>{c.name}</Text>
         </View>
-        {/* Sello redondo con el check, en la esquina de la polaroid: no tapa el nombre del local. */}
-        <Stamp tl={tl} delay={650} rotate={-10} style={{ position: 'absolute', right: -18, top: -14 }}>
-          <View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: '#62F0B6', borderWidth: 4, borderColor: '#14093a', alignItems: 'center', justifyContent: 'center', shadowColor: '#62F0B6', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 8 }}>
-            <Check size={30} color="#14093a" />
-          </View>
-        </Stamp>
         <Burst tl={tl} delay={680} palette={CAMINA_SPARKS} count={14} radius={110} style={{ left: '50%', top: '45%' }} />
       </Reveal>
       <Reveal tl={tl} delay={900} pop from={0.6} style={{ marginTop: 22 }}>
