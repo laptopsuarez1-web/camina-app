@@ -149,10 +149,10 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
       <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month}`}</Eyebrow></Reveal>
       <View style={{ marginTop: 22, width: R, height: R, alignItems: 'center', justifyContent: 'center' }}>
         <Ripple tl={tl} delay={900} size={R} />
-        <Reveal tl={tl} delay={200} pop from={0.7} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done - 1} month={c.monthShort} glow={false} /></Reveal>
+        <Reveal tl={tl} delay={150} pop from={0.7} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done - 1} month={c.monthShort} glow={false} hideCenter /></Reveal>
         {/* El tramo nuevo se enciende encima. */}
-        <Reveal tl={tl} delay={850} from={1} dy={0} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done} month={c.monthShort} /></Reveal>
-        <Reveal tl={tl} delay={420} pop from={0.5} style={{ position: 'absolute' }}>
+        <Reveal tl={tl} delay={850} from={1} dy={0} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done} month={c.monthShort} hideCenter /></Reveal>
+        <Reveal tl={tl} delay={150} pop from={0.5} style={{ position: 'absolute' }}>
           <View style={{ width: L, height: L, borderRadius: L * 0.28, overflow: 'hidden', backgroundColor: '#2F1E5C', borderWidth: 3, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
             {c.logo_url ? <Image source={{ uri: c.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
               : <Text style={{ color: '#fff', fontWeight: '900', fontSize: L * 0.42 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}

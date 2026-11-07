@@ -13,8 +13,10 @@ const BASE: Theme = { ring: MINT, inner: ['#3B2577', '#200A52'], label: MINT };
 
 // Insignia de la Ruta del mes: anillo de 3 tramos; cada local confirmado llena un tramo.
 // `themeMonth` queda por compatibilidad (ya no cambia el color). `mystery`: insignia sorpresa ("?").
-export function RutaRing({ size = 120, done = 0, month = '', glow = true, themeMonth, mystery = false }: {
+export function RutaRing({ size = 120, done = 0, month = '', glow = true, themeMonth, mystery = false, hideCenter = false }: {
   size?: number; done?: number; month?: string; glow?: boolean; themeMonth?: string | null; mystery?: boolean;
+  // Sin las huellitas ni el mes en el centro (cuando va otra cosa encima, como el logo de un local).
+  hideCenter?: boolean;
 }) {
   void themeMonth;
   const t = BASE;
@@ -59,7 +61,7 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true, themeM
           );
         })}
       </Svg>
-      <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+      {hideCenter ? null : <View pointerEvents="none" style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
         {mystery ? (
           <Text allowFontScaling={false} style={{ ...heavy(), fontSize: size * 0.4, lineHeight: size * 0.48, color: MINT }}>?</Text>
         ) : (
@@ -68,7 +70,7 @@ export function RutaRing({ size = 120, done = 0, month = '', glow = true, themeM
         {!!month && !mystery && (
           <Text style={{ ...heavy(), fontSize: size * 0.11, color: t.label, marginTop: size * 0.02 }}>{month}</Text>
         )}
-      </View>
+      </View>}
     </View>
   );
 }
