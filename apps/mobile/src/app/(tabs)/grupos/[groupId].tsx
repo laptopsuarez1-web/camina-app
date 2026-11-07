@@ -93,7 +93,7 @@ export default function GroupDetailScreen() {
     setEditingGoal(false);
     const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };
     if (nuevo === '1') {
-      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, onInvite: () => setShareOpen(true) });
+      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, target: data.group.challenge_target, onInvite: () => setShareOpen(true) });
       return;
     }
     const target = data.group.challenge_target;

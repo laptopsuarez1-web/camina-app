@@ -27,7 +27,7 @@ import {
 export type TicketBoughtCinematic = { kind: 'ticket-bought'; title: string; business?: string; when: string; place?: string; points: number; balanceBefore: number };
 export type EventJoinedCinematic = { kind: 'event-joined'; title: string; day: number; month: string; when: string; place?: string; placeUrl?: string | null; participants: number };
 export type GroupJoinedCinematic = { kind: 'group-joined'; name: string; me: CinePerson; others: CinePerson[]; total: number; goalText?: string };
-export type GroupCreatedCinematic = { kind: 'group-created'; name: string; me: CinePerson; code: string; onInvite?: () => void };
+export type GroupCreatedCinematic = { kind: 'group-created'; name: string; me: CinePerson; code: string; target?: number | null; onInvite?: () => void };
 export type FriendMadeCinematic = { kind: 'friend-made'; me: CinePerson; friend: CinePerson; onCreateGroup?: () => void; onRanking?: () => void };
 export type StreakCinematic = { kind: 'streak-milestone'; days: number };
 export type StreakWeekCinematic = { kind: 'streak-week'; weeks: number; points: number };
@@ -265,8 +265,8 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
 // =====================================================================
 
 // Grupo creado, en el mismo estilo que "Desafío creado": sin aro ni confeti. El nombre aparece letra por letra, tu cara
-// llega primero y los lugares vacíos (+) se invitan tocándolos; debajo, la barra de la meta de la semana arranca vacía
-// y un puntito la recorre para mostrar a dónde va el grupo. Tocar el código lo copia.
+// llega primero y los lugares vacíos (+) se invitan tocándolos; debajo, la meta de la semana que eligieron (el número
+// sube hasta la meta). Tocar el código lo copia.
 export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onDone: () => void }) {
   const p = usePalette();
   const [copied, setCopied] = useState(false);
@@ -278,9 +278,7 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
     tl.at(1900, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const run = useBeat(tl, 1200, { duration: 1000 });
-  const runStyle = useAnimatedStyle(() => ({ width: `${run.value * 100}%` }));
-  const walker = useAnimatedStyle(() => ({ left: `${run.value * 100}%`, opacity: run.value > 0 && run.value < 1 ? 1 : 0 }));
+  const goalCount = useCount(tl, 0, c.target ?? 0, 1200, 800);
   const invite = () => { onDone(); c.onInvite?.(); };
   return (
     <Stage tl={tl} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
@@ -302,23 +300,16 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
         ))}
       </View>
 
-      {/* La meta de la semana: la barra se recorre de 0 a la meta. */}
-      <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 26, paddingHorizontal: 8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ color: p.muted, fontWeight: '800', fontSize: 11, letterSpacing: 1 }}>HOY</Text>
-          <View style={{ flex: 1, height: 26, justifyContent: 'center' }}>
-            <View style={{ height: 6, borderRadius: 3, backgroundColor: p.track }} />
-            <Animated.View style={[{ position: 'absolute', left: 0, height: 6, borderRadius: 3, backgroundColor: colors.mint }, runStyle]} />
-            <Animated.View pointerEvents="none" style={[{ position: 'absolute', marginLeft: -9, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', shadowColor: colors.mint, shadowOpacity: 0.9, shadowRadius: 8 }, walker]} />
+      {/* La meta de la semana del grupo: el número sube hasta la meta que eligieron. */}
+      {c.target ? (
+        <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 24 }}>
+          <View style={{ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine, alignItems: 'center' }}>
+            <Text style={{ color: p.accent, fontWeight: '800', fontSize: 11, letterSpacing: 1.4 }}>META DE LA SEMANA</Text>
+            <Text style={{ ...display(28), color: p.text, marginTop: 4, fontVariant: ['tabular-nums'] }}>{goalCount.toLocaleString('es-BO')}</Text>
+            <Text style={{ color: p.muted, fontSize: 12.5 }}>pasos entre todos · cuenta desde hoy</Text>
           </View>
-          <Reveal tl={tl} delay={2100} pop from={0.3}>
-            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
-              <Trophy size={19} color={GOLD} />
-            </View>
-          </Reveal>
-        </View>
-        <Text style={{ color: p.muted, fontSize: 12.5, textAlign: 'center', marginTop: 6 }}>Cada semana, una meta de pasos entre todos.</Text>
-      </Reveal>
+        </Reveal>
+      ) : null}
 
       <Reveal tl={tl} delay={1950} pop from={0.6} style={{ marginTop: 18 }}>
         <Text style={{ ...display(26), color: p.text, textAlign: 'center' }}>¡Grupo creado!</Text>
