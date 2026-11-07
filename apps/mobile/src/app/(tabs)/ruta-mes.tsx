@@ -10,7 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useQueryClient } from '@tanstack/react-query';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { ChevronLeft } from '@/components/icons';
+import { Camera, ChevronLeft } from '@/components/icons';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { heavy } from '@/components/ruta/heavy';
 import { rutaMonthName, rutaMonthShort } from '@/hooks/useRuta';
@@ -78,7 +78,7 @@ function Polaroid({ stop, index, width, uploading, onPhoto }: {
               {uploading ? <ActivityIndicator color={MINT} /> : visited ? (
                 <View style={{ alignItems: 'center', gap: 6 }}>
                   <Animated.View style={[{ width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', borderColor: MINT, backgroundColor: 'rgba(98,240,182,0.12)', alignItems: 'center', justifyContent: 'center' }, pulseStyle]}>
-                    <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 28, lineHeight: 32 }}>+</Text>
+                    <Camera size={26} color={MINT} />
                   </Animated.View>
                   <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }}>Agrega tu foto</Text>
                   <Text style={{ color: MUTED, fontSize: 10.5 }}>de tu visita</Text>

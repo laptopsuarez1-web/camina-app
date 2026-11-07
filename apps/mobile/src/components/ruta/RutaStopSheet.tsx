@@ -10,7 +10,7 @@ import { GOLD } from '@/components/ruta/RutaPin';
 import { Coin } from '@/components/ui/Coin';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, TiktokIcon, X } from '@/components/icons';
+import { Camera, ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, TiktokIcon, X } from '@/components/icons';
 import { DAYS, closesAt, isOpenNow, rangesText, todayIndex, type OpeningHours } from '@/components/BusinessHours';
 import { supabase } from '@/lib/supabase';
 import { useRutaStopStats, type RutaStop } from '@/hooks/useRuta';
@@ -306,7 +306,8 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
                 {onPhoto ? (
                   <Press accessibilityRole="button" onPress={() => onPhoto(stop)}
-                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
+                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 7, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
+                    <Camera size={20} color={MINT} />
                     <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>Subir mi foto</Text>
                   </Press>
                 ) : null}

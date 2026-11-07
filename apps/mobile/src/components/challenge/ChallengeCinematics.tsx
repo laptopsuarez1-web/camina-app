@@ -357,10 +357,12 @@ export function Eyebrow({ children, color }: { children: string; color: string }
   return <Text style={{ fontSize: 11, letterSpacing: 1.6, fontWeight: '800', color, textTransform: 'uppercase', textAlign: 'center' }} numberOfLines={1}>{children}</Text>;
 }
 
-export function MainButton({ label, onPress, gold, bg }: { label: string; onPress: () => void; gold?: boolean; bg?: string }) {
+export function MainButton({ label, onPress, gold, bg, icon }: { label: string; onPress: () => void; gold?: boolean; bg?: string; icon?: (color: string) => React.ReactNode }) {
+  const ink = bg ? '#3a1a00' : gold ? '#3a2a00' : colors.mintDark;
   return (
-    <Press accessibilityRole="button" haptic="light" onPress={onPress} style={{ alignSelf: 'stretch', backgroundColor: bg ?? (gold ? GOLD : colors.mint), borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
-      <Text style={{ color: bg ? '#3a1a00' : gold ? '#3a2a00' : colors.mintDark, fontWeight: '800', fontSize: 15 }}>{label}</Text>
+    <Press accessibilityRole="button" haptic="light" onPress={onPress} style={{ alignSelf: 'stretch', backgroundColor: bg ?? (gold ? GOLD : colors.mint), borderRadius: 16, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
+      {icon ? icon(ink) : null}
+      <Text style={{ color: ink, fontWeight: '800', fontSize: 15 }}>{label}</Text>
     </Press>
   );
 }

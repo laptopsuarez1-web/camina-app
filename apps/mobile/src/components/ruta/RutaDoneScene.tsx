@@ -1,3 +1,4 @@
+import { Camera } from '@/components/icons';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
@@ -186,7 +187,7 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={1750} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
+        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(c) => <Camera size={20} color={c} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
         {c.onShare ? (c.onPhoto
           ? <LinkButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} color={p.accent} />
           : <MainButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} />) : null}
