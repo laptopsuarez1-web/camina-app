@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
-import { Flame, Trophy, Users } from '@/components/icons';
+import { Flame, Trophy } from '@/components/icons';
 import { IllArt } from '@/components/ui/IllustratedIcons';
 import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
@@ -264,48 +264,69 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
 // 4) Crear un grupo
 // =====================================================================
 
+// Grupo creado, en el mismo estilo que "Desafío creado": sin aro ni confeti. El nombre aparece letra por letra, tu cara
+// llega primero y los lugares vacíos (+) se invitan tocándolos; debajo, la barra de la meta de la semana arranca vacía
+// y un puntito la recorre para mostrar a dónde va el grupo. Tocar el código lo copia.
 export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onDone: () => void }) {
   const p = usePalette();
   const [copied, setCopied] = useState(false);
-  const tl = useTimeline(3400);
+  const tl = useTimeline(3200);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(1450, buzz.medium);
-    tl.at(2050, buzz.success);
+    tl.at(900, buzz.selection);
+    tl.at(1900, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const run = useBeat(tl, 1200, { duration: 1000 });
+  const runStyle = useAnimatedStyle(() => ({ width: `${run.value * 100}%` }));
+  const walker = useAnimatedStyle(() => ({ left: `${run.value * 100}%`, opacity: run.value > 0 && run.value < 1 ? 1 : 0 }));
+  const invite = () => { onDone(); c.onInvite?.(); };
   return (
     <Stage tl={tl} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
-      <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
       <View style={{ marginTop: 8 }}>
-        <Letters tl={tl} text={c.name} delay={350} size={30} color={p.text} />
+        <Letters tl={tl} text={c.name} delay={250} size={30} color={p.text} />
       </View>
-      <View style={{ marginTop: 34 }}>
-        <GroupOrbit
-          tl={tl}
-          delay={900}
-          people={[]}
-          me={c.me}
-          emptySlots={5}
-          closeRing={false}
-          meDelay={1300}
-          onSlotPress={() => { onDone(); c.onInvite?.(); }}
-          center={
-            <View style={{ alignItems: 'center' }}>
-              <Users size={30} color={p.accent} />
-              <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted, marginTop: 4 }}>Tu grupo</Text>
+
+      {/* Tu cara y los lugares para invitar. */}
+      <View style={{ flexDirection: 'row', marginTop: 24, alignItems: 'center', gap: 10 }}>
+        <Reveal tl={tl} delay={700} pop from={0.4}><Avatar p={c.me} size={60} ring={colors.mint} /></Reveal>
+        {[0, 1, 2, 3].map((i) => (
+          <Reveal key={i} tl={tl} delay={850 + i * 110} pop from={0.4}>
+            <Press accessibilityRole="button" accessibilityLabel="Invitar a alguien" onPress={invite}
+              style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderStyle: 'dashed', borderColor: p.muted, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: p.muted, fontSize: 22, fontWeight: '800', marginTop: -2 }}>+</Text>
+            </Press>
+          </Reveal>
+        ))}
+      </View>
+
+      {/* La meta de la semana: la barra se recorre de 0 a la meta. */}
+      <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 26, paddingHorizontal: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text style={{ color: p.muted, fontWeight: '800', fontSize: 11, letterSpacing: 1 }}>HOY</Text>
+          <View style={{ flex: 1, height: 26, justifyContent: 'center' }}>
+            <View style={{ height: 6, borderRadius: 3, backgroundColor: p.track }} />
+            <Animated.View style={[{ position: 'absolute', left: 0, height: 6, borderRadius: 3, backgroundColor: colors.mint }, runStyle]} />
+            <Animated.View pointerEvents="none" style={[{ position: 'absolute', marginLeft: -9, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', shadowColor: colors.mint, shadowOpacity: 0.9, shadowRadius: 8 }, walker]} />
+          </View>
+          <Reveal tl={tl} delay={2100} pop from={0.3}>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={19} color={GOLD} />
             </View>
-          }
-        />
-      </View>
-      <Reveal tl={tl} delay={2050} pop from={0.6} style={{ marginTop: 20 }}>
+          </Reveal>
+        </View>
+        <Text style={{ color: p.muted, fontSize: 12.5, textAlign: 'center', marginTop: 6 }}>Cada semana, una meta de pasos entre todos.</Text>
+      </Reveal>
+
+      <Reveal tl={tl} delay={1950} pop from={0.6} style={{ marginTop: 18 }}>
         <Text style={{ ...display(26), color: p.text, textAlign: 'center' }}>¡Grupo creado!</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2250}>
+      <Reveal tl={tl} delay={2150}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 4, lineHeight: 20, maxWidth: 280 }}>Invita a tus amigos: caminar juntos suma más.</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2400} pop from={0.8} style={{ marginTop: 12 }}>
+      <Reveal tl={tl} delay={2300} pop from={0.8} style={{ marginTop: 12 }}>
         {/* Tocar el código lo copia. */}
         <Press accessibilityRole="button" accessibilityLabel={`Código ${Array.from(c.code).join(' ')}. Toca para copiarlo`}
           onPress={async () => { await Clipboard.setStringAsync(c.code); buzz.success(); setCopied(true); }}
@@ -313,10 +334,9 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
           <Text style={{ ...display(18), color: p.text, letterSpacing: 5 }}>{c.code}</Text>
           <Text style={{ fontSize: 11, fontWeight: '700', color: copied ? p.accent : p.muted, marginTop: 1 }}>{copied ? '¡Código copiado!' : 'Toca para copiar'}</Text>
         </Press>
-        <Burst tl={tl} delay={2450} palette={CAMINA_SPARKS} count={14} radius={90} style={{ left: '50%', top: '50%' }} />
       </Reveal>
-      <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        <MainButton label="Invitar amigos" onPress={() => { onDone(); c.onInvite?.(); }} />
+      <Reveal tl={tl} delay={2500} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+        <MainButton label="Invitar amigos" onPress={invite} />
         <LinkButton label="Ir al grupo" onPress={onDone} color={p.accent} />
       </Reveal>
     </Stage>

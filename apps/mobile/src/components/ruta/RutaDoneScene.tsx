@@ -133,11 +133,11 @@ function Slot({ tl, delay, s, n }: { tl: ReturnType<typeof useTimeline>; delay: 
 // onda suave sale del aro. Abajo: la fila de tus 3 locales, subir tu foto y compartir.
 export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onDone: () => void }) {
   const p = usePalette();
-  const tl = useTimeline(2800);
+  const tl = useTimeline(3400);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(900, buzz.success);
+    tl.at(1300, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const left = 3 - c.done;
@@ -148,34 +148,34 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
     <Stage tl={tl} announce={`${c.name} confirmado. Vas ${c.done} de 3 en tu Ruta de ${c.month}.`}>
       <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month}`}</Eyebrow></Reveal>
       <View style={{ marginTop: 22, width: R, height: R, alignItems: 'center', justifyContent: 'center' }}>
-        <Ripple tl={tl} delay={900} size={R} />
+        <Ripple tl={tl} delay={1300} size={R} />
         <Reveal tl={tl} delay={150} pop from={0.7} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done - 1} month={c.monthShort} glow={false} hideCenter /></Reveal>
-        {/* El tramo nuevo se enciende encima. */}
-        <Reveal tl={tl} delay={850} from={1} dy={0} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done} month={c.monthShort} hideCenter /></Reveal>
         <Reveal tl={tl} delay={150} pop from={0.5} style={{ position: 'absolute' }}>
           <View style={{ width: L, height: L, borderRadius: L * 0.28, overflow: 'hidden', backgroundColor: '#2F1E5C', borderWidth: 3, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
             {c.logo_url ? <Image source={{ uri: c.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
               : <Text style={{ color: '#fff', fontWeight: '900', fontSize: L * 0.42 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
           </View>
         </Reveal>
+        {/* Primero se ve el logo del local; después el aro de la Ruta se enciende encima (con las huellitas y el mes) y lo reemplaza. */}
+        <Reveal tl={tl} delay={1250} from={1} dy={0} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done} month={c.monthShort} /></Reveal>
       </View>
-      <Reveal tl={tl} delay={1050} style={{ marginTop: 20 }}>
+      <Reveal tl={tl} delay={1550} style={{ marginTop: 20 }}>
         <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>¡Visita confirmada!</Text>
         <Text style={{ fontSize: 16, fontWeight: '800', color: p.accent, textAlign: 'center', marginTop: 4 }} numberOfLines={1}>{`${c.name} · ${c.done} de 3`}</Text>
       </Reveal>
       {slots ? (
-        <Reveal tl={tl} delay={1250} style={{ marginTop: 16 }}>
+        <Reveal tl={tl} delay={1750} style={{ marginTop: 16 }}>
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            {slots.map((s, i) => <Slot key={i} tl={tl} delay={1350} s={s} n={i + 1} />)}
+            {slots.map((s, i) => <Slot key={i} tl={tl} delay={1850} s={s} n={i + 1} />)}
           </View>
         </Reveal>
       ) : null}
-      <Reveal tl={tl} delay={1400}>
+      <Reveal tl={tl} delay={1950}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 20, maxWidth: 290 }}>
           {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia del mes.`}
         </Text>
       </Reveal>
-      <Reveal tl={tl} delay={1600} dy={16} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+      <Reveal tl={tl} delay={2150} dy={16} style={{ alignSelf: 'stretch', marginTop: 20 }}>
         {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(col) => <Camera size={20} color={col} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
         {c.onShare ? (c.onPhoto
           ? <LinkButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} color={p.accent} />
