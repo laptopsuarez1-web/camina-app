@@ -21,7 +21,7 @@ function mesLargo(iso: string) {
   return m.charAt(0).toUpperCase() + m.slice(1);
 }
 
-// Todo lo de la Ruta del mes para este local, en un solo lugar.
+// Todo lo de la Ruta del mes para este local, en un solo lugar y en orden: código, visitas por confirmar, números, premio y cómo funciona.
 export default function RutaPage() {
   const { business } = useBusinessAuth();
   const [codigo, setCodigo] = useState<string | null>(null);
@@ -49,68 +49,66 @@ export default function RutaPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Ruta del mes" subtitle={resumen ? `${mesLargo(resumen.month)}. Todo lo de la Ruta para tu local.` : 'Todo lo de la Ruta para tu local.'} />
+      <TopBar
+        title="Ruta del mes"
+        subtitle={resumen ? `${mesLargo(resumen.month)}. Todo lo de la Ruta para tu local.` : 'Todo lo de la Ruta para tu local.'}
+      />
 
-      <div className="max-w-[480px]">
+      <div className="max-w-[520px]">
         <div className="rounded-2xl p-5 mb-5" style={{ background: '#241748', color: '#fff' }}>
-          <p className="text-[11px] font-bold tracking-[0.1em]" style={{ color: '#7FEDC4' }}>CÓDIGO DE LA RUTA</p>
-          <div className="flex items-center justify-between gap-3 mt-1">
-            <p className="text-[40px] font-extrabold tracking-[0.3em] leading-tight">{codigo ?? '····'}</p>
-            <button
-              onClick={cambiarCodigo}
-              disabled={!codigo}
-              className="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold"
-              style={{ background: 'rgba(255,255,255,0.1)' }}
-            >
-              Cambiar código
-            </button>
-          </div>
-          <p className="text-[12.5px] mt-1.5" style={{ color: '#C4B8E8' }}>
-            Es distinto del código de canjes. Dáselo solo a quien viene por la Ruta, al pagar. La persona lo escribe en la app estando en tu local.
+          <p className="text-[13px] font-bold tracking-[0.08em]" style={{ color: '#7FEDC4' }}>CÓDIGO DE LA RUTA</p>
+          <p className="text-[48px] font-extrabold tracking-[0.3em] leading-tight mt-1">{codigo ?? '····'}</p>
+          <p className="text-[15px] leading-snug mt-1" style={{ color: '#E4DDF7' }}>
+            Dáselo a quien viene por la Ruta cuando paga. La persona lo escribe en la app, estando en tu local.
           </p>
-          {error && <p className="text-[12.5px] mt-2" style={{ color: '#F2985C' }}>{error}</p>}
+          <p className="text-[13px] mt-2" style={{ color: '#C4B8E8' }}>No es el mismo que el código de Canjes.</p>
+          <button
+            onClick={cambiarCodigo}
+            disabled={!codigo}
+            className="mt-4 rounded-xl px-4 py-2.5 text-[14px] font-semibold"
+            style={{ background: 'rgba(255,255,255,0.12)' }}
+          >
+            Cambiar código
+          </button>
+          {error && <p className="text-[14px] mt-2" style={{ color: '#F2985C' }}>{error}</p>}
         </div>
 
         {resumen && (
-          <div className="grid grid-cols-2 gap-2 mb-5">
-            <div className="bg-card border border-line rounded-2xl py-4 text-center">
-              <p className="text-[26px] font-extrabold leading-none">{resumen.in_route}</p>
-              <p className="text-muted text-[11.5px] font-semibold mt-1.5">Personas con tu local en su Ruta</p>
-            </div>
-            <div className="bg-card border border-line rounded-2xl py-4 text-center">
-              <p className="text-[26px] font-extrabold leading-none">{resumen.visits}</p>
-              <p className="text-muted text-[11.5px] font-semibold mt-1.5">Visitas confirmadas</p>
-            </div>
+          <div className="bg-card border border-line rounded-2xl p-5 mb-5 flex items-center gap-4">
+            <p className="text-[40px] font-extrabold leading-none">{resumen.in_route}</p>
+            <p className="text-[15px] font-semibold leading-snug">
+              {resumen.in_route === 1 ? 'persona tiene' : 'personas tienen'} tu local en su Ruta este mes
+            </p>
           </div>
         )}
 
+        {business && <RutaVisitas businessId={business.id} />}
+
         {resumen?.is_featured && (
-          <div className="rounded-2xl p-4 mb-5 border" style={{ background: '#FFF4D6', borderColor: '#E2B33C', color: '#5C4306' }}>
-            <p className="font-bold text-sm">Tu local es el protagonista de la Ruta este mes</p>
-            <p className="text-[12.5px] mt-1">Aparece destacado con marco dorado en el mapa de la Ruta para todas las personas.</p>
+          <div className="rounded-2xl p-5 mb-5 border" style={{ background: '#FFF4D6', borderColor: '#E2B33C', color: '#5C4306' }}>
+            <p className="font-bold text-[16px]">Tu local es el protagonista de este mes</p>
+            <p className="text-[14px] mt-1">Se ve con marco dorado en el mapa de la Ruta para todas las personas.</p>
           </div>
         )}
 
         {resumen?.prize_title && (
-          <div className="bg-card border border-line rounded-2xl p-4 mb-5">
-            <p className="text-muted text-[11px] font-bold tracking-[0.08em]">PREMIO DEL MES</p>
-            <p className="font-bold text-[15px] mt-1">{resumen.prize_title}</p>
-            {resumen.prize_detail && <p className="text-muted text-[12.5px] mt-1">{resumen.prize_detail}</p>}
+          <div className="bg-card border border-line rounded-2xl p-5 mb-5">
+            <p className="text-muted text-[13px] font-bold tracking-[0.06em]">PREMIO DEL MES</p>
+            <p className="font-bold text-[17px] mt-1">{resumen.prize_title}</p>
+            {resumen.prize_detail && <p className="text-muted text-[14px] mt-1">{resumen.prize_detail}</p>}
           </div>
         )}
 
         <div className="bg-card border border-line rounded-2xl p-5 mb-5">
-          <p className="font-semibold text-sm mb-2">Cómo funciona</p>
-          <ol className="text-muted text-[12.5px] leading-relaxed list-decimal pl-4 space-y-1">
+          <p className="font-bold text-[16px] mb-3">Cómo funciona</p>
+          <ol className="text-[14.5px] leading-relaxed list-decimal pl-5 space-y-1.5">
             <li>Cada mes las personas arman su Ruta con locales y la recorren.</li>
-            <li>Cuando alguien llega a tu local, tú le das el código de la Ruta al pagar.</li>
-            <li>La persona lo escribe en la app, y aparece abajo como visita por confirmar.</li>
-            <li>Confirmas si compró. Es venta normal: no das descuento ni Puntos.</li>
+            <li>Cuando llegan a tu local, tú les das el código de la Ruta al pagar.</li>
+            <li>La persona lo escribe en la app y aparece arriba como visita por confirmar.</li>
+            <li>Confirmas si compró. Es una venta normal: no das descuento ni Puntos.</li>
           </ol>
         </div>
       </div>
-
-      {business && <RutaVisitas businessId={business.id} />}
     </DashboardShell>
   );
 }
