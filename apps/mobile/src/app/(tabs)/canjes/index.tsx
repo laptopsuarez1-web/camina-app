@@ -316,10 +316,17 @@ function useLogoReady(logoUrl?: string | null) {
 // quedan pegados y medio superpuestos (como en Pasito), sin desparramarse. Se recalcula con el zoom: al acercarse
 // vuelven a su lugar real.
 const PIN_GAP_PX = 30;
+const MAX_SPREAD_DELTA = 0.06; // zoom máximo (latitudeDelta) hasta donde se separan pines encimados
+const MAX_RING = 5; // grupos más grandes no se abren en ronda: quedan en su lugar real
 type LatLng = { latitude: number; longitude: number };
 export function spreadPins(items: { id: string; lat: number; lng: number }[], latitudeDelta: number, mapHeightPx: number) {
   const out = new Map<string, LatLng>();
   if (!items.length || !mapHeightPx) {
+    for (const b of items) out.set(b.id, { latitude: b.lat, longitude: b.lng });
+    return out;
+  }
+  // De lejos los pines quedan juntos como en cualquier mapa; separarlos en ronda los dejaba "abiertos" y fuera de su lugar al volver a acercar.
+  if (latitudeDelta > MAX_SPREAD_DELTA) {
     for (const b of items) out.set(b.id, { latitude: b.lat, longitude: b.lng });
     return out;
   }
@@ -346,8 +353,8 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
     groups.push(group);
   }
   for (const group of groups) {
-    if (group.length === 1) {
-      out.set(group[0].id, { latitude: group[0].lat, longitude: group[0].lng });
+    if (group.length === 1 || group.length > MAX_RING) {
+      for (const g of group) out.set(g.id, { latitude: g.lat, longitude: g.lng });
       continue;
     }
     const lat = group.reduce((a, b) => a + b.lat, 0) / group.length;
@@ -446,7 +453,7 @@ export function MapPreviewCard({
               {shown.map((b) => (
                 <View key={b.id} className="flex-row items-center rounded-2xl bg-aqua-light-light dark:bg-aqua-light-dark px-2.5 py-2" style={{ gap: 10 }}>
                   {b.image_url ? (
-                    <CachedImage source={{ uri: b.image_url }} accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
+                    <CachedImage source={{ uri: b.image_url }} cachePolicy="memory-disk" accessibilityIgnoresInvertColors style={{ width: 40, height: 40, borderRadius: 12 }} />
                   ) : (
                     <View className="items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ width: 40, height: 40, borderRadius: 12 }}>
                       <Gift size={18} color={colors.purple} />
@@ -796,6 +803,22 @@ export default function CanjesScreen() {
     const lng = businessesWithCoords.reduce((acc, b) => acc + b.lng!, 0) / businessesWithCoords.length;
     return { latitude: lat, longitude: lng, latitudeDelta: 0.045, longitudeDelta: 0.045 };
   }, [hasGps, businessesWithCoords, baseRegion]);
+
+  // Las fotos (logos, portadas y premios) se bajan de a una cuando se tocan y tardaban en salir:
+  // apenas llega la lista se precargan todas en segundo plano, así al abrir un local ya están.
+  useEffect(() => {
+    const urls = new Set<string>();
+    for (const b of benefits ?? []) {
+      if (b.business.logo_url) urls.add(b.business.logo_url);
+      if (b.business.cover_url) urls.add(b.business.cover_url);
+      if (b.image_url) urls.add(b.image_url);
+    }
+    for (const b of sinPremios) {
+      if (b.logo_url) urls.add(b.logo_url);
+      if (b.cover_url) urls.add(b.cover_url);
+    }
+    if (urls.size) CachedImage.prefetch([...urls], 'memory-disk').catch(() => {});
+  }, [benefits, sinPremios]);
 
   // Reparto de pines encimados: la vista previa mide 250 de alto; el mapa completo sigue el zoom actual.
   const [fullMapHeight, setFullMapHeight] = useState(0);
@@ -1355,6 +1378,7 @@ export default function CanjesScreen() {
               {g.business.cover_url ? (
                 <CachedImage
                   source={{ uri: g.business.cover_url }}
+                  cachePolicy="memory-disk"
                   accessibilityIgnoresInvertColors
                   contentFit="cover"
                   style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
@@ -1616,7 +1640,7 @@ export default function CanjesScreen() {
                     style={{ width: '100%', height: '100%' }}
                     accessibilityLabel="Ver las fotos del local"
                   >
-                    <CachedImage source={{ uri: profileGroup.business.cover_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                    <CachedImage source={{ uri: profileGroup.business.cover_url }} cachePolicy="memory-disk" priority="high" style={{ width: '100%', height: '100%' }} contentFit="cover" />
                   </Press>
                 ) : (
                   <View style={{ flex: 1, backgroundColor: colors.authBg }} />
