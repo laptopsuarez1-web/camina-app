@@ -4,8 +4,9 @@ import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import {
-  Burst, CAMINA_SPARKS, display, Eyebrow, LinkButton, MainButton, Reveal, Stage, Stamp, usePalette, useTimeline,
+  Burst, CAMINA_SPARKS, display, Eyebrow, LinkButton, MainButton, Reveal, Stage, Stamp, useBeat, usePalette, useTimeline,
 } from '@/components/challenge/ChallengeCinematics';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { buzz } from '@/lib/haptics';
 
@@ -105,9 +106,9 @@ export type RutaStopDoneCinematic = {
 // Casillero de la fila 1-2-3: vacío con "?", lleno con el logo, y el de ahora se llena con un salto.
 function Slot({ tl, delay, s, n }: { tl: ReturnType<typeof useTimeline>; delay: number; s: { name: string; logo_url: string | null; done: boolean; now?: boolean }; n: number }) {
   const filled = (
-    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 3, borderColor: '#62F0B6', overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 3, borderColor: '#62F0B6', overflow: 'hidden', backgroundColor: '#2F1E5C', alignItems: 'center', justifyContent: 'center' }}>
       {s.logo_url ? <Image source={{ uri: s.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-        : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 20 }}>{s.name.trim()[0]?.toUpperCase()}</Text>}
+        : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 20 }}>{s.name.trim()[0]?.toUpperCase()}</Text>}
     </View>
   );
   const empty = (
@@ -121,68 +122,66 @@ function Slot({ tl, delay, s, n }: { tl: ReturnType<typeof useTimeline>; delay: 
         <View>
           {empty}
           <Stamp tl={tl} delay={delay} style={{ position: 'absolute', left: 0, top: 0 }}>{filled}</Stamp>
-          <Burst tl={tl} delay={delay + 40} palette={CAMINA_SPARKS} count={8} radius={44} style={{ left: 27, top: 27 }} />
         </View>
       ) : s.done ? filled : empty}
     </View>
   );
 }
 
-// Un local de la Ruta confirmado (1 de 3, 2 de 3): cae la "foto" del local como polaroid, le pegan el sello
-// VISITADO, su casillero se llena en la fila de 3 y se suma un tramo del aro. Abajo: subir tu foto y compartir.
+// Un local de la Ruta confirmado (1 de 3, 2 de 3). Sin confeti (eso queda para la ruta completa): el aro de la Ruta es
+// el protagonista. Aparece con el logo del local adentro, el tramo nuevo se enciende, cae un check sobre el logo y una
+// onda suave sale del aro. Abajo: la fila de tus 3 locales, subir tu foto y compartir.
 export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onDone: () => void }) {
   const p = usePalette();
-  const tl = useTimeline(3200);
+  const tl = useTimeline(2800);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(650, buzz.medium);
-    tl.at(1150, buzz.light);
-    tl.at(1500, buzz.success);
+    tl.at(900, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const left = 3 - c.done;
   const slots = c.stops?.length === 3 ? c.stops : null;
+  const R = 168;
+  const L = Math.round(R * 0.46);
   return (
-    <Stage tl={tl} announce={`${c.name} confirmado. Vas ${c.done} de 3 en tu Ruta de ${c.month}.`} confetti={{ at: 700 }}>
-      <Reveal tl={tl} delay={120}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month} · ${c.done} de 3`}</Eyebrow></Reveal>
-      {/* La polaroid del local cae girando y se acomoda; el sello le cae encima. */}
-      <Reveal tl={tl} delay={250} pop from={0.3} dy={-120} style={{ marginTop: 20 }}>
-        <View style={{ transform: [{ rotate: '-4deg' }], padding: 9, paddingBottom: 14, borderRadius: 10, backgroundColor: '#FBF8FF', shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 10 }, elevation: 10 }}>
-          <View style={{ position: 'absolute', top: -10, alignSelf: 'center', width: 70, height: 20, borderRadius: 3, backgroundColor: 'rgba(98,240,182,0.7)', transform: [{ rotate: '3deg' }], zIndex: 2 }} />
-          <View style={{ width: 150, height: 150, borderRadius: 6, overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+    <Stage tl={tl} announce={`${c.name} confirmado. Vas ${c.done} de 3 en tu Ruta de ${c.month}.`}>
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month}`}</Eyebrow></Reveal>
+      <View style={{ marginTop: 22, width: R, height: R, alignItems: 'center', justifyContent: 'center' }}>
+        <Ripple tl={tl} delay={900} size={R} />
+        <Reveal tl={tl} delay={200} pop from={0.7} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done - 1} month={c.monthShort} glow={false} /></Reveal>
+        {/* El tramo nuevo se enciende encima. */}
+        <Reveal tl={tl} delay={850} from={1} dy={0} style={{ position: 'absolute' }}><RutaRing size={R} done={c.done} month={c.monthShort} /></Reveal>
+        <Reveal tl={tl} delay={420} pop from={0.5} style={{ position: 'absolute' }}>
+          <View style={{ width: L, height: L, borderRadius: L * 0.28, overflow: 'hidden', backgroundColor: '#2F1E5C', borderWidth: 3, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
             {c.logo_url ? <Image source={{ uri: c.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 54 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
+              : <Text style={{ color: '#fff', fontWeight: '900', fontSize: L * 0.42 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
           </View>
-          <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 15, marginTop: 8, textAlign: 'center', maxWidth: 150 }} numberOfLines={1}>{c.name}</Text>
-        </View>
-        <Burst tl={tl} delay={680} palette={CAMINA_SPARKS} count={14} radius={110} style={{ left: '50%', top: '45%' }} />
-      </Reveal>
-      <Reveal tl={tl} delay={900} pop from={0.6} style={{ marginTop: 22 }}>
-        <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>{`¡Sumaste ${c.name}!`}</Text>
+        </Reveal>
+        <Stamp tl={tl} delay={900} style={{ position: 'absolute', right: R / 2 - L / 2 - 12, bottom: R / 2 - L / 2 - 12 }}>
+          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#62F0B6', borderWidth: 3, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 16 }}>✓</Text>
+          </View>
+        </Stamp>
+      </View>
+      <Reveal tl={tl} delay={1050} style={{ marginTop: 20 }}>
+        <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>¡Visita confirmada!</Text>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: p.accent, textAlign: 'center', marginTop: 4 }} numberOfLines={1}>{`${c.name} · ${c.done} de 3`}</Text>
       </Reveal>
       {slots ? (
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 16, alignItems: 'center' }}>
-          {slots.map((s, i) => (
-            <Reveal key={i} tl={tl} delay={1000 + i * 90} pop from={0.7}><Slot tl={tl} delay={1150} s={s} n={i + 1} /></Reveal>
-          ))}
-          <Reveal tl={tl} delay={1300} pop from={0.6} style={{ marginLeft: 6 }}>
-            <RutaRing size={64} done={c.done} month={c.monthShort} />
-          </Reveal>
-        </View>
-      ) : (
-        <View style={{ marginTop: 16, width: 110, height: 110 }}>
-          <Reveal tl={tl} delay={1000} style={{ position: 'absolute' }}><RutaRing size={110} done={c.done - 1} month={c.monthShort} glow={false} /></Reveal>
-          <Reveal tl={tl} delay={1300} pop from={0.85} style={{ position: 'absolute' }}><RutaRing size={110} done={c.done} month={c.monthShort} /></Reveal>
-        </View>
-      )}
-      <Reveal tl={tl} delay={1500}>
+        <Reveal tl={tl} delay={1250} style={{ marginTop: 16 }}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {slots.map((s, i) => <Slot key={i} tl={tl} delay={1350} s={s} n={i + 1} />)}
+          </View>
+        </Reveal>
+      ) : null}
+      <Reveal tl={tl} delay={1400}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 20, maxWidth: 290 }}>
-          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia y el boleto del sorteo. Guarda una foto de hoy en tu álbum.`}
+          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia del mes.`}
         </Text>
       </Reveal>
-      <Reveal tl={tl} delay={1750} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(c) => <Camera size={20} color={c} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
+      <Reveal tl={tl} delay={1600} dy={16} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(col) => <Camera size={20} color={col} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
         {c.onShare ? (c.onPhoto
           ? <LinkButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} color={p.accent} />
           : <MainButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} />) : null}
@@ -190,4 +189,11 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
       </Reveal>
     </Stage>
   );
+}
+
+// Onda suave que sale del aro una vez (en vez de confeti).
+function Ripple({ tl, delay, size }: { tl: ReturnType<typeof useTimeline>; delay: number; size: number }) {
+  const k = useBeat(tl, delay, { duration: 900 });
+  const st = useAnimatedStyle(() => ({ opacity: k.value <= 0 ? 0 : (1 - k.value) * 0.7, transform: [{ scale: 1 + k.value * 0.35 }] }));
+  return <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: '#62F0B6' }, st]} />;
 }

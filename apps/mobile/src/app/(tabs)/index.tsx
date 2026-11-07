@@ -584,7 +584,7 @@ export default function HomeScreen() {
 
       <View className="pt-5 pb-2">
         {/* El evento del mes, siempre a mano en Inicio. */}
-        {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} /> : null}
+        {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push({ pathname: '/(tabs)/ruta', params: { unirme: '1' } })} /> : null}
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
           <Press
             accessibilityRole="button"

@@ -404,7 +404,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   }, []);
   const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.warn, '#FFD97A', '#FFF1B8', '#62F0B6'] }} announce={`${c.days} días seguidos de racha.`}>
+    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
       <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
@@ -511,7 +511,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} confetti={{ at: 1950, palette: GOLD_SPARKS }} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
+    <Stage tl={tl} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Meta del grupo · ${c.name}`}</Eyebrow></Reveal>
       <Reveal tl={tl} delay={1950} pop from={0.3} style={{ marginTop: 12 }}>
         <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>

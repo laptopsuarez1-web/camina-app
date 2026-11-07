@@ -5,7 +5,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useColorScheme } from 'nativewind';
 import { Camera } from '@/components/icons';
-import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 import { uploadAvatar } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
 import { router } from 'expo-router';
@@ -30,15 +30,10 @@ export default function CompletarPerfilScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
 
   async function pickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-      allowsEditing: true,
-      aspect: [1, 1],
-    });
-    if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
-      setPhotoB64(result.assets[0].base64 ?? null);
+    const r = await pickFromGallery({ aspect: 1, max: 640 });
+    if (r) {
+      setPhotoUri(r.uri);
+      setPhotoB64(null);
     }
   }
 

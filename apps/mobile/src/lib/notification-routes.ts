@@ -1,6 +1,9 @@
 // A qué pantalla lleva cada tipo de aviso (al tocar la notificación o la fila de la bandeja).
 // Los avisos del chat del grupo llevan directo a ese grupo (si el aviso trae cuál es).
-export function routeForNotification(type?: string, data?: { group_id?: unknown } | null): string {
+export function routeForNotification(type?: string, data?: { group_id?: unknown; screen?: unknown } | null): string {
+  // Avisos que dicen directamente a qué pantalla van (la Ruta del mes y las insignias).
+  if (data?.screen === 'ruta') return '/(tabs)/ruta';
+  if (data?.screen === 'insignias') return '/(tabs)/insignias';
   if (type === 'group_note' || type === 'group_challenge') {
     const g = typeof data?.group_id === 'string' ? data.group_id : null;
     if (g) return `/(tabs)/grupos/${g}`;

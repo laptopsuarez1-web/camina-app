@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useColorScheme } from 'nativewind';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -34,6 +35,7 @@ export default function EventosScreen() {
   const [picked, setPicked] = useState<{ from: string | undefined; tab: 'eventos' | 'desafios' } | null>(null);
   const tab = picked && picked.from === params.tab ? picked.tab : params.tab === 'desafios' ? 'desafios' : 'eventos';
   const setTab = (t: 'eventos' | 'desafios') => setPicked({ from: params.tab, tab: t });
+  const dark = useColorScheme().colorScheme === 'dark';
   const [open, setOpen] = useState<PromotionItem | null>(null);
   const { width } = useWindowDimensions();
   const cardSize = Math.min(width - 40, 380);
@@ -110,9 +112,11 @@ export default function EventosScreen() {
               haptic="selection"
               feedback="none"
               onPress={() => setTab(k)}
-              className={`flex-1 rounded-full items-center py-2.5 ${on ? 'bg-purple-deep' : ''}`}
+              className="flex-1 rounded-full items-center py-2.5"
+              // Colores fijos según el modo (la clase oscura no siempre llegaba al texto y "Desafíos" no se leía).
+              style={on ? { backgroundColor: dark ? '#62F0B6' : '#5B31A3' } : undefined}
             >
-              <Text style={{ fontSize: 14.5, fontWeight: '800', color: on ? '#fff' : undefined }} className={on ? '' : 'text-purple-ink dark:text-purple-soft'}>
+              <Text style={{ fontSize: 14.5, fontWeight: '800', color: on ? (dark ? '#14093a' : '#fff') : dark ? '#E4D6FF' : '#8149C2' }}>
                 {k === 'eventos' ? 'Eventos' : 'Desafíos'}
               </Text>
             </Press>
@@ -125,7 +129,7 @@ export default function EventosScreen() {
       {tab === 'eventos' && (
         <View className="gap-4 mb-7 items-center">
           {showRuta && (
-            <RutaEventCard state={ruta} width={cardSize} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push('/(tabs)/ruta')} />
+            <RutaEventCard state={ruta} width={cardSize} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push({ pathname: '/(tabs)/ruta', params: { unirme: '1' } })} />
           )}
           {/* Ganadores del sorteo de la Ruta del mes pasado (cuando ya se sorteó). */}
           {lastWinners ? <View style={{ width: cardSize, marginTop: -12 }}><RutaPrizeCard prize={lastWinners} compact /></View> : null}

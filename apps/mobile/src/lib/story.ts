@@ -1,5 +1,6 @@
 import { Platform, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { decode } from 'base64-arraybuffer';
@@ -39,8 +40,8 @@ export async function pickStoryPhoto(source: 'camera' | 'library'): Promise<stri
     const res = await ImagePicker.launchCameraAsync(opts);
     return res.canceled ? null : res.assets[0].uri;
   }
-  const res = await ImagePicker.launchImageLibraryAsync(opts);
-  return res.canceled ? null : res.assets[0].uri;
+  const r = await pickFromGallery({ aspect: 9 / 16, max: 1920 });
+  return r?.uri ?? null;
 }
 
 // Abre la hoja de compartir del sistema con la imagen ya armada (ahí aparece Instagram > Historias).

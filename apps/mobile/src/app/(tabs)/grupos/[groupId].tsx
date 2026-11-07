@@ -34,7 +34,7 @@ import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupPhoto } from '@/lib/avatar';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
-import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -174,11 +174,11 @@ export default function GroupDetailScreen() {
   // Foto y fondo los cambia solo quien creó el grupo (policies de la migración 0069).
   async function pickGroupPhoto() {
     if (!groupId) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
-    if (result.canceled) return;
+    const picked = await pickFromGallery({ aspect: 1, max: 640 });
+    if (!picked) return;
     setLookBusy(true);
     try {
-      const url = await uploadGroupPhoto(groupId, result.assets[0].uri, result.assets[0].base64);
+      const url = await uploadGroupPhoto(groupId, picked.uri, null);
       const { error } = await supabase.from('groups').update({ photo_url: url }).eq('id', groupId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });

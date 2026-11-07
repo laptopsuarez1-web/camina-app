@@ -8,7 +8,7 @@ import { GoalSheet } from '@/components/GoalSheet';
 import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 import { ChevronLeft, ChevronDown, Camera, ImageIcon, Trash2, KeyRound, Eye, EyeSlash, Coffee, Food, Ticket, Barbell, ShoppingBag, Sparkle, DeviceMobile, Calendar, IconBubble, type IconProps } from '@/components/icons';
 import { uploadAvatar, uploadBanner } from '@/lib/avatar';
 import { birthToISO, ageFromISO, MIN_AGE } from '@/lib/age';
@@ -161,10 +161,10 @@ export default function EditarPerfilScreen() {
   const placeholder = isDark ? colors.dark.muted : colors.light.muted;
 
   async function pickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
-    if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
-      setPhotoB64(result.assets[0].base64 ?? null);
+    const r = await pickFromGallery({ aspect: 1, max: 640 });
+    if (r) {
+      setPhotoUri(r.uri);
+      setPhotoB64(null);
     }
   }
 
@@ -342,10 +342,10 @@ export default function EditarPerfilScreen() {
         </ProfileBanner>
         <ProfileBgSheet visible={bgSheet} value={bgKey} onChange={setBgKey} onClose={() => setBgSheet(false)} photoUrl={bannerShown}
           onPickPhoto={!bannerReady ? undefined : async () => {
-            const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, exif: false, allowsEditing: true, aspect: [4, 3] });
-            if (r.canceled) return;
-            setBannerUri(r.assets[0].uri);
-            setBannerB64(r.assets[0].base64 ?? null);
+            const r = await pickFromGallery({ aspect: 4 / 3, max: 1280 });
+            if (!r) return;
+            setBannerUri(r.uri);
+            setBannerB64(null);
             setBgKey('foto');
           }} />
 

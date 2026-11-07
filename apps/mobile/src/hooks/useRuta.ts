@@ -43,6 +43,9 @@ export function useRuta() {
       if (error) throw error;
       return data as RutaState;
     },
+    // Mientras una visita espera que el local la confirme, se revisa cada 6 segundos: apenas el local confirma, se ve
+    // en la app (y sale el festejo) sin tener que esperar el aviso ni salir y volver a entrar.
+    refetchInterval: (q) => ((q.state.data as RutaState | undefined)?.stops?.some((s) => s.visit === 'pending') ? 6000 : false),
   });
 }
 
