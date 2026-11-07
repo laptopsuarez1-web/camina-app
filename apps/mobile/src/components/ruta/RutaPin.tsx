@@ -3,6 +3,7 @@ import { Image, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 
 const MINT = '#62F0B6';
+export const GOLD = '#F2C14E';
 const HUELLAS = require('@/../assets/ruta-huellas.png');
 
 // Pin de la Ruta: misma forma que los pines del mapa de Canjes (cabeza cuadrada redondeada con el logo y punta abajo),
@@ -13,14 +14,15 @@ export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, 
   name: string; logoUrl?: string | null; size?: number; route?: boolean; star?: boolean; onLoaded?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
-  const ring = route ? MINT : '#fff';
+  // El protagonista del mes va con marco dorado (destacado); el resto, menta.
+  const ring = star ? GOLD : route ? MINT : '#fff';
   const b = route ? 4 : 3;
   const inner = size - b * 2;
   const showLogo = !!logoUrl && !failed;
   return (
     <View style={{ width: size + 16, height: size + 26, alignItems: 'center', paddingTop: 8 }}>
       <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: ring, alignItems: 'center', justifyContent: 'center',
-        shadowColor: route ? MINT : '#000', shadowOpacity: route ? 0.6 : 0.4, shadowRadius: route ? 8 : 4, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
+        shadowColor: star ? GOLD : route ? MINT : '#000', shadowOpacity: star ? 0.9 : route ? 0.6 : 0.4, shadowRadius: star ? 12 : route ? 8 : 4, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
         <View style={{ width: inner, height: inner, borderRadius: inner * 0.28, overflow: 'hidden', backgroundColor: showLogo ? '#fff' : '#1F7A66', alignItems: 'center', justifyContent: 'center' }}>
           {showLogo ? (
             <Image source={{ uri: logoUrl! }} fadeDuration={0} onLoad={onLoaded} onError={() => setFailed(true)} style={{ width: inner, height: inner }} resizeMode="cover" />
@@ -32,7 +34,7 @@ export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, 
           <RutaBadge />
         )}
         {star && (
-          <View style={{ position: 'absolute', bottom: -7, left: -7, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E2B33C', borderWidth: 2, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ position: 'absolute', bottom: -7, left: -7, width: 22, height: 22, borderRadius: 11, backgroundColor: GOLD, borderWidth: 2, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
             <Text allowFontScaling={false} style={{ color: '#3a2a00', fontWeight: '900', fontSize: 11, lineHeight: 13 }}>★</Text>
           </View>
         )}

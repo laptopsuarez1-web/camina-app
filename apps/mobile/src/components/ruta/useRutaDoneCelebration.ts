@@ -38,7 +38,7 @@ export function useRutaDoneCelebration(state: RutaState | undefined | null) {
 
 // Cada local confirmado (1 de 3, 2 de 3) tiene su escena, una vez por local y por mes. El 3.º lo festeja la escena de arriba.
 const stopsShown = new Set<string>();
-export function useRutaStopCelebration(state: RutaState | undefined | null, onShare?: (businessId: string) => void) {
+export function useRutaStopCelebration(state: RutaState | undefined | null, onShare?: (businessId: string) => void, onPhoto?: (businessId: string) => void) {
   useEffect(() => {
     if (!state || state.completed_at) return;
     const confirmed = state.stops.filter((s) => s.visit === 'confirmed');
@@ -61,7 +61,9 @@ export function useRutaStopCelebration(state: RutaState | undefined | null, onSh
           name: s.name,
           logo_url: s.logo_url,
           done: confirmed.length,
+          stops: state.stops.map((x) => ({ name: x.name, logo_url: x.logo_url, done: x.visit === 'confirmed' && x.business_id !== s.business_id, now: x.business_id === s.business_id })),
           onShare: onShare ? () => onShare(s.business_id) : undefined,
+          onPhoto: onPhoto ? () => onPhoto(s.business_id) : undefined,
         });
       })
       .catch(() => {});

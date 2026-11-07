@@ -12,7 +12,7 @@ import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { LocalBadge } from '@/components/badges/LocalBadge';
 import { useAuthStore } from '@/store/useAuthStore';
 import { chosenKeys, levelLabel, nextLevel, useSetFeaturedBadge, useUserBadges, LEVELS, MAX_PROFILE_BADGES, type LocalBadgeT } from '@/hooks/useBadges';
-import { rutaMonthName, rutaMonthShort } from '@/hooks/useRuta';
+import { rutaDone, rutaMonthName, rutaMonthShort, useRuta } from '@/hooks/useRuta';
 import { friendlyServerError } from '@/lib/errors';
 import { useThemeColors } from '@/theme/useThemeColors';
 
@@ -28,6 +28,9 @@ export default function InsigniasScreen() {
   const { data } = useUserBadges(userId);
   const setFeatured = useSetFeaturedBadge();
   const routes = data?.routes ?? [];
+  // La Ruta de este mes, mientras la recorres: su insignia ya aparece (a medio llenar) y abre tu álbum.
+  const { data: ruta } = useRuta();
+  const current = own && ruta?.joined && !routes.some((r) => r.month === ruta.month) ? ruta : null;
   const locals = data?.locals ?? [];
   const [sheet, setSheet] = useState<LocalBadgeT | null>(null);
 
@@ -64,12 +67,24 @@ export default function InsigniasScreen() {
       )}
 
       <Text className="text-[16px] font-bold text-center text-text-light dark:text-text-dark mb-3">Rutas del mes</Text>
-      {routes.length === 0 ? (
+      {current ? (
+        <Press accessibilityRole="button" accessibilityLabel={`Tu Ruta de ${rutaMonthName(current.month)}: ver tu álbum`} onPress={() => router.push({ pathname: '/(tabs)/ruta-mes', params: { m: current.month } })}>
+          <Glass className="rounded-3xl p-4 mb-4 flex-row items-center" style={{ gap: 14, borderColor: 'rgba(98,240,182,0.45)', borderWidth: 1.5 }}>
+            <RutaRing size={70} done={rutaDone(current)} month={rutaMonthShort(current.month)} />
+            <View className="flex-1">
+              <Text className="text-[11px] font-extrabold" style={{ color: '#2FB98A', letterSpacing: 1.2 }}>EN CURSO</Text>
+              <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark">Ruta de {rutaMonthName(current.month)}</Text>
+              <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">{rutaDone(current)} de 3 locales · toca para ver tu álbum de fotos</Text>
+            </View>
+          </Glass>
+        </Press>
+      ) : null}
+      {routes.length === 0 ? (current ? null : (
         <Glass className="rounded-3xl p-4 mb-5 items-center">
           <RutaRing size={64} done={0} glow={false} />
           <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-2">Todavía no completaste una Ruta del mes. Cada mes tiene su insignia.</Text>
         </Glass>
-      ) : (
+      )) : (
         <View className="flex-row flex-wrap justify-center mb-5" style={{ gap: 18 }}>
           {routes.map((r) => {
             const key = `ruta:${r.month}`;

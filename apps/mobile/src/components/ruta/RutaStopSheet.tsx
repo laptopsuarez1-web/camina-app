@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { GOLD } from '@/components/ruta/RutaPin';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, TiktokIcon, X } from '@/components/icons';
@@ -193,7 +194,8 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
                 </Press>
               </View>
               <View style={{ paddingHorizontal: 20, marginTop: -40, flexDirection: 'row', alignItems: 'flex-end', gap: 14 }}>
-                <View style={{ width: 76, height: 76, borderRadius: 22, borderWidth: 3, borderColor: visited ? MINT : SHEET, overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{ width: 76, height: 76, borderRadius: 22, borderWidth: 3, borderColor: protagonist ? GOLD : visited ? MINT : SHEET, overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
+                  ...(protagonist ? { shadowColor: GOLD, shadowOpacity: 0.8, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } } : null) }}>
                   {stop.logo_url
                     ? <Image source={{ uri: stop.logo_url }} cachePolicy="memory-disk" contentFit="cover" style={{ width: '100%', height: '100%' }} />
                     : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 28 }}>{stop.name.trim()[0]?.toUpperCase()}</Text>}
@@ -212,10 +214,10 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
 
           <ScrollView bounces={false} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 16 }} showsVerticalScrollIndicator={false}>
             {protagonist ? (
-              <View style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(226,179,60,0.10)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.45)' }}>
-                <Text style={{ color: '#E2B33C', fontSize: 20 }}>★</Text>
+              <View style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(242,193,78,0.10)', borderWidth: 1, borderColor: 'rgba(242,193,78,0.5)' }}>
+                <Text style={{ color: GOLD, fontSize: 20 }}>★</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: '#E2B33C', fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>LOCAL PROTAGONISTA DEL MES</Text>
+                  <Text style={{ color: GOLD, fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>LOCAL PROTAGONISTA DEL MES</Text>
                   <Text style={{ color: '#fff', fontSize: 13, marginTop: 1 }}>{prizeTitle ? `Regala "${prizeTitle}" para el sorteo de la Ruta.` : 'Regala el premio del sorteo de la Ruta.'}</Text>
                 </View>
               </View>
@@ -223,11 +225,10 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
 
             {f?.description ? <Text style={{ color: '#E6DEFF', fontSize: 14, lineHeight: 20 }} numberOfLines={4}>{f.description}</Text> : null}
 
-            {/* Números del local: para que la ficha cuente algo más que la dirección. */}
+            {/* Lo tuyo en este local (nunca quién más fue): tu nivel y lo que suma tu visita. */}
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
-              <Stat value={stats ? String(stats.people) : '–'} label="clientes por Camina" />
-              <Stat value={stats ? String(stats.fans) : '–'} label={stats?.fans === 1 ? 'Fan del local' : 'Fans del local'} />
-              <Stat accent={!!level} value={level ?? 'Nuevo'} label={next && stats ? `${stats.my_points} de ${next.at} para ${next.label}` : level ? 'tu nivel aquí' : 'tu primera visita suma'} />
+              <Stat accent={!!level} value={level ?? 'Nuevo'} label={next && stats ? `${stats.my_points} de ${next.at} para ${next.label}` : 'tu nivel aquí'} />
+              <Stat value={visited ? '✓' : '+2'} label={visited ? 'tu visita ya sumó' : 'suma tu visita a tu nivel'} />
             </View>
 
             <View style={{ marginTop: 14, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: LINE, paddingHorizontal: 14 }}>

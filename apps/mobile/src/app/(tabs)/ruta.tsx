@@ -18,7 +18,7 @@ import { Press } from '@/components/ui/Press';
 import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
-import { RutaPin } from '@/components/ruta/RutaPin';
+import { GOLD, RutaPin } from '@/components/ruta/RutaPin';
 import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaStopSheet } from '@/components/ruta/RutaStopSheet';
@@ -107,7 +107,7 @@ export default function RutaScreen() {
   const lastWinners = useLastRutaWinners(state?.month);
   const { data: participation } = useRutaParticipation(state?.month);
   useRutaDoneCelebration(state);
-  useRutaStopCelebration(state, (id) => shareRoute(state?.stops.find((x) => x.business_id === id)));
+  useRutaStopCelebration(state, (id) => shareRoute(state?.stops.find((x) => x.business_id === id)), (id) => addVisitPhoto(id));
   const userId = useAuthStore((st) => st.session?.user.id);
   const photosReady = useBadgesReady();
   const join = useJoinRuta();
@@ -352,6 +352,13 @@ export default function RutaScreen() {
             <View style={{ flex: 1 }}>
               <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.4, fontSize: 11 }}>EVENTO DEL MES · HASTA EL {Number(state.ends_on.slice(8, 10))}</Text>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 23, lineHeight: 27 }}>Tu Ruta de {month}</Text>
+              {/* Arriba y chiquito: cuántas personas ya participan este mes (solo el número). */}
+              {participation && participation.participants > 0 ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                  <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: MINT }} />
+                  <Text style={{ color: MINT, fontSize: 12, fontWeight: '800' }}>{participationLabel(participation.participants)}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
           <Text style={{ color: MUTED, fontSize: 14, lineHeight: 20, marginTop: 12 }}>Te tocan 3 locales de tu ciudad al azar. Visítalos, compra lo que quieras y gana:</Text>
@@ -380,9 +387,6 @@ export default function RutaScreen() {
               <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 15 }}>{few ? 'Pronto: faltan locales' : 'Participar'}</Text>
             )}
           </Press>
-          {participation && !few ? (
-            <Text style={{ color: MUTED, fontSize: 12, textAlign: 'center', marginTop: 8 }}>{participationLabel(participation.participants)}</Text>
-          ) : null}
         </View>
       </View>
     );
@@ -509,7 +513,7 @@ export default function RutaScreen() {
                 <View key={s.business_id} style={{ flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 18, backgroundColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.09)' : 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.35)' : 'rgba(255,255,255,0.07)' }}>
                   <Press accessibilityRole="button" accessibilityLabel={hidden ? 'Local por descubrir' : `Ver la ficha de ${s.name}`} disabled={hidden} onPress={() => setInfoFor(s)} style={{ alignItems: 'center', alignSelf: 'stretch' }}>
                     {/* Cuadrado redondeado, como los pines del mapa (no círculo). */}
-                    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 2.5, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: star ? 3 : 2.5, borderColor: star ? GOLD : ring, overflow: 'hidden', ...(star ? { shadowColor: GOLD, shadowOpacity: 0.8, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } } : null), backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
                       {hidden ? (
                         <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
                       ) : s.logo_url ? (
@@ -524,7 +528,7 @@ export default function RutaScreen() {
                       </View>
                     ) : null}
                     {star ? (
-                      <View style={{ position: 'absolute', top: -5, left: '50%', marginLeft: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E2B33C', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
+                      <View style={{ position: 'absolute', top: -5, left: '50%', marginLeft: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
                         <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 11 }}>★</Text>
                       </View>
                     ) : null}

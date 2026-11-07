@@ -41,13 +41,13 @@ export function RutaPrizeCard({ prize, compact = false }: { prize: RutaPrize; co
       {/* Local protagonista del mes: el que regala el premio. Se destaca con su logo y una estrella dorada. */}
       {prize.sponsor && !drawn ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 14, marginBottom: 14, padding: 10, borderRadius: 16, backgroundColor: 'rgba(226,179,60,0.10)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.45)' }}>
-          <View style={{ width: 38, height: 38, borderRadius: 11, overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 40, height: 40, borderRadius: 12, borderWidth: 2.5, borderColor: '#F2C14E', overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
             {prize.sponsor.logo_url
               ? <Image source={{ uri: prize.sponsor.logo_url }} cachePolicy="memory-disk" contentFit="cover" style={{ width: '100%', height: '100%' }} />
               : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 16 }}>{prize.sponsor.name.trim()[0]?.toUpperCase()}</Text>}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: '#E2B33C', fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>★ LOCAL PROTAGONISTA DEL MES</Text>
+            <Text style={{ color: '#F2C14E', fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>★ LOCAL PROTAGONISTA DEL MES</Text>
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }} numberOfLines={1}>{prize.sponsor.name}</Text>
             {!compact ? <Text style={{ color: '#C4B8E8', fontSize: 11.5 }}>Regala el premio para todos los que completen la Ruta</Text> : null}
           </View>
