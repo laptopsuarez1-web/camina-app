@@ -19,7 +19,7 @@ export function GroupLookPicker({ photo, onPhoto, background, onBackground }: {
 }) {
   const { dark, accentIcon } = useThemeColors();
   async function pickPhoto() {
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [1, 1] });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
     if (!r.canceled) onPhoto({ uri: r.assets[0].uri, b64: r.assets[0].base64 ?? null });
   }
   return (

@@ -131,7 +131,7 @@ export default function RutaMesScreen() {
 
   async function addPhoto(businessId: string) {
     if (!userId || !m) return;
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsEditing: true, aspect: [4, 5] });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, exif: false, allowsEditing: true, aspect: [4, 5] });
     if (r.canceled) return;
     setUploading(businessId);
     try {
