@@ -6,7 +6,6 @@ import { supabase, type Redemption } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
-import { RutaVisitas } from '@/components/RutaVisitas';
 
 export default function CanjesPage() {
   const { business } = useBusinessAuth();
@@ -18,6 +17,8 @@ export default function CanjesPage() {
   const [localCode, setLocalCode] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
   const [codeError, setCodeError] = useState<string | null>(null);
+  // El bloque de 6 dígitos solo sirve si el local tiene premios online activos.
+  const [hasOnline, setHasOnline] = useState(false);
 
   const loadRedemptions = useCallback(async () => {
     if (!business) return;
@@ -42,6 +43,17 @@ export default function CanjesPage() {
       .eq('business_id', business.id)
       .maybeSingle()
       .then(({ data }) => setLocalCode(data?.code ?? null));
+  }, [business]);
+
+  useEffect(() => {
+    if (!business) return;
+    supabase
+      .from('benefits')
+      .select('id', { count: 'exact', head: true })
+      .eq('business_id', business.id)
+      .eq('online', true)
+      .eq('active', true)
+      .then(({ count }) => setHasOnline((count ?? 0) > 0));
   }, [business]);
 
   async function changeLocalCode() {
@@ -96,9 +108,7 @@ export default function CanjesPage() {
     <DashboardShell>
       <TopBar title="Canjes" subtitle="Cada canje queda aquí, con su premio y cómo se confirmó." />
 
-      {business && <RutaVisitas businessId={business.id} />}
-
-      <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
+      {hasOnline && <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="text-white font-semibold text-sm mb-1">Confirmar código de 6 dígitos</p>
         <p className="text-auth-muted text-xs mb-3.5">
           Solo para premios online (WhatsApp y redes) o clientes con una versión anterior de la app. Los canjes en tu local se confirman solos con el código de 4 números.
@@ -136,7 +146,7 @@ export default function CanjesPage() {
             </span>
           </div>
         )}
-      </div>
+      </div>}
 
       <div className="bg-card border border-line rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="font-semibold text-sm mb-1">Código de tu local</p>
