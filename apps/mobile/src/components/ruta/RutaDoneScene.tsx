@@ -1,4 +1,4 @@
-import { Camera } from '@/components/icons';
+import { Camera, Check } from '@/components/icons';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
@@ -156,9 +156,10 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
           </View>
           <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 15, marginTop: 8, textAlign: 'center', maxWidth: 150 }} numberOfLines={1}>{c.name}</Text>
         </View>
-        <Stamp tl={tl} delay={650} rotate={-14} style={{ position: 'absolute', right: -26, bottom: 30 }}>
-          <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 3, borderColor: '#62F0B6', backgroundColor: 'rgba(20,9,58,0.88)' }}>
-            <Text style={{ ...display(16), color: '#62F0B6', letterSpacing: 2 }}>VISITADO ✓</Text>
+        {/* Sello redondo con el check, en la esquina de la polaroid: no tapa el nombre del local. */}
+        <Stamp tl={tl} delay={650} rotate={-10} style={{ position: 'absolute', right: -18, top: -14 }}>
+          <View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: '#62F0B6', borderWidth: 4, borderColor: '#14093a', alignItems: 'center', justifyContent: 'center', shadowColor: '#62F0B6', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 8 }}>
+            <Check size={30} color="#14093a" />
           </View>
         </Stamp>
         <Burst tl={tl} delay={680} palette={CAMINA_SPARKS} count={14} radius={110} style={{ left: '50%', top: '45%' }} />
@@ -183,7 +184,7 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
       )}
       <Reveal tl={tl} delay={1500}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 20, maxWidth: 290 }}>
-          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia sorpresa y el boleto del sorteo. Guarda una foto de hoy en tu álbum.`}
+          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia y el boleto del sorteo. Guarda una foto de hoy en tu álbum.`}
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={1750} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
