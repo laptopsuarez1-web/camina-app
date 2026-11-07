@@ -89,7 +89,7 @@ export default function RutaMesScreen() {
           </Press>
         </View>
         <View style={{ alignItems: 'center', marginTop: -70, paddingHorizontal: 20 }}>
-          <RutaRing size={120} done={done} month={rutaMonthShort(route.month)} />
+          <RutaRing size={120} done={done} month={rutaMonthShort(route.month)} themeMonth={done >= 3 ? route.month : null} />
           <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.5, fontSize: 11.5, marginTop: 12 }}>
             {route.completed_at ? `COMPLETADA · ${fecha(route.completed_at).toUpperCase()}` : `${done} DE 3 LOCALES`}
           </Text>
@@ -137,7 +137,7 @@ export default function RutaMesScreen() {
               <Image source={LOGO} style={{ width: 26, height: 26 }} />
               <Text style={{ color: MINT, ...heavy(), fontSize: 16, letterSpacing: 1 }}>CAMINA</Text>
             </View>
-            <View style={{ marginTop: 26 }}><RutaRing size={140} done={3} month={rutaMonthShort(route.month)} /></View>
+            <View style={{ marginTop: 26 }}><RutaRing size={140} done={3} month={rutaMonthShort(route.month)} themeMonth={route.month} /></View>
             <Text style={{ color: '#fff', ...heavy(), fontSize: 27, textAlign: 'center', marginTop: 20, lineHeight: 30 }}>
               COMPLETÉ MI{'\n'}<Text style={{ color: MINT, ...heavy(), fontSize: 27 }}>RUTA DE {month.toUpperCase()}</Text>
             </Text>

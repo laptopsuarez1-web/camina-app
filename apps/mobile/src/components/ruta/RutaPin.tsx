@@ -7,8 +7,10 @@ const HUELLAS = require('@/../assets/ruta-huellas.png');
 
 // Pin de la Ruta: misma forma que los pines del mapa de Canjes (cabeza cuadrada redondeada con el logo y punta abajo),
 // con borde menta y unas huellas arriba si el local es de tu ruta. Sin ruta va en blanco, igual que en Canjes.
-export function RutaPin({ name, logoUrl, size = 46, route = true, onLoaded }: {
-  name: string; logoUrl?: string | null; size?: number; route?: boolean; onLoaded?: () => void;
+// `star`: el local protagonista del mes (el que regala el premio del sorteo) lleva una estrella dorada abajo a la izquierda
+// (arriba van las huellas, y con dos pines lado a lado no se tocan).
+export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, onLoaded }: {
+  name: string; logoUrl?: string | null; size?: number; route?: boolean; star?: boolean; onLoaded?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
   const ring = route ? MINT : '#fff';
@@ -28,6 +30,11 @@ export function RutaPin({ name, logoUrl, size = 46, route = true, onLoaded }: {
         </View>
         {route && (
           <RutaBadge />
+        )}
+        {star && (
+          <View style={{ position: 'absolute', bottom: -7, left: -7, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E2B33C', borderWidth: 2, borderColor: '#200A52', alignItems: 'center', justifyContent: 'center' }}>
+            <Text allowFontScaling={false} style={{ color: '#3a2a00', fontWeight: '900', fontSize: 11, lineHeight: 13 }}>★</Text>
+          </View>
         )}
       </View>
       <View style={{ marginTop: -2, width: 0, height: 0, borderLeftWidth: 7, borderRightWidth: 7, borderTopWidth: 9, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: ring }} />

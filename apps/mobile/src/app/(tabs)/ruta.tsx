@@ -9,8 +9,8 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-import Svg, { Path, Polyline as SvgLine } from 'react-native-svg';
+import MapView, { Marker, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
+import Svg, { Path } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
@@ -21,12 +21,16 @@ import { RutaPin } from '@/components/ruta/RutaPin';
 import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaStopSheet } from '@/components/ruta/RutaStopSheet';
-import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
+import { RouteLine, RouteLineWeb, sideBySide } from '@/components/ruta/RouteLine';
+import { RutaShareCard, SHARE_SIZE } from '@/components/ruta/RutaShareCard';
+import { shareCard } from '@/lib/share-image';
+import { useRutaDoneCelebration, useRutaStopCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
 import {
-  rutaDone, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaPrize, useRutaSwapOptions, useSwapRuta,
+  participationLabel, rutaDone, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaParticipation, useRutaPrize,
+  useRutaSwapOptions, useSwapRuta, useWalkingPath,
   type RutaStop,
 } from '@/hooks/useRuta';
 
@@ -95,12 +99,14 @@ function lineOrder(stops: RutaStop[]) {
 
 export default function RutaScreen() {
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const params = useLocalSearchParams<{ nueva?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
   const { data: prize } = useRutaPrize(state?.month);
   const lastWinners = useLastRutaWinners(state?.month);
+  const { data: participation } = useRutaParticipation(state?.month);
   useRutaDoneCelebration(state);
+  useRutaStopCelebration(state, (id) => shareRoute(state?.stops.find((x) => x.business_id === id)));
   const userId = useAuthStore((st) => st.session?.user.id);
   const photosReady = useBadgesReady();
   const join = useJoinRuta();
@@ -128,9 +134,35 @@ export default function RutaScreen() {
   const done = rutaDone(state);
   const month = state ? rutaMonthName(state.month) : '';
   const ordered = useMemo(() => lineOrder(stops), [stops]);
-  // Dónde se dibuja cada pin: si dos locales están casi en la misma cuadra, se separan un poco para que no se tapen.
-  const disp = useMemo(() => spreadPins(stops), [stops]);
-  const P = (s: RutaStop) => disp.get(s.business_id) ?? { latitude: s.lat!, longitude: s.lng! };
+  // Cada pin va en la ubicación real del local. Si en pantalla dos se tocarían, se dibujan lado a lado (offs, en píxeles).
+  const P = (s: RutaStop) => ({ latitude: s.lat!, longitude: s.lng! });
+  const [offs, setOffs] = useState<Map<string, number>>(new Map());
+  function placePins(r: Region) {
+    const pts = stops.filter((s) => s.lat != null && s.lng != null).map((s) => ({
+      id: s.business_id,
+      x: ((s.lng! - r.longitude) / r.longitudeDelta) * width,
+      y: (-(s.lat! - r.latitude) / r.latitudeDelta) * height,
+    }));
+    const next = sideBySide(pts);
+    setOffs((prev) => (sameOffs(prev, next) ? prev : next));
+  }
+  // Recorrido a pie por las calles entre los locales (si no llega, la línea va recta).
+  const straight = useMemo(() => ordered.map((s) => ({ latitude: s.lat!, longitude: s.lng! })), [ordered]);
+  const walk = useWalkingPath(straight);
+  const path = walk.data ?? straight;
+  // Tarjeta para historias ("Mi Ruta 1/3 en Bloom"): se arma escondida y se comparte como imagen.
+  const shareRef = useRef<View>(null);
+  const [shareAt, setShareAt] = useState<RutaStop | null>(null);
+  async function shareRoute(at?: RutaStop | null) {
+    setShareAt(at ?? stops.find((x) => x.visit === 'confirmed') ?? stops.find((x) => x.visit === 'pending') ?? null);
+    // Un cuadro para que la tarjeta escondida se dibuje con el local elegido.
+    await new Promise((r) => setTimeout(r, 120));
+    try {
+      await shareCard(shareRef, SHARE_SIZE, `mi-ruta-${state?.month ?? ''}`, 'Comparte tu Ruta');
+    } catch (e) {
+      Alert.alert('No se pudo compartir', e instanceof Error ? e.message : 'Intenta de nuevo.');
+    }
+  }
   const [infoFor, setInfoFor] = useState<RutaStop | null>(null);
 
   useEffect(() => {
@@ -150,47 +182,25 @@ export default function RutaScreen() {
     if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
-  // Línea de la ruta que se va dibujando (cantidad de puntos visibles del recorrido).
-  const [linePts, setLinePts] = useState<{ latitude: number; longitude: number }[] | null>(null);
-  function drawLine() {
-    const pts = ordered.map(P);
-    if (pts.length < 2) return;
-    // Se interpola cada tramo en pasos chicos para que la línea "crezca" de un local al otro.
-    const dense: { latitude: number; longitude: number }[] = [];
-    for (let i = 0; i < pts.length - 1; i++) {
-      for (let k = 0; k < 12; k++) {
-        const t = k / 12;
-        dense.push({ latitude: pts[i].latitude + (pts[i + 1].latitude - pts[i].latitude) * t, longitude: pts[i].longitude + (pts[i + 1].longitude - pts[i].longitude) * t });
-      }
-    }
-    dense.push(pts[pts.length - 1]);
-    let n = 2;
-    setLinePts(dense.slice(0, n));
-    const id = setInterval(() => {
-      n += 1;
-      setLinePts(dense.slice(0, n));
-      if (n >= dense.length) { clearInterval(id); setLinePts(null); setLineOn(true); }
-    }, 45);
-  }
-
   function runIntro() {
     if (!stops.length) return;
     const steps = stops.filter((s) => s.lat != null);
     const STEP = 2300;
     steps.forEach((s, i) => {
       setTimeout(() => {
-        mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 900 });
+        mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 1000 });
         setTimeout(async () => {
           const pt = await mapRef.current?.pointForCoordinate(P(s));
           if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i });
-          setTimeout(() => { setShown(i + 1); setTracks(true); }, 650);
-          setTimeout(() => setDrop(null), 1700);
-        }, 950);
+          // El pin del mapa aparece justo debajo del que cae (mismo lugar), y recién después se va el animado: sin saltos.
+          setTimeout(() => { setShown(i + 1); setTracks(true); }, 900);
+          setTimeout(() => setDrop(null), 1900);
+        }, 1000);
       }, 300 + i * STEP);
     });
     setTimeout(() => {
       fitAll();
-      setTimeout(drawLine, 700);
+      setTimeout(() => setLineOn(true), 800);
       setTimeout(() => { setShown(stops.length); setIntro(false); }, 900);
       router.setParams({ nueva: undefined });
     }, 300 + steps.length * STEP);
@@ -340,7 +350,8 @@ export default function RutaScreen() {
           {lastWinners ? <RutaPrizeCard prize={lastWinners} compact /> : null}
           {prize ? <RutaPrizeCard prize={prize} /> : null}
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 16 }}>x2</Text></Bubble>} title="Día doble" body="Eliges un día del mes que viene y tus pasos valen el doble: hasta 40 Puntos ese día." />
-          <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Exclusiva: solo la tiene quien completa esta ruta." />
+          {/* La insignia del mes es sorpresa: cada mes tiene otra temática y recién se ve al completar la ruta. */}
+          <Premio icon={<RutaRing size={46} done={0} mystery glow={false} />} title="Insignia sorpresa del mes" body="Cada mes tiene una temática nueva. Se revela solo cuando completas la ruta." />
           <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body={prize ? `Entras al sorteo de: ${prize.title}.` : 'Entras al sorteo del mes. El premio se anuncia en Eventos.'} />
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 17 }}>↻2</Text></Bubble>} title="2 cambios de local" body="El mes que viene puedes cambiar 2 de tus 3 locales, en vez de 1." />
           <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
@@ -361,6 +372,9 @@ export default function RutaScreen() {
               <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 15 }}>{few ? 'Pronto: faltan locales' : 'Participar'}</Text>
             )}
           </Press>
+          {participation && !few ? (
+            <Text style={{ color: MUTED, fontSize: 12, textAlign: 'center', marginTop: 8 }}>{participationLabel(participation.participants)}</Text>
+          ) : null}
         </View>
       </View>
     );
@@ -368,7 +382,6 @@ export default function RutaScreen() {
 
   // ---------- Con ruta: mapa, mis 3 locales, visita y premios ----------
   const first = stops.find((s) => s.lat != null);
-  const linePath = linePts ?? (lineOn ? ordered.map(P) : []);
   const canSwap = state.swaps_left > 0 && !state.completed_at && stops.some((s) => !s.visit);
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -376,25 +389,28 @@ export default function RutaScreen() {
         {first && Platform.OS === 'web' ? (
           // Vista web: mismo mapa de la ciudad con teselas, los pines y la línea de la ruta.
           <WebCityMap
-            zoom={16}
-            center={{ lat: stops.filter((s) => s.lat != null).reduce((a, s, _, l) => a + s.lat! / l.length, 0) - 0.0016, lng: stops.filter((s) => s.lng != null).reduce((a, s, _, l) => a + s.lng! / l.length, 0) }}
-            overlay={(project) => (
-              <>
-                {linePath.length > 1 ? (
-                  <Svg style={{ position: 'absolute', inset: 0 } as never} width="100%" height="100%">
-                    <SvgLine points={linePath.map((c) => { const q = project(c.latitude, c.longitude); return `${q.x},${q.y}`; }).join(' ')} fill="none" stroke={MINT} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
-                  </Svg>
-                ) : null}
-                {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => {
-                  const q = project(P(s).latitude, P(s).longitude);
-                  return (
-                    <Press key={s.business_id} accessibilityRole="button" accessibilityLabel={`Ver ${s.name}`} onPress={() => setInfoFor(s)} style={{ position: 'absolute', left: q.x - 23, top: q.y - 58 }}>
-                      <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
-                    </Press>
-                  );
-                })}
-              </>
-            )}
+            {...webView(stops, width, height)}
+            overlay={(project) => {
+              const vis = stops.slice(0, shown).filter((s) => s.lat != null);
+              const webOffs = sideBySide(vis.map((s) => ({ id: s.business_id, ...project(s.lat!, s.lng!) })));
+              return (
+                <>
+                  <RouteLineWeb path={path} on={lineOn} project={project} />
+                  {vis.map((s) => {
+                    const q = project(P(s).latitude, P(s).longitude);
+                    const dx = webOffs.get(s.business_id) ?? 0;
+                    return (
+                      <View key={s.business_id} style={{ position: 'absolute', left: 0, top: 0 }}>
+                        {dx ? <View pointerEvents="none" style={{ position: 'absolute', left: q.x - 5, top: q.y - 5, width: 10, height: 10, borderRadius: 5, backgroundColor: MINT, borderWidth: 2, borderColor: '#16111f' }} /> : null}
+                        <Press accessibilityRole="button" accessibilityLabel={`Ver ${s.name}`} onPress={() => setInfoFor(s)} style={{ position: 'absolute', left: q.x - 31 + dx, top: q.y - 72 }}>
+                          <RutaPin name={s.name} logoUrl={s.logo_url} size={46} star={prize?.sponsor?.id === s.business_id} />
+                        </Press>
+                      </View>
+                    );
+                  })}
+                </>
+              );
+            }}
           />
         ) : first ? (
           <MapView
@@ -404,28 +420,41 @@ export default function RutaScreen() {
             customMapStyle={DARK_MAP_STYLE}
             initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
             onMapReady={() => (intro ? runIntro() : fitAll(false))}
+            onRegionChangeComplete={placePins}
             toolbarEnabled={false}
             pitchEnabled={false}
             rotateEnabled={false}
           >
-            {linePath.length > 1 && <Polyline coordinates={linePath} strokeColor={MINT} strokeWidth={5} />}
-            {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => (
-              <Marker key={s.business_id} coordinate={P(s)} tracksViewChanges={tracks} anchor={{ x: 0.5, y: 1 }}
-                onPress={() => setInfoFor(s)}>
-                <RutaPin name={s.name} logoUrl={s.logo_url} size={46} />
-              </Marker>
-            ))}
+            <RouteLine path={path} on={lineOn} />
+            {stops.slice(0, shown).filter((s) => s.lat != null).map((s) => {
+              const dx = offs.get(s.business_id) ?? 0;
+              return [
+                // Si el pin está corrido para no tapar al otro, un puntito marca el lugar exacto del local.
+                dx ? (
+                  <Marker key={`${s.business_id}-dot`} coordinate={P(s)} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false} zIndex={4}>
+                    <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: MINT, borderWidth: 2, borderColor: '#16111f' }} />
+                  </Marker>
+                ) : null,
+                <Marker key={s.business_id} coordinate={P(s)} tracksViewChanges={tracks} anchor={{ x: 0.5 - dx / 62, y: 1 }} zIndex={5}
+                  onPress={() => setInfoFor(s)}>
+                  <RutaPin name={s.name} logoUrl={s.logo_url} size={46} star={prize?.sponsor?.id === s.business_id} />
+                </Marker>,
+              ];
+            })}
           </MapView>
         ) : <View style={{ flex: 1, backgroundColor: '#1d1b2e' }} />}
-        {drop && <DropPin key={drop.key} stop={drop.stop} x={drop.x} y={drop.y} />}
+        {drop && <DropPin key={drop.key} stop={drop.stop} x={drop.x + (offs.get(drop.stop.business_id) ?? 0)} y={drop.y} />}
       </View>
 
       <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 8, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22, backgroundColor: 'rgba(22,17,31,0.86)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
         <Back />
-        <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} glow={false} />
+        <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} glow={false} themeMonth={state.completed_at ? state.month : null} />
         <View style={{ flex: 1 }}>
           <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
+          {participation && participation.participants > 1 ? (
+            <Text style={{ color: MUTED, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>{participation.participants.toLocaleString('es-BO')} personas en la Ruta este mes</Text>
+          ) : null}
         </View>
         <Press accessibilityRole="button" accessibilityLabel="Cómo funciona la Ruta" onPress={() => setShowRules(true)} hitSlop={8}
           style={{ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.14)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
@@ -444,45 +473,75 @@ export default function RutaScreen() {
         </Press>
         {panelOpen ? (
         <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 14, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
             {stops.map((s, i) => {
               // Mientras cae cada pin, los locales que todavía no salieron se ven como sorpresa.
               const hidden = i >= shown;
               const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
-              const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.35)';
+              const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.18)';
+              const star = !hidden && prize?.sponsor?.id === s.business_id;
               return (
-                <Press key={s.business_id} accessibilityRole="button" disabled={hidden} onPress={() => setInfoFor(s)} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
-                  <View style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
-                    {hidden ? (
-                      <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
-                    ) : s.logo_url ? (
-                      <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} />
-                    ) : (
-                      <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 22 }}>{s.name.trim()[0]?.toUpperCase()}</Text>
-                    )}
-                  </View>
-                  {!hidden && st === 'ok' ? (
-                    <View style={{ position: 'absolute', top: 0, right: '50%', marginRight: -28, width: 20, height: 20, borderRadius: 10, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
-                      <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 11 }}>✓</Text>
+                <View key={s.business_id} style={{ flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 18, backgroundColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.09)' : 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.35)' : 'rgba(255,255,255,0.07)' }}>
+                  <Press accessibilityRole="button" accessibilityLabel={hidden ? 'Local por descubrir' : `Ver la ficha de ${s.name}`} disabled={hidden} onPress={() => setInfoFor(s)} style={{ alignItems: 'center', alignSelf: 'stretch' }}>
+                    {/* Cuadrado redondeado, como los pines del mapa (no círculo). */}
+                    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 2.5, borderColor: ring, overflow: 'hidden', backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                      {hidden ? (
+                        <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
+                      ) : s.logo_url ? (
+                        <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} />
+                      ) : (
+                        <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 22 }}>{s.name.trim()[0]?.toUpperCase()}</Text>
+                      )}
                     </View>
-                  ) : null}
-                  <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '96%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
-                  <Text style={{ color: hidden ? MUTED : st === 'wait' ? '#C4B8E8' : MINT, fontWeight: '800', fontSize: 11, marginTop: 1 }}>
-                    {hidden ? '...' : st === 'ok' ? 'Visitado ›' : st === 'wait' ? 'Por confirmar ›' : 'Ver local ›'}
-                  </Text>
-                </Press>
+                    {!hidden && st === 'ok' ? (
+                      <View style={{ position: 'absolute', top: -5, right: '50%', marginRight: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
+                        <Text style={{ color: '#14093a', fontWeight: '900', fontSize: 11 }}>✓</Text>
+                      </View>
+                    ) : null}
+                    {star ? (
+                      <View style={{ position: 'absolute', top: -5, left: '50%', marginLeft: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: '#E2B33C', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
+                        <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 11 }}>★</Text>
+                      </View>
+                    ) : null}
+                    <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '100%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
+                  </Press>
+                  {hidden ? (
+                    <Text style={{ color: MUTED, fontWeight: '800', fontSize: 11, marginTop: 4 }}>...</Text>
+                  ) : st === 'go' ? (
+                    // Acción directa: estando en el local, se marca la visita sin abrir la ficha.
+                    <Press accessibilityRole="button" accessibilityLabel={`Marcar visita en ${s.name}`} onPress={() => setVisitFor(s)} haptic="light" hitSlop={6}
+                      style={{ marginTop: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: MINT }}>
+                      <Text allowFontScaling={false} style={{ color: '#14093a', fontWeight: '800', fontSize: 11 }}>Marcar visita</Text>
+                    </Press>
+                  ) : (
+                    <Text style={{ color: st === 'wait' ? '#C4B8E8' : MINT, fontWeight: '800', fontSize: 11, marginTop: 9 }}>{st === 'ok' ? '✓ Visitado' : 'Por confirmar'}</Text>
+                  )}
+                </View>
               );
             })}
           </View>
-          {canSwap && shown >= stops.length && (
-            <Press onPress={() => setSwapOpen(true)} style={{ alignItems: 'center', paddingTop: 12 }}>
-              <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local · {state.swaps_left === 1 ? 'te queda 1 cambio' : `te quedan ${state.swaps_left} cambios`}</Text>
-            </Press>
-          )}
+          {/* Compartir y cambiar, en una sola fila para que el panel no tape el mapa. */}
+          {shown >= stops.length && (stops.some((x) => x.visit) || canSwap) ? (
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+              {stops.some((x) => x.visit) ? (
+                <Press accessibilityRole="button" onPress={() => shareRoute()} haptic="light"
+                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>Compartir en historias</Text>
+                </Press>
+              ) : null}
+              {canSwap ? (
+                <Press accessibilityRole="button" onPress={() => setSwapOpen(true)}
+                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local</Text>
+                  <Text style={{ color: MUTED, fontSize: 10.5 }}>{state.swaps_left === 1 ? 'te queda 1 cambio' : `te quedan ${state.swaps_left} cambios`}</Text>
+                </Press>
+              ) : null}
+            </View>
+          ) : null}
 
           {state.completed_at && (
             <View style={[CARD, { padding: 16, marginTop: 12, alignItems: 'center' }]}>
-              <RutaRing size={84} done={3} month={rutaMonthShort(state.month)} />
+              <RutaRing size={84} done={3} month={rutaMonthShort(state.month)} themeMonth={state.month} />
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16, marginTop: 10 }}>¡Completaste tu Ruta de {month}!</Text>
               <Text style={{ color: MUTED, fontSize: 12.5, textAlign: 'center', marginTop: 4 }}>
                 Ganaste tu insignia{state.ticket_no ? ` y el boleto N.º ${state.ticket_no} del sorteo` : ''}. El mes que viene eliges tu Día doble y tienes 2 cambios de local.
@@ -504,7 +563,16 @@ export default function RutaScreen() {
 
       {rulesModal}
 
-      <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }} />
+      <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }}
+        protagonist={!!infoFor && prize?.sponsor?.id === infoFor.business_id} prizeTitle={prize?.title ?? null}
+        onShare={(st) => { setInfoFor(null); setTimeout(() => shareRoute(st), 350); }} />
+
+      {/* Tarjeta para historias, fuera de la pantalla (solo se usa para armar la imagen). */}
+      <View pointerEvents="none" style={{ position: 'absolute', left: -SHARE_SIZE.width * 2, top: 0 }}>
+        <View ref={shareRef} collapsable={false} testID="ruta-share-card" style={SHARE_SIZE}>
+          <RutaShareCard month={month} monthShort={rutaMonthShort(state.month)} stops={stops} at={shareAt ?? stops.find((x) => x.visit === 'confirmed') ?? null} completed={!!state.completed_at} />
+        </View>
+      </View>
 
       <LocalCodeSheet
         visible={!!visitFor}
@@ -625,21 +693,38 @@ function Chip({ children }: { children: string }) {
   );
 }
 
-// Pin que cae desde arriba con rebote, deja una onda en el piso y muestra "Te tocó …". Después lo reemplaza el pin del mapa.
+// Pin que cae desde arriba: entra con un fundido, acelera al caer, se aplasta un poco al tocar el piso y vuelve a su forma
+// con un rebote corto. La sombra crece mientras se acerca y queda una onda en el piso. Después lo reemplaza el pin del mapa.
 function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
-  const fall = useSharedValue(-520);
+  const fall = useSharedValue(0);
+  const squash = useSharedValue(0);
   const ring = useSharedValue(0);
   const label = useSharedValue(0);
   useEffect(() => {
-    fall.value = withSpring(0, { damping: 9, stiffness: 140, mass: 0.9 });
-    ring.value = withDelay(330, withTiming(1, { duration: 650, easing: Easing.out(Easing.cubic) }));
-    label.value = withDelay(450, withSequence(withTiming(1, { duration: 260 }), withDelay(800, withTiming(0, { duration: 220 }))));
-  }, [fall, ring, label]);
-  const pinStyle = useAnimatedStyle(() => ({ transform: [{ translateY: fall.value }] }));
-  const ringStyle = useAnimatedStyle(() => ({ opacity: (1 - ring.value) * 0.9, transform: [{ scale: 0.5 + ring.value * 1.8 }] }));
-  const labelStyle = useAnimatedStyle(() => ({ opacity: label.value, transform: [{ translateY: (1 - label.value) * 10 }] }));
+    fall.value = withTiming(1, { duration: 560, easing: Easing.in(Easing.quad) });
+    squash.value = withDelay(560, withSequence(
+      withTiming(1, { duration: 90, easing: Easing.out(Easing.quad) }),
+      withSpring(0, { damping: 13, stiffness: 220, mass: 0.7 }),
+    ));
+    ring.value = withDelay(560, withTiming(1, { duration: 750, easing: Easing.out(Easing.cubic) }));
+    label.value = withDelay(700, withSequence(withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) }), withDelay(820, withTiming(0, { duration: 240 }))));
+  }, [fall, squash, ring, label]);
+  const pinStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(1, fall.value * 4),
+    transform: [
+      { translateY: (1 - fall.value) * -240 },
+      // Se aplasta desde la punta (el ancla está abajo).
+      { translateY: squash.value * 6 },
+      { scaleX: 1 + squash.value * 0.14 },
+      { scaleY: 1 - squash.value * 0.16 },
+    ],
+  }));
+  const shadowStyle = useAnimatedStyle(() => ({ opacity: 0.15 + fall.value * 0.35, transform: [{ scaleX: 0.4 + fall.value * 0.6 + squash.value * 0.15 }] }));
+  const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value <= 0 ? 0 : (1 - ring.value) * 0.9, transform: [{ scale: 0.5 + ring.value * 1.8 }] }));
+  const labelStyle = useAnimatedStyle(() => ({ opacity: label.value, transform: [{ translateY: (1 - label.value) * 10 }, { scale: 0.92 + label.value * 0.08 }] }));
   return (
     <View pointerEvents="none" style={{ position: 'absolute', inset: 0 }}>
+      <Animated.View style={[{ position: 'absolute', left: x - 18, top: y - 5, width: 36, height: 10, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.55)' }, shadowStyle]} />
       <Animated.View style={[{ position: 'absolute', left: x - 30, top: y - 12, width: 60, height: 24, borderRadius: 30, borderWidth: 2, borderColor: MINT }, ringStyle]} />
       <Animated.View style={[{ position: 'absolute', left: x - 31, top: y - 72 }, pinStyle]}>
         <RutaPin name={stop.name} logoUrl={stop.logo_url} size={46} />
@@ -655,24 +740,29 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
   );
 }
 
-// Separa los pines que quedarían uno encima del otro (locales a menos de ~200 m): los aleja desde su punto medio
-// hasta esa distancia. Solo cambia dónde se dibujan; "Cómo llegar" usa la ubicación real.
-function spreadPins(stops: RutaStop[]) {
-  const MIN = 0.002;
-  const pts = stops.filter((s) => s.lat != null && s.lng != null).map((s) => ({ id: s.business_id, lat: s.lat!, lng: s.lng! }));
-  for (let pass = 0; pass < 3; pass++) {
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const a = pts[i], b = pts[j];
-        let dx = b.lng - a.lng, dy = b.lat - a.lat;
-        const d = Math.hypot(dx, dy);
-        if (d >= MIN) continue;
-        if (d < 1e-7) { dx = 1; dy = 0; } else { dx /= d; dy /= d; }
-        const push = (MIN - Math.max(d, 1e-7)) / 2;
-        a.lng -= dx * push; a.lat -= dy * push;
-        b.lng += dx * push; b.lat += dy * push;
-      }
-    }
+// Vista web: el mayor zoom en el que entran los 3 locales entre la barra de arriba y el panel de abajo.
+function webView(stops: RutaStop[], w: number, h: number) {
+  const pts = stops.filter((s) => s.lat != null && s.lng != null);
+  const lats = pts.map((s) => s.lat!);
+  const lngs = pts.map((s) => s.lng!);
+  const top = 150, bottom = 330;
+  const merc = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+  let zoom = 17;
+  for (; zoom > 12; zoom--) {
+    const scale = (256 * 2 ** zoom) / (2 * Math.PI);
+    const dx = ((Math.max(...lngs) - Math.min(...lngs)) * Math.PI / 180) * scale;
+    const dy = (merc(Math.max(...lats)) - merc(Math.min(...lats))) * scale;
+    if (dx <= w - 120 && dy <= h - top - bottom - 70) break;
   }
-  return new Map(pts.map((p) => [p.id, { latitude: p.lat, longitude: p.lng }]));
+  // El centro se corre hacia abajo para que los pines queden en el hueco libre del medio.
+  const scale = (256 * 2 ** zoom) / (2 * Math.PI);
+  const midY = (merc(Math.max(...lats)) + merc(Math.min(...lats))) / 2 - ((bottom - top) / 2) / scale;
+  const lat = (2 * Math.atan(Math.exp(midY)) - Math.PI / 2) * 180 / Math.PI;
+  return { zoom, center: { lat, lng: (Math.max(...lngs) + Math.min(...lngs)) / 2 } };
+}
+
+function sameOffs(a: Map<string, number>, b: Map<string, number>) {
+  if (a.size !== b.size) return false;
+  for (const [k, v] of a) if (Math.abs((b.get(k) ?? 0) - v) > 1) return false;
+  return true;
 }

@@ -21,6 +21,7 @@ import { friendlyServerError } from '@/lib/errors';
 import { localDay } from '@/lib/format';
 import { boliviaToday } from '@/lib/bolivia';
 import { Coin } from '@/components/ui/Coin';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Activity; tone: 'aqua' | 'gold' | 'orange' }[] = [
   { key: 'steps', title: 'Más pasos', desc: 'Gana quien suma más pasos', icon: Activity, tone: 'aqua' },
@@ -46,6 +47,7 @@ export default function NuevoDesafioScreen() {
   const inviteCode = groupDetail?.group.invite_code;
   const groupName = groupDetail?.group.name;
   const { data: balance } = usePointsBalance();
+  const userId = useAuthStore((st) => st.session?.user.id);
   const { muted, accentIcon, dangerText } = useThemeColors();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
@@ -112,6 +114,9 @@ export default function NuevoDesafioScreen() {
   if (done) {
     // Volver al grupo sacando esta pantalla del historial: si no, la flecha "atrás" del grupo traía de nuevo
     // el paso del nombre del desafío.
+    const meRow = groupDetail?.members.find((m) => m.id === userId);
+    const meP = userId ? { id: userId, name: meRow?.name ?? 'Tú', photoUrl: meRow?.photoUrl ?? null } : null;
+    const othersP = (groupDetail?.members ?? []).filter((m) => m.id !== userId).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl }));
     const toGroup = () => (router.canGoBack() ? router.back() : router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } }));
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
@@ -121,6 +126,8 @@ export default function NuevoDesafioScreen() {
           chips={[RULE_LABEL[rule], `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
           stake={stake}
           dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
+          me={meP}
+          others={othersP}
           onInvite={() =>
             shareText(
               inviteCode

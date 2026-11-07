@@ -8,6 +8,7 @@ import { Press } from '@/components/ui/Press';
 import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
 import { RutaRing } from '@/components/ruta/RutaRing';
+import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { LocalBadge } from '@/components/badges/LocalBadge';
 import { useAuthStore } from '@/store/useAuthStore';
 import { chosenKeys, levelLabel, nextLevel, useSetFeaturedBadge, useUserBadges, LEVELS, MAX_PROFILE_BADGES, type LocalBadgeT } from '@/hooks/useBadges';
@@ -18,6 +19,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 // Todas las insignias de una persona (las mías o, con ?u=, las de otra persona: son públicas).
 export default function InsigniasScreen() {
   const insets = useSafeAreaInsets();
+  const tabSpace = useTabBarSpace();
   const theme = useThemeColors();
   const me = useAuthStore((s) => s.session?.user.id);
   const { u } = useLocalSearchParams<{ u?: string }>();
@@ -46,7 +48,7 @@ export default function InsigniasScreen() {
   }
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}>
+    <ScrollView className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
       <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
         <Press accessibilityRole="button" accessibilityLabel="Volver" hitSlop={10} onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/perfil'))}
           className="w-10 h-10 rounded-full items-center justify-center bg-purple-light dark:bg-card-dark">
@@ -75,7 +77,7 @@ export default function InsigniasScreen() {
             return (
               <Press key={r.month} accessibilityRole="button" onPress={() => (own ? router.push({ pathname: '/(tabs)/ruta-mes', params: { m: r.month } }) : undefined)}
                 onLongPress={() => feature(key)} className="items-center">
-                <RutaRing size={78} done={3} month={rutaMonthShort(r.month)} />
+                <RutaRing size={78} done={3} month={rutaMonthShort(r.month)} themeMonth={r.month} />
                 <Text className="text-[12px] font-bold mt-1.5 text-text-light dark:text-text-dark" style={{ textTransform: 'capitalize' }}>{rutaMonthName(r.month)}</Text>
                 {pos > 0 && <OnProfile pos={pos} own={own} />}
               </Press>

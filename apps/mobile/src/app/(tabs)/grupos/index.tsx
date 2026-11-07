@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
+import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
+import { useRuta } from '@/hooks/useRuta';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -65,6 +67,7 @@ export default function GruposScreen() {
     onError: (e) => Alert.alert('No se pudo unir al grupo', e instanceof Error && e.message === 'Código inválido' ? 'No encontramos ningún grupo con ese código. Revísalo e intenta de nuevo.' : friendlyServerError(e, 'Intenta de nuevo.')),
   });
 
+  const { data: ruta } = useRuta();
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const { data: week } = useMyGroupsWeek(my, userId);
 
@@ -95,6 +98,13 @@ export default function GruposScreen() {
           <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
+
+      {/* Tu Ruta del mes también desde Grupos: es el evento que más se comparte entre amigos. */}
+      {ruta && ruta.eligible_count >= 3 ? (
+        <View className="-mx-5">
+          <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} />
+        </View>
+      ) : null}
 
       {(invites ?? []).length > 0 && (
         <Glass className="rounded-3xl overflow-hidden mb-4" style={{ borderColor: dark ? 'rgba(245,198,69,0.45)' : '#F0D9A0', borderWidth: 1 }}>

@@ -10,10 +10,10 @@ import { Glass } from '@/components/ui/Glass';
 type DayHours = { from: string; to: string; from2?: string; to2?: string } | null;
 export type OpeningHours = Record<string, DayHours> | null | undefined;
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+export const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 // Índice del día de hoy con lunes = 0.
-function todayIndex() {
+export function todayIndex() {
   return (new Date().getDay() + 6) % 7;
 }
 
@@ -26,18 +26,18 @@ function ranges(h: NonNullable<DayHours>): [string, string][] {
   return h.from2 && h.to2 ? [[h.from, h.to], [h.from2, h.to2]] : [[h.from, h.to]];
 }
 
-function rangesText(h: NonNullable<DayHours>) {
+export function rangesText(h: NonNullable<DayHours>) {
   return ranges(h).map(([a, b]) => `${a} – ${b}`).join(' y ');
 }
 
-function isOpenNow(h: DayHours) {
+export function isOpenNow(h: DayHours) {
   if (!h) return false;
   const now = new Date().toTimeString().slice(0, 5);
   return ranges(h).some(([a, b]) => inRange(now, a, b));
 }
 
 // Hasta qué hora está abierto en este momento (el cierre del tramo actual).
-function closesAt(h: NonNullable<DayHours>) {
+export function closesAt(h: NonNullable<DayHours>) {
   const now = new Date().toTimeString().slice(0, 5);
   return (ranges(h).find(([a, b]) => inRange(now, a, b)) ?? ranges(h)[0])[1];
 }
