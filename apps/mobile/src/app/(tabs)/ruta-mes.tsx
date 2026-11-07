@@ -266,7 +266,7 @@ export default function RutaMesScreen() {
 
       {/* Ver tus fotos en grande (se desliza entre ellas) y cambiar la que quieras. */}
       <Modal visible={!!viewing} transparent animationType="fade" onRequestClose={() => setViewing(null)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10,5,26,0.96)' }}>
+        <View style={{ flex: 1, backgroundColor: '#0E0820' }}>
           <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
             contentOffset={{ x: Math.max(0, withPhoto.findIndex((s) => s.business_id === viewing)) * width, y: 0 }}
             onMomentumScrollEnd={(e) => { const s = withPhoto[Math.round(e.nativeEvent.contentOffset.x / width)]; if (s) setViewing(s.business_id); }}>
