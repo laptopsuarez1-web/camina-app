@@ -6,8 +6,11 @@ declare
   fn text; n integer; u uuid; v integer; r retos;
 begin
   select count(*) into n from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
-  where ns.nspname = 'public' and p.prokind = 'f' and has_function_privilege('anon', p.oid, 'execute');
-  perform tt.t_eq('anon (sin sesión) no puede ejecutar ninguna función de public', n, 0);
+  where ns.nspname = 'public' and p.prokind = 'f' and has_function_privilege('anon', p.oid, 'execute')
+    -- Única excepción a propósito (0094): route_participation() devuelve solo cantidades (cuántas personas participan en la Ruta
+    -- del mes) y la usa la web pública. Cualquier otra función que se abra a anon hace fallar esta prueba.
+    and p.proname <> 'route_participation';
+  perform tt.t_eq('anon (sin sesión) no puede ejecutar ninguna función de public (salvo route_participation)', n, 0);
 
   foreach fn in array array[
     'earn_points_from_steps(uuid,date,integer)', 'redeem_benefit(uuid)', 'cancel_expired_redemption(uuid)',
