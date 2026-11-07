@@ -78,7 +78,7 @@ function Polaroid({ stop, index, width, uploading, onPhoto }: {
               {uploading ? <ActivityIndicator color={MINT} /> : visited ? (
                 <View style={{ alignItems: 'center', gap: 6 }}>
                   <Animated.View style={[{ width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', borderColor: MINT, backgroundColor: 'rgba(98,240,182,0.12)', alignItems: 'center', justifyContent: 'center' }, pulseStyle]}>
-                    <Text style={{ fontSize: 22 }}>📷</Text>
+                    <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 28, lineHeight: 32 }}>+</Text>
                   </Animated.View>
                   <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }}>Agrega tu foto</Text>
                   <Text style={{ color: MUTED, fontSize: 10.5 }}>de tu visita</Text>
@@ -197,7 +197,7 @@ export default function RutaMesScreen() {
           <Text style={{ ...heavy(), color: '#fff', fontSize: 24, marginTop: 4, textAlign: 'center' }} numberOfLines={1} adjustsFontSizeToFit>MI RUTA DE {month.toUpperCase()}</Text>
           {/* Lo que va del álbum, en chips. */}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 10 }}>
-            {[`📍 ${done} de 3 locales`, `📷 ${photos} ${photos === 1 ? 'foto' : 'fotos'}`, ...(route.ticket_no ? [`🎟️ Boleto N.º ${route.ticket_no}`] : [])].map((t) => (
+            {[`${done} de 3 locales`, `${photos} ${photos === 1 ? 'foto' : 'fotos'}`, ...(route.ticket_no ? [`Boleto N.º ${route.ticket_no}`] : [])].map((t) => (
               <View key={t} style={{ paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
                 <Text style={{ color: '#EDE6FF', fontSize: 12, fontWeight: '700' }}>{t}</Text>
               </View>

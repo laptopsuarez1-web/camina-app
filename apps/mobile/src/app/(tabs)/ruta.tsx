@@ -19,6 +19,7 @@ import { ChevronLeft } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { GOLD, RutaPin } from '@/components/ruta/RutaPin';
+import { Coin } from '@/components/ui/Coin';
 import { RutaMiniMap, WebCityMap } from '@/components/ruta/RutaMiniMap';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaStopSheet } from '@/components/ruta/RutaStopSheet';
@@ -30,7 +31,7 @@ import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
 import {
-  participationLabel, rutaDone, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaParticipation, useRutaPrize,
+  participationLabel, rutaDone, showParticipation, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaParticipation, useRutaPrize,
   useRutaSwapOptions, useSwapRuta, useWalkingPath,
   type RutaStop,
 } from '@/hooks/useRuta';
@@ -267,7 +268,7 @@ export default function RutaScreen() {
     try {
       await uploadRoutePhoto(userId, state.month, businessId, r.assets[0].uri, r.assets[0].base64);
       qc.invalidateQueries({ queryKey: ['mi-ruta', userId, state.month] });
-      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada: mírala en "Mis fotos"' });
+      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada en tu álbum' });
     } catch (e) {
       Alert.alert('No se pudo subir la foto', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -353,7 +354,7 @@ export default function RutaScreen() {
               <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.4, fontSize: 11 }}>EVENTO DEL MES · HASTA EL {Number(state.ends_on.slice(8, 10))}</Text>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 23, lineHeight: 27 }}>Tu Ruta de {month}</Text>
               {/* Arriba y chiquito: cuántas personas ya participan este mes (solo el número). */}
-              {participation && participation.participants > 0 ? (
+              {showParticipation(participation) ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
                   <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: MINT }} />
                   <Text style={{ color: MINT, fontSize: 12, fontWeight: '800' }}>{participationLabel(participation.participants)}</Text>
@@ -365,8 +366,8 @@ export default function RutaScreen() {
           {lastWinners ? <RutaPrizeCard prize={lastWinners} compact /> : null}
           {prize ? <RutaPrizeCard prize={prize} /> : null}
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 16 }}>x2</Text></Bubble>} title="Día doble" body="Eliges un día del mes que viene y tus pasos valen el doble: hasta 40 Puntos ese día." />
-          {/* La insignia del mes es sorpresa: cada mes tiene otra temática y recién se ve al completar la ruta. */}
-          <Premio icon={<RutaRing size={46} done={0} mystery glow={false} />} title="Insignia sorpresa del mes" body="Cada mes tiene una temática nueva. Se revela solo cuando completas la ruta." />
+          {/* La insignia es la misma del logo de la Ruta, con el mes abajo. */}
+          <Premio icon={<RutaRing size={46} done={3} month={rutaMonthShort(state.month)} glow={false} />} title={`Insignia de ${month}`} body="Completa tus 3 locales y queda en tus insignias para siempre." />
           <Premio icon={<Bubble><Svg width={28} height={20} viewBox="0 0 28 20"><Path d="M3 1h22a2 2 0 0 1 2 2v4a3 3 0 0 0 0 6v4a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-4a3 3 0 0 0 0-6V3a2 2 0 0 1 2-2z" fill="none" stroke={MINT} strokeWidth={2} /><Path d="M19 4v12" stroke={MINT} strokeWidth={1.6} strokeDasharray="2 2" /></Svg></Bubble>} title="Boleto del sorteo" body={prize ? `Entras al sorteo de: ${prize.title}.` : 'Entras al sorteo del mes. El premio se anuncia en Eventos.'} />
           <Premio icon={<Bubble><Text style={{ color: MINT, ...heavy(), fontSize: 17 }}>↻2</Text></Bubble>} title="2 cambios de local" body="El mes que viene puedes cambiar 2 de tus 3 locales, en vez de 1." />
           <Press onPress={() => setShowRules(true)} style={[CARD, { padding: 14, marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
@@ -466,7 +467,7 @@ export default function RutaScreen() {
         <View style={{ flex: 1 }}>
           <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
-          {participation && participation.participants > 0 ? (
+          {showParticipation(participation) ? (
             <Text style={{ color: MUTED, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
               {participation.participants === 1 ? 'Eres la primera persona en la Ruta' : `Tú y ${(participation.participants - 1).toLocaleString('es-BO')} ${participation.participants === 2 ? 'persona' : 'personas'} más en la Ruta`}
             </Text>
@@ -478,14 +479,16 @@ export default function RutaScreen() {
         </Press>
       </View>
 
-      {welcome && participation ? (
+      {welcome ? (
         <Animated.View entering={FadeInDown.springify().damping(14)} exiting={FadeOutUp.duration(260)} pointerEvents="none"
           style={{ position: 'absolute', left: 28, right: 28, top: insets.top + 86, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 18, backgroundColor: 'rgba(26,20,38,0.95)', borderWidth: 1.5, borderColor: 'rgba(98,240,182,0.55)' }}>
-            <Text style={{ ...heavy(), color: MINT, fontSize: 26 }}>{participation.participants.toLocaleString('es-BO')}</Text>
+            {showParticipation(participation) ? (
+              <Text style={{ ...heavy(), color: MINT, fontSize: 26 }}>{participation.participants.toLocaleString('es-BO')}</Text>
+            ) : null}
             <View>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>¡Ya estás adentro!</Text>
-              <Text style={{ color: MUTED, fontSize: 12 }}>{participation.participants === 1 ? 'Eres la primera persona en la Ruta' : `personas en la Ruta de ${month}`}</Text>
+              <Text style={{ color: MUTED, fontSize: 12 }}>{showParticipation(participation) ? `personas en la Ruta de ${month}` : `Tu Ruta de ${month} está lista`}</Text>
             </View>
           </View>
         </Animated.View>
@@ -528,8 +531,8 @@ export default function RutaScreen() {
                       </View>
                     ) : null}
                     {star ? (
-                      <View style={{ position: 'absolute', top: -5, left: '50%', marginLeft: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
-                        <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 11 }}>★</Text>
+                      <View style={{ position: 'absolute', top: -6, left: '50%', marginLeft: -35, width: 24, height: 24 }}>
+                        <Coin size={24} gold />
                       </View>
                     ) : null}
                     <Text style={{ color: hidden ? MUTED : '#fff', fontWeight: '800', fontSize: 12.5, marginTop: 6, maxWidth: '100%' }} numberOfLines={1}>{hidden ? 'Por descubrir' : s.name}</Text>
@@ -556,12 +559,6 @@ export default function RutaScreen() {
                 <Press accessibilityRole="button" onPress={() => shareRoute()} haptic="light"
                   style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
                   <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>Compartir</Text>
-                </Press>
-              ) : null}
-              {stops.some((x) => x.visit) ? (
-                <Press accessibilityRole="button" onPress={() => router.push({ pathname: '/(tabs)/ruta-mes', params: { m: state.month } })} haptic="light"
-                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
-                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>📷 Mis fotos</Text>
                 </Press>
               ) : null}
               {canSwap ? (

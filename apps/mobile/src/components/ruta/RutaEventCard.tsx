@@ -5,7 +5,7 @@ import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
 import { RutaRing } from './RutaRing';
 import { RutaMiniMap } from './RutaMiniMap';
-import { participationLabel, rutaDone, rutaMonthName, rutaMonthShort, useRutaParticipation, useRutaPrize, type RutaState } from '@/hooks/useRuta';
+import { participationLabel, rutaDone, showParticipation, rutaMonthName, rutaMonthShort, useRutaParticipation, useRutaPrize, type RutaState } from '@/hooks/useRuta';
 
 // Tarjeta grande del evento del mes, arriba de todo en Eventos.
 export function RutaEventCard({ state, width, onParticipate, onOpen }: {
@@ -44,7 +44,7 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
               ? `Vas ${done} de 3 locales · hasta el ${end} de ${month}`
               : `Te tocan 3 locales al azar · hasta el ${end} de ${month}`}
         </Text>
-        {participation && participation.participants > 0 ? (
+        {showParticipation(participation) ? (
           <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(98,240,182,0.12)' }}>
             <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#62F0B6' }} />
             <Text style={{ color: '#62F0B6', fontSize: 12, fontWeight: '800' }}>{participationLabel(participation.participants)}</Text>

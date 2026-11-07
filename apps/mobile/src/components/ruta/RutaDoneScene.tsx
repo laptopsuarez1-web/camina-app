@@ -12,7 +12,7 @@ export type RutaDoneCinematic = {
   kind: 'ruta-done';
   month: string; // "noviembre"
   monthShort: string; // "NOV"
-  monthIso?: string; // "2026-11-01": la insignia sale con la temática de su mes
+  monthIso?: string; // "2026-12-01" (ya no cambia el color de la insignia)
   stops: { name: string; logo_url: string | null }[];
   ticket: number | null;
   prize?: string | null;
@@ -186,7 +186,7 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={1750} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        {c.onPhoto ? <MainButton label="📷 Subir mi foto al álbum" onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
+        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
         {c.onShare ? (c.onPhoto
           ? <LinkButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} color={p.accent} />
           : <MainButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} />) : null}

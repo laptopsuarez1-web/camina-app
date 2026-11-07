@@ -282,8 +282,9 @@ function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string; logoUr
         }}
       />
       {featured && (
-        <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 7 }}>
-          <Coin size={20} gold />
+        // Moneda dorada sola, sin círculo blanco atrás (se veía como un marco blanco alrededor).
+        <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}>
+          <Coin size={24} gold />
         </View>
       )}
     </View>

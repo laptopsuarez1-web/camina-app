@@ -175,6 +175,12 @@ export function useRutaParticipation(month?: string | null) {
   });
 }
 
+// El número de participantes recién se muestra cuando pasa de 100 (con pocos queda feo); antes no se ve en ningún lado.
+export const PARTICIPATION_MIN = 100;
+export function showParticipation(p?: RutaParticipation | null): p is RutaParticipation {
+  return !!p && p.participants > PARTICIPATION_MIN;
+}
+
 // "128 personas ya están en la Ruta": el número redondo para que se lea fácil.
 export function participationLabel(n: number) {
   if (n <= 0) return 'Sé de los primeros en sumarte';

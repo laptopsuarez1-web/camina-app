@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { GOLD } from '@/components/ruta/RutaPin';
+import { Coin } from '@/components/ui/Coin';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, TiktokIcon, X } from '@/components/icons';
@@ -214,8 +215,8 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
 
           <ScrollView bounces={false} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 16 }} showsVerticalScrollIndicator={false}>
             {protagonist ? (
-              <View style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(242,193,78,0.10)', borderWidth: 1, borderColor: 'rgba(242,193,78,0.5)' }}>
-                <Text style={{ color: GOLD, fontSize: 20 }}>★</Text>
+              <View style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(226,179,60,0.10)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.5)' }}>
+                <Coin size={26} gold />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: GOLD, fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>LOCAL PROTAGONISTA DEL MES</Text>
                   <Text style={{ color: '#fff', fontSize: 13, marginTop: 1 }}>{prizeTitle ? `Regala "${prizeTitle}" para el sorteo de la Ruta.` : 'Regala el premio del sorteo de la Ruta.'}</Text>
@@ -306,7 +307,7 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
                 {onPhoto ? (
                   <Press accessibilityRole="button" onPress={() => onPhoto(stop)}
                     style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
-                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>📷 Subir mi foto</Text>
+                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>Subir mi foto</Text>
                   </Press>
                 ) : null}
                 {onShare ? (
