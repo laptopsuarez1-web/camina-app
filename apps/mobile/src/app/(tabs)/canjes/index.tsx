@@ -1,4 +1,6 @@
 import { BaifoMascot } from '@/components/ui/BaifoMascot';
+import { rankLocales } from '@/lib/rank-locales';
+import { CaminaHeart } from '@/components/ui/CaminaHeart';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -316,7 +318,8 @@ function useLogoReady(logoUrl?: string | null) {
 // Pines que caerían encimados (locales en la misma cuadra) se separan apenas, en ronda alrededor de su punto medio:
 // quedan pegados y medio superpuestos (como en Pasito), sin desparramarse. Se recalcula con el zoom: al acercarse
 // vuelven a su lugar real.
-const PIN_GAP_PX = 30;
+const PIN_GAP_PX = 34; // solo se separan los que están MUY juntos en pantalla
+const PIN_SPACE_PX = 40; // separación al acomodarlos: se ve casi todo el logo de cada uno
 const MAX_SPREAD_DELTA = 0.06; // zoom máximo (latitudeDelta) hasta donde se separan pines encimados
 const MAX_RING = 5; // grupos más grandes no se abren en ronda: quedan en su lugar real
 type LatLng = { latitude: number; longitude: number };
@@ -360,8 +363,18 @@ export function spreadPins(items: { id: string; lat: number; lng: number }[], la
     }
     const lat = group.reduce((a, b) => a + b.lat, 0) / group.length;
     const lng = group.reduce((a, b) => a + b.lng, 0) / group.length;
-    // Radio para que pines vecinos en la ronda queden a PIN_GAP_PX entre sí.
-    const rPx = PIN_GAP_PX / (2 * Math.sin(Math.PI / group.length));
+    // 2 o 3 pines: lado a lado (uno arriba del otro, la punta del de arriba tapaba la cabeza del de abajo, y un
+    // destacado grande tapaba casi entero al otro). Se ordenan de oeste a este para que cada uno quede de su lado.
+    if (group.length <= 3) {
+      const row = [...group].sort((a, b) => a.lng - b.lng || a.id.localeCompare(b.id));
+      row.forEach((b, i) => {
+        const dxPx = (i - (row.length - 1) / 2) * PIN_SPACE_PX;
+        out.set(b.id, { latitude: lat, longitude: lng + (dxPx * degPerPx) / cos });
+      });
+      continue;
+    }
+    // 4 o 5: en ronda, a PIN_SPACE_PX entre vecinos.
+    const rPx = PIN_SPACE_PX / (2 * Math.sin(Math.PI / group.length));
     const sorted = [...group].sort((a, b) => a.id.localeCompare(b.id));
     sorted.forEach((b, i) => {
       const ang = (2 * Math.PI * i) / sorted.length - Math.PI / 2;
@@ -593,6 +606,9 @@ export default function CanjesScreen() {
   const [onlyAfford, setOnlyAfford] = useState(false);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [onlyFavs, setOnlyFavs] = useState(false);
+  // Filtros extra del mapa completo: solo destacados y una categoría.
+  const [onlyFeatured, setOnlyFeatured] = useState(false);
+  const [mapCat, setMapCat] = useState<string | null>(null);
   const favorites = useFavorites();
   const { data: redeemCounts } = useRedeemCounts();
   const favIds = favorites.ids;
@@ -780,7 +796,7 @@ export default function CanjesScreen() {
 
   // Filtros rápidos del mapa (Abierto ahora / Te alcanza / Favoritos): los pines siguen los mismos filtros que la lista.
   const mapBusinesses = useMemo(() => {
-    if (!onlyOpen && !onlyAfford && !onlyFavs) return businessesWithCoords;
+    if (!onlyOpen && !onlyAfford && !onlyFavs && !onlyFeatured && !mapCat) return businessesWithCoords;
     const byBiz = new Map<string, BenefitWithBusiness[]>();
     for (const b of benefits ?? []) {
       const arr = byBiz.get(b.business.id) ?? [];
@@ -792,9 +808,11 @@ export default function CanjesScreen() {
       if (onlyOpen && !bs.some(isBenefitAvailableNow)) return false;
       if (onlyAfford && !bs.some((b) => b.cost_points <= (balance ?? 0))) return false;
       if (onlyFavs && !favIds.includes(biz.id)) return false;
+      if (onlyFeatured && !isFeatured(biz)) return false;
+      if (mapCat && biz.category !== mapCat) return false;
       return true;
     });
-  }, [onlyOpen, onlyAfford, onlyFavs, benefits, businessesWithCoords, balance, favIds]);
+  }, [onlyOpen, onlyAfford, onlyFavs, onlyFeatured, mapCat, benefits, businessesWithCoords, balance, favIds]);
 
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
@@ -830,6 +848,24 @@ export default function CanjesScreen() {
   const pinItems = useMemo(() => mapBusinesses.map((b) => ({ id: b.id, lat: b.lat!, lng: b.lng! })), [mapBusinesses]);
   const previewPins = useMemo(() => spreadPins(pinItems, mapRegion?.latitudeDelta ?? 0.045, 250), [pinItems, mapRegion]);
   const fullPins = useMemo(() => spreadPins(pinItems, fullDelta, fullMapHeight), [pinItems, fullDelta, fullMapHeight]);
+
+  // "Locales cerca tuyo" abajo del mapa completo: los mismos filtros que los pines, por cercanía y con los destacados
+  // entre los primeros según qué tan cerca estén.
+  const [sheetOpen, setSheetOpen] = useState(true);
+  const nearbyMap = useMemo(() => {
+    const minCost = new Map<string, { min: number; n: number }>();
+    for (const b of benefits ?? []) {
+      const cur = minCost.get(b.business.id);
+      minCost.set(b.business.id, { min: Math.min(cur?.min ?? Infinity, b.cost_points), n: (cur?.n ?? 0) + 1 });
+    }
+    const rows = mapBusinesses.map((b) => ({
+      business: b,
+      prizes: minCost.get(b.id)?.n ?? 0,
+      minCost: minCost.get(b.id)?.min ?? null,
+      distance: hasGps && mapRegion ? distanceMeters(mapRegion, b.lat!, b.lng!) : null,
+    }));
+    return rankLocales(rows, (x) => x.distance, (x) => isFeatured(x.business), (x) => x.business.name).slice(0, 12);
+  }, [mapBusinesses, benefits, hasGps, mapRegion]);
 
   // Buscador del mapa completo: busca en TODOS los comercios con ubicación (sin filtros de categoría).
   const mapResults = useMemo(() => {
@@ -922,13 +958,10 @@ export default function CanjesScreen() {
     if (onlyFavs) list = list.filter((g) => favIds.includes(g.business.id));
     // "Te alcanza": el local tiene al menos un premio que se puede pagar con los Puntos de hoy.
     if (onlyAfford) list = list.filter((g) => g.benefits.some((b) => b.cost_points <= (balance ?? 0)));
-    // Destacados siempre primero (también dentro de cada categoría); después, según "Ordenar por".
-    list.sort(
-      (a, b) =>
-        Number(isFeatured(b.business)) - Number(isFeatured(a.business)) ||
-        (sortBy === 'cerca' ? (a.distance ?? Infinity) - (b.distance ?? Infinity) : 0) ||
-        a.business.name.localeCompare(b.business.name)
-    );
+    // "Más cercanos": por distancia, con los destacados entre los primeros según qué tan cerca estén (cerca 1.º,
+    // a media distancia 2.º, lejos 3.º). "Recomendados": destacados primero y después por nombre.
+    if (sortBy === 'cerca') return rankLocales(list, (g) => g.distance, (g) => isFeatured(g.business), (g) => g.business.name);
+    list.sort((a, b) => Number(isFeatured(b.business)) - Number(isFeatured(a.business)) || a.business.name.localeCompare(b.business.name));
     return list;
   }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion]);
   // La vista previa no depende de los filtros de la lista (categoría, búsqueda): si el pin está en el mapa, la tarjeta tiene que abrirse.
@@ -1481,6 +1514,8 @@ export default function CanjesScreen() {
               initialRegion={mapRegion}
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
+              // El logo de Google y lo que se ve quedan arriba de la hoja de "Locales cerca tuyo".
+              mapPadding={{ top: 0, left: 0, right: 0, bottom: !previewGroup && nearbyMap.length ? (sheetOpen ? 184 : 64) + bottomInset : 0 }}
               onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
               onPress={() => {
                 // Respaldo: si igual llega el toque de un pin, no cerrar la vista previa que ese mismo toque acaba de abrir.
@@ -1529,12 +1564,12 @@ export default function CanjesScreen() {
             accessibilityLabel="Cerrar mapa"
             onPress={() => setMapOpen(false)}
             className="absolute bg-card-light rounded-full items-center justify-center"
-            style={{ top: 56, left: 20, width: 40, height: 40 }}
+            style={{ top: topInset + 14, left: 20, width: 44, height: 44 }}
           >
             <X size={18} color={colors.light.text} />
           </Press>
-          <View style={{ position: 'absolute', top: 56, left: 70, right: 20 }}>
-            <View className="flex-row items-center bg-card-light rounded-full" style={{ height: 40, paddingHorizontal: 14, gap: 8 }}>
+          <View style={{ position: 'absolute', top: topInset + 14, left: 74, right: 20 }}>
+            <View className="flex-row items-center bg-card-light rounded-full" style={{ height: 44, paddingHorizontal: 14, gap: 8 }}>
               <Search size={16} color={colors.light.muted} />
               <TextInput
                 value={mapSearch}
@@ -1552,11 +1587,14 @@ export default function CanjesScreen() {
                 </Press>
               )}
             </View>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, marginLeft: -50 }}>
+            {/* Filtros: se deslizan de costado. Te alcanza con la moneda de Camina y Favoritos con el corazón de Camina. */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginLeft: -50, marginRight: -20 }} contentContainerStyle={{ gap: 8, paddingRight: 20, paddingVertical: 4 }}>
               {([
-                { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
-                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), color: colors.aquaDeep, icon: null as React.ReactNode },
-                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), color: colors.aquaDeep, icon: <Heart size={13} color={onlyFavs ? '#fff' : colors.light.text} fill={onlyFavs ? '#fff' : colors.light.text} /> },
+                { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), icon: null as React.ReactNode },
+                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), icon: <Coin size={16} /> },
+                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), icon: <CaminaHeart size={15} /> },
+                { label: 'Destacados', on: onlyFeatured, toggle: () => setOnlyFeatured((v) => !v), icon: <Coin size={16} gold /> },
+                ...categories.filter((c) => c !== 'Todos').map((c) => ({ label: c, on: mapCat === c, toggle: () => setMapCat((v) => (v === c ? null : c)), icon: null as React.ReactNode })),
               ]).map((c) => (
                 <Press
                   key={c.label}
@@ -1566,13 +1604,13 @@ export default function CanjesScreen() {
                   haptic="selection"
                   onPress={c.toggle}
                   className="rounded-full"
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, backgroundColor: c.on ? c.color : '#fff', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 13, height: 36, backgroundColor: c.on ? colors.aquaDeep : '#fff', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
                 >
                   {c.icon}
                   <Text numberOfLines={1} style={{ fontSize: 12.5, fontWeight: '700', color: c.on ? '#fff' : colors.light.text }}>{c.label}</Text>
                 </Press>
               ))}
-            </View>
+            </ScrollView>
             {mapResults.length > 0 && (
               <View className="bg-card-light" style={{ marginTop: 6, borderRadius: 20, overflow: 'hidden' }}>
                 {mapResults.map((b) => (
@@ -1597,8 +1635,52 @@ export default function CanjesScreen() {
               </View>
             )}
           </View>
+          {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita y se esconde mientras hay un local abierto. */}
+          {previewGroup || !nearbyMap.length ? null : (
+            <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+              <Press accessibilityRole="button" accessibilityLabel={sheetOpen ? 'Achicar la lista de locales' : 'Ver locales cerca tuyo'} onPress={() => setSheetOpen((v) => !v)} feedback="none"
+                style={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 6 }}>
+                <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.35)' }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>Locales cerca tuyo</Text>
+                  <Text style={{ color: colors.aqua, fontWeight: '700', fontSize: 12.5 }}>{nearbyMap.length} {nearbyMap.length === 1 ? 'local' : 'locales'}</Text>
+                </View>
+              </Press>
+              {sheetOpen ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10, paddingTop: 4, paddingBottom: 4 }}>
+                  {nearbyMap.map((x) => {
+                    const featured = isFeatured(x.business);
+                    return (
+                      <Press key={x.business.id} accessibilityRole="button" accessibilityLabel={`${x.business.name}, ${x.business.category}`}
+                        onPress={() => { focusBusiness(x.business); lastPinPress.current = Date.now(); setPreviewBizId(x.business.id); }}
+                        style={{ width: 236, padding: 12, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: featured ? 1.5 : 1, borderColor: featured ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          {businessIcon(x.business.name, 46, x.business.logo_url, x.business.category, featured)}
+                          <View style={{ flex: 1 }}>
+                            <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>{x.business.name}</Text>
+                            <Text numberOfLines={1} style={{ color: '#C4B8E8', fontSize: 12 }}>
+                              {x.business.category}{x.distance != null && x.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(x.distance)}` : ''}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+                          {x.minCost != null ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(98,240,182,0.14)' }}>
+                              <Coin size={15} />
+                              <Text style={{ color: colors.aqua, fontWeight: '800', fontSize: 12 }}>desde {x.minCost}</Text>
+                            </View>
+                          ) : <Text style={{ color: '#C4B8E8', fontSize: 12 }}>Sin premios por ahora</Text>}
+                          {x.prizes > 0 ? <Text style={{ color: '#C4B8E8', fontSize: 11.5 }}>{x.prizes} {x.prizes === 1 ? 'premio' : 'premios'}</Text> : null}
+                        </View>
+                      </Press>
+                    );
+                  })}
+                </ScrollView>
+              ) : null}
+            </View>
+          )}
           {/* Tocar el logo de Google (abajo a la izquierda) abre Google Maps en la zona que se está viendo. */}
-          <Press
+          {!previewGroup && nearbyMap.length ? null : <Press
             accessibilityRole="link"
             accessibilityLabel="Abrir en Google Maps"
             onPress={() => {
@@ -1606,7 +1688,7 @@ export default function CanjesScreen() {
               if (c) openGoogleMaps(c.latitude, c.longitude, c.latitudeDelta);
             }}
             style={{ position: 'absolute', left: 0, bottom: 0, width: 130, height: 34 + bottomInset }}
-          />
+          />}
           {/* Con un local seleccionado se oculta: la hoja de vista previa ocupa ese lugar. */}
           {previewGroup ? null : (
           <Press
@@ -1614,7 +1696,7 @@ export default function CanjesScreen() {
             accessibilityLabel="Centrar el mapa en dónde estás"
             onPress={centerOnMe}
             className="absolute items-center justify-center rounded-full bg-card-light"
-            style={{ bottom: 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
+            style={{ bottom: nearbyMap.length ? (sheetOpen ? 196 : 76) + bottomInset : 44, right: 20, width: 48, height: 48, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}
           >
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
