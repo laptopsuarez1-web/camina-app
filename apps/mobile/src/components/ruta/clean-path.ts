@@ -48,24 +48,27 @@ function simplify(path: LatLng[], tol: number): LatLng[] {
   }
   return path.filter((_, i) => keep[i]);
 }
-function roundCorners(path: LatLng[], times = 2): LatLng[] {
-  let p = path;
-  for (let n = 0; n < times; n++) {
-    if (p.length < 3) return p;
-    const out: LatLng[] = [p[0]];
-    for (let i = 0; i < p.length - 1; i++) {
-      const a = p[i], b = p[i + 1];
-      const q = (t: number) => ({ latitude: a.latitude + (b.latitude - a.latitude) * t, longitude: a.longitude + (b.longitude - a.longitude) * t });
-      // Esquinas apenas redondeadas (corte chico): la línea no se sale de la calle.
-      if (i > 0) out.push(q(0.18));
-      if (i < p.length - 2) out.push(q(0.82));
-    }
-    out.push(p[p.length - 1]);
-    p = out;
+// Esquinas suavizadas con un corte de pocos metros (nunca proporcional al largo de la calle: en una cuadra larga un
+// corte proporcional sacaba la línea de la calzada). Un solo paso, así la línea queda pegada a las calles reales.
+const CORNER_M = 6;
+function roundCorners(path: LatLng[]): LatLng[] {
+  if (path.length < 3) return path;
+  const out: LatLng[] = [path[0]];
+  for (let i = 1; i < path.length - 1; i++) {
+    const prev = path[i - 1], cur = path[i], next = path[i + 1];
+    const cutIn = Math.min(CORNER_M, meters(prev, cur) * 0.4);
+    const cutOut = Math.min(CORNER_M, meters(cur, next) * 0.4);
+    const lerp = (a: LatLng, b: LatLng, t: number) => ({ latitude: a.latitude + (b.latitude - a.latitude) * t, longitude: a.longitude + (b.longitude - a.longitude) * t });
+    const d1 = meters(prev, cur) || 1, d2 = meters(cur, next) || 1;
+    const p1 = lerp(cur, prev, cutIn / d1);
+    const p2 = lerp(cur, next, cutOut / d2);
+    // Curva suave entre los dos cortes (punto medio desplazado hacia la esquina).
+    out.push(p1, lerp(lerp(p1, cur, 0.5), lerp(cur, p2, 0.5), 0.5), p2);
   }
-  return p;
+  out.push(path[path.length - 1]);
+  return out;
 }
 export function cleanPath(path: LatLng[]): LatLng[] {
   if (path.length < 4) return path;
-  return roundCorners(simplify(noSpurs(path), 2.5));
+  return roundCorners(simplify(noSpurs(path), 1.5));
 }
