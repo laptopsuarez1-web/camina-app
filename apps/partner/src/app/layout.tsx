@@ -37,7 +37,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`h-full antialiased ${jakarta.variable}`}>
+    <html lang="es" className={`h-full antialiased ${jakarta.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Aplica el tema elegido antes de pintar, para que no parpadee. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('camina-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-bg text-text">{children}</body>
     </html>
   );

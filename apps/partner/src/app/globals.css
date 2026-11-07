@@ -18,8 +18,24 @@
   color-scheme: light;
 }
 
+/* Oscuro: elegido a mano con el botón del menú (data-theme="dark") o automático si el teléfono está en oscuro. */
+:root[data-theme='dark'] {
+    --c-bg: #150d2b;
+    --c-card: #21173f;
+    --c-line: #3a2c63;
+    --c-muted: #a99bcf;
+    --c-text: #f1ecfb;
+    --c-aqua-light: #16352f;
+    --c-purple-light: #2c2150;
+    --c-warn-light: #3b2a22;
+    --c-warn-text: #f0c39a;
+    --c-auth-bg: #2a1c55;
+    --c-auth-bg-soft: #34246a;
+    color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --c-bg: #150d2b;
     --c-card: #21173f;
     --c-line: #3a2c63;
@@ -83,17 +99,29 @@ body {
 }
 
 /* Modo oscuro: lo que estaba en blanco fijo pasa al color de tarjeta. */
+:root[data-theme='dark'] .bg-white {
+  background-color: var(--c-card);
+}
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea {
+  color: var(--c-text);
+}
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: var(--c-muted);
+}
 @media (prefers-color-scheme: dark) {
-  .bg-white {
+  :root:not([data-theme='light']) .bg-white {
     background-color: var(--c-card);
   }
-  input,
-  select,
-  textarea {
+  :root:not([data-theme='light']) input,
+  :root:not([data-theme='light']) select,
+  :root:not([data-theme='light']) textarea {
     color: var(--c-text);
   }
-  input::placeholder,
-  textarea::placeholder {
+  :root:not([data-theme='light']) input::placeholder,
+  :root:not([data-theme='light']) textarea::placeholder {
     color: var(--c-muted);
   }
 }
