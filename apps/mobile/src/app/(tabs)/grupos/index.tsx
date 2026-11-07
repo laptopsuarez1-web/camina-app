@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
@@ -166,6 +167,7 @@ export default function GruposScreen() {
                 >
                   {/* El color de la tarjeta es el fondo que se eligió para el grupo. */}
                   <LinearGradient pointerEvents="none" colors={groupGradient(g.background)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+                  <GroupBannerArt />
                   <View className="flex-row items-center gap-3">
                     {/* Si el grupo tiene foto, va en el mismo cuadrado redondeado de los íconos. */}
                     <AvatarImage

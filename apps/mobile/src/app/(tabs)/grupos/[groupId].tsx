@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Plus, Flame, Check, IconBubble } from '@/components/icons';
 import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useRuta } from '@/hooks/useRuta';
@@ -31,6 +31,7 @@ import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
+import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupPhoto } from '@/lib/avatar';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
@@ -78,6 +79,8 @@ export default function GroupDetailScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
+  // Pestañas debajo de la tarjeta de la semana: el chat primero.
+  const [tab, setTab] = useState<'chat' | 'desafios' | 'ranking'>('chat');
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -427,18 +430,30 @@ export default function GroupDetailScreen() {
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
-        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
+        {/* Portada: el degradé del tema del grupo con su dibujo (camino y huellitas). Sin fotos: siempre se ve bien. */}
+        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
+          <GroupBannerArt />
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
-            <View className="flex-1 flex-row items-center justify-center px-3" style={{ gap: 8 }}>
-              {data.group.photo_url ? (
-                <AvatarImage uri={data.group.photo_url} style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.6)' }} fallback={null} />
-              ) : null}
-              <Text className="text-[17px] font-bold text-white flex-shrink" numberOfLines={1}>
-                {data.group.name}
-              </Text>
+            {/* Nombre del grupo con su foto, en una pastilla (como el nombre de un chat). */}
+            <View className="flex-1 items-center px-2">
+              <View className="flex-row items-center" style={{ gap: 8, maxWidth: '100%', paddingLeft: 4, paddingRight: 14, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
+                <AvatarImage
+                  uri={data.group.photo_url}
+                  style={{ width: 32, height: 32, borderRadius: 11, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)' }}
+                  fallback={
+                    <View style={{ width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.5)' }}>
+                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>{data.group.name.trim()[0]?.toUpperCase()}</Text>
+                    </View>
+                  }
+                />
+                <View className="flex-shrink">
+                  <Text className="text-[15.5px] font-bold text-white" numberOfLines={1}>{data.group.name}</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }} numberOfLines={1}>{data.members.length} {plural(data.members.length, 'miembro', 'miembros')}</Text>
+                </View>
+              </View>
             </View>
             <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <MenuIcon size={18} color="#fff" />
@@ -477,39 +492,27 @@ export default function GroupDetailScreen() {
           </View>
         </LinearGradient>
 
-        <Glass className="flex-row mx-5 mt-3 mb-3 rounded-2xl p-3.5">
-          <View className="flex-1">
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
-          </View>
-          <View className="w-px mx-3.5 bg-line-light dark:bg-line-dark" />
-          <View className="flex-1">
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">
-              {myRank ? `${myRank}.º` : '-'}
-              <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark"> de {data.members.length}</Text>
-            </Text>
-          </View>
-        </Glass>
-
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Compartir el ranking del grupo como imagen"
-          onPress={() => setRankShareOpen(true)}
-          className="mx-5 mb-3 flex-row items-center justify-center rounded-2xl"
-          style={{ gap: 9, paddingVertical: 13, backgroundColor: theme.accentDeep }}
-        >
-          <Share2 size={17} color="#fff" weight="bold" />
-          <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
-        </Press>
-
-        <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="flex-row items-center" style={{ gap: 10 }}>
-              <IconBubble icon={Users} tone="purple" size={34} />
-              <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Meta del grupo</Text>
+        {/* La semana del grupo en una sola tarjeta: pasos, tu puesto, la meta (y cambiarla) y compartir el ranking. */}
+        <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 mt-3 mb-3 rounded-3xl p-4" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
+          <View className="flex-row">
+            <View className="flex-1">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
+              <Text className="text-[22px] font-extrabold text-text-light dark:text-text-dark"><AnimatedNumber value={totalSteps} id={`group-goal-${groupId}`} /></Text>
             </View>
-            {isCreator && !editingGoal && (
+            <View className="w-px mx-3.5 bg-line-light dark:bg-line-dark" />
+            <View className="flex-1">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
+              <Text className="text-[22px] font-extrabold text-text-light dark:text-text-dark">
+                {myRank ? `${myRank}.º` : '-'}
+                <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark"> de {data.members.length}</Text>
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center justify-between mt-3.5 mb-2">
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">
+              Meta de la semana · <Text className="font-bold text-text-light dark:text-text-dark">{challengeTarget.toLocaleString('es-BO')}</Text>
+            </Text>
+            {isCreator && !editingGoal ? (
               <Press
                 accessibilityRole="button"
                 onPress={() => {
@@ -517,16 +520,14 @@ export default function GroupDetailScreen() {
                   setEditingGoal(true);
                 }}
                 hitSlop={8}
-                className="rounded-full px-3 py-1.5 bg-purple-light-light dark:bg-purple-light-dark"
+                className="rounded-full px-3 py-1 bg-purple-light-light dark:bg-purple-light-dark"
               >
-                <Text className="text-xs font-semibold text-purple-ink dark:text-purple-soft">Cambiar meta</Text>
+                <Text className="text-[11.5px] font-semibold text-purple-ink dark:text-purple-soft">Cambiar meta</Text>
               </Press>
+            ) : (
+              <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>{Math.floor(challengePct)}%</Text>
             )}
           </View>
-          <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">
-            <AnimatedNumber value={totalSteps} id={`group-goal-${groupId}`} />
-            <Text className="font-normal text-muted-light dark:text-muted-dark"> / {challengeTarget.toLocaleString('es-BO')} pasos</Text>
-          </Text>
           {editingGoal && (
             <View className="flex-row items-center gap-2 mb-3">
               <TextInput
@@ -555,14 +556,35 @@ export default function GroupDetailScreen() {
               <Check size={14} color={accentIcon} />
               <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>¡Lo lograron juntos!</Text>
             </View>
-          ) : (
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2">
-              Meta semanal compartida: sumen pasos juntos.
-            </Text>
-          )}
+          ) : null}
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel="Compartir el ranking del grupo como imagen"
+            onPress={() => setRankShareOpen(true)}
+            className="mt-3.5 flex-row items-center justify-center rounded-2xl"
+            style={{ gap: 9, paddingVertical: 12, backgroundColor: theme.accentDeep }}
+          >
+            <Share2 size={16} color="#fff" weight="bold" />
+            <Text className="text-white font-bold text-[13.5px]">Compartir ranking</Text>
+          </Press>
         </Glass>
 
-        {active ? (
+        {/* Pestañas: Chat (primero), Desafíos y Ranking. */}
+        <View accessibilityRole="tablist" className="mx-5 mb-3 flex-row rounded-full p-1 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
+          {([['chat', 'Chat'], ['desafios', 'Desafíos'], ['ranking', 'Ranking']] as const).map(([k, label]) => {
+            const on = tab === k;
+            const dot = k === 'desafios' && canJoin;
+            return (
+              <Press key={k} accessibilityRole="tab" accessibilityState={{ selected: on }} haptic="selection" feedback="none" onPress={() => setTab(k)}
+                className="flex-1 flex-row items-center justify-center rounded-full py-2.5" style={[{ gap: 6 }, on ? { backgroundColor: theme.accentDeep } : null]}>
+                <Text style={{ fontSize: 13.5, fontWeight: '800', color: on ? '#fff' : muted }}>{label}</Text>
+                {dot ? <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: on ? '#fff' : colors.aqua }} /> : null}
+              </Press>
+            );
+          })}
+        </View>
+
+        {tab === 'desafios' ? (active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
             <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
@@ -637,8 +659,9 @@ export default function GroupDetailScreen() {
               <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
             </Press>
           </Glass>
-        )}
+        )) : null}
 
+        {tab === 'ranking' ? (<>
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
           <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
             <IconBubble icon={Trophy} tone="gold" size={34} />
@@ -735,7 +758,10 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-        <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
+        </>) : null}
+
+        {tab === 'chat' ? (<>
+        <View className="mx-5 mt-1 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">se vacía cada mes</Text>
         </View>
@@ -814,9 +840,10 @@ export default function GroupDetailScreen() {
           </Text>
         )}
         </View>
+        </>) : null}
       </ScrollView>
 
-      <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
+      {tab === 'chat' ? <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
         <TextInput
           value={text}
           onChangeText={setText}
@@ -832,7 +859,7 @@ export default function GroupDetailScreen() {
         <Press accessibilityRole="button" accessibilityLabel="Enviar mensaje" onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">
           <Send size={16} color="#fff" />
         </Press>
-      </View>
+      </View> : null}
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
       <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
       <GroupDrawer
