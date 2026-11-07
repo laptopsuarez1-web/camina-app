@@ -22,13 +22,15 @@ const RULE_HELP: Record<ChallengeRule, string> = {
   steps: 'Gana quien suma más pasos durante el desafío.',
   days: 'Gana quien cumple la meta diaria más veces.',
   streak: 'Gana quien mantiene la racha de días con meta más larga.',
+  ruta: 'Gana quien visita más locales de su Ruta del mes durante el desafío. Si empatan, quien caminó más. Para llevarse Puntos hay que visitar al menos 1 local.',
 };
 
 function valueOf(rule: ChallengeRule, s: Standing) {
-  return rule === 'steps' ? s.steps : rule === 'days' ? s.goal_days : s.best_streak;
+  return rule === 'steps' ? s.steps : rule === 'days' ? s.goal_days : rule === 'ruta' ? s.ruta_visits ?? 0 : s.best_streak;
 }
 
 function valueText(rule: ChallengeRule, v: number) {
+  if (rule === 'ruta') return `${v} ${plural(v, 'local', 'locales')}`;
   return rule === 'steps' ? `${v.toLocaleString('es-BO')} pasos` : rule === 'days' ? `${v} ${plural(v, 'día', 'días')} con meta` : `racha de ${v}`;
 }
 
@@ -59,7 +61,7 @@ export default function RetoScreen() {
       {active && (
         <View className="items-center mt-4">
           <Text className="text-[20px] font-extrabold text-white text-center" numberOfLines={2}>{active.name}</Text>
-          <Text className="text-[12.5px] mt-1" style={{ color: colors.authMuted }}>{RULE_LABEL[active.rule]} · meta {active.daily_goal.toLocaleString('es-BO')} por día</Text>
+          <Text className="text-[12.5px] mt-1" style={{ color: colors.authMuted }}>{RULE_LABEL[active.rule]} · {active.rule === 'ruta' ? 'gana quien visita más locales' : `meta ${active.daily_goal.toLocaleString('es-BO')} por día`}</Text>
         </View>
       )}
     </LinearGradient>

@@ -72,7 +72,7 @@ export default function NotificacionesScreen() {
         {items.map((n) => {
           const isNew = !seenAt || n.created_at > seenAt;
           // Si el destino es esta misma pantalla no hay a dónde ir: la fila queda solo para leer.
-          const dest = routeForNotification(n.data?.type);
+          const dest = routeForNotification(n.data?.type, n.data as { group_id?: unknown } | null);
           const opens = dest !== '/(tabs)/notificaciones';
           return (
             <Press

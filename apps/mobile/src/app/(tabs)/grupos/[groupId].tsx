@@ -12,6 +12,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
 import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
+import { useRuta } from '@/hooks/useRuta';
 import { useGroupChallenge, useJoinChallenge, useMyChallengeResult, RULE_LABEL, daysLeft, ruleText } from '@/hooks/useChallenges';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
@@ -59,6 +60,7 @@ export default function GroupDetailScreen() {
   const queryClient = useQueryClient();
   const blocks = useBlocks();
   const { data: ch } = useGroupChallenge(groupId);
+  const { data: ruta } = useRuta();
   const { data: pending } = useQuery({
     queryKey: ['group-pending', groupId],
     enabled: !!groupId,
@@ -389,6 +391,37 @@ export default function GroupDetailScreen() {
   const left = active ? daysLeft(active.end_day) : 0;
   const canJoin = !!active && !ch?.joined && today <= active.start_day;
   const pot = active ? active.stake * (ch?.entries ?? 0) : 0;
+  // Sumarse al desafío en marcha (desde la tarjeta del desafío o desde su tarjeta en el chat).
+  async function joinActive() {
+    if (!active || !data) return;
+    const others = (ch?.standings ?? []).filter((st) => st.user_id !== userId).map((st) => {
+      const m = data.members.find((x) => x.id === st.user_id);
+      return { id: st.user_id, name: m?.name ?? 'Caminante', photoUrl: m?.photoUrl ?? null };
+    });
+    const me = data.members.find((x) => x.id === userId);
+    try {
+      // Desafío de la Ruta: quien se suma queda anotado en la Ruta del mes si todavía no estaba.
+      if (active.rule === 'ruta' && ruta && !ruta.joined) {
+        await supabase.rpc('route_join');
+        queryClient.invalidateQueries({ queryKey: ['ruta'] });
+      }
+      await joinChallenge.mutateAsync(active.id);
+      celebrate({
+        kind: 'challenge-joined',
+        name: active.name,
+        me: { id: userId ?? 'yo', name: me?.name ?? 'Tú', photoUrl: me?.photoUrl ?? null },
+        others,
+        stake: active.stake,
+        potBefore: pot,
+        subtitle: active.rule === 'ruta'
+          ? `Cada local de tu Ruta que visites ya cuenta. ${others.length + 1} ${plural(others.length + 1, 'caminante', 'caminantes')}, ${left + 1} ${plural(left + 1, 'día', 'días')}.`
+          : `Tus pasos de hoy ya cuentan. ${others.length + 1} ${plural(others.length + 1, 'caminante', 'caminantes')}, ${left + 1} ${plural(left + 1, 'día', 'días')}.`,
+      });
+    } catch (e) {
+      Alert.alert('No se pudo sumar', friendlyServerError(e, 'Intenta de nuevo.'));
+    }
+  }
+
 
   return (
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
@@ -537,7 +570,7 @@ export default function GroupDetailScreen() {
                 <View className="flex-1">
                   <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark" numberOfLines={1}>{active.name}</Text>
                   <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-                    {RULE_LABEL[active.rule]} · meta {active.daily_goal.toLocaleString('es-BO')} · {today < active.start_day ? 'empieza pronto' : left === 0 ? 'último día' : `${plural(left, 'queda', 'quedan')} ${left} ${plural(left, 'día', 'días')}`}
+                    {RULE_LABEL[active.rule]} · {active.rule === 'ruta' ? 'más locales gana' : `meta ${active.daily_goal.toLocaleString('es-BO')}`} · {today < active.start_day ? 'empieza pronto' : left === 0 ? 'último día' : `${plural(left, 'queda', 'quedan')} ${left} ${plural(left, 'día', 'días')}`}
                   </Text>
                 </View>
               </View>
@@ -554,34 +587,14 @@ export default function GroupDetailScreen() {
                 <Text className="w-4 text-[12px] font-bold text-text-light dark:text-text-dark">{i + 1}</Text>
                 <Text className="flex-1 text-[12.5px] text-text-light dark:text-text-dark" numberOfLines={1}>{st.user_id === userId ? `${nameOf(st.user_id)} (tú)` : nameOf(st.user_id)}</Text>
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-                  {active.rule === 'steps' ? st.steps.toLocaleString('es-BO') : active.rule === 'days' ? `${st.goal_days} ${plural(st.goal_days, 'día', 'días')}` : `racha ${st.best_streak}`}
+                  {active.rule === 'steps' ? st.steps.toLocaleString('es-BO') : active.rule === 'days' ? `${st.goal_days} ${plural(st.goal_days, 'día', 'días')}` : active.rule === 'ruta' ? `${st.ruta_visits ?? 0} de 3 locales` : `racha ${st.best_streak}`}
                 </Text>
               </View>
             ))}
             {canJoin ? (
               <Press
                 accessibilityRole="button"
-                onPress={async () => {
-                  const others = (ch?.standings ?? []).filter((st) => st.user_id !== userId).map((st) => {
-                    const m = data.members.find((x) => x.id === st.user_id);
-                    return { id: st.user_id, name: m?.name ?? 'Caminante', photoUrl: m?.photoUrl ?? null };
-                  });
-                  const me = data.members.find((x) => x.id === userId);
-                  try {
-                    await joinChallenge.mutateAsync(active.id);
-                    celebrate({
-                      kind: 'challenge-joined',
-                      name: active.name,
-                      me: { id: userId ?? 'yo', name: me?.name ?? 'Tú', photoUrl: me?.photoUrl ?? null },
-                      others,
-                      stake: active.stake,
-                      potBefore: pot,
-                      subtitle: `Tus pasos de hoy ya cuentan. ${others.length + 1} ${plural(others.length + 1, 'caminante', 'caminantes')}, ${left + 1} ${plural(left + 1, 'día', 'días')}.`,
-                    });
-                  } catch (e) {
-                    Alert.alert('No se pudo sumar', friendlyServerError(e, 'Intenta de nuevo.'));
-                  }
-                }}
+                onPress={joinActive}
                 disabled={joinChallenge.isPending}
                 className="bg-mint rounded-2xl py-3 items-center mt-2.5 flex-row justify-center"
                 style={{ gap: 6 }}
@@ -729,6 +742,46 @@ export default function GroupDetailScreen() {
         <View className="px-5 gap-2 pb-2">
         {(notes ?? []).filter((n) => !blocks.ids.has(n.user_id)).map((n) => {
           const mine = n.user_id === userId;
+          // Tarjeta del sistema: alguien creó un desafío. Desde acá mismo se puede sumar.
+          if (n.kind === 'challenge') {
+            const live = !!active && n.challenge_id === active.id;
+            return (
+              <Press
+                key={n.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Desafío ${n.text}. Ver cómo va`}
+                onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })}
+                className="self-center my-1"
+                style={{ width: '92%' }}
+              >
+                <View className="rounded-3xl p-3.5" style={{ backgroundColor: 'rgba(98,240,182,0.10)', borderWidth: 1.5, borderColor: 'rgba(98,240,182,0.45)' }}>
+                  <View className="flex-row items-center" style={{ gap: 10 }}>
+                    <IconBubble icon={Trophy} tone="gold" size={36} />
+                    <View className="flex-1">
+                      <Text className="text-[11.5px] font-bold text-muted-light dark:text-muted-dark">
+                        {mine ? 'Creaste un desafío' : `${(n.author?.full_name ?? 'Alguien').split(' ')[0]} creó un desafío`}
+                      </Text>
+                      <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark" numberOfLines={1}>{n.text}</Text>
+                      {live && (
+                        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+                          {RULE_LABEL[active.rule]}{active.stake > 0 ? ` · ${active.stake} Puntos cada uno` : ''} · {ch?.entries ?? 0} {plural(ch?.entries ?? 0, 'persona', 'personas')} adentro
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {live && canJoin ? (
+                    <Press accessibilityRole="button" onPress={joinActive} disabled={joinChallenge.isPending} className="bg-mint rounded-2xl py-2.5 items-center mt-2.5">
+                      <Text className="text-mint-dark font-bold text-[13.5px]">Participar{active.stake > 0 ? ` · pones ${active.stake}` : ''}</Text>
+                    </Press>
+                  ) : (
+                    <Text className="text-[12px] font-bold mt-2 text-center" style={{ color: accentText }}>
+                      {live ? (ch?.joined ? '✓ Ya estás dentro' : 'Ya empezó: ya no se puede sumar') : 'Este desafío ya terminó'}
+                    </Text>
+                  )}
+                </View>
+              </Press>
+            );
+          }
           return (
             <Press
               key={n.id}

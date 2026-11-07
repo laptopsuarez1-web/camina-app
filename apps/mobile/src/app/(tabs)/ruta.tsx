@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeOutUp, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
@@ -125,6 +126,9 @@ export default function RutaScreen() {
   // `intro` es local (no depende de que el parámetro de la URL llegue a tiempo): desde que se toca Participar,
   // no se muestra ningún local hasta que cae su pin en el mapa.
   const [intro, setIntro] = useState(!!params.nueva);
+  const qc = useQueryClient();
+  // Al tocar Participar: cartel con cuántas personas ya están en la Ruta (se va solo).
+  const [welcome, setWelcome] = useState(false);
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
   const [lineOn, setLineOn] = useState(!params.nueva);
   const [tracks, setTracks] = useState(true);
@@ -214,6 +218,9 @@ export default function RutaScreen() {
     try {
       await join.mutateAsync(undefined as never);
       router.setParams({ nueva: '1' });
+      await qc.invalidateQueries({ queryKey: ['ruta-participation'] });
+      setWelcome(true);
+      setTimeout(() => setWelcome(false), 5200);
     } catch (e) {
       setIntro(false);
       setShown(3);
@@ -259,7 +266,8 @@ export default function RutaScreen() {
     if (r.canceled) return;
     try {
       await uploadRoutePhoto(userId, state.month, businessId, r.assets[0].uri, r.assets[0].base64);
-      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada en tu ruta' });
+      qc.invalidateQueries({ queryKey: ['mi-ruta', userId, state.month] });
+      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada: mírala en "Mis fotos"' });
     } catch (e) {
       Alert.alert('No se pudo subir la foto', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -448,12 +456,16 @@ export default function RutaScreen() {
 
       <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 8, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22, backgroundColor: 'rgba(22,17,31,0.86)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
         <Back />
-        <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} glow={false} themeMonth={state.completed_at ? state.month : null} />
+        <Press accessibilityRole="button" accessibilityLabel="Ver mi ruta y mis fotos" onPress={() => router.push({ pathname: '/(tabs)/ruta-mes', params: { m: state.month } })} feedback="none">
+          <RutaRing size={46} done={done} month={rutaMonthShort(state.month)} glow={false} themeMonth={state.completed_at ? state.month : null} />
+        </Press>
         <View style={{ flex: 1 }}>
           <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.3, fontSize: 10.5 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 17 }}>{state.completed_at ? '¡Ruta completada!' : `${done} de 3 locales`}</Text>
-          {participation && participation.participants > 1 ? (
-            <Text style={{ color: MUTED, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>{participation.participants.toLocaleString('es-BO')} personas en la Ruta este mes</Text>
+          {participation && participation.participants > 0 ? (
+            <Text style={{ color: MUTED, fontSize: 11, fontWeight: '700' }} numberOfLines={1}>
+              {participation.participants === 1 ? 'Eres la primera persona en la Ruta' : `Tú y ${(participation.participants - 1).toLocaleString('es-BO')} ${participation.participants === 2 ? 'persona' : 'personas'} más en la Ruta`}
+            </Text>
           ) : null}
         </View>
         <Press accessibilityRole="button" accessibilityLabel="Cómo funciona la Ruta" onPress={() => setShowRules(true)} hitSlop={8}
@@ -461,6 +473,19 @@ export default function RutaScreen() {
           <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 18 }}>?</Text>
         </Press>
       </View>
+
+      {welcome && participation ? (
+        <Animated.View entering={FadeInDown.springify().damping(14)} exiting={FadeOutUp.duration(260)} pointerEvents="none"
+          style={{ position: 'absolute', left: 28, right: 28, top: insets.top + 86, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 18, backgroundColor: 'rgba(26,20,38,0.95)', borderWidth: 1.5, borderColor: 'rgba(98,240,182,0.55)' }}>
+            <Text style={{ ...heavy(), color: MINT, fontSize: 26 }}>{participation.participants.toLocaleString('es-BO')}</Text>
+            <View>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>¡Ya estás adentro!</Text>
+              <Text style={{ color: MUTED, fontSize: 12 }}>{participation.participants === 1 ? 'Eres la primera persona en la Ruta' : `personas en la Ruta de ${month}`}</Text>
+            </View>
+          </View>
+        </Animated.View>
+      ) : null}
 
       {/* Mientras caen los pines el panel no se muestra: el mapa queda libre para la animación. */}
       {!intro && (
@@ -525,15 +550,21 @@ export default function RutaScreen() {
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
               {stops.some((x) => x.visit) ? (
                 <Press accessibilityRole="button" onPress={() => shareRoute()} haptic="light"
-                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
-                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>Compartir en historias</Text>
+                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>Compartir</Text>
+                </Press>
+              ) : null}
+              {stops.some((x) => x.visit) ? (
+                <Press accessibilityRole="button" onPress={() => router.push({ pathname: '/(tabs)/ruta-mes', params: { m: state.month } })} haptic="light"
+                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
+                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>📷 Mis fotos</Text>
                 </Press>
               ) : null}
               {canSwap ? (
                 <Press accessibilityRole="button" onPress={() => setSwapOpen(true)}
                   style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>↻ Cambiar un local</Text>
-                  <Text style={{ color: MUTED, fontSize: 10.5 }}>{state.swaps_left === 1 ? 'te queda 1 cambio' : `te quedan ${state.swaps_left} cambios`}</Text>
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }} numberOfLines={1}>↻ Cambiar</Text>
+                  <Text style={{ color: MUTED, fontSize: 10.5 }} numberOfLines={1}>{state.swaps_left === 1 ? 'te queda 1' : `te quedan ${state.swaps_left}`}</Text>
                 </Press>
               ) : null}
             </View>
@@ -565,7 +596,8 @@ export default function RutaScreen() {
 
       <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }}
         protagonist={!!infoFor && prize?.sponsor?.id === infoFor.business_id} prizeTitle={prize?.title ?? null}
-        onShare={(st) => { setInfoFor(null); setTimeout(() => shareRoute(st), 350); }} />
+        onShare={(st) => { setInfoFor(null); setTimeout(() => shareRoute(st), 350); }}
+        onPhoto={photosReady ? (st) => { setInfoFor(null); setTimeout(() => addVisitPhoto(st.business_id), 350); } : undefined} />
 
       {/* Tarjeta para historias, fuera de la pantalla (solo se usa para armar la imagen). */}
       <View pointerEvents="none" style={{ position: 'absolute', left: -SHARE_SIZE.width * 2, top: 0 }}>

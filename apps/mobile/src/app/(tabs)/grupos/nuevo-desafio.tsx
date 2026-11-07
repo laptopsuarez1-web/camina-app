@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Alert, ActivityIndicator } from 'react-native';
+import { View, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { shareText } from '@/lib/share';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -7,7 +7,8 @@ import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
-import { ChevronLeft, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
+import { ChevronLeft, Activity, Calendar, Flame, MapPin, IconBubble } from '@/components/icons';
+import { useRuta } from '@/hooks/useRuta';
 import { supabase } from '@/lib/supabase';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { groupInviteLink } from '@/constants/sharing';
@@ -15,7 +16,7 @@ import { MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
-import { RULE_LABEL, type ChallengeRule } from '@/hooks/useChallenges';
+import { RULE_LABEL, RUTA_RULES, type ChallengeRule } from '@/hooks/useChallenges';
 import { ChallengeCreatedScene } from '@/components/challenge/ChallengeCinematics';
 import { friendlyServerError } from '@/lib/errors';
 import { localDay } from '@/lib/format';
@@ -23,10 +24,11 @@ import { boliviaToday } from '@/lib/bolivia';
 import { Coin } from '@/components/ui/Coin';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Activity; tone: 'aqua' | 'gold' | 'orange' }[] = [
+const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Activity; tone: 'aqua' | 'gold' | 'orange' | 'mint' }[] = [
   { key: 'steps', title: 'Más pasos', desc: 'Gana quien suma más pasos', icon: Activity, tone: 'aqua' },
   { key: 'days', title: 'Más días', desc: 'Gana quien cumple la meta más veces', icon: Calendar, tone: 'gold' },
   { key: 'streak', title: 'Mejor racha', desc: 'Gana quien mantiene la racha más larga', icon: Flame, tone: 'orange' },
+  { key: 'ruta', title: 'Ruta del mes', desc: 'Gana quien visita más locales de su Ruta', icon: MapPin, tone: 'mint' },
 ];
 const STAKES = [0, 5, 10, 20, 50];
 // Tope de la base (group_challenges.stake between 0 and 50).
@@ -47,6 +49,7 @@ export default function NuevoDesafioScreen() {
   const inviteCode = groupDetail?.group.invite_code;
   const groupName = groupDetail?.group.name;
   const { data: balance } = usePointsBalance();
+  const { data: ruta } = useRuta();
   const userId = useAuthStore((st) => st.session?.user.id);
   const { muted, accentIcon, dangerText } = useThemeColors();
   const [step, setStep] = useState(1);
@@ -85,6 +88,8 @@ export default function NuevoDesafioScreen() {
 
   async function create() {
     setSaving(true);
+    // Desafío de la Ruta: quien lo crea queda anotado en la Ruta del mes si todavía no estaba.
+    if (rule === 'ruta' && ruta && !ruta.joined) await supabase.rpc('route_join');
     const { error } = await supabase.rpc('create_group_challenge', {
       p_group: groupId,
       p_name: name.trim(),
@@ -100,6 +105,8 @@ export default function NuevoDesafioScreen() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: ['group-challenge', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['group-notes', groupId] });
+    if (rule === 'ruta') queryClient.invalidateQueries({ queryKey: ['ruta'] });
     queryClient.invalidateQueries({ queryKey: ['points-balance'] });
     queryClient.invalidateQueries({ queryKey: ['points-ledger'] });
     queryClient.invalidateQueries({ queryKey: ['points-expiring-soon'] });
@@ -123,7 +130,7 @@ export default function NuevoDesafioScreen() {
         <ChallengeCreatedScene
           name={name.trim()}
           groupName={groupName}
-          chips={[RULE_LABEL[rule], `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
+          chips={[RULE_LABEL[rule], rule === 'ruta' ? 'Gana quien visita más locales' : `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
           stake={stake}
           dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
           me={meP}
@@ -179,7 +186,7 @@ export default function NuevoDesafioScreen() {
         )}
 
         {step === 2 && (
-          <>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
             <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark mb-3">Elige la regla</Text>
             {RULES.map((r) => (
               <Press
@@ -198,6 +205,17 @@ export default function NuevoDesafioScreen() {
                 </Glass>
               </Press>
             ))}
+            {rule === 'ruta' ? (
+              <Glass className="rounded-2xl p-3.5 mt-2">
+                <Text className="text-[13px] font-extrabold text-text-light dark:text-text-dark mb-1">Reglas de la Ruta</Text>
+                {RUTA_RULES.map((t, i) => (
+                  <View key={i} className="flex-row mt-1" style={{ gap: 8 }}>
+                    <Text className="text-[12.5px] font-extrabold" style={{ color: colors.mint }}>{i + 1}</Text>
+                    <Text className="flex-1 text-[12.5px] leading-[17px] text-muted-light dark:text-muted-dark">{t}</Text>
+                  </View>
+                ))}
+              </Glass>
+            ) : (<>
             <Text className="text-[16px] font-extrabold text-text-light dark:text-text-dark mt-4 mb-2">Meta diaria por persona</Text>
             <View className="flex-row items-center justify-center" style={{ gap: 20 }}>
               <Press accessibilityRole="button" accessibilityLabel="Bajar meta 500 pasos" onPress={() => setGoal(Math.max(MIN_DAILY_GOAL, goal - 500))} className="w-11 h-11 rounded-full items-center justify-center bg-card-light dark:bg-card-dark">
@@ -209,7 +227,8 @@ export default function NuevoDesafioScreen() {
               </Press>
             </View>
             <Text className="text-center text-[12px] text-muted-light dark:text-muted-dark mt-1">mínimo {MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos</Text>
-          </>
+            </>)}
+          </ScrollView>
         )}
 
         {step === 3 && (
@@ -290,7 +309,7 @@ export default function NuevoDesafioScreen() {
             <Glass className="rounded-2xl p-3.5 mt-4">
               <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark">Cómo se reparte</Text>
               <Text className="text-[12px] leading-[17px] text-muted-light dark:text-muted-dark mt-1">
-                Los puntos de todos forman un pozo. Terminan quienes cumplen la meta diaria en al menos el 80% de los días. El primero en terminar se lleva la mitad del pozo y la otra mitad se reparte entre los demás que terminan. Si termina uno solo, se lleva todo. Si nadie termina, cada uno recupera los suyos. Camina no se queda con nada. Los puntos no se compran: solo se ganan caminando.
+                Los puntos de todos forman un pozo. {rule === 'ruta' ? 'Terminan quienes visitan al menos 1 local de su Ruta.' : 'Terminan quienes cumplen la meta diaria en al menos el 80% de los días.'} El primero en terminar se lleva la mitad del pozo y la otra mitad se reparte entre los demás que terminan. Si termina uno solo, se lleva todo. Si nadie termina, cada uno recupera los suyos. Camina no se queda con nada. Los puntos no se compran: solo se ganan caminando.
               </Text>
             </Glass>
           </>

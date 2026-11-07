@@ -1,5 +1,10 @@
 // A qué pantalla lleva cada tipo de aviso (al tocar la notificación o la fila de la bandeja).
-export function routeForNotification(type?: string): string {
+// Los avisos del chat del grupo llevan directo a ese grupo (si el aviso trae cuál es).
+export function routeForNotification(type?: string, data?: { group_id?: unknown } | null): string {
+  if (type === 'group_note' || type === 'group_challenge') {
+    const g = typeof data?.group_id === 'string' ? data.group_id : null;
+    if (g) return `/(tabs)/grupos/${g}`;
+  }
   switch (type) {
     case 'redemption_expiring':
     case 'redemption':
@@ -16,6 +21,7 @@ export function routeForNotification(type?: string): string {
       return '/(tabs)/amigos';
     case 'group_invite':
       return '/(tabs)/grupos';
+    case 'group_note':
     case 'group_challenge':
     case 'group_challenge_end':
     case 'group_week':

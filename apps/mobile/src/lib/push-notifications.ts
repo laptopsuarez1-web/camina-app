@@ -35,8 +35,9 @@ export function useNotificationTaps(enabled: boolean) {
       const id = response.notification.request.identifier;
       if (id === lastHandledTap) return;
       lastHandledTap = id;
-      const type = response.notification.request.content.data?.type;
-      router.push(routeForNotification(typeof type === 'string' ? type : undefined) as never);
+      const data = response.notification.request.content.data;
+      const type = data?.type;
+      router.push(routeForNotification(typeof type === 'string' ? type : undefined, data as { group_id?: unknown }) as never);
     };
     // App cerrada: se abrió tocando el push. App abierta o en segundo plano: llega por el listener.
     Notifications.getLastNotificationResponseAsync().then(open).catch(() => undefined);

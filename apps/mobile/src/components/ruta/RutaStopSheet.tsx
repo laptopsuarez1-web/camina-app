@@ -100,8 +100,10 @@ const NEXT: Record<string, { label: string; at: number }> = { Visitante: { label
 
 // Ficha del local de la Ruta: foto, qué es, números del local, horario y redes (se abren al tocarlos) y cómo llegar.
 // Se cierra con la X, tocando afuera o deslizando hacia abajo desde la parte de arriba.
-export function RutaStopSheet({ stop, onClose, onMark, onShare, protagonist = false, prizeTitle }: {
+export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protagonist = false, prizeTitle }: {
   stop: RutaStop | null; onClose: () => void; onMark: (s: RutaStop) => void; onShare?: (s: RutaStop) => void;
+  // Subir la foto de tu visita (una por local): se ve en "Mi ruta" al tocar la insignia.
+  onPhoto?: (s: RutaStop) => void;
   protagonist?: boolean; prizeTitle?: string | null;
 }) {
   const insets = useSafeAreaInsets();
@@ -223,8 +225,8 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, protagonist = fa
 
             {/* Números del local: para que la ficha cuente algo más que la dirección. */}
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
-              <Stat value={stats ? String(stats.ruta_month) : '–'} label="visitas por la Ruta este mes" />
               <Stat value={stats ? String(stats.people) : '–'} label="clientes por Camina" />
+              <Stat value={stats ? String(stats.fans) : '–'} label={stats?.fans === 1 ? 'Fan del local' : 'Fans del local'} />
               <Stat accent={!!level} value={level ?? 'Nuevo'} label={next && stats ? `${stats.my_points} de ${next.at} para ${next.label}` : level ? 'tu nivel aquí' : 'tu primera visita suma'} />
             </View>
 
@@ -298,12 +300,22 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, protagonist = fa
                 style={{ marginTop: 10, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
                 <Text style={{ color: MINT, fontWeight: '800', fontSize: 15 }}>Ya estoy aquí: marcar visita</Text>
               </Press>
-            ) : onShare ? (
-              <Press accessibilityRole="button" onPress={() => onShare(stop)}
-                style={{ marginTop: 10, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
-                <Text style={{ color: MINT, fontWeight: '800', fontSize: 15 }}>Compartir en historias</Text>
-              </Press>
-            ) : null}
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                {onPhoto ? (
+                  <Press accessibilityRole="button" onPress={() => onPhoto(stop)}
+                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
+                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>📷 Subir mi foto</Text>
+                  </Press>
+                ) : null}
+                {onShare ? (
+                  <Press accessibilityRole="button" onPress={() => onShare(stop)}
+                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
+                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>Compartir</Text>
+                  </Press>
+                ) : null}
+              </View>
+            )}
             <Text style={{ color: '#8E82AE', fontSize: 12, textAlign: 'center', marginTop: 10 }}>En la Ruta compras lo que quieras: no se usan Puntos ni descuentos.</Text>
           </ScrollView>
         </Animated.View>

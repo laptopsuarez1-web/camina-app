@@ -3,13 +3,22 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { localDay } from '@/lib/format';
 
-export type ChallengeRule = 'steps' | 'days' | 'streak';
+export type ChallengeRule = 'steps' | 'days' | 'streak' | 'ruta';
 
 export const RULE_LABEL: Record<ChallengeRule, string> = {
   steps: 'Más pasos',
   days: 'Más días',
   streak: 'Mejor racha',
+  ruta: 'Ruta del mes',
 };
+
+// Reglas del desafío de la Ruta, como se muestran al crearlo y en la tarjeta del chat.
+export const RUTA_RULES = [
+  'Cada persona recorre su propia Ruta del mes (3 locales sorpresa).',
+  'Cuenta cada visita confirmada por el local durante el desafío.',
+  'Gana quien visita más locales; si empatan, quien caminó más.',
+  'Para llevarse Puntos hay que visitar al menos 1 local.',
+];
 
 export interface Challenge {
   id: string;
@@ -30,10 +39,12 @@ export interface Standing {
   goal_days: number;
   best_streak: number;
   met_goal: boolean;
+  // Locales de la Ruta del mes confirmados dentro del desafío (regla 'ruta').
+  ruta_visits?: number;
 }
 
 function ruleValue(rule: ChallengeRule, s: Standing) {
-  return rule === 'steps' ? s.steps : rule === 'days' ? s.goal_days : s.best_streak;
+  return rule === 'steps' ? s.steps : rule === 'days' ? s.goal_days : rule === 'ruta' ? s.ruta_visits ?? 0 : s.best_streak;
 }
 
 // Desafío en curso del grupo, quiénes están dentro y cómo va cada uno.
@@ -99,6 +110,7 @@ export interface ChallengeResultRow {
   steps: number;
   goal_days: number;
   best_streak: number;
+  ruta_visits?: number;
   rank: number;
   payout: number;
 }
@@ -120,7 +132,7 @@ export function useMyChallengeResult(groupId: string | undefined) {
       if (!ch) return null;
       const { data: rows } = await supabase
         .from('group_challenge_results')
-        .select('user_id, steps, goal_days, best_streak, rank, payout')
+        .select('*')
         .eq('challenge_id', ch.id)
         .order('rank', { ascending: true });
       const results = (rows ?? []) as unknown as ChallengeResultRow[];
@@ -142,7 +154,8 @@ export function useMyChallengeResult(groupId: string | undefined) {
 }
 
 // Valor de una persona con la regla del desafío, en palabras ("21.430 pasos", "5 días", "racha de 4").
-export function ruleText(rule: ChallengeRule, r: { steps: number; goal_days: number; best_streak: number }) {
+export function ruleText(rule: ChallengeRule, r: { steps: number; goal_days: number; best_streak: number; ruta_visits?: number }) {
+  if (rule === 'ruta') return `${r.ruta_visits ?? 0} ${(r.ruta_visits ?? 0) === 1 ? 'local' : 'locales'}`;
   if (rule === 'steps') return `${r.steps.toLocaleString('es-BO')} pasos`;
   if (rule === 'days') return `${r.goal_days} ${r.goal_days === 1 ? 'día' : 'días'}`;
   return `racha de ${r.best_streak}`;

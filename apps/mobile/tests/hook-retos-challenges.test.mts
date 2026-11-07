@@ -100,7 +100,7 @@ test('cobrar reto: el rechazo del servidor llega a la pantalla', async () => {
 
 // ---------------------------------------------------------------- desafíos de grupo
 test('etiquetas de las reglas de desafío', () => {
-  assert.deepEqual(RULE_LABEL, { steps: 'Más pasos', days: 'Más días', streak: 'Mejor racha' });
+  assert.deepEqual(RULE_LABEL, { steps: 'Más pasos', days: 'Más días', streak: 'Mejor racha', ruta: 'Ruta del mes' });
 });
 
 test('daysLeft: cuenta los días que faltan después de hoy (el día de cierre da 0 = "último día"); nunca negativo', async () => {
@@ -226,6 +226,10 @@ test('ruleText: el valor de cada persona dicho con la regla del desafío', () =>
   assert.equal(ruleText('days', r), '1 día');
   assert.equal(ruleText('days', { ...r, goal_days: 5 }), '5 días');
   assert.equal(ruleText('streak', r), 'racha de 4');
+  // Desafío de la Ruta del mes: locales visitados (sin dato todavía = 0).
+  assert.equal(ruleText('ruta', { ...r, ruta_visits: 1 }), '1 local');
+  assert.equal(ruleText('ruta', { ...r, ruta_visits: 3 }), '3 locales');
+  assert.equal(ruleText('ruta', r), '0 locales');
 });
 
 // ---------------------------------------------------------------- días que faltan en un desafío de grupo
