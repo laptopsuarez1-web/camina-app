@@ -1136,7 +1136,15 @@ export default function CanjesScreen() {
     setActiveBenefit(null);
   }
 
-  const reviewUrl = safeReviewUrl(activeBenefit?.business.google_review_url);
+  // Con link de reseña del local, ese. Sin él, la ficha del local en Google Maps (búsqueda por nombre y dirección): desde ahí se califica.
+  const reviewUrl = (() => {
+    const b = activeBenefit?.business;
+    if (!b) return null;
+    const own = safeReviewUrl(b.google_review_url);
+    if (own) return own;
+    const q = [b.name, b.address, 'Tarija, Bolivia'].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+  })();
 
   // Desde la confirmación del canje: se cierra la hoja del código y arranca la historia de Instagram.
   const story = useStoryFlow();
