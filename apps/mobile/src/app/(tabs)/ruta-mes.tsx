@@ -245,9 +245,12 @@ export default function RutaMesScreen() {
 
         {/* El collage: tres fotos iguales en zigzag, unidas por el camino de tus pasos. */}
         <View style={{ marginTop: 22, marginHorizontal: 20, height: spots[2].y + PH }}>
-          <Svg pointerEvents="none" width={W} height={spots[2].y + PH} style={{ position: 'absolute', left: 0, top: 0 }}>
-            <Path d={pathD} stroke="rgba(98,240,182,0.55)" strokeWidth={3} strokeDasharray="1 10" strokeLinecap="round" fill="none" />
-          </Svg>
+          {/* El camino aparece cuando las fotos ya cayeron en su lugar (antes se veía mal puesto y luego se acomodaba). */}
+          <Animated.View entering={FadeIn.delay(1600).duration(500)} pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, width: W, height: spots[2].y + PH }}>
+            <Svg width={W} height={spots[2].y + PH}>
+              <Path d={pathD} stroke="rgba(98,240,182,0.55)" strokeWidth={3} strokeDasharray="1 10" strokeLinecap="round" fill="none" />
+            </Svg>
+          </Animated.View>
           {ordered.slice(0, 3).map((st, i) => (
             <View key={st.business_id} style={{ position: 'absolute', left: spots[i].x, top: spots[i].y }}>
               <Polaroid stop={st} index={i} width={P} uploading={uploading === st.business_id} focus={focus === st.business_id}
@@ -277,7 +280,8 @@ export default function RutaMesScreen() {
         <View style={{ flex: 1, backgroundColor: '#0E0820' }}>
           <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
             contentOffset={{ x: Math.max(0, withPhoto.findIndex((s) => s.business_id === viewing)) * width, y: 0 }}
-            onMomentumScrollEnd={(e) => { const s = withPhoto[Math.round(e.nativeEvent.contentOffset.x / width)]; if (s) setViewing(s.business_id); }}>
+            onMomentumScrollEnd={(e) => { // Al cerrar el visor su lista vuelve al inicio mientras se desvanece; ese salto no debe reabrirlo (antes la X no cerraba).
+            if (!viewing) return; const s = withPhoto[Math.round(e.nativeEvent.contentOffset.x / width)]; if (s) setViewing(s.business_id); }}>
             {withPhoto.map((st) => (
               <View key={st.business_id} style={{ width, flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 22 }}>
                 <View style={{ width: width - 44, padding: 10, paddingBottom: 14, borderRadius: 14, backgroundColor: '#FBF8FF' }}>

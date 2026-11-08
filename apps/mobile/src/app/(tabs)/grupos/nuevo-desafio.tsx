@@ -115,7 +115,7 @@ export default function NuevoDesafioScreen() {
 
   function back() {
     if (step > 1 && !done) setStep(step - 1);
-    else router.back();
+    else router.navigate({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } });
   }
 
   if (done) {
@@ -124,7 +124,7 @@ export default function NuevoDesafioScreen() {
     const meRow = groupDetail?.members.find((m) => m.id === userId);
     const meP = userId ? { id: userId, name: meRow?.name ?? 'Tú', photoUrl: meRow?.photoUrl ?? null } : null;
     const othersP = (groupDetail?.members ?? []).filter((m) => m.id !== userId).map((m) => ({ id: m.id, name: m.name, photoUrl: m.photoUrl }));
-    const toGroup = () => (router.canGoBack() ? router.back() : router.replace({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } }));
+    const toGroup = () => router.navigate({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: groupId! } });
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
         <ChallengeCreatedScene

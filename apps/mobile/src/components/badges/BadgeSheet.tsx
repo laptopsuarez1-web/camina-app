@@ -1,4 +1,5 @@
 import { ActivityIndicator, Modal, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
@@ -91,7 +92,10 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
               </>
             ) : null}
 
-            <Press accessibilityRole="button" onPress={onClose} className="rounded-2xl items-center" style={{ marginTop: 18, paddingVertical: 14, backgroundColor: '#1F7A66' }}>
+            <Press accessibilityRole="button" onPress={() => { const id = badge.business_id; onClose(); setTimeout(() => router.push({ pathname: '/(tabs)/canjes', params: { negocio: id } }), 250); }} className="rounded-2xl items-center" style={{ marginTop: 18, paddingVertical: 14, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Ver perfil del local</Text>
+            </Press>
+            <Press accessibilityRole="button" onPress={onClose} className="rounded-2xl items-center" style={{ marginTop: 10, paddingVertical: 14, backgroundColor: '#1F7A66' }}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Listo</Text>
             </Press>
           </ScrollView>

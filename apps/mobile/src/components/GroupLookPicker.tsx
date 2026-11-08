@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { Image } from 'expo-image';
 import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
@@ -11,9 +12,12 @@ import { useThemeColors } from '@/theme/useThemeColors';
 export type GroupPhoto = { uri: string; b64: string | null };
 
 // Foto y tema de color del grupo, para elegir al crearlo.
-export function GroupLookPicker({ photo, onPhoto, background, onBackground }: {
+export function GroupLookPicker({ photo, onPhoto, banner, onBanner, background, onBackground }: {
   photo: GroupPhoto | null;
   onPhoto: (p: GroupPhoto) => void;
+  // Portada opcional (foto ancha arriba del grupo).
+  banner?: GroupPhoto | null;
+  onBanner?: (p: GroupPhoto | null) => void;
   background: string;
   onBackground: (key: string) => void;
 }) {
@@ -21,6 +25,10 @@ export function GroupLookPicker({ photo, onPhoto, background, onBackground }: {
   async function pickPhoto() {
     const r = await pickFromGallery({ aspect: 1, max: 640 });
     if (r) onPhoto({ uri: r.uri, b64: null });
+  }
+  async function pickBanner() {
+    const r = await pickFromGallery({ aspect: 16 / 10, max: 1280 });
+    if (r) onBanner?.({ uri: r.uri, b64: null });
   }
   return (
     <View style={{ gap: 14 }}>
@@ -35,6 +43,25 @@ export function GroupLookPicker({ photo, onPhoto, background, onBackground }: {
           }
         />
       </Press>
+      {onBanner ? (
+        <View>
+          <Press accessibilityRole="button" accessibilityLabel="Elegir portada del grupo" onPress={pickBanner}>
+            {banner ? (
+              <Image source={{ uri: banner.uri }} contentFit="cover" style={{ width: '100%', aspectRatio: 16 / 7, borderRadius: 18 }} />
+            ) : (
+              <View style={{ width: '100%', aspectRatio: 16 / 7, borderRadius: 18, alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', borderWidth: 1, borderStyle: 'dashed', borderColor: dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.18)' }}>
+                <Camera size={22} color={accentIcon} />
+                <Text style={{ color: accentIcon, fontSize: 13, fontWeight: '700' }}>Agregar portada (opcional)</Text>
+              </View>
+            )}
+          </Press>
+          {banner ? (
+            <Press accessibilityRole="button" accessibilityLabel="Quitar portada" onPress={() => onBanner(null)} className="self-start mt-2" hitSlop={8}>
+              <Text style={{ color: accentIcon, fontSize: 13, fontWeight: '700' }}>Quitar portada</Text>
+            </Press>
+          ) : null}
+        </View>
+      ) : null}
       <View className="flex-row flex-wrap" style={{ gap: 8 }}>
         {GROUP_BACKGROUNDS.map((b) => {
           const on = background === b.key;

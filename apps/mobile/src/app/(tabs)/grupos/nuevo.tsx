@@ -24,6 +24,7 @@ export default function NuevoGrupoScreen() {
   const [name, setName] = useState('');
   const [background, setBackground] = useState<string>('aqua');
   const [photo, setPhoto] = useState<GroupPhoto | null>(null);
+  const [banner, setBanner] = useState<GroupPhoto | null>(null);
   const [picked, setPicked] = useState<string[]>(friend ? [friend] : []);
 
   // Al volver después de crear o eliminar un grupo, el formulario arranca limpio.
@@ -33,6 +34,7 @@ export default function NuevoGrupoScreen() {
         setName('');
         setBackground('aqua');
         setPhoto(null);
+        setBanner(null);
         setPicked(friend ? [friend] : []);
       }
     }, [friend])
@@ -67,8 +69,8 @@ export default function NuevoGrupoScreen() {
           />
         </Glass>
 
-        <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Foto y fondo</Text>
-        <GroupLookPicker photo={photo} onPhoto={setPhoto} background={background} onBackground={setBackground} />
+        <Text accessibilityRole="header" style={[typo.section, { color: text, marginTop: 14, marginBottom: 10 }]}>Foto, portada y fondo</Text>
+        <GroupLookPicker photo={photo} onPhoto={setPhoto} banner={banner} onBanner={setBanner} background={background} onBackground={setBackground} />
 
         {(friends ?? []).length > 0 ? (
           <>
@@ -85,7 +87,7 @@ export default function NuevoGrupoScreen() {
         <Press
           accessibilityRole="button"
           disabled={!ready}
-          onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-meta', params: { name: name.trim(), friends: picked.join(','), background, ...(photo ? { photo: photo.uri } : {}) } })}
+          onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-meta', params: { name: name.trim(), friends: picked.join(','), background, ...(photo ? { photo: photo.uri } : {}), ...(banner ? { banner: banner.uri } : {}) } })}
           className="rounded-2xl py-3.5 items-center mt-5"
           style={{ backgroundColor: colors.aquaDeep, opacity: ready ? 1 : 0.5 }}
         >

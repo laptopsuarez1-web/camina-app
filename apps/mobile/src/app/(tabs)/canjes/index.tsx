@@ -852,6 +852,16 @@ export default function CanjesScreen() {
   // "Locales cerca tuyo" abajo del mapa completo: los mismos filtros que los pines, por cercanía y con los destacados
   // entre los primeros según qué tan cerca estén.
   const [sheetOpen, setSheetOpen] = useState(true);
+  // Deslizar la hoja: hacia abajo la achica y hacia arriba la vuelve a abrir (no sube más allá de su tamaño).
+  const sheetPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderRelease: (_e, g) => {
+        if (g.dy > 24) setSheetOpen(false);
+        else if (g.dy < -24) setSheetOpen(true);
+      },
+    }),
+  ).current;
   const nearbyMap = useMemo(() => {
     const minCost = new Map<string, { min: number; n: number }>();
     for (const b of benefits ?? []) {
@@ -1635,9 +1645,9 @@ export default function CanjesScreen() {
               </View>
             )}
           </View>
-          {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita y se esconde mientras hay un local abierto. */}
+          {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita o deslizando hacia abajo y se esconde mientras hay un local abierto. */}
           {previewGroup || !nearbyMap.length ? null : (
-            <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+            <View {...sheetPan.panHandlers} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
               <Press accessibilityRole="button" accessibilityLabel={sheetOpen ? 'Achicar la lista de locales' : 'Ver locales cerca tuyo'} onPress={() => setSheetOpen((v) => !v)} feedback="none"
                 style={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 6 }}>
                 <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.35)' }} />

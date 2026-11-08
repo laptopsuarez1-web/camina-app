@@ -132,7 +132,15 @@ export default function RutaScreen() {
   // Al tocar Participar: cartel con cuántas personas ya están en la Ruta (se va solo).
   const [welcome, setWelcome] = useState(false);
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
-  const [lineOn, setLineOn] = useState(!params.nueva);
+  // La línea se dibuja recién cuando el mapa ya se acomodó en los 3 locales (antes aparecía mal puesta y luego saltaba).
+  const [lineOn, setLineOn] = useState(false);
+  useEffect(() => {
+    if (params.nueva) return;
+    // Respaldo por si el mapa tarda en avisar que está listo (en la web no hay cámara que acomodar).
+    const t = setTimeout(() => setLineOn(true), Platform.OS === 'web' ? 0 : 2200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [tracks, setTracks] = useState(true);
   const [drop, setDrop] = useState<{ stop: RutaStop; x: number; y: number; key: number; n: number; hidePin: boolean } | null>(null);
   // La animación de llegada espera a que el mapa termine de moverse antes de soltar cada pin (si no, el pin animado
@@ -481,7 +489,7 @@ export default function RutaScreen() {
             style={{ flex: 1 }}
             customMapStyle={DARK_MAP_STYLE}
             initialRegion={{ latitude: first.lat!, longitude: first.lng!, latitudeDelta: 0.03, longitudeDelta: 0.03 }}
-            onMapReady={() => (intro ? runIntro() : fitAll(false))}
+            onMapReady={() => { if (intro) runIntro(); else { fitAll(false); setTimeout(() => setLineOn(true), 350); } }}
             onRegionChangeComplete={placePins}
             toolbarEnabled={false}
             pitchEnabled={false}
