@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
+import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
@@ -19,7 +19,7 @@ export const CAP = {
   canjes: '/web/cap/canjes.jpg',
   ficha: '/web/cap/ficha.jpg',
   grupos: '/web/cap/grupos-v2.jpg',
-  grupo: '/web/cap/grupo-v3.jpg',
+  grupo: '/web/cap/grupo-v4.jpg',
   grupoRanking: '/web/cap/grupo-ranking-v2.jpg',
   grupoChat: '/web/cap/grupo-chat.jpg',
   grupoReto: '/web/cap/grupo-reto-v2.jpg',
@@ -512,7 +512,7 @@ export function Planes() {
               <p className="price">{p.price}</p>
               {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}. {LANZAMIENTO_NOTA}</p>}
               <p className="blurb">{p.blurb}</p>
-              <ul>{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
+              <ul>{p.features.map((f) => <li key={f}>{f}{PLAN_EXPLICA[f] ? <small className="plan-exp">{PLAN_EXPLICA[f]}</small> : null}</li>)}</ul>
               <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href="/registro">
                 {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme y elegir este plan'}
               </Link>
@@ -893,7 +893,7 @@ export function HeroGente() {
       <div className="wrap">
         <div className="copy">
           <Kinetic as="h1" text="Tu caminata de todos los días ahora vale *Puntos.*" />
-          <p className="sub">Camina cuenta tus pasos y los convierte en premios en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
+          <p className="sub">Camina cuenta tus pasos y los convierte en Puntos que canjeas por regalos y descuentos en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
           <div className="stores">
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
             <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
@@ -976,6 +976,40 @@ export function ComoFunciona() {
   );
 }
 
+// Lo principal para la gente: los Puntos se canjean por cosas gratis o descuentos en comercios de su ciudad.
+export function CanjesGente() {
+  const pasos = ['Elige un comercio en el mapa', 'Canjea su premio con tus Puntos', 'En el local, escribe su código', 'Listo: tu regalo o tu descuento'];
+  return (
+    <section className="lp-sec" id="canjes" data-modo="oscuro">
+      <div className="wrap">
+        <p className="kick">Tus premios</p>
+        <Kinetic text="Canjea tus Puntos por *cosas* *gratis.*" />
+        <p className="lead">
+          Con los Puntos que juntas caminando canjeas regalos y descuentos en los comercios de tu ciudad: cafés, comida, belleza, deporte y
+          mucho más. Cada comercio elige su premio.
+        </p>
+      </div>
+      <Deslizable
+        id="gal-canjes"
+        nota="Comercios y premios de ejemplo."
+        pant={[
+          ['El mapa de premios', 'Los comercios cerca tuyo y lo que regala cada uno.', CAP.canjes],
+          ['La ficha del local', 'Sus premios, cuántos Puntos cuesta cada uno y dónde queda.', CAP.fichaLocal],
+          ['Tu tarjeta Camina', 'Cada 5 canjes, un premio gratis extra en el comercio que elijas.', CAP.puntosNuevo],
+        ]}
+      />
+      <div className="wrap">
+        <ol className="pasitos" aria-label="Cómo canjear">
+          {pasos.map((t, i) => (
+            <li key={t}><span>{i + 1}</span>{t}</li>
+          ))}
+        </ol>
+        <p className="pasitos-nota">Regalos 100% gratis o descuentos, según el comercio. Puedes volver a canjear en el mismo local pasados 14 días.</p>
+      </div>
+    </section>
+  );
+}
+
 export function Gratis() {
   return (
     <section className="lp-sec">
@@ -1007,6 +1041,7 @@ export function GruposGente() {
         nota="El grupo y sus integrantes son de ejemplo."
         pant={[
           ['Tus grupos', 'Con amigos, familia o compañeros.', CAP.grupos],
+          ['Tu grupo', 'Podio, portada con foto, meta de la semana y ranking.', CAP.grupo],
           ['Meta semanal', 'Caminan juntos hacia un mismo número.', CAP.grupoMeta],
           ['Desafíos', 'Pasos, días o racha entre ustedes.', CAP.grupoReto],
         ]}
