@@ -76,15 +76,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     } else if (
       business &&
       role === 'owner' &&
-      business.approved &&
       business.account_kind !== 'events_only' &&
-      business.plan_onboarded === false
+      business.plan_onboarded === false &&
+      // Elige su plan (una sola vez) apenas termina la ficha: logo, portada, descripción, ubicación y al menos un
+      // beneficio. No espera a que lo aprobemos. Si ya estaba aprobado de antes, también se le pide.
+      (business.approved || (faltantesParaPublicar(business).length === 0 && (beneficiosActivos ?? 0) >= 1))
     ) {
-      // Comercio recién aprobado: antes de seguir elige su plan (gratis o de pago), una sola vez.
-      // Mientras está en revisión usa el plan gratis y no se le pide pagar nada.
       router.replace('/elegir-plan');
     }
-  }, [loading, session, business, isAdmin, role, pathname, router]);
+  }, [loading, session, business, isAdmin, role, pathname, router, beneficiosActivos]);
 
   async function handleLogout() {
     // Solo en este navegador: el cierre global (el de siempre de Supabase) también sacaba de la app del teléfono.

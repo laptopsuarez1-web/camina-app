@@ -62,14 +62,14 @@ export default function ElegirPlanPage() {
           <span className="font-extrabold tracking-wide text-[18px]" style={{ color: '#241748' }}>CAMINA</span>
         </div>
 
-        <p className="text-mint-dark font-semibold text-[13px] mb-1">¡Tu cuenta está lista, {business.name}!</p>
-        <h1 className="text-[24px] font-bold mb-1.5">Elige cómo quieres empezar</h1>
+        <p className="text-mint-dark font-semibold text-[13px] mb-1">¡Tu ficha está lista, {business.name}!</p>
+        <h1 className="text-[24px] font-bold mb-1.5">Elige tu plan</h1>
         <p className="text-muted text-[13.5px] mb-6 max-w-[560px]">
-          Puedes empezar gratis y cambiar cuando quieras, sin permanencia. Con un plan de pago tu local se ve más y recibe más clientes.
+          Con un plan de pago tu local se ve más y recibe más clientes. Pagas con el QR y cambias cuando quieras, sin permanencia.
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 mb-5">
-          {PLANS.map((p) => {
+          {PLANS.filter((p) => p.id !== 'primer_paso').map((p) => {
             const free = p.id === 'primer_paso';
             return (
               <div
@@ -119,6 +119,16 @@ export default function ElegirPlanPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* El plan gratis, aparte y más chico. */}
+        <div className="rounded-[14px] px-4 py-3 mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5" style={{ background: '#fff', border: '1px solid #E1D2F5' }}>
+          <p className="flex-1 text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
+            <b style={{ color: '#291C47' }}>Primer Paso (gratis):</b> apareces en el mapa con un premio gratis y un descuento, mínimo 3 cupones por día y sin estadísticas.
+          </p>
+          <button onClick={() => finish()} disabled={saving} className="py-2 px-4 rounded-[10px] font-semibold text-[12.5px] disabled:opacity-60" style={{ background: '#F4EEFC', color: '#241748' }}>
+            {saving ? 'Entrando…' : 'Seguir con el plan gratis'}
+          </button>
         </div>
 
         <div
