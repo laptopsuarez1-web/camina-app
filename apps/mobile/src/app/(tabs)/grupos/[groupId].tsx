@@ -50,11 +50,11 @@ function weekKey() {
 
 // Cuánto se difumina la parte de abajo de la portada. En iPhone y Android el desenfoque se mide sobre los píxeles de
 // la foto (más grandes que los de la pantalla), por eso el número es mayor que en la web para verse parecido.
-const BANNER_BLUR = Platform.OS === 'web' ? 9 : 34;
+const BANNER_BLUR = Platform.OS === 'web' ? 12 : 44;
 
 // La parte difuminada de la portada: la misma foto, borrosa, que aparece de a poco de abajo hacia arriba. En el
 // celular con MaskedView; en la web (solo para vistas previas) con una máscara CSS, porque MaskedView no la soporta ahí.
-const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.7)', '#000'] as const, locations: [0, 0.44, 0.72, 1] as const };
+const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.85)', '#000'] as const, locations: [0, 0.3, 0.56, 1] as const };
 function BannerBlurFade({ uri }: { uri: string }) {
   const img = <Image source={{ uri }} cachePolicy="memory-disk" contentFit="cover" blurRadius={BANNER_BLUR} style={{ flex: 1 }} />;
   if (Platform.OS === 'web') {
@@ -542,8 +542,11 @@ export default function GroupDetailScreen() {
                       </View>
                     }
                   />
-                  <Text className="text-[12px] text-white mt-1" numberOfLines={1}>{m.id === userId ? 'Tú' : m.name}</Text>
-                  <Text className="text-[12px]" style={{ color: colors.authMuted }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
+                  {/* Con foto de portada, el nombre y los pasos van en una burbujita oscura: se leen sobre cualquier foto. */}
+                  <View style={bannerUrl ? { marginTop: 4, maxWidth: '100%', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12, backgroundColor: 'rgba(12,8,24,0.55)' } : { alignItems: 'center', maxWidth: '100%' }}>
+                    <Text className={`text-[12px] text-white ${bannerUrl ? 'font-semibold' : 'mt-1'}`} numberOfLines={1}>{m.id === userId ? 'Tú' : m.name}</Text>
+                    <Text className="text-[12px]" style={{ color: bannerUrl ? '#DCD3F5' : colors.authMuted }}>{m.steps >= 1000 ? `${Math.round(m.steps / 100) / 10}k` : m.steps} pasos</Text>
+                  </View>
                   <View
                     style={{
                       width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,
