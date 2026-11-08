@@ -25,11 +25,11 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
       <View style={{ position: 'absolute', left: 16, top: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: '#62F0B6' }}>
         <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 11.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
       </View>
-      {prize && !prize.drawn_at ? (
-        // El premio del sorteo, a la vista desde la tarjeta.
+      {!prize || !prize.drawn_at ? (
+        // El sorteo, siempre a la vista desde la tarjeta: con su premio si ya está cargado o "Premio por anunciar".
         <View style={{ position: 'absolute', right: 16, top: 16, maxWidth: width * 0.48, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: 'rgba(26,20,38,0.88)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.5)' }}>
           <Text style={{ color: '#62F0B6', fontWeight: '800', fontSize: 9.5, letterSpacing: 1 }}>SORTEO</Text>
-          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{prize.title}</Text>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{prize?.title ?? 'Premio por anunciar'}</Text>
         </View>
       ) : null}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 80, alignItems: 'center', paddingHorizontal: 16 }}>

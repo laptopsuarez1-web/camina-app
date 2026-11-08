@@ -1214,7 +1214,7 @@ const DUDAS = [
   ['¿Tengo que pagar algo?', 'No. Camina es gratis para todos y no te pedimos datos de pago.'],
   ['¿Necesito ir al gimnasio?', 'No. Cuentan los pasos de tu día: al trabajo, a la tienda, a la plaza.'],
   ['¿Cómo cuenta mis pasos?', 'Con Salud en iPhone o Health Connect en Android. Solo abre la app una vez al día.'],
-  ['¿Qué es la Ruta del mes?', 'Un evento mensual en Eventos: te tocan 3 locales sorpresa, los visitas y compras lo que quieras (no se usan Puntos). Al completarla ganas un Día doble y la insignia del mes.'],
+  ['¿Qué es la Ruta del mes?', 'Un evento mensual en Eventos: te tocan 3 locales sorpresa, los visitas y compras lo que quieras (no se usan Puntos). Al completarla ganas un Día doble, la insignia del mes y entras al sorteo exclusivo del mes.'],
   ['¿Cómo cuenta una visita de la Ruta?', 'Al pagar, le pides al local el código de la Ruta y lo escribes en la app estando ahí. El local confirma tu compra y se suma a tu Ruta.'],
   ['¿Dónde canjeo mis Puntos?', 'En los comercios aliados que ves en el mapa de la app. Pides el código del local y listo.'],
 ];
@@ -1302,7 +1302,7 @@ export function RutaGente() {
             <li key={t}><span>{i + 1}</span>{t}</li>
           ))}
         </ol>
-        <p className="pasitos-nota">Compras lo que quieras: en la Ruta no se usan Puntos ni descuentos. Al completarla ganas la insignia del mes y un Día doble de pasos.</p>
+        <p className="pasitos-nota">Compras lo que quieras: en la Ruta no se usan Puntos ni descuentos. Al completarla ganas la insignia del mes, un Día doble de pasos y entras al sorteo exclusivo del mes.</p>
       </div>
     </section>
   );
