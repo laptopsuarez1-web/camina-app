@@ -1136,15 +1136,16 @@ export default function CanjesScreen() {
     setActiveBenefit(null);
   }
 
-  // Solo sale si el local tiene perfil en Google Maps: primero el link que cargó el comercio y, si no, el automático por Place ID
-  // (directo a escribir la reseña). Sin ninguno de los dos, se salta este paso.
+  // Orden: link de reseña que cargó el comercio, Place ID automático (directo a escribir la reseña) y, si no hay ninguno,
+  // la ficha del local en Google Maps (búsqueda por nombre y dirección): desde ahí se califica.
   const reviewUrl = (() => {
     const b = activeBenefit?.business;
     if (!b) return null;
     const own = safeReviewUrl(b.google_review_url);
     if (own) return own;
     if (b.google_place_id && /^[\w-]+$/.test(b.google_place_id)) return `https://search.google.com/local/writereview?placeid=${b.google_place_id}`;
-    return null;
+    const q = [b.name, b.address, 'Tarija, Bolivia'].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   })();
 
   // Desde la confirmación del canje: se cierra la hoja del código y arranca la historia de Instagram.
