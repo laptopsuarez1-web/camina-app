@@ -613,7 +613,7 @@ export default function HomeScreen() {
             icon={Target}
             tone="aqua"
             title="Retos"
-            value={reto ? `${reto.met} de ${reto.target}` : 'Ver retos'}
+            value={reto ? (reto.claimed ? 'Completado' : `${reto.met} de ${reto.target}`) : 'Ver retos'}
             onPress={() => router.push({ pathname: '/(tabs)/eventos', params: { tab: 'desafios' } })}
           />
           <LinkRow

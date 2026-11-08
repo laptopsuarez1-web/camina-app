@@ -1,4 +1,4 @@
--- Retos (0024, 0033): reto_progress / claim_reto con los tres tipos: referrals, steps_streak y weekly_goals.
+-- Retos (0024, 0033, 0101: una sola vez por cuenta): reto_progress / claim_reto con los tres tipos: referrals, steps_streak y weekly_goals.
 begin;
 
 do $$
@@ -34,9 +34,10 @@ begin
   perform tt.t_eq('el asiento suma los Puntos del reto', led.amount, 6);
   perform tt.t_eq('la nota dice "Reto: nombre"', led.note, 'Reto: Meta semanal de prueba');
   perform tt.t_true('los Puntos del reto vencen a los 90 días', led.expires_at = now() + interval '90 days');
-  perform tt.t_raises('no se cobra dos veces en la semana', format('select claim_reto(%L)', rid), 'Ya cobraste este reto');
+  perform tt.t_raises('no se cobra dos veces', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
   select * into r from reto_progress() where reto_id = rid;
-  perform tt.t_eq('tras cobrar: figura cobrado esta semana', r.claimed_now, true);
+  perform tt.t_eq('tras cobrar: figura completado', r.claimed_now, true);
+  perform tt.t_eq('tras cobrar: el avance queda lleno', r.met, r.target);
   perform tt.t_eq('tras cobrar: ya no es cobrable', r.claimable, false);
   perform tt.t_eq('el saldo incluye el premio', user_points_balance(u), 6);
 
@@ -95,15 +96,21 @@ begin
   for i in 1..3 loop perform tt.seed_steps(u, today - i, 5000); end loop;
   res := claim_reto(rid);
   perform tt.t_eq('cobrar la racha da 10 Puntos', res, 10);
-  perform tt.t_raises('no se cobra de nuevo mientras dure la ventana de 3 días', format('select claim_reto(%L)', rid), 'Ya cobraste este reto');
+  perform tt.t_raises('no se cobra de nuevo', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
   select * into r from reto_progress() where reto_id = rid;
   perform tt.t_eq('racha cobrada: figura cobrada y no cobrable', r.claimed_now and not r.claimable, true);
-  -- Pasados 3 días del cobro se puede volver a completar (período distinto).
-  update reto_claims set claimed_at = now() - interval '3 days 1 minute', period = 'racha:' || (today - 4) where reto_id = rid and user_id = u;
-  res := claim_reto(rid);
-  perform tt.t_eq('después de la ventana se puede cobrar otra vez', res, 10);
+  -- Una sola vez por cuenta: aunque pasen semanas y vuelva a hacer la racha, no se cobra de nuevo.
+  update reto_claims set claimed_at = now() - interval '60 days' where reto_id = rid and user_id = u;
+  perform tt.t_raises('meses después tampoco se vuelve a cobrar', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
+  select * into r from reto_progress() where reto_id = rid;
+  perform tt.t_eq('sigue figurando completado y no cobrable', r.claimed_now and not r.claimable, true);
   select count(*) into n from reto_claims where reto_id = rid and user_id = u;
-  perform tt.t_eq('quedan dos cobros registrados', n, 2);
+  perform tt.t_eq('queda un solo cobro registrado', n, 1);
+  -- Quien lo cobró con las reglas viejas (otro período) ya lo tiene completado.
+  u2 := tt.mk_user(); perform tt.t_as(u2);
+  for i in 1..3 loop perform tt.seed_steps(u2, today - i, 5000); end loop;
+  insert into reto_claims (reto_id, user_id, period, points) values (rid, u2, 'racha:2026-01-01', 10);
+  perform tt.t_raises('un cobro viejo cuenta como completado', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
 
   -- ===== referrals: cada N amigos se cobra una vez =====
   insert into retos (title, description, kind, target, reward_points) values ('Invitar de prueba', 'Prueba de invitaciones', 'referrals', 2, 10) returning id into rid;
@@ -118,18 +125,16 @@ begin
   res := claim_reto(rid);
   perform tt.t_eq('cobrar el primer grupo de 2 da 10 Puntos', res, 10);
   select * into r from reto_progress() where reto_id = rid;
-  perform tt.t_eq('después de cobrar, el avance vuelve a 0 de 2', r.met, 0);
+  perform tt.t_eq('después de cobrar, queda completo (2 de 2)', r.met, 2);
   perform tt.t_eq('... y no es cobrable', r.claimable, false);
-  perform tt.t_raises('con los mismos 2 amigos no se cobra otra vez', format('select claim_reto(%L)', rid), 'Todavía te faltan amigos');
+  perform tt.t_raises('con los mismos 2 amigos no se cobra otra vez', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
   insert into referrals (referrer_user_id, referred_user_id) values (u, tt.mk_user());
   insert into referrals (referrer_user_id, referred_user_id) values (u, tt.mk_user());
   select * into r from reto_progress() where reto_id = rid;
-  perform tt.t_eq('4 amigos en total: se puede cobrar el segundo grupo', r.claimable, true);
-  res := claim_reto(rid);
-  select count(*) into n from reto_claims where reto_id = rid and user_id = u;
-  perform tt.t_eq('segundo grupo cobrado (2 cobros)', n, 2);
+  perform tt.t_eq('4 amigos en total: igual no se vuelve a cobrar', r.claimable, false);
+  perform tt.t_raises('con más amigos tampoco', format('select claim_reto(%L)', rid), 'Ya completaste este reto');
   select string_agg(period, ',' order by period) into st from reto_claims where reto_id = rid and user_id = u;
-  perform tt.t_eq('los períodos son grupo:1 y grupo:2', st, 'grupo:1,grupo:2');
+  perform tt.t_eq('un solo cobro, período unica', st, 'unica');
 
   -- Caracterización: hoy el reto cuenta TODOS los referidos, también los que nunca ganaron Puntos
   -- (referrals.credited = false). Los 5 Puntos por referido sí exigen que el referido camine; el reto no.

@@ -90,7 +90,7 @@ export default function EventosScreen() {
   async function handleClaim(reto: Reto) {
     try {
       const points = await claim.mutateAsync(reto.id);
-      celebrate({ kind: 'sheet', title: '¡Reto cumplido!', body: reto.title, points: Number(points) || reto.reward_points });
+      celebrate({ kind: 'sheet', title: '¡Reto completado!', body: `${reto.title}. ¡Bien hecho!`, points: Number(points) || reto.reward_points });
     } catch (e) {
       Alert.alert('No pudimos darte los Puntos', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -167,7 +167,7 @@ export default function EventosScreen() {
       {tab === 'desafios' && (<>
       <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
-        Cumple metas caminando y gana Puntos extra.
+        Cumple metas caminando y gana Puntos extra. Cada reto se gana una sola vez.
       </Text>
 
       {(retos ?? []).length === 0 && (
