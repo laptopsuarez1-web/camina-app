@@ -7,13 +7,18 @@ import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Camera, Check, Share2, Trash2, Users, X } from '@/components/icons';
 import { GROUP_BACKGROUNDS, groupGradient } from '@/lib/group-look';
+import { GroupBannerArt } from '@/components/GroupBannerArt';
+import { Image } from 'expo-image';
 import { colors } from '@/theme/tokens';
 
 // Barra lateral del grupo: datos, meta, foto, fondo, invitación y salida. Entra desde la derecha.
 export function GroupDrawer({
   visible, onClose, name, photoUrl, background, memberCount, inviteCode, goal, isCreator,
-  busy, onRename, onInvite, onEditGoal, onPickPhoto, onPickBackground, onLeave, onDelete,
+  busy, onRename, onInvite, onEditGoal, onPickPhoto, onPickBackground, onLeave, onDelete, bannerUrl, onPickBanner, onRemoveBanner,
 }: {
+  bannerUrl?: string | null;
+  onPickBanner?: () => void;
+  onRemoveBanner?: () => void;
   visible: boolean;
   onClose: () => void;
   name: string;
@@ -147,15 +152,39 @@ export function GroupDrawer({
 
             {isCreator && (
               <View className="py-3.5 border-t border-line-light dark:border-line-dark">
-                <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark mb-2.5">Fondo del grupo</Text>
-                <View className="flex-row flex-wrap" style={{ gap: 10 }}>
+                <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark">Portada del grupo</Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5">Opcional. Pon una foto, o elige un color con su dibujo.</Text>
+                {/* Foto de portada: vista previa ancha, con cambiar y quitar. */}
+                <Press accessibilityRole="button" accessibilityLabel={bannerUrl ? 'Cambiar la foto de portada' : 'Poner una foto de portada'} disabled={busy} onPress={onPickBanner}
+                  style={{ height: 86, borderRadius: 16, overflow: 'hidden', marginBottom: 10, borderWidth: bannerUrl ? 2.5 : 1.5, borderStyle: bannerUrl ? 'solid' : 'dashed', borderColor: bannerUrl ? '#fff' : 'rgba(160,140,210,0.6)', alignItems: 'center', justifyContent: 'center' }}>
+                  {bannerUrl ? (
+                    <>
+                      <Image source={{ uri: bannerUrl }} contentFit="cover" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+                      <View style={{ position: 'absolute', right: 8, bottom: 8, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(10,6,20,0.7)' }}>
+                        <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '700' }}>Cambiar foto</Text>
+                      </View>
+                    </>
+                  ) : (
+                    <View className="items-center">
+                      <Camera size={20} color={colors.aqua} />
+                      <Text className="text-[12.5px] font-bold text-text-light dark:text-text-dark mt-1">Poner foto de portada</Text>
+                    </View>
+                  )}
+                </Press>
+                {bannerUrl ? (
+                  <Press accessibilityRole="button" onPress={onRemoveBanner} disabled={busy} hitSlop={6} className="self-start mb-2.5">
+                    <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">Quitar foto y usar un color</Text>
+                  </Press>
+                ) : null}
+                <View className="flex-row flex-wrap" style={{ gap: 10, opacity: bannerUrl ? 0.5 : 1 }}>
                   {GROUP_BACKGROUNDS.map((b) => {
-                    const on = (background ?? 'aqua') === b.key;
+                    const on = !bannerUrl && (background ?? 'aqua') === b.key;
                     return (
-                      <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Fondo ${b.label}`} accessibilityState={{ selected: on }} disabled={busy} onPress={() => onPickBackground(b.key)}>
-                        <LinearGradient colors={b.colors} style={{ width: (panelW - 40 - 20) / 3, height: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
-                          {on ? <Check size={16} color="#fff" weight="bold" /> : null}
-                          <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '700', marginTop: on ? 1 : 0 }}>{b.label}</Text>
+                      <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Color ${b.label}`} accessibilityState={{ selected: on }} disabled={busy} onPress={() => onPickBackground(b.key)}>
+                        <LinearGradient colors={b.colors} style={{ width: (panelW - 40 - 20) / 3, height: 62, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 6, borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
+                          <GroupBannerArt />
+                          {on ? <View style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}><Check size={11} color="#14093a" weight="bold" /></View> : null}
+                          <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '800' }}>{b.label}</Text>
                         </LinearGradient>
                       </Press>
                     );

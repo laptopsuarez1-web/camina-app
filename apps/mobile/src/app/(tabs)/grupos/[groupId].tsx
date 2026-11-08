@@ -33,7 +33,8 @@ import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
 import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { groupGradient, groupTheme } from '@/lib/group-look';
-import { uploadGroupPhoto } from '@/lib/avatar';
+import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
+import { Image } from 'expo-image';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
 import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 
@@ -191,6 +192,32 @@ export default function GroupDetailScreen() {
     } finally {
       setLookBusy(false);
     }
+  }
+
+  // Portada (opcional): una foto ancha arriba del grupo. Sin portada queda el tema de color con su dibujo.
+  async function pickGroupBanner() {
+    if (!groupId) return;
+    const picked = await pickFromGallery({ aspect: 16 / 10, max: 1280 });
+    if (!picked) return;
+    setLookBusy(true);
+    try {
+      const url = await uploadGroupBanner(groupId, picked.uri);
+      const { error } = await supabase.from('groups').update({ banner_url: url }).eq('id', groupId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    } catch (e) {
+      Alert.alert('No se pudo poner la portada', friendlyServerError(e, 'Intenta de nuevo.'));
+    } finally {
+      setLookBusy(false);
+    }
+  }
+  async function removeGroupBanner() {
+    if (!groupId) return;
+    const { error } = await supabase.from('groups').update({ banner_url: null }).eq('id', groupId);
+    if (error) { Alert.alert('No se pudo quitar la portada', friendlyServerError(error, 'Intenta de nuevo.')); return; }
+    queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['groups'] });
   }
 
   // El nombre pasa por el filtro de palabras del servidor (guard_group_name) y solo lo cambia quien creó el grupo.
@@ -382,6 +409,7 @@ export default function GroupDetailScreen() {
   const challengeTarget = data.group.challenge_target;
   const isCreator = data.group.created_by === userId;
   const theme = groupTheme(data.group.background);
+  const bannerUrl = (data.group as { banner_url?: string | null }).banner_url ?? null;
   const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
   const myRank = data.members.findIndex((m) => m.id === userId) + 1;
@@ -432,7 +460,13 @@ export default function GroupDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
         {/* Portada: el degradé del tema del grupo con su dibujo (camino y huellitas). Sin fotos: siempre se ve bien. */}
         <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
-          <GroupBannerArt />
+          {bannerUrl ? (
+            // Portada con foto: nítida, con sombra arriba (botones) y abajo (podio) para que todo se lea.
+            <>
+              <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.55)', 'rgba(10,6,20,0.1)', 'rgba(10,6,20,0.35)', theme.colors[2] + 'F2']} locations={[0, 0.3, 0.62, 1]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+            </>
+          ) : <GroupBannerArt />}
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -584,7 +618,7 @@ export default function GroupDetailScreen() {
           })}
         </View>
 
-        {tab === 'desafios' ? (active ? (
+        {tab === 'desafios' ? (<>{active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
             <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
@@ -659,7 +693,28 @@ export default function GroupDetailScreen() {
               <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
             </Press>
           </Glass>
-        )) : null}
+        )}
+        {/* El último desafío que terminó: quién ganó y cómo te fue. */}
+        {lastResult ? (
+          <Glass className="mx-5 rounded-2xl p-4 mb-3">
+            <Text className="text-[11.5px] font-bold text-muted-light dark:text-muted-dark" style={{ letterSpacing: 1 }}>ÚLTIMO DESAFÍO</Text>
+            <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark mt-1" numberOfLines={1}>{lastResult.name}</Text>
+            <View className="flex-row items-center mt-2.5" style={{ gap: 10 }}>
+              <IconBubble icon={Trophy} tone="gold" size={34} />
+              <View className="flex-1">
+                <Text className="text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
+                  Ganó <Text className="font-bold">{lastResult.results[0]?.user_id === userId ? 'tú' : nameOf(lastResult.results[0]?.user_id ?? '')}</Text>
+                  {lastResult.results[0] ? ` · ${ruleText(lastResult.rule, lastResult.results[0])}` : ''}
+                </Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark">Quedaste {lastResult.mine.rank}.º · {ruleText(lastResult.rule, lastResult.mine)}</Text>
+              </View>
+            </View>
+          </Glass>
+        ) : null}
+        {!active ? null : (
+          <Text className="mx-6 mb-3 text-[12px] text-muted-light dark:text-muted-dark text-center">Cuando termine este desafío, pueden armar otro.</Text>
+        )}
+        </>) : null}
 
         {tab === 'ranking' ? (<>
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
@@ -868,6 +923,9 @@ export default function GroupDetailScreen() {
         name={data.group.name}
         photoUrl={data.group.photo_url}
         background={data.group.background}
+        bannerUrl={bannerUrl}
+        onPickBanner={pickGroupBanner}
+        onRemoveBanner={removeGroupBanner}
         memberCount={data.members.length}
         inviteCode={data.group.invite_code}
         goal={challengeTarget}
