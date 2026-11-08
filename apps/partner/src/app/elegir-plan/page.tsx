@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { supabase, type BusinessPlan } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
-import { PLANS, PLAN_EXPLICA, PAYMENT_QR, LANZAMIENTO, LANZAMIENTO_NOTA, fundadorLink } from '@/lib/plans';
+import { PLANS, PLAN_EXPLICA, PAYMENT_QR, LANZAMIENTO, fundadorLink } from '@/lib/plans';
 import { PaymentModal } from '@/components/PaymentModal';
 
 // Pantalla que ve un comercio nuevo antes de entrar al panel: elige empezar gratis o un plan de pago.
@@ -90,7 +90,7 @@ export default function ElegirPlanPage() {
                 <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#7FEDC4' : '#291C47' }}>{p.price}</p>
                 {!free && (
                   <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : '#8B6A12' }}>
-                    {LANZAMIENTO}. {LANZAMIENTO_NOTA}
+                    {LANZAMIENTO}
                   </p>
                 )}
                 <p className="text-[12.5px] mb-4 leading-relaxed" style={{ color: p.featured ? '#C4B8E8' : '#7C6A9C' }}>{p.blurb}</p>
