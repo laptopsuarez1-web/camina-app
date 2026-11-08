@@ -79,6 +79,7 @@ export default function GroupDetailScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
+  const [rankOpen, setRankOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -461,7 +462,10 @@ export default function GroupDetailScreen() {
             // Portada con foto: nítida, con sombra arriba (botones) y abajo (podio) para que todo se lea.
             <>
               <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-              <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.55)', 'rgba(10,6,20,0.1)', 'rgba(10,6,20,0.35)', theme.colors[2] + 'F2']} locations={[0, 0.3, 0.62, 1]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              {/* Velo del color del grupo sobre toda la foto y más oscuro abajo, donde va el podio: la foto se ve pero
+                  nunca tapa los nombres, los pasos ni los puestos. */}
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '66' }} />
+              <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.55)', 'rgba(10,6,20,0.05)', theme.colors[1] + 'B3', theme.colors[2] + 'F7']} locations={[0, 0.28, 0.6, 1]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
             </>
           ) : null}
           <View className="flex-row items-center justify-between px-5">
@@ -687,7 +691,7 @@ export default function GroupDetailScreen() {
               Ranking de la semana
             </Text>
           </View>
-          {data.members.map((m, i) => (
+          {(rankOpen ? data.members : data.members.slice(0, 5)).map((m, i) => (
             <View key={m.id} className="flex-row items-center gap-3 py-1.5">
               <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
               <Press
@@ -725,7 +729,7 @@ export default function GroupDetailScreen() {
               )}
             </View>
           ))}
-          {(pending ?? []).map((p) => (
+          {(rankOpen || data.members.length <= 5 ? pending ?? [] : []).map((p) => (
             <View key={p.user_id} className="flex-row items-center gap-3 py-1.5" style={{ opacity: 0.7 }}>
               <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">·</Text>
               <AvatarImage
@@ -741,6 +745,12 @@ export default function GroupDetailScreen() {
               <Text className="text-[12px] text-muted-light dark:text-muted-dark">Invitación enviada</Text>
             </View>
           ))}
+          {/* Hasta 5 personas a la vista; el resto con "Ver más". */}
+          {data.members.length > 5 ? (
+            <Press accessibilityRole="button" onPress={() => setRankOpen((v) => !v)} hitSlop={8} className="items-center pt-2.5 mt-1 border-t border-line-light dark:border-line-dark">
+              <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>{rankOpen ? 'Ver menos' : `Ver más (${data.members.length - 5})`}</Text>
+            </Press>
+          ) : null}
         </Glass>
       {(history ?? []).length > 0 && (
         <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
