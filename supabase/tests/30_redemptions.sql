@@ -16,10 +16,9 @@ begin
   perform tt.t_eq('el canje guarda el costo', red.cost_points, 10);
   perform tt.t_true('el código tiene 6 dígitos', red.code ~ '^[0-9]{6}$');
   perform tt.t_true('el código vence a los 15 minutos', red.code_expires_at = now() + interval '15 minutes');
-  perform tt.t_eq('se descuentan los Puntos (25 - 10)', user_points_balance(u), 15);
-  select * into led from points_ledger where user_id = u and amount < 0;
-  perform tt.t_eq('el asiento del canje es de motivo redemption', led.reason::text, 'redemption');
-  perform tt.t_true('la nota nombra al comercio', led.note like 'Canje en Comercio %');
+  -- Los Puntos se reservan mientras el código está vigente y se descuentan cuando el local lo confirma.
+  perform tt.t_eq('quedan disponibles 15 (25 - 10 reservados)', user_points_balance(u) - user_points_reserved(u), 15);
+  perform tt.t_eq('todavía no hay asiento de descuento (se descuenta al confirmar)', (select count(*)::int from points_ledger where user_id = u and amount < 0), 0);
 
   -- ===== Validaciones =====
   u := tt.mk_user(); b := tt.mk_benefit(10); perform tt.give(u, 9, 60); perform tt.t_as(u);
@@ -28,7 +27,7 @@ begin
   perform tt.t_eq('un canje rechazado no deja redención ni asiento', n + (select count(*) from points_ledger where user_id = u and amount < 0)::int, 0);
   perform tt.give(u, 1, 60);
   perform redeem_benefit(b);
-  perform tt.t_eq('con justo 10 alcanza (saldo exacto)', user_points_balance(u), 0);
+  perform tt.t_eq('con justo 10 alcanza (saldo exacto)', user_points_balance(u) - user_points_reserved(u), 0);
 
   perform tt.t_as(null);
   perform tt.t_raises('sin sesión no se puede canjear', format('select redeem_benefit(%L)', b), 'No autorizado');
@@ -74,7 +73,7 @@ begin
   perform redeem_benefit(b);
   perform tt.t_pass('15 días después se puede volver a canjear');
   -- otro beneficio del MISMO comercio también está bloqueado; de otro comercio no.
-  insert into benefits (business_id, name, type, cost_points, daily_quota) values (bz, 'Otro del mismo comercio', 'gratis', 5, 5) returning id into b;
+  insert into benefits (business_id, name, type, cost_points, daily_quota) values (bz, 'Otro del mismo comercio', 'descuento', 5, 5) returning id into b;
   perform tt.t_raises('otro beneficio del mismo comercio también cuenta', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
   perform redeem_benefit(tt.mk_benefit(5));
   perform tt.t_pass('otro comercio no está bloqueado');
@@ -93,7 +92,7 @@ begin
   perform tt.t_raises('un canje confirmado sí bloquea', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
 
   -- ===== Cupo diario =====
-  b := tt.mk_benefit(5, 1); u := tt.mk_user(); u2 := tt.mk_user(); perform tt.give(u, 20, 60); perform tt.give(u2, 20, 60);
+  b := tt.mk_benefit(5, 3); set local session_replication_role = replica; update benefits set daily_quota = 1 where id = b; set local session_replication_role = origin; u := tt.mk_user(); u2 := tt.mk_user(); perform tt.give(u, 20, 60); perform tt.give(u2, 20, 60);
   perform tt.t_as(u); red := redeem_benefit(b);
   perform tt.t_as(u2);
   perform tt.t_raises('se agotó el cupo del día (cupo 1)', format('select redeem_benefit(%L)', b), 'Se agotaron los cupones de hoy');
@@ -101,21 +100,21 @@ begin
   perform redeem_benefit(b);
   perform tt.t_pass('un canje cancelado devuelve el cupo');
   -- el cupo cuenta por día de La Paz: un canje de ayer no ocupa el de hoy
-  b := tt.mk_benefit(5, 1); u := tt.mk_user(); perform tt.give(u, 20, 60); perform tt.give(u2, 20, 60);
+  b := tt.mk_benefit(5, 3); set local session_replication_role = replica; update benefits set daily_quota = 1 where id = b; set local session_replication_role = origin; u := tt.mk_user(); perform tt.give(u, 20, 60); perform tt.give(u2, 20, 60);
   perform tt.t_as(u); red := redeem_benefit(b);
   update redemptions set created_at = now() - interval '26 hours' where id = red.id;
   perform tt.t_as(u2);
   perform redeem_benefit(b);
   perform tt.t_pass('el cupo se renueva cada día (canje de hace 26 h no cuenta)');
   -- cupo ilimitado
-  b := tt.mk_benefit(1, null);
+  b := tt.mk_benefit(1, 3); set local session_replication_role = replica; update benefits set daily_quota = null where id = b; set local session_replication_role = origin;
   for n in 1..4 loop
     u := tt.mk_user(); perform tt.give(u, 5, 60); perform tt.t_as(u); perform redeem_benefit(b);
   end loop;
   perform tt.t_pass('cupo nulo = ilimitado (4 canjes seguidos)');
 
   -- ===== Cuentas de prueba (QA): sin cooldown ni cupo =====
-  u := tt.mk_user(); b := tt.mk_benefit(1, 1); perform tt.give(u, 20, 60);
+  u := tt.mk_user(); b := tt.mk_benefit(1, 3); set local session_replication_role = replica; update benefits set daily_quota = 1 where id = b; set local session_replication_role = origin; perform tt.give(u, 20, 60);
   insert into qa_accounts (user_id) values (u);
   perform tt.t_as(u); perform redeem_benefit(b); perform redeem_benefit(b);
   perform tt.t_pass('cuenta QA: puede repetir en el mismo comercio y pasar el cupo');
@@ -127,7 +126,7 @@ begin
   r2 := regenerate_redemption_code(red.id);
   perform tt.t_true('regenerar renueva el vencimiento a 15 minutos', r2.code_expires_at = now() + interval '15 minutes');
   perform tt.t_true('regenerar mantiene un código de 6 dígitos', r2.code ~ '^[0-9]{6}$');
-  perform tt.t_eq('regenerar no cobra otra vez', user_points_balance(u), 15);
+  perform tt.t_eq('regenerar no reserva otra vez (siguen 15 disponibles)', user_points_balance(u) - user_points_reserved(u), 15);
   perform tt.t_as(u2);
   perform tt.t_raises('otra persona no puede regenerar', format('select regenerate_redemption_code(%L)', red.id), 'No se puede regenerar este código');
   perform tt.t_as(u);
@@ -184,8 +183,7 @@ begin
   perform tt.t_eq('el canje pasa a cancelado', r2.status::text, 'cancelled');
   perform tt.t_eq('se devuelven los Puntos (saldo vuelve a 30)', user_points_balance(u), 30);
   select * into led from points_ledger where user_id = u and amount > 0 and reason = 'redemption';
-  perform tt.t_eq('la devolución es un asiento positivo de motivo redemption', led.amount, 10);
-  perform tt.t_true('la nota explica la devolución', led.note like 'Te devolvimos los puntos%');
+  perform tt.t_eq('no hace falta asiento de devolución: los Puntos solo estaban reservados (0054)', (select count(*)::int from points_ledger where user_id = u and reason = 'redemption'), 0);
   perform tt.t_raises('no se devuelve dos veces', format('select cancel_expired_redemption(%L)', red.id), 'ya no está pendiente');
   perform tt.t_eq('tras devolver una sola vez el saldo sigue en 30', user_points_balance(u), 30);
   perform redeem_benefit(b);
@@ -208,12 +206,11 @@ begin
   -- siempre: Puntos retenidos, cooldown de 14 días en ese comercio y un cupo del día ocupado.
   select count(*) into n_sweepers from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
   where ns.nspname = 'public' and p.prosrc ilike '%update redemptions%' and p.prosrc ilike '%cancelled%';
-  perform tt.t_eq('hoy hay una sola función que cancela canjes (la que dispara el cliente)', n_sweepers, 1);
-  perform tt.t_xfail_true('un barrido del servidor debería cancelar solo los canjes pendientes con código vencido', n_sweepers > 1, 'no hay cron ni función que lo haga');
+  perform tt.t_true('además de la del cliente hay un barrido del servidor (expire_pending_redemptions, 0052/0054)', n_sweepers >= 2);
   u := tt.mk_user(); b := tt.mk_benefit(10); perform tt.give(u, 10, 60); perform tt.t_as(u);
   red := redeem_benefit(b);
   update redemptions set code_expires_at = now() - interval '2 days' where id = red.id;   -- venció hace 2 días y nadie lo cerró
-  perform tt.t_eq('canje vencido sin cerrar: los Puntos siguen retenidos', user_points_balance(u), 0);
+  perform tt.t_eq('canje vencido sin cerrar: el código vencido ya no reserva Puntos (vuelven a estar disponibles)', user_points_balance(u) - user_points_reserved(u), 10);
   select status::text into st from redemptions where id = red.id;
   perform tt.t_eq('canje vencido sin cerrar: sigue figurando pendiente', st, 'pending');
   perform tt.t_raises('canje vencido sin cerrar: el cooldown sigue bloqueando ese comercio', format('select redeem_benefit(%L)', b), 'hace menos de 14 días');
