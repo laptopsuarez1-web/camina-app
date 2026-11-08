@@ -76,22 +76,22 @@ export const PLANS: {
 
 // Qué significa cada beneficio, en una línea simple (se muestra debajo de cada uno en la web y en el panel).
 export const PLAN_EXPLICA: Record<string, string> = {
-  'Apareces en el mapa y tu categoría': 'Tu local sale en el mapa de la app y cuando alguien busca tu rubro.',
-  '1 premio gratis y, con él, 1 descuento': 'Ofreces un regalo que la gente canjea con sus Puntos y, además, un descuento.',
-  'Mínimo 3 cupones por día': 'Cada día pueden canjear tu premio al menos 3 personas.',
-  'Sin estadísticas': 'No ves números de canjes ni de visitas en el panel.',
-  'Todo lo de Primer Paso': 'Mapa, categoría, tu premio y tu descuento, como en el plan gratis.',
-  'Puedes combinar regalo y descuento': 'Ofreces regalos y descuentos al mismo tiempo, en la combinación que quieras.',
-  'Cupones ilimitados': 'Sin tope por día: todas las personas que lleguen pueden canjear.',
-  'Varios beneficios a la vez': 'Tienes varios premios activos juntos, para distintos gustos y cantidades de Puntos.',
-  'Estadísticas básicas': 'En tu panel ves cuántas personas canjearon y el resumen de tu mes.',
-  'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': 'Cuando un cliente completa su tarjeta de Camina, puede elegir tu premio: te llegan clientes nuevos que vuelven.',
-  'Todo lo de Paso Firme': 'Regalos y descuentos combinados, cupones sin tope, varios premios y estadísticas.',
-  'Pin destacado en el mapa': 'Tu pin se ve más grande y dorado en el mapa: es el primero que ven.',
-  'Primero en tu categoría': 'Cuando alguien filtra por tu rubro, apareces arriba de todo.',
-  'Notificaciones push a usuarios cerca': 'La gente que está cerca de tu local recibe un aviso en el celular con tu premio.',
-  'Difusión de tu local en las redes de Camina': 'Publicamos tu local y tus premios en las redes de Camina.',
-  'Elegible para videos publicitarios con una agencia de marketing para promocionar tu local y Camina': 'Puedes ser elegido para un video hecho por una agencia que muestra tu local y Camina.',
+  'Apareces en el mapa y tu categoría': 'Te encuentran en el mapa de la app.',
+  '1 premio gratis y, con él, 1 descuento': 'Un premio gratis y un descuento.',
+  'Mínimo 3 cupones por día': 'Al menos 3 canjes por día.',
+  'Sin estadísticas': 'No ves números en el panel.',
+  'Todo lo de Primer Paso': 'Mapa, premio y descuento.',
+  'Puedes combinar regalo y descuento': 'Premios y descuentos al mismo tiempo.',
+  'Cupones ilimitados': 'Sin tope de canjes por día.',
+  'Varios beneficios a la vez': 'Varios premios activos juntos.',
+  'Estadísticas básicas': 'Ves tus canjes y tu mes.',
+  'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': 'Clientes de otros locales pueden elegir tu premio.',
+  'Todo lo de Paso Firme': 'Todo lo del plan anterior.',
+  'Pin destacado en el mapa': 'Tu pin, más grande y dorado.',
+  'Primero en tu categoría': 'Sales arriba al buscar tu rubro.',
+  'Notificaciones push a usuarios cerca': 'Avisamos a la gente que está cerca.',
+  'Difusión de tu local en las redes de Camina': 'Te publicamos en nuestras redes.',
+  'Elegible para videos publicitarios con una agencia de marketing para promocionar tu local y Camina': 'Puedes salir en un video de una agencia.',
 };
 
 export const PLAN_NOMBRE: Record<BusinessPlan, string> = {
