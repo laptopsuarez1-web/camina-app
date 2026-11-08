@@ -1,7 +1,8 @@
 import './landing.css';
 import './glass.css';
 import GlassFx from './GlassFx';
-import { Nav, Footer, HeroGente, Mensajes, SaludGente, ComoFunciona, Gratis, GruposGente, Proposito, TarijaCamina, Dudas, SoyComercio, CierreGente, RutaGente, InsigniasGente } from './shared';
+import { Nav, Footer, HeroGente, Mensajes, SaludGente, ComoFunciona,
+  CanjesGente, Gratis, GruposGente, Proposito, TarijaCamina, Dudas, SoyComercio, CierreGente, RutaGente, InsigniasGente } from './shared';
 
 export default function GentePage() {
   return (
@@ -15,9 +16,10 @@ export default function GentePage() {
         <Proposito />
         <SaludGente />
         <ComoFunciona />
-        <RutaGente />
+        <CanjesGente />
         <Gratis />
         <GruposGente />
+        <RutaGente />
         <InsigniasGente />
         <TarijaCamina />
         <Dudas />
