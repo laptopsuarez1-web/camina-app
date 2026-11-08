@@ -14,6 +14,7 @@ export interface PendingBusiness {
   city?: string;
   accountKind?: 'commerce' | 'events_only';
   logoDataUrl?: string | null;
+  requestedPlan?: string | null;
 }
 
 const KEY = 'camina_pending_business';
@@ -54,5 +55,6 @@ export function pendingFromMetadata(email: string, meta: Record<string, unknown>
     isVirtual: !!raw.isVirtual,
     city: raw.city,
     accountKind: raw.accountKind,
+    requestedPlan: raw.requestedPlan ?? null,
   };
 }

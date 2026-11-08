@@ -14,6 +14,20 @@ export function whatsappLink(planName: string, amount: string) {
 
 export const LANZAMIENTO = 'Precio de lanzamiento';
 
+// Cupo fundador (primeros 20 comercios: 3 meses gratis de Paso Firme). Mientras esté abierto, al registrarse el local
+// puede pedirlo: entra con el plan gratis y el equipo de Camina se lo confirma al aprobarlo. Cuando se llenen los 20,
+// poner false: el registro pide elegir y pagar el plan ahí mismo.
+export const CUPO_FUNDADOR_ABIERTO = true;
+
+// Lo que puede pedir un comercio al registrarse (se guarda en businesses.requested_plan).
+export type PlanPedido = 'fundador' | 'primer_paso' | 'paso_firme' | 'paso_adelante';
+
+// WhatsApp para mandar el comprobante del pago hecho durante el registro.
+export function comprobanteRegistroLink(planName: string, amount: string) {
+  const text = `Hola! Me estoy registrando en Camina con el plan ${planName} (${amount}). Te mando el comprobante del pago.`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
+
 export function fundadorLink(nombreComercio?: string) {
   const quien = nombreComercio ? `Soy ${nombreComercio} y quiero` : 'Quiero';
   const text = `Hola! ${quien} pedir mi cupo fundador de Camina (3 meses gratis de Paso Firme desde que salga la app). Ya creé mi perfil, ¿me habilitan?`;

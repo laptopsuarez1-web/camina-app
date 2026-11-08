@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO } from '@/lib/plans';
+import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
@@ -418,8 +418,8 @@ export function DescargaGente() {
 
 export function PasosComercio() {
   const pasos = [
-    ['Creas tu perfil en el panel', 'Es gratis con cualquier plan. Cargas tu local, tu logo, tus fotos y tu primer descuento o regalo.'],
-    ['Eliges tu plan al terminar', 'Empiezas gratis, o eliges Paso Firme o Paso Adelante y pagas con el QR. Si eres de los primeros 20, pides tu cupo fundador por WhatsApp y te habilitamos.'],
+    ['Eliges tu plan', 'Paso Firme o Paso Adelante: pagas con el QR y mandas el comprobante por WhatsApp. También puedes empezar gratis. Si eres de los primeros 20, pides tu cupo fundador.'],
+    ['Creas tu cuenta y tu ficha', 'Cargas tu local, tu logo, tus fotos y tu primer descuento o regalo en el panel.'],
     ['Revisamos tu comercio', 'El equipo de Camina lo revisa antes de que aparezca en la app.'],
     ['Apareces en el mapa', 'La gente de tu zona te encuentra y canjea. Les dices el código de tu local y listo.'],
   ];
@@ -513,17 +513,17 @@ export function Planes() {
               {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}</p>}
               <p className="blurb">{p.blurb}</p>
               <ul>{p.features.map((f) => <li key={f}>{f}{PLAN_EXPLICA[f] ? <small className="plan-exp">{PLAN_EXPLICA[f]}</small> : null}</li>)}</ul>
-              <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href="/registro">
+              <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href={`/registro?plan=${p.id}`}>
                 {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme y elegir este plan'}
               </Link>
             </InView>
           ))}
         </div>
-        <div className="fund">
+        {CUPO_FUNDADOR_ABIERTO && <div className="fund">
           <b>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app.</b>
-          <span>Para los primeros 20 comercios. Creas tu perfil en el panel con cualquier plan, nos escribes por WhatsApp y te habilitamos en la app y en el panel.</span>
-          <a className="lp-btn dark" href={WA('Hola! Quiero pedir mi cupo fundador de Camina.')}>Pedir mi cupo fundador</a>
-        </div>
+          <span>Para los primeros 20 comercios. Te creas la cuenta, armas tu ficha y te lo confirmamos cuando aprobamos tu local.</span>
+          <Link className="lp-btn dark" href="/registro?fundador=1">Pedir mi cupo fundador</Link>
+        </div>}
       </div>
     </section>
   );

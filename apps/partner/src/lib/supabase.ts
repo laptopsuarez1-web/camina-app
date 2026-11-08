@@ -54,6 +54,7 @@ export interface Business {
   ad_eligible: boolean;
   plan_started_at: string;
   pending_plan: BusinessPlan | null;
+  requested_plan?: string | null;
   created_at: string;
 }
 
