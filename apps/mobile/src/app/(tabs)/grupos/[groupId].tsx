@@ -47,6 +47,10 @@ function weekKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
+// Difuminado de la portada de abajo hacia arriba: capas cada vez más bajas y más borrosas, en pasos chicos para que
+// no se note el corte entre una y otra.
+const BANNER_BLUR_STEPS = Array.from({ length: 9 }, (_, i) => ({ from: 0.3 + i * 0.05, blur: Math.round(2 + i * i * 0.4 + i * 1.2) }));
+
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
   const { muted, accentText, accentIcon, warnText } = useThemeColors();
@@ -80,6 +84,8 @@ export default function GroupDetailScreen() {
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
   const [rankOpen, setRankOpen] = useState(false);
+  // Alto de la cabecera: para que la parte difuminada de la portada calce justo con la foto nítida.
+  const [hdrH, setHdrH] = useState(0);
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -457,15 +463,26 @@ export default function GroupDetailScreen() {
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
         {/* Portada: la foto que eligió el grupo o, si no puso, el degradé de su color. */}
-        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
+        <LinearGradient onLayout={(e) => setHdrH(e.nativeEvent.layout.height)} colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
           {bannerUrl ? (
-            // Portada con foto: nítida, con sombra arriba (botones) y abajo (podio) para que todo se lea.
+            // Portada con foto: nítida arriba y, de abajo hacia arriba, cada vez más difuminada y oscura (morado oscuro
+            // del tema), así el podio y los nombres se leen siempre, sea cual sea la foto.
             <>
               <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-              {/* Velo del color del grupo sobre toda la foto y más oscuro abajo, donde va el podio: la foto se ve pero
-                  nunca tapa los nombres, los pasos ni los puestos. */}
-              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '66' }} />
-              <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.55)', 'rgba(10,6,20,0.05)', theme.colors[1] + 'B3', theme.colors[2] + 'F7']} locations={[0, 0.28, 0.6, 1]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              {hdrH > 0
+                ? BANNER_BLUR_STEPS.map((sl) => (
+                    <View key={sl.from} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: hdrH * (1 - sl.from), overflow: 'hidden' }}>
+                      <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" blurRadius={sl.blur} style={{ position: 'absolute', left: 0, right: 0, top: -hdrH * sl.from, height: hdrH }} />
+                    </View>
+                  ))
+                : null}
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '40' }} />
+              <LinearGradient
+                pointerEvents="none"
+                colors={['rgba(10,6,20,0.5)', 'rgba(10,6,20,0.04)', theme.colors[2] + '73', theme.colors[2] + 'D9', theme.colors[2] + 'F7']}
+                locations={[0, 0.26, 0.48, 0.72, 1]}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              />
             </>
           ) : null}
           <View className="flex-row items-center justify-between px-5">
