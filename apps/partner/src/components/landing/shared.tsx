@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO, LANZAMIENTO_NOTA } from '@/lib/plans';
+import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO } from '@/lib/plans';
 import { InView, Kinetic, Counter, Parallax } from './Motion';
 import { LOCALES } from './locales';
 import RealMap from './RealMap';
@@ -510,7 +510,7 @@ export function Planes() {
             <InView as="article" key={p.id} className={`plan${p.featured ? ' feat' : ''}`} delay={i * 120}>
               <h3>{p.name}</h3>
               <p className="price">{p.price}</p>
-              {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}. {LANZAMIENTO_NOTA}</p>}
+              {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}</p>}
               <p className="blurb">{p.blurb}</p>
               <ul>{p.features.map((f) => <li key={f}>{f}{PLAN_EXPLICA[f] ? <small className="plan-exp">{PLAN_EXPLICA[f]}</small> : null}</li>)}</ul>
               <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href="/registro">

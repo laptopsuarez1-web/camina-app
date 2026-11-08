@@ -13,7 +13,6 @@ export function whatsappLink(planName: string, amount: string) {
 }
 
 export const LANZAMIENTO = 'Precio de lanzamiento';
-export const LANZAMIENTO_NOTA = 'Después costará más.';
 
 export function fundadorLink(nombreComercio?: string) {
   const quien = nombreComercio ? `Soy ${nombreComercio} y quiero` : 'Quiero';
