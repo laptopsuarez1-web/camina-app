@@ -175,7 +175,7 @@ export function GroupDrawer({
                     <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">Quitar foto y usar un color</Text>
                   </Press>
                 ) : null}
-                <View className="flex-row flex-wrap" style={{ gap: 10, opacity: bannerUrl ? 0.5 : 1 }}>
+                <View className="flex-row flex-wrap" style={{ gap: 10 }}>
                   {GROUP_BACKGROUNDS.map((b) => {
                     const on = !bannerUrl && (background ?? 'aqua') === b.key;
                     return (
