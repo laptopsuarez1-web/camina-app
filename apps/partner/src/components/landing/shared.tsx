@@ -751,7 +751,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   const texto =
     para === 'gente'
       ? 'Una sola tarjeta para todos los comercios. Cada canje confirmado suma un sello, en el comercio que quieras. Con 5 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.'
-      : 'Eliges el premio que regalas a quienes completan su tarjeta de fidelidad de Camina. Tu premio aparece entre las opciones que ven los clientes de todos los locales: más visibilidad y más gente que llega a tu local. Está incluida en los planes de Bs 100 y Bs 300, no en el gratis.';
+      : 'Eliges el premio que regalas a quienes completan su tarjeta de fidelidad de Camina. Tu premio aparece entre las opciones que ven los clientes de todos los locales: más visibilidad y más gente que llega a tu local. Está incluida en los planes de Bs 99 y Bs 299, no en el gratis.';
   const pasos =
     para === 'gente'
       ? [
@@ -760,7 +760,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
           ['Tienes 30 días', 'Lo canjeas en el local con su código y no gastas Puntos.'],
         ]
       : [
-          ['Eliges tu premio de fidelidad', 'Desde tu panel, con los planes de Bs 100 o Bs 300.'],
+          ['Eliges tu premio de fidelidad', 'Desde tu panel, con los planes de Bs 99 o Bs 299.'],
           ['Apareces para todos', 'Quien completa su tarjeta de 5 canjes, en cualquier comercio, puede elegir tu premio.'],
           ['Llegan a tu local', 'Tienen 30 días para canjearlo contigo, con tu código del local.'],
         ];

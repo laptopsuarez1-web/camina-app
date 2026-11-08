@@ -3,8 +3,8 @@ import { type BusinessPlan } from '@/lib/supabase';
 export const WHATSAPP_NUMBER = '59162714286';
 
 export const PAYMENT_QR: Partial<Record<BusinessPlan, { image: string; amount: string }>> = {
-  paso_firme: { image: '/payment/qr-paso-firme.jpg', amount: 'Bs 100' },
-  paso_adelante: { image: '/payment/qr-paso-adelante.webp', amount: 'Bs 300' },
+  paso_firme: { image: '/payment/qr-paso-firme-99.jpg', amount: 'Bs 99' },
+  paso_adelante: { image: '/payment/qr-paso-adelante-299.jpg', amount: 'Bs 299' },
 };
 
 export function whatsappLink(planName: string, amount: string) {
@@ -44,7 +44,7 @@ export const PLANS: {
   {
     id: 'paso_firme',
     name: 'Paso Firme',
-    price: 'Bs 100/mes',
+    price: 'Bs 99/mes',
     blurb: 'Combina regalos y descuentos, sin límite.',
     features: [
       'Todo lo de Primer Paso',
@@ -59,7 +59,7 @@ export const PLANS: {
   {
     id: 'paso_adelante',
     name: 'Paso Adelante',
-    price: 'Bs 300/mes',
+    price: 'Bs 299/mes',
     blurb: 'Sé la primera opción de tu zona.',
     features: [
       'Todo lo de Paso Firme',

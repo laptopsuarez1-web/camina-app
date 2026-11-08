@@ -10,8 +10,8 @@ import { ResumenMes } from '@/components/ResumenMes';
 
 const PLAN_LABEL: Record<string, string> = {
   primer_paso: 'Primer Paso · Gratis',
-  paso_firme: 'Paso Firme · Bs 100/mes',
-  paso_adelante: 'Paso Adelante · Bs 300/mes',
+  paso_firme: 'Paso Firme · Bs 99/mes',
+  paso_adelante: 'Paso Adelante · Bs 299/mes',
 };
 
 export default function InicioPage() {
