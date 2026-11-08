@@ -31,7 +31,6 @@ import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
-import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
 import { Image } from 'expo-image';
@@ -80,8 +79,6 @@ export default function GroupDetailScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
-  // Pestañas debajo de la tarjeta de la semana: el chat primero.
-  const [tab, setTab] = useState<'chat' | 'desafios' | 'ranking'>('chat');
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -458,7 +455,7 @@ export default function GroupDetailScreen() {
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
-        {/* Portada: el degradé del tema del grupo con su dibujo (camino y huellitas). Sin fotos: siempre se ve bien. */}
+        {/* Portada: la foto que eligió el grupo o, si no puso, el degradé de su color. */}
         <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
           {bannerUrl ? (
             // Portada con foto: nítida, con sombra arriba (botones) y abajo (podio) para que todo se lea.
@@ -466,7 +463,7 @@ export default function GroupDetailScreen() {
               <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
               <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.55)', 'rgba(10,6,20,0.1)', 'rgba(10,6,20,0.35)', theme.colors[2] + 'F2']} locations={[0, 0.3, 0.62, 1]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
             </>
-          ) : <GroupBannerArt />}
+          ) : null}
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
@@ -603,22 +600,8 @@ export default function GroupDetailScreen() {
           </Press>
         </Glass>
 
-        {/* Pestañas: Chat (primero), Desafíos y Ranking. */}
-        <View accessibilityRole="tablist" className="mx-5 mb-3 flex-row rounded-full p-1 bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
-          {([['chat', 'Chat'], ['desafios', 'Desafíos'], ['ranking', 'Ranking']] as const).map(([k, label]) => {
-            const on = tab === k;
-            const dot = k === 'desafios' && canJoin;
-            return (
-              <Press key={k} accessibilityRole="tab" accessibilityState={{ selected: on }} haptic="selection" feedback="none" onPress={() => setTab(k)}
-                className="flex-1 flex-row items-center justify-center rounded-full py-2.5" style={[{ gap: 6 }, on ? { backgroundColor: theme.accentDeep } : null]}>
-                <Text style={{ fontSize: 13.5, fontWeight: '800', color: on ? '#fff' : muted }}>{label}</Text>
-                {dot ? <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: on ? '#fff' : colors.aqua }} /> : null}
-              </Press>
-            );
-          })}
-        </View>
-
-        {tab === 'desafios' ? (<>{active ? (
+        {/* Desafío del grupo: el que está en marcha o, si no hay, una fila corta para crear uno. */}
+        {active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
             <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
@@ -673,50 +656,30 @@ export default function GroupDetailScreen() {
             )}
           </Glass>
         ) : (
-          <Glass className="mx-5 rounded-2xl p-4 mb-3">
-            <View className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Flame} tone="orange" size={40} />
+          <Glass className="mx-5 rounded-2xl p-3.5 mb-3">
+            <Press accessibilityRole="button" accessibilityLabel="Crear un desafío para el grupo" onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })} className="flex-row items-center" style={{ gap: 12 }}>
+              <IconBubble icon={Flame} tone="orange" size={38} />
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
-                  Arma uno: elijan la regla, la meta y cuántos puntos poner en juego.
-                </Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Elijan la regla, la meta y los Puntos en juego.</Text>
               </View>
-            </View>
-            <Press
-              accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })}
-              className="bg-mint rounded-2xl py-3 items-center mt-3 flex-row justify-center"
-              style={{ gap: 6 }}
-            >
-              <Plus size={15} color={colors.mintDark} />
-              <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
+              <View className="bg-mint rounded-full px-3.5 py-2 flex-row items-center" style={{ gap: 4 }}>
+                <Plus size={13} color={colors.mintDark} />
+                <Text className="text-mint-dark font-bold text-[12.5px]">Crear</Text>
+              </View>
             </Press>
           </Glass>
         )}
-        {/* El último desafío que terminó: quién ganó y cómo te fue. */}
-        {lastResult ? (
-          <Glass className="mx-5 rounded-2xl p-4 mb-3">
-            <Text className="text-[11.5px] font-bold text-muted-light dark:text-muted-dark" style={{ letterSpacing: 1 }}>ÚLTIMO DESAFÍO</Text>
-            <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark mt-1" numberOfLines={1}>{lastResult.name}</Text>
-            <View className="flex-row items-center mt-2.5" style={{ gap: 10 }}>
-              <IconBubble icon={Trophy} tone="gold" size={34} />
-              <View className="flex-1">
-                <Text className="text-[13px] text-text-light dark:text-text-dark" numberOfLines={1}>
-                  Ganó <Text className="font-bold">{lastResult.results[0]?.user_id === userId ? 'tú' : nameOf(lastResult.results[0]?.user_id ?? '')}</Text>
-                  {lastResult.results[0] ? ` · ${ruleText(lastResult.rule, lastResult.results[0])}` : ''}
-                </Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark">Quedaste {lastResult.mine.rank}.º · {ruleText(lastResult.rule, lastResult.mine)}</Text>
-              </View>
-            </View>
-          </Glass>
+        {/* El último desafío que terminó, en una línea: quién ganó y cómo te fue. */}
+        {lastResult && !active ? (
+          <View className="mx-6 mb-3 flex-row items-center" style={{ gap: 8 }}>
+            <Trophy size={14} color={warnText} />
+            <Text className="flex-1 text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+              Último: {lastResult.name} · ganó {lastResult.results[0]?.user_id === userId ? 'tú' : nameOf(lastResult.results[0]?.user_id ?? '')} · quedaste {lastResult.mine.rank}.º
+            </Text>
+          </View>
         ) : null}
-        {!active ? null : (
-          <Text className="mx-6 mb-3 text-[12px] text-muted-light dark:text-muted-dark text-center">Cuando termine este desafío, pueden armar otro.</Text>
-        )}
-        </>) : null}
 
-        {tab === 'ranking' ? (<>
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
           <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
             <IconBubble icon={Trophy} tone="gold" size={34} />
@@ -784,7 +747,7 @@ export default function GroupDetailScreen() {
           <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">Semanas anteriores</Text>
           {Array.from(new Set((history ?? []).map((r) => r.week_start))).slice(0, 8).map((week, idx) => {
             const rows = (history ?? []).filter((r) => r.week_start === week);
-            const open = openWeek === week || (openWeek === null && idx === 0);
+            const open = openWeek === week;
             const end = new Date(new Date(week + 'T12:00:00').getTime() + 6 * 86400000);
             const label = `${new Date(week + 'T12:00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}`;
             return (
@@ -813,9 +776,7 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-        </>) : null}
 
-        {tab === 'chat' ? (<>
         <View className="mx-5 mt-1 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">se vacía cada mes</Text>
@@ -895,10 +856,9 @@ export default function GroupDetailScreen() {
           </Text>
         )}
         </View>
-        </>) : null}
       </ScrollView>
 
-      {tab === 'chat' ? <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
+      <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
         <TextInput
           value={text}
           onChangeText={setText}
@@ -914,7 +874,7 @@ export default function GroupDetailScreen() {
         <Press accessibilityRole="button" accessibilityLabel="Enviar mensaje" onPress={send} disabled={!text.trim() || postNote.isPending} className="w-10 h-10 rounded-full bg-aqua-deep items-center justify-center">
           <Send size={16} color="#fff" />
         </Press>
-      </View> : null}
+      </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
       <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
       <GroupDrawer

@@ -7,7 +7,6 @@ import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Camera, Check, Share2, Trash2, Users, X } from '@/components/icons';
 import { GROUP_BACKGROUNDS, groupGradient } from '@/lib/group-look';
-import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { Image } from 'expo-image';
 import { colors } from '@/theme/tokens';
 
@@ -153,7 +152,7 @@ export function GroupDrawer({
             {isCreator && (
               <View className="py-3.5 border-t border-line-light dark:border-line-dark">
                 <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark">Portada del grupo</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5">Opcional. Pon una foto, o elige un color con su dibujo.</Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5">Opcional. Pon una foto, o elige un color.</Text>
                 {/* Foto de portada: vista previa ancha, con cambiar y quitar. */}
                 <Press accessibilityRole="button" accessibilityLabel={bannerUrl ? 'Cambiar la foto de portada' : 'Poner una foto de portada'} disabled={busy} onPress={onPickBanner}
                   style={{ height: 86, borderRadius: 16, overflow: 'hidden', marginBottom: 10, borderWidth: bannerUrl ? 2.5 : 1.5, borderStyle: bannerUrl ? 'solid' : 'dashed', borderColor: bannerUrl ? '#fff' : 'rgba(160,140,210,0.6)', alignItems: 'center', justifyContent: 'center' }}>
@@ -182,7 +181,6 @@ export function GroupDrawer({
                     return (
                       <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Color ${b.label}`} accessibilityState={{ selected: on }} disabled={busy} onPress={() => onPickBackground(b.key)}>
                         <LinearGradient colors={b.colors} style={{ width: (panelW - 40 - 20) / 3, height: 62, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 6, borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
-                          <GroupBannerArt />
                           {on ? <View style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}><Check size={11} color="#14093a" weight="bold" /></View> : null}
                           <Text style={{ color: '#fff', fontSize: 11.5, fontWeight: '800' }}>{b.label}</Text>
                         </LinearGradient>

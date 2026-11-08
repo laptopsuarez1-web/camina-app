@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { View, ScrollView, Switch, Alert, Linking, Platform, Modal } from 'react-native';
-import { Text } from '@/components/ui/Text';
+import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthorization as requestHealthKitAuthorization, queryStatisticsForQuantity } from '@kingstinct/react-native-healthkit';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target } from '@/components/icons';
+import { DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -107,6 +108,17 @@ export default function PerfilScreen() {
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
   const [permsOpen, setPermsOpen] = useState(false);
+  // Cambiar la meta diaria desde el perfil (la misma que se cambia en Inicio).
+  const [goalOpen, setGoalOpen] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+  async function saveGoal() {
+    const n = parseInt(goalInput, 10);
+    if (!profile || !(n >= MIN_DAILY_GOAL)) return;
+    const { error } = await supabase.from('profiles').update({ daily_goal: n }).eq('id', profile.id);
+    if (error) { Alert.alert('No se pudo cambiar la meta', friendlyError(error, 'Intenta de nuevo.')); return; }
+    await useAuthStore.getState().refreshProfile();
+    setGoalOpen(false);
+  }
   // En iPhone "unknown" es: ya se pidió pero Salud no devolvió pasos esta semana; se muestra como activo (iOS no
   // deja saber si se negó) y el botón lleva a la app Salud para revisarlo.
   const stepsShown: Perm = Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus;
@@ -244,7 +256,7 @@ export default function PerfilScreen() {
 
   const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
 
-  const badgeCount = (badges?.routes?.length ?? 0) + (badges?.locals?.length ?? 0);
+  const dailyGoal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const friendCount = (friends ?? []).length;
   const requests = (friendRequests ?? []).length;
   const chev = <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />;
@@ -296,11 +308,11 @@ export default function PerfilScreen() {
               ) : null}
             </Glass>
           </Press>
-          <Press accessibilityRole="button" accessibilityLabel={`${badgeCount} insignias, ver todas`} onPress={() => router.push('/(tabs)/insignias')} className="flex-1">
+          <Press accessibilityRole="button" accessibilityLabel={`Meta diaria: ${dailyGoal.toLocaleString('es-BO')} pasos. Cambiarla`} onPress={() => { setGoalInput(String(dailyGoal)); setGoalOpen(true); }} className="flex-1">
             <Glass className="rounded-2xl p-3 items-center">
-              <ShieldCheck size={24} color={isDark ? colors.mint : colors.aquaDeep} />
-              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{badgeCount}</Text>
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(badgeCount, 'insignia', 'insignias')}</Text>
+              <Target size={24} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{dailyGoal.toLocaleString('es-BO')}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">meta diaria</Text>
             </Glass>
           </Press>
         </View>
@@ -383,6 +395,32 @@ export default function PerfilScreen() {
           </Glass>
         </View>
       </Modal>
+
+        <Modal visible={goalOpen} transparent animationType="fade" onRequestClose={() => setGoalOpen(false)}>
+          <Press accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setGoalOpen(false)} style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.55)', justifyContent: 'center', padding: 24 }}>
+            <Press feedback="none" onPress={() => {}} style={{ borderRadius: 24, padding: 20, backgroundColor: isDark ? '#1B1530' : '#F4F0FF' }}>
+              <Text accessibilityRole="header" className="text-[17px] font-bold text-text-light dark:text-text-dark">Tu meta diaria</Text>
+              <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-1">Pasos por día. Mínimo {MIN_DAILY_GOAL.toLocaleString('es-BO')}.</Text>
+              <TextInput
+                value={goalInput}
+                onChangeText={(v) => setGoalInput(v.replace(/\D/g, '').slice(0, 6))}
+                keyboardType="number-pad"
+                autoFocus
+                selectTextOnFocus
+                accessibilityLabel="Meta diaria de pasos"
+                className="mt-3 rounded-2xl px-4 py-3 text-[20px] font-extrabold text-text-light dark:text-text-dark bg-card-light dark:bg-card-dark"
+              />
+              <View className="flex-row mt-4" style={{ gap: 10 }}>
+                <Press accessibilityRole="button" onPress={() => setGoalOpen(false)} className="flex-1 rounded-2xl py-3 items-center bg-card-light dark:bg-card-dark">
+                  <Text className="font-semibold text-text-light dark:text-text-dark">Cancelar</Text>
+                </Press>
+                <Press accessibilityRole="button" onPress={saveGoal} disabled={!(parseInt(goalInput, 10) >= MIN_DAILY_GOAL)} className="flex-1 rounded-2xl py-3 items-center bg-aqua-deep" style={{ opacity: parseInt(goalInput, 10) >= MIN_DAILY_GOAL ? 1 : 0.5 }}>
+                  <Text className="font-bold text-white">Guardar</Text>
+                </Press>
+              </View>
+            </Press>
+          </Press>
+        </Modal>
 
         <SectionLabel>Apariencia</SectionLabel>
         <Glass className="rounded-2xl px-4 py-3 mb-4">

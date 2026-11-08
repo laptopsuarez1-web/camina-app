@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { Image } from 'expo-image';
-import { GroupBannerArt } from '@/components/GroupBannerArt';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
@@ -174,7 +173,7 @@ export default function GruposScreen() {
                       <Image source={{ uri: (g as { banner_url?: string | null }).banner_url! }} cachePolicy="memory-disk" contentFit="cover" blurRadius={18} style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10 }} />
                       <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.35)', 'rgba(10,6,20,0.6)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
                     </>
-                  ) : <GroupBannerArt />}
+                  ) : null}
                   <View className="flex-row items-center gap-3">
                     {/* Si el grupo tiene foto, va en el mismo cuadrado redondeado de los íconos. */}
                     <AvatarImage
