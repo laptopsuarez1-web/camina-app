@@ -273,10 +273,12 @@ export default function GroupDetailScreen() {
     const prevDetail = queryClient.getQueryData<any>(['group-detail', groupId]);
     const prevList = queryClient.getQueryData<any[]>(['groups']);
     const prevKey = prevDetail?.group?.background ?? null;
-    if (prevKey === key) return;
-    queryClient.setQueryData<any>(['group-detail', groupId], (d: any) => (d ? { ...d, group: { ...d.group, background: key } } : d));
-    queryClient.setQueryData<any[]>(['groups'], (l) => (l ? l.map((g) => (g.id === groupId ? { ...g, background: key } : g)) : l));
-    const { error } = await supabase.from('groups').update({ background: key }).eq('id', groupId);
+    const hadBanner = !!prevDetail?.group?.banner_url;
+    if (prevKey === key && !hadBanner) return;
+    // Tocar un color también quita la foto de portada (si no, la foto seguía tapando el color).
+    queryClient.setQueryData<any>(['group-detail', groupId], (d: any) => (d ? { ...d, group: { ...d.group, background: key, banner_url: null } } : d));
+    queryClient.setQueryData<any[]>(['groups'], (l) => (l ? l.map((g) => (g.id === groupId ? { ...g, background: key, banner_url: null } : g)) : l));
+    const { error } = await supabase.from('groups').update({ background: key, banner_url: null }).eq('id', groupId);
     if (error) {
       queryClient.setQueryData(['group-detail', groupId], prevDetail);
       queryClient.setQueryData(['groups'], prevList);
