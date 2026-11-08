@@ -54,6 +54,7 @@ export interface Business {
   description: string | null;
   address: string | null;
   google_review_url?: string | null;
+  google_place_id?: string | null;
   city?: string;
   phone: string | null;
   instagram: string | null;

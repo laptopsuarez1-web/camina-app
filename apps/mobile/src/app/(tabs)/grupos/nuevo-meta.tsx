@@ -9,7 +9,7 @@ import { Glass } from '@/components/ui/Glass';
 import { ChevronLeft } from '@/components/icons';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
-import { uploadGroupPhoto } from '@/lib/avatar';
+import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
 import { friendlyServerError } from '@/lib/errors';
 import { buzz } from '@/lib/haptics';
@@ -32,7 +32,7 @@ const VISIBLE = 5; // filas a la vista: la del medio es la elegida
 export default function NuevaMetaScreen() {
   const insets = useSafeAreaInsets();
   const { dark, text, accentIcon, accentText } = useThemeColors();
-  const { name, friends, background, photo } = useLocalSearchParams<{ name: string; friends?: string; background?: string; photo?: string }>();
+  const { name, friends, background, photo, banner } = useLocalSearchParams<{ name: string; friends?: string; background?: string; photo?: string; banner?: string }>();
   const picked = friends ? friends.split(',').filter(Boolean) : [];
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
@@ -71,6 +71,15 @@ export default function NuevaMetaScreen() {
         try {
           const url = await uploadGroupPhoto(group.id, photo);
           await supabase.from('groups').update({ photo_url: url }).eq('id', group.id);
+        } catch {
+          // se puede volver a elegir desde el menú del grupo
+        }
+      }
+      if (banner) {
+        // La portada también es un extra: si falla, se puede poner después desde el menú del grupo.
+        try {
+          const url = await uploadGroupBanner(group.id, banner);
+          await supabase.from('groups').update({ banner_url: url }).eq('id', group.id);
         } catch {
           // se puede volver a elegir desde el menú del grupo
         }

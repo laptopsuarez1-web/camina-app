@@ -8,7 +8,9 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useKeyboardVisible } from '@/hooks/useKeyboardVisible';
+import { backSkipping, WIZARD_STEPS } from '@/lib/nav-back';
 import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Plus, Flame, Check, IconBubble } from '@/components/icons';
 import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -74,6 +76,11 @@ function BannerBlurFade({ uri }: { uri: string }) {
 
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
+  const kbOpen = useKeyboardVisible();
+  const navigation = useNavigation();
+  // Al abrir el teclado el chat queda a la vista (los mensajes están al final de la pantalla).
+  useEffect(() => { if (kbOpen) setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60); }, [kbOpen]);
+  const goBack = () => backSkipping(navigation as never, WIZARD_STEPS, '/(tabs)/grupos');
   const { muted, accentText, accentIcon, warnText } = useThemeColors();
   const { groupId, nuevo, bienvenida } = useLocalSearchParams<{ groupId: string; nuevo?: string; bienvenida?: string }>();
   const profile = useAuthStore((s) => s.profile);
@@ -419,7 +426,7 @@ export default function GroupDetailScreen() {
         </Press>
         <Press
           accessibilityRole="button"
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/grupos'))}
+          onPress={goBack}
           className="py-3 px-6 mt-2"
         >
           <Text className="font-bold text-[14px] text-aqua-ink dark:text-mint">Volver</Text>
@@ -501,7 +508,7 @@ export default function GroupDetailScreen() {
             </>
           ) : null}
           <View className="flex-row items-center justify-between px-5">
-            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+            <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' ? router.replace('/(tabs)/grupos') : goBack())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
             {/* Nombre del grupo con su foto, en una pastilla (como el nombre de un chat). */}
@@ -903,7 +910,7 @@ export default function GroupDetailScreen() {
         </View>
       </ScrollView>
 
-      <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
+      <View className="flex-row items-end gap-2.5 px-5 pt-2.5 border-t border-line-light dark:border-line-dark" style={{ paddingBottom: kbOpen ? 10 : Math.max(insets.bottom, 10) }}>
         <TextInput
           value={text}
           onChangeText={setText}

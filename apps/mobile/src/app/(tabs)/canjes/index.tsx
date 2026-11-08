@@ -6,7 +6,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
-import Reanimated, { FadeInUp, ZoomIn } from 'react-native-reanimated';
+import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -852,6 +852,16 @@ export default function CanjesScreen() {
   // "Locales cerca tuyo" abajo del mapa completo: los mismos filtros que los pines, por cercanía y con los destacados
   // entre los primeros según qué tan cerca estén.
   const [sheetOpen, setSheetOpen] = useState(true);
+  // Deslizar la hoja: hacia abajo la achica y hacia arriba la vuelve a abrir (no sube más allá de su tamaño).
+  const sheetPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderRelease: (_e, g) => {
+        if (g.dy > 24) setSheetOpen(false);
+        else if (g.dy < -24) setSheetOpen(true);
+      },
+    }),
+  ).current;
   const nearbyMap = useMemo(() => {
     const minCost = new Map<string, { min: number; n: number }>();
     for (const b of benefits ?? []) {
@@ -1126,7 +1136,17 @@ export default function CanjesScreen() {
     setActiveBenefit(null);
   }
 
-  const reviewUrl = safeReviewUrl(activeBenefit?.business.google_review_url);
+  // Orden: link de reseña que cargó el comercio, Place ID automático (directo a escribir la reseña) y, si no hay ninguno,
+  // la ficha del local en Google Maps (búsqueda por nombre y dirección): desde ahí se califica.
+  const reviewUrl = (() => {
+    const b = activeBenefit?.business;
+    if (!b) return null;
+    const own = safeReviewUrl(b.google_review_url);
+    if (own) return own;
+    if (b.google_place_id && /^[\w-]+$/.test(b.google_place_id)) return `https://search.google.com/local/writereview?placeid=${b.google_place_id}`;
+    const q = [b.name, b.address, 'Tarija, Bolivia'].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+  })();
 
   // Desde la confirmación del canje: se cierra la hoja del código y arranca la historia de Instagram.
   const story = useStoryFlow();
@@ -1635,9 +1655,9 @@ export default function CanjesScreen() {
               </View>
             )}
           </View>
-          {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita y se esconde mientras hay un local abierto. */}
+          {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita o deslizando hacia abajo y se esconde mientras hay un local abierto. */}
           {previewGroup || !nearbyMap.length ? null : (
-            <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+            <View {...sheetPan.panHandlers} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
               <Press accessibilityRole="button" accessibilityLabel={sheetOpen ? 'Achicar la lista de locales' : 'Ver locales cerca tuyo'} onPress={() => setSheetOpen((v) => !v)} feedback="none"
                 style={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 6 }}>
                 <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.35)' }} />
@@ -2126,7 +2146,7 @@ export default function CanjesScreen() {
       {/* Código de canje */}
       <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode} onDismiss={() => flushAfterClose(afterCodeClose)}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
-          <Glass className="rounded-t-[32px] px-6 pt-3 pb-10">
+          <View className="rounded-t-[32px] px-6 pt-3 pb-10 bg-card-light dark:bg-card-dark">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center justify-between gap-2.5 mb-5">
@@ -2200,10 +2220,10 @@ export default function CanjesScreen() {
                 {paso === 'ok' ? (
                   <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                      {[{ l: -64, t: 6, d: 500, c: '#F2B01E' }, { l: 70, t: 20, d: 650, c: colors.mint }, { l: -50, t: 90, d: 800, c: colors.mint }, { l: 62, t: 84, d: 950, c: '#F2B01E' }].map((sp, i) => (
-                        <Reanimated.Text key={i} entering={ZoomIn.delay(sp.d).springify().damping(7)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
+                      {[{ l: -84, t: 16, d: 600, c: '#F2B01E' }, { l: 78, t: 6, d: 750, c: colors.mint }, { l: -78, t: 96, d: 900, c: colors.mint }, { l: 72, t: 100, d: 1050, c: '#F2B01E' }].map((sp, i) => (
+                        <Reanimated.Text key={i} entering={FadeIn.delay(sp.d).duration(700)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
                       ))}
-                      <Reanimated.View entering={ZoomIn.delay(100).springify().damping(8)}>
+                      <Reanimated.View entering={FadeInUp.delay(100).duration(550)}>
                         <BaifoMascot pose="festeja" height={132} />
                       </Reanimated.View>
                     </View>
@@ -2214,7 +2234,7 @@ export default function CanjesScreen() {
                       </Text>
                     </Reanimated.View>
                     {activeId && bonusById[activeId] ? (
-                      <Reanimated.View entering={ZoomIn.delay(900).springify().damping(9)}>
+                      <Reanimated.View entering={FadeIn.delay(900).duration(500)}>
                         <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
                           {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
                         </Text>
@@ -2371,7 +2391,7 @@ export default function CanjesScreen() {
             <Press accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode} style={{ marginTop: 14 }}>
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center">Cerrar</Text>
             </Press>
-          </Glass>
+          </View>
         </View>
       </Modal>
       {story.element}
