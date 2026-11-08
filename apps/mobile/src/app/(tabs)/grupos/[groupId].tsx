@@ -50,11 +50,11 @@ function weekKey() {
 
 // Cuánto se difumina la parte de abajo de la portada. En iPhone y Android el desenfoque se mide sobre los píxeles de
 // la foto (más grandes que los de la pantalla), por eso el número es mayor que en la web para verse parecido.
-const BANNER_BLUR = Platform.OS === 'web' ? 12 : 44;
+const BANNER_BLUR = Platform.OS === 'web' ? 10 : 36;
 
 // La parte difuminada de la portada: la misma foto, borrosa, que aparece de a poco de abajo hacia arriba. En el
 // celular con MaskedView; en la web (solo para vistas previas) con una máscara CSS, porque MaskedView no la soporta ahí.
-const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.85)', '#000'] as const, locations: [0, 0.3, 0.56, 1] as const };
+const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.8)', '#000'] as const, locations: [0, 0.36, 0.62, 1] as const };
 function BannerBlurFade({ uri }: { uri: string }) {
   const img = <Image source={{ uri }} cachePolicy="memory-disk" contentFit="cover" blurRadius={BANNER_BLUR} style={{ flex: 1 }} />;
   if (Platform.OS === 'web') {
