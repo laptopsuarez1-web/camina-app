@@ -18,11 +18,11 @@ export const CAP = {
   actividad: '/web/cap/actividad.jpg',
   canjes: '/web/cap/canjes.jpg',
   ficha: '/web/cap/ficha.jpg',
-  grupos: '/web/cap/grupos.jpg',
-  grupo: '/web/cap/grupo.jpg',
-  grupoRanking: '/web/cap/grupo-ranking.jpg',
+  grupos: '/web/cap/grupos-v2.jpg',
+  grupo: '/web/cap/grupo-v2.jpg',
+  grupoRanking: '/web/cap/grupo-ranking-v2.jpg',
   grupoChat: '/web/cap/grupo-chat.jpg',
-  grupoReto: '/web/cap/grupo-reto.jpg',
+  grupoReto: '/web/cap/grupo-reto-v2.jpg',
   grupoColor: '/web/cap/grupo-color.jpg',
   grupoMeta: '/web/cap/grupo-meta.jpg',
   grupoInvitar: '/web/cap/grupo-invitar.jpg',
@@ -35,7 +35,8 @@ export const CAP = {
   perfil: '/web/cap/perfil.jpg',
   fichaAmigo: '/web/cap/ficha-amigo.jpg',
   fondoPerfil: '/web/cap/fondo-perfil.jpg',
-  resenaHistoria: '/web/cap/resena-historia.jpg',
+  resenaHistoria: '/web/cap/canje-calificar-v2.jpg',
+  canjeHistoria: '/web/cap/canje-historia-v2.jpg',
   fichaLocal: '/web/cap/ficha-local.jpg',
   rankingNuevo: '/web/cap/ranking-nuevo.jpg',
   puntosNuevo: '/web/cap/puntos-nuevo.jpg',
@@ -621,10 +622,9 @@ const GRUPO_PANT = [
   ['Elige la meta de la semana', 'Al crear el grupo, una ruedita de 1.000 en 1.000 pasos y atajos de 25.000 a 150.000. Se puede cambiar después.', CAP.grupoMeta],
   ['El podio de la semana', 'Se arma solo con los pasos de cada integrante desde el lunes. La corona es para quien más caminó.', CAP.grupo],
   ['Ranking del grupo', 'Todos los integrantes ordenados por pasos, y botón para compartir el ranking.', CAP.grupoRanking],
-  ['Reto de la semana', 'Un desafío con Puntos en juego: cómo va cada integrante y cuánto le falta a cada uno para el primer puesto.', CAP.grupoReto],
+  ['Desafíos del grupo', 'Crean un desafío de pasos, días o racha, y ven cómo va cada integrante.', CAP.grupoReto],
   ['Elige el color y la foto del grupo', 'Cada grupo tiene su propia foto y un fondo a elegir: violeta, esmeralda, océano, atardecer, rosa o dorado.', CAP.grupoColor],
   ['Invitar amigos al grupo', 'Eliges a tus amigos y les llega la invitación; se unen cuando aceptan.', CAP.grupoInvitar],
-  ['El chat del grupo', 'Para organizar la caminata o picarse un poco. Se vacía cada mes.', CAP.grupoChat],
   ['Ranking', 'El ranking global y el de tus amigos.', CAP.ranking],
 ] as const;
 
@@ -702,13 +702,13 @@ export function CanjeResena() {
               t: 'Calificaciones en Google Maps',
               d: 'Cuando se confirma un canje, la app le pregunta a la persona si dejaría una reseña y le abre tu ficha de Google Maps para calificarte. Es opcional y el link lo cargas tú en tu perfil. Más reseñas hacen que más gente te encuentre.',
               img: CAP.resenaHistoria,
-              alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps y a subir una historia',
+              alt: 'Pantalla de la app después de un canje con la invitación a calificar en Google Maps',
             },
             {
               t: 'Historias en Instagram',
               d: 'Quien canjea en tu local puede subir una historia a Instagram con una foto de lo que canjeó y el nombre de tu local. Se muestra a sus amigos y seguidores, y si el equipo de Camina la aprueba, gana 5 Puntos. Publicidad para ti, sin costo.',
-              img: CAP.historia,
-              alt: 'Pantalla de la historia lista para publicar en Instagram con el nombre del premio y del local',
+              img: CAP.canjeHistoria,
+              alt: 'Pantalla de la app que invita a subir una historia a Instagram con una foto de lo canjeado',
             },
             {
               t: 'Tus redes en tu ficha',
@@ -1008,8 +1008,7 @@ export function GruposGente() {
         pant={[
           ['Tus grupos', 'Con amigos, familia o compañeros.', CAP.grupos],
           ['Meta semanal', 'Caminan juntos hacia un mismo número.', CAP.grupoMeta],
-          ['Retos', 'Pongan Puntos en juego entre ustedes.', CAP.grupoReto],
-          ['Chat', 'Se animan sin salir de la app.', CAP.grupoChat],
+          ['Desafíos', 'Pasos, días o racha entre ustedes.', CAP.grupoReto],
         ]}
       />
     </section>
@@ -1217,8 +1216,8 @@ export function AsiTeVen() {
         pant={[
           ['Te encuentran', 'Tu local y tus descuentos en la lista de canjes.', CAP.canjes],
           ['Tu ficha', 'Fotos, horarios, dirección, redes, tus descuentos y cómo llegar.', CAP.fichaLocal],
-          ['Canje confirmado', 'Con tu código de 4 números, al instante. Luego, la invitación a calificarte.', CAP.resenaHistoria],
-          ['Su historia', 'Suben lo que canjearon a Instagram con el nombre de tu local.', CAP.historia],
+          ['Te invitan a calificarte', 'Con tu código de 4 números confirmas el canje y la app invita a calificar tu local.', CAP.resenaHistoria],
+          ['Su historia', 'Suben lo que canjearon a Instagram con el nombre de tu local.', CAP.canjeHistoria],
         ]}
       />
     </section>
@@ -1238,7 +1237,6 @@ const VID_RUTA = {
   participar: VID('ruta-participar'),
   local: VID('ruta-local-sumado'),
   album: VID('ruta-album'),
-  desafio: VID('ruta-desafio-grupo'),
   inicio: VID('ruta-inicio'),
 };
 
@@ -1261,7 +1259,6 @@ export function RutaGente() {
           ['Siempre en Inicio', 'Tu Ruta del mes, a un toque.', ...VID_RUTA.inicio],
           ['Visita confirmada', 'El local confirma y se llena tu aro.', ...VID_RUTA.local],
           ['Tu álbum', 'Tocas la insignia y ves tus fotos de cada local.', ...VID_RUTA.album],
-          ['Con tu grupo', 'Desafío "Ruta del mes": gana quien visita más locales.', ...VID_RUTA.desafio],
         ]}
       />
       <div className="wrap">
@@ -1306,7 +1303,7 @@ const GANA_RUTA = [
   ['Compran sin gastar Puntos', 'Pagan como cualquier cliente. Sin descuento ni regalo.'],
   ['Clientes nuevos cada mes', 'Tu logo en su mapa, con el camino a pie hasta tu puerta.'],
   ['Un código solo para la Ruta', 'Sabes por qué vinieron y confirmas con un toque.'],
-  ['Te recomiendan', 'En historias, en su álbum y en desafíos de grupos.'],
+  ['Te recomiendan', 'En historias y en su álbum del mes.'],
   ['Todo en tu resumen', 'Visitas, clientes nuevos y cuántos te tienen en su Ruta.'],
   ['Sin costo ni configurar', 'En cualquier plan. No pones premios ni descuentos.'],
 ];
@@ -1327,7 +1324,6 @@ export function RutaComercio() {
           ['Tu local en su mapa', 'Sus 3 locales caen en el mapa con el camino a pie.', ...VID_RUTA.participar],
           ['Compró en tu local', 'Confirmas con un toque y lo festejan con tu logo.', ...VID_RUTA.local],
           ['Su álbum del mes', 'Tu local queda en sus fotos y en sus historias.', ...VID_RUTA.album],
-          ['En sus grupos', 'Desafíos de grupo para visitar locales de la Ruta.', ...VID_RUTA.desafio],
         ]}
       />
       {/* Lo que gana el local, debajo de las pantallas. */}
