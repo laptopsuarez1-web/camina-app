@@ -872,7 +872,7 @@ export default function CanjesScreen() {
     const q = mapSearch.trim().toLowerCase();
     if (!q) return [];
     return businessesWithCoords
-      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q))
+      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q))
       .slice(0, 6);
   }, [mapSearch, businessesWithCoords]);
 
@@ -937,13 +937,13 @@ export default function CanjesScreen() {
     const map = new Map<string, { business: BusinessT; benefits: BenefitWithBusiness[] }>();
     for (const b of benefits ?? []) {
       if (category !== 'Todos' && b.business.category !== category) continue;
-      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '')).toLowerCase().includes(q)) continue;
+      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '') + ' ' + ((b.business as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q)) continue;
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
       map.get(b.business.id)!.benefits.push(b);
     }
     for (const b of sinPremios) {
       if (category !== 'Todos' && b.category !== category) continue;
-      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '')).toLowerCase().includes(q)) continue;
+      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q)) continue;
       map.set(b.id, { business: b, benefits: [] });
     }
     let list = [...map.values()].map((g) => ({

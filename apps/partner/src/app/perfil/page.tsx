@@ -17,7 +17,7 @@ const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.M
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { GalleryUpload } from '@/components/GalleryUpload';
-import { CATEGORIAS, opcionesCategoria } from '@/lib/categories';
+import { CATEGORIAS, MAX_PALABRAS, OTRA, SUGERENCIAS, opcionesCategoria } from '@/lib/categories';
 import { DAY_NAMES, emptyWeek, summarizeWeek, weekFromText, type DayHours, type WeekHours } from '@/lib/hours';
 
 function firstOpen(w: WeekHours) {
@@ -31,6 +31,11 @@ export default function PerfilPage() {
   const router = useRouter();
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
+  // "Otra": la categoría escrita a mano.
+  const [otraCategoria, setOtraCategoria] = useState('');
+  // "Lo que ofreces": palabras para el buscador de la app (opcional).
+  const [palabras, setPalabras] = useState<string[]>([]);
+  const [nuevaPalabra, setNuevaPalabra] = useState('');
   const [direccion, setDireccion] = useState('');
   const [semana, setSemana] = useState<WeekHours>(emptyWeek());
   const [telefono, setTelefono] = useState('');
@@ -69,6 +74,7 @@ export default function PerfilPage() {
     if (!business) return;
     setNombre(business.name);
     setCategoria(business.category);
+    setPalabras(((business as { keywords?: string[] | null }).keywords ?? []).slice(0, MAX_PALABRAS));
     setDireccion(business.address ?? '');
     setDescripcion(business.description ?? '');
     setSemana(business.opening_hours ?? weekFromText(business.hours_text));
@@ -182,7 +188,7 @@ export default function PerfilPage() {
     const payload = {
         name: nombre.trim(),
         description: descripcion.trim(),
-        category: categoria,
+        category: categoria === OTRA ? otraCategoria.trim() || 'Otros' : categoria,
         address: esVirtual ? null : direccion.trim(),
         lat: esVirtual ? null : punto ? punto.lat : null,
         lng: esVirtual ? null : punto ? punto.lng : null,
@@ -205,6 +211,11 @@ export default function PerfilPage() {
       void _f;
       void _t;
       ({ error } = await supabase.from('businesses').update({ ...sinRedes, city: ciudad }).eq('id', business.id));
+    }
+    // Lo que ofrece va aparte: si la base todavía no tiene la columna (0100), se guarda igual todo lo demás.
+    if (!error) {
+      const { error: e2 } = await supabase.from('businesses').update({ keywords: palabras }).eq('id', business.id);
+      if (e2 && !/keywords/i.test(e2.message)) error = e2;
     }
     setSaving(false);
     if (error) {
@@ -306,10 +317,40 @@ export default function PerfilPage() {
               onChange={(e) => setCategoria(e.target.value)}
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
             >
-              {opcionesCategoria(business?.category).map((c) => (
+              {[...opcionesCategoria(business?.category), OTRA].map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
+            {categoria === OTRA && (
+              <input value={otraCategoria} onChange={(e) => setOtraCategoria(e.target.value.slice(0, 30))} placeholder="Escribe tu categoría, por ejemplo: Batidos y jugos"
+                className="mt-2 w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]" />
+            )}
+          </Field>
+          <Field label="Lo que ofreces (opcional)">
+            <p className="text-[11.5px] text-muted mb-2 leading-4">
+              Elige hasta {MAX_PALABRAS}. Con estas palabras la gente encuentra tu local en el buscador de la app. Si no está lo tuyo, escríbelo abajo.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {[...palabras.filter((w) => !SUGERENCIAS.includes(w)), ...SUGERENCIAS].map((w) => {
+                const on = palabras.includes(w);
+                return (
+                  <button key={w} type="button" aria-pressed={on}
+                    onClick={() => setPalabras((cur) => (on ? cur.filter((x) => x !== w) : cur.length >= MAX_PALABRAS ? cur : [...cur, w]))}
+                    className={`px-3 py-1.5 rounded-full text-[12.5px] border ${on ? 'bg-purple text-white border-purple' : 'bg-white text-text border-line'}`}>
+                    {on ? '✓ ' : ''}{w}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <input value={nuevaPalabra} onChange={(e) => setNuevaPalabra(e.target.value.slice(0, 30))} placeholder="Otra: escribe lo que ofreces"
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const w = nuevaPalabra.trim(); if (w && !palabras.includes(w) && palabras.length < MAX_PALABRAS) setPalabras([...palabras, w]); setNuevaPalabra(''); } }}
+                className="flex-1 bg-white border border-line rounded-[10px] px-3 py-2 text-[13.5px]" />
+              <button type="button" disabled={!nuevaPalabra.trim() || palabras.length >= MAX_PALABRAS}
+                onClick={() => { const w = nuevaPalabra.trim(); if (w && !palabras.includes(w)) setPalabras([...palabras, w]); setNuevaPalabra(''); }}
+                className="px-4 rounded-[10px] bg-purple text-white text-[13px] font-semibold disabled:opacity-40">Agregar</button>
+            </div>
+            <p className="text-[11.5px] text-muted mt-1.5">{palabras.length} de {MAX_PALABRAS}</p>
           </Field>
           <label className="flex items-center gap-2 text-[13px] text-muted">
             <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
