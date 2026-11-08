@@ -181,7 +181,15 @@ export default function RutaMesScreen() {
   if (isLoading || !route) {
     return (
       <View style={{ flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center' }}>
-        {isLoading ? <ActivityIndicator color={MINT} /> : <Text style={{ color: '#fff' }}>No encontramos esta ruta.</Text>}
+        {isLoading ? <ActivityIndicator color={MINT} /> : (
+          <>
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>No encontramos esta ruta.</Text>
+            <Press accessibilityRole="button" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/insignias'))}
+              style={{ marginTop: 14, paddingHorizontal: 22, paddingVertical: 12, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.1)' }}>
+              <Text style={{ color: '#fff', fontWeight: '800' }}>Volver</Text>
+            </Press>
+          </>
+        )}
       </View>
     );
   }
