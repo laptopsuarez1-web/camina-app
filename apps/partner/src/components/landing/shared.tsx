@@ -893,7 +893,7 @@ export function HeroGente() {
       <div className="wrap">
         <div className="copy">
           <Kinetic as="h1" text="Tu caminata de todos los días ahora vale *Puntos.*" />
-          <p className="sub">Camina cuenta tus pasos y los convierte en Puntos que canjeas por regalos y descuentos en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
+          <p className="sub">Camina cuenta tus pasos y los convierte en Puntos que canjeas por descuentos o regalos en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
           <div className="stores">
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
             <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
@@ -976,25 +976,25 @@ export function ComoFunciona() {
   );
 }
 
-// Lo principal para la gente: los Puntos se canjean por cosas gratis o descuentos en comercios de su ciudad.
+// Lo principal para la gente: los Puntos se canjean por descuentos o regalos en comercios de su ciudad.
 export function CanjesGente() {
-  const pasos = ['Elige un comercio en el mapa', 'Canjea su premio con tus Puntos', 'En el local, escribe su código', 'Listo: tu regalo o tu descuento'];
+  const pasos = ['Elige un comercio en el mapa', 'Canjea su premio con tus Puntos', 'En el local, escribe su código', 'Listo: tu descuento o tu regalo'];
   return (
     <section className="lp-sec" id="canjes" data-modo="oscuro">
       <div className="wrap">
         <p className="kick">Tus premios</p>
-        <Kinetic text="Canjea tus Puntos por *cosas* *gratis.*" />
+        <Kinetic text="Canjea tus Puntos por *descuentos* *o* *regalos.*" />
         <p className="lead">
-          Con los Puntos que juntas caminando canjeas regalos y descuentos en los comercios de tu ciudad: cafés, comida, belleza, deporte y
-          mucho más. Cada comercio elige su premio.
+          Con los Puntos que juntas caminando canjeas descuentos o regalos en los comercios de tu ciudad: cafés, comida, belleza, deporte y
+          mucho más. Cada comercio elige su descuento o su regalo.
         </p>
       </div>
       <Deslizable
         id="gal-canjes"
         nota="Comercios y premios de ejemplo."
         pant={[
-          ['El mapa de premios', 'Los comercios cerca tuyo y lo que regala cada uno.', CAP.canjes],
-          ['La ficha del local', 'Sus premios, cuántos Puntos cuesta cada uno y dónde queda.', CAP.fichaLocal],
+          ['El mapa de premios', 'Los comercios cerca tuyo y el descuento o regalo de cada uno.', CAP.canjes],
+          ['La ficha del local', 'Sus descuentos o regalos, cuántos Puntos cuesta cada uno y dónde queda.', CAP.fichaLocal],
           ['Tu tarjeta Camina', 'Cada 5 canjes, un premio gratis extra en el comercio que elijas.', CAP.puntosNuevo],
         ]}
       />
@@ -1004,7 +1004,7 @@ export function CanjesGente() {
             <li key={t}><span>{i + 1}</span>{t}</li>
           ))}
         </ol>
-        <p className="pasitos-nota">Regalos 100% gratis o descuentos, según el comercio. Puedes volver a canjear en el mismo local pasados 14 días.</p>
+        <p className="pasitos-nota">Descuentos o regalos 100% gratis, según el comercio. Puedes volver a canjear en el mismo local pasados 14 días.</p>
       </div>
     </section>
   );
