@@ -81,7 +81,7 @@ export default function TarjetaPage() {
         <div className="bg-card border border-line rounded-2xl p-6 max-w-[520px]">
           <p className="font-bold text-[15px] mb-1.5">La tarjeta de fidelidad es de Paso Firme y Paso Adelante</p>
           <p className="text-muted text-[13px] leading-5 mb-4">
-            Con Paso Firme (Bs 100/mes) o Paso Adelante (Bs 300/mes) tu premio aparece entre las opciones de quienes completan su tarjeta de {goal} canjes
+            Con Paso Firme (Bs 99/mes) o Paso Adelante (Bs 299/mes) tu premio aparece entre las opciones de quienes completan su tarjeta de {goal} canjes
             en cualquier comercio. Más visibilidad y más gente que llega a tu local.
           </p>
           <Link href="/plan" className="inline-block bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px]">
