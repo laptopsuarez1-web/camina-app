@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { createElement, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -34,6 +34,7 @@ import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
 import { Image } from 'expo-image';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
 import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 
@@ -47,9 +48,29 @@ function weekKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
-// Difuminado de la portada de abajo hacia arriba: capas cada vez más bajas y más borrosas, en pasos chicos para que
-// no se note el corte entre una y otra.
-const BANNER_BLUR_STEPS = Array.from({ length: 7 }, (_, i) => ({ from: 0.42 + i * 0.05, blur: Math.round(1 + i * 1.6) }));
+// Cuánto se difumina la parte de abajo de la portada. En iPhone y Android el desenfoque se mide sobre los píxeles de
+// la foto (más grandes que los de la pantalla), por eso el número es mayor que en la web para verse parecido.
+const BANNER_BLUR = Platform.OS === 'web' ? 9 : 34;
+
+// La parte difuminada de la portada: la misma foto, borrosa, que aparece de a poco de abajo hacia arriba. En el
+// celular con MaskedView; en la web (solo para vistas previas) con una máscara CSS, porque MaskedView no la soporta ahí.
+const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.7)', '#000'] as const, locations: [0, 0.44, 0.72, 1] as const };
+function BannerBlurFade({ uri }: { uri: string }) {
+  const img = <Image source={{ uri }} cachePolicy="memory-disk" contentFit="cover" blurRadius={BANNER_BLUR} style={{ flex: 1 }} />;
+  if (Platform.OS === 'web') {
+    const css = `linear-gradient(to bottom, ${BANNER_FADE_STOPS.colors.map((c, k) => `${c} ${BANNER_FADE_STOPS.locations[k] * 100}%`).join(', ')})`;
+    return createElement('div', { style: { position: 'absolute', inset: 0, display: 'flex', pointerEvents: 'none', maskImage: css, WebkitMaskImage: css } }, img);
+  }
+  return (
+    <MaskedView
+      pointerEvents="none"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      maskElement={<LinearGradient colors={BANNER_FADE_STOPS.colors} locations={BANNER_FADE_STOPS.locations} style={{ flex: 1 }} />}
+    >
+      {img}
+    </MaskedView>
+  );
+}
 
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -84,8 +105,6 @@ export default function GroupDetailScreen() {
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
   const [rankOpen, setRankOpen] = useState(false);
-  // Alto de la cabecera: para que la parte difuminada de la portada calce justo con la foto nítida.
-  const [hdrH, setHdrH] = useState(0);
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -463,24 +482,20 @@ export default function GroupDetailScreen() {
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
         {/* Portada: la foto que eligió el grupo o, si no puso, el degradé de su color. */}
-        <LinearGradient onLayout={(e) => setHdrH(e.nativeEvent.layout.height)} colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
+        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
           {bannerUrl ? (
             // Portada con foto: nítida arriba y, de abajo hacia arriba, cada vez más difuminada y oscura (morado oscuro
             // del tema), así el podio y los nombres se leen siempre, sea cual sea la foto.
             <>
               <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-              {hdrH > 0
-                ? BANNER_BLUR_STEPS.map((sl) => (
-                    <View key={sl.from} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: hdrH * (1 - sl.from), overflow: 'hidden' }}>
-                      <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" blurRadius={sl.blur} style={{ position: 'absolute', left: 0, right: 0, top: -hdrH * sl.from, height: hdrH }} />
-                    </View>
-                  ))
-                : null}
-              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '26' }} />
+              {/* Copia difuminada de la misma foto que aparece de a poco de abajo hacia arriba (máscara con degradé):
+                  sin cortes ni líneas entre la parte nítida y la difuminada. */}
+              <BannerBlurFade uri={bannerUrl} />
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '14' }} />
               <LinearGradient
                 pointerEvents="none"
-                colors={['rgba(10,6,20,0.45)', 'rgba(10,6,20,0)', theme.colors[2] + '4D', theme.colors[2] + 'A6', theme.colors[2] + 'E0']}
-                locations={[0, 0.26, 0.52, 0.78, 1]}
+                colors={['rgba(10,6,20,0.4)', 'rgba(10,6,20,0)', theme.colors[2] + '33', theme.colors[2] + '80', theme.colors[2] + 'C2']}
+                locations={[0, 0.26, 0.58, 0.82, 1]}
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               />
             </>
