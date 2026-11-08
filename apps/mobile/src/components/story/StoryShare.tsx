@@ -6,9 +6,8 @@ import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 're
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
-import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
@@ -114,7 +113,7 @@ function StarRow() {
   return (
     <View className="flex-row items-center justify-center" style={{ gap: 6 }}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <Animated.View key={i} entering={ZoomIn.delay(350 + i * 130).springify().damping(9)}>
+        <Animated.View key={i} entering={ZoomIn.delay(350 + i * 130).duration(380)}>
           <Star size={30} color="#F2B01E" weight="fill" />
         </Animated.View>
       ))}
@@ -126,7 +125,7 @@ export function ReviewStep({ businessName, onReview, onSkip }: { businessName: s
   const dark = useColorScheme().colorScheme === 'dark';
   return (
     <Animated.View entering={FadeInDown.duration(380)} style={{ width: '100%' }}>
-      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
+      <View className="rounded-3xl bg-bg-light dark:bg-bg-dark" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
         <StarRow />
         <Animated.View entering={FadeInUp.delay(1050).duration(350)} style={{ alignItems: 'center' }}>
           <Text className="text-[17px] font-extrabold text-center text-text-light dark:text-text-dark mt-4">¿Qué tal te fue en {businessName}?</Text>
@@ -138,7 +137,7 @@ export function ReviewStep({ businessName, onReview, onSkip }: { businessName: s
           <MapPin size={17} color={dark ? colors.mintDark : '#fff'} />
           <Text className="font-bold text-[14.5px]" style={{ color: dark ? colors.mintDark : '#fff' }}>Calificar en Google Maps</Text>
         </Press>
-      </Glass>
+      </View>
       <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
         <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
       </Press>
@@ -150,12 +149,12 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
   const dark = useColorScheme().colorScheme === 'dark';
   return (
     <Animated.View entering={FadeInDown.duration(380)} style={{ width: '100%' }}>
-      <Glass className="rounded-3xl" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
-        <Animated.View entering={ZoomIn.delay(150).springify().damping(10)}>
+      <View className="rounded-3xl bg-bg-light dark:bg-bg-dark" style={{ paddingHorizontal: 20, paddingVertical: 24, alignItems: 'center' }}>
+        <Animated.View entering={ZoomIn.delay(150).duration(450)}>
           <InstagramLogo size={64} />
         </Animated.View>
         <Text className="text-[17px] font-extrabold text-center text-text-light dark:text-text-dark mt-4">Sube una historia y gana</Text>
-        <Animated.View entering={ZoomIn.delay(500).springify().damping(9)} style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 999, marginTop: 10, gap: 6, paddingVertical: 5, paddingHorizontal: 12, backgroundColor: dark ? 'rgba(98,240,182,0.14)' : 'rgba(31,122,102,0.10)' }}>
+        <Animated.View entering={FadeIn.delay(450).duration(450)} style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 999, marginTop: 10, gap: 6, paddingVertical: 5, paddingHorizontal: 12, backgroundColor: dark ? 'rgba(98,240,182,0.14)' : 'rgba(31,122,102,0.10)' }}>
           <Coin size={18} />
           <Text className="text-[15px] font-extrabold text-aqua-ink dark:text-mint">+{STORY_REWARD} Puntos</Text>
         </Animated.View>
@@ -166,7 +165,7 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
           <Camera size={18} color={dark ? colors.mintDark : '#fff'} />
           <Text className="font-bold text-[14.5px]" style={{ color: dark ? colors.mintDark : '#fff' }}>Sacar o elegir foto</Text>
         </Press>
-      </Glass>
+      </View>
       <Press accessibilityRole="button" onPress={onSkip} className="items-center py-3.5 mt-1">
         <Text className="text-muted-light dark:text-muted-dark font-semibold text-[14px]">Ahora no</Text>
       </Press>

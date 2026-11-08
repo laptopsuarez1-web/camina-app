@@ -6,7 +6,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
-import Reanimated, { FadeInUp, ZoomIn } from 'react-native-reanimated';
+import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -2136,7 +2136,7 @@ export default function CanjesScreen() {
       {/* Código de canje */}
       <Modal visible={!!activeRedemption} transparent animationType="slide" onRequestClose={closeCode} onDismiss={() => flushAfterClose(afterCodeClose)}>
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
-          <Glass className="rounded-t-[32px] px-6 pt-3 pb-10">
+          <View className="rounded-t-[32px] px-6 pt-3 pb-10 bg-card-light dark:bg-card-dark">
             <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
 
             <View className="flex-row items-center justify-between gap-2.5 mb-5">
@@ -2210,10 +2210,10 @@ export default function CanjesScreen() {
                 {paso === 'ok' ? (
                   <View className="bg-aqua-light-light dark:bg-aqua-light-dark rounded-3xl py-6 px-4 items-center mb-4 w-full">
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                      {[{ l: -64, t: 6, d: 500, c: '#F2B01E' }, { l: 70, t: 20, d: 650, c: colors.mint }, { l: -50, t: 90, d: 800, c: colors.mint }, { l: 62, t: 84, d: 950, c: '#F2B01E' }].map((sp, i) => (
-                        <Reanimated.Text key={i} entering={ZoomIn.delay(sp.d).springify().damping(7)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
+                      {[{ l: -84, t: 16, d: 600, c: '#F2B01E' }, { l: 78, t: 6, d: 750, c: colors.mint }, { l: -78, t: 96, d: 900, c: colors.mint }, { l: 72, t: 100, d: 1050, c: '#F2B01E' }].map((sp, i) => (
+                        <Reanimated.Text key={i} entering={FadeIn.delay(sp.d).duration(700)} allowFontScaling={false} style={{ position: 'absolute', left: '50%', marginLeft: sp.l, top: sp.t, fontSize: 18, color: sp.c }}>✦</Reanimated.Text>
                       ))}
-                      <Reanimated.View entering={ZoomIn.delay(100).springify().damping(8)}>
+                      <Reanimated.View entering={FadeInUp.delay(100).duration(550)}>
                         <BaifoMascot pose="festeja" height={132} />
                       </Reanimated.View>
                     </View>
@@ -2224,7 +2224,7 @@ export default function CanjesScreen() {
                       </Text>
                     </Reanimated.View>
                     {activeId && bonusById[activeId] ? (
-                      <Reanimated.View entering={ZoomIn.delay(900).springify().damping(9)}>
+                      <Reanimated.View entering={FadeIn.delay(900).duration(500)}>
                         <Text accessibilityLiveRegion="polite" className="text-aqua-ink dark:text-aqua text-[13px] font-bold mt-2 text-center">
                           {`¡+${bonusById[activeId]} Puntos por probar un local nuevo!`}
                         </Text>
@@ -2381,7 +2381,7 @@ export default function CanjesScreen() {
             <Press accessibilityRole="button" hitSlop={{ top: 6, bottom: 20 }} onPress={closeCode} style={{ marginTop: 14 }}>
               <Text className="text-muted-light dark:text-muted-dark text-[13px] text-center">Cerrar</Text>
             </Press>
-          </Glass>
+          </View>
         </View>
       </Modal>
       {story.element}

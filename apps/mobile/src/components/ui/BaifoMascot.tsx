@@ -14,7 +14,7 @@ const IMG = {
 } as const;
 export type BaifoPose = keyof typeof IMG;
 
-const DURACION: Record<BaifoPose, number> = { sentado: 1600, confundido: 1200, festeja: 450, camina: 1800, asoma: 1400 };
+const DURACION: Record<BaifoPose, number> = { sentado: 1600, confundido: 1200, festeja: 900, camina: 1800, asoma: 1400 };
 
 export function BaifoMascot({ pose, height = 124 }: { pose: BaifoPose; height?: number }) {
   const reduced = useReducedMotion();
@@ -27,7 +27,7 @@ export function BaifoMascot({ pose, height = 124 }: { pose: BaifoPose; height?: 
   const anim = useAnimatedStyle(() => {
     if (pose === 'sentado') return { transform: [{ scaleX: 1 + 0.02 * t.value }, { scaleY: 1 + 0.035 * t.value }] };
     if (pose === 'confundido') return { transform: [{ rotate: `${-2 + 4 * t.value}deg` }] };
-    if (pose === 'festeja') return { transform: [{ translateY: -10 * t.value }] };
+    if (pose === 'festeja') return { transform: [{ translateY: -6 * t.value }] };
     if (pose === 'camina') return { transform: [{ translateY: -3 * t.value }, { scale: 1 + 0.015 * t.value }] };
     return { transform: [{ translateY: 5 * t.value }] };
   });
