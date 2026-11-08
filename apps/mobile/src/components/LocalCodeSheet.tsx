@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AccessibilityInfo, Modal, Platform, TextInput as RNTextInput, View } from 'react-native';
+import { ActivityIndicator, AccessibilityInfo, Keyboard, Modal, PanResponder, Platform, TextInput as RNTextInput, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -115,6 +115,27 @@ export function LocalCodeSheet({
 
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
 
+  // Deslizar hacia abajo cierra la hoja (como las otras): se arrastra desde la parte de arriba de la hoja.
+  const drag = useSharedValue(0);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const lockedRef = useRef(false);
+  lockedRef.current = phase === 'busy' || phase === 'done';
+  const pan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => !lockedRef.current,
+      onMoveShouldSetPanResponder: (_, g) => !lockedRef.current && g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => { drag.value = Math.max(0, g.dy); },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 80 || g.vy > 0.8) { Keyboard.dismiss(); drag.value = 0; closeRef.current(); }
+        else drag.value = withSpring(0, { damping: 18, stiffness: 220 });
+      },
+      onPanResponderTerminate: () => { drag.value = withSpring(0); },
+    }),
+  ).current;
+  const dragStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drag.value }] }));
+  useEffect(() => { if (visible) drag.value = 0; }, [visible, drag]);
+
   async function submit() {
     if (code.length !== DIGITS || phase === 'busy' || phase === 'done') return;
     setPhase('busy');
@@ -145,11 +166,14 @@ export function LocalCodeSheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onDismiss={onDismiss}>
       <KeyboardSafe className="flex-1">
         <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }}>
-          <View>
+          <Press accessible={false} feedback="none" style={{ flex: 1 }} onPress={() => { if (!lockedRef.current) onClose(); }} />
+          <Animated.View style={dragStyle}>
           {/* Liquid Glass sobre un fondo que lo vuelve legible: sin ese fondo se transparentaba la lista de locales de atrás y no se leía nada. */}
           <View style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32, backgroundColor: dark ? 'rgba(22,16,31,0.86)' : 'rgba(255,255,255,0.82)' }}>
           <Glass className="rounded-t-[32px] px-6 pt-3 pb-8">
-            <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-5" />
+            <View {...pan.panHandlers} style={{ paddingTop: 4, paddingBottom: 16, marginTop: -4 }}>
+              <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center" />
+            </View>
 
             <View className="flex-row items-center gap-2.5 mb-5">
               <BusinessAvatar logoUrl={logoUrl} category={category} size={38} />
@@ -231,7 +255,7 @@ export function LocalCodeSheet({
             </Press>
           </Glass>
           </View>
-          </View>
+          </Animated.View>
         </View>
       </KeyboardSafe>
     </Modal>
