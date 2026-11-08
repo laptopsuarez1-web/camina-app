@@ -19,11 +19,11 @@ export const CAP = {
   canjes: '/web/cap/canjes.jpg',
   ficha: '/web/cap/ficha.jpg',
   grupos: '/web/cap/grupos-v2.jpg',
-  grupo: '/web/cap/grupo-v2.jpg',
+  grupo: '/web/cap/grupo-v3.jpg',
   grupoRanking: '/web/cap/grupo-ranking-v2.jpg',
   grupoChat: '/web/cap/grupo-chat.jpg',
   grupoReto: '/web/cap/grupo-reto-v2.jpg',
-  grupoColor: '/web/cap/grupo-color.jpg',
+  grupoColor: '/web/cap/grupo-color-v3.jpg',
   grupoMeta: '/web/cap/grupo-meta.jpg',
   grupoInvitar: '/web/cap/grupo-invitar.jpg',
   puntos: '/web/cap/puntos.jpg',
@@ -35,8 +35,8 @@ export const CAP = {
   perfil: '/web/cap/perfil.jpg',
   fichaAmigo: '/web/cap/ficha-amigo.jpg',
   fondoPerfil: '/web/cap/fondo-perfil.jpg',
-  resenaHistoria: '/web/cap/canje-calificar-v2.jpg',
-  canjeHistoria: '/web/cap/canje-historia-v2.jpg',
+  resenaHistoria: '/web/cap/canje-calificar-v3.jpg',
+  canjeHistoria: '/web/cap/canje-historia-v3.jpg',
   fichaLocal: '/web/cap/ficha-local.jpg',
   rankingNuevo: '/web/cap/ranking-nuevo.jpg',
   puntosNuevo: '/web/cap/puntos-nuevo.jpg',
@@ -623,7 +623,7 @@ const GRUPO_PANT = [
   ['El podio de la semana', 'Se arma solo con los pasos de cada integrante desde el lunes. La corona es para quien más caminó.', CAP.grupo],
   ['Ranking del grupo', 'Todos los integrantes ordenados por pasos, y botón para compartir el ranking.', CAP.grupoRanking],
   ['Desafíos del grupo', 'Crean un desafío de pasos, días o racha, y ven cómo va cada integrante.', CAP.grupoReto],
-  ['Elige el color y la foto del grupo', 'Cada grupo tiene su propia foto y un fondo a elegir: violeta, esmeralda, océano, atardecer, rosa o dorado.', CAP.grupoColor],
+  ['Foto, portada y fondo del grupo', 'Cada grupo tiene su foto, una portada opcional y un fondo a elegir: violeta, esmeralda, océano, atardecer, rosa o dorado.', CAP.grupoColor],
   ['Invitar amigos al grupo', 'Eliges a tus amigos y les llega la invitación; se unen cuando aceptan.', CAP.grupoInvitar],
   ['Ranking', 'El ranking global y el de tus amigos.', CAP.ranking],
 ] as const;
@@ -1228,7 +1228,7 @@ export function AsiTeVen() {
 const CAP_RUTA = {
   evento: '/web/cap/eventos-ruta-v2-dark.jpg',
   insignias: '/web/cap/insignias-dark.jpg',
-  insignia: '/web/cap/insignia-detalle-dark.jpg',
+  insignia: '/web/cap/insignia-detalle-v3-dark.jpg',
   perfil: '/web/cap/perfil-insignias-dark.jpg',
 };
 // Videos grabados de la app (Ruta v2), con su imagen fija para "reducir movimiento" y mientras cargan.
