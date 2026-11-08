@@ -25,9 +25,22 @@ async function crearComercioPendiente(userId: string, email: string): Promise<Bu
   };
   let { data: created, error } = await supabase
     .from('businesses')
-    .insert({ ...row, city: pending.city ?? 'Tarija', account_kind: pending.accountKind ?? 'commerce' })
+    .insert({
+      ...row,
+      city: pending.city ?? 'Tarija',
+      account_kind: pending.accountKind ?? 'commerce',
+      // Si eligió plan al registrarse, no se le vuelve a pedir en el panel.
+      ...(pending.requestedPlan ? { requested_plan: pending.requestedPlan, plan_onboarded: true } : {}),
+    })
     .select('*')
     .single();
+  if (error && /requested_plan/i.test(error.message)) {
+    ({ data: created, error } = await supabase
+      .from('businesses')
+      .insert({ ...row, city: pending.city ?? 'Tarija', account_kind: pending.accountKind ?? 'commerce', plan_onboarded: !!pending.requestedPlan })
+      .select('*')
+      .single());
+  }
   if (error && /city|account_kind/i.test(error.message)) {
     ({ data: created, error } = await supabase.from('businesses').insert(row).select('*').single());
   }

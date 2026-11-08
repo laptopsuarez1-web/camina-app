@@ -553,6 +553,12 @@ export default function AdminPage() {
                           </option>
                         ))}
                       </select>
+                      {/* Lo que pidió al registrarse (0102): cupo fundador o un plan de pago que dijo haber pagado. */}
+                      {b.requested_plan && b.requested_plan !== b.plan && b.requested_plan !== 'primer_paso' && !b.founder && (
+                        <p className="text-[10.5px] mt-1 font-semibold" style={{ color: '#8B6A12' }}>
+                          {b.requested_plan === 'fundador' ? 'Pidió el cupo fundador' : `Pidió ${PLAN_LABEL[b.requested_plan as BusinessPlan]} · revisar comprobante en WhatsApp`}
+                        </p>
+                      )}
                       {b.pending_plan && (
                         <p className="text-muted text-[10.5px] mt-1">
                           → {PLAN_LABEL[b.pending_plan]} el{' '}

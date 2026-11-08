@@ -12,6 +12,8 @@ import CategoryPicker from '@/components/CategoryPicker';
 import { avisarPorCorreo } from '@/lib/email';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
+import { Check } from 'lucide-react';
+import { CUPO_FUNDADOR_ABIERTO, LANZAMIENTO, PAYMENT_QR, PLANS, comprobanteRegistroLink, type PlanPedido } from '@/lib/plans';
 
 const PREFIJOS = [
   ['+591', 'Bolivia'],
@@ -30,6 +32,20 @@ export default function RegistroPage() {
   const [esVirtual, setEsVirtual] = useState(false);
   const [direccion, setDireccion] = useState('');
   const [step, setStep] = useState(1);
+  // Plan que elige al registrarse: el cupo fundador (mientras esté abierto), el gratis o uno de pago.
+  const [plan, setPlan] = useState<PlanPedido>(CUPO_FUNDADOR_ABIERTO ? 'fundador' : 'paso_firme');
+  // Los botones de la web llegan con ?plan=paso_firme (o el que eligieron) o ?fundador=1: se marca al pasar al paso del
+  // plan (no al cargar, para que la página del servidor y la del navegador coincidan).
+  const planDeLaWeb = useRef(false);
+  function aplicarPlanDeLaWeb() {
+    if (planDeLaWeb.current) return;
+    planDeLaWeb.current = true;
+    const q = new URLSearchParams(window.location.search);
+    const pedido = q.get('plan');
+    if (q.get('fundador') === '1' && CUPO_FUNDADOR_ABIERTO) setPlan('fundador');
+    else if (pedido === 'paso_firme' || pedido === 'paso_adelante' || pedido === 'primer_paso') setPlan(pedido);
+  }
+  const [pagoAvisado, setPagoAvisado] = useState(false);
   const [kind, setKind] = useState<'commerce' | 'events_only'>('commerce');
   const [ciudad, setCiudad] = useState('Tarija');
   const [ciudades, setCiudades] = useState<string[]>(['Tarija']);
@@ -62,6 +78,16 @@ export default function RegistroPage() {
   // El teléfono es opcional: si no lo cargan, se guarda vacío (null en la base).
   const telefonoCompleto = telefono.trim() ? `${prefijo} ${telefono.trim()}` : '';
 
+  // Pasos del registro. Un comercio elige su plan (y, si es de pago, paga con el QR) antes de cargar sus datos.
+  const pagado = plan === 'paso_firme' || plan === 'paso_adelante';
+  const pasos: ('tipo' | 'plan' | 'pago' | 'datos' | 'cuenta')[] =
+    kind === 'commerce' ? ['tipo', 'plan', ...(pagado ? (['pago'] as const) : []), 'datos', 'cuenta'] : ['tipo', 'datos', 'cuenta'];
+  const actual = pasos[Math.min(step, pasos.length) - 1];
+  const siguiente = () => setStep((n) => Math.min(n + 1, pasos.length));
+  const anterior = () => setStep((n) => Math.max(n - 1, 1));
+  const planElegido = PLANS.find((p) => p.id === plan);
+  const qr = pagado ? PAYMENT_QR[plan as 'paso_firme' | 'paso_adelante'] : undefined;
+
   async function pickLogo(file: File) {
     try {
       setLogo(await fileToSmallDataUrl(file));
@@ -72,8 +98,8 @@ export default function RegistroPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (step < 3) {
-      if (step === 1 || datosOk) setStep(step + 1);
+    if (actual !== 'cuenta') {
+      if (actual !== 'datos' || datosOk) siguiente();
       return;
     }
     if (!valido) return;
@@ -96,6 +122,7 @@ export default function RegistroPage() {
             isVirtual: esVirtual || kind === 'events_only',
             accountKind: kind,
             city: ciudad,
+            requestedPlan: kind === 'commerce' ? plan : null,
           },
         },
       },
@@ -120,6 +147,7 @@ export default function RegistroPage() {
         accountKind: kind,
         city: ciudad,
         logoDataUrl: logo,
+        requestedPlan: kind === 'commerce' ? plan : null,
       });
       setLoading(false);
       setAwaitingConfirmation(true);
@@ -136,11 +164,19 @@ export default function RegistroPage() {
       plan: 'primer_paso',
     };
     // Si la base todavía no tiene las columnas nuevas (ciudad / tipo de cuenta), se crea igual sin ellas.
+    const pedido = kind === 'commerce' ? { requested_plan: plan, plan_onboarded: true } : {};
     let { data: created, error: businessError } = await supabase
       .from('businesses')
-      .insert({ ...row, city: ciudad, account_kind: kind })
+      .insert({ ...row, city: ciudad, account_kind: kind, ...pedido })
       .select('id')
       .single();
+    if (businessError && /requested_plan/i.test(businessError.message)) {
+      ({ data: created, error: businessError } = await supabase
+        .from('businesses')
+        .insert({ ...row, city: ciudad, account_kind: kind, plan_onboarded: kind === 'commerce' })
+        .select('id')
+        .single());
+    }
     if (businessError && /city|account_kind/i.test(businessError.message)) {
       ({ data: created, error: businessError } = await supabase.from('businesses').insert(row).select('id').single());
     }
@@ -215,14 +251,14 @@ export default function RegistroPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-card border border-line rounded-2xl p-5 sm:p-6">
-          <p className="text-mint-dark font-semibold text-[13px] mb-1">Paso {step} de 3</p>
+          <p className="text-mint-dark font-semibold text-[13px] mb-1">Paso {step} de {pasos.length}</p>
           <div className="flex gap-1.5 mb-4">
-            {[1, 2, 3].map((n) => (
+            {pasos.map((_, i) => i + 1).map((n) => (
               <div key={n} className="h-1.5 flex-1 rounded-full" style={{ background: n <= step ? '#62F0B6' : '#e6e3ee' }} />
             ))}
           </div>
 
-          {step === 1 && (
+          {actual === 'tipo' && (
             <>
               <h1 className="text-[22px] font-bold mb-1">¿Cómo quieres usar Camina?</h1>
               <p className="text-muted text-[13px] mb-5">Elige el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
@@ -267,7 +303,10 @@ export default function RegistroPage() {
               )}
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  aplicarPlanDeLaWeb();
+                  siguiente();
+                }}
                 className="rounded-xl px-6 py-3 font-semibold text-sm"
                 style={{ background: '#241748', color: '#7FEDC4' }}
               >
@@ -282,7 +321,104 @@ export default function RegistroPage() {
             </>
           )}
 
-          {step === 2 && (
+
+          {actual === 'plan' && (
+            <div className="flex flex-col gap-3">
+              <div>
+                <h1 className="text-[22px] font-bold mb-1">Elige tu plan</h1>
+                <p className="text-muted text-[13px]">Puedes cambiarlo cuando quieras, sin permanencia.</p>
+              </div>
+              {CUPO_FUNDADOR_ABIERTO && (
+                <button
+                  type="button"
+                  onClick={() => setPlan('fundador')}
+                  className="text-left rounded-xl p-3.5 border-2"
+                  style={{ borderColor: plan === 'fundador' ? '#E0B43A' : '#e6e3ee', background: plan === 'fundador' ? '#FFF8E4' : '#fff' }}
+                >
+                  <p className="font-bold text-[14px]">Cupo fundador · 3 meses gratis de Paso Firme</p>
+                  <p className="text-muted text-[12px] mt-0.5">Para los primeros 20 comercios. Te creas la cuenta y te lo confirmamos al aprobar tu local.</p>
+                </button>
+              )}
+              {/* Los de pago primero; el gratis al final. */}
+              {[...PLANS.filter((p) => p.id !== 'primer_paso'), ...PLANS.filter((p) => p.id === 'primer_paso')].map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  onClick={() => setPlan(p.id)}
+                  className="text-left rounded-xl p-3.5 border-2"
+                  style={{ borderColor: plan === p.id ? '#1f9d75' : '#e6e3ee', background: plan === p.id ? '#f0faf6' : '#fff' }}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-bold text-[14px]">{p.name}</p>
+                    <p className="font-bold text-[14px]" style={{ color: '#1f9d75' }}>{p.price}</p>
+                  </div>
+                  <p className="text-muted text-[12px] mt-0.5">
+                    {p.blurb}
+                    {p.id !== 'primer_paso' ? <span className="font-semibold" style={{ color: '#8B6A12' }}> · {LANZAMIENTO}</span> : null}
+                  </p>
+                  {plan === p.id && (
+                    <ul className="mt-2 flex flex-col gap-1">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex gap-1.5 items-start text-[12px]">
+                          <Check size={12} color="#1f9d75" className="mt-0.5 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </button>
+              ))}
+              <div className="flex gap-2.5 mt-1">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                  Volver
+                </button>
+                <button type="button" onClick={siguiente} className="flex-1 rounded-xl py-3 font-semibold text-sm" style={{ background: '#241748', color: '#7FEDC4' }}>
+                  {pagado ? 'Continuar al pago' : 'Continuar'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {actual === 'pago' && planElegido && qr && (
+            <div className="flex flex-col gap-3.5">
+              <div>
+                <h1 className="text-[22px] font-bold mb-1">Paga {planElegido.name}</h1>
+                <p className="text-muted text-[13px]">Escanea el QR con la app de tu banco y manda el comprobante por WhatsApp.</p>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qr.image} alt={`QR de pago de ${planElegido.name}, ${qr.amount}`} className="w-full max-w-[280px] self-center rounded-xl border border-line" />
+              <a
+                href={comprobanteRegistroLink(planElegido.name, qr.amount)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setPagoAvisado(true)}
+                className="text-center rounded-xl py-3 font-semibold text-sm"
+                style={{ background: '#25D366', color: '#fff' }}
+              >
+                Mandar el comprobante por WhatsApp
+              </a>
+              <p className="text-muted text-[12px] leading-[18px]">
+                Activamos tu plan cuando revisamos el pago y tu local. Mientras tanto ya puedes armar tu ficha en el panel.
+              </p>
+              <div className="flex gap-2.5">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                  Volver
+                </button>
+                <button
+                  type="button"
+                  disabled={!pagoAvisado}
+                  onClick={siguiente}
+                  className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
+                  style={{ background: '#241748', color: '#7FEDC4' }}
+                >
+                  Ya lo mandé, crear mi cuenta
+                </button>
+              </div>
+              {!pagoAvisado && <p className="text-muted text-[11.5px] -mt-1.5">Primero manda el comprobante por WhatsApp.</p>}
+            </div>
+          )}
+
+          {actual === 'datos' && (
             <div className="flex flex-col gap-4">
               <div>
                 <h1 className="text-[22px] font-bold mb-1">Crea tu comercio</h1>
@@ -363,7 +499,7 @@ export default function RegistroPage() {
 
               {error && <p className="text-warn text-[12.5px]">{error}</p>}
               <div className="flex gap-2.5">
-                <button type="button" onClick={() => setStep(1)} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
                   Volver
                 </button>
                 <button
@@ -371,7 +507,7 @@ export default function RegistroPage() {
                   disabled={!datosOk}
                   onClick={() => {
                     setError(null);
-                    setStep(3);
+                    siguiente();
                   }}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
                   style={{ background: '#241748', color: '#7FEDC4' }}
@@ -382,7 +518,7 @@ export default function RegistroPage() {
             </div>
           )}
 
-          {step === 3 && (
+          {actual === 'cuenta' && (
             <div className="flex flex-col gap-4">
               <div>
                 <h1 className="text-[22px] font-bold mb-1">Tu cuenta</h1>
@@ -410,7 +546,7 @@ export default function RegistroPage() {
               </p>
 
               <div className="flex gap-2.5">
-                <button type="button" onClick={() => setStep(2)} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
                   Volver
                 </button>
                 <button
