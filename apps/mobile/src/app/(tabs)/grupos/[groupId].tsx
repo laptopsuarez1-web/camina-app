@@ -49,7 +49,7 @@ function weekKey() {
 
 // Difuminado de la portada de abajo hacia arriba: capas cada vez más bajas y más borrosas, en pasos chicos para que
 // no se note el corte entre una y otra.
-const BANNER_BLUR_STEPS = Array.from({ length: 9 }, (_, i) => ({ from: 0.3 + i * 0.05, blur: Math.round(2 + i * i * 0.4 + i * 1.2) }));
+const BANNER_BLUR_STEPS = Array.from({ length: 7 }, (_, i) => ({ from: 0.42 + i * 0.05, blur: Math.round(1 + i * 1.6) }));
 
 export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -476,11 +476,11 @@ export default function GroupDetailScreen() {
                     </View>
                   ))
                 : null}
-              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '40' }} />
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '26' }} />
               <LinearGradient
                 pointerEvents="none"
-                colors={['rgba(10,6,20,0.5)', 'rgba(10,6,20,0.04)', theme.colors[2] + '73', theme.colors[2] + 'D9', theme.colors[2] + 'F7']}
-                locations={[0, 0.26, 0.48, 0.72, 1]}
+                colors={['rgba(10,6,20,0.45)', 'rgba(10,6,20,0)', theme.colors[2] + '4D', theme.colors[2] + 'A6', theme.colors[2] + 'E0']}
+                locations={[0, 0.26, 0.52, 0.78, 1]}
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               />
             </>
