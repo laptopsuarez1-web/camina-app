@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -19,8 +19,8 @@ export function GroupLookPicker({ photo, onPhoto, background, onBackground }: {
 }) {
   const { dark, accentIcon } = useThemeColors();
   async function pickPhoto() {
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
-    if (!r.canceled) onPhoto({ uri: r.assets[0].uri, b64: r.assets[0].base64 ?? null });
+    const r = await pickFromGallery({ aspect: 1, max: 640 });
+    if (r) onPhoto({ uri: r.uri, b64: null });
   }
   return (
     <View style={{ gap: 14 }}>

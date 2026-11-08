@@ -379,90 +379,112 @@ export function LinkButton({ label, onPress, color }: { label: string; onPress: 
 // 1) Crear: el boleto del desafío
 // =====================================================================
 
+// Desafío creado. Sin aro ni confeti: arriba el grupo (tu cara primero y los demás que se suman), el nombre letra por
+// letra y la pista del desafío: una línea que se recorre de la salida a la meta, con un punto por día que se enciende.
+// Después las reglas en chips y el pozo, si hay.
 export function ChallengeCreatedScene({
-  name, groupName, chips, stake, dates, me, others = [], onInvite, onGoGroup, onHome,
+  name, groupName, chips, stake, dates, days = 7, me, others = [], onInvite, onGoGroup, onHome,
 }: {
-  name: string; groupName?: string; chips: string[]; stake: number; dates: string;
-  // El grupo en el aro (mismo estilo que "Grupo creado" y "Te sumaste"): tu foto sube y cierra el círculo.
+  name: string; groupName?: string; chips: string[]; stake: number; dates: string; days?: number;
   me?: CinePerson | null; others?: CinePerson[];
   onInvite: () => void; onGoGroup: () => void; onHome: () => void;
 }) {
   const p = usePalette();
-  const tl = useTimeline(3600);
+  const tl = useTimeline(3200);
   const letters = Array.from(name);
   const small = letters.length > 14;
-  const pot = useCount(tl, 0, stake, 2100, 600);
-  const { shown, extra } = ringPeople(others, 7);
-  const empty = others.length === 0 ? 4 : 0;
+  const pot = useCount(tl, 0, stake, 2300, 600);
+  const people = [...(me ? [me] : []), ...others].slice(0, 5);
+  const extra = Math.max(0, (me ? 1 : 0) + others.length - people.length);
+  const ticks = Math.max(2, Math.min(days, 10));
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(1500, buzz.medium);
-    chips.forEach((_, i) => tl.at(2350 + i * 150, buzz.selection));
+    tl.at(1500, buzz.selection);
     tl.at(2250, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // La pista se recorre de izquierda a derecha.
+  const run = useBeat(tl, 1250, { duration: 1000 });
+  const runStyle = useAnimatedStyle(() => ({ width: `${run.value * 100}%` }));
+  const walker = useAnimatedStyle(() => ({ left: `${run.value * 100}%`, opacity: run.value > 0 && run.value < 1 ? 1 : 0 }));
   return (
-    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`} confetti={{ at: 2250 }}>
-      <Reveal tl={tl} delay={150}><Eyebrow color={p.muted}>{groupName ? `Nuevo desafío · ${groupName}` : 'Nuevo desafío'}</Eyebrow></Reveal>
-      <View accessible accessibilityLabel={name} style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 6 }}>
+    <Stage tl={tl} announce={`${name} está en marcha. ${dates}`}>
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>{groupName ? `Nuevo desafío · ${groupName}` : 'Nuevo desafío'}</Eyebrow></Reveal>
+
+      {/* El grupo: las caras entran una tras otra y quedan encimadas. */}
+      <View style={{ flexDirection: 'row', marginTop: 18, alignItems: 'center' }}>
+        {people.map((x, i) => (
+          <Reveal key={x.id} tl={tl} delay={250 + i * 110} pop from={0.4} style={{ marginLeft: i ? -12 : 0, zIndex: 10 - i }}>
+            <Avatar p={x} size={i === 0 ? 54 : 46} ring={i === 0 ? colors.mint : p.glassLine} />
+          </Reveal>
+        ))}
+        {extra > 0 ? (
+          <Reveal tl={tl} delay={250 + people.length * 110} pop from={0.4} style={{ marginLeft: -12 }}>
+            <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: p.chip, borderWidth: 3, borderColor: p.glassLine, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: p.text, fontWeight: '800', fontSize: 14 }}>+{extra}</Text>
+            </View>
+          </Reveal>
+        ) : null}
+      </View>
+
+      <View accessible accessibilityLabel={name} style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 16 }}>
         {letters.map((ch, i) => (
-          <Reveal key={i} tl={tl} delay={300 + Math.min(i, 14) * 60} pop from={0.6}>
-            <Text style={{ ...display(small ? 24 : 30), color: p.text, lineHeight: small ? 30 : 36 }}>{ch === ' ' ? ' ' : ch}</Text>
+          <Reveal key={i} tl={tl} delay={600 + Math.min(i, 14) * 45} pop from={0.6}>
+            <Text style={{ ...display(small ? 26 : 32), color: p.text, lineHeight: small ? 32 : 38 }}>{ch === ' ' ? ' ' : ch}</Text>
           </Reveal>
         ))}
       </View>
-      <View style={{ marginTop: 26 }}>
-        <GroupOrbit
-          tl={tl}
-          size={232}
-          delay={700}
-          people={shown}
-          extra={extra}
-          me={me ?? null}
-          emptySlots={empty}
-          meDelay={1100}
-          onSlotPress={onInvite}
-          center={
-            <View style={{ alignItems: 'center' }}>
-              <Reveal tl={tl} delay={1000} pop from={0.3}>
-                <View style={{ width: 70, height: 70, borderRadius: 35, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
-                  <Trophy size={36} color={GOLD} />
-                </View>
-              </Reveal>
-              {stake > 0 && (
-                <Reveal tl={tl} delay={1900} dy={6} style={{ marginTop: 6 }}>
-                  <View accessible accessibilityLabel={`${stake} Puntos en juego por persona`} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <View>
-                      <Coin size={16} />
-                      {[0, 1, 2].map((i) => <View key={i} style={{ position: 'absolute', left: 8, top: 8 }}><FlyingCoin tl={tl} delay={2000 + i * 120} dx={(i - 1) * 40} dy={-220} /></View>)}
-                    </View>
-                    <Text style={{ fontWeight: '800', fontSize: 15, color: p.gold, fontVariant: ['tabular-nums'] }}>{pot}</Text>
-                  </View>
+
+      {/* La pista: salida, un punto por día y la meta con el trofeo. */}
+      <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 22, paddingHorizontal: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text style={{ color: p.muted, fontWeight: '800', fontSize: 11, letterSpacing: 1 }}>HOY</Text>
+          <View style={{ flex: 1, height: 26, justifyContent: 'center' }}>
+            <View style={{ height: 6, borderRadius: 3, backgroundColor: p.track }} />
+            <Animated.View style={[{ position: 'absolute', left: 0, height: 6, borderRadius: 3, backgroundColor: colors.mint }, runStyle]} />
+            <View style={{ position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between' }}>
+              {Array.from({ length: ticks }).map((_, i) => (
+                <Reveal key={i} tl={tl} delay={1250 + (i / (ticks - 1)) * 950} pop from={0.3}>
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.mint, borderWidth: 2, borderColor: p.bg[1] }} />
                 </Reveal>
-              )}
+              ))}
             </View>
-          }
-        />
-      </View>
-      <Reveal tl={tl} delay={2250} pop from={0.6} style={{ marginTop: 18 }}>
-        <Text style={{ ...display(26), color: p.text, textAlign: 'center' }}>¡Desafío en marcha!</Text>
+            <Animated.View pointerEvents="none" style={[{ position: 'absolute', marginLeft: -9, width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff', shadowColor: colors.mint, shadowOpacity: 0.9, shadowRadius: 8 }, walker]} />
+          </View>
+          <Reveal tl={tl} delay={2200} pop from={0.3}>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1.5, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={19} color={GOLD} />
+            </View>
+          </Reveal>
+        </View>
+        <Text style={{ color: p.muted, fontSize: 12.5, textAlign: 'center', marginTop: 6 }}>{dates}</Text>
       </Reveal>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 10 }}>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 14 }}>
         {chips.map((c, i) => (
-          <Stamp key={c} tl={tl} delay={2350 + i * 150}>
+          <Stamp key={c} tl={tl} delay={2250 + i * 120}>
             <View style={{ paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999, backgroundColor: p.chip }}>
               <Text style={{ fontSize: 12, fontWeight: '700', color: p.text }}>{c}</Text>
             </View>
           </Stamp>
         ))}
       </View>
-      <Reveal tl={tl} delay={2800}>
-        <Text style={{ fontSize: 13, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 19, maxWidth: 290 }}>
-          {dates}.{stake > 0 ? ' El primero en cumplir la meta se lleva la mitad del pozo y el resto se reparte entre los demás que cumplan.' : ' Invita a tu grupo y que gane el que más camine.'}
+      {stake > 0 && (
+        <Reveal tl={tl} delay={2300} dy={6} style={{ marginTop: 10 }}>
+          <View accessible accessibilityLabel={`${stake} Puntos en juego por persona`} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.5)' }}>
+            <Coin size={18} />
+            <Text style={{ fontWeight: '800', fontSize: 16, color: p.gold, fontVariant: ['tabular-nums'] }}>{pot}</Text>
+            <Text style={{ fontWeight: '700', fontSize: 13, color: p.gold }}>en juego por persona</Text>
+          </View>
+        </Reveal>
+      )}
+      <Reveal tl={tl} delay={2600}>
+        <Text style={{ fontSize: 13, color: p.muted, textAlign: 'center', marginTop: 14, lineHeight: 19, maxWidth: 290 }}>
+          {stake > 0 ? 'Invita a tu grupo: el primero en cumplir se lleva la mitad del pozo y el resto se reparte entre los demás que cumplan.' : 'Invita a tu grupo: sus pasos cuentan desde que se suman.'}
         </Text>
       </Reveal>
-      <Reveal tl={tl} delay={3000} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+      <Reveal tl={tl} delay={2750} dy={20} style={{ alignSelf: 'stretch', marginTop: 24 }}>
         <MainButton label="Invitar al grupo" onPress={onInvite} />
         <LinkButton label="Ir al grupo" onPress={onGoGroup} color={p.accent} />
         <LinkButton label="Volver al inicio" onPress={onHome} color={p.muted} />

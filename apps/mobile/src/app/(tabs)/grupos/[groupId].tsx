@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { createElement, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Users, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Plus, Flame, Check, IconBubble } from '@/components/icons';
 import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useRuta } from '@/hooks/useRuta';
@@ -32,9 +32,11 @@ import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
-import { uploadGroupPhoto } from '@/lib/avatar';
+import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
+import { Image } from 'expo-image';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { markNewGroupFormStale } from '@/lib/new-group-form';
-import * as ImagePicker from 'expo-image-picker';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
 
 // Acción para lector de pantalla / control por switch: el menú del mensaje solo abría con toque largo.
 const NOTE_ACTIONS = [{ name: 'options', label: 'Opciones del mensaje' }];
@@ -44,6 +46,30 @@ function weekKey() {
   const d = boliviaToday();
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// Cuánto se difumina la parte de abajo de la portada. En iPhone y Android el desenfoque se mide sobre los píxeles de
+// la foto (más grandes que los de la pantalla), por eso el número es mayor que en la web para verse parecido.
+const BANNER_BLUR = Platform.OS === 'web' ? 9 : 34;
+
+// La parte difuminada de la portada: la misma foto, borrosa, que aparece de a poco de abajo hacia arriba. En el
+// celular con MaskedView; en la web (solo para vistas previas) con una máscara CSS, porque MaskedView no la soporta ahí.
+const BANNER_FADE_STOPS = { colors: ['transparent', 'transparent', 'rgba(0,0,0,0.7)', '#000'] as const, locations: [0, 0.44, 0.72, 1] as const };
+function BannerBlurFade({ uri }: { uri: string }) {
+  const img = <Image source={{ uri }} cachePolicy="memory-disk" contentFit="cover" blurRadius={BANNER_BLUR} style={{ flex: 1 }} />;
+  if (Platform.OS === 'web') {
+    const css = `linear-gradient(to bottom, ${BANNER_FADE_STOPS.colors.map((c, k) => `${c} ${BANNER_FADE_STOPS.locations[k] * 100}%`).join(', ')})`;
+    return createElement('div', { style: { position: 'absolute', inset: 0, display: 'flex', pointerEvents: 'none', maskImage: css, WebkitMaskImage: css } }, img);
+  }
+  return (
+    <MaskedView
+      pointerEvents="none"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      maskElement={<LinearGradient colors={BANNER_FADE_STOPS.colors} locations={BANNER_FADE_STOPS.locations} style={{ flex: 1 }} />}
+    >
+      {img}
+    </MaskedView>
+  );
 }
 
 export default function GroupDetailScreen() {
@@ -78,6 +104,7 @@ export default function GroupDetailScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lookBusy, setLookBusy] = useState(false);
   const [rankShareOpen, setRankShareOpen] = useState(false);
+  const [rankOpen, setRankOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const goalCardY = useRef(0);
   const [goalInput, setGoalInput] = useState('');
@@ -93,7 +120,7 @@ export default function GroupDetailScreen() {
     setEditingGoal(false);
     const me = { id: userId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null };
     if (nuevo === '1') {
-      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, onInvite: () => setShareOpen(true) });
+      celebrate({ kind: 'group-created', name: data.group.name, me, code: data.group.invite_code, target: data.group.challenge_target, onInvite: () => setShareOpen(true) });
       return;
     }
     const target = data.group.challenge_target;
@@ -174,11 +201,11 @@ export default function GroupDetailScreen() {
   // Foto y fondo los cambia solo quien creó el grupo (policies de la migración 0069).
   async function pickGroupPhoto() {
     if (!groupId) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.5, exif: false, allowsEditing: true, aspect: [1, 1] });
-    if (result.canceled) return;
+    const picked = await pickFromGallery({ aspect: 1, max: 640 });
+    if (!picked) return;
     setLookBusy(true);
     try {
-      const url = await uploadGroupPhoto(groupId, result.assets[0].uri, result.assets[0].base64);
+      const url = await uploadGroupPhoto(groupId, picked.uri, null);
       const { error } = await supabase.from('groups').update({ photo_url: url }).eq('id', groupId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
@@ -188,6 +215,32 @@ export default function GroupDetailScreen() {
     } finally {
       setLookBusy(false);
     }
+  }
+
+  // Portada (opcional): una foto ancha arriba del grupo. Sin portada queda el tema de color con su dibujo.
+  async function pickGroupBanner() {
+    if (!groupId) return;
+    const picked = await pickFromGallery({ aspect: 16 / 10, max: 1280 });
+    if (!picked) return;
+    setLookBusy(true);
+    try {
+      const url = await uploadGroupBanner(groupId, picked.uri);
+      const { error } = await supabase.from('groups').update({ banner_url: url }).eq('id', groupId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    } catch (e) {
+      Alert.alert('No se pudo poner la portada', friendlyServerError(e, 'Intenta de nuevo.'));
+    } finally {
+      setLookBusy(false);
+    }
+  }
+  async function removeGroupBanner() {
+    if (!groupId) return;
+    const { error } = await supabase.from('groups').update({ banner_url: null }).eq('id', groupId);
+    if (error) { Alert.alert('No se pudo quitar la portada', friendlyServerError(error, 'Intenta de nuevo.')); return; }
+    queryClient.invalidateQueries({ queryKey: ['group-detail', groupId] });
+    queryClient.invalidateQueries({ queryKey: ['groups'] });
   }
 
   // El nombre pasa por el filtro de palabras del servidor (guard_group_name) y solo lo cambia quien creó el grupo.
@@ -379,6 +432,7 @@ export default function GroupDetailScreen() {
   const challengeTarget = data.group.challenge_target;
   const isCreator = data.group.created_by === userId;
   const theme = groupTheme(data.group.background);
+  const bannerUrl = (data.group as { banner_url?: string | null }).banner_url ?? null;
   const challengePct = challengeTarget > 0 ? Math.min(100, (totalSteps / challengeTarget) * 100) : 0;
 
   const myRank = data.members.findIndex((m) => m.id === userId) + 1;
@@ -427,18 +481,46 @@ export default function GroupDetailScreen() {
     <KeyboardSafe className="flex-1 bg-bg-light dark:bg-bg-dark">
       <LinearGradient pointerEvents="none" colors={[theme.wash + '66', theme.wash + '22', 'transparent']} locations={[0, 0.45, 0.8]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} className="flex-1" contentContainerClassName="pb-4" keyboardShouldPersistTaps="handled">
-        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: 54, paddingBottom: 0 }}>
+        {/* Portada: la foto que eligió el grupo o, si no puso, el degradé de su color. */}
+        <LinearGradient colors={groupGradient(data.group.background)} style={{ borderBottomLeftRadius: 36, borderBottomRightRadius: 36, paddingTop: insets.top + 8, paddingBottom: 0, overflow: 'hidden' }}>
+          {bannerUrl ? (
+            // Portada con foto: nítida arriba y, de abajo hacia arriba, cada vez más difuminada y oscura (morado oscuro
+            // del tema), así el podio y los nombres se leen siempre, sea cual sea la foto.
+            <>
+              <Image source={{ uri: bannerUrl }} cachePolicy="memory-disk" contentFit="cover" transition={200} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              {/* Copia difuminada de la misma foto que aparece de a poco de abajo hacia arriba (máscara con degradé):
+                  sin cortes ni líneas entre la parte nítida y la difuminada. */}
+              <BannerBlurFade uri={bannerUrl} />
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '14' }} />
+              <LinearGradient
+                pointerEvents="none"
+                colors={['rgba(10,6,20,0.4)', 'rgba(10,6,20,0)', theme.colors[2] + '33', theme.colors[2] + '80', theme.colors[2] + 'C2']}
+                locations={[0, 0.26, 0.58, 0.82, 1]}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              />
+            </>
+          ) : null}
           <View className="flex-row items-center justify-between px-5">
             <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => (nuevo === '1' || !router.canGoBack() ? router.replace('/(tabs)/grupos') : router.back())} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <ChevronLeft size={18} color="#fff" />
             </Press>
-            <View className="flex-1 flex-row items-center justify-center px-3" style={{ gap: 8 }}>
-              {data.group.photo_url ? (
-                <AvatarImage uri={data.group.photo_url} style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.6)' }} fallback={null} />
-              ) : null}
-              <Text className="text-[17px] font-bold text-white flex-shrink" numberOfLines={1}>
-                {data.group.name}
-              </Text>
+            {/* Nombre del grupo con su foto, en una pastilla (como el nombre de un chat). */}
+            <View className="flex-1 items-center px-2">
+              <View className="flex-row items-center" style={{ gap: 8, maxWidth: '100%', paddingLeft: 4, paddingRight: 14, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
+                <AvatarImage
+                  uri={data.group.photo_url}
+                  style={{ width: 32, height: 32, borderRadius: 11, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)' }}
+                  fallback={
+                    <View style={{ width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.5)' }}>
+                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>{data.group.name.trim()[0]?.toUpperCase()}</Text>
+                    </View>
+                  }
+                />
+                <View className="flex-shrink">
+                  <Text className="text-[15.5px] font-bold text-white" numberOfLines={1}>{data.group.name}</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }} numberOfLines={1}>{data.members.length} {plural(data.members.length, 'miembro', 'miembros')}</Text>
+                </View>
+              </View>
             </View>
             <Press accessibilityRole="button" accessibilityLabel="Menú del grupo" onPress={openGroupMenu} hitSlop={10} className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
               <MenuIcon size={18} color="#fff" />
@@ -477,39 +559,27 @@ export default function GroupDetailScreen() {
           </View>
         </LinearGradient>
 
-        <Glass className="flex-row mx-5 mt-3 mb-3 rounded-2xl p-3.5">
-          <View className="flex-1">
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">{totalSteps.toLocaleString('es-BO')}</Text>
-          </View>
-          <View className="w-px mx-3.5 bg-line-light dark:bg-line-dark" />
-          <View className="flex-1">
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
-            <Text className="text-[20px] font-extrabold text-text-light dark:text-text-dark">
-              {myRank ? `${myRank}.º` : '-'}
-              <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark"> de {data.members.length}</Text>
-            </Text>
-          </View>
-        </Glass>
-
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Compartir el ranking del grupo como imagen"
-          onPress={() => setRankShareOpen(true)}
-          className="mx-5 mb-3 flex-row items-center justify-center rounded-2xl"
-          style={{ gap: 9, paddingVertical: 13, backgroundColor: theme.accentDeep }}
-        >
-          <Share2 size={17} color="#fff" weight="bold" />
-          <Text className="text-white font-bold text-[14px]">Compartir ranking</Text>
-        </Press>
-
-        <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 rounded-2xl p-4 mb-3" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="flex-row items-center" style={{ gap: 10 }}>
-              <IconBubble icon={Users} tone="purple" size={34} />
-              <Text className="text-[14px] font-bold text-text-light dark:text-text-dark">Meta del grupo</Text>
+        {/* La semana del grupo en una sola tarjeta: pasos, tu puesto, la meta (y cambiarla) y compartir el ranking. */}
+        <Glass onLayout={(e) => { goalCardY.current = e.nativeEvent.layout.y; }} className="mx-5 mt-3 mb-3 rounded-3xl p-4" style={challengePct >= 100 ? { borderColor: colors.aqua, borderWidth: 1.5 } : undefined}>
+          <View className="flex-row">
+            <View className="flex-1">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Pasos del grupo</Text>
+              <Text className="text-[22px] font-extrabold text-text-light dark:text-text-dark"><AnimatedNumber value={totalSteps} id={`group-goal-${groupId}`} /></Text>
             </View>
-            {isCreator && !editingGoal && (
+            <View className="w-px mx-3.5 bg-line-light dark:bg-line-dark" />
+            <View className="flex-1">
+              <Text className="text-[12px] text-muted-light dark:text-muted-dark">Tu puesto</Text>
+              <Text className="text-[22px] font-extrabold text-text-light dark:text-text-dark">
+                {myRank ? `${myRank}.º` : '-'}
+                <Text className="text-[13px] font-semibold text-muted-light dark:text-muted-dark"> de {data.members.length}</Text>
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center justify-between mt-3.5 mb-2">
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">
+              Meta de la semana · <Text className="font-bold text-text-light dark:text-text-dark">{challengeTarget.toLocaleString('es-BO')}</Text>
+            </Text>
+            {isCreator && !editingGoal ? (
               <Press
                 accessibilityRole="button"
                 onPress={() => {
@@ -517,16 +587,14 @@ export default function GroupDetailScreen() {
                   setEditingGoal(true);
                 }}
                 hitSlop={8}
-                className="rounded-full px-3 py-1.5 bg-purple-light-light dark:bg-purple-light-dark"
+                className="rounded-full px-3 py-1 bg-purple-light-light dark:bg-purple-light-dark"
               >
-                <Text className="text-xs font-semibold text-purple-ink dark:text-purple-soft">Cambiar meta</Text>
+                <Text className="text-[11.5px] font-semibold text-purple-ink dark:text-purple-soft">Cambiar meta</Text>
               </Press>
+            ) : (
+              <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>{Math.floor(challengePct)}%</Text>
             )}
           </View>
-          <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">
-            <AnimatedNumber value={totalSteps} id={`group-goal-${groupId}`} />
-            <Text className="font-normal text-muted-light dark:text-muted-dark"> / {challengeTarget.toLocaleString('es-BO')} pasos</Text>
-          </Text>
           {editingGoal && (
             <View className="flex-row items-center gap-2 mb-3">
               <TextInput
@@ -555,13 +623,20 @@ export default function GroupDetailScreen() {
               <Check size={14} color={accentIcon} />
               <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>¡Lo lograron juntos!</Text>
             </View>
-          ) : (
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-2">
-              Meta semanal compartida: sumen pasos juntos.
-            </Text>
-          )}
+          ) : null}
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel="Compartir el ranking del grupo como imagen"
+            onPress={() => setRankShareOpen(true)}
+            className="mt-3.5 flex-row items-center justify-center rounded-2xl"
+            style={{ gap: 9, paddingVertical: 12, backgroundColor: theme.accentDeep }}
+          >
+            <Share2 size={16} color="#fff" weight="bold" />
+            <Text className="text-white font-bold text-[13.5px]">Compartir ranking</Text>
+          </Press>
         </Glass>
 
+        {/* Desafío del grupo: el que está en marcha o, si no hay, una fila corta para crear uno. */}
         {active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
             <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
@@ -617,27 +692,29 @@ export default function GroupDetailScreen() {
             )}
           </Glass>
         ) : (
-          <Glass className="mx-5 rounded-2xl p-4 mb-3">
-            <View className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Flame} tone="orange" size={40} />
+          <Glass className="mx-5 rounded-2xl p-3.5 mb-3">
+            <Press accessibilityRole="button" accessibilityLabel="Crear un desafío para el grupo" onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })} className="flex-row items-center" style={{ gap: 12 }}>
+              <IconBubble icon={Flame} tone="orange" size={38} />
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">
-                  Arma uno: elijan la regla, la meta y cuántos puntos poner en juego.
-                </Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Elijan la regla, la meta y los Puntos en juego.</Text>
               </View>
-            </View>
-            <Press
-              accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })}
-              className="bg-mint rounded-2xl py-3 items-center mt-3 flex-row justify-center"
-              style={{ gap: 6 }}
-            >
-              <Plus size={15} color={colors.mintDark} />
-              <Text className="text-mint-dark font-bold text-[13.5px]">Crear desafío</Text>
+              <View className="bg-mint rounded-full px-3.5 py-2 flex-row items-center" style={{ gap: 4 }}>
+                <Plus size={13} color={colors.mintDark} />
+                <Text className="text-mint-dark font-bold text-[12.5px]">Crear</Text>
+              </View>
             </Press>
           </Glass>
         )}
+        {/* El último desafío que terminó, en una línea: quién ganó y cómo te fue. */}
+        {lastResult && !active ? (
+          <View className="mx-6 mb-3 flex-row items-center" style={{ gap: 8 }}>
+            <Trophy size={14} color={warnText} />
+            <Text className="flex-1 text-[12px] text-muted-light dark:text-muted-dark" numberOfLines={1}>
+              Último: {lastResult.name} · ganó {lastResult.results[0]?.user_id === userId ? 'tú' : nameOf(lastResult.results[0]?.user_id ?? '')} · quedaste {lastResult.mine.rank}.º
+            </Text>
+          </View>
+        ) : null}
 
         <Glass className="mx-5 rounded-2xl p-4 mb-3">
           <View className="flex-row items-center mb-3" style={{ gap: 10 }}>
@@ -646,7 +723,7 @@ export default function GroupDetailScreen() {
               Ranking de la semana
             </Text>
           </View>
-          {data.members.map((m, i) => (
+          {(rankOpen ? data.members : data.members.slice(0, 5)).map((m, i) => (
             <View key={m.id} className="flex-row items-center gap-3 py-1.5">
               <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">{i + 1}.º</Text>
               <Press
@@ -684,7 +761,7 @@ export default function GroupDetailScreen() {
               )}
             </View>
           ))}
-          {(pending ?? []).map((p) => (
+          {(rankOpen || data.members.length <= 5 ? pending ?? [] : []).map((p) => (
             <View key={p.user_id} className="flex-row items-center gap-3 py-1.5" style={{ opacity: 0.7 }}>
               <Text className="w-5 text-xs font-bold text-muted-light dark:text-muted-dark">·</Text>
               <AvatarImage
@@ -700,13 +777,19 @@ export default function GroupDetailScreen() {
               <Text className="text-[12px] text-muted-light dark:text-muted-dark">Invitación enviada</Text>
             </View>
           ))}
+          {/* Hasta 5 personas a la vista; el resto con "Ver más". */}
+          {data.members.length > 5 ? (
+            <Press accessibilityRole="button" onPress={() => setRankOpen((v) => !v)} hitSlop={8} className="items-center pt-2.5 mt-1 border-t border-line-light dark:border-line-dark">
+              <Text className="text-[12.5px] font-bold" style={{ color: accentText }}>{rankOpen ? 'Ver menos' : `Ver más (${data.members.length - 5})`}</Text>
+            </Press>
+          ) : null}
         </Glass>
       {(history ?? []).length > 0 && (
         <View className="mx-5 bg-card-light dark:bg-card-dark rounded-2xl p-4 mb-3">
           <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-2">Semanas anteriores</Text>
           {Array.from(new Set((history ?? []).map((r) => r.week_start))).slice(0, 8).map((week, idx) => {
             const rows = (history ?? []).filter((r) => r.week_start === week);
-            const open = openWeek === week || (openWeek === null && idx === 0);
+            const open = openWeek === week;
             const end = new Date(new Date(week + 'T12:00:00').getTime() + 6 * 86400000);
             const label = `${new Date(week + 'T12:00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}`;
             return (
@@ -735,7 +818,8 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-        <View className="mx-5 mt-2 mb-2 flex-row items-baseline justify-between">
+
+        <View className="mx-5 mt-1 mb-2 flex-row items-baseline justify-between">
           <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">Chat del grupo</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">se vacía cada mes</Text>
         </View>
@@ -841,6 +925,9 @@ export default function GroupDetailScreen() {
         name={data.group.name}
         photoUrl={data.group.photo_url}
         background={data.group.background}
+        bannerUrl={bannerUrl}
+        onPickBanner={pickGroupBanner}
+        onRemoveBanner={removeGroupBanner}
         memberCount={data.members.length}
         inviteCode={data.group.invite_code}
         goal={challengeTarget}

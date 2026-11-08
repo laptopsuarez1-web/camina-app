@@ -40,3 +40,8 @@ test('un mensaje del chat o un desafío nuevo llevan directo a ese grupo', () =>
   // Sin grupo en el aviso: a la lista de Grupos.
   assert.equal(routeForNotification('group_note'), '/(tabs)/grupos');
 });
+
+test('los avisos de la Ruta del mes (visita confirmada, ruta completa) abren la Ruta; los de insignias, Insignias', () => {
+  assert.equal(routeForNotification(undefined, { screen: 'ruta' }), '/(tabs)/ruta');
+  assert.equal(routeForNotification(undefined, { screen: 'insignias' }), '/(tabs)/insignias');
+});

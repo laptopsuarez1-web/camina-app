@@ -10,7 +10,7 @@ import { GOLD } from '@/components/ruta/RutaPin';
 import { Coin } from '@/components/ui/Coin';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Camera, ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, TiktokIcon, X } from '@/components/icons';
+import { Camera, ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, Share2, TiktokIcon, X } from '@/components/icons';
 import { DAYS, closesAt, isOpenNow, rangesText, todayIndex, type OpeningHours } from '@/components/BusinessHours';
 import { supabase } from '@/lib/supabase';
 import { useRutaStopStats, type RutaStop } from '@/hooks/useRuta';
@@ -102,10 +102,12 @@ const NEXT: Record<string, { label: string; at: number }> = { Visitante: { label
 
 // Ficha del local de la Ruta: foto, qué es, números del local, horario y redes (se abren al tocarlos) y cómo llegar.
 // Se cierra con la X, tocando afuera o deslizando hacia abajo desde la parte de arriba.
-export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protagonist = false, prizeTitle }: {
+export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, onAlbum, myPhoto, protagonist = false, prizeTitle }: {
   stop: RutaStop | null; onClose: () => void; onMark: (s: RutaStop) => void; onShare?: (s: RutaStop) => void;
   // Subir la foto de tu visita (una por local): se ve en "Mi ruta" al tocar la insignia.
   onPhoto?: (s: RutaStop) => void;
+  // Tu foto de este local, si ya la subiste (se muestra en la ficha) y abrir tu álbum.
+  myPhoto?: { uri: string; key?: string | null } | null; onAlbum?: () => void;
   protagonist?: boolean; prizeTitle?: string | null;
 }) {
   const insets = useSafeAreaInsets();
@@ -226,6 +228,15 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
 
             {f?.description ? <Text style={{ color: '#E6DEFF', fontSize: 14, lineHeight: 20 }} numberOfLines={4}>{f.description}</Text> : null}
 
+            {/* Fotos del local (las que subió en su perfil), para saber qué vas a encontrar. */}
+            {(f?.photos ?? []).filter((u) => u && u !== cover).length ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+                {(f?.photos ?? []).filter((u) => u && u !== cover).slice(0, 8).map((u) => (
+                  <Image key={u} source={{ uri: u }} cachePolicy="memory-disk" contentFit="cover" transition={150} style={{ width: 104, height: 104, borderRadius: 14, backgroundColor: '#2F1E5C' }} />
+                ))}
+              </ScrollView>
+            ) : null}
+
             {/* Lo tuyo en este local (nunca quién más fue): tu nivel y lo que suma tu visita. */}
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
               <Stat accent={!!level} value={level ?? 'Nuevo'} label={next && stats ? `${stats.my_points} de ${next.at} para ${next.label}` : 'tu nivel aquí'} />
@@ -303,21 +314,44 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, protago
                 <Text style={{ color: MINT, fontWeight: '800', fontSize: 15 }}>Ya estoy aquí: marcar visita</Text>
               </Press>
             ) : (
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+              <>
+                {/* Tu recuerdo de la visita: la foto que subiste, o el lugar para subirla. */}
                 {onPhoto ? (
-                  <Press accessibilityRole="button" onPress={() => onPhoto(stop)}
-                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 7, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
-                    <Camera size={20} color={MINT} />
-                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>Subir mi foto</Text>
-                  </Press>
+                  myPhoto ? (
+                    <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 18, backgroundColor: 'rgba(98,240,182,0.08)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.35)' }}>
+                      <Press accessibilityRole="button" accessibilityLabel="Ver tu foto en tu álbum" onPress={onAlbum}
+                        style={{ width: 62, height: 76, borderRadius: 8, padding: 3, backgroundColor: '#FBF8FF', transform: [{ rotate: '-3deg' }] }}>
+                        <Image source={{ uri: myPhoto.uri, cacheKey: myPhoto.key ?? undefined }} cachePolicy="memory-disk" contentFit="cover" style={{ flex: 1, borderRadius: 5 }} />
+                      </Press>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>Tu foto ya está en tu álbum</Text>
+                        <View style={{ flexDirection: 'row', gap: 14, marginTop: 6 }}>
+                          {onAlbum ? <Press accessibilityRole="button" onPress={onAlbum} hitSlop={8}><Text style={{ color: MINT, fontWeight: '800', fontSize: 13.5 }}>Ver álbum</Text></Press> : null}
+                          <Press accessibilityRole="button" onPress={() => onPhoto(stop)} hitSlop={8}><Text style={{ color: MUTED, fontWeight: '700', fontSize: 13.5 }}>Cambiar foto</Text></Press>
+                        </View>
+                      </View>
+                    </View>
+                  ) : (
+                    <Press accessibilityRole="button" onPress={() => onPhoto(stop)} haptic="light"
+                      style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(98,240,182,0.55)', backgroundColor: 'rgba(98,240,182,0.06)' }}>
+                      <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(98,240,182,0.16)', alignItems: 'center', justifyContent: 'center' }}>
+                        <Camera size={22} color={MINT} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>Sube la foto de tu visita</Text>
+                        <Text style={{ color: MUTED, fontSize: 12.5, marginTop: 1 }}>Queda en tu álbum del mes, junto a tu insignia.</Text>
+                      </View>
+                    </Press>
+                  )
                 ) : null}
                 {onShare ? (
-                  <Press accessibilityRole="button" onPress={() => onShare(stop)}
-                    style={{ flex: 1, borderRadius: 16, paddingVertical: 13, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.45)' }}>
-                    <Text style={{ color: MINT, fontWeight: '800', fontSize: 14.5 }}>Compartir</Text>
+                  <Press accessibilityRole="button" onPress={() => onShare(stop)} haptic="light"
+                    style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 12 }}>
+                    <Share2 size={17} color={MUTED} />
+                    <Text style={{ color: '#E6DEFF', fontWeight: '700', fontSize: 14 }}>Compartir mi ruta en historias</Text>
                   </Press>
                 ) : null}
-              </View>
+              </>
             )}
             <Text style={{ color: '#8E82AE', fontSize: 12, textAlign: 'center', marginTop: 10 }}>En la Ruta compras lo que quieras: no se usan Puntos ni descuentos.</Text>
           </ScrollView>

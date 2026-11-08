@@ -59,14 +59,16 @@ begin
   perform tt.t_eq('hoy sí suma (tope de 20)', tt.steps_pts(u, today), 20);
   perform tt.t_eq('el saldo es solo el de hoy', user_points_balance(u), 20);
 
-  -- Ayer con pasos ya guardados y Puntos ya ganados ese día: no se suma nada más ni se pierde lo ganado.
+  -- Ayer con fila (abrió Camina ese día, 0073): se acredita el total de ayer, sin duplicar lo ya ganado.
   u := tt.mk_user(); perform tt.t_as(u);
   perform tt.seed_steps(u, ytd, 3000);
   insert into points_ledger (user_id, amount, reason, ref_day, expires_at) values (u, 3, 'steps', ytd, now() + interval '30 days');
   perform earn_points_from_steps(u, ytd, 15000);
-  perform tt.t_eq('ayer con 3 Puntos ya ganados: siguen siendo 3', tt.steps_pts(u, ytd), 3);
+  perform tt.t_eq('ayer con fila previa (0073): se completa el total del día (15), sin duplicar los 3', tt.steps_pts(u, ytd), 15);
   select steps into st from steps_daily where user_id = u and day = ytd;
-  perform tt.t_eq('ayer con fila previa: los pasos guardados no cambian', st, 3000);
+  perform tt.t_eq('ayer con fila previa: se guardan los pasos completos de ayer', st, 15000);
+  perform earn_points_from_steps(u, ytd, 15000);
+  perform tt.t_eq('repetir la sincronización de ayer no suma de nuevo', tt.steps_pts(u, ytd), 15);
 
   -- ===== Identidad =====
   u2 := tt.mk_user();
@@ -84,25 +86,15 @@ begin
   perform tt.t_eq('150.000 pasos: se guardan 60.000 (trigger 0018; el 100.000 de 0038 no se alcanza nunca)', st, 60000);
   perform tt.t_eq('150.000 pasos: igual el tope de Puntos es 20', tt.steps_pts(u, today), 20);
 
-  -- ===== Plausibilidad (0038): 300 pasos por minuto + 2.000 de margen desde la última sincronización =====
+  -- ===== Antitrampa (0042): el máximo depende solo de la hora (2.000 + 300 por minuto desde la medianoche de La Paz) =====
   u := tt.mk_user(); perform tt.t_as(u);
-  perform tt.seed_steps(u, today, 5000, 1);                     -- 5.000 pasos, última sync hace 1 minuto
-  perform earn_points_from_steps(u, today, 50000);
+  perform tt.seed_steps(u, today, 5000, 1);
+  perform earn_points_from_steps(u, today, 99999999);
   select steps into st from steps_daily where user_id = u and day = today;
-  perform tt.t_eq('hace 1 minuto con 5.000: se permite hasta 5.000 + 2.000 + 300 = 7.300', st, 7300);
-  perform tt.t_eq('... y eso da 7 Puntos', tt.steps_pts(u, today), 7);
-
-  u := tt.mk_user(); perform tt.t_as(u);
-  perform tt.seed_steps(u, today, 5000, 0);                     -- recién sincronizado
-  perform earn_points_from_steps(u, today, 50000);
-  select steps into st from steps_daily where user_id = u and day = today;
-  perform tt.t_eq('recién sincronizado: se permite solo el margen de 2.000 (7.000)', st, 7000);
-
-  u := tt.mk_user(); perform tt.t_as(u);
-  perform tt.seed_steps(u, today, 0, 10);                       -- 0 pasos, última sync hace 10 minutos
-  perform earn_points_from_steps(u, today, 20000);
-  select steps into st from steps_daily where user_id = u and day = today;
-  perform tt.t_eq('10 minutos desde 0: se permite 2.000 + 3.000 = 5.000', st, 5000);
+  perform tt.t_eq('se guarda como mucho lo que permite la hora (y nunca más de 60.000)', st, least(steps_allowed_at(today, now()), 60000));
+  perform tt.t_eq('a la hora 0 del día solo se permite el margen de 2.000', steps_allowed_at(today, today::timestamp at time zone 'America/La_Paz'), 2000);
+  perform tt.t_eq('a los 10 minutos: 2.000 + 3.000', steps_allowed_at(today, (today::timestamp at time zone 'America/La_Paz') + interval '10 minutes'), 5000);
+  perform tt.t_eq('ayer se mira hasta su medianoche (tope 100.000)', steps_allowed_at(ytd, now()), 100000);
 
   u := tt.mk_user(); perform tt.t_as(u);
   perform tt.seed_steps(u, today, 5000, 1);

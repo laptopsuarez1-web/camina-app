@@ -7,7 +7,7 @@ import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
-import { ChevronLeft, Activity, Calendar, Flame, MapPin, IconBubble } from '@/components/icons';
+import { ChevronLeft, Activity, Calendar, Flame, IconBubble } from '@/components/icons';
 import { useRuta } from '@/hooks/useRuta';
 import { supabase } from '@/lib/supabase';
 import { usePointsBalance } from '@/hooks/usePoints';
@@ -28,7 +28,7 @@ const RULES: { key: ChallengeRule; title: string; desc: string; icon: typeof Act
   { key: 'steps', title: 'Más pasos', desc: 'Gana quien suma más pasos', icon: Activity, tone: 'aqua' },
   { key: 'days', title: 'Más días', desc: 'Gana quien cumple la meta más veces', icon: Calendar, tone: 'gold' },
   { key: 'streak', title: 'Mejor racha', desc: 'Gana quien mantiene la racha más larga', icon: Flame, tone: 'orange' },
-  { key: 'ruta', title: 'Ruta del mes', desc: 'Gana quien visita más locales de su Ruta', icon: MapPin, tone: 'mint' },
+  // La Ruta del mes en grupos queda para más adelante: no se ofrece al crear un desafío (los que ya existen siguen funcionando).
 ];
 const STAKES = [0, 5, 10, 20, 50];
 // Tope de la base (group_challenges.stake between 0 and 50).
@@ -133,6 +133,7 @@ export default function NuevoDesafioScreen() {
           chips={[RULE_LABEL[rule], rule === 'ruta' ? 'Gana quien visita más locales' : `${goal.toLocaleString('es-BO')} por día`, `${days} ${days === 1 ? 'día' : 'días'}`]}
           stake={stake}
           dates={`Del ${fmtShort(start)} al ${fmtShort(end)}`}
+          days={days}
           me={meP}
           others={othersP}
           onInvite={() =>

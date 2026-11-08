@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
+import CategoryPicker from '@/components/CategoryPicker';
 import { avisarPorCorreo } from '@/lib/email';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
@@ -321,13 +322,10 @@ export default function RegistroPage() {
                 <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Café Tarija" className={input} />
               </Field>
               {kind === 'commerce' && (
-                <Field label="Tipo de comercio">
-                  <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className={input}>
-                    {CATEGORIAS.map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                </Field>
+                <div>
+                  <span className="block text-[12.5px] font-semibold mb-1.5">Tipo de comercio</span>
+                  <CategoryPicker value={categoria} onChange={setCategoria} className="bg-card" />
+                </div>
               )}
               <Field label="Ciudad">
                 <select value={ciudad} onChange={(e) => setCiudad(e.target.value)} className={input}>

@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
-import { Flame, Trophy, Users } from '@/components/icons';
+import { Flame, Trophy } from '@/components/icons';
 import { IllArt } from '@/components/ui/IllustratedIcons';
 import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
@@ -27,7 +27,7 @@ import {
 export type TicketBoughtCinematic = { kind: 'ticket-bought'; title: string; business?: string; when: string; place?: string; points: number; balanceBefore: number };
 export type EventJoinedCinematic = { kind: 'event-joined'; title: string; day: number; month: string; when: string; place?: string; placeUrl?: string | null; participants: number };
 export type GroupJoinedCinematic = { kind: 'group-joined'; name: string; me: CinePerson; others: CinePerson[]; total: number; goalText?: string };
-export type GroupCreatedCinematic = { kind: 'group-created'; name: string; me: CinePerson; code: string; onInvite?: () => void };
+export type GroupCreatedCinematic = { kind: 'group-created'; name: string; me: CinePerson; code: string; target?: number | null; onInvite?: () => void };
 export type FriendMadeCinematic = { kind: 'friend-made'; me: CinePerson; friend: CinePerson; onCreateGroup?: () => void; onRanking?: () => void };
 export type StreakCinematic = { kind: 'streak-milestone'; days: number };
 export type StreakWeekCinematic = { kind: 'streak-week'; weeks: number; points: number };
@@ -264,48 +264,60 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
 // 4) Crear un grupo
 // =====================================================================
 
+// Grupo creado, en el mismo estilo que "Desafío creado": sin aro ni confeti. El nombre aparece letra por letra, tu cara
+// llega primero y los lugares vacíos (+) se invitan tocándolos; debajo, la meta de la semana que eligieron (el número
+// sube hasta la meta). Tocar el código lo copia.
 export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onDone: () => void }) {
   const p = usePalette();
   const [copied, setCopied] = useState(false);
-  const tl = useTimeline(3400);
+  const tl = useTimeline(3200);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(1450, buzz.medium);
-    tl.at(2050, buzz.success);
+    tl.at(900, buzz.selection);
+    tl.at(1900, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const goalCount = useCount(tl, 0, c.target ?? 0, 1200, 800);
+  const invite = () => { onDone(); c.onInvite?.(); };
   return (
     <Stage tl={tl} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
-      <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
       <View style={{ marginTop: 8 }}>
-        <Letters tl={tl} text={c.name} delay={350} size={30} color={p.text} />
+        <Letters tl={tl} text={c.name} delay={250} size={30} color={p.text} />
       </View>
-      <View style={{ marginTop: 34 }}>
-        <GroupOrbit
-          tl={tl}
-          delay={900}
-          people={[]}
-          me={c.me}
-          emptySlots={5}
-          closeRing={false}
-          meDelay={1300}
-          onSlotPress={() => { onDone(); c.onInvite?.(); }}
-          center={
-            <View style={{ alignItems: 'center' }}>
-              <Users size={30} color={p.accent} />
-              <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted, marginTop: 4 }}>Tu grupo</Text>
-            </View>
-          }
-        />
+
+      {/* Tu cara y los lugares para invitar. */}
+      <View style={{ flexDirection: 'row', marginTop: 24, alignItems: 'center', gap: 10 }}>
+        <Reveal tl={tl} delay={700} pop from={0.4}><Avatar p={c.me} size={60} ring={colors.mint} /></Reveal>
+        {[0, 1, 2, 3].map((i) => (
+          <Reveal key={i} tl={tl} delay={850 + i * 110} pop from={0.4}>
+            <Press accessibilityRole="button" accessibilityLabel="Invitar a alguien" onPress={invite}
+              style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderStyle: 'dashed', borderColor: p.muted, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: p.muted, fontSize: 22, fontWeight: '800', marginTop: -2 }}>+</Text>
+            </Press>
+          </Reveal>
+        ))}
       </View>
-      <Reveal tl={tl} delay={2050} pop from={0.6} style={{ marginTop: 20 }}>
+
+      {/* La meta de la semana del grupo: el número sube hasta la meta que eligieron. */}
+      {c.target ? (
+        <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 24 }}>
+          <View style={{ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine, alignItems: 'center' }}>
+            <Text style={{ color: p.accent, fontWeight: '800', fontSize: 11, letterSpacing: 1.4 }}>META DE LA SEMANA</Text>
+            <Text style={{ ...display(28), color: p.text, marginTop: 4, fontVariant: ['tabular-nums'] }}>{goalCount.toLocaleString('es-BO')}</Text>
+            <Text style={{ color: p.muted, fontSize: 12.5 }}>pasos entre todos · cuenta desde hoy</Text>
+          </View>
+        </Reveal>
+      ) : null}
+
+      <Reveal tl={tl} delay={1950} pop from={0.6} style={{ marginTop: 18 }}>
         <Text style={{ ...display(26), color: p.text, textAlign: 'center' }}>¡Grupo creado!</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2250}>
+      <Reveal tl={tl} delay={2150}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 4, lineHeight: 20, maxWidth: 280 }}>Invita a tus amigos: caminar juntos suma más.</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2400} pop from={0.8} style={{ marginTop: 12 }}>
+      <Reveal tl={tl} delay={2300} pop from={0.8} style={{ marginTop: 12 }}>
         {/* Tocar el código lo copia. */}
         <Press accessibilityRole="button" accessibilityLabel={`Código ${Array.from(c.code).join(' ')}. Toca para copiarlo`}
           onPress={async () => { await Clipboard.setStringAsync(c.code); buzz.success(); setCopied(true); }}
@@ -313,10 +325,9 @@ export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onD
           <Text style={{ ...display(18), color: p.text, letterSpacing: 5 }}>{c.code}</Text>
           <Text style={{ fontSize: 11, fontWeight: '700', color: copied ? p.accent : p.muted, marginTop: 1 }}>{copied ? '¡Código copiado!' : 'Toca para copiar'}</Text>
         </Press>
-        <Burst tl={tl} delay={2450} palette={CAMINA_SPARKS} count={14} radius={90} style={{ left: '50%', top: '50%' }} />
       </Reveal>
-      <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        <MainButton label="Invitar amigos" onPress={() => { onDone(); c.onInvite?.(); }} />
+      <Reveal tl={tl} delay={2500} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+        <MainButton label="Invitar amigos" onPress={invite} />
         <LinkButton label="Ir al grupo" onPress={onDone} color={p.accent} />
       </Reveal>
     </Stage>
@@ -404,7 +415,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   }, []);
   const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.warn, '#FFD97A', '#FFF1B8', '#62F0B6'] }} announce={`${c.days} días seguidos de racha.`}>
+    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
       <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
@@ -511,7 +522,7 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} confetti={{ at: 1950, palette: GOLD_SPARKS }} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
+    <Stage tl={tl} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Meta del grupo · ${c.name}`}</Eyebrow></Reveal>
       <Reveal tl={tl} delay={1950} pop from={0.3} style={{ marginTop: 12 }}>
         <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>

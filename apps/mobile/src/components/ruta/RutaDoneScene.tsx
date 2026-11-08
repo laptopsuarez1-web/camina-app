@@ -4,10 +4,15 @@ import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import {
-  Burst, CAMINA_SPARKS, display, Eyebrow, LinkButton, MainButton, Reveal, Stage, Stamp, usePalette, useTimeline,
+  Burst, CAMINA_SPARKS, display, Eyebrow, LinkButton, MainButton, Reveal, Stage, Stamp, useBeat, usePalette, useTimeline,
 } from '@/components/challenge/ChallengeCinematics';
+import Animated, { useAnimatedProps, useAnimatedStyle } from 'react-native-reanimated';
+import Svg, { Circle } from 'react-native-svg';
+import { heavy } from '@/components/ruta/heavy';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { buzz } from '@/lib/haptics';
+
+const HUELLAS = require('@/../assets/ruta-huellas.png');
 
 export type RutaDoneCinematic = {
   kind: 'ruta-done';
@@ -105,9 +110,9 @@ export type RutaStopDoneCinematic = {
 // Casillero de la fila 1-2-3: vacío con "?", lleno con el logo, y el de ahora se llena con un salto.
 function Slot({ tl, delay, s, n }: { tl: ReturnType<typeof useTimeline>; delay: number; s: { name: string; logo_url: string | null; done: boolean; now?: boolean }; n: number }) {
   const filled = (
-    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 3, borderColor: '#62F0B6', overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: 3, borderColor: '#62F0B6', overflow: 'hidden', backgroundColor: '#2F1E5C', alignItems: 'center', justifyContent: 'center' }}>
       {s.logo_url ? <Image source={{ uri: s.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-        : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 20 }}>{s.name.trim()[0]?.toUpperCase()}</Text>}
+        : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 20 }}>{s.name.trim()[0]?.toUpperCase()}</Text>}
     </View>
   );
   const empty = (
@@ -121,68 +126,81 @@ function Slot({ tl, delay, s, n }: { tl: ReturnType<typeof useTimeline>; delay: 
         <View>
           {empty}
           <Stamp tl={tl} delay={delay} style={{ position: 'absolute', left: 0, top: 0 }}>{filled}</Stamp>
-          <Burst tl={tl} delay={delay + 40} palette={CAMINA_SPARKS} count={8} radius={44} style={{ left: 27, top: 27 }} />
         </View>
       ) : s.done ? filled : empty}
     </View>
   );
 }
 
-// Un local de la Ruta confirmado (1 de 3, 2 de 3): cae la "foto" del local como polaroid, le pegan el sello
-// VISITADO, su casillero se llena en la fila de 3 y se suma un tramo del aro. Abajo: subir tu foto y compartir.
+// Un local de la Ruta confirmado (1 de 3, 2 de 3). Sin confeti (eso queda para la ruta completa): el aro de la Ruta es
+// el protagonista. Aparece con el logo del local adentro, el tramo nuevo se enciende, cae un check sobre el logo y una
+// onda suave sale del aro. Abajo: la fila de tus 3 locales, subir tu foto y compartir.
 export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onDone: () => void }) {
   const p = usePalette();
-  const tl = useTimeline(3200);
+  const tl = useTimeline(3800);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(650, buzz.medium);
-    tl.at(1150, buzz.light);
-    tl.at(1500, buzz.success);
+    tl.at(1000, buzz.selection);
+    tl.at(2200, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const left = 3 - c.done;
   const slots = c.stops?.length === 3 ? c.stops : null;
+  const R = 168;
+  const COIN = Math.round(R * 0.62);
+  // La moneda: de un lado el logo del local, del otro el logo de la Ruta con el mes. Gira una vez, como una moneda.
+  const flip = useBeat(tl, 950, { duration: 750 });
+  const front = useAnimatedStyle(() => {
+    const deg = flip.value * 180;
+    return { opacity: deg < 90 ? 1 : 0, transform: [{ perspective: 700 }, { rotateY: `${deg}deg` }, { scale: 1 + Math.sin(flip.value * Math.PI) * 0.08 }] };
+  });
+  const back = useAnimatedStyle(() => {
+    const deg = flip.value * 180;
+    return { opacity: deg >= 90 ? 1 : 0, transform: [{ perspective: 700 }, { rotateY: `${deg - 180}deg` }, { scale: 1 + Math.sin(flip.value * Math.PI) * 0.08 }] };
+  });
+  const coin = { position: 'absolute' as const, width: COIN, height: COIN, borderRadius: COIN / 2, overflow: 'hidden' as const, alignItems: 'center' as const, justifyContent: 'center' as const, backfaceVisibility: 'hidden' as const };
   return (
-    <Stage tl={tl} announce={`${c.name} confirmado. Vas ${c.done} de 3 en tu Ruta de ${c.month}.`} confetti={{ at: 700 }}>
-      <Reveal tl={tl} delay={120}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month} · ${c.done} de 3`}</Eyebrow></Reveal>
-      {/* La polaroid del local cae girando y se acomoda; el sello le cae encima. */}
-      <Reveal tl={tl} delay={250} pop from={0.3} dy={-120} style={{ marginTop: 20 }}>
-        <View style={{ transform: [{ rotate: '-4deg' }], padding: 9, paddingBottom: 14, borderRadius: 10, backgroundColor: '#FBF8FF', shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 10 }, elevation: 10 }}>
-          <View style={{ position: 'absolute', top: -10, alignSelf: 'center', width: 70, height: 20, borderRadius: 3, backgroundColor: 'rgba(98,240,182,0.7)', transform: [{ rotate: '3deg' }], zIndex: 2 }} />
-          <View style={{ width: 150, height: 150, borderRadius: 6, overflow: 'hidden', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-            {c.logo_url ? <Image source={{ uri: c.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              : <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 54 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
+    <Stage tl={tl} announce={`${c.name} confirmado. Vas ${c.done} de 3 en tu Ruta de ${c.month}.`}>
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>{`Tu Ruta de ${c.month}`}</Eyebrow></Reveal>
+      <View style={{ marginTop: 22, width: R, height: R, alignItems: 'center', justifyContent: 'center' }}>
+        <Ripple tl={tl} delay={2200} size={R} />
+        <Reveal tl={tl} delay={150} pop from={0.7} style={{ position: 'absolute' }}>
+          <View style={{ width: R, height: R }}>
+            <RutaRing size={R} done={c.done - 1} month={c.monthShort} glow={false} hideCenter />
+            {/* El tramo nuevo se rellena de a poco, después del giro. */}
+            <SegmentFill tl={tl} delay={1700} size={R} index={c.done - 1} />
           </View>
-          <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 15, marginTop: 8, textAlign: 'center', maxWidth: 150 }} numberOfLines={1}>{c.name}</Text>
-        </View>
-        <Burst tl={tl} delay={680} palette={CAMINA_SPARKS} count={14} radius={110} style={{ left: '50%', top: '45%' }} />
-      </Reveal>
-      <Reveal tl={tl} delay={900} pop from={0.6} style={{ marginTop: 22 }}>
-        <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>{`¡Sumaste ${c.name}!`}</Text>
+        </Reveal>
+        <Reveal tl={tl} delay={150} pop from={0.5} style={{ position: 'absolute', width: COIN, height: COIN, alignItems: 'center', justifyContent: 'center' }}>
+          <Animated.View style={[coin, { backgroundColor: '#2F1E5C', borderWidth: 3, borderColor: '#62F0B6' }, front]}>
+            {c.logo_url ? <Image source={{ uri: c.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
+              : <Text style={{ color: '#fff', fontWeight: '900', fontSize: COIN * 0.4 }}>{c.name.trim()[0]?.toUpperCase()}</Text>}
+          </Animated.View>
+          <Animated.View style={[coin, { backgroundColor: '#2B1663', borderWidth: 3, borderColor: '#62F0B6' }, back]}>
+            <Image source={HUELLAS} contentFit="contain" style={{ width: COIN * 0.42, height: COIN * 0.46 }} />
+            <Text style={{ ...heavy(), color: '#62F0B6', fontSize: COIN * 0.17, marginTop: 2 }}>{c.monthShort}</Text>
+          </Animated.View>
+        </Reveal>
+      </View>
+      <Reveal tl={tl} delay={2350} style={{ marginTop: 20 }}>
+        <Text style={{ ...display(25), color: p.text, textAlign: 'center' }}>¡Visita confirmada!</Text>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: p.accent, textAlign: 'center', marginTop: 4 }} numberOfLines={1}>{`${c.name} · ${c.done} de 3`}</Text>
       </Reveal>
       {slots ? (
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 16, alignItems: 'center' }}>
-          {slots.map((s, i) => (
-            <Reveal key={i} tl={tl} delay={1000 + i * 90} pop from={0.7}><Slot tl={tl} delay={1150} s={s} n={i + 1} /></Reveal>
-          ))}
-          <Reveal tl={tl} delay={1300} pop from={0.6} style={{ marginLeft: 6 }}>
-            <RutaRing size={64} done={c.done} month={c.monthShort} />
-          </Reveal>
-        </View>
-      ) : (
-        <View style={{ marginTop: 16, width: 110, height: 110 }}>
-          <Reveal tl={tl} delay={1000} style={{ position: 'absolute' }}><RutaRing size={110} done={c.done - 1} month={c.monthShort} glow={false} /></Reveal>
-          <Reveal tl={tl} delay={1300} pop from={0.85} style={{ position: 'absolute' }}><RutaRing size={110} done={c.done} month={c.monthShort} /></Reveal>
-        </View>
-      )}
-      <Reveal tl={tl} delay={1500}>
+        <Reveal tl={tl} delay={2500} style={{ marginTop: 16 }}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {slots.map((s, i) => <Slot key={i} tl={tl} delay={2600} s={s} n={i + 1} />)}
+          </View>
+        </Reveal>
+      ) : null}
+      <Reveal tl={tl} delay={2650}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 20, maxWidth: 290 }}>
-          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia y el boleto del sorteo. Guarda una foto de hoy en tu álbum.`}
+          {`${left === 1 ? 'Te falta 1 local' : `Te faltan ${left} locales`} para tu insignia del mes.`}
         </Text>
       </Reveal>
-      <Reveal tl={tl} delay={1750} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(c) => <Camera size={20} color={c} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
+      <Reveal tl={tl} delay={2800} dy={16} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+        {c.onPhoto ? <MainButton label="Subir mi foto al álbum" icon={(col) => <Camera size={20} color={col} />} onPress={() => { onDone(); c.onPhoto?.(); }} /> : null}
         {c.onShare ? (c.onPhoto
           ? <LinkButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} color={p.accent} />
           : <MainButton label="Compartir en historias" onPress={() => { onDone(); c.onShare?.(); }} />) : null}
@@ -190,4 +208,31 @@ export function RutaStopDoneScene({ c, onDone }: { c: RutaStopDoneCinematic; onD
       </Reveal>
     </Stage>
   );
+}
+
+// Un tramo del aro de la Ruta que se dibuja de punta a punta (misma geometría que RutaRing).
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+function SegmentFill({ tl, delay, size, index }: { tl: ReturnType<typeof useTimeline>; delay: number; size: number; index: number }) {
+  const k = useBeat(tl, delay, { duration: 650 });
+  const r = 100;
+  const C = 2 * Math.PI * r;
+  const gap = 48;
+  const seg = C / 3 - gap;
+  const rot = -90 + ((gap / 2) * 360) / C + index * 120;
+  const a = ((-90 + index * 120) * Math.PI) / 180;
+  const props = useAnimatedProps(() => ({ strokeDasharray: [Math.max(0.01, seg * k.value), C], strokeOpacity: k.value > 0 ? 1 : 0 }));
+  const dot = useAnimatedProps(() => ({ fillOpacity: k.value > 0 ? 1 : 0 }));
+  return (
+    <Svg pointerEvents="none" width={size} height={size} viewBox="0 0 240 240" style={{ position: 'absolute', left: 0, top: 0 }}>
+      <AnimatedCircle cx={120} cy={120} r={r} fill="none" stroke="#62F0B6" strokeWidth={16} strokeLinecap="round" rotation={rot} origin="120, 120" animatedProps={props} />
+      <AnimatedCircle cx={120 + r * Math.cos(a)} cy={120 + r * Math.sin(a)} r={7} fill="#62F0B6" animatedProps={dot} />
+    </Svg>
+  );
+}
+
+// Onda suave que sale del aro una vez (en vez de confeti).
+function Ripple({ tl, delay, size }: { tl: ReturnType<typeof useTimeline>; delay: number; size: number }) {
+  const k = useBeat(tl, delay, { duration: 900 });
+  const st = useAnimatedStyle(() => ({ opacity: k.value <= 0 ? 0 : (1 - k.value) * 0.7, transform: [{ scale: 1 + k.value * 0.35 }] }));
+  return <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: '#62F0B6' }, st]} />;
 }

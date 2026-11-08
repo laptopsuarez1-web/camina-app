@@ -66,6 +66,17 @@ export async function uploadGroupPhoto(groupId: string, uri: string, base64?: st
   return warm(`${supabase.storage.from('group-photos').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`);
 }
 
+// Portada del grupo (0099): foto ancha, en el mismo bucket que la foto del grupo. Nombre nuevo cada vez para que nadie vea la
+// anterior guardada en el teléfono.
+export async function uploadGroupBanner(groupId: string, uri: string): Promise<string> {
+  const data = await shrinkToBase64(uri, null, 1280);
+  if (!data) throw new Error('No pudimos leer la foto. Elige otra.');
+  const path = `${groupId}/portada-${Date.now().toString(36)}.jpg`;
+  const { error } = await supabase.storage.from('group-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
+  if (error) throw error;
+  return warm(supabase.storage.from('group-photos').getPublicUrl(path).data.publicUrl);
+}
+
 // Foto de fondo del perfil (0083): bucket público "profile-banners", más grande que el avatar (1280 px) porque va a lo ancho.
 export async function uploadBanner(userId: string, uri: string, base64?: string | null): Promise<string> {
   const data = await shrinkToBase64(uri, base64, 1280);

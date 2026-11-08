@@ -67,7 +67,8 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
 }
 
 // Versión corta para Inicio: el evento del mes siempre a mano, sin tapar el resto.
-export function RutaHomeCard({ state, onOpen }: { state: RutaState; onOpen: () => void }) {
+// Tocar la tarjeta abre los detalles; el botón "Participar" anota directo y muestra cómo llegan tus 3 locales.
+export function RutaHomeCard({ state, onOpen, onParticipate }: { state: RutaState; onOpen: () => void; onParticipate?: () => void }) {
   const month = rutaMonthName(state.month);
   const done = rutaDone(state);
   const end = Number(state.ends_on.slice(8, 10));
@@ -88,9 +89,10 @@ export function RutaHomeCard({ state, onOpen }: { state: RutaState; onOpen: () =
             {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 locales · hasta el ${end}` : `3 locales sorpresa · hasta el ${end}`}
           </Text>
         </View>
-        <View style={{ paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14, backgroundColor: '#62F0B6' }}>
-          <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 13 }}>{state.joined ? 'Ver' : 'Participar'}</Text>
-        </View>
+        <Press accessibilityRole="button" onPress={!state.joined && onParticipate ? onParticipate : onOpen} haptic="light" hitSlop={6}
+          style={{ paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14, backgroundColor: '#62F0B6' }}>
+          <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 13 }}>{state.joined ? 'Ver mi ruta' : 'Participar'}</Text>
+        </Press>
       </View>
     </Press>
   );

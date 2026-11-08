@@ -7,15 +7,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadRoutePhoto, useBadgesReady } from '@/hooks/useBadges';
+import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
+import { uploadRoutePhoto, useBadgesReady, useMyRoute } from '@/hooks/useBadges';
 import { useAuthStore } from '@/store/useAuthStore';
 import MapView, { Marker, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
 import Svg, { Path } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
-import { ChevronLeft } from '@/components/icons';
+import { ChevronLeft, Share2 } from '@/components/icons';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { RutaRing } from '@/components/ruta/RutaRing';
 import { GOLD, RutaPin } from '@/components/ruta/RutaPin';
@@ -102,7 +102,7 @@ function lineOrder(stops: RutaStop[]) {
 export default function RutaScreen() {
   const insets = useSafeAreaInsets();
   const { height, width } = useWindowDimensions();
-  const params = useLocalSearchParams<{ nueva?: string }>();
+  const params = useLocalSearchParams<{ nueva?: string; unirme?: string }>();
   const { data: state, isLoading, isError, refetch } = useRuta();
   const { data: prize } = useRutaPrize(state?.month);
   const lastWinners = useLastRutaWinners(state?.month);
@@ -111,6 +111,7 @@ export default function RutaScreen() {
   useRutaStopCelebration(state, (id) => shareRoute(state?.stops.find((x) => x.business_id === id)), (id) => addVisitPhoto(id));
   const userId = useAuthStore((st) => st.session?.user.id);
   const photosReady = useBadgesReady();
+  const { data: album } = useMyRoute(photosReady ? state?.month : null);
   const join = useJoinRuta();
   const swap = useSwapRuta();
   const mark = useMarkRutaVisit();
@@ -133,7 +134,12 @@ export default function RutaScreen() {
   const [shown, setShown] = useState(params.nueva ? 0 : 3);
   const [lineOn, setLineOn] = useState(!params.nueva);
   const [tracks, setTracks] = useState(true);
-  const [drop, setDrop] = useState<{ stop: RutaStop; x: number; y: number; key: number } | null>(null);
+  const [drop, setDrop] = useState<{ stop: RutaStop; x: number; y: number; key: number; n: number; hidePin: boolean } | null>(null);
+  // La animación de llegada espera a que el mapa termine de moverse antes de soltar cada pin (si no, el pin animado
+  // caía en un lugar y el del mapa aparecía en otro: se veían dos).
+  const settleRef = useRef<(() => void) | null>(null);
+  const introAlive = useRef(true);
+  useEffect(() => () => { introAlive.current = false; }, []);
 
   const stops = useMemo(() => state?.stops ?? [], [state]);
   const done = rutaDone(state);
@@ -143,6 +149,8 @@ export default function RutaScreen() {
   const P = (s: RutaStop) => ({ latitude: s.lat!, longitude: s.lng! });
   const [offs, setOffs] = useState<Map<string, number>>(new Map());
   function placePins(r: Region) {
+    settleRef.current?.();
+    settleRef.current = null;
     const pts = stops.filter((s) => s.lat != null && s.lng != null).map((s) => ({
       id: s.business_id,
       x: ((s.lng! - r.longitude) / r.longitudeDelta) * width,
@@ -175,10 +183,20 @@ export default function RutaScreen() {
     return () => clearTimeout(t);
   }, [shown, stops.length]);
 
+  // Vista web (sin cámara que viaje): los pines caen uno por uno en el mapa fijo y después se dibuja la línea.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !intro || !stops.length) return;
+    const ts: ReturnType<typeof setTimeout>[] = [];
+    stops.forEach((_, i) => ts.push(setTimeout(() => setShown(i + 1), 500 + i * 1900)));
+    ts.push(setTimeout(() => { setLineOn(true); setIntro(false); router.setParams({ nueva: undefined }); }, 500 + stops.length * 1900 + 300));
+    return () => ts.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intro, stops.length]);
+
   // Seguro: si el mapa no llega a cargar (sin red o sin coordenadas), los locales igual se muestran después de la animación.
   useEffect(() => {
     if (!intro || !stops.length) return;
-    const t = setTimeout(() => { setShown(stops.length); setLineOn(true); setIntro(false); }, 300 + stops.length * 2300 + 4000);
+    const t = setTimeout(() => { setDrop(null); setShown(stops.length); setLineOn(true); setIntro(false); }, 300 + stops.length * 4200 + 5000);
     return () => clearTimeout(t);
   }, [intro, stops.length]);
 
@@ -187,29 +205,55 @@ export default function RutaScreen() {
     if (coords.length) mapRef.current?.fitToCoordinates(coords, { edgePadding: { top: 150, right: 60, bottom: 260, left: 60 }, animated });
   }
 
-  function runIntro() {
+  // Llegada de la ruta, local por local y sin apuros: el mapa viaja al local, se queda quieto, cae el pin animado, en
+  // cuanto toca el piso aparece el pin real en ese mismo punto (y el animado se apaga: nunca se ven dos), se muestra el
+  // nombre un momento y recién ahí se pasa al siguiente. Al final se ve la ruta completa y se dibuja la línea.
+  async function runIntro() {
     if (!stops.length) return;
     const steps = stops.filter((s) => s.lat != null);
-    const STEP = 2300;
-    steps.forEach((s, i) => {
-      setTimeout(() => {
-        mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 1000 });
-        setTimeout(async () => {
-          const pt = await mapRef.current?.pointForCoordinate(P(s));
-          if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i });
-          // El pin del mapa aparece justo debajo del que cae (mismo lugar), y recién después se va el animado: sin saltos.
-          setTimeout(() => { setShown(i + 1); setTracks(true); }, 900);
-          setTimeout(() => setDrop(null), 1900);
-        }, 1000);
-      }, 300 + i * STEP);
-    });
-    setTimeout(() => {
-      fitAll();
-      setTimeout(() => setLineOn(true), 800);
-      setTimeout(() => { setShown(stops.length); setIntro(false); }, 900);
-      router.setParams({ nueva: undefined });
-    }, 300 + steps.length * STEP);
+    const wait = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
+    // Los logos se bajan antes, para que el pin no aparezca primero con la inicial y después cambie.
+    steps.forEach((s) => { if (s.logo_url) Image.prefetch(s.logo_url, 'memory-disk').catch(() => {}); });
+    await wait(300);
+    for (let i = 0; i < steps.length; i++) {
+      if (!introAlive.current) return;
+      const s = steps[i];
+      const settled = new Promise<void>((res) => { settleRef.current = res; setTimeout(res, 1700); });
+      mapRef.current?.animateCamera({ center: P(s), zoom: 17 }, { duration: 900 });
+      await settled;
+      await wait(120);
+      const pt = await mapRef.current?.pointForCoordinate(P(s)).catch(() => null);
+      if (!introAlive.current) return;
+      if (pt) setDrop({ stop: s, x: pt.x, y: pt.y, key: i, n: i + 1, hidePin: false });
+      // El pin animado tarda 560 ms en caer: al tocar el piso aparece el del mapa debajo, y el animado se apaga.
+      await wait(600);
+      setTracks(true);
+      setShown(i + 1);
+      await wait(280);
+      setDrop((d) => (d && d.key === i ? { ...d, hidePin: true } : d));
+      await wait(1250);
+      setDrop((d) => (d && d.key === i ? null : d));
+      await wait(250);
+    }
+    if (!introAlive.current) return;
+    fitAll();
+    await wait(800);
+    setShown(stops.length);
+    setLineOn(true);
+    setIntro(false);
+    router.setParams({ nueva: undefined });
   }
+
+  // "Participar" desde la tarjeta de Inicio o de Eventos: entra directo (sin pasar por la pantalla de detalles).
+  // "Ver detalles" abre esta misma pantalla sin el parámetro y muestra los premios y cómo funciona.
+  const autoJoined = useRef(false);
+  useEffect(() => {
+    if (params.unirme !== '1' || autoJoined.current || !state) return;
+    autoJoined.current = true;
+    router.setParams({ unirme: undefined });
+    if (!state.joined && state.eligible_count >= 3) participate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.unirme, state]);
 
   async function participate() {
     // Primero se esconden los locales y recién después llega la ruta del servidor: así nunca se ven antes de la animación.
@@ -263,12 +307,13 @@ export default function RutaScreen() {
 
   async function addVisitPhoto(businessId: string) {
     if (!userId || !state) return;
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, exif: false, allowsEditing: true, aspect: [4, 5] });
-    if (r.canceled) return;
+    const r = await pickFromGallery({ aspect: 4 / 5, max: 1280 });
+    if (!r) return;
     try {
-      await uploadRoutePhoto(userId, state.month, businessId, r.assets[0].uri, r.assets[0].base64);
-      qc.invalidateQueries({ queryKey: ['mi-ruta', userId, state.month] });
-      celebrate({ kind: 'toast', icon: 'check', title: 'Foto guardada en tu álbum' });
+      await uploadRoutePhoto(userId, state.month, businessId, r.uri, null);
+      await qc.invalidateQueries({ queryKey: ['mi-ruta', userId, state.month] });
+      // Se abre el álbum con la foto recién puesta, para que se vea dónde quedó.
+      router.push({ pathname: '/(tabs)/ruta-mes', params: { m: state.month, foco: businessId } });
     } catch (e) {
       Alert.alert('No se pudo subir la foto', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -412,6 +457,10 @@ export default function RutaScreen() {
                   {vis.map((s) => {
                     const q = project(P(s).latitude, P(s).longitude);
                     const dx = webOffs.get(s.business_id) ?? 0;
+                    // Durante la llegada, el último local que apareció cae con su animación.
+                    if (intro && s === vis[vis.length - 1]) {
+                      return <DropPin key={`drop-${s.business_id}`} stop={s} n={vis.length} total={stops.length} hidePin={false} x={q.x + dx} y={q.y} />;
+                    }
                     return (
                       <View key={s.business_id} style={{ position: 'absolute', left: 0, top: 0 }}>
                         {dx ? <View pointerEvents="none" style={{ position: 'absolute', left: q.x - 5, top: q.y - 5, width: 10, height: 10, borderRadius: 5, backgroundColor: MINT, borderWidth: 2, borderColor: '#16111f' }} /> : null}
@@ -456,7 +505,7 @@ export default function RutaScreen() {
             })}
           </MapView>
         ) : <View style={{ flex: 1, backgroundColor: '#1d1b2e' }} />}
-        {drop && <DropPin key={drop.key} stop={drop.stop} x={drop.x + (offs.get(drop.stop.business_id) ?? 0)} y={drop.y} />}
+        {drop && <DropPin key={drop.key} stop={drop.stop} n={drop.n} total={stops.length} hidePin={drop.hidePin} x={drop.x + (offs.get(drop.stop.business_id) ?? 0)} y={drop.y} />}
       </View>
 
       <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 8, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22, backgroundColor: 'rgba(22,17,31,0.86)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
@@ -510,20 +559,23 @@ export default function RutaScreen() {
               // Mientras cae cada pin, los locales que todavía no salieron se ven como sorpresa.
               const hidden = i >= shown;
               const st = s.visit === 'confirmed' ? 'ok' : s.visit === 'pending' ? 'wait' : 'go';
-              const ring = hidden ? 'rgba(255,255,255,0.2)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(255,255,255,0.18)';
+              const ring = hidden ? 'rgba(196,184,232,0.22)' : st === 'ok' ? MINT : st === 'wait' ? '#C4B8E8' : 'rgba(196,184,232,0.28)';
               const star = !hidden && prize?.sponsor?.id === s.business_id;
               return (
                 <View key={s.business_id} style={{ flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 18, backgroundColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.09)' : 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: st === 'ok' && !hidden ? 'rgba(98,240,182,0.35)' : 'rgba(255,255,255,0.07)' }}>
                   <Press accessibilityRole="button" accessibilityLabel={hidden ? 'Local por descubrir' : `Ver la ficha de ${s.name}`} disabled={hidden} onPress={() => setInfoFor(s)} style={{ alignItems: 'center', alignSelf: 'stretch' }}>
                     {/* Cuadrado redondeado, como los pines del mapa (no círculo). */}
-                    <View style={{ width: 54, height: 54, borderRadius: 15, borderWidth: star ? 3 : 2.5, borderColor: star ? GOLD : ring, overflow: 'hidden', ...(star ? { shadowColor: GOLD, shadowOpacity: 0.8, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } } : null), backgroundColor: hidden ? '#2F1E5C' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* El color del estado es un marco por fuera; adentro el logo ocupa todo, sin filo blanco. */}
+                    <View style={{ width: 56, height: 56, borderRadius: 17, padding: star ? 3 : 2.5, backgroundColor: star ? GOLD : ring, ...(star ? { shadowColor: GOLD, shadowOpacity: 0.8, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } } : null) }}>
+                    <View style={{ flex: 1, borderRadius: 14, overflow: 'hidden', backgroundColor: '#2F1E5C', alignItems: 'center', justifyContent: 'center' }}>
                       {hidden ? (
                         <Text allowFontScaling={false} style={{ color: MINT, fontWeight: '900', fontSize: 26 }}>?</Text>
                       ) : s.logo_url ? (
-                        <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} style={{ width: '100%', height: '100%' }} />
+                        <Image cachePolicy="memory-disk" source={{ uri: s.logo_url }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
                       ) : (
-                        <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 22 }}>{s.name.trim()[0]?.toUpperCase()}</Text>
+                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22 }}>{s.name.trim()[0]?.toUpperCase()}</Text>
                       )}
+                    </View>
                     </View>
                     {!hidden && st === 'ok' ? (
                       <View style={{ position: 'absolute', top: -5, right: '50%', marginRight: -34, width: 22, height: 22, borderRadius: 11, backgroundColor: MINT, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#1a1426' }}>
@@ -557,8 +609,9 @@ export default function RutaScreen() {
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
               {stops.some((x) => x.visit) ? (
                 <Press accessibilityRole="button" onPress={() => shareRoute()} haptic="light"
-                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(98,240,182,0.12)', borderWidth: 1, borderColor: 'rgba(98,240,182,0.4)' }}>
-                  <Text style={{ color: MINT, fontWeight: '800', fontSize: 13 }}>Compartir</Text>
+                  style={{ flex: 1, borderRadius: 14, paddingVertical: 10, flexDirection: 'row', gap: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <Share2 size={15} color={MINT} />
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Compartir mi ruta</Text>
                 </Press>
               ) : null}
               {canSwap ? (
@@ -598,7 +651,9 @@ export default function RutaScreen() {
       <RutaStopSheet stop={infoFor} onClose={() => setInfoFor(null)} onMark={(st) => { setInfoFor(null); setVisitFor(st); }}
         protagonist={!!infoFor && prize?.sponsor?.id === infoFor.business_id} prizeTitle={prize?.title ?? null}
         onShare={(st) => { setInfoFor(null); setTimeout(() => shareRoute(st), 350); }}
-        onPhoto={photosReady ? (st) => { setInfoFor(null); setTimeout(() => addVisitPhoto(st.business_id), 350); } : undefined} />
+        onPhoto={photosReady ? (st) => { setInfoFor(null); setTimeout(() => addVisitPhoto(st.business_id), 350); } : undefined}
+        myPhoto={(() => { const a = album?.stops.find((x) => x.business_id === infoFor?.business_id); return a?.photo_path ? { uri: a.photo_path, key: a.photo_key } : null; })()}
+        onAlbum={state ? () => { const id = infoFor?.business_id; setInfoFor(null); router.push({ pathname: '/(tabs)/ruta-mes', params: { m: state.month, ...(id ? { foco: id } : {}) } }); } : undefined} />
 
       {/* Tarjeta para historias, fuera de la pantalla (solo se usa para armar la imagen). */}
       <View pointerEvents="none" style={{ position: 'absolute', left: -SHARE_SIZE.width * 2, top: 0 }}>
@@ -728,7 +783,7 @@ function Chip({ children }: { children: string }) {
 
 // Pin que cae desde arriba: entra con un fundido, acelera al caer, se aplasta un poco al tocar el piso y vuelve a su forma
 // con un rebote corto. La sombra crece mientras se acerca y queda una onda en el piso. Después lo reemplaza el pin del mapa.
-function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
+function DropPin({ stop, x, y, n, total, hidePin }: { stop: RutaStop; x: number; y: number; n: number; total: number; hidePin: boolean }) {
   const fall = useSharedValue(0);
   const squash = useSharedValue(0);
   const ring = useSharedValue(0);
@@ -740,10 +795,13 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
       withSpring(0, { damping: 13, stiffness: 220, mass: 0.7 }),
     ));
     ring.value = withDelay(560, withTiming(1, { duration: 750, easing: Easing.out(Easing.cubic) }));
-    label.value = withDelay(700, withSequence(withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) }), withDelay(820, withTiming(0, { duration: 240 }))));
+    label.value = withDelay(640, withSequence(withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) }), withDelay(900, withTiming(0, { duration: 260 }))));
   }, [fall, squash, ring, label]);
+  // Cuando ya está el pin del mapa en el mismo lugar, el animado se apaga suave.
+  const gone = useSharedValue(0);
+  useEffect(() => { if (hidePin) gone.value = withTiming(1, { duration: 160 }); }, [hidePin, gone]);
   const pinStyle = useAnimatedStyle(() => ({
-    opacity: Math.min(1, fall.value * 4),
+    opacity: Math.min(1, fall.value * 4) * (1 - gone.value),
     transform: [
       { translateY: (1 - fall.value) * -240 },
       // Se aplasta desde la punta (el ancla está abajo).
@@ -752,7 +810,7 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
       { scaleY: 1 - squash.value * 0.16 },
     ],
   }));
-  const shadowStyle = useAnimatedStyle(() => ({ opacity: 0.15 + fall.value * 0.35, transform: [{ scaleX: 0.4 + fall.value * 0.6 + squash.value * 0.15 }] }));
+  const shadowStyle = useAnimatedStyle(() => ({ opacity: (0.15 + fall.value * 0.35) * (1 - gone.value), transform: [{ scaleX: 0.4 + fall.value * 0.6 + squash.value * 0.15 }] }));
   const ringStyle = useAnimatedStyle(() => ({ opacity: ring.value <= 0 ? 0 : (1 - ring.value) * 0.9, transform: [{ scale: 0.5 + ring.value * 1.8 }] }));
   const labelStyle = useAnimatedStyle(() => ({ opacity: label.value, transform: [{ translateY: (1 - label.value) * 10 }, { scale: 0.92 + label.value * 0.08 }] }));
   return (
@@ -764,7 +822,7 @@ function DropPin({ stop, x, y }: { stop: RutaStop; x: number; y: number }) {
       </Animated.View>
       <Animated.View style={[{ position: 'absolute', left: x - 90, width: 180, top: y + 16, alignItems: 'center' }, labelStyle]}>
         <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(26,20,38,0.95)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center' }}>
-          <Text style={{ color: MINT, fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>TE TOCÓ</Text>
+          <Text style={{ color: MINT, fontWeight: '800', fontSize: 10.5, letterSpacing: 1.2 }}>PARADA {n} DE {total}</Text>
           <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{stop.name}</Text>
           {!!stop.category && <Text style={{ color: MUTED, fontSize: 11.5 }}>{stop.category}</Text>}
         </View>

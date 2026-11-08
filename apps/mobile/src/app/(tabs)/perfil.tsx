@@ -7,19 +7,20 @@ import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthorization as requestHealthKitAuthorization, queryStatisticsForQuantity } from '@kingstinct/react-native-healthkit';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, IconBubble, Bell, Heartbeat, MapPin, ChevronRight, ShieldCheck } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target } from '@/components/icons';
+import { DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL } from '@/constants/business-rules';
+import { GoalSheet } from '@/components/GoalSheet';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, signOutUser } from '@/store/useAuthStore';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { colors } from '@/theme/tokens';
-import { useFriendRequests } from '@/hooks/useFriends';
+import { useFriendRequests, useFriends } from '@/hooks/useFriends';
 import { useBlocks } from '@/hooks/useModeration';
 import { SUPPORT_EMAIL } from '@/constants/contact';
 import { useGlassStore } from '@/store/useGlassStore';
 import { GlassSlider } from '@/components/ui/GlassSlider';
 import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
-import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
@@ -29,6 +30,7 @@ import { NotificationPrefs } from '@/components/NotificationPrefs';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
 import { Coin } from '@/components/ui/Coin';
 import { BadgesCard } from '@/components/badges/BadgesCard';
+import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { useMyBadges } from '@/hooks/useBadges';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
@@ -72,6 +74,25 @@ function PermRow({ icon, title, text, status, onPress, last }: { icon: (p: { siz
   );
 }
 
+// Título de cada grupo de ajustes.
+function SectionLabel({ children }: { children: string }) {
+  return <Text className="text-[11.5px] font-bold text-muted-light dark:text-muted-dark mb-1.5 ml-1" style={{ letterSpacing: 1.1 }}>{children.toUpperCase()}</Text>;
+}
+
+// Una fila de ajustes: título, una línea de ayuda y lo de la derecha (flecha, estado).
+function Row({ label, hint, onPress, right, last }: { label: string; hint?: string; onPress: () => void; right?: React.ReactNode; last?: boolean }) {
+  return (
+    <Press accessibilityRole="button" accessibilityLabel={hint ? `${label}. ${hint}` : label} onPress={onPress}
+      className={`flex-row items-center px-4 py-3.5 ${last ? '' : 'border-b border-line-light dark:border-line-dark'}`} style={{ gap: 10 }}>
+      <View className="flex-1">
+        <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">{label}</Text>
+        {hint ? <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={1}>{hint}</Text> : null}
+      </View>
+      {right}
+    </Press>
+  );
+}
+
 export default function PerfilScreen() {
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
@@ -79,6 +100,7 @@ export default function PerfilScreen() {
   const { data: badges } = useMyBadges();
   const { data: balance } = usePointsBalance();
   const { data: friendRequests } = useFriendRequests();
+  const { data: friends } = useFriends();
   const blocks = useBlocks();
   const glassAmount = useGlassStore((s) => s.amount);
   const setGlassAmount = useGlassStore((s) => s.setAmount);
@@ -87,6 +109,8 @@ export default function PerfilScreen() {
   const [stepsStatus, setStepsStatus] = useState<Perm>(null);
   const [locationStatus, setLocationStatus] = useState<Perm>(null);
   const [permsOpen, setPermsOpen] = useState(false);
+  // Cambiar la meta diaria desde el perfil (la misma que se cambia en Inicio).
+  const [goalOpen, setGoalOpen] = useState(false);
   // En iPhone "unknown" es: ya se pidió pero Salud no devolvió pasos esta semana; se muestra como activo (iOS no
   // deja saber si se negó) y el botón lleva a la app Salud para revisarlo.
   const stepsShown: Perm = Platform.OS === 'ios' && stepsStatus === 'unknown' ? 'granted' : stepsStatus;
@@ -224,95 +248,95 @@ export default function PerfilScreen() {
 
   const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
 
-  return (
-    <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-14" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle marginBottom={16}>Perfil</ScreenTitle>
+  const dailyGoal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
+  const friendCount = (friends ?? []).length;
+  const requests = (friendRequests ?? []).length;
+  const chev = <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />;
 
-      <Glass className="rounded-3xl p-4 mb-3">
-        <Press accessibilityRole="button" accessibilityLabel={`${profile?.full_name ?? 'Tu perfil'}, ver y editar tu usuario`} onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center gap-3.5">
-          <View className="w-14 h-14 rounded-full bg-mint items-center justify-center overflow-hidden">
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      {/* 1) Tu portada: el fondo que elegiste (o tu foto), tu foto, nombre, zona y lo que escribiste de ti. */}
+      <ProfileBanner bg={profile?.profile_bg} photoUrl={profile?.profile_banner_url} style={{ paddingBottom: 22 }} artPad={24}>
+        <Text accessibilityRole="header" className="text-white text-[15px] font-bold mb-4" style={{ opacity: 0.85 }}>Perfil</Text>
+        <Press accessibilityRole="button" accessibilityLabel={`${profile?.full_name ?? 'Tu perfil'}, editar tu perfil`} onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center" style={{ gap: 14 }}>
+          <View style={{ width: 76, height: 76, borderRadius: 38, borderWidth: 3, borderColor: 'rgba(255,255,255,0.85)', overflow: 'hidden', backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' }}>
             <AvatarImage
               uri={profile?.photo_url}
               style={{ width: '100%', height: '100%' }}
-              fallback={<Text className="font-bold text-mint-dark text-xl">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
+              fallback={<Text className="font-bold text-mint-dark text-[28px]">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
             />
           </View>
           <View className="flex-1">
-            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{profile?.full_name}</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-0.5">
-              {profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}
-            </Text>
-          </View>
-          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
-        </Press>
-        {profile?.bio ? <Text className="text-text-light dark:text-text-dark text-[13.5px] mt-3" style={{ lineHeight: 19 }}>{profile.bio}</Text> : null}
-        <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mt-3" numberOfLines={2}>Intereses: {interestsText}</Text>
-        <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/editar-perfil')} className="flex-row items-center justify-center gap-2 rounded-full py-3 mt-3 bg-purple-deep">
-          <Pencil size={14} color="#fff" />
-          <Text className="text-[13.5px] font-semibold text-white">Editar perfil</Text>
-        </Press>
-      </Glass>
-
-      <BadgesCard badges={badges} />
-
-      <Glass className="rounded-2xl overflow-hidden mb-3">
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`}
-          onPress={() => router.push('/(tabs)/puntos')}
-          className="flex-row items-center p-4"
-          style={{ gap: 12 }}
-        >
-          <Coin size={34} />
-          <View className="flex-1">
-            <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">{balance ?? 0} {plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs">Balance disponible</Text>
-          </View>
-          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
-        </Press>
-      </Glass>
-
-      <Glass className="rounded-3xl overflow-hidden mb-3">
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel={`Amigos${(friendRequests ?? []).length > 0 ? `, ${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : ''}`}
-          onPress={() => router.push('/(tabs)/amigos')}
-          className="flex-row items-center p-4"
-          style={{ gap: 14 }}
-        >
-          <IconBubble icon={UserPlus} tone="purple" size={46} />
-          <View className="flex-1">
-            <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Amigos</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mt-0.5">Mira su ranking e invita y gana 5 Puntos</Text>
-          </View>
-          {(friendRequests ?? []).length > 0 && (
-            <View className="rounded-full items-center justify-center" style={{ minWidth: 22, height: 22, paddingHorizontal: 6, backgroundColor: colors.dangerFill }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{friendRequests!.length}</Text>
+            <Text className="text-white font-extrabold text-[21px]" numberOfLines={1}>{profile?.full_name}</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.78)', fontSize: 13, marginTop: 1 }} numberOfLines={1}>{profile?.zone ?? 'Zona no definida'} · {profile?.city ?? 'Tarija'}</Text>
+            <View className="flex-row items-center self-start mt-2 rounded-full px-3 py-1.5" style={{ gap: 6, backgroundColor: 'rgba(255,255,255,0.18)' }}>
+              <Pencil size={12} color="#fff" />
+              <Text className="text-white text-[12px] font-bold">Editar perfil</Text>
             </View>
-          )}
-          <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
+          </View>
         </Press>
-      </Glass>
+        {profile?.bio ? <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13.5, lineHeight: 19, marginTop: 12 }}>{profile.bio}</Text> : null}
+      </ProfileBanner>
 
-      <Glass className="rounded-2xl overflow-hidden mb-3">
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel={`Permisos: ${pendingPerms === 0 ? 'todo activo' : `${pendingPerms} sin activar`}`}
-          onPress={() => setPermsOpen(true)}
-          className="flex-row items-center justify-between p-3.5"
-        >
-          <View className="flex-row items-center" style={{ gap: 12 }}>
-            <IconBubble icon={ShieldCheck} tone="aqua" size={34} />
-            <Text className="text-[14px] text-text-light dark:text-text-dark">Permisos</Text>
-          </View>
-          <View className="flex-row items-center" style={{ gap: 6 }}>
-            <Text className="text-[12px]" style={{ color: pendingPerms === 0 ? (isDark ? colors.mint : colors.aquaInk) : isDark ? colors.warnSoft : colors.warnDeep }}>
-              {pendingPerms === 0 ? 'Todo activo' : `${pendingPerms} sin activar`}
-            </Text>
-            <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />
-          </View>
-        </Press>
-      </Glass>
+      <View className="px-5 pt-4">
+        {/* 2) Tus números: cada uno lleva a su pantalla. */}
+        <View className="flex-row mb-3" style={{ gap: 10 }}>
+          <Press accessibilityRole="button" accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`} onPress={() => router.push('/(tabs)/puntos')} className="flex-1">
+            <Glass className="rounded-2xl p-3 items-center">
+              <Coin size={24} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{balance ?? 0}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
+            </Glass>
+          </Press>
+          <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push('/(tabs)/amigos')} className="flex-1">
+            <Glass className="rounded-2xl p-3 items-center">
+              <UserPlus size={24} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{friendCount}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(friendCount, 'amigo', 'amigos')}</Text>
+              {requests > 0 ? (
+                <View className="absolute rounded-full items-center justify-center" style={{ top: 8, right: 8, minWidth: 20, height: 20, paddingHorizontal: 5, backgroundColor: colors.dangerFill }}>
+                  <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>{requests}</Text>
+                </View>
+              ) : null}
+            </Glass>
+          </Press>
+          <Press accessibilityRole="button" accessibilityLabel={`Meta diaria: ${dailyGoal.toLocaleString('es-BO')} pasos. Cambiarla`} onPress={() => setGoalOpen(true)} className="flex-1">
+            <Glass className="rounded-2xl p-3 items-center">
+              <Target size={24} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{dailyGoal.toLocaleString('es-BO')}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">meta diaria</Text>
+            </Glass>
+          </Press>
+        </View>
+
+        {/* 3) Tus insignias, como siempre. */}
+        <BadgesCard badges={badges} />
+
+        {/* 4) Ajustes, ordenados por tema. */}
+        <SectionLabel>Tu cuenta</SectionLabel>
+        <Glass className="rounded-2xl overflow-hidden mb-4">
+          <Row label="Editar perfil" hint="Foto, portada, nombre, zona y bio" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
+          <Row label="Intereses" hint={interestsText} onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
+          <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push('/(tabs)/amigos')} right={chev} last />
+        </Glass>
+
+        <SectionLabel>Permisos y avisos</SectionLabel>
+        <Glass className="rounded-2xl overflow-hidden mb-4">
+          <Row
+            label="Permisos"
+            hint="Pasos, notificaciones, ubicación y ranking"
+            onPress={() => setPermsOpen(true)}
+            right={
+              <View className="flex-row items-center" style={{ gap: 6 }}>
+                <Text className="text-[12px] font-semibold" style={{ color: pendingPerms === 0 ? (isDark ? colors.mint : colors.aquaInk) : isDark ? colors.warnSoft : colors.warnDeep }}>
+                  {pendingPerms === 0 ? 'Todo activo' : `${pendingPerms} sin activar`}
+                </Text>
+                {chev}
+              </View>
+            }
+            last
+          />
+        </Glass>
 
       <Modal visible={permsOpen} transparent animationType="slide" onRequestClose={() => setPermsOpen(false)}>
         <Press accessibilityRole="button" accessibilityLabel="Cerrar permisos" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setPermsOpen(false)} />
@@ -364,55 +388,52 @@ export default function PerfilScreen() {
         </View>
       </Modal>
 
-      <Glass className="rounded-3xl p-4 mb-3">
-        <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark mb-2">Personalización</Text>
-        <View className="flex-row items-center justify-between py-1.5">
-          <Text className="text-[14px] text-text-light dark:text-text-dark">Modo oscuro</Text>
-          <Switch
-            accessibilityLabel="Modo oscuro"
-            value={profile?.dark_mode ?? false}
-            onValueChange={(v) => { buzz.selection(); toggleDarkMode(v); }}
-            trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
-          />
-        </View>
-        <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-2">Vidrio de las tarjetas y la barra</Text>
-        <GlassSlider label="Vidrio de las tarjetas y la barra" value={glassAmount} onChange={setGlassAmount} onDone={persistGlass} />
-        <View className="flex-row justify-between">
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Sólido</Text>
-          <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cristal</Text>
-        </View>
-      </Glass>
+        {/* La misma ruedita de Inicio: solo metas válidas. */}
+        <GoalSheet visible={goalOpen} goal={dailyGoal} isDark={isDark} onClose={() => setGoalOpen(false)} />
 
-      <Glass className="rounded-2xl px-4 py-3 mb-3">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Soporte</Text>
-          <Press accessibilityRole="link" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>
-            <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{SUPPORT_EMAIL}</Text>
-          </Press>
-        </View>
-        {blocks.list.length > 0 && (
-          <View className="mt-3 pt-3 border-t border-line-light dark:border-line-dark">
-            <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-1.5">Personas que bloqueaste</Text>
-            {blocks.list.map((b) => (
-              <View key={b.id} className="flex-row items-center justify-between" style={{ minHeight: 44 }}>
-                <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
-                <Press accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ left: 12, right: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
-                  <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">Desbloquear</Text>
-                </Press>
-              </View>
-            ))}
+        <SectionLabel>Apariencia</SectionLabel>
+        <Glass className="rounded-2xl px-4 py-3 mb-4">
+          <View className="flex-row items-center justify-between py-1">
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Modo oscuro</Text>
+            <Switch
+              accessibilityLabel="Modo oscuro"
+              value={profile?.dark_mode ?? false}
+              onValueChange={(v) => { buzz.selection(); toggleDarkMode(v); }}
+              trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }}
+            />
           </View>
-        )}
-      </Glass>
+          <Text className="text-[13px] text-text-light dark:text-text-dark mt-2">Vidrio de las tarjetas y la barra</Text>
+          <GlassSlider label="Vidrio de las tarjetas y la barra" value={glassAmount} onChange={setGlassAmount} onDone={persistGlass} />
+          <View className="flex-row justify-between">
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Sólido</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cristal</Text>
+          </View>
+        </Glass>
 
-      <Press accessibilityRole="link" onPress={() => router.push('/legal')} className="flex-row items-center justify-center py-3">
-        <Text className="text-muted-light dark:text-muted-dark text-[13px] underline">Términos y política de privacidad</Text>
-      </Press>
+        <SectionLabel>Ayuda</SectionLabel>
+        <Glass className="rounded-2xl overflow-hidden mb-4">
+          <Row label="Escribir a soporte" hint={SUPPORT_EMAIL} onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} right={chev} />
+          <Row label="Términos y privacidad" onPress={() => router.push('/legal')} right={chev} last={blocks.list.length === 0} />
+          {blocks.list.length > 0 && (
+            <View className="px-4 py-3 border-t border-line-light dark:border-line-dark">
+              <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark mb-1.5">Personas que bloqueaste</Text>
+              {blocks.list.map((b) => (
+                <View key={b.id} className="flex-row items-center justify-between" style={{ minHeight: 44 }}>
+                  <Text className="text-[13.5px] text-text-light dark:text-text-dark">{b.name}</Text>
+                  <Press accessibilityRole="button" onPress={() => blocks.unblock.mutate(b.id)} hitSlop={{ left: 12, right: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
+                    <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">Desbloquear</Text>
+                  </Press>
+                </View>
+              ))}
+            </View>
+          )}
+        </Glass>
 
-      <Press accessibilityRole="button" onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5">
-        <LogOut size={15} color={isDark ? colors.warn : colors.warnDeep} />
-        <Text className="text-warn-deep dark:text-warn font-semibold">Cerrar sesión</Text>
-      </Press>
+        <Press accessibilityRole="button" onPress={handleLogout} className="flex-row items-center justify-center gap-2 py-3.5 mb-2">
+          <LogOut size={15} color={isDark ? colors.warn : colors.warnDeep} />
+          <Text className="text-warn-deep dark:text-warn font-semibold">Cerrar sesión</Text>
+        </Press>
+      </View>
     </ScrollView>
   );
 }

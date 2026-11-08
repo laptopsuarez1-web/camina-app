@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { Polyline } from 'react-native-maps';
 import Svg, { Polyline as SvgLine } from 'react-native-svg';
 import type { LatLng } from '@/hooks/useRuta';
+import { cleanPath } from './clean-path';
 
 const MINT = '#62F0B6';
 const SHINE = '#E9FFF6';
@@ -83,7 +84,8 @@ function useLineAnim(path: LatLng[], on: boolean) {
 }
 
 // Línea de la ruta sobre el mapa de Google (teléfono).
-export function RouteLine({ path, on }: { path: LatLng[]; on: boolean }) {
+export function RouteLine({ path: raw, on }: { path: LatLng[]; on: boolean }) {
+  const path = useMemo(() => cleanPath(raw), [raw]);
   const acc = useMemo(() => measure(path), [path]);
   const { drawn, shine } = useLineAnim(path, on);
   const part = drawn >= 1 ? path : slicePath(path, acc, 0, drawn);
@@ -99,7 +101,8 @@ export function RouteLine({ path, on }: { path: LatLng[]; on: boolean }) {
 }
 
 // La misma línea en la vista web (SVG sobre las teselas).
-export function RouteLineWeb({ path, on, project }: { path: LatLng[]; on: boolean; project: (lat: number, lng: number) => { x: number; y: number } }) {
+export function RouteLineWeb({ path: raw, on, project }: { path: LatLng[]; on: boolean; project: (lat: number, lng: number) => { x: number; y: number } }) {
+  const path = useMemo(() => cleanPath(raw), [raw]);
   const acc = useMemo(() => measure(path), [path]);
   const { drawn, shine } = useLineAnim(path, on);
   const part = drawn >= 1 ? path : slicePath(path, acc, 0, drawn);

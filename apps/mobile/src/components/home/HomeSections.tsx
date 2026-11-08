@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { rankLocales } from '@/lib/rank-locales';
 import { View, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -111,15 +112,11 @@ export function NearbyRow({
         map.set(b.business.id, { business: b.business, count: 1, minCost: b.cost_points });
       }
     }
-    return [...map.values()]
-      .map((p) => ({ ...p, distance: distanceTo(pos, p.business) }))
-      .sort(
-        (a, b) =>
-          Number(isFeatured(b.business)) - Number(isFeatured(a.business)) ||
-          (a.distance ?? Infinity) - (b.distance ?? Infinity) ||
-          a.business.name.localeCompare(b.business.name),
-      )
-      .slice(0, 10);
+    // Por cercanía; los destacados entre los primeros según qué tan cerca estén (ver rank-locales).
+    return rankLocales(
+      [...map.values()].map((p) => ({ ...p, distance: distanceTo(pos, p.business) })),
+      (p) => p.distance, (p) => isFeatured(p.business), (p) => p.business.name,
+    ).slice(0, 10);
   }, [benefits, pos]);
 
   if (places.length === 0) {

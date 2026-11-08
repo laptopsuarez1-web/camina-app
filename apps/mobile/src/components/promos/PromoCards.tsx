@@ -408,7 +408,7 @@ export function RetoCamina({
       <View className="flex-row items-end justify-between" style={{ marginTop: 12 }}>
         <View className="flex-row items-end" style={{ gap: 6 }}>
           <Text style={{ color: '#7FEDC4', fontSize: 34, lineHeight: 38, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{claimed ? '✓' : met}</Text>
-          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 4 }}>{claimed ? 'Ya lo cobraste' : `de ${target}`}</Text>
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 4 }}>{claimed ? '¡Completado! Bien hecho' : `de ${target}`}</Text>
         </View>
         {claimable ? (
           <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 9 }}>

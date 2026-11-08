@@ -105,7 +105,7 @@ export type MyRoute = {
   month: string;
   completed_at: string | null;
   ticket_no: number | null;
-  stops: { business_id: string; name: string; category: string | null; logo_url: string | null; lat: number | null; lng: number | null; visited_at: string | null; photo_path: string | null }[];
+  stops: { business_id: string; name: string; category: string | null; logo_url: string | null; lat: number | null; lng: number | null; visited_at: string | null; photo_path: string | null; photo_key?: string | null }[];
 };
 
 export function useMyRoute(month?: string | null) {
@@ -113,6 +113,8 @@ export function useMyRoute(month?: string | null) {
   return useQuery({
     queryKey: ['mi-ruta', userId, month],
     enabled: !!userId && !!month,
+    // Los enlaces firmados duran una hora: no se piden de nuevo a cada rato (cada enlace nuevo obligaba a bajar la foto otra vez).
+    staleTime: 45 * 60_000,
     queryFn: async (): Promise<MyRoute | null> => {
       const { data, error } = await supabase.rpc('my_route', { p_month: month });
       if (error) throw error;
@@ -123,7 +125,8 @@ export function useMyRoute(month?: string | null) {
       if (paths.length) {
         const { data: signed } = await supabase.storage.from('route-photos').createSignedUrls(paths, 3600);
         const byPath = new Map((signed ?? []).map((x) => [x.path, x.signedUrl]));
-        r.stops = r.stops.map((s) => ({ ...s, photo_path: s.photo_path ? byPath.get(s.photo_path) ?? null : null }));
+        // photo_key = la ruta del archivo, que no cambia: con ella el teléfono reconoce la foto que ya bajó aunque el enlace sea otro.
+        r.stops = r.stops.map((s) => ({ ...s, photo_key: s.photo_path, photo_path: s.photo_path ? byPath.get(s.photo_path) ?? null : null }));
       }
       return r;
     },
@@ -134,7 +137,8 @@ export function useMyRoute(month?: string | null) {
 export async function uploadRoutePhoto(userId: string, month: string, businessId: string, uri: string, base64?: string | null) {
   // Achicada a 1280 px antes de subir (una foto del celular pesa varios MB).
   const data = await shrinkToBase64(uri, base64, 1280);
-  const path = `${userId}/${month}-${businessId}.jpg`;
+  // Cada foto con su propio nombre: así, al cambiarla, nadie ve la anterior guardada en el teléfono.
+  const path = `${userId}/${month}-${businessId}-${Date.now().toString(36)}.jpg`;
   const { error } = await supabase.storage.from('route-photos').upload(path, decode(data), { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;
   const { error: e2 } = await supabase.rpc('set_route_photo', { p_month: month, p_business: businessId, p_path: path });
