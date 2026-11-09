@@ -43,7 +43,7 @@ export function LegalContent() {
           {"Los mensajes de grupo se borran automáticamente cada mes; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Puedes reportar y bloquear a otras personas dentro de la app."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tus fotos (perfil, portada, fotos de la Ruta e historias) y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a caminaappbo@gmail.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}
+          {"Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tus fotos (perfil, portada, fotos de la Ruta e historias) y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a soporte@caminaapp.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}
         </p>
       </section>
 
@@ -64,7 +64,7 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Contenido de las personas</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Los mensajes de grupo, las fotos de perfil, los nombres y los logos o fotos que suben los comercios son responsabilidad de quien los publica. Solo puedes subir contenido propio o que tengas derecho a usar. No se permite acoso, insultos, contenido sexual, odio o discriminación, violencia, spam, ni imágenes de otras personas sin su permiso. Al publicar, nos das una licencia limitada y gratuita para mostrar ese contenido dentro de Camina. Puedes reportar mensajes o fotos y bloquear personas desde la app; revisamos los reportes y podemos borrar contenido y suspender cuentas. Si crees que una imagen tuya o protegida por derechos de autor se usa sin permiso, escríbenos a caminaappbo@gmail.com y la retiramos en pocos días."}
+          {"Los mensajes de grupo, las fotos de perfil, los nombres y los logos o fotos que suben los comercios son responsabilidad de quien los publica. Solo puedes subir contenido propio o que tengas derecho a usar. No se permite acoso, insultos, contenido sexual, odio o discriminación, violencia, spam, ni imágenes de otras personas sin su permiso. Al publicar, nos das una licencia limitada y gratuita para mostrar ese contenido dentro de Camina. Puedes reportar mensajes o fotos y bloquear personas desde la app; revisamos los reportes y podemos borrar contenido y suspender cuentas. Si crees que una imagen tuya o protegida por derechos de autor se usa sin permiso, escríbenos a soporte@caminaapp.com y la retiramos en pocos días."}
         </p>
       </section>
 
@@ -85,21 +85,21 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Conteo de pasos y sincronización</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Tus pasos los cuentan Apple Salud, Google Health Connect o el sensor de tu teléfono, no Camina. Camina no se responsabiliza por errores, retrasos o diferencias en el conteo, por fallas del teléfono, del sistema operativo o de esos servicios, ni por Puntos que no se carguen por eso. Si ves un error comprobable, escríbenos a caminaappbo@gmail.com y lo revisamos. Esto no limita los derechos que la ley te reconoce como consumidor."}
+          {"Tus pasos los cuentan Apple Salud, Google Health Connect o el sensor de tu teléfono, no Camina. Camina no se responsabiliza por errores, retrasos o diferencias en el conteo, por fallas del teléfono, del sistema operativo o de esos servicios, ni por Puntos que no se carguen por eso. Si ves un error comprobable, escríbenos a soporte@caminaapp.com y lo revisamos. Esto no limita los derechos que la ley te reconoce como consumidor."}
         </p>
       </section>
 
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Trampas y suspensiones</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Está prohibido simular pasos (agitar el teléfono, usar aparatos o apps que generen movimiento, alterar el sensor o la ubicación), crear varias cuentas, afectar la seguridad de la app o usarla para fines ilegales. Si detectamos irregularidades, podemos suspender la cuenta, anular Puntos y canjes pendientes, sacarte de desafíos y rankings, o cerrar la cuenta. Si crees que fue un error, escríbenos a caminaappbo@gmail.com y revisamos cada caso."}
+          {"Está prohibido simular pasos (agitar el teléfono, usar aparatos o apps que generen movimiento, alterar el sensor o la ubicación), crear varias cuentas, afectar la seguridad de la app o usarla para fines ilegales. Si detectamos irregularidades, podemos suspender la cuenta, anular Puntos y canjes pendientes, sacarte de desafíos y rankings, o cerrar la cuenta. Si crees que fue un error, escríbenos a soporte@caminaapp.com y revisamos cada caso."}
         </p>
       </section>
 
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Canjes</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Puedes canjear una vez por comercio cada 14 días (dos semanas), y cada beneficio puede tener cupos diarios y horarios. Camina tiene una tarjeta de fidelidad general: cada canje confirmado, en cualquier comercio, suma un sello y, al completar los 5 sellos, eliges un premio gratis entre los que ofrecen los comercios que participan (el comercio pone el premio y no se descuentan Puntos). Tienes 30 días desde que completas la tarjeta para canjear el premio en el local; si no lo canjeas, la tarjeta vence y empiezas una nueva. Si el comercio confirmó el canje y no te entregó el premio, escríbenos a caminaappbo@gmail.com y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor."}
+          {"El comercio confirma el código en el local y recién ahí se descuentan tus Puntos. Si el código vence sin confirmarse, no se descuentan. Puedes canjear una vez por comercio cada 14 días (dos semanas), y cada beneficio puede tener cupos diarios y horarios. Camina tiene una tarjeta de fidelidad general: cada canje confirmado, en cualquier comercio, suma un sello y, al completar los 5 sellos, eliges un premio gratis entre los que ofrecen los comercios que participan (el comercio pone el premio y no se descuentan Puntos). Tienes 30 días desde que completas la tarjeta para canjear el premio en el local; si no lo canjeas, la tarjeta vence y empiezas una nueva. Si el comercio confirmó el canje y no te entregó el premio, escríbenos a soporte@caminaapp.com y lo gestionamos con el comercio; si corresponde, te devolvemos los Puntos. Los reclamos por calidad, cantidad, stock o daños del premio se dirigen al comercio que lo ofreció, sin perjuicio de tus derechos como consumidor."}
         </p>
       </section>
 
@@ -120,7 +120,7 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Datos y comercios</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para atenderte: tu primer nombre junto a los canjes y visitas que hiciste en su local, el código y el premio y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a caminaappbo@gmail.com."}
+          {"Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para atenderte: tu primer nombre junto a los canjes y visitas que hiciste en su local, el código y el premio y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a soporte@caminaapp.com."}
         </p>
       </section>
 

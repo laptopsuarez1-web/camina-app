@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Eliminar mi cuenta — Camina',
 };
 
-const SUPPORT_EMAIL = 'caminaappbo@gmail.com';
+const SUPPORT_EMAIL = 'soporte@caminaapp.com';
 
 // Página pública con URL fija: Google Play pide un enlace donde se pueda pedir la eliminación de la cuenta sin tener la app instalada.
 export default function EliminarCuentaPage() {
