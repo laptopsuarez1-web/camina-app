@@ -28,13 +28,21 @@ export function ImageUpload({
     setError(null);
     // Las fotos del celular pesan varios MB y en la app se ven chicas: se achican antes de subir para que carguen rápido.
     const file = await shrink(original, shape === 'circle' ? 600 : shape === 'wide' ? 1600 : 1200);
-    const ext = file.name.split('.').pop() || 'jpg';
+    // Algunos celulares (Samsung) entregan la foto sin tipo o como HEIC: el servidor solo acepta JPG, PNG y WebP.
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const ok = ['image/jpeg', 'image/png', 'image/webp'];
+    const contentType = ok.includes(file.type) ? file.type : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+    if (file.size > 5 * 1024 * 1024) {
+      setUploading(false);
+      setError('La foto pesa más de 5 MB. Elige otra o achícala.');
+      return;
+    }
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(`${path}.${ext}`, file, { upsert: true, contentType: file.type, cacheControl: '31536000' });
+      .upload(`${path}.${ext}`, file, { upsert: true, contentType, cacheControl: '31536000' });
     setUploading(false);
     if (uploadError) {
-      setError('No pudimos subir la foto. Intenta de nuevo.');
+      setError(`No pudimos subir la foto (${uploadError.message}). Intenta de nuevo.`);
       return;
     }
     const { data } = supabase.storage.from(bucket).getPublicUrl(`${path}.${ext}`);
@@ -87,7 +95,7 @@ export function ImageUpload({
 // logo); lo demás va a JPEG 0,85. Si algo falla o la foto ya es chica, se sube la original.
 async function shrink(file: File, max: number): Promise<File> {
   try {
-    if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+    if (file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
     const bmp = await createImageBitmap(file);
     const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
     if (scale === 1 && file.size < 400_000) return file;
@@ -97,7 +105,8 @@ async function shrink(file: File, max: number): Promise<File> {
     canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
     const png = file.type === 'image/png';
     const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, png ? 'image/png' : 'image/jpeg', 0.85));
-    if (!blob || blob.size >= file.size) return file;
+    const permitido = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+    if (!blob || (permitido && blob.size >= file.size)) return file;
     const name = file.name.replace(/\.[^.]+$/, '') + (png ? '.png' : '.jpg');
     return new File([blob], name, { type: blob.type });
   } catch {
