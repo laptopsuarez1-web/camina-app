@@ -42,6 +42,8 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   'Dietética & Saludable': { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
   'Estética & Belleza': { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
   Farmacias: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
+  Fisioterapia: { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
+  'Masajes & Fisioterapia': { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
   'Yoga & Pilates': { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
   'Gimnasio & Deporte': { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
   Bienestar: { icon: Sparkle, from: '#7FEDC4', to: '#4FC3A8', deep: '#1F7A66' },
