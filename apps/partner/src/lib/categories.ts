@@ -45,6 +45,7 @@ export const CATEGORIAS = [
   'Yoga & Pilates',
   'Gimnasio & Deporte',
   'Masajes & Fisioterapia',
+  'Fisioterapia',
   'Crossfit & Funcional',
   'Danza & Baile',
   'Artes marciales',
