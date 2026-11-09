@@ -247,14 +247,14 @@ export default function RegistroPage() {
         <div className="flex items-center gap-2.5 mb-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/camina-logo.png" alt="Camina" width={36} height={36} className="rounded-full" />
-          <span className="font-extrabold tracking-wide text-[18px]" style={{ color: '#241748' }}>CAMINA</span>
+          <span className="font-extrabold tracking-wide text-[18px]" style={{ color: 'var(--c-text)' }}>CAMINA</span>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-card border border-line rounded-2xl p-5 sm:p-6">
-          <p className="text-mint-dark font-semibold text-[13px] mb-1">Paso {step} de {pasos.length}</p>
+          <p className="text-muted font-semibold text-[13px] mb-1">Paso {step} de {pasos.length}</p>
           <div className="flex gap-1.5 mb-4">
             {pasos.map((_, i) => i + 1).map((n) => (
-              <div key={n} className="h-1.5 flex-1 rounded-full" style={{ background: n <= step ? '#62F0B6' : '#e6e3ee' }} />
+              <div key={n} className="h-1.5 flex-1 rounded-full" style={{ background: n <= step ? '#62F0B6' : 'var(--c-line)' }} />
             ))}
           </div>
 
@@ -271,8 +271,8 @@ export default function RegistroPage() {
                     type="button"
                     key={o.v}
                     onClick={() => setKind(o.v)}
-                    className="text-left rounded-xl p-3.5 border-2"
-                    style={{ borderColor: kind === o.v ? '#1f9d75' : '#e6e3ee', background: kind === o.v ? '#f0faf6' : '#fff' }}
+                    className="text-left rounded-xl p-3.5 border-2 text-text"
+                    style={{ borderColor: kind === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: kind === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
                   >
                     <p className="font-bold text-[14px]">{o.t}</p>
                     <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
@@ -291,8 +291,8 @@ export default function RegistroPage() {
                         type="button"
                         key={o.t}
                         onClick={() => setEsVirtual(o.v)}
-                        className="text-left rounded-xl p-3.5 border-2"
-                        style={{ borderColor: esVirtual === o.v ? '#1f9d75' : '#e6e3ee', background: esVirtual === o.v ? '#f0faf6' : '#fff' }}
+                        className="text-left rounded-xl p-3.5 border-2 text-text"
+                        style={{ borderColor: esVirtual === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: esVirtual === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
                       >
                         <p className="font-bold text-[14px]">{o.t}</p>
                         <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
@@ -308,7 +308,7 @@ export default function RegistroPage() {
                   siguiente();
                 }}
                 className="rounded-xl px-6 py-3 font-semibold text-sm"
-                style={{ background: '#241748', color: '#7FEDC4' }}
+                style={{ background: '#62F0B6', color: '#12281f' }}
               >
                 Continuar
               </button>
@@ -332,8 +332,8 @@ export default function RegistroPage() {
                 <button
                   type="button"
                   onClick={() => setPlan('fundador')}
-                  className="text-left rounded-xl p-3.5 border-2"
-                  style={{ borderColor: plan === 'fundador' ? '#E0B43A' : '#e6e3ee', background: plan === 'fundador' ? '#FFF8E4' : '#fff' }}
+                  className="text-left rounded-xl p-3.5 border-2 text-text"
+                  style={{ borderColor: plan === 'fundador' ? '#E0B43A' : 'var(--c-line)', background: plan === 'fundador' ? 'var(--c-warn-light)' : 'var(--c-card)' }}
                 >
                   <p className="font-bold text-[14px]">Cupo fundador · 3 meses gratis de Paso Firme</p>
                   <p className="text-muted text-[12px] mt-0.5">Para los primeros 20 comercios. Te creas la cuenta y te lo confirmamos al aprobar tu local.</p>
@@ -345,22 +345,22 @@ export default function RegistroPage() {
                   type="button"
                   key={p.id}
                   onClick={() => setPlan(p.id)}
-                  className="text-left rounded-xl p-3.5 border-2"
-                  style={{ borderColor: plan === p.id ? '#1f9d75' : '#e6e3ee', background: plan === p.id ? '#f0faf6' : '#fff' }}
+                  className="text-left rounded-xl p-3.5 border-2 text-text"
+                  style={{ borderColor: plan === p.id ? 'var(--color-aqua)' : 'var(--c-line)', background: plan === p.id ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="font-bold text-[14px]">{p.name}</p>
-                    <p className="font-bold text-[14px]" style={{ color: '#1f9d75' }}>{p.price}</p>
+                    <p className="font-bold text-[14px]" style={{ color: 'var(--color-aqua)' }}>{p.price}</p>
                   </div>
                   <p className="text-muted text-[12px] mt-0.5">
                     {p.blurb}
-                    {p.id !== 'primer_paso' ? <span className="font-semibold" style={{ color: '#8B6A12' }}> · {LANZAMIENTO}</span> : null}
+                    {p.id !== 'primer_paso' ? <span className="font-semibold" style={{ color: 'var(--c-warn-text)' }}> · {LANZAMIENTO}</span> : null}
                   </p>
                   {plan === p.id && (
                     <ul className="mt-2 flex flex-col gap-1">
                       {p.features.map((f) => (
                         <li key={f} className="flex gap-1.5 items-start text-[12px]">
-                          <Check size={12} color="#1f9d75" className="mt-0.5 shrink-0" />
+                          <Check size={12} color="#4fc3a8" className="mt-0.5 shrink-0" />
                           {f}
                         </li>
                       ))}
@@ -369,10 +369,10 @@ export default function RegistroPage() {
                 </button>
               ))}
               <div className="flex gap-2.5 mt-1">
-                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-card text-text">
                   Volver
                 </button>
-                <button type="button" onClick={siguiente} className="flex-1 rounded-xl py-3 font-semibold text-sm" style={{ background: '#241748', color: '#7FEDC4' }}>
+                <button type="button" onClick={siguiente} className="flex-1 rounded-xl py-3 font-semibold text-sm" style={{ background: '#62F0B6', color: '#12281f' }}>
                   {pagado ? 'Continuar al pago' : 'Continuar'}
                 </button>
               </div>
@@ -393,7 +393,7 @@ export default function RegistroPage() {
                 rel="noopener noreferrer"
                 onClick={() => setPagoAvisado(true)}
                 className="text-center rounded-xl py-3 font-semibold text-sm"
-                style={{ background: '#25D366', color: '#fff' }}
+                style={{ background: '#25D366', color: 'var(--c-card)' }}
               >
                 Mandar el comprobante por WhatsApp
               </a>
@@ -401,7 +401,7 @@ export default function RegistroPage() {
                 Activamos tu plan cuando revisamos el pago y tu local. Mientras tanto ya puedes armar tu ficha en el panel.
               </p>
               <div className="flex gap-2.5">
-                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-card text-text">
                   Volver
                 </button>
                 <button
@@ -409,7 +409,7 @@ export default function RegistroPage() {
                   disabled={!pagoAvisado}
                   onClick={siguiente}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#62F0B6', color: '#12281f' }}
                 >
                   Ya lo mandé, crear mi cuenta
                 </button>
@@ -432,12 +432,12 @@ export default function RegistroPage() {
                   onClick={() => fileRef.current?.click()}
                   className="w-full flex items-center gap-3.5 text-left rounded-xl p-3.5 border-2 border-dashed border-line bg-bg"
                 >
-                  <div className="w-[60px] h-[60px] shrink-0 rounded-full bg-white border border-line flex items-center justify-center overflow-hidden">
+                  <div className="w-[60px] h-[60px] shrink-0 rounded-full bg-card border border-line flex items-center justify-center overflow-hidden">
                     {logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={logo} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <ImagePlus size={24} color="#1f9d75" />
+                      <ImagePlus size={24} color="#4fc3a8" />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -499,7 +499,7 @@ export default function RegistroPage() {
 
               {error && <p className="text-warn text-[12.5px]">{error}</p>}
               <div className="flex gap-2.5">
-                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-card text-text">
                   Volver
                 </button>
                 <button
@@ -510,7 +510,7 @@ export default function RegistroPage() {
                     siguiente();
                   }}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#62F0B6', color: '#12281f' }}
                 >
                   Continuar
                 </button>
@@ -546,14 +546,14 @@ export default function RegistroPage() {
               </p>
 
               <div className="flex gap-2.5">
-                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
+                <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-card text-text">
                   Volver
                 </button>
                 <button
                   type="submit"
                   disabled={!valido || loading}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#62F0B6', color: '#12281f' }}
                 >
                   {loading ? 'Creando cuenta…' : 'Crear cuenta'}
                 </button>
