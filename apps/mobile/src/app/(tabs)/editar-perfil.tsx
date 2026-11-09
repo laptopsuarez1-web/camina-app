@@ -220,8 +220,8 @@ export default function EditarPerfilScreen() {
       Alert.alert('Falta tu contraseña actual', 'Escríbela para confirmar que eres tú.');
       return;
     }
-    if (newPassword.length < 6) {
-      Alert.alert('Contraseña muy corta', 'La nueva necesita al menos 6 caracteres.');
+    if (newPassword.length < 8) {
+      Alert.alert('Contraseña muy corta', 'La nueva necesita al menos 8 caracteres.');
       return;
     }
     if (newPassword !== repeatPassword) {
@@ -462,7 +462,7 @@ export default function EditarPerfilScreen() {
                   <Text className="font-bold text-[14.5px] mb-1 text-text-light dark:text-text-dark">{passwordTitle}</Text>
                   <Text className="text-muted-light dark:text-muted-dark text-[12.5px] mb-3">Cuenta: {email}</Text>
                   {askCurrent && <PasswordField label="Contraseña actual" value={currentPassword} onChange={setCurrentPassword} autoComplete="password" />}
-                  <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
+                  <PasswordField label="Contraseña nueva" value={newPassword} onChange={setNewPassword} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
                   <PasswordField label="Repite la contraseña nueva" value={repeatPassword} onChange={setRepeatPassword} autoComplete="new-password" />
                   {askCurrent && (
                     <Press accessibilityRole="button" onPress={forgotPassword} className="self-start mb-3">

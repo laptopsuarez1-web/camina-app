@@ -30,8 +30,8 @@ export default function ActualizarClavePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 6) {
-      setError('La contraseña necesita al menos 6 caracteres.');
+    if (password.length < 8) {
+      setError('La contraseña necesita al menos 8 caracteres.');
       return;
     }
     setLoading(true);
@@ -71,7 +71,7 @@ export default function ActualizarClavePage() {
           <PasswordInput
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña nueva (mínimo 6 caracteres)"
+            placeholder="Contraseña nueva (mínimo 8 caracteres)"
             autoComplete="new-password"
             required
             className="bg-white/95 text-text rounded-xl p-3.5"

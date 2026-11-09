@@ -531,7 +531,7 @@ export default function RegistroPage() {
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   autoComplete="new-password"
                   className={input}
                   iconClassName="text-purple"

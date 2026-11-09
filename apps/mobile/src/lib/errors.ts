@@ -5,7 +5,7 @@ const BY_CODE: Record<string, string> = {
   invalid_credentials: 'El correo o la contraseña no son correctos.',
   user_already_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
   email_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
-  weak_password: 'La contraseña es muy corta. Usa al menos 6 caracteres.',
+  weak_password: 'La contraseña es muy corta. Usa al menos 8 caracteres.',
   validation_failed: 'Revisa que el correo esté bien escrito.',
   email_address_invalid: 'Revisa que el correo esté bien escrito.',
   user_banned: 'Esta cuenta fue suspendida por el equipo de Camina. Si crees que es un error, escribe a caminaappbo@gmail.com.',

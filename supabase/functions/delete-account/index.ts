@@ -106,11 +106,18 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Best-effort: borrar archivos en Storage (avatars/<user_id>/...) — no
-  // están enlazados por FK, así que el cascade de auth.users no los toca.
-  const { data: avatarFiles } = await adminClient.storage.from('avatars').list(userId);
-  if (avatarFiles && avatarFiles.length > 0) {
-    await adminClient.storage.from('avatars').remove(avatarFiles.map((f) => `${userId}/${f.name}`));
+  // Best-effort: borrar las fotos de la persona en Storage — no están enlazadas por FK, así que el
+  // cascade de auth.users no las toca. Todas viven en <bucket>/<user_id>/...: perfil, portada, fotos de
+  // la Ruta y fotos de historias. La política de privacidad promete que se borran todas.
+  for (const bucket of ['avatars', 'profile-banners', 'route-photos', 'story-photos']) {
+    try {
+      const { data: files } = await adminClient.storage.from(bucket).list(userId, { limit: 1000 });
+      if (files && files.length > 0) {
+        await adminClient.storage.from(bucket).remove(files.map((f) => `${userId}/${f.name}`));
+      }
+    } catch (e) {
+      console.warn(`delete-account: no se pudieron borrar las fotos de ${bucket}`, e);
+    }
   }
 
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);

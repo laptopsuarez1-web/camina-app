@@ -50,8 +50,8 @@ export default function CuentaPage() {
 
   async function cambiarClave(e: React.FormEvent) {
     e.preventDefault();
-    if (nueva.length < 6) {
-      setClaveMsg({ ok: false, texto: 'La contraseña nueva necesita al menos 6 caracteres.' });
+    if (nueva.length < 8) {
+      setClaveMsg({ ok: false, texto: 'La contraseña nueva necesita al menos 8 caracteres.' });
       return;
     }
     setClaveLoading(true);
@@ -122,7 +122,7 @@ export default function CuentaPage() {
             <PasswordInput
               value={nueva}
               onChange={(e) => setNueva(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
               autoComplete="new-password"
               className={input}
               iconClassName="text-purple"
