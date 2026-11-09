@@ -201,6 +201,42 @@ export default function GroupDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, groupTotal >= groupTarget && groupTarget > 0]);
 
+  // Cierre de la semana que pasó: al entrar al grupo, una vez por semana, podio del grupo con fotos y tu puesto.
+  useEffect(() => {
+    if (!groupId || !userId || !data || !history?.length) return;
+    const monday = boliviaToday();
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const start = new Date(monday);
+    start.setDate(start.getDate() - 7);
+    const week = localDay(start);
+    const rows = history.filter((r) => r.week_start === week);
+    const mine = rows.find((r) => r.user_id === userId);
+    const total = rows.reduce((a, r) => a + r.steps, 0);
+    // Sin tu fila, con una sola persona o sin pasos, no hay nada que celebrar.
+    if (!mine || rows.length < 2 || total <= 0) return;
+    const key = `camina_gweek_${userId}_${groupId}_${week}`;
+    AsyncStorage.getItem(key).then((seen) => {
+      if (seen) return;
+      AsyncStorage.setItem(key, '1').catch(() => {});
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() - 1);
+      const mes = (d: Date) => d.toLocaleDateString('es-BO', { month: 'short' }).replace('.', '');
+      const photo = (id: string) => data.members.find((m) => m.id === id)?.photoUrl ?? null;
+      celebrate({
+        kind: 'group-week',
+        name: data.group.name,
+        weekLabel: `${start.getDate()} ${mes(start)} al ${sunday.getDate()} ${mes(sunday)}`,
+        podium: rows.filter((r) => r.rank <= 3).slice(0, 3).map((r) => ({ id: r.user_id, name: r.name, photoUrl: photo(r.user_id), steps: r.steps })),
+        meId: userId,
+        myRank: mine.rank,
+        mySteps: mine.steps,
+        members: rows.length,
+        total,
+      });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, userId, !!data, history?.length]);
+
   function openGroupMenu() {
     setDrawerOpen(true);
   }
