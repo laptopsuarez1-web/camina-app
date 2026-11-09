@@ -6,7 +6,7 @@ const TRADUCCIONES: [RegExp, string][] = [
   [/invalid login credentials/i, 'El correo o la contraseña no coinciden. Revisalos e intenta de nuevo.'],
   [/email not confirmed/i, 'Todavía no confirmaste tu correo. Busca el mail de Camina (mira también en Spam) y toca el link.'],
   [/user already registered|already been registered|already exists/i, 'Ese correo ya tiene una cuenta. Inicia sesión o toca "¿Olvidaste tu contraseña?".'],
-  [/password should be at least|password.*(short|length)/i, 'La contraseña tiene que tener al menos 6 caracteres.'],
+  [/password should be at least|password.*(short|length)/i, 'La contraseña tiene que tener al menos 8 caracteres.'],
   [/weak password|password.*(weak|pwned|leaked)/i, 'Esa contraseña es muy fácil de adivinar. Prueba con otra más larga.'],
   [/same.*password|new password should be different/i, 'La contraseña nueva tiene que ser distinta de la anterior.'],
   [/unable to validate email|invalid email|email.*invalid|valid email/i, 'Ese correo no parece válido. Revisa que esté bien escrito.'],

@@ -172,8 +172,8 @@ export default function WelcomeScreen() {
   }
 
   async function handleSubmit() {
-    if (!email.trim() || password.length < 6) {
-      Alert.alert('Faltan datos', 'Ingresa tu correo y una contraseña de al menos 6 caracteres.');
+    if (!email.trim() || password.length < 8) {
+      Alert.alert('Faltan datos', 'Ingresa tu correo y una contraseña de al menos 8 caracteres.');
       return;
     }
     setLoading(true);

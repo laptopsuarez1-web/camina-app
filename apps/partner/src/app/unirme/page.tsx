@@ -59,7 +59,7 @@ export default function UnirmePage() {
           </p>
           <form onSubmit={submit} className="w-full max-w-[320px] flex flex-col gap-3">
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Tu correo" required className={input} />
-            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña (mínimo 6)" autoComplete="new-password" minLength={6} required className={input} />
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña (mínimo 8)" autoComplete="new-password" minLength={8} required className={input} />
             {error && <p className="text-warn text-[12.5px]">{error}</p>}
             <button type="submit" disabled={loading} className="bg-mint text-mint-dark rounded-xl py-3.5 font-semibold text-sm">
               {loading ? 'Creando…' : 'Crear mi cuenta'}

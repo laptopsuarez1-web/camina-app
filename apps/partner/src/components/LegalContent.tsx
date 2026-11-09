@@ -10,7 +10,7 @@ export function LegalContent() {
         ← Camina
       </Link>
       <h1 className="text-2xl font-bold mt-4 mb-1">Términos y Privacidad</h1>
-      <p className="text-muted text-[13px] mb-8">Última actualización: octubre de 2026.</p>
+      <p className="text-muted text-[13px] mb-8">Última actualización: noviembre de 2026.</p>
 
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Términos de uso</h2>
@@ -28,16 +28,22 @@ export function LegalContent() {
           {"Ubicación: cuando la autorizas, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejas activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; para dejar de recibirlos, apaga las notificaciones de Camina desde la configuración del teléfono. Esa zona se borra cuando eliminas tu cuenta."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Tus pasos y tu nombre solo son visibles para otros usuarios si activas \"Aparecer en el ranking\" o dentro de un grupo al que te unes tú mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y un servicio de reporte de errores."}
+          {"Tus pasos y tu nombre solo son visibles para otros usuarios si activas \"Aparecer en el ranking\" o dentro de un grupo al que te unes tú mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y Sentry (reporte de errores de la app: datos técnicos del error y del teléfono, sin tu nombre, correo ni pasos)."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
           {"Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Si no hay Salud o Health Connect disponible, en iOS podemos leer el sensor de movimiento del teléfono para contar pasos."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Cámara y fotos: solo si lo autorizas, usamos la cámara para sacar la foto de tu historia en un local y tu galería para elegir tu foto de perfil, tu portada o las fotos de la Ruta. Solo subimos las fotos que eliges; no miramos el resto de tu galería. Si guardas en tu teléfono la imagen de tu resumen, la app solo escribe esa imagen en tu galería."}
+        </p>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
+          {"Ruta del mes: cuando marcas una visita a un local de la Ruta, guardamos el local, la fecha y la distancia a la que estabas del local (en metros) para confirmar que fuiste en persona. No guardamos tus coordenadas. El local ve tu primer nombre para confirmar la visita."}
+        </p>
+        <p className="text-[13.5px] leading-6 text-muted mb-3">
           {"Los mensajes de grupo se borran automáticamente cada mes; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Puedes reportar y bloquear a otras personas dentro de la app."}
         </p>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a caminaappbo@gmail.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}
+          {"Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tus fotos (perfil, portada, fotos de la Ruta e historias) y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a caminaappbo@gmail.com desde el correo de tu cuenta y la eliminamos en un plazo máximo de 7 días. Los datos borrados desaparecen también de nuestras copias de seguridad automáticas en un máximo de 30 días."}
         </p>
       </section>
 
@@ -114,7 +120,7 @@ export function LegalContent() {
       <section className="mb-8">
         <h2 className="font-bold text-[15px] mb-2">Datos y comercios</h2>
         <p className="text-[13.5px] leading-6 text-muted mb-3">
-          {"Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para el canje (el código y el premio) y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a caminaappbo@gmail.com."}
+          {"Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para atenderte: tu primer nombre junto a los canjes y visitas que hiciste en su local, el código y el premio y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a caminaappbo@gmail.com."}
         </p>
       </section>
 

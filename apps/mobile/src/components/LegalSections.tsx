@@ -4,7 +4,7 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { POINTS_PER_STEP_UNIT, DAILY_POINTS_CAP, POINTS_TTL_DAYS, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, LOYALTY_STAMPS_GOAL, LOYALTY_CARD_DAYS } from '@/constants/business-rules';
 
 // Texto legal único: lo usan la pantalla de aceptación (auth/terminos) y la de lectura (/legal).
-export const LEGAL_UPDATED = 'octubre de 2026';
+export const LEGAL_UPDATED = 'noviembre de 2026';
 
 // 1000 → "1.000" (a mano: no depende del soporte de Intl del teléfono).
 const miles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -20,13 +20,17 @@ const SECTIONS: { title: string; body: string }[] = [
 
 Ubicación: cuando la autorizas, usamos tu ubicación en el momento para mostrarte comercios cercanos en el mapa y no la guardamos. Si dejas activados los avisos cercanos, guardamos solo una zona aproximada de unos 550 m, sin historial ni ruta; puedes apagarlo en Perfil y se borra.
 
-Tus pasos y tu nombre solo son visibles para otros usuarios si activas "Aparecer en el ranking" o dentro de un grupo al que te unes tú mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y un servicio de reporte de errores.
+Tus pasos y tu nombre solo son visibles para otros usuarios si activas "Aparecer en el ranking" o dentro de un grupo al que te unes tú mismo. No vendemos tus datos a terceros. Para que la app funcione usamos estos proveedores: Supabase (base de datos y cuentas), Expo (envío de notificaciones), Google Maps (mapa), Google y Apple (inicio de sesión) y Sentry (reporte de errores de la app: datos técnicos del error y del teléfono, sin tu nombre, correo ni pasos).
 
 Guardamos también un identificador de tu celular (un código técnico, no personal) para detectar varias cuentas de una misma persona y evitar trampas. Si no hay Salud o Health Connect disponible, en iOS podemos leer el sensor de movimiento del teléfono para contar pasos.
 
+Cámara y fotos: solo si lo autorizas, usamos la cámara para sacar la foto de tu historia en un local y tu galería para elegir tu foto de perfil, tu portada o las fotos de la Ruta. Solo subimos las fotos que eliges; no miramos el resto de tu galería. Si guardas en tu teléfono la imagen de tu resumen, la app solo escribe esa imagen en tu galería.
+
+Ruta del mes: cuando marcas una visita a un local de la Ruta, guardamos el local, la fecha y la distancia a la que estabas del local (en metros) para confirmar que fuiste en persona. No guardamos tus coordenadas. El local ve tu primer nombre para confirmar la visita.
+
 Los mensajes de grupo se borran automáticamente cada mes; los resultados semanales de cada grupo (nombre, pasos y puesto) se conservan para mostrar el historial. Puedes reportar y bloquear a otras personas dentro de la app.
 
-Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar perfil > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tu foto y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a ${SUPPORT_EMAIL} y la eliminamos.`,
+Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar perfil > Eliminar cuenta. Se borran tu perfil, tus Puntos, tus canjes, tus pasos, tus fotos (perfil, portada, fotos de la Ruta e historias) y tus tokens de notificación. Se conservan, sin tu foto, los resultados semanales de grupo ya cerrados. Si no puedes entrar a la app, escríbenos a ${SUPPORT_EMAIL} y la eliminamos.`,
   },
   {
     title: 'Desafíos de grupo y Puntos en juego',
@@ -70,7 +74,7 @@ Eliminación de tu cuenta: puedes hacerlo cuando quieras desde Perfil > Editar p
   },
   {
     title: 'Datos y comercios',
-    body: `Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para el canje (el código y el premio) y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a ${SUPPORT_EMAIL}.`,
+    body: `Los comercios no ven tu cuenta ni tus pasos. Solo ven lo necesario para atenderte: tu primer nombre junto a los canjes y visitas que hiciste en su local, el código y el premio y, si ganas un sorteo, tu nombre para entregarte el premio. A comercios o patrocinadores solo les damos estadísticas agregadas, que no te identifican. Los datos de pasos y de salud se usan solo para sumar tus Puntos y mostrártelos, y nunca para publicidad. Tu ubicación aproximada se usa solo para los avisos de comercios cercanos, si los activaste. Puedes pedir ver, corregir o borrar tus datos desde Perfil > Editar perfil > Eliminar cuenta o escribiendo a ${SUPPORT_EMAIL}.`,
   },
   {
     title: 'Ley aplicable',
