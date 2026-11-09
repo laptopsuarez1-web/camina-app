@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { EndedCinematic, JoinedCinematic } from '@/components/challenge/ChallengeCinematics';
 import type {
-  EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic, TicketBoughtCinematic,
+  EventJoinedCinematic, FriendMadeCinematic, GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, GroupWeekCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic, TicketBoughtCinematic,
 } from '@/components/celebrations/MomentScenes';
 import type { RutaDoneCinematic, RutaStopDoneCinematic } from '@/components/ruta/RutaDoneScene';
 
@@ -10,7 +10,7 @@ import type { RutaDoneCinematic, RutaStopDoneCinematic } from '@/components/ruta
 //  - sheet: hoja desde abajo con chispas (reto cumplido, bienvenida);
 //  - win: pantalla completa para un gran logro;
 //  - challenge-joined / challenge-ended: cinemáticas de los desafíos (sumarse y terminar);
-//  - ticket-bought, event-joined, group-joined, group-created, friend-made, streak-milestone, streak-week, group-goal, ranking-result: escenas de momentos grandes.
+//  - ticket-bought, event-joined, group-joined, group-created, friend-made, streak-milestone, streak-week, group-goal, group-week, ranking-result: escenas de momentos grandes.
 export type ToastIcon = 'flame' | 'gift' | 'check' | 'users';
 export type Celebration =
   | { kind: 'toast'; icon: ToastIcon; title: string; body?: string; at?: 'top' | 'bottom' }
@@ -27,6 +27,7 @@ export type Celebration =
   | StreakWeekCinematic
   | GroupGoalCinematic
   | RankingResultCinematic
+  | GroupWeekCinematic
   | RutaDoneCinematic
   | RutaStopDoneCinematic;
 
