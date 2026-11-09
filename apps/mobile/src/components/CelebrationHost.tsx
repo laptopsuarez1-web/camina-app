@@ -12,7 +12,7 @@ import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
 import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScene';
-import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
+import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
 const GOLD = '#E2B33C';
 const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
@@ -359,6 +359,7 @@ export function CelebrationHost() {
       {current.kind === 'streak-week' && <StreakWeekScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'group-goal' && <GroupGoalScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ranking-result' && <RankingResultScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'group-week' && <GroupWeekScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ruta-done' && <RutaDoneScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ruta-stop' && <RutaStopDoneScene key={current.id} c={current} onDone={dismiss} />}
     </View>
