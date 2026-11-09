@@ -49,6 +49,8 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const from = Deno.env.get('EMAIL_FROM') ?? 'Camina <onboarding@resend.dev>';
+  // Si el comercio toca "Responder", la respuesta le llega al equipo de Camina (no se pierde en una casilla sin dueño).
+  const replyTo = Deno.env.get('EMAIL_REPLY_TO') ?? 'caminaappbo@gmail.com';
   const panelUrl = (Deno.env.get('PANEL_URL') ?? req.headers.get('origin') ?? '').replace(/\/$/, '');
 
   const caller = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
@@ -157,7 +159,7 @@ Deno.serve(async (req) => {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to, subject, html }),
+    body: JSON.stringify({ from, to, subject, html, reply_to: replyTo }),
   });
   if (!res.ok) return json({ ok: false, sent: false, error: await res.text() }, 502);
   return json({ ok: true, sent: true });
