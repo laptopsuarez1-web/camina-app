@@ -1,5 +1,5 @@
 // Contacto oficial de Camina (soporte, reportes, reclamos de derechos de autor).
-export const SUPPORT_EMAIL = 'caminaappbo@gmail.com';
+export const SUPPORT_EMAIL = 'soporte@caminaapp.com';
 
 // Páginas públicas (las piden Apple y Google para publicar la app).
 export const PRIVACY_URL = 'https://caminaapp.com/privacidad';

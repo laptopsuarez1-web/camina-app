@@ -11,7 +11,7 @@ import VideoShot from './VideoShot';
 
 export const WA = (texto: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
 export const WA_COMERCIO = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
-export const EMAIL_AVISAME = `mailto:caminaappbo@gmail.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
+export const EMAIL_AVISAME = `mailto:soporte@caminaapp.com?subject=${encodeURIComponent('Avísenme cuando Camina esté disponible')}&body=${encodeURIComponent('Hola! Quiero que me avisen por correo cuando Camina esté disponible en la tienda de mi celular.')}`;
 
 export const CAP = {
   inicio: '/web/cap/inicio.jpg',

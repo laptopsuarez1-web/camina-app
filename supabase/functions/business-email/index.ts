@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const from = Deno.env.get('EMAIL_FROM') ?? 'Camina <onboarding@resend.dev>';
   // Si el comercio toca "Responder", la respuesta le llega al equipo de Camina (no se pierde en una casilla sin dueño).
-  const replyTo = Deno.env.get('EMAIL_REPLY_TO') ?? 'caminaappbo@gmail.com';
+  const replyTo = Deno.env.get('EMAIL_REPLY_TO') ?? 'soporte@caminaapp.com';
   const panelUrl = (Deno.env.get('PANEL_URL') ?? req.headers.get('origin') ?? '').replace(/\/$/, '');
 
   const caller = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
