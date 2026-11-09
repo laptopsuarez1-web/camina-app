@@ -5,7 +5,7 @@
 //   - staff_invite: el dueño invitó a un cajero -> mail al cajero con el link para crear su cuenta.
 //
 // Secrets: RESEND_API_KEY (sin ella no se manda nada y responde { sent: false }), EMAIL_FROM
-// (ej. "Camina <comercios@camina.app>", dominio verificado en Resend) y PANEL_URL (ej.
+// (por defecto "Camina <no-reply@caminaapp.com>", dominio verificado en Resend) y PANEL_URL (ej.
 // "https://panel.camina.app"; si falta se usa el Origin de la llamada).
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const resendKey = Deno.env.get('RESEND_API_KEY');
-  const from = Deno.env.get('EMAIL_FROM') ?? 'Camina <onboarding@resend.dev>';
+  const from = Deno.env.get('EMAIL_FROM') ?? 'Camina <no-reply@caminaapp.com>';
   const panelUrl = (Deno.env.get('PANEL_URL') ?? req.headers.get('origin') ?? '').replace(/\/$/, '');
 
   const caller = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
