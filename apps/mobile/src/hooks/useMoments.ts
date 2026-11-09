@@ -101,61 +101,6 @@ export function useHomeMoments(streak: number | undefined) {
     }).catch(() => {});
   }, [lastWeek?.position, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cierre de la semana de cada grupo (lunes): podio del grupo con fotos y tu puesto. Una vez por grupo y por semana.
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        const monday = boliviaToday();
-        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-        const start = new Date(monday);
-        start.setDate(start.getDate() - 7);
-        const week = localDay(start);
-        const { data: mine } = await supabase.from('group_weekly_results').select('group_id, rank, steps').eq('user_id', userId).eq('week_start', week);
-        if (!mine?.length) return;
-        const fresh: typeof mine = [];
-        for (const r of mine) {
-          const key = `camina_gweek_${userId}_${r.group_id}_${week}`;
-          if (await AsyncStorage.getItem(key)) continue;
-          await AsyncStorage.setItem(key, '1');
-          fresh.push(r);
-        }
-        if (!fresh.length) return;
-        const ids = fresh.map((r) => r.group_id as string);
-        const [{ data: rows }, { data: groups }] = await Promise.all([
-          supabase.from('group_weekly_results').select('group_id, user_id, steps, rank').in('group_id', ids).eq('week_start', week).order('rank', { ascending: true }),
-          supabase.from('groups').select('id, name').in('id', ids),
-        ]);
-        const people = Array.from(new Set((rows ?? []).filter((r) => (r.rank as number) <= 3).map((r) => r.user_id as string)));
-        const { data: profs } = people.length ? await supabase.from('public_profiles').select('id, full_name, photo_url').in('id', people) : { data: [] };
-        const prof = new Map((profs ?? []).map((q) => [q.id as string, q]));
-        const sunday = new Date(monday);
-        sunday.setDate(sunday.getDate() - 1);
-        const mes = (d: Date) => d.toLocaleDateString('es-BO', { month: 'short' }).replace('.', '');
-        const weekLabel = `${start.getDate()} ${mes(start)} al ${sunday.getDate()} ${mes(sunday)}`;
-        for (const r of fresh) {
-          const all = (rows ?? []).filter((x) => x.group_id === r.group_id);
-          // Una semana en la que nadie caminó no se celebra.
-          const total = all.reduce((a, x) => a + Number(x.steps ?? 0), 0);
-          if (total <= 0 || all.length < 2) continue;
-          const podium = all.filter((x) => (x.rank as number) <= 3).slice(0, 3).map((x) => {
-            const q = prof.get(x.user_id as string);
-            return { id: x.user_id as string, name: (q?.full_name as string) || 'Caminante', photoUrl: (q?.photo_url as string | null) ?? null, steps: Number(x.steps ?? 0) };
-          });
-          celebrate({
-            kind: 'group-week',
-            name: (groups ?? []).find((g) => g.id === r.group_id)?.name ?? 'Tu grupo',
-            weekLabel, podium, meId: userId,
-            myRank: Number(r.rank), mySteps: Number(r.steps ?? 0), members: all.length, total,
-            onOpen: () => router.push({ pathname: '/(tabs)/grupos/[groupId]', params: { groupId: r.group_id as string } }),
-          });
-        }
-      } catch {
-        // si no se puede leer, no se muestra
-      }
-    })();
-  }, [userId]);
-
   // Un amigo que invitaste ya caminó y te dio sus 5 Puntos. La primera vez solo se anotan los que ya había.
   useEffect(() => {
     if (!userId) return;
