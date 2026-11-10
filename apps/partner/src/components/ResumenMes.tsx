@@ -38,7 +38,7 @@ export function ResumenMes({ businessId }: { businessId: string }) {
   const total = r.canjes + r.ruta;
   return (
     <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(140deg, #2A1A55 0%, #1A1033 100%)', color: '#fff' }}>
-      <p className="text-[11px] font-bold tracking-[0.12em]" style={{ color: '#7FEDC4' }}>TU RESUMEN DE {mes.toUpperCase()}</p>
+      <p className="text-[11px] font-bold tracking-[0.12em]" style={{ color: '#62F0B6' }}>TU RESUMEN DE {mes.toUpperCase()}</p>
       <p className="text-[22px] font-extrabold leading-tight mt-1">
         {r.personas === 0 ? 'Este mes todavía no vino nadie por Camina' : `Camina te trajo ${r.personas} ${r.personas === 1 ? 'persona' : 'personas'}`}
       </p>
@@ -49,7 +49,7 @@ export function ResumenMes({ businessId }: { businessId: string }) {
       )}
 
       {(r.en_rutas ?? 0) > 0 && (
-        <p className="text-[13px] mt-2 rounded-xl px-3 py-2" style={{ background: 'rgba(127,237,196,0.12)', color: '#7FEDC4' }}>
+        <p className="text-[13px] mt-2 rounded-xl px-3 py-2" style={{ background: 'rgba(98,240,182,0.12)', color: '#62F0B6' }}>
           Este mes tu local le tocó a <strong>{r.en_rutas} {r.en_rutas === 1 ? 'persona' : 'personas'}</strong> en su Ruta del mes: pueden venir en cualquier momento hasta fin de mes.
         </p>
       )}
@@ -60,7 +60,7 @@ export function ResumenMes({ businessId }: { businessId: string }) {
           ['Visitas de la Ruta', r.ruta, r.ruta_prev],
         ].map(([t, n, p]) => (
           <div key={t as string} className="rounded-xl py-3 px-3" style={{ background: 'rgba(255,255,255,0.07)' }}>
-            <p className="text-[22px] font-extrabold leading-none" style={{ color: '#7FEDC4' }}>{n}</p>
+            <p className="text-[22px] font-extrabold leading-none" style={{ color: '#62F0B6' }}>{n}</p>
             <p className="text-[11.5px] font-semibold mt-1" style={{ color: '#C4B8E8' }}>{t}</p>
             <Cambio now={n as number} prev={p as number} mes={prevMes} />
           </div>

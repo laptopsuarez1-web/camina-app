@@ -277,7 +277,7 @@ export function usePalette() {
     chip: dark ? colors.dark.purpleLight : colors.light.purpleLight,
     pod: dark ? '#2E2247' : '#E9DEFA',
     podWin: (dark ? ['#5a4413', '#3a2c0c'] : ['#FFE7A3', '#F5D27A']) as [string, string],
-    podMine: (dark ? ['rgba(127,237,196,0.55)', 'rgba(79,195,168,0.25)'] : ['rgba(127,237,196,0.75)', 'rgba(79,195,168,0.35)']) as [string, string],
+    podMine: (dark ? ['rgba(98,240,182,0.55)', 'rgba(79,195,168,0.25)'] : ['rgba(98,240,182,0.75)', 'rgba(79,195,168,0.35)']) as [string, string],
     stamp: dark ? colors.mint : colors.aquaDeep,
   };
 }
@@ -554,8 +554,8 @@ export function GroupOrbit({
   return (
     <Reveal tl={tl} delay={delay} pop from={0.7}>
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-        <View pointerEvents="none" style={{ position: 'absolute', width: size + 44, height: size + 44, borderRadius: (size + 44) / 2, backgroundColor: p.dark ? 'rgba(127,237,196,0.06)' : 'rgba(79,195,168,0.10)' }} />
-        <View pointerEvents="none" style={{ position: 'absolute', width: size - 20, height: size - 20, borderRadius: (size - 20) / 2, backgroundColor: p.dark ? 'rgba(127,237,196,0.07)' : 'rgba(79,195,168,0.10)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', width: size + 44, height: size + 44, borderRadius: (size + 44) / 2, backgroundColor: p.dark ? 'rgba(98,240,182,0.06)' : 'rgba(79,195,168,0.10)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', width: size - 20, height: size - 20, borderRadius: (size - 20) / 2, backgroundColor: p.dark ? 'rgba(98,240,182,0.07)' : 'rgba(79,195,168,0.10)' }} />
         <SlowSpin tl={tl} size={size - 46} color={p.dark ? 'rgba(255,255,255,0.28)' : 'rgba(91,49,163,0.3)'} />
         <DrawRing tl={tl} delay={delay + 250} size={size} stroke={8} track={p.track} to={arc} duration={arc < 1 ? 600 : 900}>
           {hasMe && closeRing ? <DrawRingTail tl={tl} delay={meDelay + 520} size={size} from={arc} /> : null}
@@ -575,7 +575,7 @@ export function GroupOrbit({
           {Array.from({ length: emptySlots }, (_, i) => (
             <Reveal key={`e${i}`} tl={tl} delay={delay + 700 + i * 110} pop style={{ position: 'absolute', ...orbitSlot(first + people.length + (extra > 0 ? 1 : 0) + i, n, size, slot) }}>
               <Press accessibilityRole="button" accessibilityLabel="Invitar a un amigo" disabled={!onSlotPress} onPress={onSlotPress} hitSlop={6}
-                style={{ width: slot - 5, height: slot - 5, margin: 2.5, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: p.dark ? 'rgba(127,237,196,0.6)' : colors.aquaDeep, backgroundColor: p.dark ? 'rgba(28,16,48,0.85)' : 'rgba(255,255,255,0.9)', alignItems: 'center', justifyContent: 'center' }}>
+                style={{ width: slot - 5, height: slot - 5, margin: 2.5, borderRadius: slot / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: p.dark ? 'rgba(98,240,182,0.6)' : colors.aquaDeep, backgroundColor: p.dark ? 'rgba(28,16,48,0.85)' : 'rgba(255,255,255,0.9)', alignItems: 'center', justifyContent: 'center' }}>
                 <Text allowFontScaling={false} style={{ fontSize: 20, lineHeight: 22, fontWeight: '800', color: p.dark ? colors.mint : colors.aquaDeep, textAlign: 'center' }}>+</Text>
               </Press>
             </Reveal>

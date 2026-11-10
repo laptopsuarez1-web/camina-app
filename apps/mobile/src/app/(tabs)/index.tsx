@@ -435,7 +435,7 @@ export default function HomeScreen() {
               accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
               onPress={() => setStreaksOpen(true)}
               className="flex-row items-center rounded-full"
-              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+              style={{ gap: 4, backgroundColor: 'rgba(98,240,182,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <Flame size={11} color={colors.mint} />
               <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
@@ -445,7 +445,7 @@ export default function HomeScreen() {
             <Animated.View
               style={{
                 flexDirection: 'row', alignItems: 'center', borderRadius: 999,
-                gap: 4, backgroundColor: 'rgba(127,237,196,0.16)', paddingHorizontal: 10, paddingVertical: 4,
+                gap: 4, backgroundColor: 'rgba(98,240,182,0.16)', paddingHorizontal: 10, paddingVertical: 4,
                 opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
               }}
             >

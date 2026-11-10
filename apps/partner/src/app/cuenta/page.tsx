@@ -99,7 +99,7 @@ export default function CuentaPage() {
             type="submit"
             disabled={emailLoading || !email.trim()}
             className="rounded-[10px] py-3 font-semibold text-sm disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
+            style={{ background: '#241748', color: '#62F0B6' }}
           >
             {emailLoading ? 'Enviando…' : 'Cambiar correo'}
           </button>
@@ -133,7 +133,7 @@ export default function CuentaPage() {
             type="submit"
             disabled={claveLoading || !actual || !nueva}
             className="rounded-[10px] py-3 font-semibold text-sm disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
+            style={{ background: '#241748', color: '#62F0B6' }}
           >
             {claveLoading ? 'Guardando…' : 'Cambiar contraseña'}
           </button>

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { DEFAULT_CITY } from '@/constants/cities';
 import { Spinner } from '@/components/ui/Spinner';
 import { View, Image, Alert, ScrollView } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
@@ -23,7 +24,7 @@ export default function CompletarPerfilScreen() {
   const [bDay, setBDay] = useState('');
   const [bMonth, setBMonth] = useState('');
   const [bYear, setBYear] = useState('');
-  const [city, setCity] = useState('Tarija');
+  const [city, setCity] = useState(DEFAULT_CITY);
   const [zone, setZone] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [photoB64, setPhotoB64] = useState<string | null>(null);

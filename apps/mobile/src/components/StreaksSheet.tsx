@@ -15,7 +15,7 @@ function Row({ icon, title, value, text, isDark }: { icon: 'flame' | 'target'; t
       <View
         style={{
           width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
-          backgroundColor: icon === 'flame' ? (isDark ? 'rgba(242,152,92,0.18)' : colors.warnLight) : isDark ? 'rgba(127,237,196,0.12)' : 'rgba(18,140,110,0.1)',
+          backgroundColor: icon === 'flame' ? (isDark ? 'rgba(242,152,92,0.18)' : colors.warnLight) : isDark ? 'rgba(98,240,182,0.12)' : 'rgba(18,140,110,0.1)',
         }}
       >
         {icon === 'flame' ? <IllArt kind="flame" size={26} /> : <Target size={22} color={colors.mint} />}

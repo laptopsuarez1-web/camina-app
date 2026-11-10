@@ -125,7 +125,7 @@ export function TicketBoughtScene({ c, onDone }: { c: TicketBoughtCinematic; onD
           </Animated.View>
         </View>
         <Stamp tl={tl} delay={2500} rotate={-8} style={{ position: 'absolute', right: 24, top: 10 + TICKET_H - 70 }}>
-          <View style={{ borderWidth: 3, borderColor: colors.aquaDeep, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4, backgroundColor: 'rgba(127,237,196,0.28)' }}>
+          <View style={{ borderWidth: 3, borderColor: colors.aquaDeep, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4, backgroundColor: 'rgba(98,240,182,0.28)' }}>
             <Text style={{ ...display(18), color: colors.aquaDeep, letterSpacing: 1.5 }}>PAGADA</Text>
           </View>
         </Stamp>
@@ -195,7 +195,7 @@ export function EventJoinedScene({ c, onDone }: { c: EventJoinedCinematic; onDon
               </View>
             </View>
             <Stamp tl={tl} delay={1850} rotate={8} style={{ position: 'absolute', right: 14, top: 14 }}>
-              <View style={{ borderWidth: 2.5, borderColor: colors.aquaDeep, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: 'rgba(127,237,196,0.28)' }}>
+              <View style={{ borderWidth: 2.5, borderColor: colors.aquaDeep, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: 'rgba(98,240,182,0.28)' }}>
                 <Text style={{ ...display(15), color: colors.aquaDeep, letterSpacing: 1 }}>¡VOY!</Text>
               </View>
             </Stamp>

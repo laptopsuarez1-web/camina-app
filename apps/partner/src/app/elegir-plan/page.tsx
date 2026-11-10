@@ -87,7 +87,7 @@ export default function ElegirPlanPage() {
                   </span>
                 )}
                 <p className="text-[17px] font-bold mb-0.5">{p.name}</p>
-                <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#7FEDC4' : '#291C47' }}>{p.price}</p>
+                <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : '#291C47' }}>{p.price}</p>
                 {!free && (
                   <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : '#8B6A12' }}>
                     {LANZAMIENTO}
@@ -97,7 +97,7 @@ export default function ElegirPlanPage() {
                 <div className="pt-3.5 mb-4.5 flex-1" style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : '#E1D2F5'}` }}>
                   {p.features.map((f) => (
                     <div key={f} className="flex gap-2 mb-2.5 items-start">
-                      <Check size={13} color={p.featured ? '#7FEDC4' : '#4FC3A8'} className="mt-0.5 shrink-0" />
+                      <Check size={13} color={p.featured ? '#62F0B6' : '#4FC3A8'} className="mt-0.5 shrink-0" />
                       <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : '#291C47' }}>
                       {f}
                       {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : '#7C6A9C' }}>{PLAN_EXPLICA[f]}</span> : null}
@@ -110,8 +110,8 @@ export default function ElegirPlanPage() {
                   disabled={saving}
                   className="w-full py-2.5 rounded-[10px] font-semibold text-[13px] disabled:opacity-60"
                   style={{
-                    background: p.featured ? '#7FEDC4' : free ? '#241748' : '#241748',
-                    color: p.featured ? '#12281F' : '#7FEDC4',
+                    background: p.featured ? '#62F0B6' : free ? '#241748' : '#241748',
+                    color: p.featured ? '#12281F' : '#62F0B6',
                   }}
                 >
                   {free ? (saving ? 'Entrando…' : 'Empezar gratis') : `Elegir ${p.name}`}

@@ -156,7 +156,7 @@ export default function AdminRetosPage() {
               onClick={save}
               disabled={saving || draft.title.trim().length < 3 || draft.description.trim().length < 5}
               className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-              style={{ background: '#241748', color: '#7FEDC4' }}
+              style={{ background: '#241748', color: '#62F0B6' }}
             >
               {saving ? 'Guardando…' : 'Guardar'}
             </button>

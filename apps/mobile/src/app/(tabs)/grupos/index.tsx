@@ -189,7 +189,7 @@ export default function GruposScreen() {
                       </Text>
                     </View>
                     {w?.myRank != null && count > 1 && (
-                      <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: 'rgba(127,237,196,0.16)' }}>
+                      <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: 'rgba(98,240,182,0.16)' }}>
                         <Text className="text-xs font-bold" style={{ color: colors.mint }}>Vas {w.myRank}.º</Text>
                       </View>
                     )}

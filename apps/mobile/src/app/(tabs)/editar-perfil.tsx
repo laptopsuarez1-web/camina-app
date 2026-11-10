@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { DEFAULT_CITY } from '@/constants/cities';
 import { useLatest } from '@/hooks/useLatest';
 import { Spinner } from '@/components/ui/Spinner';
 import { View, ScrollView, Alert, BackHandler } from 'react-native';
@@ -89,7 +90,7 @@ export default function EditarPerfilScreen() {
   const [bannerB64, setBannerB64] = useState<string | null>(null);
   const bannerShown = bannerUri ?? profile?.profile_banner_url ?? null;
   const bannerReady = useBadgesReady();
-  const [city, setCity] = useState(profile?.city ?? 'Tarija');
+  const [city, setCity] = useState(profile?.city ?? DEFAULT_CITY);
   const [zone, setZone] = useState<string | null>(profile?.zone ?? null);
   const [bYear, setBYear] = useState(b ? b.slice(0, 4) : '');
   const [bMonth, setBMonth] = useState(b ? String(parseInt(b.slice(5, 7), 10)) : '');
@@ -127,7 +128,7 @@ export default function EditarPerfilScreen() {
       bioInput.trim() !== (profile.bio ?? '').trim() ||
       bgKey !== (profile.profile_bg ?? 'violeta') ||
       bannerUri !== null ||
-      city !== (profile.city ?? 'Tarija') ||
+      city !== (profile.city ?? DEFAULT_CITY) ||
       zone !== (profile.zone ?? null) ||
       !sameList(interests, profile.interests ?? []) ||
       photoUri !== null ||

@@ -102,7 +102,7 @@ export default function AdminEventosPage() {
                     </>
                   )}
                   {r.status === 'approved' && ended && r.kind !== 'publicidad' && r.kind !== 'evento' && (
-                    <button onClick={() => draw(r.id)} className="rounded-lg px-3.5 py-1.5 text-[12px] font-bold" style={{ background: '#241748', color: '#7FEDC4' }}>
+                    <button onClick={() => draw(r.id)} className="rounded-lg px-3.5 py-1.5 text-[12px] font-bold" style={{ background: '#241748', color: '#62F0B6' }}>
                       Sortear
                     </button>
                   )}

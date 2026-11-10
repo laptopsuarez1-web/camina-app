@@ -345,7 +345,7 @@ export default function WelcomeScreen() {
               fontWeight: '900',
               letterSpacing: -1,
               marginTop: 16,
-              textShadowColor: 'rgba(127,237,196,0.55)',
+              textShadowColor: 'rgba(98,240,182,0.55)',
               textShadowOffset: { width: 0, height: 0 },
               textShadowRadius: 14,
             }}

@@ -596,7 +596,7 @@ export default function GroupDetailScreen() {
                   <View
                     style={{
                       width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,
-                      backgroundColor: rank === 0 ? 'rgba(127,237,196,0.28)' : 'rgba(255,255,255,0.12)',
+                      backgroundColor: rank === 0 ? 'rgba(98,240,182,0.28)' : 'rgba(255,255,255,0.12)',
                       borderWidth: 1, borderBottomWidth: 0, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', paddingTop: 8,
                     }}
                   >

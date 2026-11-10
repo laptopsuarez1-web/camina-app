@@ -308,7 +308,7 @@ export default function RegistroPage() {
                   siguiente();
                 }}
                 className="rounded-xl px-6 py-3 font-semibold text-sm"
-                style={{ background: '#241748', color: '#7FEDC4' }}
+                style={{ background: '#241748', color: '#62F0B6' }}
               >
                 Continuar
               </button>
@@ -372,7 +372,7 @@ export default function RegistroPage() {
                 <button type="button" onClick={anterior} className="rounded-xl px-5 py-3 font-semibold text-sm border border-line bg-white">
                   Volver
                 </button>
-                <button type="button" onClick={siguiente} className="flex-1 rounded-xl py-3 font-semibold text-sm" style={{ background: '#241748', color: '#7FEDC4' }}>
+                <button type="button" onClick={siguiente} className="flex-1 rounded-xl py-3 font-semibold text-sm" style={{ background: '#241748', color: '#62F0B6' }}>
                   {pagado ? 'Continuar al pago' : 'Continuar'}
                 </button>
               </div>
@@ -409,7 +409,7 @@ export default function RegistroPage() {
                   disabled={!pagoAvisado}
                   onClick={siguiente}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#241748', color: '#62F0B6' }}
                 >
                   Ya lo mandé, crear mi cuenta
                 </button>
@@ -510,7 +510,7 @@ export default function RegistroPage() {
                     siguiente();
                   }}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#241748', color: '#62F0B6' }}
                 >
                   Continuar
                 </button>
@@ -553,7 +553,7 @@ export default function RegistroPage() {
                   type="submit"
                   disabled={!valido || loading}
                   className="flex-1 rounded-xl py-3 font-semibold text-sm disabled:opacity-50"
-                  style={{ background: '#241748', color: '#7FEDC4' }}
+                  style={{ background: '#241748', color: '#62F0B6' }}
                 >
                   {loading ? 'Creando cuenta…' : 'Crear cuenta'}
                 </button>

@@ -92,7 +92,7 @@ export default function BeneficioPage() {
         disabled={atFreeLimit}
         title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
         className="flex items-center gap-2 rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-4.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ background: '#241748', color: '#7FEDC4' }}
+        style={{ background: '#241748', color: '#62F0B6' }}
       >
         <Plus size={15} /> Agregar beneficio
       </button>
@@ -840,7 +840,7 @@ function BeneficioForm({
           onClick={handleSave}
           disabled={saving || !nombre.trim() || !imageUrl || !canalOk || !cuposOnlineOk}
           className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
-          style={{ background: '#241748', color: '#7FEDC4' }}
+          style={{ background: '#241748', color: '#62F0B6' }}
         >
           {saving ? 'Guardando…' : 'Guardar cambios'}
         </button>

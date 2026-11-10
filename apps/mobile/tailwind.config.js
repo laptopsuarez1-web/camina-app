@@ -36,7 +36,7 @@ module.exports = {
         'auth-bg': '#241748',
         'auth-bg-soft': { light: '#2F1E5C', dark: '#3A2668' },
         'auth-muted': '#C4B8E8',
-        mint: '#7FEDC4',
+        mint: '#62F0B6',
         'mint-dark': '#12281F',
         // Texto e íconos sobre un chip mint.
         'mint-ink': '#156650',

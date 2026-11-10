@@ -102,7 +102,7 @@ export function AdminBusinessEditModal({ business, onClose, onSaved }: { busines
         </div>
         {error && <p className="text-warn text-[12.5px] mt-3">{error}</p>}
         <div className="flex gap-2 mt-4">
-          <button onClick={save} disabled={saving} className="rounded-[10px] px-4 py-2 text-[13px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#7FEDC4' }}>
+          <button onClick={save} disabled={saving} className="rounded-[10px] px-4 py-2 text-[13px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#62F0B6' }}>
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
           <button onClick={onClose} className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[10px] px-4 py-2 text-[13px] font-bold">Cancelar</button>
