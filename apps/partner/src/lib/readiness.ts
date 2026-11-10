@@ -22,6 +22,11 @@ export function faltantesParaPublicar(
   return out;
 }
 
+// Lo que sí hace falta para elegir plan: las fotos son opcionales (sin logo, la app muestra el ícono de su categoría).
+export function faltantesObligatorios(b: Parameters<typeof faltantesParaPublicar>[0]): Requisito[] {
+  return faltantesParaPublicar(b).filter((r) => r.id !== 'logo' && r.id !== 'portada');
+}
+
 // Aviso suave (no bloquea la aprobación): sin beneficios activos el local no sale en Canjes ni en el mapa.
 export function sugerenciaBeneficio(b: Pick<Business, 'account_kind'>, beneficiosActivos: number) {
   return b.account_kind !== 'events_only' && beneficiosActivos < 1;

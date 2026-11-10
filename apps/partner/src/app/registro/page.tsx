@@ -542,7 +542,7 @@ export default function RegistroPage() {
 
               <p className="text-muted text-[12px] leading-[18px]">
                 Después de crear la cuenta, el equipo de Camina revisa tu comercio antes de que aparezca en la app.
-                Para publicarte necesitamos el <strong>logo</strong> y una <strong>foto de portada</strong> (las cargas en Perfil).
+                El <strong>logo</strong> y la <strong>foto de portada</strong> son opcionales, pero te recomendamos cargarlos en Perfil: sin logo, en el mapa sales con el ícono de tu categoría.
               </p>
 
               <div className="flex gap-2.5">

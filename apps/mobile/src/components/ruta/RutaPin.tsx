@@ -3,6 +3,7 @@ import { Image, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Coin } from '@/components/ui/Coin';
 import { GOLD as FEATURED_GOLD } from '@/components/ui/Featured';
+import { categoryStyle } from '@/components/CategoryAvatar';
 
 const MINT = '#62F0B6';
 // Mismo dorado que los comercios Paso Adelante del mapa de Canjes.
@@ -13,8 +14,8 @@ const HUELLAS = require('@/../assets/ruta-huellas.png');
 // con borde menta y unas huellas arriba si el local es de tu ruta. Sin ruta va en blanco, igual que en Canjes.
 // `star`: el local protagonista del mes (el que regala el premio del sorteo) se ve igual que un destacado Paso Adelante
 // en Canjes: marco dorado y la moneda dorada arriba a la derecha (en vez de las huellas menta).
-export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, onLoaded }: {
-  name: string; logoUrl?: string | null; size?: number; route?: boolean; star?: boolean; onLoaded?: () => void;
+export function RutaPin({ name, logoUrl, category, size = 46, route = true, star = false, onLoaded }: {
+  name: string; logoUrl?: string | null; category?: string | null; size?: number; route?: boolean; star?: boolean; onLoaded?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
   // El protagonista del mes va con marco dorado (destacado); el resto, menta.
@@ -22,15 +23,17 @@ export function RutaPin({ name, logoUrl, size = 46, route = true, star = false, 
   const b = route ? 4 : 3;
   const inner = size - b * 2;
   const showLogo = !!logoUrl && !failed;
+  const cat = categoryStyle(category);
+  const CatIcon = cat.icon;
   return (
     <View style={{ width: size + 16, height: size + 26, alignItems: 'center', paddingTop: 8 }}>
       <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: ring, alignItems: 'center', justifyContent: 'center',
         shadowColor: star ? '#000' : route ? MINT : '#000', shadowOpacity: star ? 0.4 : route ? 0.6 : 0.4, shadowRadius: star ? 4 : route ? 8 : 4, shadowOffset: { width: 0, height: 2 }, elevation: 6 }}>
-        <View style={{ width: inner, height: inner, borderRadius: inner * 0.28, overflow: 'hidden', backgroundColor: showLogo ? '#fff' : '#1F7A66', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: inner, height: inner, borderRadius: inner * 0.28, overflow: 'hidden', backgroundColor: showLogo ? '#fff' : cat.to, alignItems: 'center', justifyContent: 'center' }}>
           {showLogo ? (
             <Image source={{ uri: logoUrl! }} fadeDuration={0} onLoad={onLoaded} onError={() => setFailed(true)} style={{ width: inner, height: inner }} resizeMode="cover" />
           ) : (
-            <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{(name.trim()[0] ?? '·').toUpperCase()}</Text>
+            <CatIcon size={size * 0.5} color="#fff" weight="fill" />
           )}
         </View>
         {route && !star && (

@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { faltantesParaPublicar, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
+import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
 import type { BusinessPlan } from '@/lib/supabase';
@@ -78,9 +78,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       role === 'owner' &&
       business.account_kind !== 'events_only' &&
       business.plan_onboarded === false &&
-      // Elige su plan (una sola vez) apenas termina la ficha: logo, portada, descripción, ubicación y al menos un
+      // Elige su plan (una sola vez) apenas termina la ficha: descripción, ubicación (logo y portada son opcionales) y al menos un
       // beneficio. No espera a que lo aprobemos. Si ya estaba aprobado de antes, también se le pide.
-      (business.approved || (faltantesParaPublicar(business).length === 0 && (beneficiosActivos ?? 0) >= 1))
+      (business.approved || (faltantesObligatorios(business).length === 0 && (beneficiosActivos ?? 0) >= 1))
     ) {
       router.replace('/elegir-plan');
     }

@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GOLD } from '@/components/ui/Featured';
 import {
   Coffee,
-  Food,
   Ticket,
   Barbell,
   Sparkle,
@@ -13,6 +12,8 @@ import {
   Wrench,
   Storefront,
   SquaresFour,
+  Bread, Cake, HandHeart, BeerStein, Bed, Airplane, GraduationCap, MusicNotes, Tooth, Stethoscope, Bicycle, CookingPot,
+  Hamburger, Pizza, IceCream, Wine, Scissors, Flower, PawPrint, Pill, FilmSlate, Books, Diamond, Eyeglasses, TShirt, Laptop, Basket, Drop, Fish, ForkKnife, Leaf,
   type IconProps,
 } from '@/components/icons';
 
@@ -22,7 +23,7 @@ type CategoryStyle = { icon: (p: IconProps) => React.ReactElement; from: string;
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   Todos: { icon: SquaresFour, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Café: { icon: Coffee, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
-  Gastronomía: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Gastronomía: { icon: ForkKnife, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
   Entretenimiento: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Fitness: { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   Belleza: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
@@ -31,41 +32,74 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   Servicios: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
   Otro: { icon: Storefront, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   // Categorías nuevas del panel. La app solo muestra las que tienen comercios.
-  Panadería: { icon: Coffee, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Burgers: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Sándwiches: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Pizza: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Sushi: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Restaurante: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Helados: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
-  'Bar & Vinos': { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  'Dietética & Saludable': { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  Panadería: { icon: Bread, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Burgers: { icon: Hamburger, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Sándwiches: { icon: Hamburger, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Pizza: { icon: Pizza, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Sushi: { icon: Fish, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Restaurante: { icon: ForkKnife, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Helados: { icon: IceCream, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
+  'Bar & Vinos': { icon: Wine, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  'Dietética & Saludable': { icon: Leaf, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   'Estética & Belleza': { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
-  Farmacias: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
-  Fisioterapia: { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
-  'Masajes & Fisioterapia': { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  Farmacias: { icon: Pill, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
+  Fisioterapia: { icon: HandHeart, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  'Masajes & Fisioterapia': { icon: HandHeart, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   'Yoga & Pilates': { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   'Gimnasio & Deporte': { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   Bienestar: { icon: Sparkle, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
   Cultura: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Cine: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Mascotas: { icon: Storefront, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
-  Tecnología: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
-  'Ropa & Accesorios': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Cine: { icon: FilmSlate, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Mascotas: { icon: PawPrint, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
+  Tecnología: { icon: Laptop, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
+  'Ropa & Accesorios': { icon: TShirt, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   'Tienda Online': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Kiosco: { icon: Storefront, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
-  Barbería: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
-  Peluquería: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
+  Kiosco: { icon: Basket, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
+  Barbería: { icon: Scissors, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
+  Peluquería: { icon: Scissors, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
   'Uñas & Spa': { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
-  Óptica: { icon: Storefront, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
-  'Librería & Papelería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  'Joyería & Relojería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Lavandería: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
-  'Plantas & Flores': { icon: Sparkle, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
+  Óptica: { icon: Eyeglasses, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
+  'Librería & Papelería': { icon: Books, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  'Joyería & Relojería': { icon: Diamond, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
+  Lavandería: { icon: Drop, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
+  'Plantas & Flores': { icon: Flower, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
 };
 
+// Hay cientos de categorías en el panel: si la exacta no está arriba, se busca por palabra (sin tildes ni mayúsculas).
+const CATEGORY_RULES: [RegExp, CategoryStyle][] = [
+  [/saltena|empanada|cunape|horneado|tucumana|panader/, { icon: Bread, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' }],
+  [/torta|reposter|postre|galleta|cupcake|chocolat|dulce/, { icon: Cake, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' }],
+  [/helad/, { icon: IceCream, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' }],
+  [/pizza/, { icon: Pizza, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' }],
+  [/burger|hamburg|hot dog|salchipapa|lomito|sandwich|comida rapida|taco/, { icon: Hamburger, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' }],
+  [/pollo|alita|parrilla|asado|churrasc|criolla|casera|picanter|almuerzo|pension|sopa|rotiseria|catering|comida/, { icon: CookingPot, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' }],
+  [/sushi|ramen|marisc|pescad|cevich|japones|coreana|china|oriental|peruana/, { icon: Fish, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' }],
+  [/cafe|te e|infusion|desayuno|brunch/, { icon: Coffee, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' }],
+  [/vino|vinoteca|cocteler|licor|singani|tapas/, { icon: Wine, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/cerveceria|pub |^bar( |$)|rooftop|discoteca|karaoke|pena/, { icon: BeerStein, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/jugo|smoothie|acai|fruteria|verduleria|saludable|vegan|nutricion/, { icon: Leaf, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' }],
+  [/fisio|kinesio|masaje|spa|sauna|terapia|psicolog|bienestar/, { icon: HandHeart, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' }],
+  [/odonto|dental|dentista/, { icon: Tooth, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' }],
+  [/medic|consultorio|pediatr|ginecol|laboratorio|clinic|veterinar/, { icon: Stethoscope, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' }],
+  [/gimnas|crossfit|funcional|yoga|pilates|marcial|natacion|danza|baile|deporte/, { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' }],
+  [/bicicleta/, { icon: Bicycle, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' }],
+  [/peluquer|barber|unas|pestana|ceja|maquillaje|depilacion|estetic|belleza|tatuaje|cosmetic|perfum/, { icon: Scissors, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' }],
+  [/hotel|hospedaje|hostal/, { icon: Bed, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' }],
+  [/turismo|viaje/, { icon: Airplane, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' }],
+  [/clase|curso|idioma|academia|escuela/, { icon: GraduationCap, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' }],
+  [/musica|instrumento|teatro|museo|galeria|arte/, { icon: MusicNotes, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/escape|bowling|billar|juego|patinaje|parque|evento|entreten/, { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/calzado|ropa|zapat/, { icon: TShirt, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/jugueter|artesania|souvenir|minimarket|supermercado|tienda/, { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' }],
+  [/farmacia/, { icon: Pill, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' }],
+];
+const norm = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 export function categoryStyle(category?: string | null): CategoryStyle {
-  return (category && CATEGORY_STYLES[category]) || CATEGORY_STYLES.Otro;
+  if (!category) return CATEGORY_STYLES.Otro;
+  if (CATEGORY_STYLES[category]) return CATEGORY_STYLES[category];
+  const n = norm(category);
+  return CATEGORY_RULES.find(([re]) => re.test(n))?.[1] ?? CATEGORY_STYLES.Otro;
 }
 
 // Logo del comercio si lo subió; si no, una burbuja de color con el ícono de su categoría.

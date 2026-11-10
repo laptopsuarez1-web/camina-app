@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { Marker } from 'react-native-maps';
 import { MapPin, ChevronRight, X, Gift, Check } from '@/components/icons';
 import { type BenefitWithBusiness } from '@/hooks/useBenefits';
-import { BusinessAvatar } from '@/components/CategoryAvatar';
+import { BusinessAvatar, categoryStyle } from '@/components/CategoryAvatar';
 import type { OnlineChannel } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
 import { Glass } from '@/components/ui/Glass';
@@ -167,13 +167,14 @@ export function pinSize(featured?: boolean) {
   return { head, w: head + PIN_PAD * 2, h: head + PIN_TIP + PIN_PAD * 2 };
 }
 
-export function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string; logoUrl?: string | null; featured?: boolean; onLoaded?: () => void }) {
+export function MapMarker({ name, logoUrl, category, featured, onLoaded }: { name: string; logoUrl?: string | null; category?: string | null; featured?: boolean; onLoaded?: () => void }) {
   const { head, w, h } = pinSize(featured);
   const [failed, setFailed] = useState(false);
   const border = featured ? 4 : 3;
   const ring = featured ? GOLD : '#fff';
   const showLogo = !!logoUrl && !failed;
-  const initial = (name.trim()[0] ?? '·').toUpperCase();
+  const cat = categoryStyle(category);
+  const CatIcon = cat.icon;
   return (
     <View style={{ width: w, height: h, alignItems: 'center', paddingTop: PIN_PAD }}>
       <View
@@ -196,7 +197,7 @@ export function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string;
             width: head - border * 2,
             height: head - border * 2,
             borderRadius: (head - border * 2) * 0.28,
-            backgroundColor: showLogo ? '#fff' : colors.aquaDeep,
+            backgroundColor: showLogo ? '#fff' : cat.to,
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
@@ -213,7 +214,8 @@ export function MapMarker({ name, logoUrl, featured, onLoaded }: { name: string;
               style={{ width: head - border * 2, height: head - border * 2 }}
             />
           ) : (
-            <Text style={{ color: '#fff', fontWeight: '800', fontSize: featured ? 20 : 17 }}>{initial}</Text>
+            // Sin logo: ícono de su categoría sobre el color de la categoría.
+            <CatIcon size={featured ? 28 : 24} color="#fff" weight="fill" />
           )}
         </View>
       </View>
@@ -467,7 +469,7 @@ export function BusinessMarker({ business, coordinate, onPress }: { business: Bu
       onPress={onPress}
     >
       <View style={{ width: w, height: h }}>
-        <MapMarker name={business.name} logoUrl={logo === 'ok' ? business.logo_url : null} featured={featured} onLoaded={() => setPainted(true)} />
+        <MapMarker name={business.name} category={business.category} logoUrl={logo === 'ok' ? business.logo_url : null} featured={featured} onLoaded={() => setPainted(true)} />
       </View>
     </Marker>
   );
