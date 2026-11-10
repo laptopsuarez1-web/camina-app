@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY,
   },
+  // caminaapp.com/dossier: link corto al dossier para comercios (para mandarlo por Instagram o Facebook, que no aceptan PDF).
+  async redirects() {
+    return [{ source: "/dossier", destination: "/dossier-camina.pdf", permanent: false }];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
