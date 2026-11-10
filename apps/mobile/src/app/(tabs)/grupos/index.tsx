@@ -10,7 +10,8 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { groupGradient } from '@/lib/group-look';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Plus, Users, Trophy, ChevronRight, IconBubble } from '@/components/icons';
+import { Plus, Users, Trophy, ChevronRight, Hash, IconBubble } from '@/components/icons';
+import { Spinner } from '@/components/ui/Spinner';
 import { useMyGroupsWeek } from '@/hooks/useMyGroupsWeek';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -75,7 +76,14 @@ export default function GruposScreen() {
     <KeyboardSafe className="flex-1">
       <HeaderLight />
       <ScrollView refreshControl={pull} ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle>Grupos</ScreenTitle>
+      <View className="flex-row items-center" style={{ gap: 12 }}>
+        <View className="flex-1">
+          <ScreenTitle>Grupos</ScreenTitle>
+        </View>
+        <Press accessibilityRole="button" accessibilityLabel="Crear un grupo nuevo" haptic="light" onPress={() => router.push('/(tabs)/grupos/nuevo')} className="bg-purple-deep items-center justify-center" style={{ width: 42, height: 42, borderRadius: 21 }}>
+          <Plus size={20} color="#fff" />
+        </Press>
+      </View>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Camina, comparte y gana en equipo
       </Text>
@@ -250,62 +258,55 @@ export default function GruposScreen() {
         </>
       )}
 
-      <Text accessibilityRole="header" className="mb-3 text-text-light dark:text-text-dark" style={typo.section}>
-        ¿Te invitaron a un grupo?
-      </Text>
-      <View className="gap-2.5">
-        <Glass className="rounded-2xl p-4">
-          <Text className="text-muted-light dark:text-muted-dark text-xs mb-2.5">
-            Los grupos son privados: se entra con el código o el link que te pasa quien lo armó.
-          </Text>
-          <View className="flex-row items-center" style={{ gap: 8 }}>
-            <TextInput
-              value={code}
-              onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-              placeholder="Código de invitación"
-              accessibilityLabel="Código de invitación"
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={8}
-              returnKeyType="go"
-              onSubmitEditing={() => code.length >= 6 && joinGroup.mutate(code)}
-              // El campo está al final de la lista: al abrir el teclado se baja la lista para que quede a la vista.
-              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
-              className="flex-1 border border-line-light dark:border-line-dark rounded-sm px-3 py-2.5 text-text-light dark:text-text-dark"
-            />
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel="Unirme con el código"
-              onPress={() => code.length >= 6 && joinGroup.mutate(code)}
-              disabled={joinGroup.isPending || code.length < 6}
-              className="bg-aqua-deep rounded-full px-4 py-2.5"
-              style={{ opacity: code.length < 6 ? 0.5 : 1 }}
-            >
-              <Text className="text-white text-xs font-semibold">Unirme</Text>
-            </Press>
+      {/* Unirse con código y crear grupo: dos tarjetas con el mismo estilo que el resto de la pantalla. */}
+      <Glass className="rounded-3xl p-4 mb-3">
+        <View className="flex-row items-center" style={{ gap: 12, marginBottom: 12 }}>
+          <IconBubble icon={Hash} tone="aqua" size={38} />
+          <View className="flex-1">
+            <Text accessibilityRole="header" className="text-[14.5px] font-bold text-text-light dark:text-text-dark">¿Te invitaron a un grupo?</Text>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Entra con el código o el link que te pasaron.</Text>
           </View>
-        </Glass>
-        {my.length > 0 && (
+        </View>
+        <View className="flex-row items-center rounded-2xl bg-purple-light-light dark:bg-purple-light-dark" style={{ paddingLeft: 14, paddingRight: 6, paddingVertical: 6, gap: 8 }}>
+          <TextInput
+            value={code}
+            onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+            placeholder="Código"
+            placeholderTextColor={dark ? colors.dark.muted : colors.light.muted}
+            accessibilityLabel="Código de invitación"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={8}
+            returnKeyType="go"
+            onSubmitEditing={() => code.length >= 6 && joinGroup.mutate(code)}
+            // El campo está al final de la lista: al abrir el teclado se baja la lista para que quede a la vista.
+            onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
+            className="flex-1 text-text-light dark:text-text-dark"
+            style={{ fontSize: 17, fontWeight: '800', letterSpacing: 3, paddingVertical: 8, minWidth: 0 }}
+          />
           <Press
             accessibilityRole="button"
-            onPress={() => router.push('/(tabs)/grupos/nuevo')}
-            className="flex-row items-center gap-3 rounded-2xl p-4"
-            style={{ borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#C9B5EA' }}
+            accessibilityLabel="Unirme con el código"
+            haptic="light"
+            onPress={() => code.length >= 6 && joinGroup.mutate(code)}
+            disabled={joinGroup.isPending || code.length < 6}
+            className="bg-aqua-deep rounded-xl items-center justify-center"
+            style={{ paddingHorizontal: 18, height: 42, opacity: code.length < 6 ? 0.45 : 1 }}
           >
-            <View className="w-9.5 h-9.5 rounded-full bg-purple-deep items-center justify-center">
-              <Plus size={16} color="#fff" />
-            </View>
-            <View className="flex-1">
-              <Text className="font-semibold text-[13px] text-text-light dark:text-text-dark">
-                Crear un grupo nuevo
-              </Text>
-              <Text className="text-muted-light dark:text-muted-dark text-xs">
-                Arma tu propio grupo y suma amigos
-              </Text>
-            </View>
+            {joinGroup.isPending ? <Spinner color="#fff" /> : <Text className="text-white font-extrabold" style={{ fontSize: 14 }}>Unirme</Text>}
           </Press>
-        )}
-      </View>
+        </View>
+      </Glass>
+      <Glass className="rounded-3xl overflow-hidden">
+        <Press accessibilityRole="button" accessibilityLabel="Crear un grupo nuevo" onPress={() => router.push('/(tabs)/grupos/nuevo')} feedback="row" className="flex-row items-center p-4" style={{ gap: 12 }}>
+          <IconBubble icon={Plus} tone="purple" size={38} />
+          <View className="flex-1">
+            <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Crear un grupo nuevo</Text>
+            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Arma tu grupo y suma a tus amigos</Text>
+          </View>
+          <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />
+        </Press>
+      </Glass>
       </ScrollView>
     </KeyboardSafe>
   );
