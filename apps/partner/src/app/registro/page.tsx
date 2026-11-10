@@ -78,7 +78,7 @@ export default function RegistroPage() {
   }, []);
 
   const datosOk = Boolean(nombre.trim() && (esVirtual || kind === 'events_only' || direccion.trim()) && (telefono.trim() === '' || telefono.replace(/\D/g, '').length >= 6));
-  const cuentaOk = Boolean(sesionEmail || (email.trim() && password.length >= 6));
+  const cuentaOk = Boolean(sesionEmail || (email.trim() && password.length >= 8));
   const valido = datosOk && cuentaOk;
   // El teléfono es opcional: si no lo cargan, se guarda vacío (null en la base).
   const telefonoCompleto = telefono.trim() ? `${prefijo} ${telefono.trim()}` : '';
@@ -111,81 +111,55 @@ export default function RegistroPage() {
     setLoading(true);
     setError(null);
 
-    // Los datos del comercio viajan también dentro de la cuenta (sin el logo): así no se pierden
-    // si el correo se confirma desde otro navegador o desde el celular.
-    const { data, error: signUpError } = sesionEmail
-      ? { data: { session: (await supabase.auth.getSession()).data.session }, error: null }
-      : await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: {
-          pending_business: {
-            name: nombre.trim(),
-            category: kind === 'events_only' ? 'Eventos' : categoria,
-            address: direccion.trim(),
-            phone: telefonoCompleto,
-            isVirtual: esVirtual || kind === 'events_only',
-            accountKind: kind,
-            city: ciudad,
-            requestedPlan: kind === 'commerce' ? plan : null,
-          },
-        },
-      },
-    });
-    if (signUpError) {
-      setLoading(false);
-      setError(mensajeError(signUpError));
-      return;
-    }
-
-    // Supabase no da error si el correo ya existe: devuelve el usuario sin identidades y no manda ningún correo.
-    // Pasa, por ejemplo, con quien ya tiene cuenta de la app (con Google o con correo).
-    if (!sesionEmail && !data.session && (data as { user?: { identities?: unknown[] } }).user?.identities?.length === 0) {
-      // El correo ya tiene cuenta (por ejemplo, la de la app): puede usarlo en el panel eligiendo una contraseña
-      // para el panel. Se guardan los datos del local y se le manda el link para elegirla; al entrar, el local se crea solo.
-      savePendingBusiness({
-        email: email.trim(),
-        name: nombre.trim(),
-        category: kind === 'events_only' ? 'Eventos' : categoria,
-        address: direccion.trim(),
-        phone: telefonoCompleto,
-        isVirtual: esVirtual || kind === 'events_only',
-        accountKind: kind,
-        city: ciudad,
-        logoDataUrl: logo,
-        requestedPlan: kind === 'commerce' ? plan : null,
+    // La cuenta se crea ya confirmada (la persona entra directo) y el correo de verificación le llega después.
+    let session = null;
+    if (sesionEmail) {
+      session = (await supabase.auth.getSession()).data.session;
+    } else {
+      const { data: alta, error: altaError } = await supabase.functions.invoke('panel-email', {
+        body: { action: 'signup', email: email.trim(), password },
       });
-      await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/actualizar-clave` });
-      setLoading(false);
-      setError(`Te mandamos un correo a ${email.trim()} para confirmar tu cuenta del panel y elegir tu contraseña. Ábrelo y entras directo a tu comercio.`);
-      return;
+      if (altaError) {
+        setLoading(false);
+        setError('No pudimos crear la cuenta. Revisa el correo y que la contraseña tenga al menos 8 caracteres.');
+        return;
+      }
+      if ((alta as { exists?: boolean } | null)?.exists) {
+        // Ese correo ya tiene cuenta (por ejemplo, la de la app): se le manda un correo para elegir la contraseña del panel
+        // y al entrar el local se carga solo.
+        savePendingBusiness({
+          email: email.trim(),
+          name: nombre.trim(),
+          category: kind === 'events_only' ? 'Eventos' : categoria,
+          address: direccion.trim(),
+          phone: telefonoCompleto,
+          isVirtual: esVirtual || kind === 'events_only',
+          accountKind: kind,
+          city: ciudad,
+          logoDataUrl: logo,
+          requestedPlan: kind === 'commerce' ? plan : null,
+        });
+        await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/actualizar-clave` });
+        setLoading(false);
+        setError(`Te mandamos un correo a ${email.trim()} para confirmar tu cuenta del panel y elegir tu contraseña. Ábrelo y entras directo a tu comercio.`);
+        return;
+      }
+      const { data: entrada, error: entradaError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (entradaError) {
+        setLoading(false);
+        setError(mensajeError(entradaError));
+        return;
+      }
+      session = entrada.session;
     }
-
-    if (!data.session) {
-      // Confirmación de email obligatoria: todavía no hay sesión para poder
-      // insertar el negocio (RLS lo exige). Guardamos los datos del alta aquí
-      // y useBusinessAuth los consume solo cuando el usuario confirme y entre.
-      savePendingBusiness({
-        email: email.trim(),
-        name: nombre.trim(),
-        category: kind === 'events_only' ? 'Eventos' : categoria,
-        address: direccion.trim(),
-        phone: telefonoCompleto,
-        isVirtual: esVirtual || kind === 'events_only',
-        accountKind: kind,
-        city: ciudad,
-        logoDataUrl: logo,
-        requestedPlan: kind === 'commerce' ? plan : null,
-      });
+    if (!session) {
       setLoading(false);
-      setAwaitingConfirmation(true);
+      setError('No pudimos entrar a tu cuenta. Intenta de nuevo.');
       return;
     }
 
     const row = {
-      owner_user_id: data.session.user.id,
+      owner_user_id: session.user.id,
       name: nombre.trim(),
       category: kind === 'events_only' ? 'Eventos' : categoria,
       address: esVirtual || kind === 'events_only' ? null : direccion.trim(),
