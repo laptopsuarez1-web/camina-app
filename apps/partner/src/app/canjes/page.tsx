@@ -137,9 +137,9 @@ export default function CanjesPage() {
         {result && (
           <div
             className="mt-3 flex items-center gap-2 rounded-[10px] px-3 py-2.5"
-            style={{ background: result.ok ? 'rgba(127,237,196,0.16)' : 'rgba(242,152,92,0.16)' }}
+            style={{ background: result.ok ? 'rgba(98,240,182,0.16)' : 'rgba(242,152,92,0.16)' }}
           >
-            {result.ok ? <Check size={15} color="#7FEDC4" className="shrink-0" /> : <X size={15} color="#F2985C" className="shrink-0" />}
+            {result.ok ? <Check size={15} color="#62F0B6" className="shrink-0" /> : <X size={15} color="#F2985C" className="shrink-0" />}
             <span className="text-white text-[12.5px]">
               {result.msg}
               {result.premio && <strong className="block text-[16px] text-mint mt-0.5">{result.premio}</strong>}

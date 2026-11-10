@@ -1,4 +1,5 @@
 import { View, ScrollView, Alert } from 'react-native';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
@@ -20,6 +21,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 
 // Mis amigos: solicitudes pendientes, lista de amigos (con su racha y pasos de la semana), invitar por link y armar un grupo con ellos.
 export default function AmigosScreen() {
+  const pull = usePullToRefresh();
   const insets = useSafeAreaInsets();
   const tabSpace = useTabBarSpace();
   const { dark, text, line, muted, accentIcon, warnText } = useThemeColors();
@@ -46,7 +48,7 @@ export default function AmigosScreen() {
 
   return (
     <View className="flex-1">
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="px-5" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabSpace }}>
+      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="px-5" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabSpace }}>
         <View className="flex-row items-center justify-between mb-5">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)' }}>
             <ChevronLeft size={18} color={accentIcon} />

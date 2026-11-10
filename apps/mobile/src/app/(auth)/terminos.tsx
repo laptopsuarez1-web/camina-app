@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, ScrollView, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -82,7 +83,7 @@ export default function TerminosScreen() {
           style={{ backgroundColor: accepted ? colors.aquaDeep : isDark ? colors.dark.line : colors.light.line }}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <Spinner color="#fff" />
           ) : (
             <Text className="font-bold text-[15px]" style={{ color: accepted ? '#fff' : isDark ? colors.dark.muted : colors.light.muted }}>
               Aceptar y continuar

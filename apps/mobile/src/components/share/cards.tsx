@@ -30,9 +30,9 @@ const PAL = {
   },
   dark: {
     bg: ['#15141B', '#1A1822', '#201C2B'] as const,
-    ink: '#F4EFFF', muted: '#B3A6D6', accent: '#7FEDC4', accentSoft: 'rgba(127,237,196,0.14)',
+    ink: '#F4EFFF', muted: '#B3A6D6', accent: '#62F0B6', accentSoft: 'rgba(98,240,182,0.14)',
     tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)',
-    bar: '#7FEDC4', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
+    bar: '#62F0B6', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
     heat: ['#2E5F52', '#3C8F76', '#59CBA6', '#A2F6D8'], heatInk: ['#F4EFFF', '#FFFFFF', '#0D2019', '#0D2019'], heatEmpty: 'rgba(255,255,255,0.28)',
@@ -371,7 +371,7 @@ function ResumenOverlay({ data }: { data: ResumenData }) {
     : [{ label: 'Promedio', value: fmtInt(stats.avgPerDay), unit: 'pasos/día' }, { label: 'Distancia', value: fmtKm(stats.km), unit: 'km' }, weeklyRank ? { label: 'Ranking', value: `${weeklyRank}.º`, unit: 'esta semana' } : { label: 'Meta', value: `${stats.daysMet}/${stats.days}`, unit: 'días' }];
   return (
     <CardFrame theme="dark" format="overlay" label="">
-      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#7FEDC4' }, SHADOW]}>{name ? `${title} de ${name}` : title} · {when}</Text>
+      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>{name ? `${title} de ${name}` : title} · {when}</Text>
       <Text style={[{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.1), fontWeight: '800', color: '#FFFFFF', letterSpacing: -2, marginTop: 2 }, SHADOW]} numberOfLines={1}>{big}</Text>
       <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>pasos</Text>
       {period === 'month' ? null : (
@@ -379,7 +379,7 @@ function ResumenOverlay({ data }: { data: ResumenData }) {
           <Svg width={W} height={52}>
             {stats.bars.map((b, i) => {
               const h = Math.max(3, (b.steps / max) * 50);
-              return <Rect key={b.key} x={i * (bw + 6)} y={52 - h} width={bw} height={h} rx={Math.min(5, bw / 2)} fill={b.met ? '#7FEDC4' : 'rgba(255,255,255,0.55)'} />;
+              return <Rect key={b.key} x={i * (bw + 6)} y={52 - h} width={bw} height={h} rx={Math.min(5, bw / 2)} fill={b.met ? '#62F0B6' : 'rgba(255,255,255,0.55)'} />;
             })}
           </Svg>
         </View>
@@ -426,7 +426,7 @@ function GroupOverlay({ data }: { data: GroupCardData }) {
   const pct = data.target > 0 ? Math.min(1, data.total / data.target) : 0;
   return (
     <CardFrame theme="dark" format="overlay" label="">
-      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#7FEDC4' }, SHADOW]}>Ranking del grupo · {data.weekLabel}</Text>
+      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>Ranking del grupo · {data.weekLabel}</Text>
       <Text style={[{ fontSize: 34, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1, marginTop: 2 }, SHADOW]} numberOfLines={2}>{data.groupName}</Text>
       <Text style={[{ fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginTop: 4 }, SHADOW]}>Meta: {Math.round(pct * 100)} % · {fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
       <View style={{ marginTop: 14, gap: 8 }}>
@@ -877,7 +877,7 @@ export function WrappedOverlay({ data, index }: { data: WrappedData; index: numb
     const fs = fitSize(v, size, CARD_W - 52);
     return <Text style={[{ fontSize: fs, lineHeight: Math.round(fs * 1.1), fontWeight: '800', color: '#FFFFFF', letterSpacing: -2 }, SHADOW]} numberOfLines={1}>{v}</Text>;
   };
-  const kick = (t: string) => <Text style={[{ fontSize: 13, fontWeight: '800', color: '#7FEDC4' }, SHADOW]}>{t}</Text>;
+  const kick = (t: string) => <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>{t}</Text>;
   const sub = (t: string) => <Text style={[{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>{t}</Text>;
   const stats = (items: { label: string; value: string; unit?: string }[]) => (
     <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>{items.map((t) => <OStat key={t.label} {...t} />)}</View>

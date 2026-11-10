@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AccessibilityInfo, Keyboard, Modal, PanResponder, Platform, TextInput as RNTextInput, View } from 'react-native';
+import { useLatest } from '@/hooks/useLatest';
+import { Spinner } from '@/components/ui/Spinner';
+import { AccessibilityInfo, Keyboard, Modal, PanResponder, Platform, TextInput as RNTextInput, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -98,6 +100,7 @@ export function LocalCodeSheet({
 
   useEffect(() => {
     if (visible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
       setCode('');
       setError(null);
       setPhase('typing');
@@ -117,11 +120,10 @@ export function LocalCodeSheet({
 
   // Deslizar hacia abajo cierra la hoja (como las otras): se arrastra desde la parte de arriba de la hoja.
   const drag = useSharedValue(0);
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
-  const lockedRef = useRef(false);
-  lockedRef.current = phase === 'busy' || phase === 'done';
-  const pan = useRef(
+  const closeRef = useLatest(onClose);
+  const lockedRef = useLatest(phase === 'busy' || phase === 'done');
+  // eslint-disable-next-line react-hooks/refs -- la ref solo se lee al tocar o arrastrar, no al dibujar
+  const [pan] = useState(() =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => !lockedRef.current,
       onMoveShouldSetPanResponder: (_, g) => !lockedRef.current && g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
@@ -132,8 +134,9 @@ export function LocalCodeSheet({
       },
       onPanResponderTerminate: () => { drag.value = withSpring(0); },
     }),
-  ).current;
+  );
   const dragStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drag.value }] }));
+  // eslint-disable-next-line react-hooks/immutability -- valor compartido de Reanimated: se modifica a propósito
   useEffect(() => { if (visible) drag.value = 0; }, [visible, drag]);
 
   async function submit() {
@@ -145,6 +148,7 @@ export function LocalCodeSheet({
       setError(message);
       setPhase('error');
       buzz.error();
+      // eslint-disable-next-line react-hooks/immutability -- valor compartido de Reanimated: se modifica a propósito
       if (!reduced) shake.value = withSequence(withTiming(-10, { duration: 50 }), withTiming(10, { duration: 80 }), withTiming(-8, { duration: 70 }), withTiming(6, { duration: 60 }), withTiming(0, { duration: 50 }));
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(message);
       // Las casillas quedan en rojo un momento y se vacían para escribir de nuevo.
@@ -240,7 +244,7 @@ export function LocalCodeSheet({
               style={{ opacity: !ready && phase === 'typing' ? 0.5 : 1 }}
             >
               {phase === 'busy' ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <Spinner size="small" color="#fff" />
               ) : phase === 'done' ? (
                 <>
                   <Check size={18} color="#fff" />

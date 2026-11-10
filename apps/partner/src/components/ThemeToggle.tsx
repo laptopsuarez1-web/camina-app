@@ -52,7 +52,7 @@ export function ThemeToggle() {
                 aplicar(id);
               }}
               className="flex flex-col items-center gap-0.5 rounded-lg py-1.5 text-[12px] font-semibold"
-              style={activo ? { background: '#7FEDC4', color: '#12281F' } : { color: '#E4DDF7' }}
+              style={activo ? { background: '#62F0B6', color: '#12281F' } : { color: '#E4DDF7' }}
             >
               <Icon size={15} />
               {label}

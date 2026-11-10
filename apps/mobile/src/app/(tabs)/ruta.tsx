@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, Modal, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, FadeInDown, FadeOutUp, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
@@ -350,7 +351,7 @@ export default function RutaScreen() {
               <Text style={{ color: '#fff', fontWeight: '800' }}>Reintentar</Text>
             </Press>
           </>
-        ) : <ActivityIndicator color={MINT} />}
+        ) : <Spinner color={MINT} />}
       </View>
     );
   }
@@ -437,7 +438,7 @@ export default function RutaScreen() {
         <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 12, backgroundColor: BG, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' }}>
           <Press accessibilityRole="button" disabled={few || join.isPending} onPress={participate} haptic="light"
             style={{ borderRadius: 16, paddingVertical: 15, alignItems: 'center', backgroundColor: MINT, opacity: few ? 0.5 : 1 }}>
-            {join.isPending ? <ActivityIndicator color="#14093a" /> : (
+            {join.isPending ? <Spinner color="#14093a" /> : (
               <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 15 }}>{few ? 'Pronto: faltan locales' : 'Participar'}</Text>
             )}
           </Press>
@@ -711,7 +712,7 @@ export default function RutaScreen() {
               ))}
             </View>
             <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.2, fontSize: 11, marginTop: 16, textAlign: 'center' }}>ELIGE EL NUEVO</Text>
-            {options.isLoading ? <ActivityIndicator color={MINT} style={{ marginTop: 10 }} /> : (
+            {options.isLoading ? <Spinner color={MINT} style={{ marginTop: 10 }} /> : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, flexGrow: 0 }} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
                 {(options.data ?? []).map((o) => (
                   <Choice key={o.business_id} fill={false} name={o.name} logo={o.logo_url} on={swapIn === o.business_id} onPress={() => setSwapIn(o.business_id)} />
@@ -721,7 +722,7 @@ export default function RutaScreen() {
             )}
             <Press disabled={!swapOut || !swapIn || swap.isPending} onPress={doSwap}
               style={{ marginTop: 16, borderRadius: 16, paddingVertical: 14, alignItems: 'center', backgroundColor: '#1F7A66', opacity: !swapOut || !swapIn ? 0.5 : 1 }}>
-              {swap.isPending ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Cambiar</Text>}
+              {swap.isPending ? <Spinner color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Cambiar</Text>}
             </Press>
             <Text style={{ color: MUTED, fontSize: 12, textAlign: 'center', marginTop: 10 }}>Los locales que ya visitaste no se pueden cambiar.</Text>
             <Press onPress={() => setSwapOpen(false)} style={{ alignItems: 'center', paddingVertical: 10 }}>
@@ -772,7 +773,7 @@ function DoubleDayPicker({ value, busy, onPick }: { value: string | null; busy: 
           </View>
           <Press disabled={!sel || busy} onPress={() => sel && onPick(iso(sel))}
             style={{ marginTop: 12, borderRadius: 14, paddingVertical: 12, alignItems: 'center', backgroundColor: '#1F7A66', opacity: sel ? 1 : 0.5 }}>
-            {busy ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800' }}>{sel ? `Usar el ${sel}` : 'Elige un día'}</Text>}
+            {busy ? <Spinner color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800' }}>{sel ? `Usar el ${sel}` : 'Elige un día'}</Text>}
           </Press>
         </>
       )}

@@ -220,7 +220,7 @@ const STATUS_LABEL: Record<RedemptionRow['status'], string> = {
 };
 
 function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; fg: string } {
-  if (s === 'confirmed') return dark ? { bg: 'rgba(127,237,196,0.16)', fg: colors.mint } : { bg: colors.light.aquaLight, fg: colors.aquaInk };
+  if (s === 'confirmed') return dark ? { bg: 'rgba(98,240,182,0.16)', fg: colors.mint } : { bg: colors.light.aquaLight, fg: colors.aquaInk };
   if (s === 'pending') return dark ? { bg: 'rgba(242,152,92,0.18)', fg: '#FFB27A' } : { bg: colors.warnLight, fg: colors.warnDeep };
   return dark ? { bg: 'rgba(255,255,255,0.08)', fg: colors.dark.muted } : { bg: colors.light.purpleLight, fg: colors.light.muted };
 }

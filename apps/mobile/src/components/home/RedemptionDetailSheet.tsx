@@ -105,6 +105,7 @@ export function RedemptionDetailSheet({
                   </View>
                 </Glass>
 
+                {/* eslint-disable-next-line react-hooks/purity -- compara con la hora actual para saber si el código venció */}
                 {r.status === 'pending' && r.code && r.code_expires_at && parse(r.code_expires_at).getTime() > Date.now() ? (
                   <View className="rounded-2xl items-center bg-aqua-deep" style={{ paddingVertical: 14 }}>
                     <Text className="text-white text-[30px] font-bold" style={{ letterSpacing: 5 }}>{r.code.slice(0, 3)} {r.code.slice(3)}</Text>

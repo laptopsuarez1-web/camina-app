@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Modal, StyleSheet } from 'react-native';
@@ -68,6 +69,7 @@ const CAL_BG = { met: colors.mint, miss: '#F4A8A2', idle: '#D3D3DA', none: color
 const CAL_FG = { met: colors.mintDark, miss: '#7A1510', idle: '#45454F', none: colors.light.muted };
 
 export default function ActividadScreen() {
+  const pull = usePullToRefresh();
   const isDark = useColorScheme().colorScheme === 'dark';
   // Textos de color (estado de la meta, "Cerrar") con su par para oscuro.
   const { accentText, warnText, purpleText, dangerText } = useThemeColors();
@@ -227,7 +229,7 @@ export default function ActividadScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
 
       {wrapped && wrappedStart ? (

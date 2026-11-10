@@ -83,7 +83,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
               }`}
             >
-              <Icon size={16} color={active ? '#7FEDC4' : '#9385B5'} />
+              <Icon size={16} color={active ? '#62F0B6' : '#9385B5'} />
               {item.label}
               {item.href === '/admin/historias' && pendingStories > 0 && (
                 <span className="ml-auto rounded-full bg-warn text-white text-[11px] font-bold px-1.5 min-w-5 text-center">{pendingStories}</span>

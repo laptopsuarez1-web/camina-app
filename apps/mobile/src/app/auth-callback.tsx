@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -27,7 +28,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark px-8">
-      <ActivityIndicator accessibilityLabel="Cargando" color={colors.aqua} />
+      <Spinner accessibilityLabel="Cargando" color={colors.aqua} />
       <Text className="text-muted-light dark:text-muted-dark text-[13px] mt-4 text-center">
         Confirmando tu cuenta…
       </Text>

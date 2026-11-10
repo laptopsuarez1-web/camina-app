@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { View, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -50,6 +51,7 @@ function timeAgo(iso: string) {
 }
 
 export default function NotificacionesScreen() {
+  const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
   const { items, seenAt, markAllSeen, isLoading, isError, refetch } = useNotifications();
 
@@ -58,7 +60,7 @@ export default function NotificacionesScreen() {
   useFocusEffect(useCallback(() => () => { markAllSeen(); }, [markAllSeen]));
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader style={{ paddingBottom: 24 }}>
         <View className="flex-row items-center gap-3">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

@@ -56,7 +56,7 @@ export default function RutaPage() {
 
       <div className="max-w-[520px]">
         <div className="rounded-2xl p-5 mb-5" style={{ background: '#241748', color: '#fff' }}>
-          <p className="text-[13px] font-bold tracking-[0.08em]" style={{ color: '#7FEDC4' }}>CÓDIGO DE LA RUTA</p>
+          <p className="text-[13px] font-bold tracking-[0.08em]" style={{ color: '#62F0B6' }}>CÓDIGO DE LA RUTA</p>
           <p className="text-[48px] font-extrabold tracking-[0.3em] leading-tight mt-1">{codigo ?? '····'}</p>
           <p className="text-[15px] leading-snug mt-1" style={{ color: '#E4DDF7' }}>
             Dáselo a quien viene por la Ruta cuando paga. La persona lo escribe en la app, estando en tu local.

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
@@ -39,7 +40,7 @@ export function ProfileRetry() {
         disabled={retrying}
         style={{ marginTop: 16, backgroundColor: colors.aquaDeep, borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
       >
-        {retrying ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>Reintentar</Text>}
+        {retrying ? <Spinner color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>Reintentar</Text>}
       </Press>
       <Press accessibilityRole="button" onPress={logout} style={{ paddingVertical: 14, alignItems: 'center' }}>
         <Text className="text-aqua-ink dark:text-mint text-[13.5px] font-semibold">Cerrar sesión</Text>

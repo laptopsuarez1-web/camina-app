@@ -9,8 +9,8 @@ export function usePointsPulse(raw: number | undefined) {
   const value = raw ?? 0;
   const prev = useRef<number | null>(null);
   const [shown, setShown] = useState(value);
-  const scale = useRef(new Animated.Value(1)).current;
-  const counter = useRef(new Animated.Value(0)).current;
+  const [scale] = useState(() => new Animated.Value(1));
+  const [counter] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (raw === undefined) return; // todavía cargando: no es una ganancia

@@ -1,5 +1,5 @@
 import '@/theme/global.css';
-import '@/lib/web-alert';
+import '@/lib/app-alert';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
@@ -14,9 +14,15 @@ import { startAuthLinkListener } from '@/lib/auth-links';
 import { queryClient } from '@/lib/query-client';
 import { Sentry, setMonitoringUser } from '@/lib/monitoring';
 import { ForceUpdateGate } from '@/components/ForceUpdateGate';
+import { AppAlertHost } from '@/components/AppAlertHost';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { watchConnection } from '@/lib/connection';
 import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { useGlassStore } from '@/store/useGlassStore';
 import { setBrandFontsReady, useBrandFonts } from '@/theme/fonts';
+
+// Si una pantalla falla al dibujarse, sale la pantalla de error de Camina (con el Baifo) en vez de cerrarse la app.
+export { ErrorScreen as ErrorBoundary } from '@/components/ErrorScreen';
 
 // El splash se queda hasta que carga la tipografía de marca (o pasan 4 s: sin la fuente la app igual abre, con la del sistema).
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -54,6 +60,8 @@ function RootLayout() {
     if (Platform.OS === 'web' && typeof document !== 'undefined') document.documentElement.lang = 'es';
   }, []);
 
+  useEffect(() => watchConnection(queryClient), []);
+
   useEffect(() => {
     setMonitoringUser(profile?.id ?? null);
   }, [profile?.id]);
@@ -89,6 +97,8 @@ function RootLayout() {
           <ForceUpdateGate>
             <Stack screenOptions={{ headerShown: false }} />
           </ForceUpdateGate>
+          <OfflineBanner />
+          <AppAlertHost />
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

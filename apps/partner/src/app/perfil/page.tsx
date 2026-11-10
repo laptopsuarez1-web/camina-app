@@ -591,7 +591,7 @@ export default function PerfilPage() {
             onClick={handleSave}
             disabled={saving}
             className="rounded-[10px] py-3.5 font-semibold text-sm mt-1 disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
+            style={{ background: '#241748', color: '#62F0B6' }}
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
@@ -612,7 +612,7 @@ export default function PerfilPage() {
                 if (session) await refreshBusiness(session.user.id, session.user.email);
               }}
               className="rounded-[10px] py-3 font-semibold text-[13px]"
-              style={{ background: '#7FEDC4', color: '#12281F' }}
+              style={{ background: '#62F0B6', color: '#12281F' }}
             >
               Ya lo corregí, volver a enviar
             </button>

@@ -199,7 +199,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               setResending(false);
             }}
             className="rounded-[8px] px-3.5 py-2 text-[12.5px] font-bold disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
+            style={{ background: '#241748', color: '#62F0B6' }}
           >
             {resending ? 'Enviando…' : 'Ya lo corregí, volver a enviar'}
           </button>
@@ -264,7 +264,7 @@ function NavLink({ item, active, plan }: { item: NavItem; active: boolean; plan:
         active ? 'bg-mint/10 text-white font-semibold' : 'text-[#D9D0F2]'
       }`}
     >
-      <Icon size={16} color={active ? '#7FEDC4' : '#C4B8E8'} />
+      <Icon size={16} color={active ? '#62F0B6' : '#C4B8E8'} />
       <span className="flex-1">{item.label}</span>
       {bloqueado && <Lock size={12} color="#9385B5" aria-label="No incluido en tu plan" />}
     </Link>

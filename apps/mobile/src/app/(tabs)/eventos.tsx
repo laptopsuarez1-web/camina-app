@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useColorScheme } from 'nativewind';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
@@ -24,6 +25,7 @@ import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaEventCard } from '@/components/ruta/RutaEventCard';
 
 export default function EventosScreen() {
+  const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
   const { data: retos } = useRetos();
   const claim = useClaimReto();
@@ -99,7 +101,7 @@ export default function EventosScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>{tab === 'eventos' ? 'Eventos' : 'Desafíos'}</ScreenTitle>
       <View accessibilityRole="tablist" className="flex-row rounded-full p-1 mb-4 bg-purple-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
         {(['eventos', 'desafios'] as const).map((k) => {

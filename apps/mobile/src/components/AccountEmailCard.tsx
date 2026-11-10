@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Alert, ActivityIndicator } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Alert } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -126,7 +127,7 @@ export function AccountEmailCard() {
             disabled={linking}
             className="flex-row items-center justify-center gap-2 border border-line-light dark:border-line-dark rounded-xl py-3"
           >
-            {linking ? <ActivityIndicator size="small" color={muted} /> : <GoogleIcon size={18} />}
+            {linking ? <Spinner size="small" color={muted} /> : <GoogleIcon size={18} />}
             <Text className="font-semibold text-[13.5px] text-text-light dark:text-text-dark">Vincular con Google</Text>
           </Press>
           <Text className="text-muted-light dark:text-muted-dark text-[11.5px] mt-1.5 text-center">
@@ -159,7 +160,7 @@ export function AccountEmailCard() {
           <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3">Te vamos a mandar un link para confirmar que el correo nuevo es tuyo.</Text>
           <View className="flex-row gap-2">
             <Press accessibilityRole="button" onPress={save} disabled={saving} className="flex-1 bg-aqua-deep rounded-xl py-3 items-center">
-              {saving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Cambiar correo</Text>}
+              {saving ? <Spinner size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">Cambiar correo</Text>}
             </Press>
             <Press
               accessibilityRole="button"

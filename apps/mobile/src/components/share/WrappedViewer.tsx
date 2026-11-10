@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, Platform, View, useWindowDimensions } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, Image, Modal, Platform, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
@@ -181,7 +182,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
               <Text style={{ color: btnFg, fontWeight: '800', fontSize: 14 }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
             </Press>
             <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: busy ? 0.7 : 1 }}>
-              {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
+              {busy ? <Spinner color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
               <Text className="text-white font-bold text-[15px]">Compartir esta lámina</Text>
             </Press>
           </View>

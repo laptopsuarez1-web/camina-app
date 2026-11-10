@@ -363,7 +363,7 @@ export default function EventosPage() {
               <p className="text-[12px] font-bold opacity-90">{kind === 'publicidad' ? (business?.name ?? '') : KIND_LABEL[kind]}</p>
               <p className="text-[19px] font-extrabold leading-tight">{title || 'Tu título aquí'}</p>
               {kind === 'desafio' && (
-                <p className="mt-1"><span className="text-[34px] font-extrabold" style={{ color: '#7FEDC4' }}>{goalSteps.toLocaleString('es-BO')}</span> <span className="text-[13px] font-bold">{goalMode === 'daily' ? `pasos por día, durante ${goalDays} días` : 'pasos en total'}</span></p>
+                <p className="mt-1"><span className="text-[34px] font-extrabold" style={{ color: '#62F0B6' }}>{goalSteps.toLocaleString('es-BO')}</span> <span className="text-[13px] font-bold">{goalMode === 'daily' ? `pasos por día, durante ${goalDays} días` : 'pasos en total'}</span></p>
               )}
               {kind !== 'publicidad' && prize && <p className="mt-2 rounded-xl bg-white text-[#241748] text-[13.5px] font-bold px-3 py-2">🎁 {prize}</p>}
             </div>
@@ -375,7 +375,7 @@ export default function EventosPage() {
             onClick={submit}
             disabled={sending || badDates || badGoal || needsPhoto || badLink || badTicket || badPlaceUrl || title.trim().length < 3 || description.trim().length < 5}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
-            style={{ background: '#241748', color: '#7FEDC4' }}
+            style={{ background: '#241748', color: '#62F0B6' }}
           >
             {sending ? 'Enviando…' : `Enviar a Camina para aprobación · Bs ${price}`}
           </button>

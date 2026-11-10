@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { View, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Alert, ScrollView } from 'react-native';
 import { shareText } from '@/lib/share';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -327,7 +328,7 @@ export default function NuevoDesafioScreen() {
           className="rounded-2xl py-4 items-center"
           style={{ backgroundColor: colors.mint, opacity: !canNext || (step === 3 && insufficient) ? 0.5 : 1 }}
         >
-          {saving ? <ActivityIndicator color={colors.mintDark} /> : <Text className="text-mint-dark font-bold text-[15px]">{step < 3 ? 'Siguiente' : 'Crear desafío'}</Text>}
+          {saving ? <Spinner color={colors.mintDark} /> : <Text className="text-mint-dark font-bold text-[15px]">{step < 3 ? 'Siguiente' : 'Crear desafío'}</Text>}
         </Press>
       </View>
     </KeyboardSafe>

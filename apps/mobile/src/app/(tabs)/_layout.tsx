@@ -12,6 +12,9 @@ import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 import { healOldPhotos } from '@/lib/avatar';
 
+// Un error dentro de las pestañas muestra la pantalla de error sin perder la barra de sesión.
+export { ErrorScreen as ErrorBoundary } from '@/components/ErrorScreen';
+
 // Íconos de la barra: el mismo dibujo en todos los teléfonos, y cada uno hace un gesto corto al tocarlo (ver TabGlyph).
 // Son componentes fijos (no se crean en cada render) para que la animación no se reinicie.
 function glyph(kind: TabKind) {

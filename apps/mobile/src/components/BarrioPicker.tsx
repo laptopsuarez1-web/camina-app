@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, ActivityIndicator, Alert, Linking } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Alert, Linking } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import * as Location from 'expo-location';
@@ -92,7 +93,7 @@ export function BarrioPicker({ city, zone, onChange }: { city: string; zone: str
         </View>
       )}
       <Press accessibilityRole="button" accessibilityState={{ busy: locating }} onPress={useMyLocation} disabled={locating} className="flex-row items-center self-start mt-2 py-1.5" style={{ gap: 6 }}>
-        {locating ? <ActivityIndicator size="small" color={colors.aquaDeep} /> : <Locate size={15} color={dark ? colors.mint : colors.aquaInk} />}
+        {locating ? <Spinner size="small" color={colors.aquaDeep} /> : <Locate size={15} color={dark ? colors.mint : colors.aquaInk} />}
         <Text className="text-aqua-ink dark:text-mint text-[13px] font-semibold">Usar mi ubicación actual</Text>
       </Press>
     </View>

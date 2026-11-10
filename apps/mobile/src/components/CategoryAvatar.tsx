@@ -21,10 +21,10 @@ type CategoryStyle = { icon: (p: IconProps) => React.ReactElement; from: string;
 // Ícono y color de cada categoría (las mismas que se eligen en el panel de comercios).
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   Todos: { icon: SquaresFour, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Café: { icon: Coffee, from: '#7FEDC4', to: '#4FC3A8', deep: '#1F7A66' },
+  Café: { icon: Coffee, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
   Gastronomía: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
   Entretenimiento: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  Fitness: { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
+  Fitness: { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   Belleza: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
   Compras: { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Salud: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
@@ -39,14 +39,14 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   Restaurante: { icon: Food, from: '#FFB27A', to: '#F2985C', deep: '#B0541A' },
   Helados: { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
   'Bar & Vinos': { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
-  'Dietética & Saludable': { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
+  'Dietética & Saludable': { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
   'Estética & Belleza': { icon: Sparkle, from: '#F27BA0', to: '#D4537E', deep: '#A52F5C' },
   Farmacias: { icon: FirstAid, from: '#FF7A7E', to: '#E5484D', deep: '#B3262B' },
-  Fisioterapia: { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
-  'Masajes & Fisioterapia': { icon: FirstAid, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
-  'Yoga & Pilates': { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
-  'Gimnasio & Deporte': { icon: Barbell, from: '#7FEDC4', to: '#3FB7A0', deep: '#1F7A66' },
-  Bienestar: { icon: Sparkle, from: '#7FEDC4', to: '#4FC3A8', deep: '#1F7A66' },
+  Fisioterapia: { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  'Masajes & Fisioterapia': { icon: FirstAid, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  'Yoga & Pilates': { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  'Gimnasio & Deporte': { icon: Barbell, from: '#62F0B6', to: '#3FB7A0', deep: '#1F7A66' },
+  Bienestar: { icon: Sparkle, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
   Cultura: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Cine: { icon: Ticket, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Mascotas: { icon: Storefront, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
@@ -61,7 +61,7 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   'Librería & Papelería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   'Joyería & Relojería': { icon: ShoppingBag, from: '#A672E8', to: '#8B4FD1', deep: '#5B31A3' },
   Lavandería: { icon: Wrench, from: '#86A6E6', to: '#5B7FC7', deep: '#3A57A0' },
-  'Plantas & Flores': { icon: Sparkle, from: '#7FEDC4', to: '#4FC3A8', deep: '#1F7A66' },
+  'Plantas & Flores': { icon: Sparkle, from: '#62F0B6', to: '#4FC3A8', deep: '#1F7A66' },
 };
 
 export function categoryStyle(category?: string | null): CategoryStyle {

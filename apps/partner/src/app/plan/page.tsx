@@ -73,7 +73,7 @@ export default function PlanPage() {
               className="flex-1 rounded-[18px] p-5.5 relative"
               style={{
                 background: p.featured ? '#241748' : '#fff',
-                border: `1.5px solid ${active ? '#7FEDC4' : p.featured ? '#241748' : '#E1D2F5'}`,
+                border: `1.5px solid ${active ? '#62F0B6' : p.featured ? '#241748' : '#E1D2F5'}`,
                 color: p.featured ? '#fff' : '#291C47',
               }}
             >
@@ -85,13 +85,13 @@ export default function PlanPage() {
               {active && (
                 <span
                   className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10.5px] font-bold"
-                  style={{ color: p.featured ? '#7FEDC4' : '#4FC3A8' }}
+                  style={{ color: p.featured ? '#62F0B6' : '#4FC3A8' }}
                 >
                   <Check size={12} /> Actual
                 </span>
               )}
               <p className="text-[17px] font-bold mb-0.5">{p.name}</p>
-              <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#7FEDC4' : '#291C47' }}>
+              <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : '#291C47' }}>
                 {p.price}
               </p>
               {p.id !== 'primer_paso' && (
@@ -111,7 +111,7 @@ export default function PlanPage() {
               >
                 {p.features.map((f) => (
                   <div key={f} className="flex gap-2 mb-2.5 items-start">
-                    <Check size={13} color={p.featured ? '#7FEDC4' : '#4FC3A8'} className="mt-0.5 shrink-0" />
+                    <Check size={13} color={p.featured ? '#62F0B6' : '#4FC3A8'} className="mt-0.5 shrink-0" />
                     <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : '#291C47' }}>
                       {f}
                       {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : '#7C6A9C' }}>{PLAN_EXPLICA[f]}</span> : null}
@@ -124,8 +124,8 @@ export default function PlanPage() {
                 disabled={active}
                 className="w-full py-2.5 rounded-[10px] font-semibold text-[13px] disabled:cursor-default"
                 style={{
-                  background: active ? (p.featured ? 'rgba(127,237,196,0.15)' : '#F7F3FC') : p.featured ? '#7FEDC4' : '#241748',
-                  color: active ? (p.featured ? '#7FEDC4' : '#7C6A9C') : p.featured ? '#12281F' : '#7FEDC4',
+                  background: active ? (p.featured ? 'rgba(98,240,182,0.15)' : '#F7F3FC') : p.featured ? '#62F0B6' : '#241748',
+                  color: active ? (p.featured ? '#62F0B6' : '#7C6A9C') : p.featured ? '#12281F' : '#62F0B6',
                 }}
               >
                 {active ? 'Tu plan actual' : 'Cambiar a este plan'}

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { Alert, View, Modal, ScrollView, Linking, useWindowDimensions, StyleSheet, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, View, Modal, ScrollView, Linking, useWindowDimensions, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
@@ -73,7 +74,7 @@ export function ChallengeCard({ p, onPress, width }: { p: PromotionItem; onPress
           </View>
           {goal ? (
             <View className="flex-row items-end" style={{ gap: 10, marginTop: 12 }}>
-              <Text style={{ color: '#7FEDC4', fontSize: 46, lineHeight: 50, fontWeight: '800', letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{goal.big}</Text>
+              <Text style={{ color: '#62F0B6', fontSize: 46, lineHeight: 50, fontWeight: '800', letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{goal.big}</Text>
               <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 6, flexShrink: 1 }}>{goal.small}</Text>
             </View>
           ) : null}
@@ -259,7 +260,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                 </View>
                 {goal ? (
                   <View className="flex-row items-end" style={{ gap: 10, marginTop: 12 }}>
-                    <Text style={{ color: '#7FEDC4', fontSize: 40, lineHeight: 44, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{goal.big}</Text>
+                    <Text style={{ color: '#62F0B6', fontSize: 40, lineHeight: 44, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{goal.big}</Text>
                     <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 5, flexShrink: 1 }}>{goal.small}</Text>
                   </View>
                 ) : null}
@@ -327,7 +328,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                   ) : null}
                   {ticket === 'points' ? (
                     <Press accessibilityRole="button" onPress={redeemTicket} disabled={redeem.isPending || (balance ?? 0) < (p.ticket_points ?? 0)} className="bg-purple-deep rounded-2xl py-3.5 items-center mt-5" style={(balance ?? 0) < (p.ticket_points ?? 0) ? { opacity: 0.5 } : undefined}>
-                      {redeem.isPending ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{`Canjear entrada · ${p.ticket_points} Puntos`}</Text>}
+                      {redeem.isPending ? <Spinner color="#fff" /> : <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{`Canjear entrada · ${p.ticket_points} Puntos`}</Text>}
                     </Press>
                   ) : null}
                   {ticket === 'points' && (balance ?? 0) < (p.ticket_points ?? 0) ? (
@@ -367,7 +368,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                 </View>
               ) : (
                 <Press accessibilityRole="button" onPress={() => onJoin(p)} disabled={joining} className="bg-purple-deep rounded-2xl py-3.5 items-center mt-5">
-                  {joining ? <ActivityIndicator color="#fff" /> : (
+                  {joining ? <Spinner color="#fff" /> : (
                     <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{p.kind === 'evento' ? 'Anotarme' : 'Participar'}</Text>
                   )}
                 </Press>
@@ -407,17 +408,17 @@ export function RetoCamina({
       </View>
       <View className="flex-row items-end justify-between" style={{ marginTop: 12 }}>
         <View className="flex-row items-end" style={{ gap: 6 }}>
-          <Text style={{ color: '#7FEDC4', fontSize: 34, lineHeight: 38, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{claimed ? '✓' : met}</Text>
+          <Text style={{ color: '#62F0B6', fontSize: 34, lineHeight: 38, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{claimed ? '✓' : met}</Text>
           <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', paddingBottom: 4 }}>{claimed ? '¡Completado! Bien hecho' : `de ${target}`}</Text>
         </View>
         {claimable ? (
           <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 9 }}>
-            {claiming ? <ActivityIndicator size="small" color="#2A1A00" /> : <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Reclamar +{reward}</Text>}
+            {claiming ? <Spinner size="small" color="#2A1A00" /> : <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Reclamar +{reward}</Text>}
           </Press>
         ) : null}
       </View>
       <View style={{ height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 10 }}>
-        <View style={{ width: `${claimed ? 100 : pct}%`, height: '100%', backgroundColor: '#7FEDC4', borderRadius: 4 }} />
+        <View style={{ width: `${claimed ? 100 : pct}%`, height: '100%', backgroundColor: '#62F0B6', borderRadius: 4 }} />
       </View>
     </View>
   );

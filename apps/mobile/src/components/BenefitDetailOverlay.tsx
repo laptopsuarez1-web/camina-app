@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useState } from 'react';
+import { useLatest } from '@/hooks/useLatest';
 import { Animated, Linking, PanResponder, ScrollView, View } from 'react-native';
 import { WhatsappIcon } from '@/components/icons';
 import { useColorScheme } from 'nativewind';
@@ -32,11 +33,11 @@ const STEPS_ONLINE = ['Toca Canjear y guarda tu código.', 'Escríbele al local 
 
 export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefit: Benefit; business: Business; onClose: () => void }) {
   // Se cierra deslizando hacia abajo desde la manija (o jalando la lista hacia abajo estando arriba), además de "Entendido" y tocar el fondo.
-  const dy = useRef(new Animated.Value(0)).current;
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
+  const [dy] = useState(() => new Animated.Value(0));
+  const closeRef = useLatest(onClose);
   const dismiss = () => Animated.timing(dy, { toValue: 700, duration: 180, useNativeDriver: true }).start(() => closeRef.current());
-  const pan = useRef(
+  // eslint-disable-next-line react-hooks/refs -- la ref solo se lee al tocar o arrastrar, no al dibujar
+  const [pan] = useState(() =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -46,7 +47,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
         else Animated.spring(dy, { toValue: 0, useNativeDriver: true }).start();
       },
     })
-  ).current;
+  );
   const dark = useColorScheme().colorScheme === 'dark';
   const phoneDigits = (business.phone ?? '').replace(/\D/g, '');
   const canWhatsapp = phoneDigits.length >= 7;

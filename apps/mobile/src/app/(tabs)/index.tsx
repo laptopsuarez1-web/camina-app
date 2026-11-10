@@ -94,7 +94,7 @@ export default function HomeScreen() {
   const topInset = useSafeAreaInsets().top;
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, source: stepSource, refresh: refreshSteps } = useTodaySteps();
+  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
   const isQa = useIsQa();
   const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
@@ -208,10 +208,10 @@ export default function HomeScreen() {
     });
   }
   const bumpScale = pillBump.interpolate({ inputRange: [0, 0.22, 1], outputRange: [1, 1.14, 1] });
-  const chipPop = useRef(new Animated.Value(0)).current;
-  const wave1 = useRef(new Animated.Value(0)).current;
-  const wave2 = useRef(new Animated.Value(0)).current;
-  const goalIn = useRef(new Animated.Value(goalMet ? 1 : 0)).current;
+  const [chipPop] = useState(() => new Animated.Value(0));
+  const [wave1] = useState(() => new Animated.Value(0));
+  const [wave2] = useState(() => new Animated.Value(0));
+  const [goalIn] = useState(() => new Animated.Value(goalMet ? 1 : 0));
   // Lo que ya se celebró hoy (Puntos del día y meta) queda guardado en el teléfono: cada Punto nuevo y la meta se
   // celebran una sola vez, aunque se haya ganado con la app cerrada, y no se repiten cada vez que se vuelve a entrar.
   const celebrating = useRef(false);
@@ -220,6 +220,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
     setSeenReady(false);
     AsyncStorage.getItem(`camina_home_seen_${userId}`)
       .then((raw) => { seen.current = raw ? JSON.parse(raw) : null; })
@@ -434,7 +435,7 @@ export default function HomeScreen() {
               accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
               onPress={() => setStreaksOpen(true)}
               className="flex-row items-center rounded-full"
-              style={{ gap: 4, backgroundColor: 'rgba(127,237,196,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
+              style={{ gap: 4, backgroundColor: 'rgba(98,240,182,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
             >
               <Flame size={11} color={colors.mint} />
               <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
@@ -444,7 +445,7 @@ export default function HomeScreen() {
             <Animated.View
               style={{
                 flexDirection: 'row', alignItems: 'center', borderRadius: 999,
-                gap: 4, backgroundColor: 'rgba(127,237,196,0.16)', paddingHorizontal: 10, paddingVertical: 4,
+                gap: 4, backgroundColor: 'rgba(98,240,182,0.16)', paddingHorizontal: 10, paddingVertical: 4,
                 opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
               }}
             >

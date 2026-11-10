@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,7 +39,7 @@ export function GroupDrawer({
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const panelW = Math.min(340, width * 0.86);
-  const x = useRef(new Animated.Value(panelW)).current;
+  const [x] = useState(() => new Animated.Value(panelW));
   useEffect(() => {
     if (visible) Animated.timing(x, { toValue: 0, duration: 240, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     else x.setValue(panelW);

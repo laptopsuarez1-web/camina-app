@@ -1,4 +1,4 @@
-.lp { --ink:#1d1338; --violet:#241748; --violet2:#3a2478; --purple:#8b4fd1; --mint:#7fedc4; --mint-d:#12281f; --gold:#e0b43a;
+.lp { --ink:#1d1338; --violet:#241748; --violet2:#3a2478; --purple:#8b4fd1; --mint:#62F0B6; --mint-d:#12281f; --gold:#e0b43a;
   --paper:#f7f3fc; --line:#e1d2f5; --muted:#6b5a8e; font-family: var(--font-jakarta), system-ui, sans-serif; color:var(--ink); background:var(--paper); line-height:1.55; overflow-x:clip; }
 .lp *{box-sizing:border-box}
 .lp a{color:inherit}
@@ -27,7 +27,7 @@
 .lp .lp-btn:hover{transform:translateY(-2px)}
 .lp .lp-btn:active{transform:scale(.97)}
 .lp .lp-btn.mint{background:var(--mint);color:var(--mint-d)}
-.lp .lp-btn.mint:hover{box-shadow:0 10px 30px rgba(127,237,196,.35)}
+.lp .lp-btn.mint:hover{box-shadow:0 10px 30px rgba(98,240,182,.35)}
 .lp .lp-btn.ghost{border:1.5px solid rgba(255,255,255,.4);color:#fff}
 .lp .lp-btn.ghost:hover{background:rgba(255,255,255,.1)}
 .lp .lp-btn.dark{background:var(--violet);color:#fff}

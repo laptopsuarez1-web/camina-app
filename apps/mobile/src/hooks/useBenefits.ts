@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { DEFAULT_CITY } from '@/constants/cities';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { Benefit, Business, LocalCodeResult, Redemption, StoryShare } from '@/lib/database.types';
@@ -7,7 +8,7 @@ export type BenefitWithBusiness = Benefit & { business: Business };
 
 // Solo se muestran los comercios de la ciudad de la persona (por defecto Tarija).
 export function useBenefits() {
-  const city = useAuthStore((s) => s.profile?.city ?? 'Tarija');
+  const city = useAuthStore((s) => s.profile?.city ?? DEFAULT_CITY);
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({
     queryKey: ['benefits', city, userId],
@@ -19,7 +20,7 @@ export function useBenefits() {
         .select('*, business:businesses!benefits_business_id_fkey(*)')
         .eq('active', true);
       if (error) throw error;
-      const all = (data as unknown as (BenefitWithBusiness & { fans_only?: boolean })[]).filter((b) => (b.business?.city ?? 'Tarija') === city);
+      const all = (data as unknown as (BenefitWithBusiness & { fans_only?: boolean })[]).filter((b) => (b.business?.city ?? DEFAULT_CITY) === city);
       // Premios solo para Fans (0083): se muestran solo a quien es Fan de ese local. El servidor igual lo vuelve a revisar al canjear.
       if (!all.some((b) => b.fans_only)) return all;
       const { data: mine } = await supabase.rpc('user_badges', { p_user: userId });
@@ -32,13 +33,15 @@ export function useBenefits() {
 // Comercios aprobados de la ciudad (la base solo muestra los aprobados). Canjes los usa para que un local
 // aparezca en la lista y en el mapa aunque todavía no tenga ningún beneficio activo.
 export function useApprovedBusinesses() {
-  const city = useAuthStore((s) => s.profile?.city ?? 'Tarija');
+  const city = useAuthStore((s) => s.profile?.city ?? DEFAULT_CITY);
   return useQuery({
     queryKey: ['approved-businesses', city],
     queryFn: async () => {
-      const { data, error } = await supabase.from('businesses').select('*').eq('approved', true);
+      // Solo se bajan los locales de la ciudad de la persona (los locales viejos sin ciudad son de la ciudad de lanzamiento).
+      const base = supabase.from('businesses').select('*').eq('approved', true);
+      const { data, error } = await (city === DEFAULT_CITY ? base.or(`city.eq.${DEFAULT_CITY},city.is.null`) : base.eq('city', city));
       if (error) throw error;
-      return (data as unknown as Business[]).filter((b) => (b.city ?? 'Tarija') === city);
+      return (data as unknown as Business[]).filter((b) => (b.city ?? DEFAULT_CITY) === city);
     },
     staleTime: 60_000,
   });

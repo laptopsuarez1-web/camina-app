@@ -1,8 +1,9 @@
 import { createElement, useEffect, useRef, useState } from 'react';
+import { Spinner } from '@/components/ui/Spinner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { View, ScrollView, ActivityIndicator, Keyboard, Platform, Alert, Animated, Easing } from 'react-native';
+import { View, ScrollView, Keyboard, Platform, Alert } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -446,7 +447,7 @@ export default function GroupDetailScreen() {
   if (isLoading && !data) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-        <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />
+        <Spinner color={colors.aqua} accessibilityLabel="Cargando" />
       </View>
     );
   }
@@ -595,7 +596,7 @@ export default function GroupDetailScreen() {
                   <View
                     style={{
                       width: '100%', height: heights[rank] ?? 58, marginTop: 6, borderTopLeftRadius: 20, borderTopRightRadius: 20,
-                      backgroundColor: rank === 0 ? 'rgba(127,237,196,0.28)' : 'rgba(255,255,255,0.12)',
+                      backgroundColor: rank === 0 ? 'rgba(98,240,182,0.28)' : 'rgba(255,255,255,0.12)',
                       borderWidth: 1, borderBottomWidth: 0, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', paddingTop: 8,
                     }}
                   >
