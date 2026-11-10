@@ -75,7 +75,7 @@
             {
               "scheme": "https",
               "host": "caminaapp.com",
-              "pathPrefix": "/r"
+              "pathPrefix": "/r/"
             },
             {
               "scheme": "https",
