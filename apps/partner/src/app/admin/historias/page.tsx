@@ -114,7 +114,7 @@ export default function AdminHistoriasPage() {
                   <img src={photos[r.photo_path]} alt={`Historia de @${r.instagram_handle}`} className="w-full h-full object-cover" />
                 </a>
               ) : null}
-              <span className="absolute top-2.5 left-2.5 bg-white/95 rounded-full text-[11px] font-bold px-2.5 py-0.5 text-[#9A4A13]">
+              <span className="absolute top-2.5 left-2.5 bg-white/95 rounded-full text-[11px] font-bold px-2.5 py-0.5 text-[color:var(--c-warn-text)]">
                 {ago(r.created_at)}
               </span>
             </div>
@@ -157,7 +157,7 @@ export default function AdminHistoriasPage() {
                   </button>
                 </div>
               ) : (
-                <p className={`text-[12px] font-bold ${r.status === 'approved' ? 'text-[#1A6555]' : 'text-[#9A4A13]'}`}>
+                <p className={`text-[12px] font-bold ${r.status === 'approved' ? 'text-[color:var(--c-ok-text)]' : 'text-[color:var(--c-warn-text)]'}`}>
                   {r.status === 'approved' ? 'Aprobada' : 'Rechazada'}
                   {r.decided_at ? ` · ${ago(r.decided_at)}` : ''}
                 </p>

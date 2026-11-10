@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram, Users, Gift } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 
 const NAV = [
@@ -92,6 +93,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
       <div className="mt-auto pt-5">
+        <ThemeToggle />
         <button
           onClick={handleLogout}
           className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"

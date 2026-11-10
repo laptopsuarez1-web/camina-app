@@ -86,9 +86,9 @@ export default function CuentasPage() {
                 <div>
                   <p className="font-semibold text-text text-[13.5px]">
                     {c.full_name || 'Sin nombre'}
-                    {c.banned_at && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold" style={{ background: '#FDEEE2', color: '#C0392B' }}>Baneada</span>}
+                    {c.banned_at && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold" style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}>Baneada</span>}
                     {c.admin_account && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold bg-mint/15 text-mint-dark">Equipo</span>}
-                    {c.owns_business && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C]">Dueño de comercio</span>}
+                    {c.owns_business && <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold bg-purple-light text-muted">Dueño de comercio</span>}
                   </p>
                   <p className="text-muted text-[12px]">{c.email} · creada el {new Date(c.created_at).toLocaleDateString('es-BO')}</p>
                   {c.banned_at && c.ban_reason && <p className="text-[12px] mt-0.5" style={{ color: 'var(--c-warn-text)' }}>Motivo: {c.ban_reason}</p>}
@@ -103,7 +103,7 @@ export default function CuentasPage() {
                       <button
                         onClick={() => { setAccion({ id: c.id, kind: 'ban' }); setMotivo(''); }}
                         className="rounded-[8px] px-3 py-1.5 text-[12px] font-bold"
-                        style={{ background: '#FFF3D6', color: '#8A5A2E' }}
+                        style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}
                       >
                         Banear
                       </button>
@@ -111,7 +111,7 @@ export default function CuentasPage() {
                     <button
                       onClick={() => { setAccion({ id: c.id, kind: 'delete' }); setMotivo(''); }}
                       className="rounded-[8px] px-3 py-1.5 text-[12px] font-bold"
-                      style={{ background: '#FDEEE2', color: '#C0392B' }}
+                      style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}
                     >
                       Eliminar
                     </button>
@@ -131,12 +131,12 @@ export default function CuentasPage() {
                     <button onClick={() => ejecutar(c, 'ban')} disabled={busy} className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#7FEDC4' }}>
                       {busy ? 'Baneando…' : 'Banear cuenta'}
                     </button>
-                    <button onClick={() => setAccion(null)} className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold">Cancelar</button>
+                    <button onClick={() => setAccion(null)} className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold">Cancelar</button>
                   </div>
                 </div>
               )}
               {accion?.id === c.id && accion.kind === 'delete' && (
-                <div className="mt-2.5 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: '#FDEEE2', color: '#8A5A2E' }}>
+                <div className="mt-2.5 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
                   <p className="mb-2">
                     ¿Eliminar la cuenta de <b>{c.full_name || c.email}</b> para siempre? Se borran sus Puntos, canjes, grupos y mensajes
                     {c.owns_business ? ', y también su comercio' : ''}. No se puede deshacer.
@@ -145,7 +145,7 @@ export default function CuentasPage() {
                     <button onClick={() => ejecutar(c, 'delete')} disabled={busy} className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#C0392B' }}>
                       {busy ? 'Eliminando…' : 'Sí, eliminar'}
                     </button>
-                    <button onClick={() => setAccion(null)} className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold">Cancelar</button>
+                    <button onClick={() => setAccion(null)} className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold">Cancelar</button>
                   </div>
                 </div>
               )}

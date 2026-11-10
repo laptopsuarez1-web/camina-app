@@ -270,7 +270,7 @@ export default function AdminPage() {
             </p>
             <div className="flex items-center gap-2 mt-2">
               <input type="date" value={launchInput} onChange={(e) => setLaunchInput(e.target.value)} className="border border-line rounded-[8px] px-2 py-1 text-[12px]" />
-              <button onClick={() => saveLaunch(false)} disabled={!launchInput} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C] disabled:opacity-50">Fijar fecha</button>
+              <button onClick={() => saveLaunch(false)} disabled={!launchInput} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-purple-light text-muted disabled:opacity-50">Fijar fecha</button>
               {launchAt && <button onClick={() => saveLaunch(true)} className="text-[11.5px] text-muted underline">Quitar</button>}
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={() => decideAlert(a.id, false)}
-                      className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                      className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
                     >
                       Rechazar
                     </button>
@@ -317,7 +317,7 @@ export default function AdminPage() {
           const rejected = businesses.filter((b) => !b.approved && b.rejected_at);
 
           const confirmDelete = (b: Business) => (
-            <div className="mt-2 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: '#FDEEE2', color: '#8A5A2E' }}>
+            <div className="mt-2 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
               <p className="mb-2">
                 ¿Eliminar <b>{b.name}</b> para siempre? Se borran también sus beneficios y canjes. No se puede deshacer.
               </p>
@@ -332,7 +332,7 @@ export default function AdminPage() {
                 </button>
                 <button
                   onClick={() => setDeletingId(null)}
-                  className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                  className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
                 >
                   Cancelar
                 </button>
@@ -362,7 +362,7 @@ export default function AdminPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[11.5px] font-semibold underline"
-                                style={{ color: '#1f7d68' }}
+                                style={{ color: 'var(--c-ok-text)' }}
                               >
                                 WhatsApp {b.phone}
                               </a>
@@ -396,7 +396,7 @@ export default function AdminPage() {
                                 setRejectReason('');
                                 setDeletingId(null);
                               }}
-                              className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                              className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
                             >
                               Rechazar
                             </button>
@@ -406,7 +406,7 @@ export default function AdminPage() {
                                 setRejectingId(null);
                               }}
                               className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
-                              style={{ background: '#FDEEE2', color: '#C0392B' }}
+                              style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}
                             >
                               Eliminar
                             </button>
@@ -435,7 +435,7 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={() => setRejectingId(null)}
-                                className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
+                                className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
                               >
                                 Cancelar
                               </button>
@@ -482,7 +482,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => setDeletingId(deletingId === b.id ? null : b.id)}
                               className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold"
-                              style={{ background: '#FDEEE2', color: '#C0392B' }}
+                              style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}
                             >
                               Eliminar
                             </button>
@@ -523,15 +523,15 @@ export default function AdminPage() {
                     <td className="px-4 py-3 text-muted">{b.category}</td>
                     <td className="px-4 py-3">
                       {b.paused_at ? (
-                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: '#FFF3D6', color: '#8A5A2E' }} title={b.pause_reason ?? undefined}>
+                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }} title={b.pause_reason ?? undefined}>
                           En pausa
                         </span>
                       ) : b.approved ? (
-                        <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
+                        <span className="text-[color:var(--c-ok-text)] bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
                           Aprobado
                         </span>
                       ) : b.rejected_at ? (
-                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: '#FDEEE2', color: '#C0392B' }}>
+                        <span className="rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}>
                           Rechazado
                         </span>
                       ) : (
@@ -555,7 +555,7 @@ export default function AdminPage() {
                       </select>
                       {/* Lo que pidió al registrarse (0102): cupo fundador o un plan de pago que dijo haber pagado. */}
                       {b.requested_plan && b.requested_plan !== b.plan && b.requested_plan !== 'primer_paso' && !b.founder && (
-                        <p className="text-[10.5px] mt-1 font-semibold" style={{ color: '#8B6A12' }}>
+                        <p className="text-[10.5px] mt-1 font-semibold" style={{ color: 'var(--c-warn-text)' }}>
                           {b.requested_plan === 'fundador' ? 'Pidió el cupo fundador' : `Pidió ${PLAN_LABEL[b.requested_plan as BusinessPlan]} · revisar comprobante en WhatsApp`}
                         </p>
                       )}
@@ -575,8 +575,8 @@ export default function AdminPage() {
                           disabled={savingId === b.id}
                           className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
                           style={{
-                            background: b.ad_eligible ? 'rgba(127,237,196,0.2)' : '#F7F3FC',
-                            color: b.ad_eligible ? '#0F7A5C' : '#7C6A9C',
+                            background: b.ad_eligible ? 'rgba(127,237,196,0.2)' : 'var(--c-purple-light)',
+                            color: b.ad_eligible ? 'var(--c-ok-text)' : 'var(--c-muted)',
                           }}
                         >
                           {b.ad_eligible ? 'Elegible ✓' : 'No elegible'}
@@ -587,14 +587,14 @@ export default function AdminPage() {
                     </td>
                     <td className="px-4 py-3">
                       {b.founder ? (
-                        <span className="text-mint-dark bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
+                        <span className="text-[color:var(--c-ok-text)] bg-mint/15 rounded-full px-2.5 py-1 text-[11px] font-bold">
                           {b.founder_until ? `Hasta ${new Date(b.founder_until).toLocaleDateString('es-BO')}` : 'Empieza al lanzar'}
                         </span>
                       ) : (
                         <button
                           onClick={() => makeFounder(b.id)}
                           disabled={savingId === b.id}
-                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-[#F7F3FC] text-[#7C6A9C]"
+                          className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold bg-purple-light text-muted"
                         >
                           Hacer fundador
                         </button>
@@ -625,7 +625,7 @@ export default function AdminPage() {
                                 setDeletingId(null);
                               }}
                               className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
-                              style={{ background: '#FFF3D6', color: '#8A5A2E' }}
+                              style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}
                             >
                               Pausar
                             </button>
@@ -669,7 +669,7 @@ export default function AdminPage() {
                               setPausingId(null);
                             }}
                             className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
-                            style={{ background: '#FDEEE2', color: '#C0392B' }}
+                            style={{ background: 'var(--c-danger-light)', color: 'var(--c-danger-text)' }}
                           >
                             Eliminar
                           </button>
