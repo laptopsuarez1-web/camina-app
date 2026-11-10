@@ -105,7 +105,7 @@ export function AdminBusinessEditModal({ business, onClose, onSaved }: { busines
           <button onClick={save} disabled={saving} className="rounded-[10px] px-4 py-2 text-[13px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#7FEDC4' }}>
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
-          <button onClick={onClose} className="bg-[#F7F3FC] text-[#7C6A9C] rounded-[10px] px-4 py-2 text-[13px] font-bold">Cancelar</button>
+          <button onClick={onClose} className="bg-purple-light text-muted rounded-[10px] px-4 py-2 text-[13px] font-bold">Cancelar</button>
         </div>
       </div>
     </div>
