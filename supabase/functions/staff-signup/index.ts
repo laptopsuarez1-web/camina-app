@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
   const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error) {
-    // Ya existía una cuenta con ese correo (por ejemplo, de la app): entra con su contraseña de siempre.
+    // Ya existía una cuenta con ese correo (por ejemplo, de la app): con la invitación se le pone la contraseña elegida.
     if (/already|registered|exists/i.test(error.message)) {
       // Si esa cuenta quedó a medias (nunca confirmó el correo), con la invitación se confirma y se le pone la contraseña elegida.
       for (let page = 1; page <= 20; page++) {
@@ -50,11 +50,13 @@ Deno.serve(async (req) => {
         const users = lista?.users ?? [];
         const u = users.find((x) => x.email?.toLowerCase() === email);
         if (u) {
-          if (!u.email_confirmed_at) {
-            await admin.auth.admin.updateUserById(u.id, { password, email_confirm: true });
-            return json({ ok: true });
-          }
-          break;
+          // La invitación (código secreto que solo llegó a ese correo) prueba que la persona es dueña del correo:
+          // se confirma la cuenta si hacía falta y se le pone la contraseña elegida. Nunca a dueños de comercio ni admins.
+          const { data: dueno } = await admin.from('businesses').select('id').eq('owner_user_id', u.id).maybeSingle();
+          const { data: esAdmin } = await admin.from('app_admins').select('user_id').eq('user_id', u.id).maybeSingle();
+          if (dueno || esAdmin) return json({ exists: true });
+          await admin.auth.admin.updateUserById(u.id, { password, email_confirm: true });
+          return json({ ok: true });
         }
         if (users.length < 1000) break;
       }
