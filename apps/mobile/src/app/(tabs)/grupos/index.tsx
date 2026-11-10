@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Image } from 'expo-image';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Alert } from 'react-native';
@@ -28,6 +29,7 @@ import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 
 export default function GruposScreen() {
+  const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
   const { dark } = useThemeColors();
   const { data: groups, isLoading, isError, refetch } = useGroups();
@@ -72,7 +74,7 @@ export default function GruposScreen() {
   return (
     <KeyboardSafe className="flex-1">
       <HeaderLight />
-      <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView refreshControl={pull} ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Grupos</ScreenTitle>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Camina, comparte y gana en equipo

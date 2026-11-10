@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Alert, ScrollView, View } from 'react-native';
 import { BadgeSheet } from '@/components/badges/BadgeSheet';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,6 +19,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 
 // Todas las insignias de una persona (las mías o, con ?u=, las de otra persona: son públicas).
 export default function InsigniasScreen() {
+  const pull = usePullToRefresh();
   const insets = useSafeAreaInsets();
   const tabSpace = useTabBarSpace();
   const theme = useThemeColors();
@@ -51,7 +53,7 @@ export default function InsigniasScreen() {
   }
 
   return (
-    <ScrollView className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
+    <ScrollView refreshControl={pull} className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
       <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
         <Press accessibilityRole="button" accessibilityLabel="Volver" hitSlop={10} onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/perfil'))}
           className="w-10 h-10 rounded-full items-center justify-center bg-purple-light dark:bg-card-dark">

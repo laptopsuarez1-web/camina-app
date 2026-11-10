@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, AccessibilityInfo, Platform } from 'react-native';
 import { shareText } from '@/lib/share';
@@ -88,6 +89,7 @@ function useMovimientos() {
 }
 
 export default function PuntosScreen() {
+  const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
   const { data: balance, isError: balanceError } = usePointsBalance();
@@ -115,7 +117,7 @@ export default function PuntosScreen() {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">
