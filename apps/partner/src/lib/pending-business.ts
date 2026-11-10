@@ -33,7 +33,8 @@ export function consumePendingBusiness(email: string): PendingBusiness | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PendingBusiness;
-    if (parsed.email.trim().toLowerCase() !== email.trim().toLowerCase()) return null;
+    // '*' = alta con Google: todavía no se conoce el correo, lo pone Google al volver.
+    if (parsed.email !== '*' && parsed.email.trim().toLowerCase() !== email.trim().toLowerCase()) return null;
     localStorage.removeItem(KEY);
     return parsed;
   } catch {

@@ -28,22 +28,33 @@ export default function LoginPage() {
       return;
     }
 
-    // No mandamos siempre a /inicio: si la cuenta es de admin y no tiene un
-    // comercio propio, /inicio la rebota a /admin igual, pero de paso muestra
-    // un instante la pantalla de "Panel de comercios" — confuso para un
-    // admin. Decidimos el destino aquí mismo, antes de navegar.
-    const userId = data.session?.user.id;
+    await irAlPanel(data.session?.user.id);
+  }
+
+  // No mandamos siempre a /inicio: un admin sin comercio propio va a /admin, y quien entró con Google
+  // sin tener comercio ni datos de alta guardados va a /registro a cargar el suyo.
+  async function irAlPanel(userId: string | undefined) {
     const { data: adminCheck } = await supabase.rpc('is_admin');
     const { data: ownBusiness } = userId
       ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
       : { data: null };
     setLoading(false);
-
     if (!ownBusiness && adminCheck) {
       router.replace('/admin');
-    } else {
-      router.replace('/inicio');
+      return;
     }
+    if (!ownBusiness) {
+      const { data: userData } = await supabase.auth.getUser();
+      const tieneAlta = !!userData.user?.user_metadata?.pending_business || !!localStorage.getItem('camina_pending_business');
+      const { data: staffBusinessId } = await supabase.rpc('claim_staff_invite');
+      if (staffBusinessId) {
+        router.replace('/canjes');
+        return;
+      }
+      router.replace(tieneAlta ? '/inicio' : '/registro');
+      return;
+    }
+    router.replace('/inicio');
   }
 
   return (
