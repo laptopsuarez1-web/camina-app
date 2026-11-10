@@ -22,6 +22,27 @@ export default function UnirmePage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    // Con el link de la invitación (trae un código) la cuenta se crea ya confirmada y entra directo.
+    const token = new URLSearchParams(window.location.search).get('t');
+    if (token) {
+      const { data: alta, error: altaErr } = await supabase.functions.invoke('staff-signup', { body: { email: email.trim(), password, token } });
+      if (alta?.error) {
+        setLoading(false);
+        setError(alta.error);
+        return;
+      }
+      // Si el servicio no responde, se sigue con el alta normal (con confirmación de correo).
+      if (!altaErr) {
+      const { error: loginErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      setLoading(false);
+      if (loginErr) {
+        setError(alta?.exists ? 'Ya tienes una cuenta con ese correo. Inicia sesión con tu contraseña de siempre.' : mensajeError(loginErr));
+        return;
+      }
+      window.location.href = '/canjes';
+      return;
+      }
+    }
     const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password });
     setLoading(false);
     if (err) {
@@ -29,13 +50,13 @@ export default function UnirmePage() {
       return;
     }
     if (data.session) {
-      window.location.href = '/';
+      window.location.href = '/canjes';
       return;
     }
     setDone(true);
   }
 
-  const input = 'w-full bg-white/95 text-text rounded-xl p-3.5';
+  const input = 'w-full bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5';
 
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
@@ -45,11 +66,16 @@ export default function UnirmePage() {
       {done ? (
         <>
           <p className="text-auth-muted text-[13px] mb-6 max-w-[300px]">
-            Te mandamos un correo a {email}. Confírmalo y después{' '}
+            <strong className="block text-white text-[15px] mb-2">Falta un paso</strong>
+            1. Abre el correo que te mandamos a {email} y toca el link para confirmarlo.
+            <br />
+            2. Vuelve aquí e{' '}
             <Link href="/login" className="text-mint underline">
               inicia sesión
-            </Link>
-            : vas a entrar directo a los canjes de tu comercio.
+            </Link>{' '}
+            con ese mismo correo y tu contraseña.
+            <br />
+            3. Vas a ver la pantalla de canjes de tu comercio.
           </p>
         </>
       ) : (

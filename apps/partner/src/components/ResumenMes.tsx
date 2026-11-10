@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-type Resumen = {
+export type Resumen = {
   month: string;
   canjes: number; canjes_prev: number;
   ruta: number; ruta_prev: number; en_rutas?: number;
@@ -27,11 +27,13 @@ function Cambio({ now, prev, mes }: { now: number; prev: number; mes: string }) 
 }
 
 // Resumen del mes (0090): cuánta gente te trajo Camina, cuántos son nuevos y cuántos volvieron.
-export function ResumenMes({ businessId }: { businessId: string }) {
-  const [r, setR] = useState<Resumen | null>(null);
+export function ResumenMes({ businessId, datos }: { businessId: string; datos?: Resumen | null }) {
+  const [propio, setR] = useState<Resumen | null>(null);
+  const r = datos ?? propio;
   useEffect(() => {
+    if (datos !== undefined) return;
     supabase.rpc('business_month_summary', { p_business: businessId }).then(({ data, error }) => setR(error ? null : ((data as Resumen) ?? null)));
-  }, [businessId]);
+  }, [businessId, datos]);
   if (!r) return null;
   const mes = new Date(r.month + 'T12:00:00Z').toLocaleDateString('es-BO', { month: 'long', timeZone: 'UTC' });
   const prevMes = new Date(new Date(r.month + 'T12:00:00Z').setUTCMonth(new Date(r.month + 'T12:00:00Z').getUTCMonth() - 1)).toLocaleDateString('es-BO', { month: 'long', timeZone: 'UTC' });

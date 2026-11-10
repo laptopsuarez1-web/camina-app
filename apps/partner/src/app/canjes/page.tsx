@@ -8,7 +8,8 @@ import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
 
 export default function CanjesPage() {
-  const { business } = useBusinessAuth();
+  const { business, role } = useBusinessAuth();
+  const esCajero = role === 'cashier';
   const [codeInput, setCodeInput] = useState('');
   const [result, setResult] = useState<{ ok: boolean; msg: string; premio?: string } | null>(null);
   const [checking, setChecking] = useState(false);
@@ -106,7 +107,10 @@ export default function CanjesPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Canjes" subtitle="Cada canje queda aquí, con su premio y cómo se confirmó." />
+      <TopBar
+        title={esCajero ? 'Validar canjes' : 'Canjes'}
+        subtitle={esCajero ? `Entraste como cajero de ${business?.name ?? 'tu comercio'}. Aquí ves los canjes y validas los códigos.` : 'Cada canje queda aquí, con su premio y cómo se confirmó.'}
+      />
 
       {hasOnline && <div className="bg-auth-bg rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="text-white font-semibold text-sm mb-1">Confirmar código de 6 dígitos</p>
@@ -151,20 +155,19 @@ export default function CanjesPage() {
       <div className="bg-card border border-line rounded-2xl p-5 mb-5 max-w-[480px]">
         <p className="font-semibold text-sm mb-1">Código de tu local</p>
         <p className="text-muted text-xs mb-3.5">
-          Dile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace
-          falta que abras el panel. Si se filtró, cámbialo cuando quieras.
+          {esCajero ? 'Dile este código al cliente en la caja. Lo escribe en la app, estando en el local, y el canje queda confirmado al instante.' : 'Dile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace falta que abras el panel. Si se filtró, cámbialo cuando quieras.'}
         </p>
         <div className="flex items-center gap-3">
           <span aria-label={localCode ? `Código del local ${localCode.split('').join(' ')}` : 'Sin código'} className="flex-1 bg-bg rounded-[10px] px-3.5 py-2.5 text-[28px] font-extrabold tracking-[10px] text-center">
             {localCode ?? '····'}
           </span>
-          <button
+          {!esCajero && <button
             onClick={changeLocalCode}
             disabled={changing || !localCode}
             className="shrink-0 border border-line rounded-[10px] px-4 py-2.5 font-semibold text-[13px]"
           >
             {changing ? 'Cambiando…' : 'Cambiar código'}
-          </button>
+          </button>}
         </div>
         {codeError && <p className="text-warn text-[12.5px] mt-2.5">{codeError}</p>}
       </div>

@@ -258,6 +258,7 @@ export default function PerfilPage() {
 
       <div className="flex flex-wrap gap-5 max-w-[620px]">
         <div className="flex-1 min-w-0 flex flex-col gap-3.5">
+<SectionTitle n="1" text="Fotos" first />
           <div className="flex gap-3.5">
             {business && (
               <>
@@ -285,6 +286,7 @@ export default function PerfilPage() {
 
           {business && <GalleryUpload businessId={business.id} photos={business.photos ?? []} onChange={handlePhotosChange} />}
 
+<SectionTitle n="2" text="Sobre tu local" />
           <Field label="Nombre comercial">
             <input
               value={nombre}
@@ -349,6 +351,7 @@ export default function PerfilPage() {
             <p className="text-[11.5px] text-muted mt-1.5">{palabras.length} de {MAX_PALABRAS}</p>
             </div>
           </details>
+          <SectionTitle n="3" text="Dónde estás" />
           <label className="flex items-center gap-2 text-[13px] text-muted">
             <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
             Es un emprendimiento virtual (no tengo local físico)
@@ -410,6 +413,7 @@ export default function PerfilPage() {
               {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
             </Field>
           )}
+<SectionTitle n="4" text="Horario" />
           <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>
             <div className="bg-white border border-line rounded-[10px] p-3 flex flex-col gap-2">
               {DAY_NAMES.map((name, i) => {
@@ -517,6 +521,7 @@ export default function PerfilPage() {
               </p>
             </div>
           </Field>
+<SectionTitle n="5" text="Contacto y redes" />
           <Field label="Contacto (WhatsApp, opcional)" icon={<Phone size={13} color="#7C6A9C" />}>
             <input
               value={telefono}
@@ -667,5 +672,14 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
       </span>
       {children}
     </label>
+  );
+}
+
+function SectionTitle({ n, text, first }: { n: string; text: string; first?: boolean }) {
+  return (
+    <div className={`flex items-center gap-2.5 ${first ? '' : 'mt-5 pt-5 border-t border-line'}`}>
+      <span className="w-6 h-6 rounded-full bg-mint text-auth-bg text-[12px] font-extrabold flex items-center justify-center">{n}</span>
+      <p className="text-[16px] font-bold">{text}</p>
+    </div>
   );
 }

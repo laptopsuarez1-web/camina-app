@@ -72,17 +72,18 @@ export default function BeneficioPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Mis beneficios" subtitle="Esto es lo que ven los usuarios en el mapa y la lista de Canjes." />
+      <TopBar title="Mis beneficios" subtitle="Los premios que ofreces. Así los ven los clientes en la app." />
 
       {isFree && (
-        <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
-          <Star size={15} color="#8B4FD1" />
-          <p className="text-[12.5px] text-[#4A3D68]">
+        <div className="flex items-start gap-3 bg-purple-light rounded-2xl px-4 py-3.5 mb-5">
+          <Star size={16} color="#8B4FD1" className="mt-0.5 shrink-0" />
+          <p className="text-[13px] leading-snug text-text">
+            <strong>Plan gratis: 1 premio gratis y 1 descuento.</strong>{' '}
             {hasGratis
               ? hasDescuento
-                ? '🔓 Ya tienes tu premio gratis y tu descuento. Pasa a Paso Firme o Paso Adelante para sumar más premios y cupones ilimitados.'
-                : '🔓 Ya puedes crear un descuento. Con Primer Paso tienes 1 premio gratis y 1 descuento.'
-              : '🔒 Crea un premio gratis para poder agregar un descuento. Con Primer Paso tienes 1 premio gratis y 1 descuento.'}
+                ? 'Ya los tienes. Pasa a un plan de pago para sumar más.'
+                : 'Ya puedes crear tu descuento.'
+              : 'Crea primero el premio gratis para poder agregar el descuento.'}
           </p>
         </div>
       )}
@@ -91,32 +92,33 @@ export default function BeneficioPage() {
         onClick={() => !atFreeLimit && setEditingId('new')}
         disabled={atFreeLimit}
         title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
-        className="flex items-center gap-2 rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-4.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: '#241748', color: '#62F0B6' }}
       >
-        <Plus size={15} /> Agregar beneficio
+        <Plus size={16} /> Agregar beneficio
       </button>
 
       {loading && <p className="text-muted text-[13px]">Cargando…</p>}
 
       {!loading && benefits.length === 0 && (
-        <div className="bg-card border border-line rounded-2xl p-6 text-center max-w-[480px]">
-          <p className="text-[13.5px] text-muted">Todavía no tienes ningún beneficio cargado.</p>
+        <div className="bg-card border border-line rounded-2xl p-8 text-center max-w-[480px]">
+          <p className="font-semibold text-[15px] mb-1">Todavía no tienes premios</p>
+          <p className="text-[13.5px] text-muted">Toca "Agregar beneficio" para crear el primero. Así tu local aparece en el mapa de la app.</p>
         </div>
       )}
 
-      <div className="flex flex-col gap-3 max-w-[480px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 max-w-[860px]">
         {benefits.map((b) => (
-          <div key={b.id} className="bg-card border border-line rounded-2xl p-4 flex gap-3.5">
+          <div key={b.id} className="bg-card border border-line rounded-2xl p-4 flex gap-4">
             {b.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={b.image_url} alt={b.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+              <img src={b.image_url} alt={b.name} className="w-[76px] h-[76px] rounded-2xl object-cover shrink-0" />
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-bg shrink-0" />
+              <div className="w-[76px] h-[76px] rounded-2xl bg-bg shrink-0" />
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-[13.5px] truncate">{b.name || 'Sin nombre'}</p>
+                <p className="font-bold text-[15px] truncate">{b.name || 'Sin nombre'}</p>
                 <span
                   className="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
                   style={{
@@ -127,7 +129,7 @@ export default function BeneficioPage() {
                   {b.active ? 'Activo' : 'Desactivado'}
                 </span>
               </div>
-              <p className="text-xs text-muted mt-0.5">
+              <p className="text-[13px] text-muted mt-0.5">
                 {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
               </p>
               <p className="text-xs text-muted mt-0.5">
@@ -135,19 +137,19 @@ export default function BeneficioPage() {
                   ? `Online por ${CANALES_ONLINE.find((c) => c.id === b.online_channel)?.label ?? 'redes'} · ${b.online_channel === 'web' ? 'con tus cupones' : b.online_quota == null ? 'cupos ilimitados' : `${b.online_quota} cupos en total`}`
                   : b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}
               </p>
-              <div className="flex gap-3 mt-2.5">
+              <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => setEditingId(b.id)}
-                  className="flex items-center gap-1 text-xs font-semibold"
-                  style={{ color: '#4FC3A8' }}
+                  className="flex items-center gap-1.5 text-[12.5px] font-semibold rounded-full px-3.5 py-1.5 bg-aqua-light"
+                  style={{ color: '#2E9E7C' }}
                 >
                   <Pencil size={12} /> Editar
                 </button>
                 <button
                   onClick={() => handleDelete(b.id)}
                   disabled={deletingId === b.id}
-                  className="flex items-center gap-1 text-xs font-semibold disabled:opacity-50"
-                  style={{ color: '#D4537E' }}
+                  className="flex items-center gap-1.5 text-[12.5px] font-semibold rounded-full px-3.5 py-1.5 disabled:opacity-50"
+                  style={{ color: '#D4537E', background: 'var(--c-danger-light)' }}
                 >
                   <Trash2 size={12} /> {deletingId === b.id ? 'Borrando…' : 'Borrar'}
                 </button>
@@ -366,7 +368,7 @@ function BeneficioForm({
       </button>
       <TopBar
         title={benefitId ? 'Editar beneficio' : 'Nuevo beneficio'}
-        subtitle="Esto es lo que ven los usuarios en el mapa y la lista de Canjes."
+        subtitle="Los premios que ofreces. Así los ven los clientes en la app."
       />
 
       {isFree && (
