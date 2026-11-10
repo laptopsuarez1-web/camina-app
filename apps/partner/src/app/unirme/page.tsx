@@ -36,7 +36,7 @@ export default function UnirmePage() {
       const { error: loginErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       setLoading(false);
       if (loginErr) {
-        setError(alta?.exists ? 'Ya tienes una cuenta con ese correo. Inicia sesión con tu contraseña de siempre.' : mensajeError(loginErr));
+        setError(alta?.exists ? 'Esta invitación ya se usó. Inicia sesión con tu contraseña.' : mensajeError(loginErr));
         return;
       }
       window.location.href = '/canjes';
