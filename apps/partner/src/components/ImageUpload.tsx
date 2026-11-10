@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImagePlus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { CropDialog } from '@/components/CropDialog';
 
 export function ImageUpload({
   bucket,
@@ -22,6 +23,7 @@ export function ImageUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toCrop, setToCrop] = useState<File | null>(null);
 
   async function handleFile(original: File) {
     setUploading(true);
@@ -82,10 +84,27 @@ export function ImageUpload({
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) handleFile(file);
+          if (!file) return;
+          // GIF y SVG no se recortan; el resto se acomoda antes de subir.
+          if (file.type === 'image/gif' || file.type === 'image/svg+xml') handleFile(file);
+          else setToCrop(file);
           e.target.value = '';
         }}
       />
+      {toCrop && (
+        <CropDialog
+          file={toCrop}
+          aspect={shape === 'wide' ? 16 / 9 : 1}
+          round={shape === 'circle'}
+          max={shape === 'circle' ? 600 : shape === 'wide' ? 1600 : 1200}
+          title={`Acomoda: ${label}`}
+          onCancel={() => setToCrop(null)}
+          onDone={(f) => {
+            setToCrop(null);
+            handleFile(f);
+          }}
+        />
+      )}
       {error && <p className="text-warn text-[11.5px] mt-1">{error}</p>}
     </div>
   );

@@ -15,6 +15,7 @@ import { queryClient } from '@/lib/query-client';
 import { Sentry, setMonitoringUser } from '@/lib/monitoring';
 import { ForceUpdateGate } from '@/components/ForceUpdateGate';
 import { AppAlertHost } from '@/components/AppAlertHost';
+import { PhotoCropHost } from '@/components/PhotoCropHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { watchConnection } from '@/lib/connection';
 import { useNotificationPrefs } from '@/store/useNotificationPrefs';
@@ -98,6 +99,7 @@ function RootLayout() {
             <Stack screenOptions={{ headerShown: false }} />
           </ForceUpdateGate>
           <OfflineBanner />
+          <PhotoCropHost />
           <AppAlertHost />
         </QueryClientProvider>
       </SafeAreaProvider>
