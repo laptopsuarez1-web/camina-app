@@ -73,9 +73,10 @@ function Editor({ req }: { req: CropRequest }) {
   }));
 
   const zoomBy = (d: number) => {
-    k.value = Math.min(MAX_ZOOM, Math.max(1, k.value + d));
-    tx.value = clamp(tx.value, Math.max(0, (dw * k.value - fw) / 2));
-    ty.value = clamp(ty.value, Math.max(0, (dh * k.value - fh) / 2));
+    const nk = Math.min(MAX_ZOOM, Math.max(1, k.get() + d));
+    k.set(nk);
+    tx.set(clamp(tx.get(), Math.max(0, (dw * nk - fw) / 2)));
+    ty.set(clamp(ty.get(), Math.max(0, (dh * nk - fh) / 2)));
   };
 
   async function confirm() {
