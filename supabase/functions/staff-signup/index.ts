@@ -43,7 +43,23 @@ Deno.serve(async (req) => {
   const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error) {
     // Ya existía una cuenta con ese correo (por ejemplo, de la app): entra con su contraseña de siempre.
-    if (/already|registered|exists/i.test(error.message)) return json({ exists: true });
+    if (/already|registered|exists/i.test(error.message)) {
+      // Si esa cuenta quedó a medias (nunca confirmó el correo), con la invitación se confirma y se le pone la contraseña elegida.
+      for (let page = 1; page <= 20; page++) {
+        const { data: lista } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+        const users = lista?.users ?? [];
+        const u = users.find((x) => x.email?.toLowerCase() === email);
+        if (u) {
+          if (!u.email_confirmed_at) {
+            await admin.auth.admin.updateUserById(u.id, { password, email_confirm: true });
+            return json({ ok: true });
+          }
+          break;
+        }
+        if (users.length < 1000) break;
+      }
+      return json({ exists: true });
+    }
     return json({ error: 'No pudimos crear la cuenta. Intenta de nuevo.' }, 500);
   }
   return json({ ok: true });

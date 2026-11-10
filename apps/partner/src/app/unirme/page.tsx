@@ -43,7 +43,7 @@ export default function UnirmePage() {
       return;
       }
     }
-    const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password });
+    const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/` } });
     setLoading(false);
     if (err) {
       setError(mensajeError(err));
@@ -66,16 +66,10 @@ export default function UnirmePage() {
       {done ? (
         <>
           <p className="text-auth-muted text-[13px] mb-6 max-w-[300px]">
-            <strong className="block text-white text-[15px] mb-2">Falta un paso</strong>
-            1. Abre el correo que te mandamos a {email} y toca el link para confirmarlo.
+            <strong className="block text-white text-[15px] mb-2">Revisa tu correo</strong>
+            Te mandamos un link a {email}. Tócalo y entras directo a los canjes de tu comercio, sin iniciar sesión.
             <br />
-            2. Vuelve aquí e{' '}
-            <Link href="/login" className="text-mint underline">
-              inicia sesión
-            </Link>{' '}
-            con ese mismo correo y tu contraseña.
-            <br />
-            3. Vas a ver la pantalla de canjes de tu comercio.
+            <span className="text-[12px]">Si no lo ves, mira en Spam.</span>
           </p>
         </>
       ) : (

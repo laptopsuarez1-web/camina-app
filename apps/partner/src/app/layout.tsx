@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import { AuthRedirect } from '@/components/AuthRedirect';
 
 const jakarta = localFont({
   src: [
@@ -47,7 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-bg text-text">{children}</body>
+      <body className="min-h-full flex flex-col bg-bg text-text"><AuthRedirect />
+        {children}
+      </body>
     </html>
   );
 }
