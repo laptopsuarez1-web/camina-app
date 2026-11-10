@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
-import { entrarConGoogle } from '@/lib/google';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
 import CategoryPicker from '@/components/CategoryPicker';
@@ -94,25 +93,6 @@ export default function RegistroPage() {
   const planElegido = PLANS.find((p) => p.id === plan);
   const qr = pagado ? PAYMENT_QR[plan as 'paso_firme' | 'paso_adelante'] : undefined;
 
-  async function registrarConGoogle() {
-    if (!datosOk) return;
-    // Se guardan los datos del local en este navegador: al volver de Google se crea el comercio solo.
-    savePendingBusiness({
-      email: '*',
-      name: nombre.trim(),
-      category: kind === 'events_only' ? 'Eventos' : categoria,
-      address: direccion.trim(),
-      phone: telefonoCompleto,
-      isVirtual: esVirtual || kind === 'events_only',
-      accountKind: kind,
-      city: ciudad,
-      logoDataUrl: logo,
-      requestedPlan: kind === 'commerce' ? plan : null,
-    });
-    const err = await entrarConGoogle();
-    if (err) setError(err);
-  }
-
   async function pickLogo(file: File) {
     try {
       setLogo(await fileToSmallDataUrl(file));
@@ -179,7 +159,7 @@ export default function RegistroPage() {
       });
       await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/actualizar-clave` });
       setLoading(false);
-      setError(`Ese correo ya tiene una cuenta de Camina. Te mandamos un link a ${email.trim()} para que elijas tu contraseña del panel: al abrirlo, entras y tu comercio queda cargado.`);
+      setError(`Te mandamos un correo a ${email.trim()} para confirmar tu cuenta del panel y elegir tu contraseña. Ábrelo y entras directo a tu comercio.`);
       return;
     }
 
@@ -580,14 +560,6 @@ export default function RegistroPage() {
                 </p>
               ) : (
                 <>
-              <button
-                type="button"
-                onClick={registrarConGoogle}
-                className="rounded-xl py-3 font-semibold text-sm border border-line bg-card text-text flex items-center justify-center gap-2"
-              >
-                <span className="font-bold text-[15px]" style={{ color: '#4285F4' }}>G</span> Registrarme con Google
-              </button>
-              <p className="text-muted text-[12px] text-center -my-1">o con tu correo</p>
               <Field label="Email de trabajo">
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="tucomercio@email.com" className={input} />
               </Field>

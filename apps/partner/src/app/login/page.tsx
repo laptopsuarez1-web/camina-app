@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
-import { entrarConGoogle } from '@/lib/google';
 
 const SOPORTE_WHATSAPP = `https://wa.me/59162714286?text=${encodeURIComponent('Hola! Tengo una consulta sobre el panel de comercios de Camina.')}`;
 
@@ -58,27 +57,6 @@ export default function LoginPage() {
     router.replace('/inicio');
   }
 
-  // Al volver de Google la sesión ya está: se la manda a su panel sin pedirle nada más.
-  useEffect(() => {
-    const h = window.location.hash;
-    const q = window.location.search;
-    if (!/access_token=/.test(h) && !/[?&]code=/.test(q)) return;
-    let hecho = false;
-    const decidir = async () => {
-      if (hecho) return;
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) return;
-      hecho = true;
-      await irAlPanel(data.session.user.id);
-    };
-    void decidir();
-    const { data: sub } = supabase.auth.onAuthStateChange((e) => {
-      if (e === 'SIGNED_IN') void decidir();
-    });
-    return () => sub.subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
@@ -110,13 +88,6 @@ export default function LoginPage() {
           className="bg-mint text-mint-dark rounded-xl py-3.5 font-semibold text-sm"
         >
           {loading ? 'Ingresando…' : 'Iniciar sesión'}
-        </button>
-        <button
-          type="button"
-          onClick={async () => setError(await entrarConGoogle())}
-          className="bg-white text-[#291C47] rounded-xl py-3.5 font-semibold text-sm flex items-center justify-center gap-2"
-        >
-          <span className="font-bold text-[15px]" style={{ color: '#4285F4' }}>G</span> Continuar con Google
         </button>
         <Link href="/recuperar" className="text-auth-muted text-[12.5px] text-center mt-1.5">
           ¿Olvidaste tu contraseña?
