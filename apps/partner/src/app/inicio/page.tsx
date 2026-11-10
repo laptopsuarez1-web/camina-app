@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ticket, ScanLine, ChevronRight } from 'lucide-react';
+import { Ticket, ChevronRight } from 'lucide-react';
 import { supabase, type Redemption, type BusinessNotification } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -16,10 +16,14 @@ export default function InicioPage() {
   const [todayQuotaTotal, setTodayQuotaTotal] = useState<number | null>(null);
   const [news, setNews] = useState<BusinessNotification[]>([]);
   const [resumen, setResumen] = useState<Resumen | null>(null);
+  const [localCode, setLocalCode] = useState<string | null>(null);
+  const [rutaCode, setRutaCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (!business) return;
 
+    supabase.from('business_local_codes').select('code').eq('business_id', business.id).maybeSingle().then(({ data }) => setLocalCode(data?.code ?? null));
+    supabase.rpc('my_route_code', { p_business: business.id }).then(({ data, error }) => setRutaCode(error ? null : ((data as string) ?? null)));
     supabase.rpc('business_month_summary', { p_business: business.id }).then(({ data, error }) => setResumen(error ? null : ((data as Resumen) ?? null)));
 
     supabase
@@ -78,22 +82,25 @@ export default function InicioPage() {
 
   return (
     <DashboardShell>
-      <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Lo importante de tu local, en un vistazo." />
+      <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Tus códigos y cómo viene tu local." />
 
-      {/* Lo que más se hace cada día, bien a la vista. */}
-      <Link
-        href="/canjes"
-        className="flex items-center gap-4 rounded-2xl p-5 mb-5 bg-auth-bg active:opacity-90"
-      >
-        <span className="w-12 h-12 rounded-full bg-mint flex items-center justify-center shrink-0">
-          <ScanLine size={22} color="#241748" />
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className="block text-white font-bold text-[17px]">Confirmar un canje</span>
-          <span className="block text-auth-muted text-[13px] mt-0.5">Llegó un cliente con su código de 6 dígitos.</span>
-        </span>
-        <ChevronRight size={20} color="#62F0B6" />
-      </Link>
+      {/* Los dos códigos que el local le da al cliente, siempre a la vista. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-5">
+        <CodeCard
+          titulo="Código del local"
+          codigo={localCode}
+          texto="Díselo al cliente cuando canjea su premio. Lo escribe en la app, estando en tu local."
+          href="/canjes"
+          link="Ver canjes o cambiar el código"
+        />
+        <CodeCard
+          titulo="Código de la Ruta"
+          codigo={rutaCode}
+          texto="Díselo a quien viene por la Ruta del mes cuando paga."
+          href="/ruta"
+          link="Ver la Ruta o cambiar el código"
+        />
+      </div>
 
       {/* Solo tres números, sin palabras raras. */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
@@ -188,6 +195,17 @@ function StatCard({ label, value, accent }: { label: string; value: string | num
       <p className="text-[26px] font-bold leading-none" style={{ color: accent }}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function CodeCard({ titulo, codigo, texto, href, link }: { titulo: string; codigo: string | null; texto: string; href: string; link: string }) {
+  return (
+    <div className="rounded-2xl p-5 bg-auth-bg">
+      <p className="text-[12px] font-bold tracking-[0.08em] text-mint">{titulo.toUpperCase()}</p>
+      <p className="text-[44px] font-extrabold tracking-[0.25em] leading-tight mt-1 text-white">{codigo ?? '····'}</p>
+      <p className="text-[13.5px] leading-snug mt-1 text-[#E4DDF7]">{texto}</p>
+      <Link href={href} className="inline-block text-[12.5px] font-semibold text-mint mt-3">{link} ›</Link>
     </div>
   );
 }

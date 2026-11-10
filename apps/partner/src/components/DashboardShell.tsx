@@ -27,12 +27,12 @@ const NAV_PRINCIPAL: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home },
   { href: '/canjes', label: 'Canjes', icon: Receipt },
   { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
-  { href: '/tarjeta', label: 'Tarjeta de fidelidad', icon: Stamp, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/ruta', label: 'Ruta del mes', icon: Route },
 ];
 
 const NAV_MAS: NavItem[] = [
+  { href: '/tarjeta', label: 'Tarjeta de fidelidad', icon: Stamp, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing, planes: ['paso_adelante'] },
   { href: '/eventos', label: 'Desafíos y eventos', icon: PartyPopper },
@@ -121,7 +121,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {(role === 'cashier'
           ? NAV_PRINCIPAL.filter((i) => i.href === '/canjes')
           : business.account_kind === 'events_only'
-            ? [NAV_MAS[2], NAV_PRINCIPAL[3]]
+            ? [NAV_MAS.find((i) => i.href === '/eventos')!, NAV_MAS.find((i) => i.href === '/tarjeta')!]
             : NAV_PRINCIPAL
         ).map((item) => (
           <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
