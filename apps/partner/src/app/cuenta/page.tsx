@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -12,6 +12,19 @@ const input = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 tex
 export default function CuentaPage() {
   const { session } = useBusinessAuth();
   const emailActual = session?.user.email ?? '';
+  // null = todavía no se sabe. Quien entró directo al registrarse ve si ya verificó su correo.
+  const [verificado, setVerificado] = useState<boolean | null>(null);
+  const [reenvio, setReenvio] = useState<string | null>(null);
+  useEffect(() => {
+    if (!session) return;
+    supabase.rpc('my_email_verified').then(({ data, error }) => setVerificado(error ? null : !!data));
+  }, [session]);
+  async function reenviarVerificacion() {
+    setReenvio('Enviando…');
+    const { data, error } = await supabase.functions.invoke('panel-email', { body: { action: 'resend' } });
+    const r = data as { sent?: boolean; wait?: boolean } | null;
+    setReenvio(error || !r?.sent ? (r?.wait ? 'Espera un minuto antes de pedir otro.' : 'No pudimos enviarlo. Intenta de nuevo.') : `Te mandamos un correo a ${emailActual}. Ábrelo para verificar (mira también en Spam).`);
+  }
 
   const [email, setEmail] = useState('');
   const [emailLoading, setEmailLoading] = useState(false);
@@ -83,6 +96,21 @@ export default function CuentaPage() {
           <p className="text-muted text-[12.5px]">
             Tu correo actual es <b>{emailActual || '…'}</b>.
           </p>
+          {verificado !== null && (
+            <div className="flex flex-col gap-1.5">
+              <p className={`text-[12.5px] font-semibold ${verificado ? 'text-mint-dark' : 'text-warn'}`}>
+                {verificado ? '✓ Correo verificado' : 'Correo sin verificar'}
+              </p>
+              {!verificado && (
+                <>
+                  <button type="button" onClick={reenviarVerificacion} className="self-start text-[12.5px] font-semibold underline text-purple">
+                    Reenviar correo de verificación
+                  </button>
+                  {reenvio && <p className="text-muted text-[12px]">{reenvio}</p>}
+                </>
+              )}
+            </div>
+          )}
           <label className="block">
             <span className="block text-[12.5px] font-semibold mb-1.5">Correo nuevo</span>
             <input
