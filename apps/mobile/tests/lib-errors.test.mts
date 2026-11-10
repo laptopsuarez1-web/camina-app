@@ -16,7 +16,7 @@ test('friendlyError: credenciales inválidas se traducen y no filtran el texto e
 test('friendlyError: cuenta ya existente, contraseña corta y correo mal escrito', () => {
   assert.match(friendlyError({ code: 'user_already_exists' }), /ya tiene una cuenta/);
   assert.match(friendlyError({ code: 'email_exists' }), /ya tiene una cuenta/);
-  assert.match(friendlyError({ code: 'weak_password' }), /al menos 6 caracteres/);
+  assert.match(friendlyError({ code: 'weak_password' }), /al menos 8 caracteres/);
   assert.match(friendlyError({ code: 'validation_failed' }), /correo esté bien escrito/);
   assert.match(friendlyError({ code: 'email_address_invalid' }), /correo esté bien escrito/);
 });
