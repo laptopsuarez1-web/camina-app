@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
+import { entrarConGoogle } from '@/lib/google';
 
 const SOPORTE_WHATSAPP = `https://wa.me/59162714286?text=${encodeURIComponent('Hola! Tengo una consulta sobre el panel de comercios de Camina.')}`;
 
@@ -28,23 +29,55 @@ export default function LoginPage() {
       return;
     }
 
-    // No mandamos siempre a /inicio: si la cuenta es de admin y no tiene un
-    // comercio propio, /inicio la rebota a /admin igual, pero de paso muestra
-    // un instante la pantalla de "Panel de comercios" — confuso para un
-    // admin. Decidimos el destino aquí mismo, antes de navegar.
-    const userId = data.session?.user.id;
+    await irAlPanel(data.session?.user.id);
+  }
+
+  // No mandamos siempre a /inicio: un admin sin comercio propio va a /admin, y quien entró con Google
+  // sin tener comercio ni datos de alta guardados va a /registro a cargar el suyo.
+  async function irAlPanel(userId: string | undefined) {
     const { data: adminCheck } = await supabase.rpc('is_admin');
     const { data: ownBusiness } = userId
       ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
       : { data: null };
     setLoading(false);
-
     if (!ownBusiness && adminCheck) {
       router.replace('/admin');
-    } else {
-      router.replace('/inicio');
+      return;
     }
+    if (!ownBusiness) {
+      const { data: userData } = await supabase.auth.getUser();
+      const tieneAlta = !!userData.user?.user_metadata?.pending_business || !!localStorage.getItem('camina_pending_business');
+      const { data: staffBusinessId } = await supabase.rpc('claim_staff_invite');
+      if (staffBusinessId) {
+        router.replace('/canjes');
+        return;
+      }
+      router.replace(tieneAlta ? '/inicio' : '/registro');
+      return;
+    }
+    router.replace('/inicio');
   }
+
+  // Al volver de Google la sesión ya está: se la manda a su panel sin pedirle nada más.
+  useEffect(() => {
+    const h = window.location.hash;
+    const q = window.location.search;
+    if (!/access_token=/.test(h) && !/[?&]code=/.test(q)) return;
+    let hecho = false;
+    const decidir = async () => {
+      if (hecho) return;
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+      hecho = true;
+      await irAlPanel(data.session.user.id);
+    };
+    void decidir();
+    const { data: sub } = supabase.auth.onAuthStateChange((e) => {
+      if (e === 'SIGNED_IN') void decidir();
+    });
+    return () => sub.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
@@ -77,6 +110,13 @@ export default function LoginPage() {
           className="bg-mint text-mint-dark rounded-xl py-3.5 font-semibold text-sm"
         >
           {loading ? 'Ingresando…' : 'Iniciar sesión'}
+        </button>
+        <button
+          type="button"
+          onClick={async () => setError(await entrarConGoogle())}
+          className="bg-white text-[#291C47] rounded-xl py-3.5 font-semibold text-sm flex items-center justify-center gap-2"
+        >
+          <span className="font-bold text-[15px]" style={{ color: '#4285F4' }}>G</span> Continuar con Google
         </button>
         <Link href="/recuperar" className="text-auth-muted text-[12.5px] text-center mt-1.5">
           ¿Olvidaste tu contraseña?
