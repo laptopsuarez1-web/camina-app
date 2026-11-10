@@ -146,9 +146,9 @@ Deno.serve(async (req) => {
       'Te invitaron como cajero',
       [
         `<strong>${nombre}</strong> te sumó a su equipo en Camina para que valides los códigos de los clientes.`,
-        'Crea tu cuenta con este mismo correo (es gratis y tarda un minuto). Después entras directo a la pantalla de canjes.',
+        'Toca el botón, elige una contraseña y listo: entras directo a la pantalla de canjes. No hace falta confirmar nada más.',
       ],
-      panelUrl ? { texto: 'Crear mi cuenta de cajero', url: `${panelUrl}/unirme?email=${encodeURIComponent(email)}` } : undefined
+      panelUrl ? { texto: 'Crear mi cuenta de cajero', url: `${panelUrl}/unirme?email=${encodeURIComponent(email)}&t=${staff.id}` } : undefined
     );
   } else {
     return json({ error: 'Tipo desconocido' }, 400);

@@ -22,6 +22,27 @@ export default function UnirmePage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    // Con el link de la invitación (trae un código) la cuenta se crea ya confirmada y entra directo.
+    const token = new URLSearchParams(window.location.search).get('t');
+    if (token) {
+      const { data: alta, error: altaErr } = await supabase.functions.invoke('staff-signup', { body: { email: email.trim(), password, token } });
+      if (alta?.error) {
+        setLoading(false);
+        setError(alta.error);
+        return;
+      }
+      // Si el servicio no responde, se sigue con el alta normal (con confirmación de correo).
+      if (!altaErr) {
+      const { error: loginErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      setLoading(false);
+      if (loginErr) {
+        setError(alta?.exists ? 'Ya tienes una cuenta con ese correo. Inicia sesión con tu contraseña de siempre.' : mensajeError(loginErr));
+        return;
+      }
+      window.location.href = '/canjes';
+      return;
+      }
+    }
     const { data, error: err } = await supabase.auth.signUp({ email: email.trim(), password });
     setLoading(false);
     if (err) {
