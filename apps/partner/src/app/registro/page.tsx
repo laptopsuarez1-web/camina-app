@@ -163,8 +163,23 @@ export default function RegistroPage() {
     // Supabase no da error si el correo ya existe: devuelve el usuario sin identidades y no manda ningún correo.
     // Pasa, por ejemplo, con quien ya tiene cuenta de la app (con Google o con correo).
     if (!sesionEmail && !data.session && (data as { user?: { identities?: unknown[] } }).user?.identities?.length === 0) {
+      // El correo ya tiene cuenta (por ejemplo, la de la app): puede usarlo en el panel eligiendo una contraseña
+      // para el panel. Se guardan los datos del local y se le manda el link para elegirla; al entrar, el local se crea solo.
+      savePendingBusiness({
+        email: email.trim(),
+        name: nombre.trim(),
+        category: kind === 'events_only' ? 'Eventos' : categoria,
+        address: direccion.trim(),
+        phone: telefonoCompleto,
+        isVirtual: esVirtual || kind === 'events_only',
+        accountKind: kind,
+        city: ciudad,
+        logoDataUrl: logo,
+        requestedPlan: kind === 'commerce' ? plan : null,
+      });
+      await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/actualizar-clave` });
       setLoading(false);
-      setError('Ese correo ya está usado en Camina (por ejemplo, en la app). Para tu comercio usa otro correo. Si es tuyo y quieres usarlo igual, entra desde Iniciar sesión.');
+      setError(`Ese correo ya tiene una cuenta de Camina. Te mandamos un link a ${email.trim()} para que elijas tu contraseña del panel: al abrirlo, entras y tu comercio queda cargado.`);
       return;
     }
 
