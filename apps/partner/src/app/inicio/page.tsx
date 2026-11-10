@@ -161,6 +161,14 @@ export default function InicioPage() {
         </div>
       </div>
 
+      <Link href="/cuenta" className="flex items-center justify-between bg-card border border-line rounded-2xl px-4.5 py-3.5 mb-5 text-sm">
+        <span>
+          <span className="block font-semibold">Mi correo y contraseña</span>
+          <span className="block text-muted text-[12.5px] mt-0.5">Cámbialos cuando quieras.</span>
+        </span>
+        <ChevronRight size={16} />
+      </Link>
+
       {/* El detalle sigue disponible, pero cerrado: no abruma al entrar. */}
       {business && resumen && (
         <details className="group mb-5">
