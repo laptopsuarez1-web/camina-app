@@ -109,10 +109,11 @@ function Editor({ req }: { req: CropRequest }) {
         </View>
         <View className="flex-row items-center justify-center mb-4" style={{ gap: 14 }}>
           <Press accessibilityRole="button" accessibilityLabel="Alejar" onPress={() => zoomBy(-0.4)} className="w-12 h-12 rounded-full bg-white/15 items-center justify-center">
-            <Text className="text-white text-[26px] font-bold">−</Text>
+            <View style={styles.bar} />
           </Press>
           <Press accessibilityRole="button" accessibilityLabel="Acercar" onPress={() => zoomBy(0.4)} className="w-12 h-12 rounded-full bg-white/15 items-center justify-center">
-            <Text className="text-white text-[26px] font-bold">+</Text>
+            <View style={styles.bar} />
+            <View style={[styles.bar, styles.barV]} />
           </Press>
         </View>
         <View className="flex-row px-5" style={{ gap: 12 }}>
@@ -146,4 +147,7 @@ export function PhotoCropHost() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0B0B10' },
+  // Signos + y − dibujados (con letra quedaban corridos del centro).
+  bar: { position: 'absolute', width: 18, height: 3, borderRadius: 2, backgroundColor: '#fff' },
+  barV: { width: 3, height: 18 },
 });
