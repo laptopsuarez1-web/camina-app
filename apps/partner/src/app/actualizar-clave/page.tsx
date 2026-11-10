@@ -74,7 +74,7 @@ export default function ActualizarClavePage() {
             placeholder="Contraseña nueva (mínimo 8 caracteres)"
             autoComplete="new-password"
             required
-            className="bg-white/95 text-text rounded-xl p-3.5"
+            className="bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5"
           />
           {error && <p className="text-warn text-[12.5px]">{error}</p>}
           <button

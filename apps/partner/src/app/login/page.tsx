@@ -60,7 +60,7 @@ export default function LoginPage() {
           type="email"
           placeholder="Email del comercio"
           required
-          className="bg-white/95 text-text rounded-xl p-3.5"
+          className="bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5"
         />
         <PasswordInput
           value={password}
@@ -68,7 +68,7 @@ export default function LoginPage() {
           placeholder="Contraseña"
           autoComplete="current-password"
           required
-          className="bg-white/95 text-text rounded-xl p-3.5"
+          className="bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5"
         />
         {error && <p className="text-warn text-[12.5px]">{error}</p>}
         <button

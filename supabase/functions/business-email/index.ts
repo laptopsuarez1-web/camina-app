@@ -29,7 +29,7 @@ function esc(s: string) {
 function plantilla(titulo: string, parrafos: string[], boton?: { texto: string; url: string }) {
   return `<!doctype html><html><body style="margin:0;background:#F7F3FC;font-family:Arial,Helvetica,sans-serif;color:#291C47">
 <div style="max-width:520px;margin:0 auto;padding:28px 20px">
-<p style="font-weight:800;letter-spacing:1px;color:#241748;margin:0 0 18px">CAMINA</p>
+<img src="https://caminaapp.com/camina-logo.png" width="64" height="64" alt="Camina" style="display:block;border-radius:32px;margin:0 0 18px">
 <div style="background:#fff;border:1px solid #E1D2F5;border-radius:16px;padding:22px">
 <h1 style="font-size:20px;margin:0 0 12px">${esc(titulo)}</h1>
 ${parrafos.map((p) => `<p style="font-size:14px;line-height:21px;margin:0 0 12px">${p}</p>`).join('')}
