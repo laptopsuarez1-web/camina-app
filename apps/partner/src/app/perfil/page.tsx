@@ -267,7 +267,7 @@ export default function PerfilPage() {
                   path={`${business.id}/logo`}
                   value={business.logo_url}
                   onUploaded={(url) => handlePhotoUploaded('logo_url', url)}
-                  label="Logo"
+                  label="Logo (opcional, recomendado)"
                   shape="square"
                 />
                 <div className="flex-1 min-w-0">
@@ -276,7 +276,7 @@ export default function PerfilPage() {
                     path={`${business.id}/cover`}
                     value={business.cover_url}
                     onUploaded={(url) => handlePhotoUploaded('cover_url', url)}
-                    label="Foto de portada"
+                    label="Foto de portada (opcional, recomendado)"
                     shape="wide"
                   />
                 </div>

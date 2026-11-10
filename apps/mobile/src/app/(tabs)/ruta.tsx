@@ -474,7 +474,7 @@ export default function RutaScreen() {
                       <View key={s.business_id} style={{ position: 'absolute', left: 0, top: 0 }}>
                         {dx ? <View pointerEvents="none" style={{ position: 'absolute', left: q.x - 5, top: q.y - 5, width: 10, height: 10, borderRadius: 5, backgroundColor: MINT, borderWidth: 2, borderColor: '#16111f' }} /> : null}
                         <Press accessibilityRole="button" accessibilityLabel={`Ver ${s.name}`} onPress={() => setInfoFor(s)} style={{ position: 'absolute', left: q.x - 31 + dx, top: q.y - 72 }}>
-                          <RutaPin name={s.name} logoUrl={s.logo_url} size={46} star={prize?.sponsor?.id === s.business_id} />
+                          <RutaPin name={s.name} logoUrl={s.logo_url} category={s.category} size={46} star={prize?.sponsor?.id === s.business_id} />
                         </Press>
                       </View>
                     );
@@ -508,7 +508,7 @@ export default function RutaScreen() {
                 ) : null,
                 <Marker key={s.business_id} coordinate={P(s)} tracksViewChanges={tracks} anchor={{ x: 0.5 - dx / 62, y: 1 }} zIndex={5}
                   onPress={() => setInfoFor(s)}>
-                  <RutaPin name={s.name} logoUrl={s.logo_url} size={46} star={prize?.sponsor?.id === s.business_id} />
+                  <RutaPin name={s.name} logoUrl={s.logo_url} category={s.category} size={46} star={prize?.sponsor?.id === s.business_id} />
                 </Marker>,
               ];
             })}
@@ -708,14 +708,14 @@ export default function RutaScreen() {
             <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.2, fontSize: 11, marginTop: 16, textAlign: 'center' }}>¿CUÁL QUITAS?</Text>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               {stops.filter((s) => !s.visit).map((s) => (
-                <Choice key={s.business_id} name={s.name} logo={s.logo_url} on={swapOut === s.business_id} onPress={() => setSwapOut(s.business_id)} />
+                <Choice key={s.business_id} name={s.name} category={s.category} logo={s.logo_url} on={swapOut === s.business_id} onPress={() => setSwapOut(s.business_id)} />
               ))}
             </View>
             <Text style={{ color: MINT, fontWeight: '800', letterSpacing: 1.2, fontSize: 11, marginTop: 16, textAlign: 'center' }}>ELIGE EL NUEVO</Text>
             {options.isLoading ? <Spinner color={MINT} style={{ marginTop: 10 }} /> : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8, flexGrow: 0 }} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
                 {(options.data ?? []).map((o) => (
-                  <Choice key={o.business_id} fill={false} name={o.name} logo={o.logo_url} on={swapIn === o.business_id} onPress={() => setSwapIn(o.business_id)} />
+                  <Choice key={o.business_id} fill={false} name={o.name} category={o.category} logo={o.logo_url} on={swapIn === o.business_id} onPress={() => setSwapIn(o.business_id)} />
                 ))}
                 {(options.data ?? []).length === 0 && <Text style={{ color: MUTED, fontSize: 13 }}>No hay otros locales para elegir por ahora.</Text>}
               </ScrollView>
@@ -735,11 +735,11 @@ export default function RutaScreen() {
   );
 }
 
-function Choice({ name, logo, on, onPress, fill = true }: { name: string; logo: string | null; on: boolean; onPress: () => void; fill?: boolean }) {
+function Choice({ name, logo, category, on, onPress, fill = true }: { name: string; logo: string | null; category?: string | null; on: boolean; onPress: () => void; fill?: boolean }) {
   return (
     <Press accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress} haptic="selection"
       style={{ ...(fill ? { flex: 1 } : { width: 104 }), alignItems: 'center', paddingVertical: 10, borderRadius: 16, borderWidth: 1.5, borderColor: on ? MINT : 'transparent', backgroundColor: on ? 'rgba(98,240,182,0.12)' : 'rgba(255,255,255,0.05)' }}>
-      <RutaPin name={name} logoUrl={logo} size={36} route={false} />
+      <RutaPin name={name} logoUrl={logo} category={category} size={36} route={false} />
       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 11.5 }} numberOfLines={1}>{name}</Text>
     </Press>
   );
@@ -827,7 +827,7 @@ function DropPin({ stop, x, y, n, total, hidePin }: { stop: RutaStop; x: number;
       <Animated.View style={[{ position: 'absolute', left: x - 18, top: y - 5, width: 36, height: 10, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.55)' }, shadowStyle]} />
       <Animated.View style={[{ position: 'absolute', left: x - 30, top: y - 12, width: 60, height: 24, borderRadius: 30, borderWidth: 2, borderColor: MINT }, ringStyle]} />
       <Animated.View style={[{ position: 'absolute', left: x - 31, top: y - 72 }, pinStyle]}>
-        <RutaPin name={stop.name} logoUrl={stop.logo_url} size={46} />
+        <RutaPin name={stop.name} logoUrl={stop.logo_url} category={stop.category} size={46} />
       </Animated.View>
       <Animated.View style={[{ position: 'absolute', left: x - 90, width: 180, top: y + 16, alignItems: 'center' }, labelStyle]}>
         <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(26,20,38,0.95)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center' }}>
