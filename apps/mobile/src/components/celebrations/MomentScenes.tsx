@@ -735,6 +735,13 @@ export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: (
   const sub = won
     ? `Fuiste quien más caminó en ${c.name}.`
     : `Quedaste ${c.myRank}.º de ${c.members} en ${c.name}.${c.podium[0] ? ` Ganó ${c.podium[0].name.split(' ')[0]}.` : ''}`;
+  // Igual que en el ranking global: se comparte el resultado de la semana con el texto listo.
+  const share = () => {
+    const text = won
+      ? `Gané la semana en ${c.name} en Camina con ${c.mySteps.toLocaleString('es-BO')} pasos. ¿Quién me alcanza?`
+      : `Quedé ${c.myRank}.º en ${c.name} en Camina con ${c.mySteps.toLocaleString('es-BO')} pasos esta semana. ¿Te animas?`;
+    Share.share({ message: text }).catch(() => {});
+  };
   const order = [2, 1, 3];
   return (
     <Stage tl={tl} confetti={won ? { at: 1900, palette: [GOLD, '#FFD97A', '#FFF1B8', colors.aqua] } : undefined} announce={`${title} ${sub} Entre todos caminaron ${c.total} pasos.`}>
@@ -758,7 +765,8 @@ export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: (
         <StatChip tl={tl} delay={2400} value={c.total.toLocaleString('es-BO')} label="Del grupo" />
       </View>
       <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 18 }}>
-        <MainButton gold={won} label={c.onOpen ? 'Ver el grupo' : 'Genial'} onPress={() => { onDone(); c.onOpen?.(); }} />
+        <MainButton gold={won} label="Compartir" onPress={share} />
+        <LinkButton label={c.onOpen ? 'Ver el grupo' : 'Genial'} onPress={() => { onDone(); c.onOpen?.(); }} color={p.accent} />
         {c.onOpen ? <LinkButton label="Seguir" onPress={onDone} color={p.muted} /> : null}
       </Reveal>
     </Stage>
