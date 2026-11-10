@@ -39,6 +39,18 @@ ${boton ? `<a href="${esc(boton.url)}" style="display:inline-block;margin-top:6p
 </div></body></html>`;
 }
 
+// Versión de solo texto del mismo correo: Gmail desconfía (y manda a "Promociones") los correos que son solo HTML.
+function aTexto(html: string) {
+  return html
+    .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g, '$2: $1')
+    .replace(/<\/(p|h1|div)>/g, '\n\n')
+    .replace(/<img[^>]*>/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   const authHeader = req.headers.get('Authorization');
@@ -108,9 +120,9 @@ Deno.serve(async (req) => {
     const { data } = await admin.auth.admin.getUserById(business.owner_user_id);
     if (data.user?.email) to = [data.user.email];
     if (type === 'approved') {
-      subject = '¡Tu comercio ya está en Camina!';
+      subject = 'Tu comercio ya está en Camina';
       html = plantilla(
-        '¡Tu comercio ya está publicado! 🎉',
+        'Tu comercio ya está publicado',
         [
           `Revisamos <strong>${nombre}</strong> y ya aparece en el mapa y en la lista de la app.`,
           'Desde el panel puedes ver tus canjes, validar los códigos de tus clientes y sumar más beneficios.',
@@ -159,7 +171,7 @@ Deno.serve(async (req) => {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to, subject, html, reply_to: replyTo }),
+    body: JSON.stringify({ from, to, subject, html, text: aTexto(html), reply_to: replyTo }),
   });
   if (!res.ok) return json({ ok: false, sent: false, error: await res.text() }, 502);
   return json({ ok: true, sent: true });
