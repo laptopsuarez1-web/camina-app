@@ -164,7 +164,7 @@ export default function RegistroPage() {
     // Pasa, por ejemplo, con quien ya tiene cuenta de la app (con Google o con correo).
     if (!sesionEmail && !data.session && (data as { user?: { identities?: unknown[] } }).user?.identities?.length === 0) {
       setLoading(false);
-      setError('Ese correo ya tiene una cuenta de Camina (por ejemplo, la de la app). Entra con "Continuar con Google" o con tu contraseña desde Iniciar sesión; si no la recuerdas, usa "¿Olvidaste tu contraseña?". No hace falta registrarte de nuevo.');
+      setError('Ese correo ya está usado en Camina (por ejemplo, en la app). Para tu comercio usa otro correo. Si es tuyo y quieres usarlo igual, entra desde Iniciar sesión.');
       return;
     }
 
