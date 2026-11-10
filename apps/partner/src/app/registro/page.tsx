@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { savePendingBusiness } from '@/lib/pending-business';
+import { entrarConGoogle } from '@/lib/google';
 import { fileToSmallDataUrl, uploadLogoFromDataUrl } from '@/lib/logo';
 import { CATEGORIAS } from '@/lib/categories';
 import CategoryPicker from '@/components/CategoryPicker';
@@ -60,6 +61,11 @@ export default function RegistroPage() {
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [resending, setResending] = useState(false);
   const router = useRouter();
+  // Si ya entró con Google (o tiene sesión), no se le pide correo ni contraseña: la cuenta es esa.
+  const [sesionEmail, setSesionEmail] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSesionEmail(data.session?.user.email ?? null));
+  }, []);
 
   useEffect(() => {
     supabase
@@ -73,7 +79,7 @@ export default function RegistroPage() {
   }, []);
 
   const datosOk = Boolean(nombre.trim() && (esVirtual || kind === 'events_only' || direccion.trim()) && (telefono.trim() === '' || telefono.replace(/\D/g, '').length >= 6));
-  const cuentaOk = Boolean(email.trim() && password.length >= 6);
+  const cuentaOk = Boolean(sesionEmail || (email.trim() && password.length >= 6));
   const valido = datosOk && cuentaOk;
   // El teléfono es opcional: si no lo cargan, se guarda vacío (null en la base).
   const telefonoCompleto = telefono.trim() ? `${prefijo} ${telefono.trim()}` : '';
@@ -87,6 +93,25 @@ export default function RegistroPage() {
   const anterior = () => setStep((n) => Math.max(n - 1, 1));
   const planElegido = PLANS.find((p) => p.id === plan);
   const qr = pagado ? PAYMENT_QR[plan as 'paso_firme' | 'paso_adelante'] : undefined;
+
+  async function registrarConGoogle() {
+    if (!datosOk) return;
+    // Se guardan los datos del local en este navegador: al volver de Google se crea el comercio solo.
+    savePendingBusiness({
+      email: '*',
+      name: nombre.trim(),
+      category: kind === 'events_only' ? 'Eventos' : categoria,
+      address: direccion.trim(),
+      phone: telefonoCompleto,
+      isVirtual: esVirtual || kind === 'events_only',
+      accountKind: kind,
+      city: ciudad,
+      logoDataUrl: logo,
+      requestedPlan: kind === 'commerce' ? plan : null,
+    });
+    const err = await entrarConGoogle();
+    if (err) setError(err);
+  }
 
   async function pickLogo(file: File) {
     try {
@@ -108,7 +133,9 @@ export default function RegistroPage() {
 
     // Los datos del comercio viajan también dentro de la cuenta (sin el logo): así no se pierden
     // si el correo se confirma desde otro navegador o desde el celular.
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = sesionEmail
+      ? { data: { session: (await supabase.auth.getSession()).data.session }, error: null }
+      : await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -524,6 +551,20 @@ export default function RegistroPage() {
                 <h1 className="text-[22px] font-bold mb-1">Tu cuenta</h1>
                 <p className="text-muted text-[13px]">Con estos datos vas a entrar al panel.</p>
               </div>
+              {sesionEmail ? (
+                <p className="text-[13.5px] rounded-xl border border-line bg-card p-3.5">
+                  Vas a entrar con <strong>{sesionEmail}</strong>. No hace falta elegir contraseña.
+                </p>
+              ) : (
+                <>
+              <button
+                type="button"
+                onClick={registrarConGoogle}
+                className="rounded-xl py-3 font-semibold text-sm border border-line bg-card text-text flex items-center justify-center gap-2"
+              >
+                <span className="font-bold text-[15px]" style={{ color: '#4285F4' }}>G</span> Registrarme con Google
+              </button>
+              <p className="text-muted text-[12px] text-center -my-1">o con tu correo</p>
               <Field label="Email de trabajo">
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="tucomercio@email.com" className={input} />
               </Field>
@@ -537,6 +578,8 @@ export default function RegistroPage() {
                   iconClassName="text-purple"
                 />
               </Field>
+                </>
+              )}
 
               {error && <p className="text-warn text-[12.5px]">{error}</p>}
 
