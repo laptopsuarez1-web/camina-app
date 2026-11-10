@@ -160,6 +160,14 @@ export default function RegistroPage() {
       return;
     }
 
+    // Supabase no da error si el correo ya existe: devuelve el usuario sin identidades y no manda ningún correo.
+    // Pasa, por ejemplo, con quien ya tiene cuenta de la app (con Google o con correo).
+    if (!sesionEmail && !data.session && (data as { user?: { identities?: unknown[] } }).user?.identities?.length === 0) {
+      setLoading(false);
+      setError('Ese correo ya tiene una cuenta de Camina (por ejemplo, la de la app). Entra con "Continuar con Google" o con tu contraseña desde Iniciar sesión; si no la recuerdas, usa "¿Olvidaste tu contraseña?". No hace falta registrarte de nuevo.');
+      return;
+    }
+
     if (!data.session) {
       // Confirmación de email obligatoria: todavía no hay sesión para poder
       // insertar el negocio (RLS lo exige). Guardamos los datos del alta aquí
