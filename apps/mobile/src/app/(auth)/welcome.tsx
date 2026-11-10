@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView, Platform } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Image, Alert, ScrollView, Platform } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -86,6 +87,7 @@ export default function WelcomeScreen() {
     clearGoogleWatchdog();
     const idToken = googleResponse.params.id_token;
     if (!idToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
       setOauthLoading(false);
       Sentry.captureMessage('Google: respuesta sin id_token', 'error');
       Alert.alert('No pudimos iniciar sesión con Google', 'Google no devolvió tus datos. Intenta de nuevo o usa tu correo.');
@@ -294,7 +296,7 @@ export default function WelcomeScreen() {
             style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
           >
             {enteringNow ? (
-              <ActivityIndicator color={colors.mintDark} />
+              <Spinner color={colors.mintDark} />
             ) : (
               <Text style={{ color: colors.mintDark, fontWeight: '700', fontSize: 15 }}>Ya confirmé, entrar</Text>
             )}
@@ -308,7 +310,7 @@ export default function WelcomeScreen() {
             style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14, alignItems: 'center', width: '100%', maxWidth: 320, marginBottom: 12 }}
           >
             {resending ? (
-              <ActivityIndicator color="#fff" />
+              <Spinner color="#fff" />
             ) : (
               <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Reenviar correo</Text>
             )}
@@ -365,7 +367,7 @@ export default function WelcomeScreen() {
                 style={{ backgroundColor: '#fff', borderColor: colors.light.line, borderWidth: 1, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
               >
                 {googleBusy ? (
-                  <ActivityIndicator color="#1a1a1a" />
+                  <Spinner color="#1a1a1a" />
                 ) : (
                   <Text style={{ color: '#1a1a1a', fontWeight: '500', fontSize: 14 }}>Continuar con Google</Text>
                 )}
@@ -382,7 +384,7 @@ export default function WelcomeScreen() {
                 style={{ backgroundColor: colors.mintDark, borderRadius: 12, padding: 13, alignItems: 'center', opacity: oauthLoading ? 0.6 : 1 }}
               >
                 {appleBusy ? (
-                  <ActivityIndicator color={colors.mint} />
+                  <Spinner color={colors.mint} />
                 ) : (
                   <Text style={{ color: colors.mint, fontWeight: '500', fontSize: 14 }}>Continuar con Apple</Text>
                 )}
@@ -449,7 +451,7 @@ export default function WelcomeScreen() {
               style={{ backgroundColor: colors.mint, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 }}
             >
               {loading ? (
-                <ActivityIndicator color={colors.mintDark} />
+                <Spinner color={colors.mintDark} />
               ) : (
                 <Text style={{ color: colors.mintDark, fontWeight: '600', fontSize: 15 }}>
                   {authKind === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}

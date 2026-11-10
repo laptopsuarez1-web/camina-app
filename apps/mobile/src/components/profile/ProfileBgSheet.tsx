@@ -1,4 +1,5 @@
-import { ActivityIndicator, Modal, View } from 'react-native';
+import { Modal, View } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
 import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -25,7 +26,7 @@ export function ProfileBgSheet({ visible, value, onChange, onClose, photoUrl, on
               <View className="flex-row mb-4" style={{ gap: 10 }}>
                 <Press accessibilityRole="button" accessibilityLabel="Subir una foto de fondo" onPress={onPickPhoto} style={{ width: '31.5%' }}>
                   <View style={{ height: 72, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(98,240,182,0.6)', alignItems: 'center', justifyContent: 'center' }}>
-                    {picking ? <ActivityIndicator color="#62F0B6" /> : <Camera size={20} color="#3B927E" />}
+                    {picking ? <Spinner color="#62F0B6" /> : <Camera size={20} color="#3B927E" />}
                   </View>
                   <Text className="text-[11.5px] text-center mt-1.5 text-muted-light dark:text-muted-dark">{photoUrl ? 'Cambiar foto' : 'Subir foto'}</Text>
                 </Press>

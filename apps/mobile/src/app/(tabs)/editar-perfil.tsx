@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Alert, ActivityIndicator, BackHandler } from 'react-native';
+import { useLatest } from '@/hooks/useLatest';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, ScrollView, Alert, BackHandler } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { GoalSheet } from '@/components/GoalSheet';
-import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
+import { MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL , BIO_MAX_LENGTH } from '@/constants/business-rules';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { pickPhoto as pickFromGallery } from '@/lib/pick-photo';
@@ -20,7 +22,6 @@ import { SUPPORT_EMAIL } from '@/constants/contact';
 import { BarrioPicker } from '@/components/BarrioPicker';
 import { usePlaces } from '@/hooks/usePlaces';
 import { emailRedirectUrl } from '@/lib/auth-links';
-import { BIO_MAX_LENGTH } from '@/constants/business-rules';
 import { friendlyError } from '@/lib/errors';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -147,12 +148,11 @@ export default function EditarPerfilScreen() {
     ]);
     return true;
   }
-  const leaveRef = useRef(leave);
-  leaveRef.current = leave;
+  const leaveRef = useLatest(leave);
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => leaveRef.current());
     return () => sub.remove();
-  }, []);
+  }, [leaveRef]);
 
   useEffect(() => {
     if (recovering) useAuthStore.setState({ passwordRecovery: false });
@@ -442,7 +442,7 @@ export default function EditarPerfilScreen() {
           </Glass>
 
           <Press accessibilityRole="button" onPress={save} disabled={saving} className="bg-aqua-deep rounded-2xl py-4 items-center mb-6">
-            {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
+            {saving ? <Spinner color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
           </Press>
 
           {!!email && (
@@ -473,7 +473,7 @@ export default function EditarPerfilScreen() {
                   )}
                   <View className="flex-row gap-2">
                     <Press accessibilityRole="button" onPress={savePassword} disabled={savingPassword} className="flex-1 bg-aqua-deep rounded-xl py-3 items-center">
-                      {savingPassword ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">{hasPassword ? 'Cambiar contraseña' : 'Crear contraseña'}</Text>}
+                      {savingPassword ? <Spinner size="small" color="#fff" /> : <Text className="text-white font-bold text-[13.5px]">{hasPassword ? 'Cambiar contraseña' : 'Crear contraseña'}</Text>}
                     </Press>
                     <Press
                       accessibilityRole="button"
@@ -492,7 +492,7 @@ export default function EditarPerfilScreen() {
 
           <Press accessibilityRole="button" onPress={confirmDelete} disabled={deleting} className="flex-row items-center justify-center gap-2 py-4">
             {deleting ? (
-              <ActivityIndicator color={isDark ? colors.warn : colors.warnDeep} size="small" />
+              <Spinner color={isDark ? colors.warn : colors.warnDeep} size="small" />
             ) : (
               <>
                 <Trash2 size={15} color={isDark ? colors.warn : colors.warnDeep} />
@@ -506,7 +506,7 @@ export default function EditarPerfilScreen() {
       {dirty ? (
         <View pointerEvents="box-none" style={{ position: 'absolute', left: 20, right: 20, bottom: Math.max(insets.bottom, 12) + 8 }}>
           <Press accessibilityRole="button" accessibilityState={{ busy: saving }} onPress={save} disabled={saving} className="rounded-2xl py-4 items-center" style={{ backgroundColor: '#1F7A66', opacity: saving ? 0.7 : 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 }}>
-            {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
+            {saving ? <Spinner color="#fff" /> : <Text className="text-white font-bold text-[15px]">Guardar cambios</Text>}
           </Press>
         </View>
       ) : null}

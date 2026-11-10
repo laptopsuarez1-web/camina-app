@@ -1,4 +1,5 @@
-import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -71,7 +72,7 @@ export default function RetoScreen() {
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
         {header}
-        <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" style={{ marginTop: 40 }} />
+        <Spinner color={colors.aqua} accessibilityLabel="Cargando" style={{ marginTop: 40 }} />
       </View>
     );
   }

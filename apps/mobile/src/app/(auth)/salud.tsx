@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Linking, ScrollView, Image, AppState, ActivityIndicator } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Linking, ScrollView, Image, AppState } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -102,7 +103,7 @@ export default function SaludScreen() {
 
         <View accessibilityLiveRegion="polite" style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 18, padding: 18, marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            {setup === 'checking' || busy ? <ActivityIndicator color={colors.mint} /> : null}
+            {setup === 'checking' || busy ? <Spinner color={colors.mint} /> : null}
             <Text style={{ color: setup === 'active' ? colors.mint : '#fff', fontSize: 16, fontWeight: '800', flex: 1 }}>{c.title}</Text>
           </View>
           <Text style={{ color: colors.authMuted, fontSize: 13, lineHeight: 19, marginBottom: c.action ? 14 : 0 }}>{c.text}</Text>

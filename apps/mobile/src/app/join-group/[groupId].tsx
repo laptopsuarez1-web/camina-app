@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -62,7 +63,7 @@ export default function JoinGroupScreen() {
   if (loading || !group) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-        <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />
+        <Spinner color={colors.aqua} accessibilityLabel="Cargando" />
       </View>
     );
   }
@@ -86,7 +87,7 @@ export default function JoinGroupScreen() {
         accessibilityState={{ busy: joining }}
         className="bg-aqua-deep rounded-2xl py-4 px-10 items-center mb-3"
       >
-        {joining ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-[15px]">Unirme al grupo</Text>}
+        {joining ? <Spinner color="#fff" /> : <Text className="text-white font-bold text-[15px]">Unirme al grupo</Text>}
       </Press>
       <Press accessibilityRole="button" onPress={() => router.replace('/(tabs)/grupos')}>
         <Text className="text-muted-light dark:text-muted-dark text-[13px]">Ahora no</Text>

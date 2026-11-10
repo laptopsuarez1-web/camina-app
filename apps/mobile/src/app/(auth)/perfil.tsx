@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { View, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View, Image, Alert, ScrollView } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -191,7 +192,7 @@ export default function CompletarPerfilScreen() {
           style={{ backgroundColor: ready ? colors.aquaDeep : isDark ? colors.dark.line : colors.light.line }}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <Spinner color="#fff" />
           ) : (
             <Text className={`font-bold text-[16px] ${ready ? 'text-white' : 'text-muted-light dark:text-muted-dark'}`}>Empezar a caminar</Text>
           )}

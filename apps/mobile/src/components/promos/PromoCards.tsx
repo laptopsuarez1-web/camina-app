@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { Alert, View, Modal, ScrollView, Linking, useWindowDimensions, StyleSheet, ActivityIndicator, type StyleProp, type ViewStyle } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, View, Modal, ScrollView, Linking, useWindowDimensions, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
@@ -327,7 +328,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                   ) : null}
                   {ticket === 'points' ? (
                     <Press accessibilityRole="button" onPress={redeemTicket} disabled={redeem.isPending || (balance ?? 0) < (p.ticket_points ?? 0)} className="bg-purple-deep rounded-2xl py-3.5 items-center mt-5" style={(balance ?? 0) < (p.ticket_points ?? 0) ? { opacity: 0.5 } : undefined}>
-                      {redeem.isPending ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{`Canjear entrada · ${p.ticket_points} Puntos`}</Text>}
+                      {redeem.isPending ? <Spinner color="#fff" /> : <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{`Canjear entrada · ${p.ticket_points} Puntos`}</Text>}
                     </Press>
                   ) : null}
                   {ticket === 'points' && (balance ?? 0) < (p.ticket_points ?? 0) ? (
@@ -367,7 +368,7 @@ export function PromoSheet({ p, onClose, onJoin, joining }: { p: PromotionItem |
                 </View>
               ) : (
                 <Press accessibilityRole="button" onPress={() => onJoin(p)} disabled={joining} className="bg-purple-deep rounded-2xl py-3.5 items-center mt-5">
-                  {joining ? <ActivityIndicator color="#fff" /> : (
+                  {joining ? <Spinner color="#fff" /> : (
                     <Text style={{ color: '#fff', fontSize: 15.5, fontWeight: '800' }}>{p.kind === 'evento' ? 'Anotarme' : 'Participar'}</Text>
                   )}
                 </Press>
@@ -412,7 +413,7 @@ export function RetoCamina({
         </View>
         {claimable ? (
           <Press accessibilityRole="button" hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }} onPress={onClaim} haptic="light" disabled={claiming} style={{ backgroundColor: '#F5B83A', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 9 }}>
-            {claiming ? <ActivityIndicator size="small" color="#2A1A00" /> : <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Reclamar +{reward}</Text>}
+            {claiming ? <Spinner size="small" color="#2A1A00" /> : <Text style={{ color: '#2A1A00', fontSize: 13.5, fontWeight: '800' }}>Reclamar +{reward}</Text>}
           </Press>
         ) : null}
       </View>

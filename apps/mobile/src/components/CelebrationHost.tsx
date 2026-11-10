@@ -15,7 +15,6 @@ import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScen
 import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
 const GOLD = '#E2B33C';
-const SPARKS = [colors.aqua, '#E2B33C', '#B7A6F0', colors.warn];
 const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];
 const coin = require('@/../assets/camina-coin.png');
 
@@ -341,6 +340,7 @@ export function CelebrationHost() {
   // Un teclado abierto de la pantalla de atrás (ej. el numérico de la meta) taparía la escena.
   useEffect(() => {
     if (current) Keyboard.dismiss();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- solo debe correr al cambiar de escena
   }, [current?.id]);
   if (!current) return null;
   return (

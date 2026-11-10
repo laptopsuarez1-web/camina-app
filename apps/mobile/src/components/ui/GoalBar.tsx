@@ -1,19 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Animated, Easing } from 'react-native';
 import { colors } from '@/theme/tokens';
 
 // Barra animada de la meta del grupo (también usada en la ficha de amigo): se llena al entrar, un brillo la recorre mientras falta y, al cumplirla, late.
 // `plain`: sin latido ni cambio de color al llegar al 100 % (para comparar dos personas, donde la mayor siempre llega al tope).
 export function GoalBar({ pct, accent, plain = false }: { pct: number; accent: string; plain?: boolean }) {
-  const w = useRef(new Animated.Value(0)).current;
-  const shine = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(1)).current;
+  const [w] = useState(() => new Animated.Value(0));
+  const [shine] = useState(() => new Animated.Value(0));
+  const [pulse] = useState(() => new Animated.Value(1));
+  const done = pct >= 100;
   useEffect(() => {
     Animated.timing(w, { toValue: pct, duration: 1100, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [pct, w]);
   useEffect(() => {
     const loop = Animated.loop(
-      !plain && pct >= 100
+      !plain && done
         ? Animated.sequence([
             Animated.timing(pulse, { toValue: 1.04, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
             Animated.timing(pulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
@@ -25,7 +26,7 @@ export function GoalBar({ pct, accent, plain = false }: { pct: number; accent: s
     );
     loop.start();
     return () => loop.stop();
-  }, [pct >= 100, plain, shine, pulse]);
+  }, [done, plain, shine, pulse]);
   return (
     <Animated.View style={{ transform: [{ scaleY: pulse }] }}>
       <View className="h-2.5 rounded-full bg-line-light dark:bg-line-dark overflow-hidden">

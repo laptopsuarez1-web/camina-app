@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -87,14 +88,14 @@ function Polaroid({ stop, index, width, uploading, focus, onPhoto, onOpen }: {
           {stop.photo_path ? (
             <>
               <Image cachePolicy="memory-disk" source={{ uri: stop.photo_path, cacheKey: stop.photo_key ?? undefined }} style={{ width: '100%', height: '100%' }} contentFit="cover" transition={200} />
-              {uploading ? <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(20,11,46,0.55)', alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={MINT} /></View> : null}
+              {uploading ? <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(20,11,46,0.55)', alignItems: 'center', justifyContent: 'center' }}><Spinner color={MINT} /></View> : null}
             </>
           ) : (
             <>
               {stop.logo_url ? (
                 <Image cachePolicy="memory-disk" source={{ uri: stop.logo_url }} style={{ position: 'absolute', inset: 0, opacity: visited ? 0.35 : 0.14 }} contentFit="cover" blurRadius={visited ? 0 : 6} />
               ) : null}
-              {uploading ? <ActivityIndicator color={MINT} /> : visited ? (
+              {uploading ? <Spinner color={MINT} /> : visited ? (
                 <View style={{ alignItems: 'center', gap: 6 }}>
                   <Animated.View style={[{ width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', borderColor: MINT, backgroundColor: 'rgba(98,240,182,0.12)', alignItems: 'center', justifyContent: 'center' }, pulseStyle]}>
                     <Camera size={26} color={MINT} />
@@ -181,7 +182,7 @@ export default function RutaMesScreen() {
   if (isLoading || !route) {
     return (
       <View style={{ flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center' }}>
-        {isLoading ? <ActivityIndicator color={MINT} /> : (
+        {isLoading ? <Spinner color={MINT} /> : (
           <>
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>No encontramos esta ruta.</Text>
             <Press accessibilityRole="button" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/insignias'))}
@@ -270,7 +271,7 @@ export default function RutaMesScreen() {
       {(route.completed_at || photos > 0) && (
         <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
           <Press accessibilityRole="button" onPress={share} disabled={sharing} haptic="light" style={{ borderRadius: 16, paddingVertical: 15, alignItems: 'center', backgroundColor: MINT }}>
-            {sharing ? <ActivityIndicator color="#14093a" /> : <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 15 }}>Compartir mi álbum en historias</Text>}
+            {sharing ? <Spinner color="#14093a" /> : <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 15 }}>Compartir mi álbum en historias</Text>}
           </Press>
         </View>
       )}
@@ -304,7 +305,7 @@ export default function RutaMesScreen() {
           <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 18 }}>
             <Press accessibilityRole="button" onPress={() => viewing && addPhoto(viewing)} disabled={!!uploading} haptic="light"
               style={{ borderRadius: 16, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
-              {uploading ? <ActivityIndicator color={MINT} /> : <><Camera size={18} color={MINT} /><Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Cambiar esta foto</Text></>}
+              {uploading ? <Spinner color={MINT} /> : <><Camera size={18} color={MINT} /><Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Cambiar esta foto</Text></>}
             </Press>
           </View>
         </View>

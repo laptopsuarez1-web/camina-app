@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Copy, DownloadSimple, Share2, X } from '@/components/icons';
@@ -173,7 +174,7 @@ export function CardShareSheet({
                 <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
               </Press>
               <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: overlay ? '#8B4FD1' : '#1F7A66', opacity: busy ? 0.7 : 1 }}>
-                {busy ? <ActivityIndicator color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
+                {busy ? <Spinner color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
                 <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
               </Press>
             </View>

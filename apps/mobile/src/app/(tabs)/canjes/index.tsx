@@ -1,4 +1,6 @@
 import { BaifoMascot } from '@/components/ui/BaifoMascot';
+import { useLatest } from '@/hooks/useLatest';
+import { Spinner } from '@/components/ui/Spinner';
 import { rankLocales } from '@/lib/rank-locales';
 import { CaminaHeart } from '@/components/ui/CaminaHeart';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -7,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
 import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { View, ScrollView, Modal, Animated, PanResponder, ActivityIndicator, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Modal, Animated, PanResponder, Alert, Image, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
@@ -399,10 +401,9 @@ export function MapPreviewCard({
   business: BusinessT; benefits: { id: string; name: string; cost_points: number; image_url?: string | null }[]; openNow: boolean; distance: number | null; bottomInset: number; onOpen: () => void; onClose: () => void;
 }) {
   const isDarkCard = useColorScheme().colorScheme === 'dark';
-  const dy = useRef(new Animated.Value(0)).current;
-  const cb = useRef({ onOpen, onClose });
-  cb.current = { onOpen, onClose };
-  const pan = useRef(
+  const [dy] = useState(() => new Animated.Value(0));
+  const cb = useLatest({ onOpen, onClose });
+  const [pan] = useState(() =>
     PanResponder.create({
       onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
       onPanResponderMove: (_e, g) => dy.setValue(Math.max(-40, g.dy)),
@@ -417,7 +418,7 @@ export function MapPreviewCard({
         }
       },
     })
-  ).current;
+  );
   const shown = benefits.slice(0, 3);
   const featured = isFeatured(business);
   const km = distance != null && distance < MAX_SHOWN_DISTANCE_M ? formatDistance(distance) : null;
@@ -636,6 +637,7 @@ export default function CanjesScreen() {
   const { negocio } = useLocalSearchParams<{ negocio?: string }>();
   useEffect(() => {
     if (!negocio) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
     setProfileBusinessId(negocio);
     router.setParams({ negocio: undefined });
   }, [negocio]);
@@ -843,6 +845,7 @@ export default function CanjesScreen() {
   const [fullMapHeight, setFullMapHeight] = useState(0);
   const [fullDelta, setFullDelta] = useState(0.045);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
     if (mapRegion) setFullDelta(mapRegion.latitudeDelta);
   }, [mapRegion]);
   const pinItems = useMemo(() => mapBusinesses.map((b) => ({ id: b.id, lat: b.lat!, lng: b.lng! })), [mapBusinesses]);
@@ -1203,7 +1206,7 @@ export default function CanjesScreen() {
             </MapView>
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />
+              <Spinner color={colors.aqua} accessibilityLabel="Cargando" />
             </View>
           )}
 
@@ -1520,7 +1523,7 @@ export default function CanjesScreen() {
               en iPhone a veces quedaba sin responder a los gestos (no se podía mover ni hacer zoom). */}
           {mapRegion && !fullMapReady ? (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando el mapa" />
+              <Spinner color={colors.aqua} accessibilityLabel="Cargando el mapa" />
             </View>
           ) : null}
           {mapRegion && fullMapReady && (
@@ -1657,6 +1660,7 @@ export default function CanjesScreen() {
           </View>
           {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita o deslizando hacia abajo y se esconde mientras hay un local abierto. */}
           {previewGroup || !nearbyMap.length ? null : (
+            // eslint-disable-next-line react-hooks/refs -- la ref solo se lee al tocar o arrastrar, no al dibujar
             <View {...sheetPan.panHandlers} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
               <Press accessibilityRole="button" accessibilityLabel={sheetOpen ? 'Achicar la lista de locales' : 'Ver locales cerca tuyo'} onPress={() => setSheetOpen((v) => !v)} feedback="none"
                 style={{ paddingTop: 8, paddingHorizontal: 20, paddingBottom: 6 }}>
@@ -1991,7 +1995,7 @@ export default function CanjesScreen() {
                                 className={`rounded-2xl items-center justify-center flex-row mt-3 ${canRedeem ? 'bg-aqua-deep' : 'bg-line-light dark:bg-line-dark'}`}
                                 style={{ paddingVertical: 11, gap: 8 }}
                               >
-                                {redeeming && <ActivityIndicator size="small" color="#fff" />}
+                                {redeeming && <Spinner size="small" color="#fff" />}
                                 <Text className={canRedeem ? 'text-white' : 'text-muted-light dark:text-muted-dark'} style={{ fontWeight: '700', fontSize: 14 }}>
                                   {redeeming ? 'Canjeando…' : myPending ? (isWeb ? 'Ver mi cupón' : 'Ver mi código') : note ?? 'Canjear'}
                                 </Text>
@@ -2361,7 +2365,7 @@ export default function CanjesScreen() {
                 {/* "Ya lo mostré" no cierra: queda esperando que el local valide y pasa solo a "Canje confirmado". */}
                 {shownId === activeId ? (
                   <View accessibilityLiveRegion="polite" className="flex-row items-center justify-center gap-2.5 bg-bg-light dark:bg-bg-dark rounded-2xl py-4 mb-2.5">
-                    <ActivityIndicator size="small" color={colors.aqua} />
+                    <Spinner size="small" color={colors.aqua} />
                     <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">
                       Esperando que {activeBenefit?.business.name ?? 'el local'} lo confirme…
                     </Text>

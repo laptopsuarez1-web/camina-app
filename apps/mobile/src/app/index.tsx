@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View } from 'react-native';
 import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -25,7 +26,7 @@ export default function Index() {
   if (initializing || onboardingSeen === null) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-        <ActivityIndicator accessibilityLabel="Cargando" color={colors.aqua} />
+        <Spinner accessibilityLabel="Cargando" color={colors.aqua} />
       </View>
     );
   }

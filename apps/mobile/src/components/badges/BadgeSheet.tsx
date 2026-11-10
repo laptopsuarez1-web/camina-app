@@ -1,4 +1,5 @@
-import { ActivityIndicator, Modal, ScrollView, View } from 'react-native';
+import { Modal, ScrollView, View } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -71,7 +72,7 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
                 <Text style={{ color: '#62F0B6', fontSize: 11.5, fontWeight: '800', letterSpacing: 1.2, marginTop: 22, marginBottom: 8 }}>CÓMO SUMASTE</Text>
                 <View style={{ borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 14 }}>
                   {isLoading ? (
-                    <ActivityIndicator color="#62F0B6" style={{ paddingVertical: 18 }} />
+                    <Spinner color="#62F0B6" style={{ paddingVertical: 18 }} />
                   ) : !history?.length ? (
                     <Text style={{ color: '#C4B8E8', fontSize: 13, paddingVertical: 14, textAlign: 'center' }}>Todavía no hay movimientos en este local.</Text>
                   ) : (

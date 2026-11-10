@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner';
+import { View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -37,7 +38,7 @@ export default function ReferralLinkScreen() {
 
   return (
     <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-      <ActivityIndicator color={colors.aqua} accessibilityLabel="Cargando" />
+      <Spinner color={colors.aqua} accessibilityLabel="Cargando" />
     </View>
   );
 }
