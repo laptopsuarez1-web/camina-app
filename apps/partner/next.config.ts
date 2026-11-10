@@ -30,7 +30,10 @@ const nextConfig: NextConfig = {
   // caminaapp.com/alta: el link para que un comercio se registre. En Android, la app de Camina abre por sí sola todo link que
   // empiece con /r (por ejemplo /registro) y el comercio no podía registrarse; /alta no empieza con /r, así que abre en el navegador.
   async rewrites() {
-    return [{ source: "/alta", destination: "/registro" }];
+    return [
+      { source: "/alta", destination: "/registro" },
+      { source: "/comercios/registro", destination: "/registro" },
+    ];
   },
   async headers() {
     return [
