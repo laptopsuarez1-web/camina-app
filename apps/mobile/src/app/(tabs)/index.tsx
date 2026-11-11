@@ -40,6 +40,8 @@ import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
 import { useRuta } from '@/hooks/useRuta';
+import { BaifoToday } from '@/components/home/BaifoToday';
+import { baifoToday } from '@/lib/baifo-today';
 import { NearbyRow, MyRedemptionsSection, SectionHeader, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -593,6 +595,13 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        {/* El Baifo dice cómo va tu día. Mientras los pasos todavía no llegaron no se muestra, para no decir algo falso. */}
+        {live ? (
+          <BaifoToday
+            today={baifoToday({ steps, goal, streak: streak ?? 0, pointsToday, hour: boliviaHour() })}
+            onPress={() => router.push('/(tabs)/actividad')}
+          />
+        ) : null}
         {/* El evento del mes, siempre a mano en Inicio. */}
         {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push({ pathname: '/(tabs)/ruta', params: { unirme: '1' } })} /> : null}
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (
