@@ -33,6 +33,7 @@ import { boliviaToday } from '@/lib/bolivia';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import Reanimated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
@@ -577,7 +578,8 @@ export default function GroupDetailScreen() {
             {podiumOrder.map((m) => {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
-                <View key={m.id} className="items-center" style={{ width: 92 }}>
+                // El podio sube al entrar: primero el 3.º, después el 2.º y al final el 1.º. Con "reducir movimiento" aparece quieto.
+                <Reanimated.View key={m.id} entering={FadeInDown.delay(120 + (2 - Math.min(rank, 2)) * 130).duration(460).easing(Easing.out(Easing.cubic))} className="items-center" style={{ width: 92 }}>
                   {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={44} /></View>}
                   <AvatarImage
                     uri={m.photoUrl}
@@ -602,7 +604,7 @@ export default function GroupDetailScreen() {
                   >
                     <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>{rank + 1}</Text>
                   </View>
-                </View>
+                </Reanimated.View>
               );
             })}
           </View>

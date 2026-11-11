@@ -10,6 +10,7 @@ import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/u
 import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
+import { useReducedMotion } from 'react-native-reanimated';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
 import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScene';
 import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
@@ -26,6 +27,8 @@ function wordmark(size: number) {
 
 // Destello: brillo, dos ondas y partículas de varias formas (puntos, rayitas, confeti) que salen, giran y caen un poco.
 function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | string; y: number; radius: number; palette: string[]; delay?: number; count?: number }) {
+  // Con "reducir movimiento" este adorno no se dibuja.
+  const reducedMotion = useReducedMotion();
   const t = useState(() => new Animated.Value(0))[0];
   useEffect(() => {
     Animated.timing(t, { toValue: 1, duration: 1300, delay, easing: Easing.linear, useNativeDriver: true }).start();
@@ -40,6 +43,7 @@ function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | 
       }}
     />
   );
+  if (reducedMotion) return null;
   return (
     <View pointerEvents="none" style={{ position: 'absolute', left: x as number, top: y, width: 0, height: 0 }}>
       <Animated.View
@@ -100,10 +104,13 @@ function Halo({ size, color }: { size: number; color: string }) {
 
 // Monedas que caen desde arriba cuando hay Puntos.
 function CoinRain({ count = 10 }: { count?: number }) {
+  // Con "reducir movimiento" este adorno no se dibuja.
+  const reducedMotion = useReducedMotion();
   const t = useState(() => new Animated.Value(0))[0];
   useEffect(() => {
     Animated.timing(t, { toValue: 1, duration: 1800, delay: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }).start();
   }, [t]);
+  if (reducedMotion) return null;
   return (
     <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 0 }}>
       {Array.from({ length: count }, (_, i) => {
