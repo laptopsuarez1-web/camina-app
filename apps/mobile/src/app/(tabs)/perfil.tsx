@@ -248,8 +248,6 @@ export default function PerfilScreen() {
     router.replace('/(auth)/welcome?modo=login');
   }
 
-  const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
-
   const dailyGoal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const friendCount = (friends ?? []).length;
   const requests = (friendRequests ?? []).length;
@@ -317,8 +315,7 @@ export default function PerfilScreen() {
         {/* 4) Ajustes, ordenados por tema. */}
         <SectionLabel>Tu cuenta</SectionLabel>
         <Glass className="rounded-2xl overflow-hidden mb-4">
-          <Row label="Editar perfil" hint="Foto, portada, nombre, zona y bio" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
-          <Row label="Intereses" hint={interestsText} onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
+          <Row label="Editar perfil" hint="Foto, portada, nombre, zona, bio e intereses" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
           <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} right={chev} last />
         </Glass>
 

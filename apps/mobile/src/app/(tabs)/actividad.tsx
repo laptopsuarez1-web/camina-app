@@ -230,7 +230,15 @@ export default function ActividadScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
+      {/* Compartir es una acción secundaria: va como botón redondo al lado del título, igual que el "+" de Comunidad. */}
+      <View className="flex-row items-center" style={{ gap: 12 }}>
+        <View className="flex-1">
+          <ScreenTitle marginBottom={16}>Actividad</ScreenTitle>
+        </View>
+        <Press accessibilityRole="button" accessibilityLabel="Compartir mi progreso como imagen" haptic="light" onPress={() => setShareOpen(true)} className="bg-aqua-deep items-center justify-center" style={{ width: 42, height: 42, borderRadius: 21, marginBottom: 16 }}>
+          <Share2 size={19} color="#fff" weight="bold" />
+        </Press>
+      </View>
 
       {wrapped && wrappedStart ? (
         <Press
@@ -365,17 +373,6 @@ export default function ActividadScreen() {
           </View>
         )}
       </LinearGradient>
-
-      <Press
-        accessibilityRole="button"
-        accessibilityLabel="Compartir mi progreso como imagen"
-        onPress={() => setShareOpen(true)}
-        className="flex-row items-center justify-center rounded-2xl mb-3"
-        style={{ gap: 9, paddingVertical: 14, backgroundColor: colors.aquaDeep }}
-      >
-        <Share2 size={18} color="#fff" weight="bold" />
-        <Text className="text-white font-bold text-[14.5px]">Compartir mi progreso</Text>
-      </Press>
 
       {/* Con la comunidad en 0 o sin diferencia no hay nada que comparar: no se muestra "supera por 0 pasos". */}
       {dailyDiffVsCommunity !== null && dailyDiffVsCommunity !== 0 && Number(communityAverage) > 0 && (
