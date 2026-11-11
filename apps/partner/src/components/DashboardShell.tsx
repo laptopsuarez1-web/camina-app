@@ -50,6 +50,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const enMas = NAV_MAS.some((i) => i.href === pathname);
   const [masAbierto, setMasAbierto] = useState(enMas);
+  // Quien entró directo al registrarse ve un aviso hasta verificar su correo.
+  const [sinVerificar, setSinVerificar] = useState(false);
+  useEffect(() => {
+    if (!session || role !== 'owner') return;
+    supabase.rpc('my_email_verified').then(({ data, error }) => setSinVerificar(!error && data === false));
+  }, [session, role, pathname]);
 
   // Para el cartel de "te falta…" mientras el local no está publicado.
   useEffect(() => {
@@ -241,6 +247,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </>
           )}
         </div>
+      )}
+      {sinVerificar && pathname !== '/cuenta' && (
+        <Link
+          href="/cuenta"
+          className="block mb-4 rounded-xl border border-line bg-card px-4 py-3 text-[13px]"
+        >
+          <b>Verifica tu correo.</b> Te mandamos un código de 6 números: escríbelo en Mi cuenta. <span className="underline">Ir ahora</span>
+        </Link>
       )}
       {children}
     </ResponsiveFrame>
