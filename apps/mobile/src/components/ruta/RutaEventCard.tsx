@@ -96,7 +96,7 @@ export function RutaHomeCard({ state, onOpen, onParticipate }: { state: RutaStat
         <View className="flex-1">
           <Text style={{ ...heavy(), color: '#fff', fontSize: 16, lineHeight: 19 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#C4B8E8', fontSize: 12.5, lineHeight: 16, marginTop: 2 }} numberOfLines={2}>
-            {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 locales · ${rutaTimeLeft(state.ends_on)}` : `3 locales sorpresa · hasta el ${end}`}
+            {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 · ${rutaTimeLeft(state.ends_on)}` : `3 locales sorpresa · hasta el ${end}`}
           </Text>
         </View>
         <Press accessibilityRole="button" onPress={!state.joined && onParticipate ? onParticipate : onOpen} haptic="light" hitSlop={6}
