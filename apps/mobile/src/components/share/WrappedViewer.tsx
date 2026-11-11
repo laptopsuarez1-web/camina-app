@@ -1,4 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { SlideMotionProvider } from '@/components/share/slide-motion';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert, Image, Modal, Platform, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +17,21 @@ type Mode = CardTheme | 'overlay';
 
 // Sin el marco de enfoque del navegador en las zonas de toque (se veía una línea vertical en el medio).
 const NO_RING = (Platform.OS === 'web' ? { outlineStyle: 'none' } : {}) as object;
+
+// Barra de página de la lámina actual: se llena al entrar, como en una historia.
+function PageBar({ state, color, animate }: { state: 'done' | 'now' | 'next'; color: string; animate: boolean }) {
+  const k = useSharedValue(state === 'now' && animate ? 0 : 1);
+  useEffect(() => {
+    if (state === 'now' && animate) { k.value = 0; k.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) }); } else k.value = 1;
+  }, [state, animate, k]);
+  const fill = useAnimatedStyle(() => ({ transform: [{ scaleX: k.value }] }));
+  return (
+    <View style={{ flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' }}>
+      <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: color, opacity: state === 'done' ? 0.6 : 0.3 }} />
+      {state === 'now' ? <Animated.View style={[{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: color, transformOrigin: 'left' }, fill]} /> : null}
+    </View>
+  );
+}
 
 function Chip({ label, on, onPress, a11y, bg, fg }: { label: string; on: boolean; onPress: () => void; a11y: string; bg: string; fg: string }) {
   return (
@@ -33,6 +50,7 @@ function Chip({ label, on, onPress, a11y, bg, fg }: { label: string; on: boolean
 export function WrappedViewer({ visible, onClose, data, firstName }: { visible: boolean; onClose: () => void; data: WrappedData | null | undefined; firstName: string | null }) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<Mode>('dark');
   const [withName, setWithName] = useState(false);
@@ -129,14 +147,19 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
         {/* La lámina a pantalla completa. */}
         <View pointerEvents="none" style={{ position: 'absolute', left: (width - CARD_W * scale) / 2, top: cardTop, width: CARD_W * scale, height: h * scale, overflow: 'hidden', borderRadius: overlay ? 0 : 22 * scale }}>
           <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }}>
-            {overlay ? <WrappedOverlay data={shown} index={i} /> : <WrappedSlide theme={theme} data={shown} index={i} />}
+            {/* La lámina que se ve se anima al entrar (los bloques entran de a uno, los números suben). Con "reducir movimiento", no. */}
+            {overlay ? <WrappedOverlay data={shown} index={i} /> : (
+              <SlideMotionProvider on={!reduced}>
+                <WrappedSlide key={i} theme={theme} data={shown} index={i} />
+              </SlideMotionProvider>
+            )}
           </View>
         </View>
 
         {/* Mitad izquierda: lámina anterior; mitad derecha: la siguiente. */}
         <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, flexDirection: 'row' }}>
-          <Press accessibilityRole="button" accessibilityLabel="Lámina anterior" feedback="none" disabled={i === 0} onPress={() => setIndex(Math.max(0, i - 1))} style={[{ flex: 1 }, NO_RING]} />
-          <Press accessibilityRole="button" accessibilityLabel="Lámina siguiente" feedback="none" disabled={i === total - 1} onPress={() => setIndex(Math.min(total - 1, i + 1))} style={[{ flex: 1 }, NO_RING]} />
+          <Press accessibilityRole="button" accessibilityLabel="Lámina anterior" feedback="none" haptic="selection" disabled={i === 0} onPress={() => setIndex(Math.max(0, i - 1))} style={[{ flex: 1 }, NO_RING]} />
+          <Press accessibilityRole="button" accessibilityLabel="Lámina siguiente" feedback="none" haptic="selection" disabled={i === total - 1} onPress={() => setIndex(Math.min(total - 1, i + 1))} style={[{ flex: 1 }, NO_RING]} />
         </View>
 
         {/* Arriba, sobre la franja libre de la lámina: cerrar y las barras de página (la actual resaltada, el resto visibles para que se vea que hay más). */}
@@ -146,7 +169,7 @@ export function WrappedViewer({ visible, onClose, data, firstName }: { visible: 
           </Press>
           <View pointerEvents="none" accessibilityLabel={`Lámina ${i + 1} de ${total}`} style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
             {Array.from({ length: total }, (_, k) => (
-              <View key={k} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: chrome, opacity: k === i ? 1 : k < i ? 0.6 : 0.3 }} />
+              <PageBar key={k} state={k === i ? 'now' : k < i ? 'done' : 'next'} color={chrome} animate={!reduced} />
             ))}
           </View>
         </View>

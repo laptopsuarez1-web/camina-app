@@ -6,6 +6,7 @@ import { CrownMark } from '@/components/CrownMark';
 import { FlameArt, TrophyArt } from '@/components/share/art';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
+import { Grow, Stagger, useCountUp } from '@/components/share/slide-motion';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
 
 // Tarjetas que la persona comparte como imagen (historias, WhatsApp, donde quiera). Se dibujan siempre a 360 px de ancho
@@ -541,8 +542,10 @@ const W_INNER = CARD_W - 44;
 const onAccent = (theme: CardTheme) => (theme === 'dark' ? '#12281F' : '#FFFFFF');
 
 function BigNumber({ p, value, size = 64 }: { p: Pal; value: string; size?: number }) {
+  // El tamaño se calcula con el valor final: mientras el número sube, la letra no cambia de tamaño.
   const fs = fitSize(value, size, W_INNER);
-  return <Text style={{ fontSize: fs, fontWeight: '800', color: p.ink, letterSpacing: -2, lineHeight: Math.round(fs * 1.12) }} numberOfLines={1}>{value}</Text>;
+  const shown = useCountUp(value, fmtInt);
+  return <Text style={{ fontSize: fs, fontWeight: '800', color: p.ink, letterSpacing: -2, lineHeight: Math.round(fs * 1.12), fontVariant: ['tabular-nums'] }} numberOfLines={1}>{shown}</Text>;
 }
 function Kicker({ p, children }: { p: Pal; children: ReactNode }) {
   return <Text style={{ fontSize: 14, fontWeight: '700', color: p.muted, marginBottom: 4 }}>{children}</Text>;
@@ -579,6 +582,7 @@ function MonthBars({ p, data, width, height }: { p: Pal; data: WrappedData; widt
   const ticks = [1, Math.round(n / 4), Math.round(n / 2), Math.round((3 * n) / 4), n].filter((v, i, a) => a.indexOf(v) === i);
   return (
     <View>
+      <Grow>
       <Svg width={width} height={height}>
         {data.calendar.map((c, i) => {
           const h = Math.max(3, height - y(c.steps));
@@ -587,6 +591,7 @@ function MonthBars({ p, data, width, height }: { p: Pal; data: WrappedData; widt
         })}
         <Line x1={0} x2={width} y1={y(data.goal)} y2={y(data.goal)} stroke={p.goal} strokeWidth={1} strokeDasharray="3 3" />
       </Svg>
+      </Grow>
       <View style={{ height: 14, marginTop: 4 }}>
         {ticks.map((t) => (
           <Text key={t} style={{ position: 'absolute', left: Math.min(width - 14, Math.max(0, (t - 1) * (bw + gap) + bw / 2 - 7)), width: 14, textAlign: 'center', fontSize: 9.5, fontWeight: '700', color: p.muted }}>{t}</Text>
@@ -626,7 +631,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
   if (slide === 0) {
     const diff = data.prevSteps ? data.steps - data.prevSteps : null;
     return frame(
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+      <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
           <Kicker p={p}>Tu mes en Camina{nm}</Kicker>
           <BigNumber p={p} value={fmtInt(data.steps)} size={72} />
@@ -645,7 +650,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
           <MiniStat p={p} label="Distancia" value={fmtKm(data.km)} unit="km" />
           <MiniStat p={p} label="Con meta" value={`${data.daysMet}/${data.days}`} unit="días" />
         </View>
-      </View>,
+      </Stagger>,
     );
   }
 
@@ -659,7 +664,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
     const max = Math.max(data.best?.steps ?? 1, 1);
     const over = data.best && data.avgPerDay > 0 ? Math.round((data.best.steps / data.avgPerDay - 1) * 100) : null;
     return frame(
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+      <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
           <Kicker p={p}>Tu día más activo fue</Kicker>
           <Text style={{ fontSize: 54, fontWeight: '800', color: p.mark, letterSpacing: -1.8, lineHeight: 60 }}>{data.best ? shortDay(data.best.key) : '–'}</Text>
@@ -707,7 +712,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
             <Text style={{ fontSize: 19, fontWeight: '800', color: p.accent }}>{fmtInt(bw.steps)} <Text style={{ fontSize: 11, color: p.muted, fontWeight: '600' }}>pasos</Text></Text>
           </Panel>
         ) : null}
-      </View>,
+      </Stagger>,
     );
   }
 
@@ -720,7 +725,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
     const inRun = (k: string) => !!data.run.from && !!data.run.to && k >= data.run.from && k <= data.run.to;
     const pct = data.days > 0 ? data.daysMet / data.days : 0;
     return frame(
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+      <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
           <View style={{ marginBottom: 4 }}><FlameArt size={64} /></View>
           <BigNumber p={p} value={String(n)} size={104} />
@@ -744,11 +749,11 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
         <Panel p={p}>
           <PanelTitle p={p} right={<Text style={{ fontSize: 12, fontWeight: '800', color: p.accent }}>{Math.round(pct * 100)} %</Text>}>Días con meta cumplida</PanelTitle>
           <View style={{ height: 10, borderRadius: 5, backgroundColor: p.track, overflow: 'hidden' }}>
-            <View style={{ width: `${Math.max(3, pct * 100)}%`, height: 10, borderRadius: 5, backgroundColor: p.bar }} />
+            <Grow axis="x" delay={420}><View style={{ width: `${Math.max(3, pct * 100)}%`, height: 10, borderRadius: 5, backgroundColor: p.bar }} /></Grow>
           </View>
           <Text style={{ fontSize: 11.5, fontWeight: '600', color: p.muted, marginTop: 8 }}>{data.daysMet} de {data.days} días de {data.monthName}</Text>
         </Panel>
-      </View>,
+      </Stagger>,
     );
   }
 
@@ -760,7 +765,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
     const topPct = Math.max(1, Math.ceil((position / participants) * 100));
     const beaten = Math.max(0, participants - position);
     return frame(
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+      <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
           <View style={{ marginBottom: 4 }}><TrophyArt size={64} /></View>
           <Kicker p={p}>Tu mejor puesto en el ranking global</Kicker>
@@ -782,7 +787,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
           <MiniStat p={p} label="Estás en el top" value={`${topPct} %`} />
           <MiniStat p={p} label="Superaste a" value={fmtInt(beaten)} unit={beaten === 1 ? 'caminante' : 'caminantes'} />
         </View>
-      </View>,
+      </Stagger>,
     );
   }
 
@@ -796,7 +801,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
       ...(data.points.bonus > 0 ? [{ label: 'Bonos y extras', value: data.points.bonus, color: p.mark, pct: 100 - stepsPct }] : []),
     ];
     return frame(
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+      <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
         <View>
           <Image source={require('@/../assets/camina-coin.png')} accessible={false} style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 6 }} />
           <BigNumber p={p} value={fmtInt(data.points.total)} size={96} />
@@ -823,14 +828,14 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
           <MiniStat p={p} label="Promedio" value={perDay >= 10 ? fmtInt(Math.round(perDay)) : perDay.toFixed(1).replace('.', ',')} unit="Puntos por día" />
           <MiniStat p={p} label="Días con meta" value={`${data.daysMet}`} unit={`de ${data.days}`} />
         </View>
-      </View>,
+      </Stagger>,
     );
   }
 
   // 5 · Resumen con semanas.
   const wmax = Math.max(...weeks.map((w) => w.steps), 1);
   return frame(
-    <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
+    <Stagger style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 30 }}>
       <View>
         <Kicker p={p}>{`Tu ${data.monthName}${nm}`}</Kicker>
         <Text style={{ fontSize: 32, fontWeight: '800', color: p.ink, letterSpacing: -1 }}>En resumen</Text>
@@ -853,7 +858,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
             return (
               <View key={w.from} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: 120 }}>
                 <Text style={{ fontSize: 9.5, fontWeight: '800', color: isBest ? p.ink : p.muted, marginBottom: 3 }} numberOfLines={1}>{w.steps >= 10000 ? `${Math.round(w.steps / 1000)}k` : fmtInt(w.steps)}</Text>
-                <View style={{ width: '100%', height: Math.max(6, (w.steps / wmax) * 84), borderRadius: 8, backgroundColor: isBest ? p.barBest : p.bar }} />
+                <View style={{ width: '100%' }}><Grow delay={320 + i * 70}><View style={{ width: '100%', height: Math.max(6, (w.steps / wmax) * 84), borderRadius: 8, backgroundColor: isBest ? p.barBest : p.bar }} /></Grow></View>
                 <Text style={{ fontSize: 9.5, fontWeight: '700', color: p.muted, marginTop: 4 }}>S{i + 1}</Text>
               </View>
             );
@@ -864,7 +869,7 @@ export function WrappedSlide({ theme, data, index }: { theme: CardTheme; data: W
         <Note p={p} />
         <Text style={{ fontSize: 12.5, fontWeight: '700', color: p.ink, marginTop: 6 }}>Un mes más caminando{data.name ? `, ${data.name}` : ''}. ¡Gracias por sumar!</Text>
       </View>
-    </View>,
+    </Stagger>,
   );
 }
 
