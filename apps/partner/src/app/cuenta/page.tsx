@@ -19,11 +19,24 @@ export default function CuentaPage() {
     if (!session) return;
     supabase.rpc('my_email_verified').then(({ data, error }) => setVerificado(error ? null : !!data));
   }, [session]);
+  const [codigo, setCodigo] = useState('');
+  const [codigoMsg, setCodigoMsg] = useState<{ ok: boolean; texto: string } | null>(null);
+  async function confirmarCodigo(e: React.FormEvent) {
+    e.preventDefault();
+    setCodigoMsg(null);
+    const { data, error } = await supabase.functions.invoke('panel-email', { body: { action: 'verify_code', code: codigo } });
+    const r = data as { ok?: boolean; error?: string } | null;
+    if (error || !r?.ok) {
+      setCodigoMsg({ ok: false, texto: r?.error ?? 'No pudimos revisar el código. Intenta de nuevo.' });
+      return;
+    }
+    setVerificado(true);
+  }
   async function reenviarVerificacion() {
     setReenvio('Enviando…');
     const { data, error } = await supabase.functions.invoke('panel-email', { body: { action: 'resend' } });
     const r = data as { sent?: boolean; wait?: boolean } | null;
-    setReenvio(error || !r?.sent ? (r?.wait ? 'Espera un minuto antes de pedir otro.' : 'No pudimos enviarlo. Intenta de nuevo.') : `Te mandamos un correo a ${emailActual}. Ábrelo para verificar (mira también en Spam).`);
+    setReenvio(error || !r?.sent ? (r?.wait ? 'Espera un minuto antes de pedir otro.' : 'No pudimos enviarlo. Intenta de nuevo.') : `Te mandamos un código a ${emailActual} (mira también en Spam).`);
   }
 
   const [email, setEmail] = useState('');
@@ -103,8 +116,35 @@ export default function CuentaPage() {
               </p>
               {!verificado && (
                 <>
+                  <p className="text-muted text-[12px]">Escribe el código de 6 números que te mandamos a tu correo.</p>
+                  <div className="flex gap-2">
+                    <input
+                      value={codigo}
+                      onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (codigo.length === 6) void confirmarCodigo(e as unknown as React.FormEvent);
+                        }
+                      }}
+                      placeholder="000000"
+                      className={`${input} tracking-[6px] text-center text-[16px] font-bold max-w-[160px]`}
+                    />
+                    <button
+                      type="button"
+                      onClick={confirmarCodigo}
+                      disabled={codigo.length !== 6}
+                      className="rounded-[10px] px-4 text-[13px] font-semibold disabled:opacity-50"
+                      style={{ background: '#62F0B6', color: '#12281f' }}
+                    >
+                      Verificar
+                    </button>
+                  </div>
+                  {codigoMsg && <p className={`text-[12px] ${codigoMsg.ok ? 'text-mint-dark' : 'text-warn'}`}>{codigoMsg.texto}</p>}
                   <button type="button" onClick={reenviarVerificacion} className="self-start text-[12.5px] font-semibold underline text-purple">
-                    Reenviar correo de verificación
+                    Mandar otro código
                   </button>
                   {reenvio && <p className="text-muted text-[12px]">{reenvio}</p>}
                 </>

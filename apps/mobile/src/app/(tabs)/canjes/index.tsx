@@ -38,6 +38,8 @@ import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
+import { VerifyEmailCard } from '@/components/VerifyEmailCard';
+import { useEmailVerified } from '@/hooks/useEmailVerified';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -88,6 +90,9 @@ export default function CanjesScreen() {
   const redeem = useRedeemBenefit();
   const redeemLocal = useRedeemWithLocalCode();
   const [localCodeFor, setLocalCodeFor] = useState<BenefitWithBusiness | null>(null);
+  const emailVerified = useEmailVerified();
+  const [verifyGate, setVerifyGate] = useState<BenefitWithBusiness | null>(null);
+  const userEmail = useAuthStore((st) => st.session?.user.email);
   const localResult = useRef<{ benefit: BenefitWithBusiness; redemption: Redemption } | null>(null);
   const regenerate = useRegenerateCode();
   const cancelExpired = useCancelExpiredRedemption();
@@ -516,6 +521,11 @@ export default function CanjesScreen() {
 
   // Antes de generar el código se confirma: el código vence en minutos y hay que estar en el local.
   function confirmRedeem(benefit: BenefitWithBusiness) {
+    // Sin correo verificado no se canjea: primero se pide el código (se puede volver atrás).
+    if (!emailVerified.verified && userEmail) {
+      setVerifyGate(benefit);
+      return;
+    }
     const free = cardPrizeId === benefit.id;
     if (benefit.online && benefit.online_channel === 'web') {
       Alert.alert(
@@ -1628,6 +1638,24 @@ export default function CanjesScreen() {
       </Modal>
 
       {/* Código del local (4 números) */}
+      <Modal visible={!!verifyGate} transparent animationType="fade" onRequestClose={() => setVerifyGate(null)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', padding: 16, paddingBottom: 32 }}>
+          {userEmail ? (
+            <VerifyEmailCard
+              email={userEmail}
+              required
+              closeLabel="Volver"
+              onClose={() => setVerifyGate(null)}
+              onVerified={() => {
+                // Queda verificado al instante; la persona vuelve y toca Canjear otra vez.
+                queryClient.setQueryData(['email-verified', useAuthStore.getState().session?.user.id], true);
+                setVerifyGate(null);
+                Alert.alert('Correo verificado', 'Listo, ya puedes canjear.');
+              }}
+            />
+          ) : null}
+        </View>
+      </Modal>
       <LocalCodeSheet
         visible={!!localCodeFor}
         businessName={localCodeFor?.business.name ?? ''}

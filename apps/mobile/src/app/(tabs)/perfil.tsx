@@ -32,6 +32,8 @@ import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/pu
 import { BadgesCard } from '@/components/badges/BadgesCard';
 import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { useMyBadges } from '@/hooks/useBadges';
+import { VerifyEmailCard } from '@/components/VerifyEmailCard';
+import { useEmailVerified } from '@/hooks/useEmailVerified';
 
 type Perm = 'granted' | 'denied' | 'unknown' | null;
 
@@ -97,6 +99,8 @@ export default function PerfilScreen() {
   const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
+  const userEmail = useAuthStore((s) => s.session?.user.email);
+  const emailVerified = useEmailVerified();
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: badges } = useMyBadges();
   // Canjes ya entregados (los pendientes, vencidos y cancelados no cuentan en el número).
@@ -314,6 +318,8 @@ export default function PerfilScreen() {
         <BadgesCard badges={badges} />
 
         {/* 4) Ajustes, ordenados por tema. */}
+        {!emailVerified.verified && userEmail ? <VerifyEmailCard email={userEmail} onVerified={emailVerified.refresh} /> : null}
+
         <SectionLabel>Tu cuenta</SectionLabel>
         <Glass className="rounded-2xl overflow-hidden mb-4">
           <Row label="Editar perfil" hint="Foto, portada, nombre, zona, bio e intereses" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />

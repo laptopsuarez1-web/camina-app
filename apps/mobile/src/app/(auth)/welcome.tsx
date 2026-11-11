@@ -14,6 +14,7 @@ import { emailRedirectUrl } from '@/lib/auth-links';
 import { friendlyError } from '@/lib/errors';
 import { Eye, EyeSlash } from '@/components/icons';
 import { colors } from '@/theme/tokens';
+import { VerifyEmailCard } from '@/components/VerifyEmailCard';
 import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
@@ -29,6 +30,7 @@ export default function WelcomeScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [verifyStep, setVerifyStep] = useState<string | null>(null);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
@@ -179,10 +181,32 @@ export default function WelcomeScreen() {
       return;
     }
     setLoading(true);
-    const { data, error } =
-      authKind === 'login'
-        ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-        : await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: emailRedirectUrl() } });
+    if (authKind === 'signup') {
+      // Cuenta nueva con correo: entra directo (sin confirmar antes) y verifica el correo con un código de 6 números.
+      const { data: alta, error: altaError } = await supabase.functions.invoke('panel-email', {
+        body: { action: 'signup', email: email.trim(), password },
+      });
+      if (altaError || alta?.error) {
+        setLoading(false);
+        Alert.alert('No pudimos crear tu cuenta', alta?.error ?? friendlyError(altaError));
+        return;
+      }
+      if (alta?.exists) {
+        setLoading(false);
+        Alert.alert('Ese correo ya tiene una cuenta', 'Inicia sesión con tu contraseña. Si no la recuerdas, toca "¿Olvidaste tu contraseña?".');
+        setAuthKind('login');
+        return;
+      }
+      const { error: inError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      setLoading(false);
+      if (inError) {
+        Alert.alert('No pudimos iniciar sesión', friendlyError(inError));
+        return;
+      }
+      setVerifyStep(email.trim());
+      return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
 
     if (error) {
@@ -190,18 +214,7 @@ export default function WelcomeScreen() {
         setAwaitingConfirmation(email.trim());
         return;
       }
-      Alert.alert(authKind === 'login' ? 'No pudimos iniciar sesión' : 'No pudimos crear tu cuenta', friendlyError(error));
-      return;
-    }
-    // Con confirmación de correo, Supabase no da error si el correo ya existe: devuelve un usuario sin identidades.
-    // Sin este aviso la persona quedaba esperando un correo que nunca llega.
-    if (authKind === 'signup' && data.user && (data.user.identities?.length ?? 1) === 0) {
-      Alert.alert('Ese correo ya tiene una cuenta', 'Inicia sesión con tu contraseña. Si no la recuerdas, toca "¿Olvidaste tu contraseña?".');
-      setAuthKind('login');
-      return;
-    }
-    if (authKind === 'signup' && !data.session) {
-      setAwaitingConfirmation(email.trim());
+      Alert.alert('No pudimos iniciar sesión', friendlyError(error));
       return;
     }
     await afterAuth();
@@ -268,6 +281,20 @@ export default function WelcomeScreen() {
     setResending(false);
     if (error) Alert.alert('No pudimos reenviar el correo', friendlyError(error, 'No pudimos mandar el correo ahora. Intenta en unos minutos o escríbenos a soporte.'));
     else Alert.alert('Listo', 'Te mandamos el correo de nuevo.');
+  }
+
+  if (verifyStep) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.authBg }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }} keyboardShouldPersistTaps="handled">
+          <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 }}>¡Cuenta creada!</Text>
+          <Text style={{ color: colors.authMuted, fontSize: 15, lineHeight: 21, marginBottom: 20 }}>
+            Ya puedes usar Camina. Verifica tu correo ahora o hazlo más tarde desde tu Perfil.
+          </Text>
+          <VerifyEmailCard email={verifyStep} onVerified={afterAuth} onClose={afterAuth} closeLabel="Verificar más tarde" />
+        </ScrollView>
+      </View>
+    );
   }
 
   if (awaitingConfirmation) {
