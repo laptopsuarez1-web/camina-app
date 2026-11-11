@@ -10,7 +10,6 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GoalSheet } from '@/components/GoalSheet';
-import { IllArt } from '@/components/ui/IllustratedIcons';
 import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -36,7 +35,7 @@ import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
-import { Pencil, ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps } from '@/components/icons';
+import { ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
@@ -355,25 +354,9 @@ export default function HomeScreen() {
         </View>
         </View>
 
-        {/* El saludo a la izquierda y la racha a la derecha: la llama con los días seguidos, siempre a la vista. Tocarla abre "Tu racha". */}
-        <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 12, gap: 10 }}>
-          <Text className="text-auth-muted flex-1" numberOfLines={1} style={{ fontSize: 17, lineHeight: 22, fontWeight: '700' }}>
-            {greeting(profile?.full_name ?? '')}
-          </Text>
-          <Press
-            accessibilityRole="button"
-            accessibilityLabel={(streak ?? 0) > 0 ? `Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tu racha` : 'Sin racha todavía. Ver cómo empezar'}
-            hitSlop={8}
-            haptic="light"
-            onPress={() => setStreaksOpen(true)}
-            className="flex-row items-center rounded-full"
-            style={{ gap: 4, paddingLeft: 7, paddingRight: 11, height: 32, backgroundColor: (streak ?? 0) > 0 ? 'rgba(242,152,92,0.18)' : 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: (streak ?? 0) > 0 ? 'rgba(242,152,92,0.4)' : 'rgba(255,255,255,0.12)' }}
-          >
-            <View style={{ opacity: (streak ?? 0) > 0 ? 1 : 0.5 }}><IllArt kind="flame" size={20} /></View>
-            <Text allowFontScaling={false} style={{ color: '#fff', fontSize: 14, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
-            <Text allowFontScaling={false} style={{ color: colors.authMuted, fontSize: 12, fontWeight: '600' }}>{streak === 1 ? 'día' : 'días'}</Text>
-          </Press>
-        </View>
+        <Text className="text-auth-muted px-5" style={{ paddingTop: 12, fontSize: 17, lineHeight: 22, fontWeight: '700' }}>
+          {greeting(profile?.full_name ?? '')}
+        </Text>
 
         <View className="items-center justify-center" style={{ marginTop: 16 }}>
           {[wave1, wave2].map((w, i) => (
@@ -410,25 +393,7 @@ export default function HomeScreen() {
               >
                 {stepsText}
               </Text>
-              {/* La meta vive dentro del aro: "de 5.000 pasos" y, al cumplirla, "meta de 5.000" con su tilde. Tocarla abre la ruedita. */}
-              <Press
-                accessibilityRole="button"
-                accessibilityLabel={`${goalMet ? 'Meta cumplida. ' : ''}Tu meta diaria es de ${goal.toLocaleString('es-BO')} pasos. Cambiarla`}
-                hitSlop={{ top: 6, bottom: 6, left: 14, right: 14 }}
-                onPress={() => setGoalOpen(true)}
-              >
-                {goalMet ? (
-                  <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4, opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }}>
-                    <Check size={12} color={colors.mint} />
-                    <Text style={{ color: colors.mint, fontSize: 13, fontWeight: '700' }}>meta de {goal.toLocaleString('es-BO')}</Text>
-                  </Animated.View>
-                ) : (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <Text className="text-auth-muted text-[13px]">de {goal.toLocaleString('es-BO')} pasos</Text>
-                    <Pencil size={11} color={colors.authMuted} />
-                  </View>
-                )}
-              </Press>
+              <Text className="text-auth-muted text-[13px] mt-1">pasos hoy</Text>
               <Animated.View
                 ref={chipRef}
                 style={{
@@ -446,6 +411,41 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
+
+        {/* Debajo del aro: la racha y la meta como dos cifras separadas por una línea (sin pastillas ni lápiz).
+            Tocar la racha abre "Tu racha"; tocar la meta abre la ruedita para cambiarla. */}
+        <View className="flex-row items-stretch px-8" style={{ marginTop: 18 }}>
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`Racha de ${streak ?? 0} ${streak === 1 ? 'día' : 'días'}. Ver tu racha`}
+            haptic="light"
+            onPress={() => setStreaksOpen(true)}
+            className="flex-1 items-center"
+            style={{ paddingVertical: 4 }}
+          >
+            <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
+            <Text style={{ color: colors.authMuted, fontSize: 12, lineHeight: 16 }}>{streak === 1 ? 'día de racha' : 'días de racha'}</Text>
+          </Press>
+          <View style={{ width: 1, backgroundColor: 'rgba(255,255,255,0.14)', marginVertical: 4 }} />
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`${goalMet ? 'Meta cumplida. ' : ''}Tu meta diaria es de ${goal.toLocaleString('es-BO')} pasos. Cambiarla`}
+            haptic="light"
+            onPress={() => setGoalOpen(true)}
+            className="flex-1 items-center"
+            style={{ paddingVertical: 4 }}
+          >
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{goal.toLocaleString('es-BO')}</Text>
+              {goalMet ? (
+                <Animated.View style={{ opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }}>
+                  <Check size={14} color={colors.mint} weight="bold" />
+                </Animated.View>
+              ) : null}
+            </View>
+            <Text style={{ color: goalMet ? colors.mint : colors.authMuted, fontSize: 12, lineHeight: 16, fontWeight: goalMet ? '700' : '400' }}>{goalMet ? 'meta cumplida' : 'meta diaria'}</Text>
+          </Press>
+        </View>
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
