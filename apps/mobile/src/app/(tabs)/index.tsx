@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GoalSheet } from '@/components/GoalSheet';
+import { IllArt } from '@/components/ui/IllustratedIcons';
 import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -423,7 +424,10 @@ export default function HomeScreen() {
             className="flex-1 items-center"
             style={{ paddingVertical: 4 }}
           >
-            <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <View style={{ opacity: (streak ?? 0) > 0 ? 1 : 0.45 }}><IllArt kind="flame" size={17} /></View>
+              <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
+            </View>
             <Text style={{ color: colors.authMuted, fontSize: 12, lineHeight: 16 }}>{streak === 1 ? 'día de racha' : 'días de racha'}</Text>
           </Press>
           <View style={{ width: 1, backgroundColor: 'rgba(255,255,255,0.14)', marginVertical: 4 }} />

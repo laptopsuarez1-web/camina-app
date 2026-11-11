@@ -745,7 +745,7 @@ export default function GroupDetailScreen() {
         ) : (
           <Glass className="mx-5 rounded-2xl p-3.5 mb-3">
             <Press accessibilityRole="button" accessibilityLabel="Crear un desafío para el grupo" onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })} className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Flame} tone="orange" size={38} />
+              <IconBubble icon={Flame} tone="aqua" size={38} />
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Elijan la regla, la meta y los Puntos en juego.</Text>

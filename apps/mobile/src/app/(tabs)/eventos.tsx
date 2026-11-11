@@ -135,7 +135,7 @@ export default function EventosScreen() {
               reto.kind === 'referrals' ? (
                 <IconBubble icon={Users} tone="purple" size={42} />
               ) : reto.kind === 'steps_streak' ? (
-                <IconBubble icon={Flame} tone="orange" size={42} />
+                <IconBubble icon={Flame} tone="aqua" size={42} />
               ) : (
                 <IconBubble icon={CheckCircle2} tone="aqua" size={42} />
               )

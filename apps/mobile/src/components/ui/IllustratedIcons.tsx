@@ -9,7 +9,7 @@ export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'ta
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral', store: 'gold' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
 const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
@@ -17,7 +17,8 @@ const GRAD = {
 } as const;
 
 // Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
-const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint' };
+// La llama de la racha es verde, del color de Camina, con el centro en verde claro.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];

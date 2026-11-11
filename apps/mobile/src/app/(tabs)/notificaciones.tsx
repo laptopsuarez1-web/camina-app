@@ -20,7 +20,7 @@ function bubbleFor(type?: string) {
       return <IconBubble icon={Clock} tone="orange" size={38} />;
     case 'streak':
     case 'streak_reminder':
-      return <IconBubble icon={Flame} tone="orange" size={38} />;
+      return <IconBubble icon={Flame} tone="aqua" size={38} />;
     case 'nearby':
       return <IconBubble icon={MapPin} tone="purple" size={38} />;
     case 'reto':

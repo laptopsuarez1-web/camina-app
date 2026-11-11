@@ -16,7 +16,7 @@ function Row({ icon, title, value, text, isDark }: { icon: 'flame' | 'target'; t
       <View
         style={{
           width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
-          backgroundColor: icon === 'flame' ? (isDark ? 'rgba(242,152,92,0.18)' : colors.warnLight) : isDark ? 'rgba(98,240,182,0.12)' : 'rgba(18,140,110,0.1)',
+          backgroundColor: icon === 'flame' ? (isDark ? 'rgba(98,240,182,0.14)' : colors.light.aquaLight) : isDark ? 'rgba(98,240,182,0.12)' : 'rgba(18,140,110,0.1)',
         }}
       >
         {icon === 'flame' ? <IllArt kind="flame" size={26} /> : <Target size={22} color={colors.mint} />}
@@ -85,7 +85,7 @@ export function StreaksSheet({
         <Press accessible={false} feedback="none" className="bg-card-light dark:bg-card-dark rounded-t-[28px] px-5 pt-3 pb-9" onPress={() => {}}>
           <View className="w-9 h-1.5 rounded-full bg-line-light dark:bg-line-dark self-center mb-4" />
           <View className="items-center">
-            <View style={{ width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? 'rgba(242,152,92,0.16)' : colors.warnLight, opacity: racha > 0 ? 1 : 0.6 }}>
+            <View style={{ width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? 'rgba(98,240,182,0.14)' : colors.light.aquaLight, opacity: racha > 0 ? 1 : 0.6 }}>
               <IllArt kind="flame" size={54} />
             </View>
             <Text accessibilityRole="header" accessibilityLabel={`Tu racha: ${dias(racha)} seguidos`} className="text-text-light dark:text-text-dark" style={{ fontSize: 52, lineHeight: 58, fontWeight: '900', letterSpacing: -1.5, marginTop: 8, fontVariant: ['tabular-nums'] }}>{racha}</Text>
