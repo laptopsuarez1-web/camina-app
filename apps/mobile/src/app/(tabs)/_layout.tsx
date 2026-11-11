@@ -98,6 +98,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="perfil" options={{ href: null }} />
       <Tabs.Screen name="puntos" options={{ href: null }} />
       <Tabs.Screen name="tarjetas" options={{ href: null }} />
+      <Tabs.Screen name="mis-canjes" options={{ href: null }} />
       <Tabs.Screen name="notificaciones" options={{ href: null }} />
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="editar-perfil" options={{ href: null, tabBarStyle: { display: 'none' } }} />

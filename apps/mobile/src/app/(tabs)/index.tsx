@@ -10,7 +10,6 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GoalSheet } from '@/components/GoalSheet';
-import { StreakPath } from '@/components/home/StreakPath';
 import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -36,7 +35,7 @@ import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
-import { ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps } from '@/components/icons';
+import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
@@ -427,7 +426,21 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <StreakPath streak={streak ?? 0} onPress={() => setStreaksOpen(true)} />
+        {/* Debajo del aro queda solo la racha (la meta ya está dentro del aro). */}
+        {(streak ?? 0) > 0 ? (
+          <View className="items-center" style={{ marginTop: 20 }}>
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
+              onPress={() => setStreaksOpen(true)}
+              className="flex-row items-center rounded-full"
+              style={{ gap: 5, backgroundColor: 'rgba(98,240,182,0.1)', paddingHorizontal: 12, paddingVertical: 5 }}
+            >
+              <Flame size={12} color={colors.mint} />
+              <Text style={{ color: colors.mint, fontSize: 12.5, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
+            </Press>
+          </View>
+        ) : null}
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
@@ -580,7 +593,7 @@ export default function HomeScreen() {
             <MyRedemptionsSection
               redemptions={redemptions as unknown as RedemptionRow[] | undefined}
               loading={redemptionsLoading}
-              onSeeAll={() => router.push({ pathname: '/(tabs)/canjes', params: { ver: 'mios' } })}
+              onSeeAll={() => router.push('/(tabs)/mis-canjes')}
               storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
               onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje' })}
             />

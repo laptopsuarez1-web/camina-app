@@ -17,17 +17,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown, IconBubble } from '@/components/icons';
-import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useOnlineRedeemed, useMyRedemptions, useMyStoryShares, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
+import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
+import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
 import { rewardReview } from '@/hooks/useBadges';
 import { LevelCard } from '@/components/badges/LevelCard';
 import { FollowupQuestion, ReviewStep, StoryStep } from '@/components/story/StoryShare';
 import { useStoryFlow } from '@/components/story/StoryFlow';
-import { storyStateFor } from '@/lib/story';
-import { Segmented } from '@/components/ui/Segmented';
-import { MyRedemptionsSection, type RedemptionRow } from '@/components/home/HomeSections';
 import { BellButton } from '@/components/ui/BellButton';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -57,8 +54,6 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import { Coin } from '@/components/ui/Coin';
 
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
-
-const SEGS = [{ key: 'comercios', label: 'Comercios' }, { key: 'mios', label: 'Mis canjes' }] as const;
 
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -137,12 +132,7 @@ export default function CanjesScreen() {
   const fullMapRef = useRef<MapView>(null);
   const [profileBusinessId, setProfileBusinessId] = useState<string | null>(null);
   // Desde Inicio: /canjes?negocio=<id> abre directo la ficha de ese local.
-  const { negocio, ver } = useLocalSearchParams<{ negocio?: string; ver?: string }>();
-  // Solapas: Comercios (para canjear) y Mis canjes (lo que ya canjeaste y tus tarjetas). Se puede llegar con ?ver=mios.
-  const [pickedSeg, setPickedSeg] = useState<{ from: string | undefined; seg: 'comercios' | 'mios' } | null>(null);
-  const seg: 'comercios' | 'mios' = pickedSeg && pickedSeg.from === ver ? pickedSeg.seg : ver === 'mios' ? 'mios' : 'comercios';
-  const setSeg = (k: 'comercios' | 'mios') => setPickedSeg({ from: ver, seg: k });
-  const { data: storyShares } = useMyStoryShares();
+  const { negocio } = useLocalSearchParams<{ negocio?: string }>();
   useEffect(() => {
     if (!negocio) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
@@ -769,8 +759,6 @@ export default function CanjesScreen() {
           <ScreenTitle>Canjes</ScreenTitle>
           <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
 
-          <Segmented value={seg} onChange={setSeg} options={SEGS} />
-          {seg === 'comercios' && (<>
           {!profile?.zone && showZonePrompt && (
             <View className="bg-purple-light-light dark:bg-purple-light-dark rounded-2xl p-4 mb-3.5">
               <Text className="text-[13px] font-semibold mb-2.5 text-text-light dark:text-text-dark">¿Desde qué zona caminas?</Text>
@@ -864,33 +852,7 @@ export default function CanjesScreen() {
               {quickChips}
             </ScrollView>
           )}
-          </>)}
         </View>
-
-        {seg === 'mios' && (
-          <View style={{ gap: 14 }}>
-            <MyRedemptionsSection
-              title={null}
-              limit={50}
-              redemptions={myRedemptions as unknown as RedemptionRow[] | undefined}
-              loading={myRedemptions === undefined}
-              storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
-              onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje' })}
-            />
-            <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/tarjetas')} className="mx-5">
-              <Glass className="rounded-3xl flex-row items-center p-4" style={{ gap: 12 }}>
-                <IconBubble icon={Gift} tone="gold" size={40} />
-                <View className="flex-1">
-                  <Text className="font-bold text-[14.5px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
-                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">
-                    {caminaCard && caminaCard.goal > 0 ? `Llevas ${Math.min(caminaCard.stamps, caminaCard.goal)} de ${caminaCard.goal} sellos` : 'Junta sellos con tus canjes y elige un premio gratis'}
-                  </Text>
-                </View>
-                <ChevronRight size={14} color={muted} />
-              </Glass>
-            </Press>
-          </View>
-        )}
 
         <Modal visible={categoryOpen} transparent animationType="slide" onRequestClose={() => setCategoryOpen(false)}>
           <Press accessibilityRole="button" accessibilityLabel="Cerrar categorías" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={() => setCategoryOpen(false)} />
@@ -935,7 +897,6 @@ export default function CanjesScreen() {
           </View>
         </Modal>
 
-        {seg === 'comercios' && (
         <View className="px-5 pt-4" style={{ gap: 12 }}>
           {isLoading && (
             <SkeletonGroup style={{ gap: 12 }}>
@@ -1051,7 +1012,6 @@ export default function CanjesScreen() {
             />
           )}
         </View>
-        )}
       </ScrollView>
 
       {/* Mapa completo */}
