@@ -688,7 +688,7 @@ export default function GroupDetailScreen() {
         {/* Desafío del grupo: el que está en marcha o, si no hay, una fila corta para crear uno. */}
         {active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
-            <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
+            <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el desafío" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
                 <IconBubble icon={Trophy} tone="gold" size={34} />
                 <View className="flex-1">

@@ -23,7 +23,7 @@ import { useLastRutaWinners, useRuta } from '@/hooks/useRuta';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaEventCard } from '@/components/ruta/RutaEventCard';
 
-const TABS = [{ key: 'eventos', label: 'Eventos' }, { key: 'desafios', label: 'Retos y desafíos' }] as const;
+const TABS = [{ key: 'eventos', label: 'Eventos' }, { key: 'desafios', label: 'Desafíos' }] as const;
 
 export default function EventosScreen() {
   const pull = usePullToRefresh();
@@ -92,7 +92,7 @@ export default function EventosScreen() {
   async function handleClaim(reto: Reto) {
     try {
       const points = await claim.mutateAsync(reto.id);
-      celebrate({ kind: 'sheet', title: '¡Reto completado!', body: `${reto.title}. ¡Bien hecho!`, points: Number(points) || reto.reward_points });
+      celebrate({ kind: 'sheet', title: '¡Desafío completado!', body: `${reto.title}. ¡Bien hecho!`, points: Number(points) || reto.reward_points });
     } catch (e) {
       Alert.alert('No pudimos darte los Puntos', friendlyServerError(e, 'Intenta de nuevo.'));
     }
@@ -105,7 +105,7 @@ export default function EventosScreen() {
       <ScreenTitle>Eventos</ScreenTitle>
       <Segmented options={TABS} value={tab} onChange={setTab} />
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
-        {tab === 'eventos' ? 'Vive experiencias únicas con tus marcas favoritas' : 'Cumple retos de Camina y súmate a los desafíos de tus marcas favoritas'}
+        {tab === 'eventos' ? 'Vive experiencias únicas con tus marcas favoritas' : 'Cumple los desafíos de Camina y súmate a los de tus marcas favoritas'}
       </Text>
       {tab === 'eventos' && (
         <View className="gap-4 mb-7 items-center">
@@ -118,13 +118,13 @@ export default function EventosScreen() {
         </View>
       )}
       {tab === 'desafios' && (<>
-      <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
+      <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Desafíos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
-        Cumple metas caminando y gana Puntos extra. Cada reto se gana una sola vez.
+        Cumple metas caminando y gana Puntos extra. Cada desafío se gana una sola vez.
       </Text>
 
       {(retos ?? []).length === 0 && (
-        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay retos activos.</Text>
+        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay desafíos activos.</Text>
       )}
       <View className="gap-3 mb-7">
         {(retos ?? []).map((reto) => (

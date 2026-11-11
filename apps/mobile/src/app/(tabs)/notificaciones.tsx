@@ -114,7 +114,7 @@ export default function NotificacionesScreen() {
             <EmptyIllustration kind="avisos" />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por aquí</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
-              Te avisamos aquí de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
+              Te avisamos aquí de tus códigos y Puntos por vencer, tu racha, desafíos y promociones de comercios cerca.
             </Text>
           </View>
         )}

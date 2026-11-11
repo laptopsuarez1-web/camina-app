@@ -353,7 +353,7 @@ export default function PerfilScreen() {
         <PermRow
           icon={Bell}
           title="Notificaciones"
-          text={pushStatus === 'granted' ? 'Te avisamos de códigos por vencer, tu racha y retos.' : 'Sin esto no te avisamos de códigos por vencer ni de tu racha.'}
+          text={pushStatus === 'granted' ? 'Te avisamos de códigos por vencer, tu racha y tus desafíos.' : 'Sin esto no te avisamos de códigos por vencer ni de tu racha.'}
           status={pushStatus}
           onPress={pushStatus === 'granted' ? () => Linking.openSettings() : enablePush}
         />

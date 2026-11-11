@@ -152,7 +152,7 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
 }
 
 // Cinta con lo que tiene la app.
-const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que eliges', 'Racha y calendario', 'Grupos y ranking', 'Retos Camina', 'Desafíos y eventos', 'Comparte tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitas'];
+const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que eliges', 'Racha y calendario', 'Grupos y ranking', 'Desafíos Camina', 'Desafíos y eventos', 'Comparte tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitas'];
 export function Cinta({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
   const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`)) : CINTA;
   const fila = [...base, ...base];
@@ -250,10 +250,10 @@ export function Galeria() {
     ['Tu día en un vistazo', 'Tus pasos de hoy, tus Puntos y tu racha.', CAP.inicio],
     ['Actividad', 'Tu semana, tu meta y tu racha.', CAP.actividad],
     ['Grupos', 'Camina en equipo con tus amigos.', CAP.grupos],
-    ['Tu grupo', 'Podio, meta compartida y reto de la semana.', CAP.grupo],
+    ['Tu grupo', 'Podio, meta compartida y desafío de la semana.', CAP.grupo],
     ['Eventos', 'Experiencias con fecha y lugar.', CAP.eventos],
     ['Desafíos', 'Súmate a desafíos con premios.', CAP.desafios],
-    ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
+    ['Desafíos Camina', 'Metas extra que suman Puntos.', CAP.retos],
     ['Canjear', 'Busca comercios y mira sus premios.', CAP.canjes],
     ['La ficha del local', 'Fotos, horarios, redes y premios.', CAP.ficha],
     ['Tus Puntos', 'Tu saldo, tus movimientos y cómo invitar amigos.', CAP.puntos],
@@ -290,7 +290,7 @@ export function Objetivos() {
     },
     {
       t: 'Motivación',
-      d: 'Puntos por cada 1.000 pasos, retos y grupos para caminar con amigos. Es más fácil sostener el hábito cuando hay con quién.',
+      d: 'Puntos por cada 1.000 pasos, desafíos y grupos para caminar con amigos. Es más fácil sostener el hábito cuando hay con quién.',
       img: CAP.grupos,
       alt: 'Pantalla de grupos con la meta semanal',
     },
@@ -592,16 +592,16 @@ export function EquipoRetos() {
           items={[
             {
               t: 'Grupos',
-              d: 'Crea un grupo con amigos o familia, elijan una meta semanal entre todos, sumen pasos juntos y miren el ranking. Pueden armar retos con Puntos en juego e invitar a más amigos cuando quieran.',
+              d: 'Crea un grupo con amigos o familia, elijan una meta semanal entre todos, sumen pasos juntos y miren el ranking. Pueden armar desafíos con Puntos en juego e invitar a más amigos cuando quieran.',
               img: CAP.grupos,
               alt: 'Pantalla de Grupos con un grupo de ejemplo y su meta de la semana',
               tag: 'Grupo de ejemplo',
             },
             {
-              t: 'Retos Camina',
-              d: 'Retos que te empujan a moverte más y suman puntos extra: invitar amigos, completar metas de pasos y más.',
+              t: 'Desafíos Camina',
+              d: 'Desafíos que te empujan a moverte más y suman puntos extra: invitar amigos, completar metas de pasos y más.',
               img: CAP.retos,
-              alt: 'Pantalla de los retos de Camina',
+              alt: 'Pantalla de los desafíos de Camina',
             },
             {
               t: 'Eventos y sorteos',
@@ -820,7 +820,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
 
 type Tile = { t: string; d: string; ico: keyof typeof ICO; span: 's2' | 's3' | 's4'; pts?: string; shot?: string; alt?: string; row2?: boolean; fill?: boolean };
 const TILES: Tile[] = [
-  { t: 'Retos Camina', d: 'Metas extra además de tus pasos de cada día: cúmplelas y ganas más Puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Retos Camina', row2: true },
+  { t: 'Desafíos Camina', d: 'Metas extra además de tus pasos de cada día: cúmplelas y ganas más Puntos.', ico: 'trofeo', span: 's3', shot: CAP.retos, alt: 'Pantalla de Retos Camina', row2: true },
   { t: 'Tu meta, a tu medida', d: 'Eliges tu meta diaria de pasos en Perfil > Editar perfil y la cambias cuando quieras. Todos tus pasos suman, llegues o no a la meta.', ico: 'pasos', span: 's3', fill: true },
   { t: 'Invita amigos', d: 'Comparte tu link: recibes 5 puntos cuando tu amigo se registra y consigue su primer punto.', ico: 'amigos', span: 's2', pts: '+5 puntos' },
   { t: 'Historias que suman', d: 'Sube una historia a Instagram y gana 5 puntos cuando el equipo de Camina la aprueba.', ico: 'camara', span: 's2', pts: '+5 puntos' },
@@ -968,7 +968,7 @@ export function ComoFunciona() {
           ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
           ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: cada 5 canjes, un premio gratis donde quieras.', CAP.puntosNuevo],
           ['Tu racha', 'Cada día seguido cuenta.', CAP.rachas],
-          ['Retos Camina', 'Metas extra que suman Puntos.', CAP.retos],
+          ['Desafíos Camina', 'Metas extra que suman Puntos.', CAP.retos],
           ['Eventos y desafíos', 'Caminatas y premios de comercios de tu ciudad.', CAP.desafios],
         ]}
       />
