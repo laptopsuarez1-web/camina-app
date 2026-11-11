@@ -622,7 +622,7 @@ export default function HomeScreen() {
             tone="gold"
             title="Ranking semanal"
             value={myRank ? `Vas ${myRank.position}.º` : 'Ver'}
-            onPress={() => router.push('/(tabs)/ranking')}
+            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'ranking' } })}
           />
           <LinkRow
             icon={UserPlus}
@@ -630,7 +630,7 @@ export default function HomeScreen() {
             title="Amigos"
             value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invita'}
             alert={(friendRequests ?? []).length > 0}
-            onPress={() => router.push('/(tabs)/amigos')}
+            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })}
           />
           <LinkRow
             icon={Users}

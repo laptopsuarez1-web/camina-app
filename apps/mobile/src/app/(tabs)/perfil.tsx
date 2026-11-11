@@ -290,7 +290,7 @@ export default function PerfilScreen() {
               <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
             </Glass>
           </Press>
-          <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push('/(tabs)/amigos')} className="flex-1">
+          <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} className="flex-1">
             <Glass className="rounded-2xl p-3 items-center">
               <UserPlus size={24} color={isDark ? colors.mint : colors.aquaDeep} />
               <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{friendCount}</Text>
@@ -319,7 +319,7 @@ export default function PerfilScreen() {
         <Glass className="rounded-2xl overflow-hidden mb-4">
           <Row label="Editar perfil" hint="Foto, portada, nombre, zona y bio" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
           <Row label="Intereses" hint={interestsText} onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
-          <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push('/(tabs)/amigos')} right={chev} last />
+          <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} right={chev} last />
         </Glass>
 
         <SectionLabel>Permisos y avisos</SectionLabel>

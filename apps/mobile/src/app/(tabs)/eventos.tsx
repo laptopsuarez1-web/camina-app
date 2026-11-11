@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { useColorScheme } from 'nativewind';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import { Press } from '@/components/ui/Press';
 import { Users, Flame, CheckCircle2, IconBubble } from '@/components/icons';
 import { useRetos, useClaimReto, type Reto } from '@/hooks/useRetos';
 import { usePromotions, useJoinPromotion, type PromotionItem } from '@/hooks/usePromotions';
@@ -12,6 +10,7 @@ import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
+import { Segmented } from '@/components/ui/Segmented';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -23,6 +22,8 @@ import { ChallengeCard, EventCard, PromoSheet, RetoCamina } from '@/components/p
 import { useLastRutaWinners, useRuta } from '@/hooks/useRuta';
 import { RutaPrizeCard } from '@/components/ruta/RutaPrizeCard';
 import { RutaEventCard } from '@/components/ruta/RutaEventCard';
+
+const TABS = [{ key: 'eventos', label: 'Eventos' }, { key: 'desafios', label: 'Retos y desafíos' }] as const;
 
 export default function EventosScreen() {
   const pull = usePullToRefresh();
@@ -37,7 +38,6 @@ export default function EventosScreen() {
   const [picked, setPicked] = useState<{ from: string | undefined; tab: 'eventos' | 'desafios' } | null>(null);
   const tab = picked && picked.from === params.tab ? picked.tab : params.tab === 'desafios' ? 'desafios' : 'eventos';
   const setTab = (t: 'eventos' | 'desafios') => setPicked({ from: params.tab, tab: t });
-  const dark = useColorScheme().colorScheme === 'dark';
   const [open, setOpen] = useState<PromotionItem | null>(null);
   const { width } = useWindowDimensions();
   const cardSize = Math.min(width - 40, 380);
@@ -102,31 +102,10 @@ export default function EventosScreen() {
     <View className="flex-1">
       <HeaderLight />
       <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
-      <ScreenTitle>{tab === 'eventos' ? 'Eventos' : 'Desafíos'}</ScreenTitle>
-      <View accessibilityRole="tablist" className="flex-row rounded-full p-1 mb-4 bg-purple-light dark:bg-card-dark border border-line-light dark:border-line-dark" style={{ gap: 4 }}>
-        {(['eventos', 'desafios'] as const).map((k) => {
-          const on = tab === k;
-          return (
-            <Press
-              key={k}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: on }}
-              haptic="selection"
-              feedback="none"
-              onPress={() => setTab(k)}
-              className="flex-1 rounded-full items-center py-2.5"
-              // Colores fijos según el modo (la clase oscura no siempre llegaba al texto y "Desafíos" no se leía).
-              style={on ? { backgroundColor: dark ? '#62F0B6' : '#5B31A3' } : undefined}
-            >
-              <Text style={{ fontSize: 14.5, fontWeight: '800', color: on ? (dark ? '#14093a' : '#fff') : dark ? '#E4D6FF' : '#8149C2' }}>
-                {k === 'eventos' ? 'Eventos' : 'Desafíos'}
-              </Text>
-            </Press>
-          );
-        })}
-      </View>
+      <ScreenTitle>Eventos</ScreenTitle>
+      <Segmented options={TABS} value={tab} onChange={setTab} />
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
-        {tab === 'eventos' ? 'Vive experiencias únicas con tus marcas favoritas' : 'Súmate, camina y gana premios de tus marcas favoritas'}
+        {tab === 'eventos' ? 'Vive experiencias únicas con tus marcas favoritas' : 'Cumple retos de Camina y súmate a los desafíos de tus marcas favoritas'}
       </Text>
       {tab === 'eventos' && (
         <View className="gap-4 mb-7 items-center">
@@ -138,34 +117,6 @@ export default function EventosScreen() {
           {events.map((p) => <EventCard key={p.id} p={p} size={cardSize} onPress={() => setOpen(p)} />)}
         </View>
       )}
-      {tab === 'desafios' && challenges.length > 0 && (
-        <View className="gap-4 mb-7">
-          {challenges.map((p) => <ChallengeCard key={p.id} p={p} onPress={() => setOpen(p)} />)}
-        </View>
-      )}
-      <PromoSheet p={open ? (promos ?? []).find((x) => x.id === open.id) ?? open : null} onClose={() => setOpen(null)} onJoin={handleJoin} joining={join.isPending} />
-
-      {promosError && !promos && (
-        <View className="mb-8">
-          <EmptyState mascot="confundido"
-            title="No pudimos cargar"
-            text="Revisa tu conexión e intenta de nuevo."
-            actionLabel="Reintentar"
-            onAction={() => refetchPromos()}
-          />
-        </View>
-      )}
-      {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 && !showRuta : challenges.length === 0) && (
-        <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
-          <BaifoMascot pose="camina" />
-          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
-            {tab === 'eventos' ? 'Pronto habrá eventos' : 'Pronto habrá desafíos de comercios'}
-          </Text>
-          <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
-            Mientras tanto, sigue caminando: cuando un comercio de tu ciudad publique uno, lo verás aquí.
-          </Text>
-        </Glass>
-      )}
       {tab === 'desafios' && (<>
       <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Retos Camina</Text>
       <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
@@ -175,7 +126,7 @@ export default function EventosScreen() {
       {(retos ?? []).length === 0 && (
         <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay retos activos.</Text>
       )}
-      <View className="gap-3">
+      <View className="gap-3 mb-7">
         {(retos ?? []).map((reto) => (
           <RetoCamina
             key={reto.id}
@@ -202,7 +153,39 @@ export default function EventosScreen() {
           />
         ))}
       </View>
+      <Text accessibilityRole="header" className="mb-1 text-text-light dark:text-text-dark" style={typo.section}>Desafíos de comercios</Text>
+      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mb-4 leading-relaxed">
+        Súmate, camina y gana premios de tus marcas favoritas.
+      </Text>
+      {challenges.length > 0 && (
+        <View className="gap-4 mb-7">
+          {challenges.map((p) => <ChallengeCard key={p.id} p={p} onPress={() => setOpen(p)} />)}
+        </View>
+      )}
       </>)}
+      <PromoSheet p={open ? (promos ?? []).find((x) => x.id === open.id) ?? open : null} onClose={() => setOpen(null)} onJoin={handleJoin} joining={join.isPending} />
+
+      {promosError && !promos && (
+        <View className="mb-8">
+          <EmptyState mascot="confundido"
+            title="No pudimos cargar"
+            text="Revisa tu conexión e intenta de nuevo."
+            actionLabel="Reintentar"
+            onAction={() => refetchPromos()}
+          />
+        </View>
+      )}
+      {!promosLoading && !promosError && (tab === 'eventos' ? events.length === 0 && !showRuta : challenges.length === 0) && (
+        <Glass className="rounded-3xl items-center mb-8" style={{ paddingVertical: 34, paddingHorizontal: 24 }}>
+          <BaifoMascot pose="camina" />
+          <Text className="font-extrabold text-[20px] text-text-light dark:text-text-dark text-center" style={{ marginTop: 12 }}>
+            {tab === 'eventos' ? 'Pronto habrá eventos' : 'Pronto habrá desafíos de comercios'}
+          </Text>
+          <Text className="text-muted-light dark:text-muted-dark text-[14px] text-center leading-5" style={{ marginTop: 6 }}>
+            Mientras tanto, sigue caminando: cuando un comercio de tu ciudad publique uno, lo verás aquí.
+          </Text>
+        </Glass>
+      )}
 
       </ScrollView>
     </View>
