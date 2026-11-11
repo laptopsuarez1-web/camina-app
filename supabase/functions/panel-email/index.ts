@@ -1,4 +1,4 @@
-// Alta del panel de comercios sin confirmar el correo antes, y verificación del correo después.
+// Alta de cuentas (panel de comercios y app) sin confirmar el correo antes, y verificación del correo después.
 //   - signup: crea la cuenta ya confirmada (la persona entra directo) y le manda un correo para verificar el correo.
 //             Si ese correo ya tiene cuenta, no toca nada: responde { exists: true } (el panel lo manda a elegir clave por correo).
 //   - verify_code: con la sesión, valida el código de 6 números que llegó al correo (5 intentos, 30 minutos).
@@ -28,13 +28,13 @@ function correo(codigo: string) {
 <img src="https://caminaapp.com/camina-logo.png" width="64" height="64" alt="Camina" style="display:block;border-radius:32px;margin:0 0 18px">
 <div style="background:#fff;border:1px solid #E1D2F5;border-radius:16px;padding:22px">
 <h1 style="font-size:20px;margin:0 0 12px">Verifica tu correo</h1>
-<p style="font-size:14px;line-height:21px;margin:0 0 12px">Ya puedes usar el panel de tu comercio. Escribe este código en el panel, en Mi cuenta, para verificar que este correo es tuyo:</p>
+<p style="font-size:14px;line-height:21px;margin:0 0 12px">Escribe este código en Camina (la app o el panel de comercios) para verificar que este correo es tuyo:</p>
 <p style="font-size:34px;font-weight:700;letter-spacing:8px;margin:6px 0 12px;color:#241748">${esc(codigo)}</p>
 <p style="font-size:13px;line-height:19px;margin:0;color:#7C6A9C">El código dura 30 minutos.</p>
 </div>
-<p style="font-size:12px;color:#7C6A9C;margin:16px 4px 0">¿Dudas? Escribinos por WhatsApp al +591 62714286.</p>
+<p style="font-size:12px;color:#7C6A9C;margin:16px 4px 0">¿Dudas? Escríbenos por WhatsApp al +591 62714286.</p>
 </div></body></html>`;
-  const text = `Verifica tu correo\n\nYa puedes usar el panel de tu comercio. Escribe este código en el panel, en Mi cuenta, para verificar que este correo es tuyo:\n\n${codigo}\n\nEl código dura 30 minutos.\n\n¿Dudas? Escribinos por WhatsApp al +591 62714286.`;
+  const text = `Verifica tu correo\n\nEscribe este código en Camina (la app o el panel de comercios) para verificar que este correo es tuyo:\n\n${codigo}\n\nEl código dura 30 minutos.\n\n¿Dudas? Escríbenos por WhatsApp al +591 62714286.`;
   return { html, text };
 }
 
