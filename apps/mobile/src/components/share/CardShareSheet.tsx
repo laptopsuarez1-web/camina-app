@@ -1,4 +1,6 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { buzz } from '@/lib/haptics';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -82,6 +84,16 @@ export function CardShareSheet({
   const overlay = format === 'overlay';
   const shotRef = useRef<View>(null);
 
+  // La vista previa "se asienta" al abrir la hoja y cada vez que cambia de formato o de tema: se nota qué cambió.
+  const reduced = useReducedMotion();
+  const pop = useSharedValue(1);
+  useEffect(() => {
+    if (!visible || reduced) { pop.value = 1; return; }
+    pop.value = 0;
+    pop.value = withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) });
+  }, [visible, theme, format, reduced, pop]);
+  const popStyle = useAnimatedStyle(() => ({ opacity: 0.35 + 0.65 * pop.value, transform: [{ scale: 0.955 + 0.045 * pop.value }] }));
+
   const h = cardHeight(format);
   const maxH = Math.min(320, screenH * 0.4);
   const scale = Math.min(maxH / h, (screenW - 80) / CARD_W);
@@ -105,6 +117,7 @@ export function CardShareSheet({
         return;
       }
       setSaved(true);
+      buzz.success();
       setTimeout(() => setSaved(false), 2200);
     } catch (e) {
       Alert.alert('No pudimos guardar la imagen', friendlyError(e, 'Prueba de nuevo en un momento.'));
@@ -122,6 +135,7 @@ export function CardShareSheet({
 
   function flash(k: 'img') {
     setCopied(k);
+    buzz.success();
     setTimeout(() => setCopied(null), 2200);
   }
 
@@ -153,14 +167,14 @@ export function CardShareSheet({
             {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />}
 
             {/* Vista previa: la misma tarjeta, achicada. */}
-            <View accessible accessibilityLabel="Vista previa de la tarjeta" style={{ alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8, backgroundColor: overlay ? '#3B3552' : undefined }}>
+            <Animated.View accessible accessibilityLabel="Vista previa de la tarjeta" style={[popStyle, { alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8, backgroundColor: overlay ? '#3B3552' : undefined }]}>
               {/* Fondo de ejemplo detrás de la tarjeta transparente: ahí va tu foto. */}
               {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} /> : null}
               {overlay && !photo ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, opacity: 0.5, backgroundColor: '#8F86B3' }} /> : null}
               <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }} pointerEvents="none">
                 {render({ theme, format })}
               </View>
-            </View>
+            </Animated.View>
 
             {overlay ? (
               <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-4 flex-row items-center justify-center mt-2" style={{ gap: 8, backgroundColor: copied === 'img' ? '#16604F' : '#1F7A66' }}>

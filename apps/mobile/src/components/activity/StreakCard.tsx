@@ -38,7 +38,11 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
     return () => { alive = false; };
   }, [filled, flame, cells]);
 
-  const ink = isDark ? '#FFB27A' : colors.warnDeep;
+  // La racha va en verde, el color de Camina.
+  const ink = isDark ? colors.mint : colors.aquaInk;
+  // Casilla cumplida: fondo verde suave con borde, para que la llama se vea adentro (antes era un bloque liso y la tapaba).
+  const fill = isDark ? 'rgba(98,240,182,0.16)' : colors.light.aquaLight;
+  const edge = isDark ? 'rgba(98,240,182,0.55)' : colors.aqua;
   const flameScale = flame.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
   const left = STREAK_BONUS_DAYS - filled;
 
@@ -48,7 +52,7 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
         <Animated.View
           style={{
             width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: isDark ? 'rgba(242,152,92,0.18)' : colors.warnLight,
+            backgroundColor: isDark ? 'rgba(98,240,182,0.14)' : colors.light.aquaLight,
             opacity: flame, transform: [{ scale: flameScale }],
           }}
         >
@@ -86,14 +90,14 @@ export function StreakCard({ streak, isDark }: { streak: number; isDark: boolean
               >
                 <Animated.View
                   style={{
-                    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.warn,
+                    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: fill, borderRadius: 9, borderWidth: 1.5, borderColor: edge,
                     opacity: cells[i], transform: [{ scale }],
                   }}
                 />
                 {last ? (
-                  <Text className="text-[12px] font-extrabold" style={{ color: i < filled ? '#fff' : ink }}>{`+${STREAK_BONUS_POINTS}`}</Text>
+                  <Text className="text-[12px] font-extrabold" style={{ color: ink }}>{`+${STREAK_BONUS_POINTS}`}</Text>
                 ) : (
-                  <Flame size={14} color={i < filled ? '#fff' : isDark ? '#6F6590' : '#C7BEDB'} />
+                  i < filled ? <IllArt kind="flame" size={19} /> : <Flame size={14} color={isDark ? '#6F6590' : '#C7BEDB'} />
                 )}
               </View>
               <Text className="text-[12px] mt-1 text-muted-light dark:text-muted-dark">{i + 1}</Text>

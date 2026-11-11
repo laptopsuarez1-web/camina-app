@@ -10,7 +10,7 @@ const PASOS = [
 
 const SI_FALLA = [
   ['La app dice "Ese código no es"', 'Revisa en Canjes cuál es el código actual de tu local (son 4 números) y vuelve a decírselo.'],
-  ['La app dice que está lejos', 'La persona tiene que estar a menos de 300 m de tu local. Pedile que active la ubicación; si tu local aparece mal en el mapa, escríbenos por WhatsApp.'],
+  ['La app dice que está lejos', 'La persona tiene que estar a menos de 300 m de tu local. Pídele que active la ubicación; si tu local aparece mal en el mapa, escríbenos por WhatsApp.'],
   ['Se filtró tu código', 'En Canjes toca "Cambiar código": el anterior deja de servir. Avísale el nuevo a tu equipo.'],
   ['Quiere canjear otra vez', 'Cada persona puede canjear en tu local una vez cada 14 días (dos semanas). La app se lo avisa.'],
 ];

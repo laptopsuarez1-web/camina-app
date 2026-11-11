@@ -9,7 +9,7 @@ export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'ta
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'coral', store: 'gold' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
 const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
@@ -17,7 +17,8 @@ const GRAD = {
 } as const;
 
 // Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
-const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint' };
+// La llama de la racha es verde, del color de Camina, con el centro en verde claro.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];
@@ -101,14 +102,15 @@ export const PARTS: Record<IllKind, IllPart[]> = {
   friend: [
     { origin: '50% 50%', node: ({ f }) => (
       <>
-        <Circle cx={19} cy={15} r={8} fill={f} />
-        <Path d="M4 41c0-9 6-14 15-14s15 5 15 14z" fill={f} />
+        <Circle cx={16} cy={15.500} r={7.500} fill={f} />
+        <Path d="M3 40c0-8.500 5.500-13 13-13s13 4.500 13 13z" fill={f} />
       </>
     ) },
+    // Dos personas juntas (antes era una persona con un "+", que se leía como "agregar").
     { origin: '50% 50%', node: ({ g }) => (
       <>
-        <Circle cx={38} cy={30} r={9} fill={g} />
-        <Path d="M38 25v10M33 30h10" stroke="#fff" strokeWidth={3.200} strokeLinecap="round" />
+        <Circle cx={33.500} cy={19} r={6.500} fill={g} />
+        <Path d="M23 40c0-7.500 4.500-11.500 10.500-11.500S44 32.500 44 40z" fill={g} />
       </>
     ) },
   ],

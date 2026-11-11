@@ -54,7 +54,7 @@ export default function AgregarAlGrupoScreen() {
         </Text>
 
         {!isLoading && (friends ?? []).length === 0 ? (
-          <EmptyState title="Todavía no tienes amigos en Camina" text="Invita a tus amigos con tu link. Mientras tanto, puedes compartir el link o el código del grupo." actionLabel="Ir a Amigos" onAction={() => router.replace('/(tabs)/amigos')} />
+          <EmptyState title="Todavía no tienes amigos en Camina" text="Invita a tus amigos con tu link. Mientras tanto, puedes compartir el link o el código del grupo." actionLabel="Ir a Amigos" onAction={() => router.replace({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} />
         ) : (
           <>
             <FriendPicker friends={friends ?? []} selected={picked} taken={members} onToggle={toggle} />

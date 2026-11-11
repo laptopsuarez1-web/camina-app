@@ -88,7 +88,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: HomeIcon }} />
       <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: ActivityIcon }} />
-      <Tabs.Screen name="grupos" options={{ title: 'Grupos', tabBarIcon: GroupsIcon }} />
+      <Tabs.Screen name="grupos" options={{ title: 'Comunidad', tabBarIcon: GroupsIcon }} />
       <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: EventsIcon }} />
       <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: CanjesIcon }} />
       {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
@@ -98,6 +98,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="perfil" options={{ href: null }} />
       <Tabs.Screen name="puntos" options={{ href: null }} />
       <Tabs.Screen name="tarjetas" options={{ href: null }} />
+      <Tabs.Screen name="mis-canjes" options={{ href: null }} />
       <Tabs.Screen name="notificaciones" options={{ href: null }} />
       <Tabs.Screen name="grupos/[groupId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="editar-perfil" options={{ href: null, tabBarStyle: { display: 'none' } }} />

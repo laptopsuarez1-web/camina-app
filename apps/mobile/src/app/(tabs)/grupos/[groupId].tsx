@@ -33,6 +33,7 @@ import { boliviaToday } from '@/lib/bolivia';
 import { friendlyServerError } from '@/lib/errors';
 import { Coin } from '@/components/ui/Coin';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import Reanimated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { GroupDrawer } from '@/components/GroupDrawer';
 import { groupGradient, groupTheme } from '@/lib/group-look';
 import { uploadGroupBanner, uploadGroupPhoto } from '@/lib/avatar';
@@ -577,7 +578,8 @@ export default function GroupDetailScreen() {
             {podiumOrder.map((m) => {
               const rank = data.members.findIndex((x) => x.id === m.id);
               return (
-                <View key={m.id} className="items-center" style={{ width: 92 }}>
+                // El podio sube al entrar: primero el 3.º, después el 2.º y al final el 1.º. Con "reducir movimiento" aparece quieto.
+                <Reanimated.View key={m.id} entering={FadeInDown.delay(120 + (2 - Math.min(rank, 2)) * 130).duration(460).easing(Easing.out(Easing.cubic))} className="items-center" style={{ width: 92 }}>
                   {rank === 0 && <View importantForAccessibility="no" accessibilityElementsHidden style={{ marginBottom: 3 }}><CrownMark size={44} /></View>}
                   <AvatarImage
                     uri={m.photoUrl}
@@ -602,7 +604,7 @@ export default function GroupDetailScreen() {
                   >
                     <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>{rank + 1}</Text>
                   </View>
-                </View>
+                </Reanimated.View>
               );
             })}
           </View>
@@ -688,7 +690,7 @@ export default function GroupDetailScreen() {
         {/* Desafío del grupo: el que está en marcha o, si no hay, una fila corta para crear uno. */}
         {active ? (
           <Glass className="mx-5 rounded-2xl p-4 mb-3" style={{ borderColor: colors.aqua, borderWidth: 1.5 }}>
-            <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el reto" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
+            <Press accessibilityRole="button" accessibilityLabel="Ver cómo va el desafío" onPress={() => router.push({ pathname: '/(tabs)/grupos/reto', params: { groupId: data.group.id } })} className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center flex-1" style={{ gap: 10 }}>
                 <IconBubble icon={Trophy} tone="gold" size={34} />
                 <View className="flex-1">
@@ -743,7 +745,7 @@ export default function GroupDetailScreen() {
         ) : (
           <Glass className="mx-5 rounded-2xl p-3.5 mb-3">
             <Press accessibilityRole="button" accessibilityLabel="Crear un desafío para el grupo" onPress={() => router.push({ pathname: '/(tabs)/grupos/nuevo-desafio', params: { groupId: data.group.id } })} className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Flame} tone="orange" size={38} />
+              <IconBubble icon={Flame} tone="aqua" size={38} />
               <View className="flex-1">
                 <Text className="text-[13.5px] font-bold text-text-light dark:text-text-dark">Sin desafíos por ahora</Text>
                 <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Elijan la regla, la meta y los Puntos en juego.</Text>

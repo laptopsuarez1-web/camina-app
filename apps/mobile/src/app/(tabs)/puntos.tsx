@@ -68,7 +68,7 @@ function useMovimientos() {
       const kindOf = (reason: string, note: string | null, amount: number) => {
         if (reason === 'referral') return 'Invitación';
         if (reason === 'redemption') return amount < 0 ? 'Canje' : 'Devolución';
-        if (note?.startsWith('Reto:')) return 'Reto';
+        if (note?.startsWith('Reto:')) return 'Desafío Camina';
         if (note?.startsWith('Historia en Instagram')) return 'Historia';
         return 'Desafío de grupo';
       };
@@ -250,7 +250,7 @@ export default function PuntosScreen() {
           <EmptyState
             illustration="puntos"
             title="Tus Puntos van a aparecer aquí"
-            text="Cada 1.000 pasos que camines sumas un punto, siempre que abras la app ese día. También ganas por retos, invitando amigos y desafíos de grupo."
+            text="Cada 1.000 pasos que camines sumas un punto, siempre que abras la app ese día. También ganas por desafíos e invitando amigos de grupo."
           />
         )}
       </View>

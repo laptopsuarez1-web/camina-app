@@ -20,7 +20,7 @@ function bubbleFor(type?: string) {
       return <IconBubble icon={Clock} tone="orange" size={38} />;
     case 'streak':
     case 'streak_reminder':
-      return <IconBubble icon={Flame} tone="orange" size={38} />;
+      return <IconBubble icon={Flame} tone="aqua" size={38} />;
     case 'nearby':
       return <IconBubble icon={MapPin} tone="purple" size={38} />;
     case 'reto':
@@ -114,7 +114,7 @@ export default function NotificacionesScreen() {
             <EmptyIllustration kind="avisos" />
             <Text className="text-[14px] font-semibold text-text-light dark:text-text-dark">Todo tranquilo por aquí</Text>
             <Text className="text-[12.5px] text-muted-light dark:text-muted-dark text-center px-8">
-              Te avisamos aquí de tus códigos y Puntos por vencer, tu racha, retos y promociones de comercios cerca.
+              Te avisamos aquí de tus códigos y Puntos por vencer, tu racha, desafíos y promociones de comercios cerca.
             </Text>
           </View>
         )}

@@ -90,7 +90,7 @@ export function useHomeMoments(streak: number | undefined) {
       const show = (podium?: PodiumPerson[]) => celebrate({
         kind: 'ranking-result', position: lastWeek.position, steps: lastWeek.steps, weekLabel, podium,
         me: { id: userId, name: prof?.full_name || 'Tú', photoUrl: prof?.photo_url ?? null },
-        onRanking: () => router.push('/(tabs)/ranking'),
+        onRanking: () => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'ranking' } }),
       });
       if (lastWeek.position > 3) { show(); return; }
       // En el podio: se traen los otros dos para mostrar sus fotos (si falla, el podio sale igual).

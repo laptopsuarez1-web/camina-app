@@ -10,6 +10,8 @@ export interface Streaks {
   racha: number;
   /** Meta personal: días seguidos llegando a la meta que tenía la persona ese día. No cambia la Racha. */
   meta: number;
+  /** Los últimos 7 días (termina hoy): si ese día llegó a los pasos que mantienen la Racha. */
+  week: { key: string; ok: boolean }[];
 }
 
 const localKey = (d: Date) =>
@@ -48,7 +50,13 @@ export function useStreaks() {
       const rows = data ?? [];
       const racha = new Set(rows.filter((d) => d.steps >= STREAK_MIN_STEPS).map((d) => d.day));
       const meta = new Set(rows.filter((d) => d.steps >= (d.goal ? Math.max(d.goal, MIN_DAILY_GOAL) : goal)).map((d) => d.day));
-      return { racha: run(racha), meta: run(meta) };
+      const week = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const key = localKey(d);
+        return { key, ok: racha.has(key) };
+      });
+      return { racha: run(racha), meta: run(meta), week };
     },
   });
 }

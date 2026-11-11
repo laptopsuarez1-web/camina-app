@@ -6,18 +6,17 @@ import { View, ScrollView, Alert } from 'react-native';
 import { KeyboardSafe } from '@/components/ui/KeyboardSafe';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { groupGradient } from '@/lib/group-look';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Plus, Users, Trophy, ChevronRight, Hash, IconBubble } from '@/components/icons';
+import { Plus, Users, ChevronRight, Hash, IconBubble } from '@/components/icons';
 import { Spinner } from '@/components/ui/Spinner';
 import { useMyGroupsWeek } from '@/hooks/useMyGroupsWeek';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useGroups } from '@/hooks/useGroups';
-import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
-import { useGroupInvites, useGroupInviteActions } from '@/hooks/useFriends';
+import { useGroupInvites, useGroupInviteActions, useFriendRequests } from '@/hooks/useFriends';
 import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -25,10 +24,17 @@ import { Glass } from '@/components/ui/Glass';
 import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
+import { Segmented } from '@/components/ui/Segmented';
+import { RankingBody } from '@/components/comunidad/RankingBody';
+import { AmigosBody } from '@/components/comunidad/AmigosBody';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { friendlyServerError } from '@/lib/errors';
 
+type Seg = 'grupos' | 'ranking' | 'amigos';
+const isSeg = (v: unknown): v is Seg => v === 'grupos' || v === 'ranking' || v === 'amigos';
+
+// Pestaña Comunidad: tus grupos, el ranking semanal y tus amigos, en tres solapas.
 export default function GruposScreen() {
   const pull = usePullToRefresh();
   const tabSpace = useTabBarSpace();
@@ -37,7 +43,13 @@ export default function GruposScreen() {
   const userId = useAuthStore((s) => s.session?.user.id);
   const queryClient = useQueryClient();
   const [code, setCode] = useState('');
-  const { data: myRank } = useMyWeeklyRank();
+  const { data: friendRequests } = useFriendRequests();
+  // Se puede llegar con la solapa pedida (?ver=ranking o ?ver=amigos); si la persona toca otra, manda su elección.
+  const params = useLocalSearchParams<{ ver?: string; vista?: string }>();
+  const [picked, setPicked] = useState<{ from: string | undefined; seg: Seg } | null>(null);
+  const seg: Seg = picked && picked.from === params.ver ? picked.seg : isSeg(params.ver) ? params.ver : 'grupos';
+  const setSeg = (k: Seg) => setPicked({ from: params.ver, seg: k });
+  const pendingFriends = (friendRequests ?? []).length;
   const { data: invites } = useGroupInvites();
   const { accept, decline } = useGroupInviteActions();
 
@@ -78,34 +90,31 @@ export default function GruposScreen() {
       <ScrollView refreshControl={pull} ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <View className="flex-1">
-          <ScreenTitle>Grupos</ScreenTitle>
+          <ScreenTitle>Comunidad</ScreenTitle>
         </View>
+        {seg === 'grupos' ? (
         <Press accessibilityRole="button" accessibilityLabel="Crear un grupo nuevo" haptic="light" onPress={() => router.push('/(tabs)/grupos/nuevo')} className="bg-purple-deep items-center justify-center" style={{ width: 42, height: 42, borderRadius: 21 }}>
           <Plus size={20} color="#fff" />
         </Press>
+        ) : <View style={{ height: 42 }} />}
       </View>
+      <Segmented
+        value={seg}
+        onChange={setSeg}
+        options={[
+          { key: 'grupos', label: 'Grupos' },
+          { key: 'ranking', label: 'Ranking' },
+          { key: 'amigos', label: 'Amigos', dot: pendingFriends > 0, a11yLabel: pendingFriends > 0 ? `Amigos, ${pendingFriends} ${pendingFriends === 1 ? 'solicitud' : 'solicitudes'}` : 'Amigos' },
+        ]}
+      />
+
+      {seg === 'ranking' && <RankingBody embedded initialView={params.vista === 'amigos' ? 'amigos' : 'global'} onInvite={() => setSeg('amigos')} />}
+      {seg === 'amigos' && <AmigosBody />}
+
+      {seg === 'grupos' && (<>
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>
         Camina, comparte y gana en equipo
       </Text>
-
-      <Glass className="rounded-3xl overflow-hidden mb-4">
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel={`Ranking semanal: ${myRank ? `vas ${myRank.position}.º` : 'ver'}`}
-          onPress={() => router.push('/(tabs)/ranking')}
-          feedback="row"
-          className="flex-row items-center p-4"
-          style={{ gap: 12 }}
-        >
-          <IconBubble icon={Trophy} tone="gold" size={38} />
-          <View className="flex-1">
-            <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ranking semanal</Text>
-            <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Global y entre amigos</Text>
-          </View>
-          <Text className="text-[13px] text-muted-light dark:text-muted-dark">{myRank ? `Vas ${myRank.position}.º` : 'Ver'}</Text>
-          <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />
-        </Press>
-      </Glass>
 
       {(invites ?? []).length > 0 && (
         <Glass className="rounded-3xl overflow-hidden mb-4" style={{ borderColor: dark ? 'rgba(245,198,69,0.45)' : '#F0D9A0', borderWidth: 1 }}>
@@ -307,6 +316,7 @@ export default function GruposScreen() {
           <ChevronRight size={14} color={dark ? colors.dark.muted : colors.light.muted} />
         </Press>
       </Glass>
+      </>)}
       </ScrollView>
     </KeyboardSafe>
   );

@@ -8,12 +8,12 @@ import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthorization as requestHealthKitAuthorization, queryStatisticsForQuantity } from '@kingstinct/react-native-healthkit';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target, Gift } from '@/components/icons';
 import { DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { GoalSheet } from '@/components/GoalSheet';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, signOutUser } from '@/store/useAuthStore';
-import { usePointsBalance } from '@/hooks/usePoints';
+import { useMyRedemptions } from '@/hooks/useBenefits';
 import { colors } from '@/theme/tokens';
 import { useFriendRequests, useFriends } from '@/hooks/useFriends';
 import { useBlocks } from '@/hooks/useModeration';
@@ -29,7 +29,6 @@ import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { NotificationPrefs } from '@/components/NotificationPrefs';
 import { unregisterPushToken, registerForPushNotificationsAsync } from '@/lib/push-notifications';
-import { Coin } from '@/components/ui/Coin';
 import { BadgesCard } from '@/components/badges/BadgesCard';
 import { ProfileBanner } from '@/components/profile/ProfileBanner';
 import { useMyBadges } from '@/hooks/useBadges';
@@ -104,7 +103,9 @@ export default function PerfilScreen() {
   const emailVerified = useEmailVerified();
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: badges } = useMyBadges();
-  const { data: balance } = usePointsBalance();
+  // Canjes ya entregados (los pendientes, vencidos y cancelados no cuentan en el número).
+  const { data: myRedemptions } = useMyRedemptions();
+  const canjes = (myRedemptions ?? []).filter((r) => r.status === 'confirmed').length;
   const { data: friendRequests } = useFriendRequests();
   const { data: friends } = useFriends();
   const blocks = useBlocks();
@@ -252,8 +253,6 @@ export default function PerfilScreen() {
     router.replace('/(auth)/welcome?modo=login');
   }
 
-  const interestsText = (profile?.interests ?? []).length > 0 ? (profile?.interests ?? []).join(', ') : 'Todavía no elegiste ninguno';
-
   const dailyGoal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const friendCount = (friends ?? []).length;
   const requests = (friendRequests ?? []).length;
@@ -287,14 +286,14 @@ export default function PerfilScreen() {
       <View className="px-5 pt-4">
         {/* 2) Tus números: cada uno lleva a su pantalla. */}
         <View className="flex-row mb-3" style={{ gap: 10 }}>
-          <Press accessibilityRole="button" accessibilityLabel={`${balance ?? 0} ${plural(balance ?? 0, 'Punto', 'Puntos')}, ver detalle`} onPress={() => router.push('/(tabs)/puntos')} className="flex-1">
+          <Press accessibilityRole="button" accessibilityLabel={`Mis canjes: ${canjes} ${plural(canjes, 'canje', 'canjes')}. Ver todos`} onPress={() => router.push('/(tabs)/mis-canjes')} className="flex-1">
             <Glass className="rounded-2xl p-3 items-center">
-              <Coin size={24} />
-              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{balance ?? 0}</Text>
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">{plural(balance ?? 0, 'Punto', 'Puntos')}</Text>
+              <Gift size={24} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{canjes}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">mis canjes</Text>
             </Glass>
           </Press>
-          <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push('/(tabs)/amigos')} className="flex-1">
+          <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} className="flex-1">
             <Glass className="rounded-2xl p-3 items-center">
               <UserPlus size={24} color={isDark ? colors.mint : colors.aquaDeep} />
               <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{friendCount}</Text>
@@ -323,9 +322,8 @@ export default function PerfilScreen() {
 
         <SectionLabel>Tu cuenta</SectionLabel>
         <Glass className="rounded-2xl overflow-hidden mb-4">
-          <Row label="Editar perfil" hint="Foto, portada, nombre, zona y bio" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
-          <Row label="Intereses" hint={interestsText} onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
-          <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push('/(tabs)/amigos')} right={chev} last />
+          <Row label="Editar perfil" hint="Foto, portada, nombre, zona, bio e intereses" onPress={() => router.push('/(tabs)/editar-perfil')} right={chev} />
+          <Row label="Invitar amigos" hint="Ganas 5 Puntos por cada amigo que se suma" onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} right={chev} last />
         </Glass>
 
         <SectionLabel>Permisos y avisos</SectionLabel>
@@ -359,7 +357,7 @@ export default function PerfilScreen() {
         <PermRow
           icon={Bell}
           title="Notificaciones"
-          text={pushStatus === 'granted' ? 'Te avisamos de códigos por vencer, tu racha y retos.' : 'Sin esto no te avisamos de códigos por vencer ni de tu racha.'}
+          text={pushStatus === 'granted' ? 'Te avisamos de códigos por vencer, tu racha y tus desafíos.' : 'Sin esto no te avisamos de códigos por vencer ni de tu racha.'}
           status={pushStatus}
           onPress={pushStatus === 'granted' ? () => Linking.openSettings() : enablePush}
         />

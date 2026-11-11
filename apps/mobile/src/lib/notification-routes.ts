@@ -29,6 +29,9 @@ export function routeForNotification(type?: string, data?: { group_id?: unknown;
     case 'group_challenge_end':
     case 'group_week':
       return '/(tabs)/grupos';
+    // Resumen del lunes para quien no tiene grupo: lleva al ranking, dentro de Comunidad.
+    case 'weekly_rank':
+      return '/(tabs)/grupos?ver=ranking';
     case 'wrapped':
       return '/(tabs)/actividad';
     case 'streak':

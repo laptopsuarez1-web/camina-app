@@ -226,8 +226,14 @@ function statusColors(s: RedemptionRow['status'], dark: boolean): { bg: string; 
 }
 
 export function MyRedemptionsSection({
-  redemptions, loading, storyFor, onStory,
+  redemptions, loading, storyFor, onStory, limit = 3, title = 'Tus canjes', onSeeAll,
 }: {
+  // Cuántos se muestran (Inicio: los 3 últimos; pestaña Canjes: todos).
+  limit?: number;
+  // Título de la sección; null la deja sin título (en Canjes ya lo dice la solapa).
+  title?: string | null;
+  // En Inicio: "Ver todos" lleva a la solapa Mis canjes.
+  onSeeAll?: () => void;
   redemptions: RedemptionRow[] | undefined;
   loading: boolean;
   // Estado de la historia de Instagram de cada canje (null = no corresponde: no confirmado o muy viejo).
@@ -236,11 +242,12 @@ export function MyRedemptionsSection({
 }) {
   const dark = useColorScheme().colorScheme === 'dark';
   const [detail, setDetail] = useState<RedemptionDetail | null>(null);
-  const list = (redemptions ?? []).slice(0, 3);
+  const list = (redemptions ?? []).slice(0, limit);
+  const header = title ? <SectionHeader title={title} actionLabel={onSeeAll && (redemptions ?? []).length > 0 ? 'Ver todos' : undefined} onAction={onSeeAll} /> : null;
   if (loading && !redemptions) {
     return (
       <View>
-        <SectionHeader title="Tus canjes" />
+        {header}
         <SkeletonGroup style={{ marginHorizontal: 20 }}>
           <Glass className="rounded-3xl overflow-hidden" style={{ padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <Skeleton width={42} height={42} radius={14} />
@@ -256,7 +263,7 @@ export function MyRedemptionsSection({
   }
   return (
     <View>
-      <SectionHeader title="Tus canjes" />
+      {header}
       {list.length === 0 ? (
         <View className="mx-5">
           <EmptyState

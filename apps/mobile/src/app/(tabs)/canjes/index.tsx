@@ -766,7 +766,7 @@ export default function CanjesScreen() {
         </View>
 
         <View className="px-5 pt-5">
-          <ScreenTitle>Canjear</ScreenTitle>
+          <ScreenTitle>Canjes</ScreenTitle>
           <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
 
           {!profile?.zone && showZonePrompt && (

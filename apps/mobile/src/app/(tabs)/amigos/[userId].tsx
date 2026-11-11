@@ -65,7 +65,7 @@ export default function FriendProfileScreen() {
       me: { id: meId, name: profile?.full_name ?? 'Tú', photoUrl: profile?.photo_url ?? null },
       friend: { id: userId!, name: card.full_name, photoUrl: card.photo_url },
       onCreateGroup: () => router.push({ pathname: '/(tabs)/grupos/nuevo', params: { friend: userId! } }),
-      onRanking: () => router.push({ pathname: '/(tabs)/ranking', params: { view: 'amigos' } }),
+      onRanking: () => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'ranking', vista: 'amigos' } }),
     });
   };
   const { text, muted, line, dark, accentText, purpleText } = useThemeColors();

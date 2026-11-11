@@ -188,6 +188,12 @@ test('Racha cuenta con 5.000 pasos aunque la meta sea otra; Meta personal usa la
     ]);
     setAuth(USER, { daily_goal: 8000 });
     useStreaks();
-    assert.deepEqual(await rq.lastQuery.queryFn(), { racha: 2, meta: 2 });
+    const r = await rq.lastQuery.queryFn();
+    assert.equal(r.racha, 2);
+    assert.equal(r.meta, 2);
+    // La semana a la vista: 7 días que terminan hoy, con tilde solo los que llegaron a 5.000 pasos.
+    assert.equal(r.week.length, 7);
+    assert.equal(r.week[6].key, dayKey(0));
+    assert.deepEqual(r.week.map((d: { ok: boolean }) => d.ok), [false, false, false, false, false, true, true]);
   });
 });

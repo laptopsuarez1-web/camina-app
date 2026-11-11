@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { View, ScrollView, Image, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
-import { Text, TextInput } from '@/components/ui/Text';
+import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,8 +9,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GoalSheet } from '@/components/GoalSheet';
+import { IllArt } from '@/components/ui/IllustratedIcons';
 import { BellButton } from '@/components/ui/BellButton';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
@@ -28,19 +29,19 @@ import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { syncStreakReminders } from '@/lib/streak-reminders';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
 import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
-import { useFriends, useFriendRequests } from '@/hooks/useFriends';
+import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
-import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
+import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL } from '@/constants/business-rules';
+import { ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
 import { useRuta } from '@/hooks/useRuta';
-import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
+import { NearbyRow, MyRedemptionsSection, SectionHeader, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
@@ -123,7 +124,6 @@ export default function HomeScreen() {
   const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
   const { data: myRank } = useMyWeeklyRank();
-  const { data: friends } = useFriends();
   const { data: friendRequests } = useFriendRequests();
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
@@ -131,8 +131,7 @@ export default function HomeScreen() {
   const retryFor = useRef({ steps: 0, tries: 0 });
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [retryTick, setRetryTick] = useState(0);
-  const [editingGoal, setEditingGoal] = useState(false);
-  const [goalInput, setGoalInput] = useState('');
+  const [goalOpen, setGoalOpen] = useState(false);
 
   useEffect(() => {
     if (live && steps > 0 && steps !== lastSynced.current) {
@@ -273,20 +272,15 @@ export default function HomeScreen() {
   const myGroups = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
   const groupsValue = myGroups.length === 0 ? 'Ninguno' : myGroups.length === 1 ? '1 activo' : `${myGroups.length} activos`;
 
-  const goalDraft = parseInt(goalInput, 10) || 0;
-  const goalHint =
-    goalDraft < MIN_DAILY_GOAL
-      ? `La meta mínima es ${MIN_DAILY_GOAL.toLocaleString('es-BO')} pasos`
-      : goalDraft >= GOOD_DAILY_GOAL
-        ? '¡Muy bien! Una meta que suma'
-        : '¡Tú puedes más!';
-  // iOS ignora accessibilityLiveRegion: cuando el aviso cambia mientras se edita la meta, se anuncia a mano.
-  const lastGoalHint = useRef('');
-  useEffect(() => {
-    const prev = lastGoalHint.current;
-    lastGoalHint.current = editingGoal ? goalHint : '';
-    if (editingGoal && prev && prev !== goalHint && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(goalHint);
-  }, [editingGoal, goalHint]);
+  // Premios: para cuántos alcanza con los Puntos de hoy (todos, sin empujar a ninguno). Si no alcanza para ninguno, desde cuántos Puntos hay.
+  const activeBenefits = benefits ?? [];
+  const affordable = balance === undefined ? 0 : activeBenefits.filter((b) => b.cost_points <= balance).length;
+  const cheapest = activeBenefits.length > 0 ? Math.min(...activeBenefits.map((b) => b.cost_points)) : null;
+  const prizesValue = activeBenefits.length === 0 || balance === undefined
+    ? ''
+    : affordable > 0
+      ? `Te alcanza para ${affordable}`
+      : `Desde ${cheapest} ${plural(cheapest ?? 0, 'Punto', 'Puntos')}`;
 
   // Aviso de Puntos por vencer: el mismo texto se ve y se lee.
   const expiringMsg =
@@ -294,16 +288,6 @@ export default function HomeScreen() {
       ? `${expiring.amount} ${plural(expiring.amount, 'Punto vence', 'Puntos vencen')} ${expiring.days <= 0 ? 'hoy' : `en ${expiring.days} ${plural(expiring.days, 'día', 'días')}`}`
       : '';
   const expiringHint = expiring?.amount === 1 ? 'Canjéalo antes de perderlo' : 'Canjéalos antes de perderlos';
-
-  async function saveGoal() {
-    const n = parseInt(goalInput, 10);
-    if (n < MIN_DAILY_GOAL) return; // el aviso de meta mínima ya se ve debajo
-    if (profile && n > 0) {
-      await supabase.from('profiles').update({ daily_goal: n }).eq('id', profile.id);
-      await useAuthStore.getState().refreshProfile();
-    }
-    setEditingGoal(false);
-  }
 
   return (
     <View ref={rootRef} className="flex-1">
@@ -428,89 +412,44 @@ export default function HomeScreen() {
           </ProgressRing>
         </View>
 
-        <View className="flex-row items-center justify-center gap-2 flex-wrap" style={{ marginTop: 22 }}>
-          {(streak ?? 0) > 0 && (
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver tus rachas`}
-              onPress={() => setStreaksOpen(true)}
-              className="flex-row items-center rounded-full"
-              style={{ gap: 4, backgroundColor: 'rgba(98,240,182,0.1)', paddingHorizontal: 10, paddingVertical: 4 }}
-            >
-              <Flame size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '600' }}>{streak} {streak === 1 ? 'día' : 'días'} de racha</Text>
-            </Press>
-          )}
-          {goalMet && (
-            <Animated.View
-              style={{
-                flexDirection: 'row', alignItems: 'center', borderRadius: 999,
-                gap: 4, backgroundColor: 'rgba(98,240,182,0.16)', paddingHorizontal: 10, paddingVertical: 4,
-                opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
-              }}
-            >
-              <Check size={11} color={colors.mint} />
-              <Text style={{ color: colors.mint, fontSize: 12, fontWeight: '700' }}>¡Meta cumplida!</Text>
-            </Animated.View>
-          )}
-          {editingGoal ? (
-            <View className="flex-row items-center gap-1.5">
-              <TextInput
-                accessibilityLabel="Meta diaria de pasos"
-                value={goalInput}
-                onChangeText={(v) => setGoalInput(v.replace(/\D/g, ''))}
-                keyboardType="number-pad"
-                autoFocus
-                style={{
-                  width: 80,
-                  backgroundColor: 'rgba(255,255,255,0.12)',
-                  borderWidth: 1,
-                  borderColor: colors.authBgSoft,
-                  borderRadius: 8,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  color: '#fff',
-                  fontSize: 12,
-                }}
-              />
-              <Press accessibilityRole="button" hitSlop={{ top: 10, bottom: 10, left: 4, right: 8 }} onPress={saveGoal} className="bg-mint rounded-lg px-2.5 py-1">
-                <Text className="text-mint-dark font-bold text-[12px]">Listo</Text>
-              </Press>
-            </View>
-          ) : (
-            <Press
-              accessibilityRole="button"
-              accessibilityLabel={`Cambiar meta diaria, ${goal.toLocaleString('es-BO')} pasos`}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-              onPress={() => {
-                setGoalInput(String(goal));
-                setEditingGoal(true);
-              }}
-              className="rounded-full"
-              style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', paddingHorizontal: 10, paddingVertical: 4 }}
-            >
-              <View className="flex-row items-center" style={{ gap: 4 }}>
-                <Text style={{ color: colors.authMuted, fontSize: 12 }}>meta {goal.toLocaleString('es-BO')}</Text>
-                <Pencil size={14} color={colors.authMuted} />
-              </View>
-            </Press>
-          )}
-        </View>
-        {editingGoal && (
-          <Text
-            accessibilityLiveRegion="polite"
-            accessibilityLabel={goalHint}
-            style={{
-              color: goalDraft < MIN_DAILY_GOAL ? '#FFB27A' : colors.mint,
-              fontSize: 12,
-              fontWeight: '600',
-              textAlign: 'center',
-              marginTop: 8,
-            }}
+
+        {/* Debajo del aro: la racha y la meta como dos cifras separadas por una línea (sin pastillas ni lápiz).
+            Tocar la racha abre "Tu racha"; tocar la meta abre la ruedita para cambiarla. */}
+        <View className="flex-row items-stretch px-8" style={{ marginTop: 18 }}>
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`Racha de ${streak ?? 0} ${streak === 1 ? 'día' : 'días'}. Ver tu racha`}
+            haptic="light"
+            onPress={() => setStreaksOpen(true)}
+            className="flex-1 items-center"
+            style={{ paddingVertical: 4 }}
           >
-            {goalHint}
-          </Text>
-        )}
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <View style={{ opacity: (streak ?? 0) > 0 ? 1 : 0.45 }}><IllArt kind="flame" size={17} /></View>
+              <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{streak ?? 0}</Text>
+            </View>
+            <Text style={{ color: colors.authMuted, fontSize: 12, lineHeight: 16 }}>{streak === 1 ? 'día de racha' : 'días de racha'}</Text>
+          </Press>
+          <View style={{ width: 1, backgroundColor: 'rgba(255,255,255,0.14)', marginVertical: 4 }} />
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`${goalMet ? 'Meta cumplida. ' : ''}Tu meta diaria es de ${goal.toLocaleString('es-BO')} pasos. Cambiarla`}
+            haptic="light"
+            onPress={() => setGoalOpen(true)}
+            className="flex-1 items-center"
+            style={{ paddingVertical: 4 }}
+          >
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <Text style={{ color: '#fff', fontSize: 17, lineHeight: 21, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{goal.toLocaleString('es-BO')}</Text>
+              {goalMet ? (
+                <Animated.View style={{ opacity: goalIn, transform: [{ scale: goalIn.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }}>
+                  <Check size={14} color={colors.mint} weight="bold" />
+                </Animated.View>
+              ) : null}
+            </View>
+            <Text style={{ color: goalMet ? colors.mint : colors.authMuted, fontSize: 12, lineHeight: 16, fontWeight: goalMet ? '700' : '400' }}>{goalMet ? 'meta cumplida' : 'meta diaria'}</Text>
+          </Press>
+        </View>
 
         {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
@@ -609,12 +548,25 @@ export default function HomeScreen() {
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
         <HomePromoSections />
 
-        <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+        {/* Tu semana: lo que tienes en marcha, con el dato a la vista. Amigos solo aparece si hay solicitudes (su lugar es Comunidad). */}
+        <View style={{ marginTop: 22 }}>
+          <SectionHeader title="Tu semana" />
+        </View>
+        <Glass className="rounded-3xl mx-5 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+          {prizesValue ? (
+            <LinkRow
+              icon={Gift}
+              tone="aqua"
+              title="Premios"
+              value={prizesValue}
+              onPress={() => router.push('/(tabs)/canjes')}
+            />
+          ) : null}
           <LinkRow
             icon={Target}
             tone="aqua"
-            title="Retos"
-            value={reto ? (reto.claimed ? 'Completado' : `${reto.met} de ${reto.target}`) : 'Ver retos'}
+            title="Desafíos"
+            value={reto ? (reto.claimed ? 'Completado' : `${reto.met} de ${reto.target}`) : 'Ver desafíos'}
             onPress={() => router.push({ pathname: '/(tabs)/eventos', params: { tab: 'desafios' } })}
           />
           <LinkRow
@@ -622,16 +574,18 @@ export default function HomeScreen() {
             tone="gold"
             title="Ranking semanal"
             value={myRank ? `Vas ${myRank.position}.º` : 'Ver'}
-            onPress={() => router.push('/(tabs)/ranking')}
+            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'ranking' } })}
           />
-          <LinkRow
-            icon={UserPlus}
-            tone="purple"
-            title="Amigos"
-            value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invita'}
-            alert={(friendRequests ?? []).length > 0}
-            onPress={() => router.push('/(tabs)/amigos')}
-          />
+          {(friendRequests ?? []).length > 0 ? (
+            <LinkRow
+              icon={UserPlus}
+              tone="purple"
+              title="Amigos"
+              value={`${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}`}
+              alert
+              onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })}
+            />
+          ) : null}
           <LinkRow
             icon={Users}
             tone="purple"
@@ -642,32 +596,13 @@ export default function HomeScreen() {
           />
         </Glass>
 
-
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Ver toda tu actividad"
-          onPress={() => router.push('/(tabs)/actividad')}
-          className="mx-5"
-          style={{ marginTop: 14 }}
-        >
-          <Glass className="rounded-3xl p-4 flex-row items-center justify-between">
-            <View className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Activity} tone="aqua" size={42} />
-              <View>
-                <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark">Gráfico, calendario e historial</Text>
-              </View>
-            </View>
-            <ChevronRight size={16} color={isDark ? colors.dark.muted : colors.light.muted} />
-          </Glass>
-        </Press>
-
         {/* Sin canjes también se muestra: es el estado vacío con el Baifo. Si falló la carga, no. */}
         {(redemptions !== undefined || redemptionsLoading) && (
           <View style={{ marginTop: 28 }}>
             <MyRedemptionsSection
               redemptions={redemptions as unknown as RedemptionRow[] | undefined}
               loading={redemptionsLoading}
+              onSeeAll={() => router.push('/(tabs)/mis-canjes')}
               storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
               onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje' })}
             />
@@ -677,7 +612,8 @@ export default function HomeScreen() {
 
       </View>
     </ScrollView>
-    <StreaksSheet visible={streaksOpen} racha={streaks?.racha ?? 0} meta={streaks?.meta ?? 0} goal={goal} isDark={isDark} onClose={() => setStreaksOpen(false)} />
+    <GoalSheet visible={goalOpen} goal={goal} isDark={isDark} onClose={() => setGoalOpen(false)} />
+    <StreaksSheet visible={streaksOpen} racha={streaks?.racha ?? 0} meta={streaks?.meta ?? 0} week={streaks?.week} stepsToday={steps} goal={goal} isDark={isDark} onClose={() => setStreaksOpen(false)} />
     {flight && <CoinFlight path={flight} bump={pillBump} onDone={() => {
       flying.current = false;
       setFlight(null);
