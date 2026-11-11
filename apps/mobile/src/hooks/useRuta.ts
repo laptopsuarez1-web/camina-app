@@ -119,6 +119,14 @@ export function rutaMonthName(month: string) {
 export function rutaMonthShort(month: string) {
   return rutaMonthName(month).slice(0, 3).toUpperCase();
 }
+// Cuánto falta para que cierre la Ruta, en días de calendario: "quedan 19 días", "queda 1 día", "termina hoy".
+export function rutaTimeLeft(endsOn: string, now: Date = new Date()) {
+  const [y, m, d] = endsOn.slice(0, 10).split('-').map(Number);
+  const days = Math.round((new Date(y, m - 1, d).getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000);
+  if (days <= 0) return 'termina hoy';
+  return days === 1 ? 'queda 1 día' : `quedan ${days} días`;
+}
+
 export function rutaDone(s?: RutaState | null) {
   return (s?.stops ?? []).filter((x) => x.visit === 'confirmed').length;
 }

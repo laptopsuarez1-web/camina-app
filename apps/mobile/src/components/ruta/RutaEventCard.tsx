@@ -5,7 +5,7 @@ import { heavy } from '@/components/ruta/heavy';
 import { Press } from '@/components/ui/Press';
 import { RutaRing } from './RutaRing';
 import { RutaMiniMap } from './RutaMiniMap';
-import { participationLabel, rutaDone, showParticipation, rutaMonthName, rutaMonthShort, useRutaParticipation, useRutaPrize, type RutaState } from '@/hooks/useRuta';
+import { participationLabel, rutaDone, rutaTimeLeft, showParticipation, rutaMonthName, rutaMonthShort, useRutaParticipation, useRutaPrize, type RutaState } from '@/hooks/useRuta';
 
 // Tarjeta grande del evento del mes, arriba de todo en Eventos.
 export function RutaEventCard({ state, width, onParticipate, onOpen }: {
@@ -20,7 +20,10 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
   return (
     <Press accessibilityRole="button" accessibilityLabel={`Evento del mes: tu Ruta de ${month}`} onPress={onOpen} haptic="light"
       style={{ width, height, borderRadius: 30, overflow: 'hidden', backgroundColor: '#1a1330', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
-      <RutaMiniMap places={state.locales} padBottom={height * 0.45} pinSize={30} mystery />
+      {/* Antes de participar, pines sorpresa. Ya con ruta, tus 3 locales con su logo. */}
+      {state.joined && state.stops.length > 0
+        ? <RutaMiniMap places={state.stops} padBottom={height * 0.45} pinSize={34} route />
+        : <RutaMiniMap places={state.locales} padBottom={height * 0.45} pinSize={30} mystery />}
       <LinearGradient pointerEvents="none" colors={['rgba(22,17,31,0.05)', 'rgba(22,17,31,0.25)', 'rgba(32,10,82,0.94)', '#200A52']} locations={[0, 0.35, 0.62, 1]} style={{ position: 'absolute', inset: 0 }} />
       <View style={{ position: 'absolute', left: 16, top: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: '#62F0B6' }}>
         <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 11.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
@@ -41,9 +44,14 @@ export function RutaEventCard({ state, width, onParticipate, onOpen }: {
           {state.completed_at
             ? '¡Completaste tu ruta de este mes!'
             : state.joined
-              ? `Vas ${done} de 3 locales · hasta el ${end} de ${month}`
+              ? `Vas ${done} de 3 locales · ${rutaTimeLeft(state.ends_on)}`
               : `Te tocan 3 locales al azar · hasta el ${end} de ${month}`}
         </Text>
+        {state.joined && !state.completed_at ? (
+          <Text style={{ color: '#62F0B6', fontSize: 12, fontWeight: '700', marginTop: 4, textAlign: 'center' }}>
+            Completa los 3 y gana Día doble, insignia y boleto del sorteo
+          </Text>
+        ) : null}
         {showParticipation(participation) ? (
           <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(98,240,182,0.12)' }}>
             <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#62F0B6' }} />
@@ -75,8 +83,10 @@ export function RutaHomeCard({ state, onOpen, onParticipate }: { state: RutaStat
   return (
     <Press accessibilityRole="button" accessibilityLabel={`Evento del mes: tu Ruta de ${month}`} onPress={onOpen} haptic="light"
       className="mx-5 mb-4" style={{ height: 176, borderRadius: 26, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(98,240,182,0.28)', backgroundColor: '#17112a' }}>
-      {/* El centro de la ciudad de fondo con los pines sorpresa, igual que la foto del evento. */}
-      <RutaMiniMap places={state.locales} pinSize={24} padBottom={98} mystery />
+      {/* El centro de la ciudad de fondo: pines sorpresa antes de participar; ya con ruta, tus 3 locales con su logo. */}
+      {state.joined && state.stops.length > 0
+        ? <RutaMiniMap places={state.stops} pinSize={28} padBottom={98} route />
+        : <RutaMiniMap places={state.locales} pinSize={24} padBottom={98} mystery />}
       <LinearGradient pointerEvents="none" colors={['rgba(32,10,82,0.05)', 'rgba(32,10,82,0.55)', '#200A52']} locations={[0, 0.45, 0.72]} style={{ position: 'absolute', inset: 0 }} />
       <View style={{ position: 'absolute', left: 12, top: 10, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: '#62F0B6' }}>
         <Text style={{ color: '#14093a', fontWeight: '800', fontSize: 10.5, letterSpacing: 1 }}>EVENTO DEL MES</Text>
@@ -86,7 +96,7 @@ export function RutaHomeCard({ state, onOpen, onParticipate }: { state: RutaStat
         <View className="flex-1">
           <Text style={{ ...heavy(), color: '#fff', fontSize: 16, lineHeight: 19 }}>TU RUTA DE {month.toUpperCase()}</Text>
           <Text style={{ color: '#C4B8E8', fontSize: 12.5, lineHeight: 16, marginTop: 2 }} numberOfLines={2}>
-            {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 locales · hasta el ${end}` : `3 locales sorpresa · hasta el ${end}`}
+            {state.completed_at ? '¡Completaste tu ruta!' : state.joined ? `Vas ${done} de 3 locales · ${rutaTimeLeft(state.ends_on)}` : `3 locales sorpresa · hasta el ${end}`}
           </Text>
         </View>
         <Press accessibilityRole="button" onPress={!state.joined && onParticipate ? onParticipate : onOpen} haptic="light" hitSlop={6}

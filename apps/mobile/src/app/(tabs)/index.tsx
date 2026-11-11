@@ -28,19 +28,19 @@ import { useNotificationPrefs } from '@/store/useNotificationPrefs';
 import { syncStreakReminders } from '@/lib/streak-reminders';
 import { useWeeklyGoalReto } from '@/hooks/useRetos';
 import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
-import { useFriends, useFriendRequests } from '@/hooks/useFriends';
+import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { DAILY_POINTS_CAP, POINTS_PER_STEP_UNIT, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, GOOD_DAILY_GOAL } from '@/constants/business-rules';
-import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Activity, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
+import { Flame, ChevronRight, Users, UserPlus, Trophy, Target, Gift, Check, IconBubble, type IconProps, Pencil } from '@/components/icons';
 import { HomeAdBanner, HomePromoSections } from '@/components/home/HomePromos';
 import { useRutaDoneCelebration } from '@/components/ruta/useRutaDoneCelebration';
 import { RutaHomeCard } from '@/components/ruta/RutaEventCard';
 import { useRuta } from '@/hooks/useRuta';
-import { NearbyRow, MyRedemptionsSection, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
+import { NearbyRow, MyRedemptionsSection, SectionHeader, useHomePosition, type RedemptionRow } from '@/components/home/HomeSections';
 import { Glass } from '@/components/ui/Glass';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
@@ -123,7 +123,6 @@ export default function HomeScreen() {
   const { data: expiring } = usePointsExpiringSoon(14);
   const { data: reto } = useWeeklyGoalReto();
   const { data: myRank } = useMyWeeklyRank();
-  const { data: friends } = useFriends();
   const { data: friendRequests } = useFriendRequests();
   const syncSteps = useSyncSteps();
   const lastSynced = useRef(0);
@@ -287,6 +286,16 @@ export default function HomeScreen() {
     lastGoalHint.current = editingGoal ? goalHint : '';
     if (editingGoal && prev && prev !== goalHint && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(goalHint);
   }, [editingGoal, goalHint]);
+
+  // Premios: para cuántos alcanza con los Puntos de hoy (todos, sin empujar a ninguno). Si no alcanza para ninguno, desde cuántos Puntos hay.
+  const activeBenefits = benefits ?? [];
+  const affordable = balance === undefined ? 0 : activeBenefits.filter((b) => b.cost_points <= balance).length;
+  const cheapest = activeBenefits.length > 0 ? Math.min(...activeBenefits.map((b) => b.cost_points)) : null;
+  const prizesValue = activeBenefits.length === 0 || balance === undefined
+    ? ''
+    : affordable > 0
+      ? `Te alcanza para ${affordable}`
+      : `Desde ${cheapest} ${plural(cheapest ?? 0, 'Punto', 'Puntos')}`;
 
   // Aviso de Puntos por vencer: el mismo texto se ve y se lee.
   const expiringMsg =
@@ -609,7 +618,20 @@ export default function HomeScreen() {
         <NearbyRow benefits={benefits ?? []} pos={pos} loading={benefitsLoading} />
         <HomePromoSections />
 
-        <Glass className="rounded-3xl mx-5 mt-4 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+        {/* Tu semana: lo que tienes en marcha, con el dato a la vista. Amigos solo aparece si hay solicitudes (su lugar es Comunidad). */}
+        <View style={{ marginTop: 22 }}>
+          <SectionHeader title="Tu semana" />
+        </View>
+        <Glass className="rounded-3xl mx-5 overflow-hidden" style={{ shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } }}>
+          {prizesValue ? (
+            <LinkRow
+              icon={Gift}
+              tone="aqua"
+              title="Premios"
+              value={prizesValue}
+              onPress={() => router.push('/(tabs)/canjes')}
+            />
+          ) : null}
           <LinkRow
             icon={Target}
             tone="aqua"
@@ -624,14 +646,16 @@ export default function HomeScreen() {
             value={myRank ? `Vas ${myRank.position}.º` : 'Ver'}
             onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'ranking' } })}
           />
-          <LinkRow
-            icon={UserPlus}
-            tone="purple"
-            title="Amigos"
-            value={(friendRequests ?? []).length > 0 ? `${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}` : (friends ?? []).length > 0 ? `${friends!.length}` : 'Invita'}
-            alert={(friendRequests ?? []).length > 0}
-            onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })}
-          />
+          {(friendRequests ?? []).length > 0 ? (
+            <LinkRow
+              icon={UserPlus}
+              tone="purple"
+              title="Amigos"
+              value={`${friendRequests!.length} ${friendRequests!.length === 1 ? 'solicitud' : 'solicitudes'}`}
+              alert
+              onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })}
+            />
+          ) : null}
           <LinkRow
             icon={Users}
             tone="purple"
@@ -641,26 +665,6 @@ export default function HomeScreen() {
             last
           />
         </Glass>
-
-
-        <Press
-          accessibilityRole="button"
-          accessibilityLabel="Ver toda tu actividad"
-          onPress={() => router.push('/(tabs)/actividad')}
-          className="mx-5"
-          style={{ marginTop: 14 }}
-        >
-          <Glass className="rounded-3xl p-4 flex-row items-center justify-between">
-            <View className="flex-row items-center" style={{ gap: 12 }}>
-              <IconBubble icon={Activity} tone="aqua" size={42} />
-              <View>
-                <Text className="text-[14.5px] font-bold text-text-light dark:text-text-dark">Ver toda tu actividad</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark">Gráfico, calendario e historial</Text>
-              </View>
-            </View>
-            <ChevronRight size={16} color={isDark ? colors.dark.muted : colors.light.muted} />
-          </Glass>
-        </Press>
 
         {/* Sin canjes también se muestra: es el estado vacío con el Baifo. Si falló la carga, no. */}
         {(redemptions !== undefined || redemptionsLoading) && (
