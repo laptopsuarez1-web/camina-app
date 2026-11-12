@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Camina · Dossier para marcas y experiencias</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+.cover { padding: 0; background: #120a26 }
+.cover .bg { position: absolute; inset: 0; background: url(a/plaza.jpg) center/cover; opacity: .55 }
+.cover .shade { position: absolute; inset: 0; background: linear-gradient(90deg, #160c33 0%, rgba(22,12,51,.92) 42%, rgba(22,12,51,.35) 75%, rgba(22,12,51,.2) 100%) }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px }
+.step .phone { width: 44mm }
+.step h3 { font-size: 18px; margin: 0; font-weight: 800 }
+.step p { margin: 0; font-size: 12.5px; color: #CFC4EE; line-height: 1.45; max-width: 64mm }
+.tipo { border-radius: 18px; padding: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12) }
+.tipo .t { font-family: Montserrat; font-weight: 900; font-size: 19px; color: #fff }
+.tipo .d { font-size: 12px; color: #CFC4EE; margin-top: 3px; line-height: 1.4 }
+.tipo .ej { margin-top: 10px; font-size: 12px; font-weight: 700; color: #1a0f3a; background: #62F0B6; border-radius: 10px; padding: 7px 9px; line-height: 1.3 }
+.plan { border-radius: 20px; padding: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); display: flex; flex-direction: column; gap: 6px }
+.plan .n { font-weight: 800; font-size: 15px }
+.plan .p { font-family: Montserrat; font-weight: 900; font-size: 26px }
+.plan ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; color: #D6CCF0; display: flex; flex-direction: column; gap: 5px }
+.plan li::before { content: '✓  '; color: #62F0B6; font-weight: 800 }
+.plan.f { background: linear-gradient(160deg, #2b1d63, #1d1347); border: 2px solid #62F0B6 }
+</style>
+<style>
+.fmt { border-radius: 18px; padding: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12) }
+.fmt .t { font-family: Montserrat; font-weight: 900; font-size: 17px; color: #fff; margin-top: 2px }
+.fmt .d { font-size: 12px; color: #CFC4EE; margin-top: 5px; line-height: 1.45 }
+.ideas { display: flex; flex-direction: column; gap: 7px; margin-top: 12px }
+.ideas span { font-size: 12.5px; font-weight: 700; color: #1a0f3a; background: #62F0B6; border-radius: 10px; padding: 7px 11px; align-self: flex-start }
+</style></head><body>
+
+<!-- 1. PORTADA -->
+<section class="pg cover">
+  <div class="bg"></div><div class="shade"></div>
+  <div style="position:absolute;left:16mm;top:14mm;display:flex;align-items:center;gap:10px"><img src="a/logo.png" style="height:13mm"><span class="big" style="font-size:24px;color:#62F0B6;letter-spacing:2px">CAMINA</span></div>
+  <div style="position:absolute;left:16mm;top:42mm;width:128mm">
+    <div class="kicker">Para marcas, empresas y experiencias · 2026</div>
+    <h1 style="font-size:52px">Tu marca,<br><span class="m">en movimiento.</span></h1>
+    <p class="lead" style="font-size:16px;max-width:122mm">Camina es la app tarijeña donde la gente gana Puntos por caminar. Con desafíos, eventos y espacios de marca, <b style="color:#fff">haces que miles de personas se muevan con tu marca y lleguen a ella.</b></p>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <span class="pill m">Sale el 1 de diciembre</span>
+      <span class="pill o">Desde Bs 200</span>
+      <span class="pill o">No necesitas local</span>
+    </div>
+  </div>
+  <div class="phone" style="width:58mm;position:absolute;right:30mm;top:16mm;transform:rotate(4deg)"><img src="a/br-desafio.jpg"></div>
+  <div class="phone" style="width:52mm;position:absolute;right:84mm;top:40mm;transform:rotate(-5deg)"><img src="a/br-home.jpg"></div>
+  <img src="a/baifo.png" style="position:absolute;right:8mm;bottom:6mm;width:42mm">
+  <div class="foot" style="color:#B9AED9"><span>Dossier para marcas y experiencias · caminaapp.com</span><span>Hecha en Bolivia</span></div>
+</section>
+
+<!-- 2. POR QUÉ CAMINA -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>01 · Por qué Camina</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Una audiencia que se mueve</div>
+      <h2>No es publicidad que se salta: <span class="m">es una meta que se cumple.</span></h2>
+      <p class="lead">La gente abre Camina todos los días para ver sus pasos, cuidar su racha y competir con sus amigos. Ahí es donde aparece tu marca: como el premio, el reto o el evento al que quieren llegar.</p>
+      <div class="grid4" style="grid-template-columns:1fr 1fr;margin-top:16px">
+        <div class="card"><div class="ic"><i style="--u:url(a/ic/footprints.svg)"></i></div><h3>Movimiento real</h3><p>No son vistas: son personas que caminan kilómetros por tu reto o llegan a tu evento.</p></div>
+        <div class="card"><div class="ic"><i style="--u:url(a/ic/flame.svg)"></i></div><h3>Todos los días</h3><p>Meta diaria, rachas, grupos y ranking semanal: una app que se abre seguido.</p></div>
+        <div class="card"><div class="ic"><i style="--u:url(a/ic/heart.svg)"></i></div><h3>Con propósito</h3><p>Tu marca asociada a la salud, al aire libre y a la comunidad de tu ciudad.</p></div>
+        <div class="card"><div class="ic"><i style="--u:url(a/ic/bar-chart-3.svg)"></i></div><h3>Medible</h3><p>Ves cuántos se sumaron, cuántos cumplieron, las entradas canjeadas y los ganadores.</p></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5mm;flex-shrink:0"><div class="phone" style="width:46mm;"><img src="a/app-grupos.jpg"></div><div class="phone" style="width:46mm;transform:translateY(10mm)"><img src="a/app-rachas.jpg"></div></div>
+  </div>
+</section>
+
+<!-- 3. FORMATOS -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>02 · Formatos</span></div>
+  <div class="content">
+    <div class="kicker">Elige cómo aparecer</div>
+    <h2>Cinco formas de que Tarija <span class="m">camine con tu marca.</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px">
+      <div class="fmt"><div class="ic"><i style="--u:url(a/ic/trophy.svg)"></i></div><div class="t">Desafío patrocinado</div><div class="d">Una meta de pasos con tu nombre y tu premio. Al terminar, se sortea entre quienes cumplieron.</div></div>
+      <div class="fmt"><div class="ic"><i style="--u:url(a/ic/calendar.svg)"></i></div><div class="t">Evento o experiencia</div><div class="d">Caminatas, clases, ferias o lanzamientos, con lugar, fotos, entradas y sorteo.</div></div>
+      <div class="fmt"><div class="ic"><i style="--u:url(a/ic/smartphone.svg)"></i></div><div class="t">Banner en Inicio</div><div class="d">Tu marca en la primera pantalla. Al tocarla, la persona va a tu WhatsApp, redes o web.</div></div>
+      <div class="fmt"><div class="ic"><i style="--u:url(a/ic/route.svg)"></i></div><div class="t">Ruta del mes</div><div class="d">Pon el premio del sorteo del mes y sé el local protagonista, destacado en dorado.</div></div>
+      <div class="fmt"><div class="ic"><i style="--u:url(a/ic/users.svg)"></i></div><div class="t">Tu equipo caminando</div><div class="d">Un grupo para tus colaboradores con meta semanal, ranking y retos internos.</div></div>
+    </div>
+    <div class="card" style="margin-top:16px;display:flex;gap:14px;align-items:center"><div class="ic" style="margin:0"><i style="--u:url(a/ic/shield-check.svg)"></i></div><p style="font-size:15px">Todo lo publica el equipo de Camina después de revisarlo: nada de mensajes engañosos. El premio lo pone y lo entrega tu marca.</p></div>
+  </div>
+</section>
+
+<!-- 4. DESAFÍO PATROCINADO -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>03 · Desafío patrocinado</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div style="display:flex;gap:5mm;flex-shrink:0"><div class="phone" style="width:54mm;"><img src="a/br-desafios.jpg"></div><div class="phone" style="width:54mm;transform:translateY(10mm)"><img src="a/br-desafio.jpg"></div></div>
+    <div style="flex:1">
+      <div class="kicker">El formato estrella</div>
+      <h2>Miles de pasos <span class="m">con tu nombre.</span></h2>
+      <p class="lead">Defines una meta de pasos (por día o en total) y un premio. La gente toca «Participar» y sus pasos cuentan desde ese momento. Al terminar, Camina sortea tu premio entre quienes cumplieron.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <div class="card"><h3>Dónde aparece</h3><p>En Eventos → Desafíos y en «Desafíos destacados» de Inicio, con tu logo y tu color.</p></div>
+        <div class="card"><h3>Tú decides</h3><p>La meta, los días (hasta 30), el premio y de 1 a 10 ganadores.</p></div>
+      </div>
+      <div class="ideas"><span>«Reto Fripap's: 50.000 pasos en 7 días»</span><span>«8.000 pasos diarios durante una semana»</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. EVENTOS Y EXPERIENCIAS -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>04 · Eventos y experiencias</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">De la app a la calle</div>
+      <h2>Experiencias que <span class="m">llenan un lugar.</span></h2>
+      <p class="lead">Publica tu evento con fecha, lugar y botón «Cómo llegar», hasta 8 fotos y la forma de entrar que prefieras.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px">
+        <div class="card"><h3>Entrada libre</h3><p>La gente toca «Anotarme» y ves cuántos van.</p></div>
+        <div class="card"><h3>Con Puntos</h3><p>La entrada se canjea con los Puntos que ganaron caminando, con cupos.</p></div>
+        <div class="card"><h3>Con dinero</h3><p>Pones el precio y te escriben por WhatsApp o compran en tu link.</p></div>
+      </div>
+      <p class="lead" style="font-size:13.5px">Y si quieres, sorteas un premio entre los que se anotaron.</p>
+      <div class="ideas"><span>Caminata nocturna con sorteo</span><span>Clase de yoga en el parque</span><span>Lanzamiento de producto con entrada por Puntos</span></div>
+    </div>
+    <div style="display:flex;gap:5mm;flex-shrink:0"><div class="phone" style="width:52mm;"><img src="a/br-eventos.jpg"></div><div class="phone" style="width:52mm;transform:translateY(10mm)"><img src="a/br-evento.jpg"></div></div>
+  </div>
+</section>
+
+<!-- 6. BANNER + RUTA + EQUIPO -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>05 · Más espacios para tu marca</span></div>
+  <div class="content" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10mm;align-items:start">
+    <div><div class="kicker">Banner en Inicio</div><h2 style="font-size:26px">La primera pantalla <span class="m">es tuya.</span></h2><p class="lead" style="font-size:13px">Tu logo y tu mensaje entre los pasos del día y los locales. Al tocar, va directo a tu WhatsApp, Instagram, TikTok o web. No necesitas local.</p><div style="margin-top:10px"><div class="phone" style="width:58mm;"><img src="a/br-home.jpg"></div></div></div>
+    <div><div class="kicker">Ruta del mes</div><h2 style="font-size:26px">Sé el <span class="m">protagonista del mes.</span></h2><p class="lead" style="font-size:13px">Pon el premio del sorteo de la Ruta: tu local sale en más rutas, destacado en dorado, y tu marca en el evento del mes.</p><div style="margin-top:10px"><div class="phone" style="width:58mm;"><img src="a/app-ruta2.jpg"></div></div></div>
+    <div><div class="kicker">Bienestar para tu equipo</div><h2 style="font-size:26px">Tu empresa, <span class="m">caminando junta.</span></h2><p class="lead" style="font-size:13px">Un grupo para tus colaboradores con meta semanal, ranking y retos con premios. Bienestar real, que se ve en los números.</p><div style="margin-top:10px"><div class="phone" style="width:58mm;"><img src="a/app-ranking.jpg"></div></div></div>
+  </div>
+</section>
+
+<!-- 7. PRECIOS -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>06 · Precios</span></div>
+  <div class="content">
+    <div class="kicker">Precios de lanzamiento</div>
+    <h2>Simple y <span class="m">sin sorpresas.</span></h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:18px">
+      <div class="plan"><div class="n">Publicación de marca</div><div class="p">Bs 400</div><div class="muted" style="font-size:12.5px">por publicación · no necesitas local</div><ul><li>Una pieza a elección: banner en Inicio, evento o desafío</li><li>Diseño base con tu logo y tu color</li><li>Lo revisamos y lo publicamos por ti</li></ul></div>
+      <div class="plan f"><span class="pill g" style="align-self:flex-start">Si ya tienes un local en Camina</span><div class="n">Evento o desafío</div><div class="p" style="color:#62F0B6">Bs 200</div><div class="muted" style="font-size:12.5px">por publicación, con cualquier plan de local</div><ul><li>Tu evento o desafío con tu ficha y tus premios</li><li>La gente ya conoce tu local en el mapa</li></ul></div>
+      <div class="plan"><div class="n">Campaña a medida</div><div class="p">A conversar</div><div class="muted" style="font-size:12.5px">para marcas que quieren más</div><ul><li>Varias piezas a lo largo del mes</li><li>Ruta del mes protagonista</li><li>Bienestar para tu equipo</li><li>Difusión en las redes de Camina</li></ul></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/gift.svg)"></i></div><h3>El premio es tuyo</h3><p>Tú lo pones y lo entregas a los ganadores que sortea Camina.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/shield-check.svg)"></i></div><h3>Revisado por Camina</h3><p>Todo se aprueba antes de salir, para cuidar a la gente y a tu marca.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/zap.svg)"></i></div><h3>Lo publicas tú</h3><p>Desde el panel de Camina, en minutos, o te lo armamos nosotros.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. EMPECEMOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>07 · Empecemos</span></div>
+  <div class="content" style="display:flex;gap:14mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Sale el 1 de diciembre en Tarija</div>
+      <h2 style="font-size:44px">Que tu próxima campaña<br><span class="m">se mida en pasos.</span></h2>
+      <p class="lead">Cuéntanos qué quieres lograr y te armamos la propuesta: un desafío, un evento o una campaña completa.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">1</span><span style="font-size:14px">Escríbenos por WhatsApp (escanea el código).</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">2</span><span style="font-size:14px">Definimos juntos el formato, el premio y las fechas.</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">3</span><span style="font-size:14px">Lo publicamos y ves en vivo cuántos se suman.</span></div>
+      </div>
+    </div>
+    <div style="width:92mm;flex-shrink:0;display:flex;flex-direction:column;gap:10px;align-items:stretch">
+      <div style="background:#fff;border-radius:18px;padding:10px;text-align:center"><img src="a/qr-whatsapp.svg" style="width:62mm"><div style="color:#200a52;font-weight:800;font-size:13px;margin-top:4px">WhatsApp +591 627 14286</div></div>
+      <div class="card"><h3>Marcos Suárez · Creador de Camina</h3><p>caminaappbo@gmail.com · caminaapp.com</p></div>
+    </div>
+  </div>
+  <img src="a/baifo.png" style="position:absolute;left:150mm;bottom:4mm;width:30mm;opacity:.95">
+</section>
+</body></html>
