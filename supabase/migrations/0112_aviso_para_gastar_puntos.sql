@@ -1,6 +1,6 @@
 -- 0112: aviso de los sábados (10:00 de Bolivia) para animar a usar los Puntos.
 -- A quien le alcanza para al menos un premio y no canjeó nada en los últimos 7 días: cuántos Puntos tiene y para cuántos premios le alcanza.
--- Uno por persona por semana. Solo encola avisos. Se revierte con cron.unschedule('queue-spend-nudge').
+-- Uno por persona por semana. Solo encola avisos. (El tipo del aviso pasa a 'points_spend' en 0115.) Se revierte con cron.unschedule('queue-spend-nudge').
 create or replace function queue_spend_nudge_notifications() returns void
 language sql security definer set search_path = public
 as $f$
