@@ -23,6 +23,15 @@ const INICIOS = [
   { inicio: '', label: 'Mi frase', ejemplo: 'en tu segunda visita del mes' },
 ];
 
+// Botones de elegir (Gratis/Descuento, % u otro): se leen bien en claro y en oscuro.
+function choiceStyle(on: boolean, tone: 'aqua' | 'purple', locked = false): React.CSSProperties {
+  if (locked) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)', opacity: 0.45 };
+  if (!on) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)' };
+  return tone === 'aqua'
+    ? { borderColor: '#4FC3A8', background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)', boxShadow: 'inset 0 0 0 1px #4FC3A8' }
+    : { borderColor: '#8B4FD1', background: 'var(--c-purple-light)', color: 'var(--c-purple-text)', boxShadow: 'inset 0 0 0 1px #8B4FD1' };
+}
+
 function cap(t: string) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
@@ -146,8 +155,8 @@ export default function BeneficioPage() {
                 <span
                   className="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
                   style={{
-                    background: b.active ? '#E3F5F0' : '#F1EBFA',
-                    color: b.active ? '#2E9E7C' : '#8B4FD1',
+                    background: b.active ? 'var(--c-aqua-light)' : 'var(--c-purple-light)',
+                    color: b.active ? 'var(--c-ok-text)' : 'var(--c-purple-text)',
                   }}
                 >
                   {b.active ? 'Activo' : 'Desactivado'}
@@ -460,11 +469,7 @@ function BeneficioForm({
             onClick={() => !gratisLocked && setTipo('gratis')}
             title={gratisLocked ? 'Ya tienes un premio gratis: este puede ser un descuento' : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={{
-              borderColor: tipo === 'gratis' ? '#4FC3A8' : '#E1D2F5',
-              background: tipo === 'gratis' ? '#E3F5F0' : '#fff',
-              color: gratisLocked ? '#C7BEDB' : tipo === 'gratis' ? '#4FC3A8' : '#7C6A9C',
-            }}
+            style={choiceStyle(tipo === 'gratis', 'aqua', gratisLocked)}
           >
             Gratis
           </button>
@@ -473,11 +478,7 @@ function BeneficioForm({
             onClick={() => !descuentoLocked && setTipo('descuento')}
             title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={{
-              borderColor: tipo === 'descuento' ? '#8B4FD1' : '#E1D2F5',
-              background: tipo === 'descuento' ? '#F1EBFA' : '#fff',
-              color: descuentoLocked ? '#C7BEDB' : tipo === 'descuento' ? '#8B4FD1' : '#7C6A9C',
-            }}
+            style={choiceStyle(tipo === 'descuento', 'purple', descuentoLocked)}
           >
             Descuento
           </button>
@@ -504,7 +505,7 @@ function BeneficioForm({
                     className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border"
                     style={inicio === op.inicio
                       ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' }
-                      : { background: '#fff', borderColor: '#CFEDE3', color: '#2E9E7C' }}
+                      : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-ok-text)' }}
                   >
                     {op.label}
                   </button>
@@ -534,11 +535,7 @@ function BeneficioForm({
                 type="button"
                 onClick={() => setDescuentoModo('porcentaje')}
                 className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={{
-                  borderColor: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#E1D2F5',
-                  background: descuentoModo === 'porcentaje' ? '#E3F5F0' : '#fff',
-                  color: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#7C6A9C',
-                }}
+                style={choiceStyle(descuentoModo === 'porcentaje', 'aqua')}
               >
                 % de descuento
               </button>
@@ -546,11 +543,7 @@ function BeneficioForm({
                 type="button"
                 onClick={() => setDescuentoModo('texto')}
                 className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={{
-                  borderColor: descuentoModo === 'texto' ? '#4FC3A8' : '#E1D2F5',
-                  background: descuentoModo === 'texto' ? '#E3F5F0' : '#fff',
-                  color: descuentoModo === 'texto' ? '#4FC3A8' : '#7C6A9C',
-                }}
+                style={choiceStyle(descuentoModo === 'texto', 'aqua')}
               >
                 Otro (2x1, Bs fijos...)
               </button>
@@ -643,9 +636,9 @@ function BeneficioForm({
                       onClick={() => setOnlineChannel(c.id)}
                       className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border disabled:cursor-not-allowed"
                       style={{
-                        background: on ? '#4FC3A8' : '#fff',
-                        color: !ok ? '#C7BEDB' : on ? '#fff' : '#7C6A9C',
-                        borderColor: on ? '#4FC3A8' : '#E1D2F5',
+                        background: on ? '#4FC3A8' : 'var(--c-card)',
+                        color: !ok ? 'var(--c-line)' : on ? '#fff' : 'var(--c-muted)',
+                        borderColor: on ? '#4FC3A8' : 'var(--c-line)',
                       }}
                     >
                       {c.label}
@@ -750,9 +743,9 @@ function BeneficioForm({
                   onClick={() => aplicarFranja(f.from, f.to)}
                   className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
                   style={{
-                    background: on ? '#8B4FD1' : '#fff',
-                    color: on ? '#fff' : '#7C6A9C',
-                    borderColor: on ? '#8B4FD1' : '#E1D2F5',
+                    background: on ? '#8B4FD1' : 'var(--c-card)',
+                    color: on ? '#fff' : 'var(--c-muted)',
+                    borderColor: on ? '#8B4FD1' : 'var(--c-line)',
                   }}
                 >
                   {f.label} · {f.from}–{f.to}
@@ -765,9 +758,9 @@ function BeneficioForm({
               onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
               className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
               style={{
-                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#fff',
-                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : '#7C6A9C',
-                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#E1D2F5',
+                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-card)',
+                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : 'var(--c-muted)',
+                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-line)',
               }}
             >
               Solo lunes a jueves
@@ -788,7 +781,7 @@ function BeneficioForm({
               </button>
             </div>
           ) : (
-            <p className="text-[11px] mt-2" style={{ color: '#7C6A9C' }}>
+            <p className="text-[11px] mt-2" style={{ color: 'var(--c-muted)' }}>
               {isFree
                 ? 'Con Paso Firme, Camina te sugiere tus horas más flojas según tus canjes.'
                 : 'Cuando tengas más canjes, aquí te vamos a sugerir tus horas más flojas.'}
@@ -834,9 +827,9 @@ function BeneficioForm({
                 onClick={() => toggleDia(i)}
                 className="w-9 h-9 rounded-full text-[12px] font-bold"
                 style={{
-                  background: on ? '#4FC3A8' : '#fff',
-                  color: on ? '#fff' : '#7C6A9C',
-                  border: `1px solid ${on ? '#4FC3A8' : '#E1D2F5'}`,
+                  background: on ? '#4FC3A8' : 'var(--c-card)',
+                  color: on ? '#fff' : 'var(--c-muted)',
+                  border: `1px solid ${on ? '#4FC3A8' : 'var(--c-line)'}`,
                 }}
               >
                 {d}
@@ -889,7 +882,7 @@ function BeneficioForm({
             aria-label="Solo para tus Fans"
             onClick={() => setFansOnly((v) => !v)}
             className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: fansOnly ? '#4FC3A8' : '#E1D2F5' }}
+            style={{ background: fansOnly ? '#4FC3A8' : 'var(--c-line)' }}
           >
             <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: fansOnly ? '22px' : '2px' }} />
           </button>
@@ -906,7 +899,7 @@ function BeneficioForm({
             type="button"
             onClick={() => setActive((v) => !v)}
             className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: active ? '#4FC3A8' : '#E1D2F5' }}
+            style={{ background: active ? '#4FC3A8' : 'var(--c-line)' }}
           >
             <span
               className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"

@@ -12,8 +12,8 @@ import { registerForPushNotificationsAsync } from '@/lib/push-notifications';
 const DISMISSED_KEY = 'camina_push_prompt_dismissed_at';
 const WAIT_MS = 3 * 86_400_000;
 
-// El permiso de avisos se pide recién después del primer logro (un Punto, la meta o una racha) y explicando para qué
-// sirve: pedido apenas se entra, mucha gente dice que no y después no le llega nada. "Ahora no" lo esconde 3 días.
+// Segunda oportunidad: el permiso se pide apenas se entra; si la persona lo saltó (y el teléfono deja volver a
+// preguntar), después del primer logro esta tarjeta explica para qué sirve. "Ahora no" la esconde 3 días.
 export function PushPromptCard({ earnedSomething }: { earnedSomething: boolean }) {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);

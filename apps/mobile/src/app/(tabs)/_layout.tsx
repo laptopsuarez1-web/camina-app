@@ -33,8 +33,8 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (session) {
-      // No se pide el permiso al entrar: solo se registra si ya lo dio. El pedido va en Inicio, después del primer logro.
-      registerForPushNotificationsAsync({ onlyIfGranted: true });
+      // El permiso de avisos se pide apenas se entra (así llega a más gente).
+      registerForPushNotificationsAsync();
       shareCoarseLocation();
       scheduleWrappedReminder();
       registerDevice(session.user.id).then((status) => {
