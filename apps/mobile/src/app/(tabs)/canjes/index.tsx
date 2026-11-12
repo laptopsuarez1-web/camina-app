@@ -18,7 +18,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
 import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
@@ -744,6 +744,7 @@ export default function CanjesScreen() {
             >
               <Coin size={20} />
               <Text style={{ fontWeight: '700', fontSize: 15, color: colors.light.text }}>{balanceText}</Text>
+              <Text maxFontSizeMultiplier={1.3} style={{ fontWeight: '600', fontSize: 13, color: colors.light.muted }}>Puntos</Text>
             </Press>
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <BellButton color={colors.light.muted} bg="#fff" />
@@ -778,7 +779,21 @@ export default function CanjesScreen() {
         </View>
 
         <View className="px-5 pt-5">
-          <ScreenTitle>Canjes</ScreenTitle>
+          <View className="flex-row items-center justify-between" style={{ gap: 12 }}>
+            <View style={{ flexShrink: 1 }}><ScreenTitle>Canjes</ScreenTitle></View>
+            {/* Quien acaba de canjear busca su código aquí: atajo a Mis canjes (que también está en Perfil). */}
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel="Mis canjes"
+              hitSlop={6}
+              onPress={() => router.push('/(tabs)/mis-canjes')}
+              className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full"
+              style={{ gap: 6, paddingHorizontal: 12, height: 34 }}
+            >
+              <Ticket size={15} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[13px] font-bold text-text-light dark:text-text-dark">Mis canjes</Text>
+            </Press>
+          </View>
           <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
 
           {!profile?.zone && showZonePrompt && (

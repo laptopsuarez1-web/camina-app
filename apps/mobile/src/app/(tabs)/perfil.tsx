@@ -23,6 +23,8 @@ import { GlassSlider } from '@/components/ui/GlassSlider';
 import { buzz } from '@/lib/haptics';
 import { Glass } from '@/components/ui/Glass';
 import { AvatarImage } from '@/components/ui/AvatarImage';
+import { Coin } from '@/components/ui/Coin';
+import { usePointsBalance } from '@/hooks/usePoints';
 import { plural } from '@/lib/format';
 import { friendlyError } from '@/lib/errors';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
@@ -106,6 +108,7 @@ export default function PerfilScreen() {
   // Canjes ya entregados (los pendientes, vencidos y cancelados no cuentan en el número).
   const { data: myRedemptions } = useMyRedemptions();
   const canjes = (myRedemptions ?? []).filter((r) => r.status === 'confirmed').length;
+  const { data: balance } = usePointsBalance();
   const { data: friendRequests } = useFriendRequests();
   const { data: friends } = useFriends();
   const blocks = useBlocks();
@@ -286,11 +289,11 @@ export default function PerfilScreen() {
       <View className="px-5 pt-4">
         {/* 2) Tus números: cada uno lleva a su pantalla. */}
         <View className="flex-row mb-3" style={{ gap: 10 }}>
-          <Press accessibilityRole="button" accessibilityLabel={`Mis canjes: ${canjes} ${plural(canjes, 'canje', 'canjes')}. Ver todos`} onPress={() => router.push('/(tabs)/mis-canjes')} className="flex-1">
+          <Press accessibilityRole="button" accessibilityLabel={`${balance ?? 0} Puntos. Ver movimientos`} onPress={() => router.push('/(tabs)/puntos')} className="flex-1">
             <Glass className="rounded-2xl p-3 items-center">
-              <Gift size={24} color={isDark ? colors.mint : colors.aquaDeep} />
-              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{canjes}</Text>
-              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">mis canjes</Text>
+              <Coin size={24} />
+              <Text className="text-[18px] font-extrabold text-text-light dark:text-text-dark mt-1">{(balance ?? 0).toLocaleString('es-BO')}</Text>
+              <Text className="text-[11.5px] text-muted-light dark:text-muted-dark">Puntos</Text>
             </Glass>
           </Press>
           <Press accessibilityRole="button" accessibilityLabel={`Amigos${requests > 0 ? `, ${requests} ${requests === 1 ? 'solicitud' : 'solicitudes'}` : ''}`} onPress={() => router.push({ pathname: '/(tabs)/grupos', params: { ver: 'amigos' } })} className="flex-1">
