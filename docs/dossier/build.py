@@ -2,16 +2,29 @@ import re,base64,sys
 def scale_fonts(s,f=1.22):
     return re.sub(r'font-size:\s*([\d.]+)px', lambda m: f"font-size:{round(float(m.group(1))*f,1)}px", s)
 def icons(s):
+    # Íconos dibujados en verde dentro del PDF (sin máscaras: algunos visores, como el de iPhone, las muestran como un cuadrado negro).
+    def svg(name):
+        t=open('a/ic/'+name+'.svg').read()
+        t=re.sub(r'<!--.*?-->','',t,flags=re.S).strip()
+        t=re.sub(r'class="[^"]*"','',t).replace('width="24"','width="23"').replace('height="24"','height="23"').replace('stroke="currentColor"','stroke="#62F0B6"')
+        return t
+    return re.sub(r'<i style="--u:url\(a/ic/([\w-]+)\.svg\)"></i>', lambda m: svg(m.group(1)), s)
+def icons_old(s):
     def rep(m):
         svg=open('a/ic/'+m.group(1)+'.svg','rb').read()
         return "url('data:image/svg+xml;base64,"+base64.b64encode(svg).decode()+"')"
     return re.sub(r"url\(a/ic/([\w-]+)\.svg\)", rep, s)
 c=open('base.css').read(); c=scale_fonts(c)
+c=c.replace('box-shadow: 0 18px 40px rgba(0,0,0,.45); ','').replace('background: rgba(98,240,182,.14)','background: #273150')
 c=c.replace(".num { width: 30px; height: 30px;",".num { width: 36px; height: 36px;").replace(".ic { width: 34px; height: 34px;",".ic { width: 42px; height: 42px;").replace(".ic i { display: block; width: 19px; height: 19px;",".ic i { display: block; width: 23px; height: 23px;")
 open('base2.css','w').write(c)
 src,dst=sys.argv[1],sys.argv[2]
 s=open(src).read().replace('href="base.css"','href="base2.css"')
 s=scale_fonts(s); s=icons(s)
+# Portadas con la foto ya oscurecida (sin transparencias) y sin opacidades.
+s=s.replace('<div class="bg"></div><div class="shade"></div>','<div class="bg" style="background-image:url(a/plaza-cover.jpg);opacity:1"></div>')
+s=s.replace('<div class="bg" style="background-image:url(a/ciudad.jpg)"></div><div class="shade"></div>','<div class="bg" style="background-image:url(a/ciudad-cover.jpg);opacity:1"></div>')
+s=s.replace(';opacity:.95','')
 for a,b in [("width:58mm;transform:rotate(4deg)","width:68mm;transform:rotate(4deg)"),("right:84mm;top:40mm;width:52mm","right:84mm;top:40mm;width:58mm"),
             ('class="phone" style="width:42mm"','class="phone" style="width:50mm"'),
             ('class="phone" style="width:56mm;transform:translateY(-6mm)"','class="phone" style="width:62mm;transform:translateY(-6mm)"'),('class="phone" style="width:56mm;transform:translateY(8mm)"','class="phone" style="width:62mm;transform:translateY(8mm)"'),
