@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog, Route } from 'lucide-react';
+import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog, Route, ShoppingBag } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -29,6 +29,7 @@ const NAV_PRINCIPAL: NavItem[] = [
   { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/ruta', label: 'Ruta del mes', icon: Route },
+  { href: '/catalogo', label: 'Catálogo o menú', icon: ShoppingBag },
 ];
 
 const NAV_MAS: NavItem[] = [

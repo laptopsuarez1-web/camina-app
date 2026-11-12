@@ -8,6 +8,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
+import { CatalogSection } from '@/components/CatalogSection';
 import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { View, ScrollView, Modal, PanResponder, Alert, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -1399,6 +1400,8 @@ export default function CanjesScreen() {
                     </View>
                   </View>
                 ) : null}
+
+                <CatalogSection businessId={profileGroup.business.id} />
 
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
