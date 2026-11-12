@@ -84,6 +84,41 @@ export default function InicioPage() {
     <DashboardShell>
       <TopBar title={`Hola, ${business?.name ?? ''}`} subtitle="Tus códigos y cómo viene tu local." />
 
+      {/* Lo que te trajo Camina: lo primero que ve el dueño, en una frase. Solo números que registramos (sin inventar plata). */}
+      {resumen && resumen.personas > 0 ? (
+        <div className="rounded-2xl px-5 py-4 mb-5" style={{ background: 'var(--c-aqua-light)' }}>
+          <p className="text-[12px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--c-ok-text)' }}>
+            Lo que te trajo Camina {mes ? `en ${mes}` : 'este mes'}
+          </p>
+          <p className="text-[15px] leading-6 text-text">
+            <b className="text-[20px]">{resumen.personas} {resumen.personas === 1 ? 'persona' : 'personas'}</b> llegaron a tu local por Camina
+            {resumen.nuevos > 0 ? (
+              <>
+                : <b>{resumen.nuevos} {resumen.nuevos === 1 ? 'nueva' : 'nuevas'}</b>
+                {resumen.volvieron > 0 ? (
+                  <>
+                    {' '}y <b>{resumen.volvieron}</b> que {resumen.volvieron === 1 ? 'volvió' : 'volvieron'}
+                  </>
+                ) : null}
+              </>
+            ) : null}
+            .
+            {resumen.compraron_extra > 0 ? (
+              <>
+                {' '}
+                <b>{resumen.compraron_extra}</b> {resumen.compraron_extra === 1 ? 'compró' : 'compraron'} algo más además del premio.
+              </>
+            ) : null}
+          </p>
+        </div>
+      ) : resumen ? (
+        <div className="rounded-2xl px-5 py-4 mb-5 border border-line bg-card">
+          <p className="text-[14px] text-text">
+            <b>Lo que te trajo Camina:</b> cuando lleguen tus primeros clientes caminando, aquí vas a ver cuántos son, cuántos son nuevos y cuántos vuelven.
+          </p>
+        </div>
+      ) : null}
+
       {/* Los dos códigos que el local le da al cliente, siempre a la vista. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-5">
         <CodeCard

@@ -91,6 +91,8 @@ export interface Benefit {
   discount_percent: number | null;
   // Premio con tu compra (0116): qué hay que comprar para llevárselo. Null = nada.
   with_purchase?: string | null;
+  // Solo para clientes nuevos (0117): únicamente quien nunca canjeó en ese local.
+  new_customers_only?: boolean;
   cost_points: number;
   daily_quota: number | null;
   active: boolean;

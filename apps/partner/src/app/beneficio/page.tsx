@@ -1,5 +1,6 @@
 'use client';
 
+import { ideasParaRubro, etiquetaIdea, type IdeaPremio } from '@/lib/ideas-premio';
 import { useEffect, useState } from 'react';
 import { Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
@@ -163,7 +164,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
+                {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos{b.new_customers_only ? ' · Solo clientes nuevos' : ''}
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -229,8 +230,8 @@ function BeneficioForm({
   const descuentoLocked = isFree && (!freeHasGratis || freeHasDescuento);
   const gratisLocked = isFree && freeHasGratis;
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
-  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>(
-    benefit?.discount_percent != null ? 'porcentaje' : 'texto'
+  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | '2x1' | 'texto'>(
+    benefit?.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
   );
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(
     benefit?.discount_percent != null ? String(benefit.discount_percent) : '20'
@@ -250,6 +251,24 @@ function BeneficioForm({
   const frase = joinFrase(inicio, compra);
   // Tres formas de ofrecerlo. "Regalo con compra" se guarda como gratis + la frase de la compra.
   const modo: 'gratis' | 'regalo' | 'descuento' = tipo === 'descuento' ? 'descuento' : conCompra ? 'regalo' : 'gratis';
+  // Ideas por rubro (solo al crear): llenan nombre, cómo se ofrece y Puntos. Se esconden las que el plan no permite.
+  const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'descuento' ? !descuentoLocked : !gratisLocked));
+  function usarIdea(i: IdeaPremio) {
+    setNombre(i.nombre);
+    elegirModo(i.modo);
+    if (i.regalo) {
+      setInicio(i.regalo.inicio);
+      setCompra(i.regalo.resto);
+    }
+    if (i.modo === 'descuento') {
+      if (i.dosxuno) setDescuentoModo('2x1');
+      else {
+        setDescuentoModo('porcentaje');
+        setDescuentoPorcentaje(String(i.porcentaje ?? 10));
+      }
+    }
+    setCosto(String(i.puntos));
+  }
   function elegirModo(m: 'gratis' | 'regalo' | 'descuento') {
     if (m === 'descuento' ? descuentoLocked : gratisLocked) return;
     setTipo(m === 'descuento' ? 'descuento' : 'gratis');
@@ -292,6 +311,7 @@ function BeneficioForm({
   const [active, setActive] = useState(benefit?.active ?? true);
   // Premio solo para Fans (0083): opcional, solo lo ven y lo canjean quienes son Fans del local.
   const [fansOnly, setFansOnly] = useState(!!benefit?.fans_only);
+  const [soloNuevos, setSoloNuevos] = useState(!!benefit?.new_customers_only);
   // La opción aparece recién cuando el servidor tiene la columna (migración 0083); antes, guardar no la manda.
   const [fansReady, setFansReady] = useState(false);
   useEffect(() => {
@@ -350,7 +370,9 @@ function BeneficioForm({
         tipo === 'descuento'
           ? descuentoModo === 'porcentaje'
             ? `${Number(descuentoPorcentaje) || 0}% de descuento`
-            : descuento.trim()
+            : descuentoModo === '2x1'
+              ? '2x1'
+              : descuento.trim()
           : null,
       discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
       cost_points: Number(costo) || 0,
@@ -358,6 +380,7 @@ function BeneficioForm({
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
       active,
       ...(fansReady ? { fans_only: fansOnly } : {}),
+      new_customers_only: soloNuevos,
       image_url: imageUrl,
       valid_from: validFrom || null,
       valid_to: validTo || null,
@@ -437,6 +460,25 @@ function BeneficioForm({
 
       <div className="max-w-[540px]">
         <Paso n={1} title="Tu premio" hint="Es lo primero que ven en la app.">
+          {ideas.length > 0 && (
+            <div className="bg-bg rounded-xl p-3 mb-4">
+              <p className="text-[12.5px] font-semibold mb-2">💡 ¿No se te ocurre? Toca una idea para tu rubro</p>
+              <div className="flex flex-wrap gap-1.5">
+                {ideas.map((i) => (
+                  <button
+                    key={i.nombre}
+                    type="button"
+                    onClick={() => usarIdea(i)}
+                    className="rounded-full px-3 py-1.5 text-[12px] font-semibold border text-left"
+                    style={nombre === i.nombre ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-text)' }}
+                  >
+                    {etiquetaIdea(i)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted mt-2">Después cambias lo que quieras: el nombre, los Puntos o la foto.</p>
+            </div>
+          )}
           <ImageUpload
             bucket="benefit-images"
             path={`${businessId}/${benefitId ?? 'new'}-photo`}
@@ -525,8 +567,11 @@ function BeneficioForm({
                 <button type="button" onClick={() => setDescuentoModo('porcentaje')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'porcentaje', 'purple')}>
                   % de descuento
                 </button>
+                <button type="button" onClick={() => setDescuentoModo('2x1')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === '2x1', 'purple')}>
+                  2x1
+                </button>
                 <button type="button" onClick={() => setDescuentoModo('texto')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'texto', 'purple')}>
-                  Otro (2x1, Bs fijos…)
+                  Otro (Bs fijos…)
                 </button>
               </div>
               {descuentoModo === 'porcentaje' ? (
@@ -540,8 +585,13 @@ function BeneficioForm({
                   />
                   <span className="text-[13.5px] text-muted">% de descuento</span>
                 </div>
+              ) : descuentoModo === '2x1' ? (
+                <>
+                  <p className="text-[12.5px] text-muted leading-4">Se lleva 2 y paga 1. Ideal para que la persona venga con un amigo: tú ganas dos clientes.</p>
+                  <Vista>«2x1 en {nombre.trim() || 'tu premio'}»</Vista>
+                </>
               ) : (
-                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: 2x1, Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
+                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
               )}
             </div>
           )}
@@ -754,6 +804,12 @@ function BeneficioForm({
               </div>
             )}
           </Opcion>
+          <Opcion
+            on={soloNuevos}
+            onToggle={() => setSoloNuevos((v) => !v)}
+            title="Solo para clientes nuevos"
+            hint="Lo canjea solo quien nunca canjeó en tu local. Ideal para atraer gente que todavía no te conoce."
+          />
           {fansReady && (
             <Opcion on={fansOnly} onToggle={() => setFansOnly((v) => !v)} title="Solo para tus Fans" hint="Un premio especial para tus clientes más fieles." />
           )}
