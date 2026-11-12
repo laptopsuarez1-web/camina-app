@@ -216,7 +216,7 @@ export default function RetoScreen() {
           <Press
             accessibilityRole="button"
             onPress={() =>
-              Alert.alert('¿Eliminar este desafío?', 'Los puntos puestos se devuelven.', [
+              Alert.alert('¿Eliminar este desafío?', 'Los Puntos puestos se devuelven.', [
                 { text: 'Cancelar', style: 'cancel' },
                 {
                   text: 'Eliminar desafío',

@@ -332,7 +332,7 @@ export default function GroupDetailScreen() {
     Alert.alert(
       del ? '¿Eliminar este grupo?' : '¿Salir de este grupo?',
       del
-        ? 'Se borran el grupo, el chat, el historial y los desafíos para todos los miembros. Los puntos puestos en un desafío activo se devuelven. No se puede deshacer.'
+        ? 'Se borran el grupo, el chat, el historial y los desafíos para todos los miembros. Los Puntos puestos en un desafío activo se devuelven. No se puede deshacer.'
         : creator
           ? 'Eres quien creó el grupo: la administración pasa a la persona más antigua del grupo. Si eres la única, el grupo se elimina.'
           : 'Dejas de ver el ranking y el chat. Puedes volver a entrar con el código o el link de invitación.',

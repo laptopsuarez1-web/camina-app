@@ -30,7 +30,7 @@ export default function DescargarPage() {
       <img src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-5" />
       <p className="text-white font-bold text-[22px] mb-2">Descarga Camina</p>
       <p className="text-auth-muted text-[14px] mb-7 max-w-[320px] leading-5">
-        Camina, junta puntos y canjéalos por descuentos y premios en locales de tu ciudad.
+        Camina, junta Puntos y canjéalos por descuentos y premios en locales de tu ciudad.
       </p>
       {os === null ? (
         <p className="text-auth-muted text-[13px]">Abriendo la tienda…</p>

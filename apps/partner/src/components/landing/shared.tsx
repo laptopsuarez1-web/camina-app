@@ -92,7 +92,7 @@ export function Footer() {
   );
 }
 
-// Tarjetas flotantes de vidrio con lo que hace la app (reglas reales: 1.000 pasos = 1 punto, 5 puntos por invitar).
+// Tarjetas flotantes de vidrio con lo que hace la app (reglas reales: 1.000 pasos = 1 Punto, 5 Puntos por invitar).
 const ICO = {
   pasos: <Image className="ico-logo" src="/marca/logo-solo-transparente.png" alt="" width={64} height={64} />,
   trofeo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" /><path d="M8 6H4.5v1.5A3.5 3.5 0 0 0 8 11" /><path d="M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11" /><path d="M12 13v4" /><path d="M8.5 20h7" /><path d="M10 17h4v3h-4z" /></svg>,
@@ -123,7 +123,7 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
             <div>
               <b>{l.nombre}</b>
               <span>{p.nombre}</span>
-              <em>{p.detalle} · {p.puntos} puntos</em>
+              <em>{p.detalle} · {p.puntos} Puntos</em>
             </div>
           </div>
         ))}
@@ -131,9 +131,9 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
     );
   }
   const items = [
-    { cls: 'fc1', ico: ICO.pasos, t: 'Cada 1.000 pasos', d: 'Se vuelven puntos', e: '1 punto' },
-    { cls: 'fc2', ico: ICO.racha, t: 'Cada día', d: 'Tope diario de puntos', e: 'hasta 20 puntos' },
-    { cls: 'fc3', ico: ICO.amigos, t: 'Invita a un amigo', d: 'Cuando consigue su primer punto', e: '+5 puntos' },
+    { cls: 'fc1', ico: ICO.pasos, t: 'Cada 1.000 pasos', d: 'Se vuelven Puntos', e: '1 Punto' },
+    { cls: 'fc2', ico: ICO.racha, t: 'Cada día', d: 'Tope diario de Puntos', e: 'hasta 20 Puntos' },
+    { cls: 'fc3', ico: ICO.amigos, t: 'Invita a un amigo', d: 'Cuando consigue su primer Punto', e: '+5 Puntos' },
   ];
   return (
     <>
@@ -152,9 +152,9 @@ export function FloatCards({ para = 'gente' }: { para?: 'gente' | 'comercios' })
 }
 
 // Cinta con lo que tiene la app.
-const CINTA = ['Pasos que se vuelven puntos', 'Meta diaria que eliges', 'Racha y calendario', 'Grupos y ranking', 'Desafíos Camina', 'Desafíos y eventos', 'Comparte tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitas'];
+const CINTA = ['Pasos que se vuelven Puntos', 'Meta diaria que eliges', 'Racha y calendario', 'Grupos y ranking', 'Desafíos Camina', 'Desafíos y eventos', 'Comparte tu progreso', 'Modo claro y oscuro', 'Tu ubicación solo cuando la necesitas'];
 export function Cinta({ para = 'gente' }: { para?: 'gente' | 'comercios' }) {
-  const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} puntos`)) : CINTA;
+  const base = para === 'comercios' ? LOCALES.flatMap((l) => l.premios.map((p) => `${l.nombre}: ${p.nombre} · ${p.detalle} · ${p.puntos} Puntos`)) : CINTA;
   const fila = [...base, ...base];
   return (
     <div className="cinta" aria-label={para === 'comercios' ? 'Premios que ya están en Camina' : 'Lo que tiene Camina'}>
@@ -174,11 +174,11 @@ export function Reglas() {
         <div className="stats">
           <InView className="stat">
             <b><Counter to={1000} /></b>
-            <span>pasos son <em>1 punto</em></span>
+            <span>pasos son <em>1 Punto</em></span>
           </InView>
           <InView className="stat" delay={120}>
             <b>hasta <Counter to={20} /></b>
-            <span>puntos por día</span>
+            <span>Puntos por día</span>
           </InView>
           <InView className="stat" delay={240}>
             <b><Counter to={4} /></b>
@@ -186,7 +186,7 @@ export function Reglas() {
           </InView>
           <InView className="stat" delay={360}>
             <b><Counter to={90} /></b>
-            <span>días de vigencia de cada punto</span>
+            <span>días de vigencia de cada Punto</span>
           </InView>
         </div>
         <InView className="reparto">
@@ -230,7 +230,7 @@ export function Locales() {
                   {l.premios.map((p) => (
                     <li key={p.nombre}>
                       <span>{p.nombre}<small>{p.detalle}</small></span>
-                      <b>{p.puntos} puntos</b>
+                      <b>{p.puntos} Puntos</b>
                     </li>
                   ))}
                 </ul>
@@ -275,7 +275,7 @@ export function Galeria() {
           </figure>
         ))}
       </div>
-      <p className="wrap gal-nota">Los pasos y puntos son de ejemplo, igual que el grupo y sus integrantes. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
+      <p className="wrap gal-nota">Los pasos y Puntos son de ejemplo, igual que el grupo y sus integrantes. Los eventos y desafíos son ejemplos de lo que puede haber. Los locales y sus premios son reales.</p>
     </section>
   );
 }
@@ -599,7 +599,7 @@ export function EquipoRetos() {
             },
             {
               t: 'Desafíos Camina',
-              d: 'Desafíos que te empujan a moverte más y suman puntos extra: invitar amigos, completar metas de pasos y más.',
+              d: 'Desafíos que te empujan a moverte más y suman Puntos extra: invitar amigos, completar metas de pasos y más.',
               img: CAP.retos,
               alt: 'Pantalla de los desafíos de Camina',
             },
