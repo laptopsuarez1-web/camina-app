@@ -81,8 +81,8 @@ export default function RetoScreen() {
     return (
       <View className="flex-1 bg-bg-light dark:bg-bg-dark">
         {header}
-        <Text className="text-center text-[15px] font-bold text-text-light dark:text-text-dark mt-10">No hay un reto en marcha</Text>
-        <Text className="text-center text-[13px] text-muted-light dark:text-muted-dark mt-2 mx-10">Cuando alguien del grupo arme uno, aquí verás cómo va cada persona.</Text>
+        <Text className="text-center text-[15px] font-bold text-text-light dark:text-text-dark mt-10">Este grupo pide un desafío</Text>
+        <Text className="text-center text-[13px] text-muted-light dark:text-muted-dark mt-2 mx-10">Cuando alguien lo arme, aquí verás quién va ganando. ¿Se animan?</Text>
       </View>
     );
   }

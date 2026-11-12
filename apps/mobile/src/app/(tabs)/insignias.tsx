@@ -84,7 +84,7 @@ export default function InsigniasScreen() {
       {routes.length === 0 ? (current ? null : (
         <Glass className="rounded-3xl p-4 mb-5 items-center">
           <RutaRing size={64} done={0} glow={false} />
-          <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-2">Todavía no completaste una Ruta del mes. Cada mes tiene su insignia.</Text>
+          <Text className="text-[13px] text-muted-light dark:text-muted-dark text-center mt-2">Tu primera insignia está a una Ruta de distancia. Complétala y llévatela: cada mes hay una nueva.</Text>
         </Glass>
       )) : (
         <View className="flex-row flex-wrap justify-center mb-5" style={{ gap: 18 }}>

@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Footprints, Store, Gift, Receipt, LifeBuoy, X } from 'lucide-react';
 
 const KEY = 'camina-guia-vista';
 // La página Guía y reglas la vuelve a abrir con este evento.
 export const ABRIR_GUIA = 'camina:abrir-guia';
 
-type Paso = { icon: typeof Store; t: string; d: string; href?: string; ir?: string };
+type Paso = { icon: typeof Store; t: string; d: string; href?: string; ir?: string; logo?: boolean };
 
 const PASOS_DUENO: Paso[] = [
   {
     icon: Footprints,
+    logo: true,
     t: '¡Bienvenido a Camina!',
     d: 'La gente camina, junta Puntos y los canjea por tus premios. Tú pones el premio; ellos llegan caminando a tu local.',
   },
@@ -47,6 +49,7 @@ const PASOS_DUENO: Paso[] = [
 const PASOS_CAJERO: Paso[] = [
   {
     icon: Footprints,
+    logo: true,
     t: '¡Bienvenido al equipo!',
     d: 'Aquí atiendes los canjes de Camina: la gente camina, junta Puntos y los cambia por los premios del local.',
   },
@@ -98,9 +101,13 @@ export function BienvenidaGuia({ cajero }: { cajero: boolean }) {
         <button type="button" onClick={cerrar} aria-label="Cerrar guía" className="absolute top-3.5 right-3.5 p-1.5 rounded-full text-muted">
           <X size={18} />
         </button>
-        <div className="mx-auto w-[72px] h-[72px] rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--c-aqua-light)' }}>
-          <Icon size={32} color="#4FC3A8" />
-        </div>
+        {p.logo ? (
+          <Image src="/camina-logo.png" alt="Camina" width={88} height={88} className="mx-auto rounded-full mb-4" priority />
+        ) : (
+          <div className="mx-auto w-[72px] h-[72px] rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--c-aqua-light)' }}>
+            <Icon size={32} color="#4FC3A8" />
+          </div>
+        )}
         <p className="text-[11.5px] font-bold uppercase tracking-wider text-muted mb-1">
           Paso {i + 1} de {pasos.length}
         </p>
