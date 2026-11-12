@@ -668,7 +668,7 @@ export function PublicidadComercio() {
         <Kinetic text="Promociona tu local en eventos y sorteos." />
         <p className="lead">
           Además de los premios por canje, puedes publicar un evento o un sorteo dentro de la app. Un evento puede estar publicado hasta 2 semanas; un desafío o un banner, hasta 30 días.
-          Cada publicación cuesta Bs 200 (Bs 400 si solo quieres publicidad, sin canjes) y, por el lanzamiento, la primera es gratis.
+          Cada publicación cuesta Bs 200 (Bs 400 si solo quieres publicidad, sin canjes; para marcas, la primera es gratis por el lanzamiento).
           Lo revisamos y se publica cuando confirmamos el pago por WhatsApp.
         </p>
         <Bloques
