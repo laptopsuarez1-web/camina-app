@@ -15,6 +15,8 @@
   --c-danger-text: #c0392b;
   --c-ok-text: #1f7d68;
   --c-purple-text: #8b4fd1;
+  --c-btn-bg: #241748;
+  --c-btn-text: #62f0b6;
   --c-auth-bg: #241748;
   --c-auth-bg-soft: #2f1e5c;
   --background: var(--c-bg);
@@ -37,6 +39,8 @@
     --c-danger-text: #ff9a8c;
     --c-ok-text: #7fedc4;
     --c-purple-text: #cfa9ff;
+    --c-btn-bg: #62f0b6;
+    --c-btn-text: #241748;
     --c-auth-bg: #2a1c55;
     --c-auth-bg-soft: #34246a;
     color-scheme: dark;
@@ -57,6 +61,8 @@
     --c-danger-text: #ff9a8c;
     --c-ok-text: #7fedc4;
     --c-purple-text: #cfa9ff;
+    --c-btn-bg: #62f0b6;
+    --c-btn-text: #241748;
     --c-auth-bg: #2a1c55;
     --c-auth-bg-soft: #34246a;
     color-scheme: dark;

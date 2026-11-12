@@ -36,7 +36,7 @@ export default function GuiaPage() {
         <GuiaContent />
 
         <section id="material" className="mb-8">
-          <h2 className="font-extrabold text-[18px] mb-1" style={{ color: '#241748' }}>Material para tu local</h2>
+          <h2 className="font-extrabold text-[18px] mb-1 text-text">Material para tu local</h2>
           <p className="text-muted text-[13px] mb-3.5">
             Avísale a tus clientes que en tu local se canjea con Camina. Imprime el afiche o usa el logo en tus redes.
           </p>

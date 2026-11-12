@@ -94,7 +94,7 @@ export default function EquipoPage() {
             onClick={add}
             disabled={saving || !email.includes('@')}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
-            style={{ background: '#241748', color: '#62F0B6' }}
+            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
           >
             {saving ? 'Invitando…' : 'Invitar'}
           </button>

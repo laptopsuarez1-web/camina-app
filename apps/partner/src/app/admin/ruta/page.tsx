@@ -169,7 +169,7 @@ export default function AdminRutaPage() {
                 )}
               </div>
               {!p.drawn_at && ended && (
-                <button onClick={() => draw(p.month)} className="shrink-0 rounded-lg px-3.5 py-1.5 text-[12px] font-bold" style={{ background: '#241748', color: '#62F0B6' }}>
+                <button onClick={() => draw(p.month)} className="shrink-0 rounded-lg px-3.5 py-1.5 text-[12px] font-bold" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
                   Sortear
                 </button>
               )}

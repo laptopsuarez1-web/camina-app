@@ -26,7 +26,7 @@ const REGLAS = [
   ['Puntos justos', 'Como guía: 2,5 puntos equivalen a Bs 1, o sea que algo de Bs 10 ronda los 25 puntos. En la app se gana 1 punto cada 1.000 pasos, con un máximo de 20 por día.'],
   ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada beneficio necesita su propia foto para poder guardarse.'],
   ['Avisos cercanos (Paso Adelante)', 'Hasta 3 por mes. Los revisamos antes de enviarlos, salen entre 8:00 y 21:00 y cada persona recibe como máximo 1 por semana. Nada de mensajes engañosos.'],
-  ['Trato respetuoso', 'Las personas que canjean son clientes tuyos: atendelas como a cualquiera. Camina puede pausar comercios con quejas repetidas.'],
+  ['Trato respetuoso', 'Las personas que canjean son clientes tuyos: atiéndelas como a cualquiera. Camina puede pausar comercios con quejas repetidas.'],
 ];
 
 const FAQ = [
@@ -41,7 +41,7 @@ const FAQ = [
 function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mb-8 break-inside-avoid-page">
-      <h2 className="font-extrabold text-[18px] mb-3.5" style={{ color: '#241748' }}>{title}</h2>
+      <h2 className="font-extrabold text-[18px] mb-3.5 text-text">{title}</h2>
       {children}
     </section>
   );

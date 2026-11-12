@@ -45,8 +45,8 @@ export function RutaVisitas({ businessId }: { businessId: string }) {
   }
 
   if (!datos) return null;
-  const pendientes = datos.visits.filter((v) => v.status === 'pending');
-  const recientes = datos.visits.filter((v) => v.status === 'confirmed').slice(0, 5);
+  const pendientes = (datos.visits ?? []).filter((v) => v.status === 'pending');
+  const recientes = (datos.visits ?? []).filter((v) => v.status === 'confirmed').slice(0, 5);
 
   return (
     <>

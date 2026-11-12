@@ -136,7 +136,7 @@ export default function CatalogoPage() {
           <p className="text-[12.5px] text-muted leading-5">Pega el link de tu catálogo (WhatsApp, tu web, Drive) o sube tu PDF. En la app sale un botón &ldquo;Ver catálogo&rdquo; en tu ficha.</p>
           <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://wa.me/c/591..." className={input} />
           <div className="flex gap-2">
-            <button onClick={() => guardarLink(link)} disabled={link.trim() === (business?.catalog_url ?? '')} className="flex-1 rounded-xl py-2.5 font-semibold text-[13.5px] disabled:opacity-50" style={{ background: '#241748', color: '#62F0B6' }}>Guardar link</button>
+            <button onClick={() => guardarLink(link)} disabled={link.trim() === (business?.catalog_url ?? '')} className="flex-1 rounded-xl py-2.5 font-semibold text-[13.5px] disabled:opacity-50" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>Guardar link</button>
             <button onClick={() => pdfRef.current?.click()} disabled={subiendo} className="flex-1 rounded-xl py-2.5 font-semibold text-[13.5px] border border-line bg-white">{subiendo ? 'Subiendo…' : 'Subir PDF'}</button>
           </div>
           <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) subirPdf(f); }} />
@@ -172,7 +172,7 @@ export default function CatalogoPage() {
             onClick={add}
             disabled={saving || name.trim().length === 0}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
-            style={{ background: '#241748', color: '#62F0B6' }}
+            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
           >
             {saving ? 'Guardando…' : 'Agregar al catálogo'}
           </button>

@@ -596,7 +596,7 @@ export default function PerfilPage() {
             onClick={handleSave}
             disabled={saving}
             className="rounded-[10px] py-3.5 font-semibold text-sm mt-1 disabled:opacity-50"
-            style={{ background: '#241748', color: '#62F0B6' }}
+            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>

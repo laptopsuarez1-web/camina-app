@@ -75,7 +75,7 @@ export default function InicioPage() {
       });
   }, [business]);
 
-  const mes = resumen
+  const mes = resumen?.month
     ? new Date(resumen.month + 'T12:00:00Z').toLocaleDateString('es-BO', { month: 'long', timeZone: 'UTC' })
     : '';
   const sinNoticias = news.filter((n) => !n.read).length;

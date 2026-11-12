@@ -59,7 +59,7 @@ export default function ElegirPlanPage() {
         <div className="flex items-center gap-2.5 mb-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/camina-logo.png" alt="Camina" width={36} height={36} className="rounded-full" />
-          <span className="font-extrabold tracking-wide text-[18px]" style={{ color: '#241748' }}>CAMINA</span>
+          <span className="font-extrabold tracking-wide text-[18px]" style={{ color: 'var(--c-text)' }}>CAMINA</span>
         </div>
 
         <p className="text-mint-dark font-semibold text-[13px] mb-1">¡Tu ficha está lista, {business.name}!</p>
@@ -76,9 +76,9 @@ export default function ElegirPlanPage() {
                 key={p.id}
                 className="flex-1 rounded-[18px] p-5.5 relative flex flex-col"
                 style={{
-                  background: p.featured ? '#241748' : '#fff',
-                  border: `1.5px solid ${p.featured ? '#241748' : '#E1D2F5'}`,
-                  color: p.featured ? '#fff' : '#291C47',
+                  background: p.featured ? '#241748' : 'var(--c-card)',
+                  border: `1.5px solid ${p.featured ? '#241748' : 'var(--c-line)'}`,
+                  color: p.featured ? '#fff' : 'var(--c-text)',
                 }}
               >
                 {p.featured && (
@@ -87,20 +87,20 @@ export default function ElegirPlanPage() {
                   </span>
                 )}
                 <p className="text-[17px] font-bold mb-0.5">{p.name}</p>
-                <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : '#291C47' }}>{p.price}</p>
+                <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : 'var(--c-text)' }}>{p.price}</p>
                 {!free && (
-                  <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : '#8B6A12' }}>
+                  <p className="text-[11.5px] font-semibold mb-2" style={{ color: p.featured ? '#E0B43A' : 'var(--c-warn-text)' }}>
                     {LANZAMIENTO}
                   </p>
                 )}
-                <p className="text-[12.5px] mb-4 leading-relaxed" style={{ color: p.featured ? '#C4B8E8' : '#7C6A9C' }}>{p.blurb}</p>
-                <div className="pt-3.5 mb-4.5 flex-1" style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : '#E1D2F5'}` }}>
+                <p className="text-[12.5px] mb-4 leading-relaxed" style={{ color: p.featured ? '#C4B8E8' : 'var(--c-muted)' }}>{p.blurb}</p>
+                <div className="pt-3.5 mb-4.5 flex-1" style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : 'var(--c-line)'}` }}>
                   {p.features.map((f) => (
                     <div key={f} className="flex gap-2 mb-2.5 items-start">
                       <Check size={13} color={p.featured ? '#62F0B6' : '#4FC3A8'} className="mt-0.5 shrink-0" />
-                      <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : '#291C47' }}>
+                      <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : 'var(--c-text)' }}>
                       {f}
-                      {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : '#7C6A9C' }}>{PLAN_EXPLICA[f]}</span> : null}
+                      {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : 'var(--c-muted)' }}>{PLAN_EXPLICA[f]}</span> : null}
                     </span>
                     </div>
                   ))}
@@ -122,22 +122,22 @@ export default function ElegirPlanPage() {
         </div>
 
         {/* El plan gratis, aparte y más chico. */}
-        <div className="rounded-[14px] px-4 py-3 mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5" style={{ background: '#fff', border: '1px solid #E1D2F5' }}>
-          <p className="flex-1 text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
-            <b style={{ color: '#291C47' }}>Primer Paso (gratis):</b> apareces en el mapa con un premio gratis y un descuento, mínimo 3 cupones por día y sin estadísticas.
+        <div className="rounded-[14px] px-4 py-3 mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5" style={{ background: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+          <p className="flex-1 text-[12.5px] leading-relaxed" style={{ color: 'var(--c-muted)' }}>
+            <b style={{ color: 'var(--c-text)' }}>Primer Paso (gratis):</b> apareces en el mapa con un premio gratis y un descuento, mínimo 3 cupones por día y sin estadísticas.
           </p>
-          <button onClick={() => finish()} disabled={saving} className="py-2 px-4 rounded-[10px] font-semibold text-[12.5px] disabled:opacity-60" style={{ background: '#F4EEFC', color: '#241748' }}>
+          <button onClick={() => finish()} disabled={saving} className="py-2 px-4 rounded-[10px] font-semibold text-[12.5px] disabled:opacity-60" style={{ background: 'var(--c-purple-light)', color: 'var(--c-text)' }}>
             {saving ? 'Entrando…' : 'Seguir con el plan gratis'}
           </button>
         </div>
 
         <div
           className="rounded-[18px] p-5 mb-5 flex flex-col md:flex-row md:items-center gap-3"
-          style={{ background: '#fff', border: '1.5px dashed #E0B43A' }}
+          style={{ background: 'var(--c-card)', border: '1.5px dashed #E0B43A' }}
         >
           <div className="flex-1">
-            <p className="text-[15px] font-bold" style={{ color: '#291C47' }}>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app</p>
-            <p className="text-[12.5px] leading-relaxed" style={{ color: '#7C6A9C' }}>
+            <p className="text-[15px] font-bold" style={{ color: 'var(--c-text)' }}>Cupo fundador: 3 meses gratis de Paso Firme, desde que salga la app</p>
+            <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--c-muted)' }}>
               Para los primeros 20 comercios. Escríbenos por WhatsApp y te habilitamos en la app y en el panel. Mientras tanto ya puedes crear tu perfil.
             </p>
           </div>
@@ -153,7 +153,7 @@ export default function ElegirPlanPage() {
           </a>
         </div>
 
-        {error && <p className="text-[13px] mb-3" style={{ color: '#c0392b' }}>{error}</p>}
+        {error && <p className="text-[13px] mb-3" style={{ color: 'var(--c-danger-text)' }}>{error}</p>}
 
         <p className="text-muted text-[12.5px] leading-relaxed max-w-[640px]">
           Los planes de pago se activan cuando confirmamos tu transferencia (te pedimos el comprobante por WhatsApp). Mientras tanto

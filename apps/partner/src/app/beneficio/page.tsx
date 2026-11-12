@@ -126,7 +126,7 @@ export default function BeneficioPage() {
         disabled={atFreeLimit}
         title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ background: '#241748', color: '#62F0B6' }}
+        style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
         <Plus size={16} /> Agregar beneficio
       </button>
@@ -427,7 +427,7 @@ function BeneficioForm({
       {isFree && (
         <div className="flex items-center gap-2.5 bg-purple-light rounded-xl px-3.5 py-2.5 mb-4.5">
           <Star size={15} color="#8B4FD1" />
-          <p className="text-[12.5px] text-[#4A3D68]">
+          <p className="text-[12.5px] text-text">
             {freeHasGratis
               ? '🔓 Ya tienes un premio gratis: este puede ser tu descuento.'
               : '🔒 Crea primero un premio gratis: así se habilita el descuento.'}
@@ -775,7 +775,7 @@ function BeneficioForm({
               onClick={handleSave}
               disabled={saving || !nombre.trim() || !imageUrl || !canalOk || !cuposOnlineOk}
               className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
-              style={{ background: '#241748', color: '#62F0B6' }}
+              style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
             >
               {saving ? 'Guardando…' : 'Guardar premio'}
             </button>

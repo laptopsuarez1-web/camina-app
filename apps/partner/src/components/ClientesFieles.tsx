@@ -25,10 +25,10 @@ export function ClientesFieles({ businessId }: { businessId: string }) {
           </div>
         ))}
       </div>
-      {d.top.length > 0 && (
+      {(d.top ?? []).length > 0 && (
         <>
           <p className="text-[12px] font-semibold text-muted mb-1">Tus Fans</p>
-          {d.top.map((f, i) => (
+          {(d.top ?? []).map((f, i) => (
             <div key={i} className="border-t border-line py-2 flex justify-between text-[13px]">
               <span className="font-semibold">{f.name}</span>
               <span className="text-muted">{f.points} puntos</span>
