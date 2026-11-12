@@ -207,7 +207,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               setResending(false);
             }}
             className="rounded-[8px] px-3.5 py-2 text-[12.5px] font-bold disabled:opacity-50"
-            style={{ background: '#241748', color: '#62F0B6' }}
+            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
           >
             {resending ? 'Enviando…' : 'Ya lo corregí, volver a enviar'}
           </button>

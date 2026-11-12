@@ -429,7 +429,7 @@ export default function AdminPage() {
                                 onClick={() => rejectBusiness(b.id)}
                                 disabled={!rejectReason.trim() || savingId === b.id}
                                 className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold disabled:opacity-50"
-                                style={{ background: '#241748', color: '#62F0B6' }}
+                                style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
                               >
                                 Rechazar y avisar
                               </button>
@@ -641,7 +641,7 @@ export default function AdminPage() {
                               className="w-full bg-white border border-line rounded-[8px] px-2.5 py-1.5 text-[12px]"
                             />
                             <div className="flex gap-1.5">
-                              <button onClick={() => setPaused(b, true)} disabled={savingId === b.id} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#62F0B6' }}>
+                              <button onClick={() => setPaused(b, true)} disabled={savingId === b.id} className="rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold disabled:opacity-50" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
                                 Pausar comercio
                               </button>
                               <button onClick={() => setPausingId(null)} className="text-muted text-[11.5px] font-semibold">No</button>

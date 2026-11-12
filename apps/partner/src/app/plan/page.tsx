@@ -72,9 +72,9 @@ export default function PlanPage() {
               key={p.id}
               className="flex-1 rounded-[18px] p-5.5 relative"
               style={{
-                background: p.featured ? '#241748' : '#fff',
-                border: `1.5px solid ${active ? '#62F0B6' : p.featured ? '#241748' : '#E1D2F5'}`,
-                color: p.featured ? '#fff' : '#291C47',
+                background: p.featured ? '#241748' : 'var(--c-card)',
+                border: `1.5px solid ${active ? '#62F0B6' : p.featured ? '#241748' : 'var(--c-line)'}`,
+                color: p.featured ? '#fff' : 'var(--c-text)',
               }}
             >
               {p.featured && (
@@ -91,7 +91,7 @@ export default function PlanPage() {
                 </span>
               )}
               <p className="text-[17px] font-bold mb-0.5">{p.name}</p>
-              <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : '#291C47' }}>
+              <p className="text-xl font-bold mb-1.5" style={{ color: p.featured ? '#62F0B6' : 'var(--c-text)' }}>
                 {p.price}
               </p>
               {p.id !== 'primer_paso' && (
@@ -101,20 +101,20 @@ export default function PlanPage() {
               )}
               <p
                 className="text-[12.5px] mb-4 leading-relaxed"
-                style={{ color: p.featured ? '#C4B8E8' : '#7C6A9C' }}
+                style={{ color: p.featured ? '#C4B8E8' : 'var(--c-muted)' }}
               >
                 {p.blurb}
               </p>
               <div
                 className="pt-3.5 mb-4.5"
-                style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : '#E1D2F5'}` }}
+                style={{ borderTop: `1px solid ${p.featured ? '#4A3A78' : 'var(--c-line)'}` }}
               >
                 {p.features.map((f) => (
                   <div key={f} className="flex gap-2 mb-2.5 items-start">
                     <Check size={13} color={p.featured ? '#62F0B6' : '#4FC3A8'} className="mt-0.5 shrink-0" />
-                    <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : '#291C47' }}>
+                    <span className="text-xs leading-relaxed" style={{ color: p.featured ? '#E4DBFA' : 'var(--c-text)' }}>
                       {f}
-                      {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : '#7C6A9C' }}>{PLAN_EXPLICA[f]}</span> : null}
+                      {PLAN_EXPLICA[f] ? <span className="block mt-0.5 text-[11px] leading-snug" style={{ color: p.featured ? '#B9AEDD' : 'var(--c-muted)' }}>{PLAN_EXPLICA[f]}</span> : null}
                     </span>
                   </div>
                 ))}
@@ -124,8 +124,8 @@ export default function PlanPage() {
                 disabled={active}
                 className="w-full py-2.5 rounded-[10px] font-semibold text-[13px] disabled:cursor-default"
                 style={{
-                  background: active ? (p.featured ? 'rgba(98,240,182,0.15)' : '#F7F3FC') : p.featured ? '#62F0B6' : '#241748',
-                  color: active ? (p.featured ? '#62F0B6' : '#7C6A9C') : p.featured ? '#12281F' : '#62F0B6',
+                  background: active ? (p.featured ? 'rgba(98,240,182,0.15)' : 'var(--c-bg)') : p.featured ? '#62F0B6' : 'var(--c-btn-bg)',
+                  color: active ? (p.featured ? '#62F0B6' : 'var(--c-muted)') : p.featured ? '#12281F' : 'var(--c-btn-text)',
                 }}
               >
                 {active ? 'Tu plan actual' : 'Cambiar a este plan'}

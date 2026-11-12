@@ -175,7 +175,7 @@ export default function EventosPage() {
     : { backgroundImage: `linear-gradient(135deg, ${c1}, ${c2})` };
   const label = 'block text-[12px] font-bold uppercase tracking-wide text-[#5B4A7A] mb-1.5';
   const section = 'bg-card border border-line rounded-2xl p-5 flex flex-col gap-3.5';
-  const seg = (on: boolean) => ({ borderColor: on ? '#1f9d75' : '#e6e3ee', background: on ? '#f0faf6' : '#fff' });
+  const seg = (on: boolean) => ({ borderColor: on ? '#4FC3A8' : 'var(--c-line)', background: on ? 'var(--c-aqua-light)' : 'var(--c-card)', color: on ? 'var(--c-ok-text)' : 'var(--c-muted)' });
 
   return (
     <DashboardShell>
@@ -375,7 +375,7 @@ export default function EventosPage() {
             onClick={submit}
             disabled={sending || badDates || badGoal || needsPhoto || badLink || badTicket || badPlaceUrl || title.trim().length < 3 || description.trim().length < 5}
             className="w-full rounded-xl py-3 font-semibold text-[14px] disabled:opacity-50"
-            style={{ background: '#241748', color: '#62F0B6' }}
+            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
           >
             {sending ? 'Enviando…' : `Enviar a Camina para aprobación · Bs ${price}`}
           </button>

@@ -570,6 +570,13 @@ export default function RegistroPage() {
                   {loading ? 'Creando cuenta…' : 'Crear cuenta'}
                 </button>
               </div>
+              <p className="text-muted text-[11.5px] text-center">
+                Al crear la cuenta aceptas los{' '}
+                <a href="/terminos#comercios" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+                  Términos para comercios
+                </a>
+                .
+              </p>
             </div>
           )}
         </form>

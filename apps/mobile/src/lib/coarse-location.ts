@@ -13,7 +13,11 @@ const roundCoarse = (x: number) => Number((Math.round(x / 0.005) * 0.005).toFixe
 export async function shareCoarseLocation(force = false) {
   try {
     const perm = await Location.getForegroundPermissionsAsync();
-    if (!perm.granted) return;
+    if (!perm.granted) {
+      // Si quitó el permiso, se borra la zona que habíamos guardado (así lo dice la política de privacidad).
+      if (await AsyncStorage.getItem(KEY)) await clearCoarseLocation();
+      return;
+    }
     if (!force) {
       const last = Number((await AsyncStorage.getItem(KEY)) ?? 0);
       if (Date.now() - last < EVERY_MS) return;
@@ -27,7 +31,7 @@ export async function shareCoarseLocation(force = false) {
   }
 }
 
-// Borra la ubicación guardada (al apagar los avisos cercanos).
+// Borra la zona guardada (cuando se quita el permiso de ubicación).
 export async function clearCoarseLocation() {
   try {
     await supabase.rpc('save_coarse_location', { p_lat: null, p_lng: null });

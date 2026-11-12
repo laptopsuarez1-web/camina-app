@@ -128,7 +128,7 @@ export default function CuentasPage() {
                     className="w-full bg-white border border-line rounded-[10px] px-3 py-2 text-[13px] text-text"
                   />
                   <div className="flex gap-2 mt-1.5">
-                    <button onClick={() => ejecutar(c, 'ban')} disabled={busy} className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold disabled:opacity-50" style={{ background: '#241748', color: '#62F0B6' }}>
+                    <button onClick={() => ejecutar(c, 'ban')} disabled={busy} className="rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold disabled:opacity-50" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
                       {busy ? 'Baneando…' : 'Banear cuenta'}
                     </button>
                     <button onClick={() => setAccion(null)} className="bg-purple-light text-muted rounded-[8px] px-3.5 py-1.5 text-[12px] font-bold">Cancelar</button>
