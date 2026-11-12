@@ -25,12 +25,18 @@ const INICIOS = [
 ];
 
 // Botones de elegir (Gratis/Descuento, % u otro): se leen bien en claro y en oscuro.
-function choiceStyle(on: boolean, tone: 'aqua' | 'purple', locked = false): React.CSSProperties {
+function choiceStyle(on: boolean, tone: 'aqua' | 'purple' | 'gold', locked = false): React.CSSProperties {
   if (locked) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)', opacity: 0.45 };
   if (!on) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)' };
+  if (tone === 'gold') return { borderColor: '#E0B43A', background: 'var(--c-warn-light)', color: 'var(--c-warn-text)', boxShadow: 'inset 0 0 0 1px #E0B43A' };
   return tone === 'aqua'
     ? { borderColor: '#4FC3A8', background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)', boxShadow: 'inset 0 0 0 1px #4FC3A8' }
     : { borderColor: '#8B4FD1', background: 'var(--c-purple-light)', color: 'var(--c-purple-text)', boxShadow: 'inset 0 0 0 1px #8B4FD1' };
+}
+
+// Bs con coma decimal solo si hace falta: 25 → «Bs 25», 25.5 → «Bs 25,50».
+function bs(n: number) {
+  return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
 }
 
 function cap(t: string) {
@@ -164,7 +170,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos{b.new_customers_only ? ' · Solo clientes nuevos' : ''}
+                {b.combo_price_bs != null ? `Combo a ${bs(Number(b.combo_price_bs))}` : b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos{b.new_customers_only ? ' · Solo clientes nuevos' : ''}
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -250,7 +256,17 @@ function BeneficioForm({
   const [compra, setCompra] = useState(inicial.resto);
   const frase = joinFrase(inicio, compra);
   // Tres formas de ofrecerlo. "Regalo con compra" se guarda como gratis + la frase de la compra.
-  const modo: 'gratis' | 'regalo' | 'descuento' = tipo === 'descuento' ? 'descuento' : conCompra ? 'regalo' : 'gratis';
+  // Combo Camina: un combo a precio especial (se guarda como descuento, con qué trae y los dos precios).
+  const [esCombo, setEsCombo] = useState(benefit?.combo_price_bs != null);
+  const [comboItems, setComboItems] = useState(benefit?.combo_items ?? '');
+  const [comboPrecio, setComboPrecio] = useState(benefit?.combo_price_bs != null ? String(benefit.combo_price_bs) : '');
+  const [comboNormal, setComboNormal] = useState(benefit?.combo_regular_bs != null ? String(benefit.combo_regular_bs) : '');
+  // La opción aparece cuando la base ya tiene las columnas del combo (migración 0118).
+  const [comboReady, setComboReady] = useState(false);
+  useEffect(() => {
+    supabase.from('benefits').select('combo_items').limit(1).then(({ error }) => setComboReady(!error));
+  }, []);
+  const modo: 'gratis' | 'regalo' | 'descuento' | 'combo' = tipo === 'descuento' ? (esCombo ? 'combo' : 'descuento') : conCompra ? 'regalo' : 'gratis';
   // Ideas por rubro (solo al crear): llenan nombre, cómo se ofrece y Puntos. Se esconden las que el plan no permite.
   const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'descuento' ? !descuentoLocked : !gratisLocked));
   function usarIdea(i: IdeaPremio) {
@@ -269,10 +285,13 @@ function BeneficioForm({
     }
     setCosto(String(i.puntos));
   }
-  function elegirModo(m: 'gratis' | 'regalo' | 'descuento') {
-    if (m === 'descuento' ? descuentoLocked : gratisLocked) return;
-    setTipo(m === 'descuento' ? 'descuento' : 'gratis');
+  function elegirModo(m: 'gratis' | 'regalo' | 'descuento' | 'combo') {
+    const esDescuento = m === 'descuento' || m === 'combo';
+    if (esDescuento ? descuentoLocked : gratisLocked) return;
+    setTipo(esDescuento ? 'descuento' : 'gratis');
     setConCompra(m === 'regalo');
+    setEsCombo(m === 'combo');
+    if (m === 'combo' && !nombre.trim()) setNombre('Combo Camina');
   }
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
@@ -356,6 +375,16 @@ function BeneficioForm({
   async function handleSave() {
     setError(null);
     setSaved(false);
+    if (modo === 'combo') {
+      if (comboItems.trim().length < 3) {
+        setError('Escribe qué trae el combo (por ejemplo: «Salchipapa clásica + gaseosa personal»).');
+        return;
+      }
+      if (!(Number(comboPrecio) > 0) || !(Number(comboNormal) > Number(comboPrecio))) {
+        setError('El precio con Camina tiene que ser menor que el precio normal.');
+        return;
+      }
+    }
     if (modo === 'regalo' && compra.trim().length < 2) {
       setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
       return;
@@ -367,14 +396,21 @@ function BeneficioForm({
       name: nombre.trim(),
       type: tipo,
       discount_detail:
-        tipo === 'descuento'
+        modo === 'combo'
+          ? `Combo a ${bs(Number(comboPrecio))}`
+          : tipo === 'descuento'
           ? descuentoModo === 'porcentaje'
             ? `${Number(descuentoPorcentaje) || 0}% de descuento`
             : descuentoModo === '2x1'
               ? '2x1'
               : descuento.trim()
           : null,
-      discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
+      discount_percent: modo !== 'combo' && tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
+      ...(comboReady
+        ? modo === 'combo'
+          ? { combo_items: comboItems.trim(), combo_price_bs: Number(comboPrecio), combo_regular_bs: Number(comboNormal) }
+          : { combo_items: null, combo_price_bs: null, combo_regular_bs: null }
+        : {}),
       cost_points: Number(costo) || 0,
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
@@ -507,12 +543,13 @@ function BeneficioForm({
         </Paso>
 
         <Paso n={2} title="Cómo lo ofreces" hint="Elige una opción.">
-          <div className="grid grid-cols-3 gap-2">
+          <div className={`grid gap-2 ${comboReady ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {(
               [
                 { id: 'gratis', t: 'Gratis', d: 'Se lo lleva sin pagar', tone: 'aqua', locked: gratisLocked },
                 { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: gratisLocked },
                 { id: 'descuento', t: 'Descuento', d: 'Paga menos', tone: 'purple', locked: descuentoLocked },
+                ...(comboReady ? [{ id: 'combo' as const, t: 'Combo Camina', d: 'Un combo a precio especial', tone: 'gold' as const, locked: descuentoLocked }] : []),
               ] as const
             ).map((o) => (
               <button
@@ -558,6 +595,27 @@ function BeneficioForm({
                 />
               </div>
               <Vista>«De regalo {compra.trim() ? frase : joinFrase(inicio, INICIOS.find((o) => o.inicio === inicio)?.ejemplo ?? '')}»</Vista>
+            </div>
+          )}
+
+          {modo === 'combo' && (
+            <div className="mt-4">
+              <Field label="¿Qué trae el combo?">
+                <input value={comboItems} onChange={(e) => setComboItems(e.target.value.slice(0, 120))} placeholder="Ej: Salchipapa clásica + gaseosa personal" className={INPUT} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <Field label="Precio normal (Bs)">
+                  <input value={comboNormal} onChange={(e) => setComboNormal(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="32" inputMode="decimal" className={INPUT} />
+                </Field>
+                <Field label="Precio con Camina (Bs)">
+                  <input value={comboPrecio} onChange={(e) => setComboPrecio(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="25" inputMode="decimal" className={INPUT} />
+                </Field>
+              </div>
+              <Vista>
+                «{nombre.trim() || 'Combo Camina'} · {Number(comboPrecio) > 0 ? bs(Number(comboPrecio)) : 'Bs 25'}
+                {Number(comboNormal) > Number(comboPrecio) ? ` (antes ${bs(Number(comboNormal))})` : ''}»
+              </Vista>
+              <p className="text-[11.5px] text-muted mt-1 leading-4">Sirve para mover lo que más te conviene vender. La persona paga el combo en tu local.</p>
             </div>
           )}
 

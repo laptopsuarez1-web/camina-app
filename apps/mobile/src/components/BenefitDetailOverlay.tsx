@@ -15,6 +15,9 @@ type Benefit = {
   description?: string | null;
   with_purchase?: string | null;
   new_customers_only?: boolean;
+  combo_items?: string | null;
+  combo_price_bs?: number | string | null;
+  combo_regular_bs?: number | string | null;
   discount_detail?: string | null;
   discount_percent?: number | null;
   cost_points: number;
@@ -79,7 +82,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
             <BenefitHeader title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
           )}
           {(b.requires_booking && !b.online) || b.with_purchase || b.new_customers_only ? <View className="flex-row flex-wrap" style={{ gap: 8 }}><NewCustomerChip b={b} /><PurchaseChip b={b} />{b.requires_booking && !b.online ? <BookingChip b={b} /> : null}</View> : null}
-          <WhatIncludes text={b.description} />
+          <WhatIncludes text={b.description || (b.combo_items ? `Trae: ${b.combo_items}` : null)} />
           <HowToRedeem steps={b.online ? STEPS_ONLINE : STEPS_LOCAL} />
           <Conditions items={conditionsOf(b)} />
           {canWhatsapp ? (

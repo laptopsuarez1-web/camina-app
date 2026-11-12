@@ -43,6 +43,7 @@ import { VerifyEmailCard } from '@/components/VerifyEmailCard';
 import { useEmailVerified } from '@/hooks/useEmailVerified';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
+import { comboPrice, bs as bsLabel } from '@/components/BenefitInfo';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
@@ -59,8 +60,10 @@ import { Coin } from '@/components/ui/Coin';
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
 
 // Cuánto descuenta un premio de descuento, corto para la pastilla: "-20%", "-Bs 20" o el detalle que escribió el local.
-function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null }): string | null {
+function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null; combo_price_bs?: number | string | null }): string | null {
   if (b.type !== 'descuento') return null;
+  // Combo Camina: la etiqueta es el precio del combo, no un descuento.
+  if (b.combo_price_bs != null) return bsLabel(b.combo_price_bs);
   const pct = Number(b.discount_percent);
   if (pct > 0) return `-${Number.isInteger(pct) ? pct : pct.toFixed(1).replace('.', ',')}%`;
   const d = (b.discount_detail ?? '').trim();
@@ -1524,7 +1527,7 @@ export default function CanjesScreen() {
                                     <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
-                                    {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
+                                    {comboPrice(b) ? `Combo a ${comboPrice(b)}` : b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
                                   {b.online ? (
                                     <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">

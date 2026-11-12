@@ -93,6 +93,10 @@ export interface Benefit {
   with_purchase?: string | null;
   // Solo para clientes nuevos (0117): únicamente quien nunca canjeó en ese local.
   new_customers_only?: boolean;
+  // Combo Camina (0118): qué trae y los dos precios en Bs.
+  combo_items?: string | null;
+  combo_price_bs?: number | string | null;
+  combo_regular_bs?: number | string | null;
   cost_points: number;
   daily_quota: number | null;
   active: boolean;

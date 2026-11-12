@@ -14,6 +14,9 @@ export type BenefitFacts = {
   // Premio con tu compra (0116): qué hay que comprar para llevárselo.
   with_purchase?: string | null;
   new_customers_only?: boolean;
+  combo_items?: string | null;
+  combo_price_bs?: number | string | null;
+  combo_regular_bs?: number | string | null;
   discount_detail?: string | null;
   discount_percent?: number | null;
   dine_in_only?: boolean;
@@ -138,8 +141,21 @@ export function purchaseLine(f: string) {
   return f.charAt(0).toUpperCase() + f.slice(1);
 }
 
+// Bs con coma decimal solo si hace falta: 25 → «Bs 25».
+export function bs(v: number | string | null | undefined): string {
+  const n = Number(v);
+  return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
+}
+
+// Combo Camina: «Bs 25 (antes Bs 32)». Null si el premio no es un combo.
+export function comboPrice(b: BenefitFacts): string | null {
+  if (b.combo_price_bs == null) return null;
+  return `${bs(b.combo_price_bs)}${b.combo_regular_bs != null ? ` (antes ${bs(b.combo_regular_bs)})` : ''}`;
+}
+
 export function conditionsOf(b: BenefitFacts): string[] {
   const out: string[] = [];
+  if (comboPrice(b)) out.push(`Combo a ${comboPrice(b)}: lo pagas en el local`);
   if (b.new_customers_only) out.push('Solo para tu primera visita a este local');
   if (b.with_purchase) out.push(purchaseLine(b.with_purchase));
   if (b.online) out.push(`Se cobra por ${CHANNEL[b.online_channel ?? ''] ?? 'el canal del local'}, sin ir al local`);
