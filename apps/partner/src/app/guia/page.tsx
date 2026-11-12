@@ -1,6 +1,7 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Download, Sparkles } from 'lucide-react';
+import { ABRIR_GUIA } from '@/components/BienvenidaGuia';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { GuiaContent } from '@/components/GuiaContent';
 
@@ -24,6 +25,13 @@ export default function GuiaPage() {
         >
           <Download size={15} /> Descargar la guía en PDF
         </a>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(ABRIR_GUIA))}
+          className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-6 ml-2"
+        >
+          <Sparkles size={15} /> Ver la guía rápida
+        </button>
 
         <GuiaContent />
 
