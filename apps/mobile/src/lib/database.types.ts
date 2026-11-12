@@ -45,6 +45,7 @@ export interface StoryShare {
 }
 
 export interface Business {
+  catalog_url?: string | null;
   // Premio que el local ofrece a quienes completan la tarjeta de fidelidad de Camina (null = no participa).
   loyalty_benefit_id?: string | null;
   id: string;
