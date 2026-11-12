@@ -67,6 +67,9 @@ const CHART_H = 110;
 // Colores del calendario: verde (abrió la app y cumplió), rojo (abrió la app y no llegó), gris (no abrió la app).
 const CAL_BG = { met: colors.mint, miss: '#F4A8A2', idle: '#D3D3DA', none: colors.light.line };
 const CAL_FG = { met: colors.mintDark, miss: '#7A1510', idle: '#45454F', none: colors.light.muted };
+// En oscuro los días sin dato (y los que faltan del mes) van apagados: antes eran círculos lila claro que brillaban más que los cumplidos.
+const CAL_BG_DARK = { ...CAL_BG, idle: 'rgba(255,255,255,0.16)', none: 'rgba(255,255,255,0.06)' };
+const CAL_FG_DARK = { ...CAL_FG, idle: colors.dark.muted, none: colors.dark.muted };
 
 export default function ActividadScreen() {
   const pull = usePullToRefresh();
@@ -445,11 +448,11 @@ export default function ActividadScreen() {
                   onPress={() => setSelected(cell.key)}
                   className="w-8 h-8 rounded-md items-center justify-center"
                   style={{
-                    backgroundColor: CAL_BG[cell.state],
+                    backgroundColor: (isDark ? CAL_BG_DARK : CAL_BG)[cell.state],
                     ...(cell.key === todayKey ? { borderWidth: 1.5, borderColor: colors.aquaDeep } : {}),
                   }}
                 >
-                  <Text className="text-[12px] font-bold" style={{ color: CAL_FG[cell.state] }}>
+                  <Text className="text-[12px] font-bold" style={{ color: (isDark ? CAL_FG_DARK : CAL_FG)[cell.state] }}>
                     {cell.day}
                   </Text>
                 </Press>
@@ -462,7 +465,7 @@ export default function ActividadScreen() {
         <View className="flex-row flex-wrap mt-2" style={{ gap: 12 }}>
           {([['met', 'Meta cumplida'], ['miss', 'No cumpliste'], ['idle', 'No abriste la app']] as const).map(([k, label]) => (
             <View key={k} className="flex-row items-center" style={{ gap: 5 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: CAL_BG[k] }} />
+              <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: (isDark ? CAL_BG_DARK : CAL_BG)[k] }} />
               <Text className="text-[12px] text-muted-light dark:text-muted-dark">{label}</Text>
             </View>
           ))}

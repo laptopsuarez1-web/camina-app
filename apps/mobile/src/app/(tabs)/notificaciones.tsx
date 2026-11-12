@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useFocusEffect } from 'expo-router';
 import { EmptyIllustration } from '@/components/ui/EmptyIllustration';
-import { ChevronLeft, Bell, Clock, Flame, MapPin, Trophy, Gift, Instagram, UserPlus, IconBubble } from '@/components/icons';
+import { ChevronLeft, Bell, Clock, Flame, MapPin, MapIcon, Trophy, Gift, Instagram, UserPlus, Users, Storefront, IconBubble } from '@/components/icons';
 import { useNotifications } from '@/hooks/useNotifications';
 import { colors } from '@/theme/tokens';
 import { DarkHeader } from '@/components/ui/DarkHeader';
@@ -31,6 +31,25 @@ function bubbleFor(type?: string) {
     case 'story_rejected':
     case 'story_review':
       return <IconBubble icon={Instagram} tone="purple" size={38} />;
+    // Grupos: mensajes del chat, desafíos y el resumen del lunes.
+    case 'group_note':
+    case 'group_week':
+    case 'group_challenge':
+    case 'group_challenge_end':
+      return <IconBubble icon={Users} tone="purple" size={38} />;
+    // Ranking: tu puesto del jueves y el resumen del lunes.
+    case 'weekly_rank':
+      return <IconBubble icon={Trophy} tone="gold" size={38} />;
+    case 'route_reminder':
+      return <IconBubble icon={MapIcon} tone="aqua" size={38} />;
+    case 'points_expiring':
+    case 'camina_card_expiring':
+      return <IconBubble icon={Clock} tone="gold" size={38} />;
+    case 'camina_card_ready':
+    case 'referral_credited':
+      return <IconBubble icon={Gift} tone="gold" size={38} />;
+    case 'new_place':
+      return <IconBubble icon={Storefront} tone="aqua" size={38} />;
     case 'friend_request':
     case 'friend_accepted':
     case 'group_invite':
