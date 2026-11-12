@@ -6,7 +6,7 @@ import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import type { OpeningHours } from '@/components/BusinessHours';
-import { BookingChip, PurchaseChip, BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
+import { BookingChip, PurchaseChip, NewCustomerChip, BenefitThumb, CostPill, HowToGetThere, BenefitHeader, Conditions, HowToRedeem, PlaceBlock, WhatIncludes, conditionsOf } from '@/components/BenefitInfo';
 
 // Detalle de un premio dentro de la ficha del local. Es una capa dentro de la ficha y NO otro Modal:
 // en iPhone un panel abierto encima de otro dejaba la pantalla sin responder (ver las fotos del local).
@@ -14,6 +14,10 @@ type Benefit = {
   name: string;
   description?: string | null;
   with_purchase?: string | null;
+  new_customers_only?: boolean;
+  combo_items?: string | null;
+  combo_price_bs?: number | string | null;
+  combo_regular_bs?: number | string | null;
   discount_detail?: string | null;
   discount_percent?: number | null;
   cost_points: number;
@@ -77,8 +81,8 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
           ) : (
             <BenefitHeader title={b.name} businessName={business.name} address={business.address} cost={b.cost_points} />
           )}
-          {(b.requires_booking && !b.online) || b.with_purchase ? <View className="flex-row" style={{ gap: 8 }}><PurchaseChip b={b} />{b.requires_booking && !b.online ? <BookingChip b={b} /> : null}</View> : null}
-          <WhatIncludes text={b.description} />
+          {(b.requires_booking && !b.online) || b.with_purchase || b.new_customers_only ? <View className="flex-row flex-wrap" style={{ gap: 8 }}><NewCustomerChip b={b} /><PurchaseChip b={b} />{b.requires_booking && !b.online ? <BookingChip b={b} /> : null}</View> : null}
+          <WhatIncludes text={b.description || (b.combo_items ? `Trae: ${b.combo_items}` : null)} />
           <HowToRedeem steps={b.online ? STEPS_ONLINE : STEPS_LOCAL} />
           <Conditions items={conditionsOf(b)} />
           {canWhatsapp ? (

@@ -63,6 +63,12 @@ export interface Benefit {
   fans_only?: boolean;
   // Premio con tu compra (0116): qué hay que comprar para llevárselo. Null = nada.
   with_purchase?: string | null;
+  // Solo para clientes nuevos (0117): lo canjea únicamente quien nunca canjeó en el local.
+  new_customers_only?: boolean;
+  // Combo Camina (0118): qué trae, precio con Camina y precio normal (en Bs). Va como descuento.
+  combo_items?: string | null;
+  combo_price_bs?: number | null;
+  combo_regular_bs?: number | null;
   id: string;
   business_id: string;
   name: string;

@@ -124,7 +124,7 @@ export default function ElegirPlanPage() {
         {/* El plan gratis, aparte y más chico. */}
         <div className="rounded-[14px] px-4 py-3 mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5" style={{ background: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
           <p className="flex-1 text-[12.5px] leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-            <b style={{ color: 'var(--c-text)' }}>Primer Paso (gratis):</b> apareces en el mapa con un premio gratis y un descuento, mínimo 3 cupones por día y sin estadísticas.
+            <b style={{ color: 'var(--c-text)' }}>Primer Paso (gratis):</b> apareces en el mapa con un premio gratis y otro a elección, mínimo 3 cupones por día y sin estadísticas.
           </p>
           <button onClick={() => finish()} disabled={saving} className="py-2 px-4 rounded-[10px] font-semibold text-[12.5px] disabled:opacity-60" style={{ background: 'var(--c-purple-light)', color: 'var(--c-text)' }}>
             {saving ? 'Entrando…' : 'Seguir con el plan gratis'}

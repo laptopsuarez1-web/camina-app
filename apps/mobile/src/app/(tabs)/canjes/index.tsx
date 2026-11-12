@@ -18,7 +18,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
 import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
@@ -43,6 +43,7 @@ import { VerifyEmailCard } from '@/components/VerifyEmailCard';
 import { useEmailVerified } from '@/hooks/useEmailVerified';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
+import { comboPrice, bs as bsLabel } from '@/components/BenefitInfo';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { GOLD, isFeatured, GoldBadge } from '@/components/ui/Featured';
 import { useRedeemCounts } from '@/hooks/useRedeemCounts';
@@ -59,8 +60,10 @@ import { Coin } from '@/components/ui/Coin';
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
 
 // Cuánto descuenta un premio de descuento, corto para la pastilla: "-20%", "-Bs 20" o el detalle que escribió el local.
-function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null }): string | null {
+function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null; combo_price_bs?: number | string | null }): string | null {
   if (b.type !== 'descuento') return null;
+  // Combo Camina: la etiqueta es el precio del combo, no un descuento.
+  if (b.combo_price_bs != null) return bsLabel(b.combo_price_bs);
   const pct = Number(b.discount_percent);
   if (pct > 0) return `-${Number.isInteger(pct) ? pct : pct.toFixed(1).replace('.', ',')}%`;
   const d = (b.discount_detail ?? '').trim();
@@ -778,7 +781,21 @@ export default function CanjesScreen() {
         </View>
 
         <View className="px-5 pt-5">
-          <ScreenTitle>Canjes</ScreenTitle>
+          <View className="flex-row items-center justify-between" style={{ gap: 12 }}>
+            <View style={{ flexShrink: 1 }}><ScreenTitle>Canjes</ScreenTitle></View>
+            {/* Quien acaba de canjear busca su código aquí: atajo a Mis canjes (que también está en Perfil). */}
+            <Press
+              accessibilityRole="button"
+              accessibilityLabel="Mis canjes"
+              hitSlop={6}
+              onPress={() => router.push('/(tabs)/mis-canjes')}
+              className="flex-row items-center bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-full"
+              style={{ gap: 6, paddingHorizontal: 12, height: 34 }}
+            >
+              <Ticket size={15} color={isDark ? colors.mint : colors.aquaDeep} />
+              <Text className="text-[13px] font-bold text-text-light dark:text-text-dark">Mis canjes</Text>
+            </Press>
+          </View>
           <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>{balanceText} {plural(balance ?? 0, 'Punto disponible', 'Puntos disponibles')}</Text>
 
           {!profile?.zone && showZonePrompt && (
@@ -1510,7 +1527,7 @@ export default function CanjesScreen() {
                                     <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
-                                    {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
+                                    {comboPrice(b) ? `Combo a ${comboPrice(b)}` : b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
                                   {b.online ? (
                                     <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">

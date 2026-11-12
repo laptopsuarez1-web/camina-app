@@ -1,5 +1,6 @@
 'use client';
 
+import { ideasParaRubro, etiquetaIdea, type IdeaPremio } from '@/lib/ideas-premio';
 import { useEffect, useState } from 'react';
 import { Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
@@ -24,12 +25,23 @@ const INICIOS = [
 ];
 
 // Botones de elegir (Gratis/Descuento, % u otro): se leen bien en claro y en oscuro.
-function choiceStyle(on: boolean, tone: 'aqua' | 'purple', locked = false): React.CSSProperties {
+function choiceStyle(on: boolean, tone: 'aqua' | 'purple' | 'gold', locked = false): React.CSSProperties {
   if (locked) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)', opacity: 0.45 };
   if (!on) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)' };
+  if (tone === 'gold') return { borderColor: '#E0B43A', background: 'var(--c-warn-light)', color: 'var(--c-warn-text)', boxShadow: 'inset 0 0 0 1px #E0B43A' };
   return tone === 'aqua'
     ? { borderColor: '#4FC3A8', background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)', boxShadow: 'inset 0 0 0 1px #4FC3A8' }
     : { borderColor: '#8B4FD1', background: 'var(--c-purple-light)', color: 'var(--c-purple-text)', boxShadow: 'inset 0 0 0 1px #8B4FD1' };
+}
+
+// Bs con coma decimal solo si hace falta: 25 → «Bs 25», 25.5 → «Bs 25,50».
+function bs(n: number) {
+  return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
+}
+
+// Plan gratis: el premio Gratis "de verdad" (sin pedir compra).
+function esGratisPuro(b: { type: string; with_purchase?: string | null }) {
+  return b.type === 'gratis' && !b.with_purchase;
 }
 
 function cap(t: string) {
@@ -97,10 +109,11 @@ export default function BeneficioPage() {
     );
   }
 
-  // Plan gratis: primero 1 premio gratis; con un gratis activo se habilita 1 descuento (máx. 2 premios).
+  // Plan gratis: primero 1 premio Gratis de verdad (sin compra); con ese activo se habilita 1 premio más de cualquier
+  // otro tipo (regalo con compra, descuento, 2x1 o combo). Máximo 2. La base lo controla igual (0119).
   const activeBenefits = benefits.filter((b) => b.active);
-  const hasGratis = activeBenefits.some((b) => b.type === 'gratis');
-  const hasDescuento = activeBenefits.some((b) => b.type === 'descuento');
+  const hasGratis = activeBenefits.some(esGratisPuro);
+  const hasDescuento = activeBenefits.some((b) => !esGratisPuro(b));
   const atFreeLimit = isFree && hasGratis && hasDescuento;
 
   return (
@@ -111,12 +124,12 @@ export default function BeneficioPage() {
         <div className="flex items-start gap-3 bg-purple-light rounded-2xl px-4 py-3.5 mb-5">
           <Star size={16} color="#8B4FD1" className="mt-0.5 shrink-0" />
           <p className="text-[13px] leading-snug text-text">
-            <strong>Plan gratis: 1 premio gratis y 1 descuento.</strong>{' '}
+            <strong>Plan gratis: 1 premio gratis y, con él, 1 más.</strong>{' '}
             {hasGratis
               ? hasDescuento
                 ? 'Ya los tienes. Pasa a un plan de pago para sumar más.'
-                : 'Ya puedes crear tu descuento.'
-              : 'Crea primero el premio gratis para poder agregar el descuento.'}
+                : 'Ya puedes sumar tu segundo premio: regalo con compra, descuento, 2x1 o combo.'
+              : 'Empieza con un premio gratis (sin compra): después se habilita el segundo.'}
           </p>
         </div>
       )}
@@ -124,7 +137,7 @@ export default function BeneficioPage() {
       <button
         onClick={() => !atFreeLimit && setEditingId('new')}
         disabled={atFreeLimit}
-        title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
+        title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 más' : ''}
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
@@ -163,7 +176,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
+                {b.combo_price_bs != null ? `Combo a ${bs(Number(b.combo_price_bs))}` : b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos{b.new_customers_only ? ' · Solo clientes nuevos' : ''}
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -224,13 +237,14 @@ function BeneficioForm({
   const [nombre, setNombre] = useState(benefit?.name ?? '');
   // Plan gratis: el descuento se habilita recién cuando hay un premio gratis activo, y es uno solo.
   const otherActive = otherBenefits.filter((b) => b.active);
-  const freeHasGratis = otherActive.some((b) => b.type === 'gratis');
-  const freeHasDescuento = otherActive.some((b) => b.type === 'descuento');
+  // Plan gratis: "gratis" es el premio Gratis sin compra; todo lo demás (regalo, descuento, 2x1, combo) es "el segundo".
+  const freeHasGratis = otherActive.some(esGratisPuro);
+  const freeHasDescuento = otherActive.some((b) => !esGratisPuro(b));
   const descuentoLocked = isFree && (!freeHasGratis || freeHasDescuento);
   const gratisLocked = isFree && freeHasGratis;
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
-  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | 'texto'>(
-    benefit?.discount_percent != null ? 'porcentaje' : 'texto'
+  const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | '2x1' | 'texto'>(
+    benefit?.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
   );
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(
     benefit?.discount_percent != null ? String(benefit.discount_percent) : '20'
@@ -249,11 +263,42 @@ function BeneficioForm({
   const [compra, setCompra] = useState(inicial.resto);
   const frase = joinFrase(inicio, compra);
   // Tres formas de ofrecerlo. "Regalo con compra" se guarda como gratis + la frase de la compra.
-  const modo: 'gratis' | 'regalo' | 'descuento' = tipo === 'descuento' ? 'descuento' : conCompra ? 'regalo' : 'gratis';
-  function elegirModo(m: 'gratis' | 'regalo' | 'descuento') {
-    if (m === 'descuento' ? descuentoLocked : gratisLocked) return;
-    setTipo(m === 'descuento' ? 'descuento' : 'gratis');
+  // Combo Camina: un combo a precio especial (se guarda como descuento, con qué trae y los dos precios).
+  const [esCombo, setEsCombo] = useState(benefit?.combo_price_bs != null);
+  const [comboItems, setComboItems] = useState(benefit?.combo_items ?? '');
+  const [comboPrecio, setComboPrecio] = useState(benefit?.combo_price_bs != null ? String(benefit.combo_price_bs) : '');
+  const [comboNormal, setComboNormal] = useState(benefit?.combo_regular_bs != null ? String(benefit.combo_regular_bs) : '');
+  // La opción aparece cuando la base ya tiene las columnas del combo (migración 0118).
+  const [comboReady, setComboReady] = useState(false);
+  useEffect(() => {
+    supabase.from('benefits').select('combo_items').limit(1).then(({ error }) => setComboReady(!error));
+  }, []);
+  const modo: 'gratis' | 'regalo' | 'descuento' | 'combo' = tipo === 'descuento' ? (esCombo ? 'combo' : 'descuento') : conCompra ? 'regalo' : 'gratis';
+  // Ideas por rubro (solo al crear): llenan nombre, cómo se ofrece y Puntos. Se esconden las que el plan no permite.
+  const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'gratis' ? !gratisLocked : !descuentoLocked));
+  function usarIdea(i: IdeaPremio) {
+    setNombre(i.nombre);
+    elegirModo(i.modo);
+    if (i.regalo) {
+      setInicio(i.regalo.inicio);
+      setCompra(i.regalo.resto);
+    }
+    if (i.modo === 'descuento') {
+      if (i.dosxuno) setDescuentoModo('2x1');
+      else {
+        setDescuentoModo('porcentaje');
+        setDescuentoPorcentaje(String(i.porcentaje ?? 10));
+      }
+    }
+    setCosto(String(i.puntos));
+  }
+  function elegirModo(m: 'gratis' | 'regalo' | 'descuento' | 'combo') {
+    const esDescuento = m === 'descuento' || m === 'combo';
+    if (m === 'gratis' ? gratisLocked : descuentoLocked) return;
+    setTipo(esDescuento ? 'descuento' : 'gratis');
     setConCompra(m === 'regalo');
+    setEsCombo(m === 'combo');
+    if (m === 'combo' && !nombre.trim()) setNombre('Combo Camina');
   }
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
@@ -292,6 +337,7 @@ function BeneficioForm({
   const [active, setActive] = useState(benefit?.active ?? true);
   // Premio solo para Fans (0083): opcional, solo lo ven y lo canjean quienes son Fans del local.
   const [fansOnly, setFansOnly] = useState(!!benefit?.fans_only);
+  const [soloNuevos, setSoloNuevos] = useState(!!benefit?.new_customers_only);
   // La opción aparece recién cuando el servidor tiene la columna (migración 0083); antes, guardar no la manda.
   const [fansReady, setFansReady] = useState(false);
   useEffect(() => {
@@ -336,6 +382,16 @@ function BeneficioForm({
   async function handleSave() {
     setError(null);
     setSaved(false);
+    if (modo === 'combo') {
+      if (comboItems.trim().length < 3) {
+        setError('Escribe qué trae el combo (por ejemplo: «Salchipapa clásica + gaseosa personal»).');
+        return;
+      }
+      if (!(Number(comboPrecio) > 0) || !(Number(comboNormal) > Number(comboPrecio))) {
+        setError('El precio con Camina tiene que ser menor que el precio normal.');
+        return;
+      }
+    }
     if (modo === 'regalo' && compra.trim().length < 2) {
       setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
       return;
@@ -347,17 +403,27 @@ function BeneficioForm({
       name: nombre.trim(),
       type: tipo,
       discount_detail:
-        tipo === 'descuento'
+        modo === 'combo'
+          ? `Combo a ${bs(Number(comboPrecio))}`
+          : tipo === 'descuento'
           ? descuentoModo === 'porcentaje'
             ? `${Number(descuentoPorcentaje) || 0}% de descuento`
-            : descuento.trim()
+            : descuentoModo === '2x1'
+              ? '2x1'
+              : descuento.trim()
           : null,
-      discount_percent: tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
+      discount_percent: modo !== 'combo' && tipo === 'descuento' && descuentoModo === 'porcentaje' ? Number(descuentoPorcentaje) || null : null,
+      ...(comboReady
+        ? modo === 'combo'
+          ? { combo_items: comboItems.trim(), combo_price_bs: Number(comboPrecio), combo_regular_bs: Number(comboNormal) }
+          : { combo_items: null, combo_price_bs: null, combo_regular_bs: null }
+        : {}),
       cost_points: Number(costo) || 0,
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
       active,
       ...(fansReady ? { fans_only: fansOnly } : {}),
+      new_customers_only: soloNuevos,
       image_url: imageUrl,
       valid_from: validFrom || null,
       valid_to: validTo || null,
@@ -429,14 +495,33 @@ function BeneficioForm({
           <Star size={15} color="#8B4FD1" />
           <p className="text-[12.5px] text-text">
             {freeHasGratis
-              ? '🔓 Ya tienes un premio gratis: este puede ser tu descuento.'
-              : '🔒 Crea primero un premio gratis: así se habilita el descuento.'}
+              ? '🔓 Ya tienes tu premio gratis: este puede ser tu segundo premio (regalo con compra, descuento, 2x1 o combo).'
+              : '🔒 Empieza con un premio gratis (sin compra): así se habilita el segundo.'}
           </p>
         </div>
       )}
 
       <div className="max-w-[540px]">
         <Paso n={1} title="Tu premio" hint="Es lo primero que ven en la app.">
+          {ideas.length > 0 && (
+            <div className="bg-bg rounded-xl p-3 mb-4">
+              <p className="text-[12.5px] font-semibold mb-2">💡 ¿No se te ocurre? Toca una idea para tu rubro</p>
+              <div className="flex flex-wrap gap-1.5">
+                {ideas.map((i) => (
+                  <button
+                    key={i.nombre}
+                    type="button"
+                    onClick={() => usarIdea(i)}
+                    className="rounded-full px-3 py-1.5 text-[12px] font-semibold border text-left"
+                    style={nombre === i.nombre ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-text)' }}
+                  >
+                    {etiquetaIdea(i)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted mt-2">Después cambias lo que quieras: el nombre, los Puntos o la foto.</p>
+            </div>
+          )}
           <ImageUpload
             bucket="benefit-images"
             path={`${businessId}/${benefitId ?? 'new'}-photo`}
@@ -465,19 +550,20 @@ function BeneficioForm({
         </Paso>
 
         <Paso n={2} title="Cómo lo ofreces" hint="Elige una opción.">
-          <div className="grid grid-cols-3 gap-2">
+          <div className={`grid gap-2 ${comboReady ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {(
               [
                 { id: 'gratis', t: 'Gratis', d: 'Se lo lleva sin pagar', tone: 'aqua', locked: gratisLocked },
-                { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: gratisLocked },
+                { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: descuentoLocked },
                 { id: 'descuento', t: 'Descuento', d: 'Paga menos', tone: 'purple', locked: descuentoLocked },
+                ...(comboReady ? [{ id: 'combo' as const, t: 'Combo Camina', d: 'Un combo a precio especial', tone: 'gold' as const, locked: descuentoLocked }] : []),
               ] as const
             ).map((o) => (
               <button
                 key={o.id}
                 type="button"
                 disabled={o.locked}
-                title={o.locked ? (o.id === 'descuento' ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : 'Ya tienes un premio gratis: este puede ser un descuento') : ''}
+                title={o.locked ? (o.id === 'gratis' ? 'Ya tienes tu premio gratis: este puede ser el segundo' : freeHasDescuento ? 'Con Primer Paso tienes un premio gratis y uno más' : 'Empieza con un premio gratis (sin compra)') : ''}
                 onClick={() => elegirModo(o.id)}
                 className="rounded-xl border px-2 py-2.5 text-center disabled:cursor-not-allowed"
                 style={choiceStyle(modo === o.id, o.tone, o.locked)}
@@ -519,14 +605,38 @@ function BeneficioForm({
             </div>
           )}
 
+          {modo === 'combo' && (
+            <div className="mt-4">
+              <Field label="¿Qué trae el combo?">
+                <input value={comboItems} onChange={(e) => setComboItems(e.target.value.slice(0, 120))} placeholder="Ej: Salchipapa clásica + gaseosa personal" className={INPUT} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <Field label="Precio normal (Bs)">
+                  <input value={comboNormal} onChange={(e) => setComboNormal(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="32" inputMode="decimal" className={INPUT} />
+                </Field>
+                <Field label="Precio con Camina (Bs)">
+                  <input value={comboPrecio} onChange={(e) => setComboPrecio(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="25" inputMode="decimal" className={INPUT} />
+                </Field>
+              </div>
+              <Vista>
+                «{nombre.trim() || 'Combo Camina'} · {Number(comboPrecio) > 0 ? bs(Number(comboPrecio)) : 'Bs 25'}
+                {Number(comboNormal) > Number(comboPrecio) ? ` (antes ${bs(Number(comboNormal))})` : ''}»
+              </Vista>
+              <p className="text-[11.5px] text-muted mt-1 leading-4">Sirve para mover lo que más te conviene vender. La persona paga el combo en tu local.</p>
+            </div>
+          )}
+
           {modo === 'descuento' && (
             <div className="mt-4">
               <div className="flex gap-2 mb-3">
                 <button type="button" onClick={() => setDescuentoModo('porcentaje')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'porcentaje', 'purple')}>
                   % de descuento
                 </button>
+                <button type="button" onClick={() => setDescuentoModo('2x1')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === '2x1', 'purple')}>
+                  2x1
+                </button>
                 <button type="button" onClick={() => setDescuentoModo('texto')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'texto', 'purple')}>
-                  Otro (2x1, Bs fijos…)
+                  Otro (Bs fijos…)
                 </button>
               </div>
               {descuentoModo === 'porcentaje' ? (
@@ -540,8 +650,13 @@ function BeneficioForm({
                   />
                   <span className="text-[13.5px] text-muted">% de descuento</span>
                 </div>
+              ) : descuentoModo === '2x1' ? (
+                <>
+                  <p className="text-[12.5px] text-muted leading-4">Se lleva 2 y paga 1. Ideal para que la persona venga con un amigo: tú ganas dos clientes.</p>
+                  <Vista>«2x1 en {nombre.trim() || 'tu premio'}»</Vista>
+                </>
               ) : (
-                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: 2x1, Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
+                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
               )}
             </div>
           )}
@@ -754,6 +869,12 @@ function BeneficioForm({
               </div>
             )}
           </Opcion>
+          <Opcion
+            on={soloNuevos}
+            onToggle={() => setSoloNuevos((v) => !v)}
+            title="Solo para clientes nuevos"
+            hint="Lo canjea solo quien nunca canjeó en tu local. Ideal para atraer gente que todavía no te conoce."
+          />
           {fansReady && (
             <Opcion on={fansOnly} onToggle={() => setFansOnly((v) => !v)} title="Solo para tus Fans" hint="Un premio especial para tus clientes más fieles." />
           )}

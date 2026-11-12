@@ -150,7 +150,7 @@ export default function GuiaRegistroPage() {
         </Nota>
         <Nota n={3}>Cuánto cuesta: como guía, 2,5 Puntos equivalen a Bs 1 (algo de Bs 10 ronda los 25 Puntos). Escribe cuánto vale en Bs y el panel te sugiere los Puntos.</Nota>
         <Nota n={4}>Cuándo vale: días y horario. Tip: si vale en tus horas flojas, la gente llega justo cuando más la necesitas.</Nota>
-        <Nota n={5}>Con el plan gratis tienes 1 premio gratis y, con él, 1 descuento. Con los planes de pago, varios premios a la vez y cupones ilimitados.</Nota>
+        <Nota n={5}>Con el plan gratis empiezas con 1 premio gratis (sin compra) y, con él, sumas 1 más: regalo con compra, descuento, 2x1 o combo. Con los planes de pago, varios premios a la vez y cupones ilimitados.</Nota>
         <Captura src="p-beneficios.jpg" alt="Mis premios" alto={58} />
       </Hoja>
 

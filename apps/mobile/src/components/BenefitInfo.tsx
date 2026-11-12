@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/Text';
 import { Glass } from '@/components/ui/Glass';
 import { Coin } from '@/components/ui/Coin';
 import { BusinessHours, type OpeningHours } from '@/components/BusinessHours';
-import { IconBubble, Calendar, MapPin, Storefront, ShoppingBag, GlobeIcon } from '@/components/icons';
+import { IconBubble, Calendar, MapPin, Storefront, ShoppingBag, GlobeIcon, UserPlus } from '@/components/icons';
 import { plural } from '@/lib/format';
 
 // Lo que muestran juntos el detalle de un canje y el detalle de un premio de la ficha: costo, cuándo y dónde vale, qué incluye.
@@ -13,6 +13,10 @@ export type BenefitFacts = {
   description?: string | null;
   // Premio con tu compra (0116): qué hay que comprar para llevárselo.
   with_purchase?: string | null;
+  new_customers_only?: boolean;
+  combo_items?: string | null;
+  combo_price_bs?: number | string | null;
+  combo_regular_bs?: number | string | null;
   discount_detail?: string | null;
   discount_percent?: number | null;
   dine_in_only?: boolean;
@@ -137,8 +141,22 @@ export function purchaseLine(f: string) {
   return f.charAt(0).toUpperCase() + f.slice(1);
 }
 
+// Bs con coma decimal solo si hace falta: 25 → «Bs 25».
+export function bs(v: number | string | null | undefined): string {
+  const n = Number(v);
+  return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
+}
+
+// Combo Camina: «Bs 25 (antes Bs 32)». Null si el premio no es un combo.
+export function comboPrice(b: BenefitFacts): string | null {
+  if (b.combo_price_bs == null) return null;
+  return `${bs(b.combo_price_bs)}${b.combo_regular_bs != null ? ` (antes ${bs(b.combo_regular_bs)})` : ''}`;
+}
+
 export function conditionsOf(b: BenefitFacts): string[] {
   const out: string[] = [];
+  if (comboPrice(b)) out.push(`Combo a ${comboPrice(b)}: lo pagas en el local`);
+  if (b.new_customers_only) out.push('Solo para tu primera visita a este local');
   if (b.with_purchase) out.push(purchaseLine(b.with_purchase));
   if (b.online) out.push(`Se cobra por ${CHANNEL[b.online_channel ?? ''] ?? 'el canal del local'}, sin ir al local`);
   else {
@@ -224,6 +242,10 @@ export function WhatIncludes({ text }: { text?: string | null }) {
 
 export function PurchaseChip({ b }: { b: BenefitFacts }) {
   return b.with_purchase ? <Chip icon={ShoppingBag} tone="aqua" label="Con tu compra" /> : null;
+}
+
+export function NewCustomerChip({ b }: { b: BenefitFacts }) {
+  return b.new_customers_only ? <Chip icon={UserPlus} tone="purple" label="Primera visita" /> : null;
 }
 
 export function BookingChip({ b }: { b: BenefitFacts }) {
