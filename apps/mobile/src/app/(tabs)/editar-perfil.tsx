@@ -418,7 +418,7 @@ export default function EditarPerfilScreen() {
 
           <Glass className="rounded-3xl p-4 mb-4">
             <Text className="font-bold text-[15px] mb-1 text-text-light dark:text-text-dark">Tus intereses</Text>
-            <Text className="text-muted-light dark:text-muted-dark text-xs mb-3">Opcional. Nos ayuda a mostrarte mejores beneficios.</Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs mb-3">Opcional. Nos ayuda a mostrarte mejores premios.</Text>
             <View className="flex-row flex-wrap gap-2">
               {INTERESTS_OPTIONS.map(([name]) => {
                 const active = interests.includes(name);

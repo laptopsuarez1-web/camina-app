@@ -2,7 +2,7 @@ import type { Business } from '@/lib/supabase';
 
 // Lo recomendado para publicar un local en la app. Lo usa el cartel del dueño ("te recomendamos…") y el admin
 // (lo muestra como recomendación; el admin puede aprobar siempre, aunque falte algo), así los dos miran la misma lista.
-// Un beneficio activo NO es requisito: el comercio se puede aprobar sin premios y aparece en Canjes
+// Un premio activo NO es requisito: el comercio se puede aprobar sin premios y aparece en Canjes
 // y en el mapa recién cuando carga el primero (ver sugerenciaBeneficio).
 export interface Requisito {
   id: 'logo' | 'portada' | 'descripcion' | 'ubicacion';
@@ -27,7 +27,7 @@ export function faltantesObligatorios(b: Parameters<typeof faltantesParaPublicar
   return faltantesParaPublicar(b).filter((r) => r.id !== 'logo' && r.id !== 'portada');
 }
 
-// Aviso suave (no bloquea la aprobación): sin beneficios activos el local no sale en Canjes ni en el mapa.
+// Aviso suave (no bloquea la aprobación): sin premios activos el local no sale en Canjes ni en el mapa.
 export function sugerenciaBeneficio(b: Pick<Business, 'account_kind'>, beneficiosActivos: number) {
   return b.account_kind !== 'events_only' && beneficiosActivos < 1;
 }

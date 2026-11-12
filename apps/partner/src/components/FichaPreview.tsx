@@ -70,7 +70,7 @@ export function FichaPreview({ business, benefits }: { business: Business; benef
 
         <p className="text-[15px] font-bold mt-5 mb-2.5">Premios disponibles</p>
         {activos.length === 0 && (
-          <p className="text-[12.5px] text-muted">Todavía no hay beneficios activos. Se puede aprobar igual: aparece en Canjes y en el mapa cuando cargue el primero.</p>
+          <p className="text-[12.5px] text-muted">Todavía no hay premios activos. Se puede aprobar igual: aparece en Canjes y en el mapa cuando cargue el primero.</p>
         )}
         <div className="flex flex-col gap-2">
           {activos.map((b) => (
@@ -94,7 +94,7 @@ export function FichaPreview({ business, benefits }: { business: Business; benef
   );
 }
 
-// Ventana con la vista previa. Carga sola los beneficios del local.
+// Ventana con la vista previa. Carga sola los premios del local.
 export function FichaPreviewModal({ business, onClose, footer }: { business: Business; onClose: () => void; footer?: React.ReactNode }) {
   const [benefits, setBenefits] = useState<Benefit[] | null>(null);
   useEffect(() => {

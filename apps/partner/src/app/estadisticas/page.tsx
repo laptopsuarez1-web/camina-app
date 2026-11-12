@@ -61,6 +61,8 @@ export default function EstadisticasPage() {
       });
   }, [business, locked]);
 
+  // Hoy, fijado una vez al abrir la página: los gráficos cuentan los últimos días hacia atrás desde aquí.
+  const [ahora] = useState(() => Date.now());
   const stats = useMemo(() => {
     const total = rows.length;
     const answered = rows.filter((r) => r.extra_consumption !== null);
@@ -73,11 +75,11 @@ export default function EstadisticasPage() {
       const key = d.toISOString().slice(0, 10);
       byDay.set(key, (byDay.get(key) ?? 0) + 1);
       byHour[d.getHours()] += 1;
-      const name = r.benefit?.name ?? 'Beneficio';
+      const name = r.benefit?.name ?? 'Premio';
       byBenefit.set(name, (byBenefit.get(name) ?? 0) + 1);
     }
     const days = Array.from({ length: DIAS }, (_, i) => {
-      const d = new Date(Date.now() - (DIAS - 1 - i) * 24 * 3600 * 1000);
+      const d = new Date(ahora - (DIAS - 1 - i) * 24 * 3600 * 1000);
       const key = d.toISOString().slice(0, 10);
       return { label: `${d.getDate()}/${d.getMonth() + 1}`, value: byDay.get(key) ?? 0 };
     });
@@ -93,7 +95,7 @@ export default function EstadisticasPage() {
       hours,
       top,
     };
-  }, [rows]);
+  }, [rows, ahora]);
 
   return (
     <DashboardShell>
@@ -103,7 +105,7 @@ export default function EstadisticasPage() {
         <div className="bg-card border border-line rounded-2xl p-6 max-w-[520px]">
           <p className="font-bold text-[15px] mb-1.5">Las estadísticas son del plan Paso Firme</p>
           <p className="text-muted text-[13px] leading-5 mb-4">
-            Con Paso Firme ves cuántos canjes tuviste por día, a qué hora te visitan más, cuál es tu beneficio favorito
+            Con Paso Firme ves cuántos canjes tuviste por día, a qué hora te visitan más, cuál es tu premio favorito
             y cuántos clientes compraron algo más.
           </p>
           <Link href="/plan" className="inline-block bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px]">
@@ -125,7 +127,7 @@ export default function EstadisticasPage() {
               <p className="text-muted text-[11px]">{stats.answered} respuestas</p>
             </div>
             <div className="bg-card border border-line rounded-2xl p-4">
-              <p className="text-muted text-[12px]">Beneficio más canjeado</p>
+              <p className="text-muted text-[12px]">Premio más canjeado</p>
               <p className="text-[15px] font-bold mt-1.5 leading-5">{stats.top ? `${stats.top[0]} (${stats.top[1]})` : '—'}</p>
             </div>
           </div>

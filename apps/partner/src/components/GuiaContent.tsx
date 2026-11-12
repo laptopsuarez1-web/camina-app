@@ -5,7 +5,7 @@ const PASOS = [
   { t: 'La persona elige el premio en la app', d: 'En tu local toca Canjear y la app le pide el código de 4 números de tu local.' },
   { t: 'Le dices tu código', d: 'Dile el código de tu local (lo ves en Canjes, arriba). No hace falta que abras el panel ni el celular.' },
   { t: 'La app confirma al instante', d: 'La persona escribe el código estando en tu local y ve "Canje confirmado". El canje queda registrado en Canjes con su premio.' },
-  { t: 'Entregas el beneficio', d: 'Entrega lo prometido. Cada persona puede canjear una vez cada 14 días (dos semanas) en tu local.' },
+  { t: 'Entregas el premio', d: 'Entrega lo prometido. Cada persona puede canjear una vez cada 14 días (dos semanas) en tu local.' },
 ];
 
 const SI_FALLA = [
@@ -16,22 +16,22 @@ const SI_FALLA = [
 ];
 
 const REGLAS = [
-  ['Lo que publicas es lo que entregas', 'El beneficio tiene que ser real, vigente y como está descrito (horario, días, condiciones). Si algo cambia, edítalo o páusalo en "Mis beneficios".'],
+  ['Lo que publicas es lo que entregas', 'El premio tiene que ser real, vigente y como está descrito (horario, días, condiciones). Si algo cambia, edítalo o páusalo en "Mis premios".'],
   ['Sin consumo extra obligatorio', 'Un premio "Gratis" no puede pedir que la persona compre otra cosa. Si quieres pedir una compra, elige "Regalo con compra": la app lo muestra claro (por ejemplo, «De regalo llevando 2 salchipapas»).'],
   ['Un canje, una entrega', 'Cada canje se entrega una sola vez. No des tu código a quien no esté en tu local.'],
   ['El código es de tu local', 'Tu código de 4 números sirve solo en tu comercio. Cámbialo desde Canjes cuando quieras.'],
-  ['Una vez cada 14 días por comercio', 'Cada persona puede canjear en tu local una vez cada 14 días (dos semanas). Así el beneficio alcanza para más gente.'],
+  ['Una vez cada 14 días por comercio', 'Cada persona puede canjear en tu local una vez cada 14 días (dos semanas). Así el premio alcanza para más gente.'],
   ['Tarjeta de fidelidad (Paso Firme y Paso Adelante)', 'Camina tiene una tarjeta de fidelidad general: cada canje confirmado en cualquier comercio suma un sello. Con 5 sellos la persona elige un premio gratis entre los comercios que participan. Tú eliges en la sección Tarjeta de fidelidad el premio que ofreces: aparece entre las opciones que ven todos los clientes de Camina (más visibilidad para tu local). La persona tiene 30 días para canjearlo en tu local con tu código del local, y no se le descuentan Puntos. El premio lo pones tú.'],
-  ['Cupones por día', 'Eliges cuántos cupones das por día, o ilimitados. Cuando se agotan, el beneficio aparece como agotado hasta el día siguiente.'],
+  ['Cupones por día', 'Eliges cuántos cupones das por día, o ilimitados. Cuando se agotan, el premio aparece como agotado hasta el día siguiente.'],
   ['Puntos justos', 'Como guía: 2,5 Puntos equivalen a Bs 1, o sea que algo de Bs 10 ronda los 25 Puntos. En la app se gana 1 Punto cada 1.000 pasos, con un máximo de 20 por día.'],
-  ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada beneficio necesita su propia foto para poder guardarse.'],
+  ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada premio necesita su propia foto para poder guardarse.'],
   ['Avisos cercanos (Paso Adelante)', 'Hasta 3 por mes. Los revisamos antes de enviarlos, salen entre 8:00 y 21:00 y cada persona recibe como máximo 1 por semana. Nada de mensajes engañosos.'],
   ['Trato respetuoso', 'Las personas que canjean son clientes tuyos: atiéndelas como a cualquiera. Camina puede pausar comercios con quejas repetidas.'],
 ];
 
 const FAQ = [
   ['¿Cómo cambio mi horario?', 'Perfil del local → Horarios. Marcas los días que abres y la hora de apertura y cierre.'],
-  ['¿Cómo subo o pauso un beneficio?', 'Mis beneficios → eliges el beneficio → "Activo" para pausarlo o reactivarlo.'],
+  ['¿Cómo subo o pauso un premio?', 'Mis premios → eliges el premio → "Activo" para pausarlo o reactivarlo.'],
   ['¿Puedo cambiar de plan?', 'Sí, cuando quieras desde Plan. Empiezas gratis en Primer Paso.'],
   ['¿Dónde veo cuánta gente canjeó?', 'En Inicio y en Estadísticas (según tu plan).'],
   ['¿Y los premios online (WhatsApp y redes)?', 'Esos canjes generan un código de 6 números que dura 7 días. La persona te lo manda y lo confirmas en Canjes → "Confirmar código".'],

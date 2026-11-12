@@ -43,8 +43,8 @@ export default function EventosPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [prize, setPrize] = useState('');
-  const [starts, setStarts] = useState(toLocalInput(new Date(Date.now() + 24 * 3600 * 1000)));
-  const [ends, setEnds] = useState(toLocalInput(new Date(Date.now() + 4 * 24 * 3600 * 1000)));
+  const [starts, setStarts] = useState(() => toLocalInput(new Date(Date.now() + 24 * 3600 * 1000)));
+  const [ends, setEnds] = useState(() => toLocalInput(new Date(Date.now() + 4 * 24 * 3600 * 1000)));
   const [goalMode, setGoalMode] = useState<'daily' | 'total'>('daily');
   const [goalSteps, setGoalSteps] = useState(8000);
   const [goalDays, setGoalDays] = useState(3);

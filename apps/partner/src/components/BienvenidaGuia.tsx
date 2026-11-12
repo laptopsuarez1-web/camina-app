@@ -30,7 +30,7 @@ const PASOS_DUENO: Paso[] = [
     t: 'Crea tu primer premio',
     d: 'Elige qué regalas y cuántos Puntos cuesta. Algo rico y simple engancha más que algo caro.',
     href: '/beneficio',
-    ir: 'Ir a Mis beneficios',
+    ir: 'Ir a Mis premios',
   },
   {
     icon: Receipt,

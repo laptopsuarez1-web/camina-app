@@ -57,7 +57,7 @@ export default function RegistroPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [awaitingConfirmation] = useState(false);
   const [resending, setResending] = useState(false);
   const router = useRouter();
   // Si ya entró con Google (o tiene sesión), no se le pide correo ni contraseña: la cuenta es esa.
@@ -268,7 +268,7 @@ export default function RegistroPage() {
               <p className="text-muted text-[13px] mb-5">Elige el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
               <div className="flex flex-col gap-2.5 mb-5">
                 {[
-                  { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y beneficios para canje' },
+                  { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y descuentos para canje' },
                   { v: 'events_only' as const, t: 'Solo quiero publicar un evento o sorteo', d: 'Publicidad dentro de la app, sin estar en el mapa (Bs 400 por publicación)' },
                 ].map((o) => (
                   <button
