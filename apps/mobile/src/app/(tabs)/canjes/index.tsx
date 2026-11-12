@@ -8,6 +8,7 @@ import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
+import { CatalogSection } from '@/components/CatalogSection';
 import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { View, ScrollView, Modal, PanResponder, Alert, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -1376,6 +1377,17 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">WhatsApp</Text>
                     </Press>
                   ) : null}
+                  {profileGroup.business.catalog_url ? (
+                    <Press
+                      onPress={() => Linking.openURL(profileGroup.business.catalog_url!).catch(() => {})}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Ver el catálogo de ${profileGroup.business.name}`}
+                      className="flex-row items-center border rounded-full px-3.5 py-2"
+                      style={{ gap: 6, ...glassChip(isDark) }}
+                    >
+                      <Text className="text-[12.5px] font-semibold text-text-light dark:text-text-dark">📖 Ver catálogo</Text>
+                    </Press>
+                  ) : null}
                   {profileGroup.business.website ? (
                     <Press
                       onPress={() => Linking.openURL(websiteUrl(profileGroup.business.website!))}
@@ -1399,6 +1411,8 @@ export default function CanjesScreen() {
                     </View>
                   </View>
                 ) : null}
+
+                <CatalogSection businessId={profileGroup.business.id} />
 
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
