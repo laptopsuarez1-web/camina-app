@@ -60,9 +60,11 @@ export async function unregisterPushToken(): Promise<void> {
   }
 }
 
-// `userInitiated`: el pedido viene de un toque de la persona (botón Activar de Perfil), así que
-// se saltea la guarda de "ya preguntamos en esta sesión". La llamada automática del layout no lo usa.
-export async function registerForPushNotificationsAsync(opts?: { userInitiated?: boolean }): Promise<void> {
+// `userInitiated`: el pedido viene de un toque de la persona (botón Activar de Perfil o la tarjeta de Inicio), así que
+// se saltea la guarda de "ya preguntamos en esta sesión".
+// `onlyIfGranted`: si todavía no dio permiso, no se pregunta (solo se registra el token si ya lo dio). Es lo que usa
+// el arranque de la app: el permiso se pide después del primer logro, con una tarjeta que explica para qué sirve.
+export async function registerForPushNotificationsAsync(opts?: { userInitiated?: boolean; onlyIfGranted?: boolean }): Promise<void> {
   if (registered) return;
 
   if (Platform.OS === 'android') {
@@ -76,6 +78,7 @@ export async function registerForPushNotificationsAsync(opts?: { userInitiated?:
   const existing = await Notifications.getPermissionsAsync();
   let status = existing.status;
   // Si ya dijo que no (y el sistema no deja volver a preguntar), no insistimos: se reactiva desde Perfil.
+  if (status !== 'granted' && opts?.onlyIfGranted) return;
   if (status !== 'granted' && ((!opts?.userInitiated && askedThisSession) || (existing.status === 'denied' && !existing.canAskAgain))) return;
   if (status !== 'granted') {
     askedThisSession = true;

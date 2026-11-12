@@ -89,6 +89,8 @@ export interface Benefit {
   description?: string | null;
   discount_detail: string | null;
   discount_percent: number | null;
+  // Premio con tu compra (0116): qué hay que comprar para llevárselo. Null = nada.
+  with_purchase?: string | null;
   cost_points: number;
   daily_quota: number | null;
   active: boolean;

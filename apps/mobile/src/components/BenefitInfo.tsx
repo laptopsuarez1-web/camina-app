@@ -11,6 +11,8 @@ import { plural } from '@/lib/format';
 // Lo que muestran juntos el detalle de un canje y el detalle de un premio de la ficha: costo, cuándo y dónde vale, qué incluye.
 export type BenefitFacts = {
   description?: string | null;
+  // Premio con tu compra (0116): qué hay que comprar para llevárselo.
+  with_purchase?: string | null;
   discount_detail?: string | null;
   discount_percent?: number | null;
   dine_in_only?: boolean;
@@ -132,6 +134,7 @@ export function HowToRedeem({ steps }: { steps: string[] }) {
 
 export function conditionsOf(b: BenefitFacts): string[] {
   const out: string[] = [];
+  if (b.with_purchase) out.push(`Con la compra de ${b.with_purchase}`);
   if (b.online) out.push(`Se cobra por ${CHANNEL[b.online_channel ?? ''] ?? 'el canal del local'}, sin ir al local`);
   else {
     out.push(b.dine_in_only ? 'Válido solo para consumo en el local' : 'Válido en el local, para llevar o consumir');
@@ -212,6 +215,10 @@ export function WhatIncludes({ text }: { text?: string | null }) {
       <Text className="text-[14.5px] text-text-light dark:text-text-dark" style={{ lineHeight: 22 }}>{text}</Text>
     </View>
   );
+}
+
+export function PurchaseChip({ b }: { b: BenefitFacts }) {
+  return b.with_purchase ? <Chip icon={ShoppingBag} tone="aqua" label="Con tu compra" /> : null;
 }
 
 export function BookingChip({ b }: { b: BenefitFacts }) {

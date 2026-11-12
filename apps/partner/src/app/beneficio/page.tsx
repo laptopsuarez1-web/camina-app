@@ -130,7 +130,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
+                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'}{b.with_purchase ? ' con tu compra' : ''} · {b.cost_points} Puntos
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -208,6 +208,9 @@ function BeneficioForm({
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
+  // Con tu compra: la persona compra algo y se lleva el premio.
+  const [conCompra, setConCompra] = useState(!!benefit?.with_purchase);
+  const [compra, setCompra] = useState(benefit?.with_purchase ?? '');
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva más de un día caminando).
@@ -287,9 +290,13 @@ function BeneficioForm({
   }
 
   async function handleSave() {
-    setSaving(true);
     setError(null);
     setSaved(false);
+    if (conCompra && compra.trim().length < 3) {
+      setError('Escribe qué tiene que comprar la persona (por ejemplo: un corte de cabello).');
+      return;
+    }
+    setSaving(true);
 
     const payload = {
       business_id: businessId,
@@ -320,6 +327,8 @@ function BeneficioForm({
       online_quota: online && onlineChannel !== 'web' ? Number(onlineQuota) || null : null,
       // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
       ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
+      // Igual que la descripción: solo se manda si hay algo que guardar o borrar.
+      ...(conCompra && compra.trim() ? { with_purchase: compra.trim() } : benefit?.with_purchase ? { with_purchase: null } : {}),
     };
 
     let savedId = benefitId;
@@ -444,6 +453,29 @@ function BeneficioForm({
           >
             Descuento
           </button>
+        </div>
+
+        {/* Mismo estilo que "Premio online": se lee bien en claro y en oscuro. */}
+        <div className="bg-aqua-light rounded-xl p-3.5 mb-4.5">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" checked={conCompra} onChange={(e) => setConCompra(e.target.checked)} className="mt-0.5" />
+            <span>
+              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Con tu compra</span>
+              <span className="block text-[11.5px] text-muted leading-4">La persona compra algo y se lleva el premio. Así cada canje te deja una venta y puedes pedir menos Puntos.</span>
+            </span>
+          </label>
+          {conCompra && (
+            <div className="mt-2.5">
+              <label className="block text-[12px] font-semibold mb-1" style={{ color: '#2E9E7C' }}>¿Qué tiene que comprar?</label>
+              <input
+                value={compra}
+                onChange={(e) => setCompra(e.target.value.slice(0, 60))}
+                placeholder="Ej: un corte de cabello"
+                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+              />
+              <p className="text-[11.5px] text-muted mt-1.5 leading-4">En la app se ve: «Con la compra de {compra.trim() || 'un corte de cabello'}».</p>
+            </div>
+          )}
         </div>
 
         {tipo === 'descuento' && (
