@@ -32,6 +32,13 @@ export default function GuiaPage() {
         >
           <Sparkles size={15} /> Ver la guía rápida
         </button>
+        <a
+          href="/guia-registro-comercios.pdf"
+          download
+          className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-6 ml-2"
+        >
+          <Download size={15} /> Guía de registro (PDF)
+        </a>
 
         <GuiaContent />
 
