@@ -93,7 +93,7 @@ export default function CanjesPage() {
       const { data: b } = await supabase.from('benefits').select('name, with_purchase').eq('id', benefitId).maybeSingle();
       const bb = b as { name?: string; with_purchase?: string | null } | null;
       // Premio con tu compra: se recuerda que va con la compra, para cobrarla.
-      premio = bb?.name ? (bb.with_purchase ? `${bb.name} (con la compra de ${bb.with_purchase})` : bb.name) : undefined;
+      premio = bb?.name ? (bb.with_purchase ? `${bb.name}, ${bb.with_purchase}` : bb.name) : undefined;
     }
     setChecking(false);
     setResult({

@@ -132,9 +132,14 @@ export function HowToRedeem({ steps }: { steps: string[] }) {
   );
 }
 
+// La frase la escribe el local tal cual («llevando 2 salchipapas»).
+export function purchaseLine(f: string) {
+  return f.charAt(0).toUpperCase() + f.slice(1);
+}
+
 export function conditionsOf(b: BenefitFacts): string[] {
   const out: string[] = [];
-  if (b.with_purchase) out.push(`Con la compra de ${b.with_purchase}`);
+  if (b.with_purchase) out.push(purchaseLine(b.with_purchase));
   if (b.online) out.push(`Se cobra por ${CHANNEL[b.online_channel ?? ''] ?? 'el canal del local'}, sin ir al local`);
   else {
     out.push(b.dine_in_only ? 'Válido solo para consumo en el local' : 'Válido en el local, para llevar o consumir');

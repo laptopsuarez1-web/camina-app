@@ -1007,7 +1007,7 @@ export default function CanjesScreen() {
                   <View
                     key={b.id}
                     accessible
-                    accessibilityLabel={`${b.name}${b.with_purchase ? `, con la compra de ${b.with_purchase}` : ''}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
+                    accessibilityLabel={`${b.name}${b.with_purchase ? `, ${b.with_purchase}` : ''}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
                     className="flex-row items-center bg-aqua-deep rounded-full"
                     style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: discountTag(b) || b.with_purchase ? 5 : 12 }}
                   >
@@ -1510,7 +1510,7 @@ export default function CanjesScreen() {
                                     <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
-                                    {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}{b.with_purchase ? ` con la compra de ${b.with_purchase}` : ''}
+                                    {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}{b.with_purchase ? ` ${b.with_purchase}` : ''}
                                   </Text>
                                   {b.online ? (
                                     <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">

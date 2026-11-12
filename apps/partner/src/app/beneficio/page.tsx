@@ -14,6 +14,30 @@ import { FRANJAS_COMUNES, DIAS_ENTRE_SEMANA_MASK, franjaFloja } from '@/lib/hora
 // supabase/migrations/0001_init.sql). 127 = todos los días.
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
+// Cómo empieza la frase del "Regalo con tu compra". Vacío = frase libre.
+const INICIOS = [
+  { inicio: 'llevando', label: 'Llevando…', ejemplo: '2 salchipapas' },
+  { inicio: 'con tu', label: 'Con tu…', ejemplo: 'corte de cabello' },
+  { inicio: 'si pides', label: 'Si pides…', ejemplo: 'un combo familiar' },
+  { inicio: 'al comprar', label: 'Al comprar…', ejemplo: 'cualquier café' },
+  { inicio: '', label: 'Mi frase', ejemplo: 'en tu segunda visita del mes' },
+];
+
+function cap(t: string) {
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function joinFrase(inicio: string, resto: string) {
+  const r = resto.trim();
+  return inicio ? `${inicio} ${r}` : r.charAt(0).toLowerCase() + r.slice(1);
+}
+
+function splitFrase(f?: string | null) {
+  if (!f) return { inicio: 'llevando', resto: '' };
+  const op = INICIOS.find((o) => o.inicio && f.toLowerCase().startsWith(o.inicio + ' '));
+  return op ? { inicio: op.inicio, resto: f.slice(op.inicio.length + 1) } : { inicio: '', resto: f };
+}
+
 export default function BeneficioPage() {
   const { business } = useBusinessAuth();
   const isFree = business?.plan === 'primer_paso';
@@ -130,7 +154,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'}{b.with_purchase ? ' con tu compra' : ''} · {b.cost_points} Puntos
+                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'}{b.with_purchase ? ` ${b.with_purchase}` : ''} · {b.cost_points} Puntos
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -208,9 +232,13 @@ function BeneficioForm({
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
-  // Con tu compra: la persona compra algo y se lleva el premio.
+  // Con tu compra: la persona compra algo y se lleva el premio. El local
+  // elige cómo empieza la frase y la completa; se guarda entera.
+  const inicial = splitFrase(benefit?.with_purchase);
   const [conCompra, setConCompra] = useState(!!benefit?.with_purchase);
-  const [compra, setCompra] = useState(benefit?.with_purchase ?? '');
+  const [inicio, setInicio] = useState(inicial.inicio);
+  const [compra, setCompra] = useState(inicial.resto);
+  const frase = joinFrase(inicio, compra);
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva más de un día caminando).
@@ -292,8 +320,8 @@ function BeneficioForm({
   async function handleSave() {
     setError(null);
     setSaved(false);
-    if (conCompra && compra.trim().length < 3) {
-      setError('Escribe qué tiene que comprar la persona (por ejemplo: un corte de cabello).');
+    if (conCompra && compra.trim().length < 2) {
+      setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
       return;
     }
     setSaving(true);
@@ -328,7 +356,7 @@ function BeneficioForm({
       // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
       ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
       // Igual que la descripción: solo se manda si hay algo que guardar o borrar.
-      ...(conCompra && compra.trim() ? { with_purchase: compra.trim() } : benefit?.with_purchase ? { with_purchase: null } : {}),
+      ...(conCompra && compra.trim() ? { with_purchase: frase } : benefit?.with_purchase ? { with_purchase: null } : {}),
     };
 
     let savedId = benefitId;
@@ -460,20 +488,41 @@ function BeneficioForm({
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={conCompra} onChange={(e) => setConCompra(e.target.checked)} className="mt-0.5" />
             <span>
-              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Con tu compra</span>
-              <span className="block text-[11.5px] text-muted leading-4">La persona compra algo y se lleva el premio. Así cada canje te deja una venta y puedes pedir menos Puntos.</span>
+              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Regalo con tu compra</span>
+              <span className="block text-[11.5px] text-muted leading-4">Premia a quien te compra: cada canje te trae una venta, y puedes pedir menos Puntos.</span>
             </span>
           </label>
           {conCompra && (
-            <div className="mt-2.5">
-              <label className="block text-[12px] font-semibold mb-1" style={{ color: '#2E9E7C' }}>¿Qué tiene que comprar?</label>
-              <input
-                value={compra}
-                onChange={(e) => setCompra(e.target.value.slice(0, 60))}
-                placeholder="Ej: un corte de cabello"
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-              />
-              <p className="text-[11.5px] text-muted mt-1.5 leading-4">En la app se ve: «Con la compra de {compra.trim() || 'un corte de cabello'}».</p>
+            <div className="mt-3">
+              <span className="block text-[12px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>¿Cómo lo dices?</span>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {INICIOS.map((op) => (
+                  <button
+                    key={op.inicio}
+                    type="button"
+                    onClick={() => setInicio(op.inicio)}
+                    className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border"
+                    style={inicio === op.inicio
+                      ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' }
+                      : { background: '#fff', borderColor: '#CFEDE3', color: '#2E9E7C' }}
+                  >
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center bg-white border border-line rounded-[10px] px-3">
+                {inicio ? <span className="text-[13.5px] font-semibold mr-1.5 whitespace-nowrap" style={{ color: '#2E9E7C' }}>{cap(inicio)}</span> : null}
+                <input
+                  value={compra}
+                  onChange={(e) => setCompra(e.target.value.slice(0, 60 - (inicio ? inicio.length + 1 : 0)))}
+                  placeholder={INICIOS.find((o) => o.inicio === inicio)?.ejemplo}
+                  className="flex-1 min-w-0 bg-transparent py-2.5 text-[13.5px] outline-none"
+                />
+              </div>
+              <p className="text-[11.5px] text-muted mt-2 leading-4">
+                En la app se ve: <b style={{ color: '#2E9E7C' }}>«{tipo === 'descuento' ? 'Descuento' : 'Gratis'} {compra.trim() ? frase : joinFrase(inicio, INICIOS.find((o) => o.inicio === inicio)?.ejemplo ?? '')}»</b>
+              </p>
+              <p className="text-[11px] text-muted mt-1 leading-4">Corto y con gancho funciona mejor. Ideas: «llevando un combo», «con tu corte», «si pides postre».</p>
             </div>
           )}
         </div>
