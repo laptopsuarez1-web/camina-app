@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Camina · Dossier para comercios</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+.cover { padding: 0; background: #120a26 }
+.cover .bg { position: absolute; inset: 0; background: url(a/plaza.jpg) center/cover; opacity: .55 }
+.cover .shade { position: absolute; inset: 0; background: linear-gradient(90deg, #160c33 0%, rgba(22,12,51,.92) 42%, rgba(22,12,51,.35) 75%, rgba(22,12,51,.2) 100%) }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px }
+.step .phone { width: 44mm }
+.step h3 { font-size: 18px; margin: 0; font-weight: 800 }
+.step p { margin: 0; font-size: 12.5px; color: #CFC4EE; line-height: 1.45; max-width: 64mm }
+.tipo { border-radius: 18px; padding: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12) }
+.tipo .t { font-family: Montserrat; font-weight: 900; font-size: 19px; color: #fff }
+.tipo .d { font-size: 12px; color: #CFC4EE; margin-top: 3px; line-height: 1.4 }
+.tipo .ej { margin-top: 10px; font-size: 12px; font-weight: 700; color: #1a0f3a; background: #62F0B6; border-radius: 10px; padding: 7px 9px; line-height: 1.3 }
+.plan { border-radius: 20px; padding: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); display: flex; flex-direction: column; gap: 6px }
+.plan .n { font-weight: 800; font-size: 15px }
+.plan .p { font-family: Montserrat; font-weight: 900; font-size: 26px }
+.plan ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; color: #D6CCF0; display: flex; flex-direction: column; gap: 5px }
+.plan li::before { content: '✓  '; color: #62F0B6; font-weight: 800 }
+.plan.f { background: linear-gradient(160deg, #2b1d63, #1d1347); border: 2px solid #62F0B6 }
+</style></head><body>
+
+<!-- 1. PORTADA -->
+<section class="pg cover">
+  <div class="bg"></div><div class="shade"></div>
+  <div style="position:absolute;left:16mm;top:14mm;display:flex;align-items:center;gap:10px"><img src="a/logo.png" style="height:13mm"><span class="big" style="font-size:24px;color:#62F0B6;letter-spacing:2px">CAMINA</span></div>
+  <div style="position:absolute;left:16mm;top:42mm;width:128mm">
+    <div class="kicker">Para comercios de Tarija · 2026</div>
+    <h1 style="font-size:52px">Gente caminando<br><span class="m">hacia tu local.</span></h1>
+    <p class="lead" style="font-size:16px;max-width:122mm">Camina es una app boliviana que premia a las personas por caminar. Juntan Puntos y los cambian por premios en comercios como el tuyo. <b style="color:#fff">Tú pones el premio; ellos llegan a tu puerta.</b></p>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <span class="pill m">Sale el 1 de diciembre</span>
+      <span class="pill o">Tu local listo en 5 minutos</span>
+      <span class="pill o">Empiezas gratis</span>
+    </div>
+  </div>
+  <div style="position:absolute;right:30mm;top:16mm;width:58mm;transform:rotate(4deg)" class="phone"><img src="a/app-ficha-local.jpg"></div>
+  <div style="position:absolute;right:84mm;top:40mm;width:52mm;transform:rotate(-5deg)" class="phone"><img src="a/app-inicio.jpg"></div>
+  <img src="a/baifo.png" style="position:absolute;right:8mm;bottom:6mm;width:42mm">
+  <div class="foot" style="color:#B9AED9"><span>Dossier para comercios · caminaapp.com</span><span>Hecha en Bolivia</span></div>
+</section>
+
+<!-- 2. EN 30 SEGUNDOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>01 · Camina en 30 segundos</span></div>
+  <div class="content">
+    <div class="kicker">Cómo funciona</div>
+    <h2>De un paso a <span class="m">tu caja</span>, en tres momentos.</h2>
+    <div class="grid3" style="margin-top:14px">
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/app-actividad.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">1</span><h3>Caminan</h3></div><p>La app cuenta los pasos sola, con el teléfono. <b style="color:#fff">1.000 pasos = 1 Punto</b>, hasta 20 por día.</p></div>
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/app-canjear.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">2</span><h3>Te encuentran</h3></div><p>Tu local aparece en el mapa con tu premio. Eligen el tuyo y salen a buscarlo.</p></div>
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/app-ficha-fripaps.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">3</span><h3>Llegan a tu local</h3></div><p>Te piden el código de tu local, lo escriben en la app y listo: <b style="color:#fff">canje confirmado</b>.</p></div>
+    </div>
+  </div>
+  <div class="banner" style="position:absolute;left:16mm;right:16mm;bottom:14mm;text-align:center">No pagas publicidad: lo único que pones es el premio que tú eliges dar.</div>
+</section>
+
+<!-- 3. LO QUE GANA TU LOCAL -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>02 · Lo que gana tu local</span></div>
+  <div class="content">
+    <div class="kicker">Visitas, no likes</div>
+    <h2>Cada canje es una <span class="m">persona real</span> en tu local.</h2>
+    <div class="grid4" style="margin-top:16px">
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/user-plus.svg)"></i></div><h3>Clientes nuevos</h3><p>Gente que te descubre en el mapa y entra por primera vez. Puedes hacer un premio <b>solo para clientes nuevos</b>.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/repeat.svg)"></i></div><h3>Clientes que vuelven</h3><p>Suben de nivel en tu local (Visitante, Habitual, Fan) y la tarjeta de fidelidad los trae de vuelta.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/clock.svg)"></i></div><h3>Horas flojas llenas</h3><p>Activa tu premio solo en los días y horas en que casi no entra nadie.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/shopping-bag.svg)"></i></div><h3>Venden algo más</h3><p>Quien viene por su premio casi siempre compra algo más. Con el regalo con compra o un combo, la venta está asegurada.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/star.svg)"></i></div><h3>Reseñas en Google</h3><p>Después del canje la app le pide a la persona que te califique en Google Maps.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/instagram.svg)"></i></div><h3>Historias en Instagram</h3><p>Suben una foto de tu premio a su historia y la app les da Puntos extra. Tú sales en sus redes.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/route.svg)"></i></div><h3>Ruta del mes</h3><p>Un evento mensual que manda gente caminando a tu local a comprar. Gratis para todos.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/bar-chart-3.svg)"></i></div><h3>Tus números claros</h3><p>Tu panel te dice cuánta gente te trajo Camina, cuántos son nuevos y cuántos volvieron.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. HISTORIAS Y RESEÑAS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>03 · Publicidad que no pagas</span></div>
+  <div class="content" style="display:flex;gap:16mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Después de cada canje</div>
+      <h2>Tus clientes te hacen <span class="m">la publicidad.</span></h2>
+      <p class="lead">Apenas alguien canjea en tu local, la app le pide dos cosas. Tú no haces nada.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start"><div class="ic" style="margin:0"><i style="--u:url(a/ic/star.svg)"></i></div><div><h3>Que te califique en Google Maps</h3><p>Más reseñas buenas = apareces más arriba cuando alguien busca dónde comer, cortarse el pelo o comprar en Tarija.</p></div></div>
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start"><div class="ic" style="margin:0"><i style="--u:url(a/ic/camera.svg)"></i></div><div><h3>Que suba una historia de tu premio</h3><p>Etiqueta a Camina, el equipo la revisa y le da <b style="color:#fff">+5 Puntos</b>. Sus amigos ven tu local.</p></div></div>
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start"><div class="ic" style="margin:0"><i style="--u:url(a/ic/heart.svg)"></i></div><div><h3>Que vuelva</h3><p>Cada vez que canjea en tu local sube de nivel: Visitante, Habitual y Fan. Puedes hacer premios solo para tus Fans.</p></div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6mm;flex-shrink:0"><div class="phone" style="width:56mm;transform:translateY(-6mm)"><img src="a/app-calificar.jpg"></div><div class="phone" style="width:56mm;transform:translateY(8mm)"><img src="a/app-historia.jpg"></div></div>
+  </div>
+</section>
+
+<!-- 5. TÚ ELIGES EL PREMIO -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>04 · Tú eliges el premio</span></div>
+  <div class="content">
+    <div class="kicker">Tu negocio, tus reglas</div>
+    <h2>Cinco formas de <span class="m">atraer gente.</span></h2>
+    <p class="lead">Eliges qué das, cuántos Puntos cuesta, cuántos por día y en qué horario. El panel hasta te sugiere ideas para tu rubro.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px">
+      <div class="tipo"><div class="t">Gratis</div><div class="d">Algo que se lleva sin pagar. El más fuerte para que te prueben.</div><div class="ej">Gaseosa personal · 12 Puntos</div></div>
+      <div class="tipo"><div class="t">Regalo con compra</div><div class="d">Un extra cuando compra. Cada canje te deja una venta.</div><div class="ej">De regalo llevando 2 salchipapas</div></div>
+      <div class="tipo"><div class="t">Descuento</div><div class="d">Un % o un monto. Tú pones el límite.</div><div class="ej">20% en tu corte · 25 Puntos</div></div>
+      <div class="tipo"><div class="t">2x1</div><div class="d">Se lleva 2 y paga 1. Viene con un amigo: ganas dos clientes.</div><div class="ej">2x1 en hamburguesas</div></div>
+      <div class="tipo" style="border-color:#E0B43A"><div class="t" style="color:#E0B43A">Combo Camina</div><div class="d">Tu combo a precio especial. Mueves lo que más te conviene.</div><div class="ej" style="background:#E0B43A">Salchipapa + gaseosa · Bs 25 (antes 32)</div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <span class="pill o">✓ Solo para clientes nuevos</span><span class="pill o">✓ Solo en tus horas flojas</span><span class="pill o">✓ Cupones por día</span><span class="pill o">✓ Solo para consumir en el local</span><span class="pill o">✓ Lo pausas cuando quieras</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px">
+      <div style="border-radius:14px;overflow:hidden;height:30mm;background:url(a/foto-bloom.jpg) center/cover;position:relative"><span class="pill m" style="position:absolute;left:8px;bottom:8px;font-size:11px;padding:5px 10px">Bloom · Retirado de gel · 35 Puntos</span></div>
+      <div style="border-radius:14px;overflow:hidden;height:30mm;background:url(a/foto-coco.jpg) center/cover;position:relative"><span class="pill m" style="position:absolute;left:8px;bottom:8px;font-size:11px;padding:5px 10px">Coco Barber · Corte de cabello · 25 Puntos</span></div>
+      <div style="border-radius:14px;overflow:hidden;height:30mm;background:url(a/foto-fripaps.jpg) center/cover;position:relative"><span class="pill m" style="position:absolute;left:8px;bottom:8px;font-size:11px;padding:5px 10px">Fripap's · 20% en salchipapa · 25 Puntos</span></div>
+    </div>
+    <p class="note" style="margin-top:6px">Algunos de nuestros primeros comercios aliados.</p>
+    <p class="note" style="margin-top:8px">Como guía, 2,5 Puntos valen Bs 1: algo de Bs 10 ronda los 25 Puntos. Una persona junta como máximo 20 Puntos por día, así que cada premio le cuesta días de caminar.</p>
+  </div>
+</section>
+
+<!-- 6. CANJE EN 10 SEGUNDOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>05 · Así de simple en tu caja</span></div>
+  <div class="content" style="display:flex;gap:14mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">El canje</div>
+      <h2>Toma <span class="m">10 segundos.</span><br>Sin máquinas, sin papeles.</h2>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-top:18px">
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">1</span><span style="font-size:14.5px">La persona toca <b>Canjear</b> en tu local.</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">2</span><span style="font-size:14.5px">Le dices el <b>código de 4 números</b> de tu local.</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">3</span><span style="font-size:14.5px">Lo escribe y la app confirma al instante. <b>Entregas el premio.</b></span></div>
+      </div>
+      <div class="card" style="margin-top:18px"><h3>Tu equipo también</h3><p>Das acceso a tus cajeros desde el panel: solo ven el código y los canjes, sin tu contraseña. Cada canje queda registrado y una misma persona puede volver a canjear en tu local recién a los 14 días.</p></div>
+    </div>
+    <div style="width:150mm;flex-shrink:0"><div class="phone" style="border-radius:14px"><img src="a/panel-inicio.jpg"></div><p class="note" style="margin-top:6px">Tu panel en caminaapp.com: el código de tu local, el de la Ruta y lo que te trajo Camina este mes.</p></div>
+  </div>
+</section>
+
+<!-- 7. RUTA DEL MES -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>06 · Ruta del mes</span></div>
+  <div class="content" style="display:flex;gap:14mm;align-items:center">
+    <div style="display:flex;gap:6mm;flex-shrink:0"><div class="phone" style="width:56mm"><img src="a/app-ruta2.jpg"></div><div class="phone" style="width:52mm;transform:translateY(10mm)"><img src="a/app-ruta.jpg"></div></div>
+    <div style="flex:1">
+      <div class="kicker">Evento de cada mes · gratis para tu local</div>
+      <h2>La Ruta del mes trae gente <span class="m">a comprar.</span></h2>
+      <p class="lead">Cada mes a cada persona le tocan 3 locales al azar. Si completa su Ruta, gana una insignia y entra al sorteo del mes.</p>
+      <div class="grid3" style="grid-template-columns:1fr 1fr;margin-top:16px">
+        <div class="card"><h3>Vienen a comprar</h3><p>En la Ruta no regalas nada: la persona viene a comprar y tú confirmas su visita.</p></div>
+        <div class="card"><h3>Código propio</h3><p>Un código de 4 números solo para la Ruta, aparte del de los canjes.</p></div>
+        <div class="card"><h3>En grupo</h3><p>Los grupos de amigos hacen la Ruta juntos como desafío.</p></div>
+        <div class="card"><h3>Local protagonista</h3><p>Si pones el premio del sorteo, sales en más rutas y destacado en dorado.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. EN 5 MINUTOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>07 · Tu local en la app</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Te lo hacemos fácil</div>
+      <h2>Tu local en Camina<br>en <span class="m">5 minutos.</span></h2>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-top:16px">
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">1</span><div style="font-size:13.5px;line-height:1.45"><b>Entra a caminaapp.com/registro</b><br><span class="muted">Elige tu plan y crea tu cuenta con tu correo.</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">2</span><div style="font-size:13.5px;line-height:1.45"><b>Sube tu logo, tus fotos y tu ubicación</b><br><span class="muted">Con un toque en «Usar mi ubicación actual» desde tu local.</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">3</span><div style="font-size:13.5px;line-height:1.45"><b>Crea tu premio</b><br><span class="muted">Toca una idea para tu rubro y se llena sola.</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">4</span><div style="font-size:13.5px;line-height:1.45"><b>Lo revisamos y sales en la app</b><br><span class="muted">Te avisamos por correo apenas esté publicado.</span></div></div>
+      </div>
+      <div class="banner" style="margin-top:16px;font-size:14px">¿Sin tiempo? Mándanos tus fotos por WhatsApp y te lo armamos nosotros.</div>
+    </div>
+    <div style="width:145mm;flex-shrink:0"><div class="phone" style="border-radius:14px"><img src="a/panel-ideas.jpg"></div><p class="note" style="margin-top:6px">Crear un premio en el panel: ideas listas para tu rubro, la foto, el tipo y los Puntos.</p></div>
+  </div>
+</section>
+
+<!-- 9. POR QUÉ LA GENTE VUELVE + EL MODELO FUNCIONA -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>08 · Por qué funciona</span></div>
+  <div class="content" style="display:flex;gap:12mm">
+    <div style="flex:1.05">
+      <div class="kicker">La gente abre la app todos los días</div>
+      <h2>No es un contador de pasos: <span class="m">es una comunidad.</span></h2>
+      <div style="display:flex;gap:4mm;margin-top:14px"><div class="phone" style="width:40mm"><img src="a/app-grupos.jpg"></div><div class="phone" style="width:40mm"><img src="a/app-ranking.jpg"></div><div class="phone" style="width:40mm"><img src="a/app-desafios.jpg"></div></div>
+      <p class="lead" style="font-size:13px">Grupos de amigos con meta semanal, ranking, rachas, desafíos con Puntos e insignias de sus locales favoritos. Cuanto más camina, más Puntos tiene para gastar en tu local.</p>
+    </div>
+    <div style="flex:1">
+      <div class="kicker">Referencia en la región</div>
+      <h2 style="font-size:28px">El modelo <span class="m">ya funciona.</span></h2>
+      <p class="lead" style="font-size:13px">Pasito, una app argentina que también premia caminar con beneficios en comercios, se lanzó en Buenos Aires en mayo de 2026:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <div class="card"><div class="big m" style="font-size:34px">+70%</div><p>de quienes canjean compran algo más en el local</p></div>
+        <div class="card"><div class="big m" style="font-size:34px">+250</div><p>locales sumados en su primer mes</p></div>
+        <div class="card" style="grid-column:span 2"><div class="big m" style="font-size:34px">+230.000</div><p>personas caminando al cumplir un mes</p></div>
+      </div>
+      <p class="note" style="margin-top:10px">Fuentes: Infobae, 18/05/2026 (dato del +70%, declarado por su fundador); Pasito en Instagram, 04/06/2026. Camina no está vinculada a Pasito: se cita solo como referencia de mercado.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10. PLANES Y SOCIO FUNDADOR -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>09 · Planes</span></div>
+  <div class="content">
+    <div class="kicker">Sin permanencia · sin comisión por canje</div>
+    <h2>Empiezas <span class="m">gratis.</span> Creces cuando quieras.</h2>
+    <div style="display:grid;grid-template-columns:1.15fr 1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <div class="plan f"><span class="pill g" style="align-self:flex-start">Cupo fundador · primeros 20</span><div class="p" style="color:#62F0B6">3 meses gratis</div><div class="n">del plan Paso Firme, desde el lanzamiento</div><ul><li>Te acompañamos a cargar tu local y tus premios</li><li>Sales desde el primer día</li><li>Después sigues gratis o eliges plan</li></ul></div>
+      <div class="plan"><div class="n">Primer Paso</div><div class="p">Gratis</div><ul><li>Tu local en el mapa y en tu categoría</li><li>1 premio gratis y, con él, 1 más (regalo, descuento, 2x1 o combo)</li><li>Mínimo 3 cupones por día</li></ul></div>
+      <div class="plan"><div class="n">Paso Firme</div><div class="p">Bs 99<span style="font-size:14px">/mes</span></div><ul><li>Todo lo de Primer Paso</li><li>Varios premios a la vez y cupones ilimitados</li><li>Estadísticas</li><li>Tu premio en la tarjeta de fidelidad de Camina</li></ul></div>
+      <div class="plan"><div class="n">Paso Adelante</div><div class="p">Bs 299<span style="font-size:14px">/mes</span></div><ul><li>Todo lo de Paso Firme</li><li>Pin destacado y primero en tu categoría</li><li>Avisos a la gente que camina cerca</li><li>Difusión en las redes de Camina</li></ul></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px">
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/gift.svg)"></i></div><h3>Solo pones el premio</h3><p>Sin comisión por canje. Tú decides cuánto regalas y cuándo.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/zap.svg)"></i></div><h3>Sales desde el día 1</h3><p>Los fundadores aparecen en el mapa y en la lista de premios desde el lanzamiento.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/sparkles.svg)"></i></div><h3>Difusión de lanzamiento</h3><p>Los comercios fundadores salen en las redes de Camina.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/message-circle.svg)"></i></div><h3>Te acompañamos</h3><p>Por WhatsApp te ayudamos a armar tu local, tus premios y tus primeros canjes.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px;font-size:11px">Precios de lanzamiento por local. Publicidad dentro de la app (opcional): banner en Inicio, evento o desafío por Bs 400; con un plan de local, cada evento o desafío cuesta Bs 200. Todo se publica con aprobación de Camina.</p>
+  </div>
+</section>
+
+<!-- 11. PRÓXIMOS PASOS -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>10 · Empecemos</span></div>
+  <div class="content" style="display:flex;gap:14mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Sale el 1 de diciembre en Tarija</div>
+      <h2 style="font-size:44px">Que la gente de Tarija<br><span class="m">camine hacia tu local.</span></h2>
+      <p class="lead">Empieza en Tarija; después Santa Cruz, La Paz y Cochabamba en 2027. Los primeros 20 comercios salen como socios fundadores.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">1</span><span style="font-size:14px">Escanea el código y registra tu local (5 minutos).</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">2</span><span style="font-size:14px">O escríbenos y te lo armamos nosotros.</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">3</span><span style="font-size:14px">El 1 de diciembre, la gente empieza a caminar hacia ti.</span></div>
+      </div>
+    </div>
+    <div style="width:92mm;flex-shrink:0;display:flex;flex-direction:column;gap:10px;align-items:stretch">
+      <div style="background:#fff;border-radius:18px;padding:10px;text-align:center"><img src="a/qr-registro.svg" style="width:62mm"><div style="color:#200a52;font-weight:800;font-size:13px;margin-top:4px">caminaapp.com/registro</div></div>
+      <div class="card"><h3>Marcos Suárez · Creador de Camina</h3><p>WhatsApp +591 627 14286<br>caminaappbo@gmail.com · caminaapp.com</p></div>
+    </div>
+  </div>
+  <img src="a/baifo.png" style="position:absolute;left:150mm;bottom:4mm;width:30mm;opacity:.95">
+</section>
+</body></html>
