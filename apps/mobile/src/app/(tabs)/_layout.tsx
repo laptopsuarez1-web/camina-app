@@ -33,6 +33,7 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (session) {
+      // El permiso de avisos se pide apenas se entra (así llega a más gente).
       registerForPushNotificationsAsync();
       shareCoarseLocation();
       scheduleWrappedReminder();

@@ -90,8 +90,10 @@ export default function CanjesPage() {
     const conTarjeta = !!(data as { loyalty_free?: boolean } | null)?.loyalty_free;
     let premio: string | undefined;
     if (benefitId) {
-      const { data: b } = await supabase.from('benefits').select('name').eq('id', benefitId).maybeSingle();
-      premio = b?.name ?? undefined;
+      const { data: b } = await supabase.from('benefits').select('name, with_purchase').eq('id', benefitId).maybeSingle();
+      const bb = b as { name?: string; with_purchase?: string | null } | null;
+      // Premio con tu compra: se recuerda que va con la compra, para cobrarla.
+      premio = bb?.name ? (bb.with_purchase ? `${bb.name}, ${bb.with_purchase}` : bb.name) : undefined;
     }
     setChecking(false);
     setResult({

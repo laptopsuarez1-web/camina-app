@@ -36,7 +36,7 @@ import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
-import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS } from '@/constants/business-rules';
+import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, DAILY_POINTS_CAP, DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
 import { VerifyEmailCard } from '@/components/VerifyEmailCard';
@@ -57,6 +57,17 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import { Coin } from '@/components/ui/Coin';
 
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
+
+// Cuánto descuenta un premio de descuento, corto para la pastilla: "-20%", "-Bs 20" o el detalle que escribió el local.
+function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null }): string | null {
+  if (b.type !== 'descuento') return null;
+  const pct = Number(b.discount_percent);
+  if (pct > 0) return `-${Number.isInteger(pct) ? pct : pct.toFixed(1).replace('.', ',')}%`;
+  const d = (b.discount_detail ?? '').trim();
+  const bs = /(\d+(?:[.,]\d+)?)\s*(bs|bob)\b/i.exec(d) ?? /\bbs\.?\s*(\d+(?:[.,]\d+)?)/i.exec(d);
+  if (bs) return `-Bs ${bs[1]}`;
+  return d && d.length <= 14 ? d : 'Descuento';
+}
 
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -996,13 +1007,24 @@ export default function CanjesScreen() {
                   <View
                     key={b.id}
                     accessible
-                    accessibilityLabel={`${b.name}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
+                    accessibilityLabel={`${b.name}${b.with_purchase ? `, ${b.with_purchase}` : ''}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
                     className="flex-row items-center bg-aqua-deep rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
+                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: discountTag(b) || b.with_purchase ? 5 : 12 }}
                   >
                     <Coin size={20} />
                     <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
                     <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
+                    {/* Si es un descuento, se dice cuánto: así nadie cree que el premio es gratis. */}
+                    {b.with_purchase ? (
+                      <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2, marginRight: discountTag(b) ? 0 : -7 }}>
+                        <Text className="text-[12px] font-extrabold text-white">con tu compra</Text>
+                      </View>
+                    ) : null}
+                    {discountTag(b) ? (
+                      <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2 }}>
+                        <Text className="text-[12px] font-extrabold text-white">{discountTag(b)}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 ))}
               </ScrollView>
@@ -1457,7 +1479,11 @@ export default function CanjesScreen() {
                           const canAfford = (balance ?? 0) >= cost;
                           const canRedeem = !!myPending || (canAfford && available && !outOfStock);
                           const redeeming = redeem.isPending && redeem.variables === b.id;
-                          const note = myPending ? null : !available ? 'Fuera de horario' : outOfStock ? (b.online ? 'Sin cupos' : 'Sin cupones hoy') : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : 'Te faltan Puntos') : null;
+                          // Cuánto falta en días, caminando la meta diaria (1 Punto cada 1.000 pasos, hasta el tope del día).
+                          const missing = Math.max(0, cost - (balance ?? 0));
+                          const perDay = Math.min(Math.max(1, Math.floor(Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL) / POINTS_PER_STEP_UNIT)), DAILY_POINTS_CAP);
+                          const daysToAfford = balance !== undefined && missing > 0 && available && !outOfStock && !myPending ? Math.ceil(missing / perDay) : 0;
+                          const note = myPending ? null : !available ? 'Fuera de horario' : outOfStock ? (b.online ? 'Sin cupos' : 'Sin cupones hoy') : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : `Te faltan ${cost - (balance ?? 0)} ${plural(cost - (balance ?? 0), 'Punto', 'Puntos')}`) : null;
                           return (
                             <Glass
                               key={b.id}
@@ -1484,7 +1510,7 @@ export default function CanjesScreen() {
                                     <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
-                                    {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
+                                    {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}{b.with_purchase ? ` ${b.with_purchase}` : ''}
                                   </Text>
                                   {b.online ? (
                                     <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">
@@ -1528,6 +1554,11 @@ export default function CanjesScreen() {
                                   {redeeming ? 'Canjeando…' : myPending ? (isWeb ? 'Ver mi cupón' : 'Ver mi código') : note ?? 'Canjear'}
                                 </Text>
                               </Press>
+                              {daysToAfford > 0 ? (
+                                <Text className="text-[12px] text-center text-muted-light dark:text-muted-dark mt-1.5">
+                                  {daysToAfford === 1 ? 'Lo juntas mañana caminando tu meta' : `Unos ${daysToAfford} días caminando tu meta`}
+                                </Text>
+                              ) : null}
                             </Glass>
                           );
                         })}

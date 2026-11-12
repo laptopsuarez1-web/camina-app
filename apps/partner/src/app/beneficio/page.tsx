@@ -14,6 +14,39 @@ import { FRANJAS_COMUNES, DIAS_ENTRE_SEMANA_MASK, franjaFloja } from '@/lib/hora
 // supabase/migrations/0001_init.sql). 127 = todos los días.
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
+// Cómo empieza la frase del "Regalo con tu compra". Vacío = frase libre.
+const INICIOS = [
+  { inicio: 'llevando', label: 'Llevando…', ejemplo: '2 salchipapas' },
+  { inicio: 'con tu', label: 'Con tu…', ejemplo: 'corte de cabello' },
+  { inicio: 'si pides', label: 'Si pides…', ejemplo: 'un combo familiar' },
+  { inicio: 'al comprar', label: 'Al comprar…', ejemplo: 'cualquier café' },
+  { inicio: '', label: 'Mi frase', ejemplo: 'en tu segunda visita del mes' },
+];
+
+// Botones de elegir (Gratis/Descuento, % u otro): se leen bien en claro y en oscuro.
+function choiceStyle(on: boolean, tone: 'aqua' | 'purple', locked = false): React.CSSProperties {
+  if (locked) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)', opacity: 0.45 };
+  if (!on) return { borderColor: 'var(--c-line)', background: 'var(--c-card)', color: 'var(--c-muted)' };
+  return tone === 'aqua'
+    ? { borderColor: '#4FC3A8', background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)', boxShadow: 'inset 0 0 0 1px #4FC3A8' }
+    : { borderColor: '#8B4FD1', background: 'var(--c-purple-light)', color: 'var(--c-purple-text)', boxShadow: 'inset 0 0 0 1px #8B4FD1' };
+}
+
+function cap(t: string) {
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function joinFrase(inicio: string, resto: string) {
+  const r = resto.trim();
+  return inicio ? `${inicio} ${r}` : r.charAt(0).toLowerCase() + r.slice(1);
+}
+
+function splitFrase(f?: string | null) {
+  if (!f) return { inicio: 'llevando', resto: '' };
+  const op = INICIOS.find((o) => o.inicio && f.toLowerCase().startsWith(o.inicio + ' '));
+  return op ? { inicio: op.inicio, resto: f.slice(op.inicio.length + 1) } : { inicio: '', resto: f };
+}
+
 export default function BeneficioPage() {
   const { business } = useBusinessAuth();
   const isFree = business?.plan === 'primer_paso';
@@ -122,15 +155,15 @@ export default function BeneficioPage() {
                 <span
                   className="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
                   style={{
-                    background: b.active ? '#E3F5F0' : '#F1EBFA',
-                    color: b.active ? '#2E9E7C' : '#8B4FD1',
+                    background: b.active ? 'var(--c-aqua-light)' : 'var(--c-purple-light)',
+                    color: b.active ? 'var(--c-ok-text)' : 'var(--c-purple-text)',
                   }}
                 >
                   {b.active ? 'Activo' : 'Desactivado'}
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
+                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'}{b.with_purchase ? ` ${b.with_purchase}` : ''} · {b.cost_points} Puntos
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -208,6 +241,13 @@ function BeneficioForm({
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
+  // Con tu compra: la persona compra algo y se lleva el premio. El local
+  // elige cómo empieza la frase y la completa; se guarda entera.
+  const inicial = splitFrase(benefit?.with_purchase);
+  const [conCompra, setConCompra] = useState(!!benefit?.with_purchase);
+  const [inicio, setInicio] = useState(inicial.inicio);
+  const [compra, setCompra] = useState(inicial.resto);
+  const frase = joinFrase(inicio, compra);
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva más de un día caminando).
@@ -287,9 +327,13 @@ function BeneficioForm({
   }
 
   async function handleSave() {
-    setSaving(true);
     setError(null);
     setSaved(false);
+    if (conCompra && compra.trim().length < 2) {
+      setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
+      return;
+    }
+    setSaving(true);
 
     const payload = {
       business_id: businessId,
@@ -320,6 +364,8 @@ function BeneficioForm({
       online_quota: online && onlineChannel !== 'web' ? Number(onlineQuota) || null : null,
       // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
       ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
+      // Igual que la descripción: solo se manda si hay algo que guardar o borrar.
+      ...(conCompra && compra.trim() ? { with_purchase: frase } : benefit?.with_purchase ? { with_purchase: null } : {}),
     };
 
     let savedId = benefitId;
@@ -423,11 +469,7 @@ function BeneficioForm({
             onClick={() => !gratisLocked && setTipo('gratis')}
             title={gratisLocked ? 'Ya tienes un premio gratis: este puede ser un descuento' : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={{
-              borderColor: tipo === 'gratis' ? '#4FC3A8' : '#E1D2F5',
-              background: tipo === 'gratis' ? '#E3F5F0' : '#fff',
-              color: gratisLocked ? '#C7BEDB' : tipo === 'gratis' ? '#4FC3A8' : '#7C6A9C',
-            }}
+            style={choiceStyle(tipo === 'gratis', 'aqua', gratisLocked)}
           >
             Gratis
           </button>
@@ -436,14 +478,54 @@ function BeneficioForm({
             onClick={() => !descuentoLocked && setTipo('descuento')}
             title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : ''}
             className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={{
-              borderColor: tipo === 'descuento' ? '#8B4FD1' : '#E1D2F5',
-              background: tipo === 'descuento' ? '#F1EBFA' : '#fff',
-              color: descuentoLocked ? '#C7BEDB' : tipo === 'descuento' ? '#8B4FD1' : '#7C6A9C',
-            }}
+            style={choiceStyle(tipo === 'descuento', 'purple', descuentoLocked)}
           >
             Descuento
           </button>
+        </div>
+
+        {/* Mismo estilo que "Premio online": se lee bien en claro y en oscuro. */}
+        <div className="bg-aqua-light rounded-xl p-3.5 mb-4.5">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" checked={conCompra} onChange={(e) => setConCompra(e.target.checked)} className="mt-0.5" />
+            <span>
+              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Regalo con tu compra</span>
+              <span className="block text-[11.5px] text-muted leading-4">Premia a quien te compra: cada canje te trae una venta, y puedes pedir menos Puntos.</span>
+            </span>
+          </label>
+          {conCompra && (
+            <div className="mt-3">
+              <span className="block text-[12px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>¿Cómo lo dices?</span>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {INICIOS.map((op) => (
+                  <button
+                    key={op.inicio}
+                    type="button"
+                    onClick={() => setInicio(op.inicio)}
+                    className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border"
+                    style={inicio === op.inicio
+                      ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' }
+                      : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-ok-text)' }}
+                  >
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center bg-white border border-line rounded-[10px] px-3">
+                {inicio ? <span className="text-[13.5px] font-semibold mr-1.5 whitespace-nowrap" style={{ color: '#2E9E7C' }}>{cap(inicio)}</span> : null}
+                <input
+                  value={compra}
+                  onChange={(e) => setCompra(e.target.value.slice(0, 60 - (inicio ? inicio.length + 1 : 0)))}
+                  placeholder={INICIOS.find((o) => o.inicio === inicio)?.ejemplo}
+                  className="flex-1 min-w-0 bg-transparent py-2.5 text-[13.5px] outline-none"
+                />
+              </div>
+              <p className="text-[11.5px] text-muted mt-2 leading-4">
+                En la app se ve: <b style={{ color: '#2E9E7C' }}>«{tipo === 'descuento' ? 'Descuento' : 'Gratis'} {compra.trim() ? frase : joinFrase(inicio, INICIOS.find((o) => o.inicio === inicio)?.ejemplo ?? '')}»</b>
+              </p>
+              <p className="text-[11px] text-muted mt-1 leading-4">Corto y con gancho funciona mejor. Ideas: «llevando un combo», «con tu corte», «si pides postre».</p>
+            </div>
+          )}
         </div>
 
         {tipo === 'descuento' && (
@@ -453,11 +535,7 @@ function BeneficioForm({
                 type="button"
                 onClick={() => setDescuentoModo('porcentaje')}
                 className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={{
-                  borderColor: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#E1D2F5',
-                  background: descuentoModo === 'porcentaje' ? '#E3F5F0' : '#fff',
-                  color: descuentoModo === 'porcentaje' ? '#4FC3A8' : '#7C6A9C',
-                }}
+                style={choiceStyle(descuentoModo === 'porcentaje', 'aqua')}
               >
                 % de descuento
               </button>
@@ -465,11 +543,7 @@ function BeneficioForm({
                 type="button"
                 onClick={() => setDescuentoModo('texto')}
                 className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={{
-                  borderColor: descuentoModo === 'texto' ? '#4FC3A8' : '#E1D2F5',
-                  background: descuentoModo === 'texto' ? '#E3F5F0' : '#fff',
-                  color: descuentoModo === 'texto' ? '#4FC3A8' : '#7C6A9C',
-                }}
+                style={choiceStyle(descuentoModo === 'texto', 'aqua')}
               >
                 Otro (2x1, Bs fijos...)
               </button>
@@ -562,9 +636,9 @@ function BeneficioForm({
                       onClick={() => setOnlineChannel(c.id)}
                       className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border disabled:cursor-not-allowed"
                       style={{
-                        background: on ? '#4FC3A8' : '#fff',
-                        color: !ok ? '#C7BEDB' : on ? '#fff' : '#7C6A9C',
-                        borderColor: on ? '#4FC3A8' : '#E1D2F5',
+                        background: on ? '#4FC3A8' : 'var(--c-card)',
+                        color: !ok ? 'var(--c-line)' : on ? '#fff' : 'var(--c-muted)',
+                        borderColor: on ? '#4FC3A8' : 'var(--c-line)',
                       }}
                     >
                       {c.label}
@@ -669,9 +743,9 @@ function BeneficioForm({
                   onClick={() => aplicarFranja(f.from, f.to)}
                   className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
                   style={{
-                    background: on ? '#8B4FD1' : '#fff',
-                    color: on ? '#fff' : '#7C6A9C',
-                    borderColor: on ? '#8B4FD1' : '#E1D2F5',
+                    background: on ? '#8B4FD1' : 'var(--c-card)',
+                    color: on ? '#fff' : 'var(--c-muted)',
+                    borderColor: on ? '#8B4FD1' : 'var(--c-line)',
                   }}
                 >
                   {f.label} · {f.from}–{f.to}
@@ -684,9 +758,9 @@ function BeneficioForm({
               onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
               className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
               style={{
-                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#fff',
-                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : '#7C6A9C',
-                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : '#E1D2F5',
+                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-card)',
+                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : 'var(--c-muted)',
+                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-line)',
               }}
             >
               Solo lunes a jueves
@@ -707,7 +781,7 @@ function BeneficioForm({
               </button>
             </div>
           ) : (
-            <p className="text-[11px] mt-2" style={{ color: '#7C6A9C' }}>
+            <p className="text-[11px] mt-2" style={{ color: 'var(--c-muted)' }}>
               {isFree
                 ? 'Con Paso Firme, Camina te sugiere tus horas más flojas según tus canjes.'
                 : 'Cuando tengas más canjes, aquí te vamos a sugerir tus horas más flojas.'}
@@ -753,9 +827,9 @@ function BeneficioForm({
                 onClick={() => toggleDia(i)}
                 className="w-9 h-9 rounded-full text-[12px] font-bold"
                 style={{
-                  background: on ? '#4FC3A8' : '#fff',
-                  color: on ? '#fff' : '#7C6A9C',
-                  border: `1px solid ${on ? '#4FC3A8' : '#E1D2F5'}`,
+                  background: on ? '#4FC3A8' : 'var(--c-card)',
+                  color: on ? '#fff' : 'var(--c-muted)',
+                  border: `1px solid ${on ? '#4FC3A8' : 'var(--c-line)'}`,
                 }}
               >
                 {d}
@@ -808,7 +882,7 @@ function BeneficioForm({
             aria-label="Solo para tus Fans"
             onClick={() => setFansOnly((v) => !v)}
             className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: fansOnly ? '#4FC3A8' : '#E1D2F5' }}
+            style={{ background: fansOnly ? '#4FC3A8' : 'var(--c-line)' }}
           >
             <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: fansOnly ? '22px' : '2px' }} />
           </button>
@@ -825,7 +899,7 @@ function BeneficioForm({
             type="button"
             onClick={() => setActive((v) => !v)}
             className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: active ? '#4FC3A8' : '#E1D2F5' }}
+            style={{ background: active ? '#4FC3A8' : 'var(--c-line)' }}
           >
             <span
               className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"

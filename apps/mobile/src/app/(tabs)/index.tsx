@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GoalSheet } from '@/components/GoalSheet';
 import { IllArt } from '@/components/ui/IllustratedIcons';
+import { PushPromptCard } from '@/components/home/PushPromptCard';
 import { BellButton } from '@/components/ui/BellButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
@@ -88,6 +89,8 @@ function LinkRow({
   );
 }
 
+const PROFILE_HINT_KEY = 'camina_profile_hint_seen';
+
 export default function HomeScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   const tabSpace = useTabBarSpace();
@@ -132,6 +135,15 @@ export default function HomeScreen() {
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [retryTick, setRetryTick] = useState(0);
   const [goalOpen, setGoalOpen] = useState(false);
+  // Globito "Tu perfil está aquí": se muestra una sola vez.
+  const [profileHint, setProfileHint] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(PROFILE_HINT_KEY).then((v) => { if (!v) setProfileHint(true); }).catch(() => {});
+  }, []);
+  const hideProfileHint = () => {
+    setProfileHint(false);
+    AsyncStorage.setItem(PROFILE_HINT_KEY, '1').catch(() => {});
+  };
 
   useEffect(() => {
     if (live && steps > 0 && steps !== lastSynced.current) {
@@ -337,24 +349,41 @@ export default function HomeScreen() {
             </View>
             <View className="flex-row items-center gap-2.5">
               <BellButton dark color={colors.authMuted} />
-              <Press
-                accessibilityRole="button"
-                accessibilityLabel="Tu perfil"
-                hitSlop={6}
-                onPress={() => router.push('/(tabs)/perfil')}
-                className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
-              >
-                <AvatarImage
-                  uri={profile?.photo_url}
-                  style={{ width: '100%', height: '100%' }}
-                  fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
-                />
-              </Press>
+              <View>
+                <Press
+                  accessibilityRole="button"
+                  accessibilityLabel={profile?.photo_url ? 'Tu perfil' : 'Tu perfil. Todavía no tiene foto'}
+                  hitSlop={6}
+                  onPress={() => { hideProfileHint(); router.push('/(tabs)/perfil'); }}
+                  className="w-8 h-8 rounded-full bg-mint items-center justify-center overflow-hidden"
+                >
+                  <AvatarImage
+                    uri={profile?.photo_url}
+                    style={{ width: '100%', height: '100%' }}
+                    fallback={<Text className="text-mint-dark font-bold">{(profile?.full_name || 'C')[0]?.toUpperCase()}</Text>}
+                  />
+                </Press>
+                {/* Sin foto, un puntito invita a completar el perfil (y a encontrarlo). */}
+                {!profile?.photo_url ? (
+                  <View pointerEvents="none" style={{ position: 'absolute', top: -2, right: -2, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.mint, borderWidth: 2, borderColor: '#2a1a4d' }} />
+                ) : null}
+              </View>
             </View>
           </View>
         </View>
         </View>
 
+        {/* La primera vez: un globito que señala la foto de arriba ("ahí está tu perfil"). Se va al tocarlo o al abrir el perfil. */}
+        {profileHint ? (
+          <Press accessibilityRole="button" accessibilityLabel="Tu perfil, tus canjes e insignias están en tu foto de arriba. Entendido" onPress={hideProfileHint}
+            style={{ position: 'absolute', right: 14, top: Platform.OS === 'android' ? topInset + 66 : Math.max(topInset, 24) + 52, zIndex: 20, alignItems: 'flex-end' }}>
+            <View style={{ width: 0, height: 0, marginRight: 14, borderLeftWidth: 7, borderRightWidth: 7, borderBottomWidth: 8, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: colors.mint }} />
+            <View style={{ backgroundColor: colors.mint, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, maxWidth: 230 }}>
+              <Text style={{ color: colors.mintDark, fontSize: 12.5, fontWeight: '800' }}>Tu perfil está aquí</Text>
+              <Text style={{ color: colors.mintDark, fontSize: 11.5, lineHeight: 15 }}>Tus canjes, insignias y amigos. Toca para cerrar.</Text>
+            </View>
+          </Press>
+        ) : null}
         <Text className="text-auth-muted px-5" style={{ paddingTop: 12, fontSize: 17, lineHeight: 22, fontWeight: '700' }}>
           {greeting(profile?.full_name ?? '')}
         </Text>
@@ -523,6 +552,7 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        <PushPromptCard earnedSomething={pointsToday > 0 || goalMet || (streak ?? 0) > 0} />
         {/* El evento del mes, siempre a mano en Inicio. */}
         {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push({ pathname: '/(tabs)/ruta', params: { unirme: '1' } })} /> : null}
         {expiring && expiring.amount > 0 && expiring.days <= 14 ? (

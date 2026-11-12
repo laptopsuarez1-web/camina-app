@@ -60,8 +60,8 @@ export async function unregisterPushToken(): Promise<void> {
   }
 }
 
-// `userInitiated`: el pedido viene de un toque de la persona (botón Activar de Perfil), así que
-// se saltea la guarda de "ya preguntamos en esta sesión". La llamada automática del layout no lo usa.
+// `userInitiated`: el pedido viene de un toque de la persona (botón Activar de Perfil o la tarjeta de Inicio), así que
+// se saltea la guarda de "ya preguntamos en esta sesión".
 export async function registerForPushNotificationsAsync(opts?: { userInitiated?: boolean }): Promise<void> {
   if (registered) return;
 

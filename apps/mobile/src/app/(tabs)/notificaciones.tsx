@@ -45,6 +45,7 @@ function bubbleFor(type?: string) {
     case 'points_expiring':
     case 'camina_card_expiring':
       return <IconBubble icon={Clock} tone="gold" size={38} />;
+    case 'points_spend':
     case 'camina_card_ready':
     case 'referral_credited':
       return <IconBubble icon={Gift} tone="gold" size={38} />;

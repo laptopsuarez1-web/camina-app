@@ -14,6 +14,7 @@
   --c-danger-light: #fdeee2;
   --c-danger-text: #c0392b;
   --c-ok-text: #1f7d68;
+  --c-purple-text: #8b4fd1;
   --c-auth-bg: #241748;
   --c-auth-bg-soft: #2f1e5c;
   --background: var(--c-bg);
@@ -35,6 +36,7 @@
     --c-danger-light: #4a2328;
     --c-danger-text: #ff9a8c;
     --c-ok-text: #7fedc4;
+    --c-purple-text: #cfa9ff;
     --c-auth-bg: #2a1c55;
     --c-auth-bg-soft: #34246a;
     color-scheme: dark;
@@ -54,6 +56,7 @@
     --c-danger-light: #4a2328;
     --c-danger-text: #ff9a8c;
     --c-ok-text: #7fedc4;
+    --c-purple-text: #cfa9ff;
     --c-auth-bg: #2a1c55;
     --c-auth-bg-soft: #34246a;
     color-scheme: dark;

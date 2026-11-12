@@ -12,6 +12,7 @@ export function routeForNotification(type?: string, data?: { group_id?: unknown;
     case 'redemption_expiring':
     case 'redemption':
     case 'nearby':
+    case 'points_spend':
       return '/(tabs)/canjes';
     case 'reto':
     case 'promotion_win':
