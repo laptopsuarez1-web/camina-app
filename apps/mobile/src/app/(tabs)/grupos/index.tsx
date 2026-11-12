@@ -160,8 +160,8 @@ export default function GruposScreen() {
       {!isLoading && !(isError && !groups) && my.length === 0 && (
         <View className="mb-7">
           <EmptyState
-            title="Todavía no estás en ningún grupo"
-            text="Caminar con amigos es más fácil: suman pasos juntos, compiten en el ranking y arman desafíos con Puntos. Crea uno o súmate con el código que te pase un amigo."
+            title="Caminar en grupo rinde más"
+            text="Suman pasos juntos, se miden en el ranking y arman desafíos con Puntos. Crea tu grupo o únete con el código de un amigo."
             actionLabel="Crear un grupo"
             onAction={() => router.push('/(tabs)/grupos/nuevo')}
           />

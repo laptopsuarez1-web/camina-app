@@ -124,7 +124,7 @@ export default function EventosScreen() {
       </Text>
 
       {(retos ?? []).length === 0 && (
-        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Todavía no hay desafíos activos.</Text>
+        <Text className="text-[13px] text-muted-light dark:text-muted-dark">Pronto llega un desafío nuevo. Mientras, cuida tu racha para arrancar con todo.</Text>
       )}
       <View className="gap-3 mb-7">
         {(retos ?? []).map((reto) => (

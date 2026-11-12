@@ -148,8 +148,8 @@ export function NearbyRow({
         <SectionHeader title="Locales cerca tuyo" />
         <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/canjes?view=lista')} className="mx-5">
           <Glass className="rounded-3xl p-4">
-            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Explora comercios</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Todavía no hay nada cerca: mira qué se puede canjear.</Text>
+            <Text className="text-[13px] font-bold text-text-light dark:text-text-dark mb-1">Descubre premios en tu ciudad</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark">Cerca tuyo todavía no hay locales, pero en tu ciudad hay premios esperándote.</Text>
           </Glass>
         </Press>
       </View>
@@ -268,9 +268,9 @@ export function MyRedemptionsSection({
         <View className="mx-5">
           <EmptyState
             mascot="sentado"
-            title="Todavía no canjeaste nada"
-            text="Tus pasos se vuelven Puntos, y los Puntos se vuelven premios en comercios de tu ciudad."
-            actionLabel="Ir a canjear"
+            title="Tu primer premio te está esperando"
+            text="Cada 1.000 pasos suman un Punto, y con tus Puntos te llevas premios en locales de tu ciudad."
+            actionLabel="Ver premios"
             onAction={() => router.push('/(tabs)/canjes')}
           />
         </View>

@@ -17,7 +17,7 @@ const SI_FALLA = [
 
 const REGLAS = [
   ['Lo que publicas es lo que entregas', 'El beneficio tiene que ser real, vigente y como está descrito (horario, días, condiciones). Si algo cambia, edítalo o páusalo en "Mis beneficios".'],
-  ['Sin consumo extra obligatorio', 'Un beneficio "gratis" no puede pedir que la persona compre otra cosa. Si tu descuento es sobre una compra, déjalo claro en la descripción.'],
+  ['Sin consumo extra obligatorio', 'Un premio "Gratis" no puede pedir que la persona compre otra cosa. Si quieres pedir una compra, elige "Regalo con compra": la app lo muestra claro (por ejemplo, «De regalo llevando 2 salchipapas»).'],
   ['Un canje, una entrega', 'Cada canje se entrega una sola vez. No des tu código a quien no esté en tu local.'],
   ['El código es de tu local', 'Tu código de 4 números sirve solo en tu comercio. Cámbialo desde Canjes cuando quieras.'],
   ['Una vez cada 14 días por comercio', 'Cada persona puede canjear en tu local una vez cada 14 días (dos semanas). Así el beneficio alcanza para más gente.'],

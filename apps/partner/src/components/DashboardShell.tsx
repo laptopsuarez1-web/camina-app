@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { BienvenidaGuia } from '@/components/BienvenidaGuia';
 import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
@@ -258,6 +259,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </Link>
       )}
       {children}
+      {pathname !== '/elegir-plan' && <BienvenidaGuia cajero={role === 'cashier'} />}
     </ResponsiveFrame>
   );
 }

@@ -1510,7 +1510,7 @@ export default function CanjesScreen() {
                                     <Text className="text-[12px] font-bold mt-0.5" style={{ color: '#8F6307' }}>{freeByCard ? 'Premio de tu tarjeta: gratis' : 'Premio de la tarjeta de fidelidad'}</Text>
                                   ) : null}
                                   <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5" numberOfLines={2}>
-                                    {b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}{b.with_purchase ? ` ${b.with_purchase}` : ''}
+                                    {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'descuento' ? b.discount_detail ?? 'Descuento' : 'Gratis'}
                                   </Text>
                                   {b.online ? (
                                     <Text className="text-[12px] font-bold mt-0.5 text-aqua-ink dark:text-aqua">

@@ -163,7 +163,7 @@ export default function BeneficioPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mt-0.5">
-                {b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'}{b.with_purchase ? ` ${b.with_purchase}` : ''} · {b.cost_points} Puntos
+                {b.with_purchase ? `De regalo ${b.with_purchase}` : b.type === 'gratis' ? 'Gratis' : b.discount_detail || 'Descuento'} · {b.cost_points} Puntos
               </p>
               <p className="text-xs text-muted mt-0.5">
                 {b.online
@@ -248,6 +248,13 @@ function BeneficioForm({
   const [inicio, setInicio] = useState(inicial.inicio);
   const [compra, setCompra] = useState(inicial.resto);
   const frase = joinFrase(inicio, compra);
+  // Tres formas de ofrecerlo. "Regalo con compra" se guarda como gratis + la frase de la compra.
+  const modo: 'gratis' | 'regalo' | 'descuento' = tipo === 'descuento' ? 'descuento' : conCompra ? 'regalo' : 'gratis';
+  function elegirModo(m: 'gratis' | 'regalo' | 'descuento') {
+    if (m === 'descuento' ? descuentoLocked : gratisLocked) return;
+    setTipo(m === 'descuento' ? 'descuento' : 'gratis');
+    setConCompra(m === 'regalo');
+  }
   const [valorBs, setValorBs] = useState('');
   // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
   // día, algo de Bs 10 ya le lleva más de un día caminando).
@@ -329,7 +336,7 @@ function BeneficioForm({
   async function handleSave() {
     setError(null);
     setSaved(false);
-    if (conCompra && compra.trim().length < 2) {
+    if (modo === 'regalo' && compra.trim().length < 2) {
       setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
       return;
     }
@@ -365,7 +372,7 @@ function BeneficioForm({
       // Solo se manda si hay algo que guardar o borrar, así sigue andando aunque falte la columna.
       ...(descripcion.trim() ? { description: descripcion.trim() } : benefit?.description ? { description: null } : {}),
       // Igual que la descripción: solo se manda si hay algo que guardar o borrar.
-      ...(conCompra && compra.trim() ? { with_purchase: frase } : benefit?.with_purchase ? { with_purchase: null } : {}),
+      ...(modo === 'regalo' && compra.trim() ? { with_purchase: frase } : benefit?.with_purchase ? { with_purchase: null } : {}),
     };
 
     let savedId = benefitId;
@@ -428,74 +435,62 @@ function BeneficioForm({
         </div>
       )}
 
-      <div className="bg-card border border-line rounded-2xl p-5.5 max-w-[480px]">
-        <div className="mb-4.5">
+      <div className="max-w-[540px]">
+        <Paso n={1} title="Tu premio" hint="Es lo primero que ven en la app.">
           <ImageUpload
             bucket="benefit-images"
             path={`${businessId}/${benefitId ?? 'new'}-photo`}
             value={imageUrl}
             onUploaded={setImageUrl}
-            label="Foto del beneficio (obligatoria)"
+            label="Foto del premio (obligatoria)"
             shape="wide"
           />
-        </div>
+          <div className="mt-4">
+            <Field label="Nombre">
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Salchipapa clásica" className={INPUT} />
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Descripción (opcional)">
+              <textarea
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                rows={3}
+                maxLength={300}
+                placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas."
+                className={INPUT}
+              />
+            </Field>
+          </div>
+        </Paso>
 
-        <Field label="Nombre del beneficio">
-          <input
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-          />
-        </Field>
+        <Paso n={2} title="Cómo lo ofreces" hint="Elige una opción.">
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { id: 'gratis', t: 'Gratis', d: 'Se lo lleva sin pagar', tone: 'aqua', locked: gratisLocked },
+                { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: gratisLocked },
+                { id: 'descuento', t: 'Descuento', d: 'Paga menos', tone: 'purple', locked: descuentoLocked },
+              ] as const
+            ).map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                disabled={o.locked}
+                title={o.locked ? (o.id === 'descuento' ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : 'Ya tienes un premio gratis: este puede ser un descuento') : ''}
+                onClick={() => elegirModo(o.id)}
+                className="rounded-xl border px-2 py-2.5 text-center disabled:cursor-not-allowed"
+                style={choiceStyle(modo === o.id, o.tone, o.locked)}
+              >
+                <span className="block text-[13px] font-bold leading-tight">{o.t}</span>
+                <span className="block text-[11px] mt-0.5 opacity-80 leading-tight">{o.d}</span>
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-4.5">
-          <Field label="Descripción del producto (opcional)">
-            <textarea
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              rows={3}
-              maxLength={300}
-              placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas. Porción individual."
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-            <p className="text-[11.5px] text-muted mt-1.5 leading-4">Los clientes la ven en la app, debajo del nombre del premio.</p>
-          </Field>
-        </div>
-
-        <label className="block text-[12.5px] font-semibold mb-1.5 mt-4.5">Tipo</label>
-        <div className="flex gap-2 mb-4.5">
-          <button
-            disabled={gratisLocked}
-            onClick={() => !gratisLocked && setTipo('gratis')}
-            title={gratisLocked ? 'Ya tienes un premio gratis: este puede ser un descuento' : ''}
-            className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={choiceStyle(tipo === 'gratis', 'aqua', gratisLocked)}
-          >
-            Gratis
-          </button>
-          <button
-            disabled={descuentoLocked}
-            onClick={() => !descuentoLocked && setTipo('descuento')}
-            title={descuentoLocked ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : ''}
-            className="flex-1 py-2.5 rounded-[10px] border text-[13px] font-semibold disabled:cursor-not-allowed"
-            style={choiceStyle(tipo === 'descuento', 'purple', descuentoLocked)}
-          >
-            Descuento
-          </button>
-        </div>
-
-        {/* Mismo estilo que "Premio online": se lee bien en claro y en oscuro. */}
-        <div className="bg-aqua-light rounded-xl p-3.5 mb-4.5">
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" checked={conCompra} onChange={(e) => setConCompra(e.target.checked)} className="mt-0.5" />
-            <span>
-              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Regalo con tu compra</span>
-              <span className="block text-[11.5px] text-muted leading-4">Premia a quien te compra: cada canje te trae una venta, y puedes pedir menos Puntos.</span>
-            </span>
-          </label>
-          {conCompra && (
-            <div className="mt-3">
-              <span className="block text-[12px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>¿Cómo lo dices?</span>
+          {modo === 'regalo' && (
+            <div className="mt-4">
+              <span className="block text-[12.5px] font-semibold mb-1.5">¿Cómo lo dices?</span>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {INICIOS.map((op) => (
                   <button
@@ -505,14 +500,14 @@ function BeneficioForm({
                     className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border"
                     style={inicio === op.inicio
                       ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' }
-                      : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-ok-text)' }}
+                      : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-muted)' }}
                   >
                     {op.label}
                   </button>
                 ))}
               </div>
               <div className="flex items-center bg-white border border-line rounded-[10px] px-3">
-                {inicio ? <span className="text-[13.5px] font-semibold mr-1.5 whitespace-nowrap" style={{ color: '#2E9E7C' }}>{cap(inicio)}</span> : null}
+                {inicio ? <span className="text-[13.5px] font-semibold mr-1.5 whitespace-nowrap" style={{ color: 'var(--c-ok-text)' }}>{cap(inicio)}</span> : null}
                 <input
                   value={compra}
                   onChange={(e) => setCompra(e.target.value.slice(0, 60 - (inicio ? inicio.length + 1 : 0)))}
@@ -520,408 +515,328 @@ function BeneficioForm({
                   className="flex-1 min-w-0 bg-transparent py-2.5 text-[13.5px] outline-none"
                 />
               </div>
-              <p className="text-[11.5px] text-muted mt-2 leading-4">
-                En la app se ve: <b style={{ color: '#2E9E7C' }}>«{tipo === 'descuento' ? 'Descuento' : 'Gratis'} {compra.trim() ? frase : joinFrase(inicio, INICIOS.find((o) => o.inicio === inicio)?.ejemplo ?? '')}»</b>
-              </p>
-              <p className="text-[11px] text-muted mt-1 leading-4">Corto y con gancho funciona mejor. Ideas: «llevando un combo», «con tu corte», «si pides postre».</p>
+              <Vista>«De regalo {compra.trim() ? frase : joinFrase(inicio, INICIOS.find((o) => o.inicio === inicio)?.ejemplo ?? '')}»</Vista>
             </div>
           )}
-        </div>
 
-        {tipo === 'descuento' && (
-          <div className="mb-4.5">
-            <div className="flex gap-2 mb-2.5">
-              <button
-                type="button"
-                onClick={() => setDescuentoModo('porcentaje')}
-                className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={choiceStyle(descuentoModo === 'porcentaje', 'aqua')}
-              >
-                % de descuento
-              </button>
-              <button
-                type="button"
-                onClick={() => setDescuentoModo('texto')}
-                className="flex-1 py-2 rounded-[8px] border text-[12.5px] font-semibold"
-                style={choiceStyle(descuentoModo === 'texto', 'aqua')}
-              >
-                Otro (2x1, Bs fijos...)
-              </button>
-            </div>
-
-            {descuentoModo === 'porcentaje' ? (
-              <Field label="Porcentaje de descuento">
+          {modo === 'descuento' && (
+            <div className="mt-4">
+              <div className="flex gap-2 mb-3">
+                <button type="button" onClick={() => setDescuentoModo('porcentaje')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'porcentaje', 'purple')}>
+                  % de descuento
+                </button>
+                <button type="button" onClick={() => setDescuentoModo('texto')} className="flex-1 py-2 rounded-[10px] border text-[12.5px] font-semibold" style={choiceStyle(descuentoModo === 'texto', 'purple')}>
+                  Otro (2x1, Bs fijos…)
+                </button>
+              </div>
+              {descuentoModo === 'porcentaje' ? (
                 <div className="flex items-center gap-2">
                   <input
                     value={descuentoPorcentaje}
                     onChange={(e) => setDescuentoPorcentaje(e.target.value.replace(/\D/g, '').slice(0, 3))}
                     placeholder="20"
-                    className="w-24 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                    aria-label="Porcentaje de descuento"
+                    className="w-20 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
                   />
-                  <span className="text-[13.5px] text-muted">% — ej: pon 20 para &ldquo;20% de descuento&rdquo;</span>
+                  <span className="text-[13.5px] text-muted">% de descuento</span>
                 </div>
-              </Field>
-            ) : (
-              <Field label="Detalle del descuento">
+              ) : (
+                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: 2x1, Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
+              )}
+            </div>
+          )}
+        </Paso>
+
+        <Paso n={3} title="Cuánto cuesta" hint="En Puntos de Camina. Se gana 1 Punto cada 1.000 pasos (máx. 20 por día).">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Puntos">
+              <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
+            </Field>
+            {!online && (
+              <Field label={`Cupones por día${isFree && !ilimitado ? ' (mín. 3)' : ''}`}>
                 <input
-                  value={descuento}
-                  onChange={(e) => setDescuento(e.target.value)}
-                  placeholder="Ej: 2x1, Bs 10 de descuento"
-                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                  value={ilimitado && !isFree ? '∞' : cupones}
+                  onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))}
+                  disabled={!isFree && ilimitado}
+                  className={`${INPUT} disabled:opacity-50`}
                 />
               </Field>
             )}
           </div>
-        )}
-
-        <div className="bg-aqua-light rounded-xl p-3.5 mt-4.5 mb-4">
-          <p className="text-[12.5px] font-semibold mb-1.5" style={{ color: '#2E9E7C' }}>
-            ¿No sabes cuántos Puntos poner?
-          </p>
-          <p className="text-[11.5px] mb-2.5" style={{ color: '#3A8C72' }}>
-            Como referencia, 2,5 Puntos equivalen a Bs 1: algo de <strong>Bs 10</strong> ronda los <strong>25 Puntos</strong> (con el
-            tope de 20 Puntos ganados por día, ya le lleva más de una jornada caminando). Mete el
-            valor de lo que estás regalando y te tiramos una sugerencia — es una guía, no una regla, tú
-            pones el número final.
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="text-[12.5px] text-muted">Vale aprox.</span>
+          <div className="flex flex-wrap items-center gap-2 mt-3 bg-bg rounded-xl px-3 py-2.5">
+            <span className="text-[12.5px] text-muted">¿Cuánto vale en Bs?</span>
             <input
               value={valorBs}
               onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
               placeholder="Bs"
+              aria-label="Valor en Bs"
               className="w-20 bg-white border border-line rounded-[8px] px-2.5 py-1.5 text-[12.5px]"
             />
-            {puntosSugeridos !== null && (
-              <>
-                <span className="text-[12.5px] text-muted">→ sugerido</span>
-                <button
-                  type="button"
-                  onClick={() => setCosto(String(puntosSugeridos))}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
-                  style={{ background: '#4FC3A8', color: '#fff' }}
-                >
-                  {puntosSugeridos} Puntos — usar
-                </button>
-              </>
+            {puntosSugeridos !== null ? (
+              <button
+                type="button"
+                onClick={() => setCosto(String(puntosSugeridos))}
+                className="rounded-full px-3 py-1 text-[12px] font-semibold"
+                style={{ background: '#4FC3A8', color: '#fff' }}
+              >
+                Usar {puntosSugeridos} Puntos
+              </button>
+            ) : (
+              <span className="text-[11.5px] text-muted">y te sugerimos los Puntos</span>
             )}
           </div>
-        </div>
-
-        <div className="bg-aqua-light rounded-xl p-3.5 mb-4">
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} className="mt-0.5" />
-            <span>
-              <span className="block text-[13px] font-semibold" style={{ color: '#2E9E7C' }}>Premio online (sin ir al local)</span>
-              <span className="block text-[11.5px] leading-4 mt-0.5" style={{ color: '#3A8C72' }}>
-                La persona canjea en la app y no hace falta que vaya al local. Por WhatsApp o redes recibe un código propio que le
-                manda a tu tienda y tú lo confirmas en Canjes cuando quieras (le dura 7 días). Si tienes página web, cargas tus
-                propios cupones y ella los pega al pagar. Los días y horarios de abajo se respetan igual.
-              </span>
-            </span>
-          </label>
-          {online && (
-            <div className="mt-3">
-              <p className="text-[12.5px] font-semibold mb-1.5">¿Por dónde te escriben para cobrar?</p>
-              <div className="flex flex-wrap gap-1.5">
-                {CANALES_ONLINE.map((c) => {
-                  const ok = c.tiene(business);
-                  const on = onlineChannel === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      disabled={!ok}
-                      title={ok ? '' : c.falta}
-                      onClick={() => setOnlineChannel(c.id)}
-                      className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border disabled:cursor-not-allowed"
-                      style={{
-                        background: on ? '#4FC3A8' : 'var(--c-card)',
-                        color: !ok ? 'var(--c-line)' : on ? '#fff' : 'var(--c-muted)',
-                        borderColor: on ? '#4FC3A8' : 'var(--c-line)',
-                      }}
-                    >
-                      {c.label}
-                    </button>
-                  );
-                })}
-              </div>
-              {!canalOk && (
-                <p className="text-warn text-[12px] mt-2">
-                  Elige un canal. Si no ves el tuyo, cárgalo primero en <a href="/perfil" className="underline">Perfil</a>.
-                </p>
-              )}
-              {esWeb ? (
-                <div className="mt-3">
-                  <Field label="Tus cupones de la página (uno por línea)">
-                    <textarea
-                      value={codigosTexto}
-                      onChange={(e) => setCodigosTexto(e.target.value)}
-                      rows={5}
-                      placeholder={'AMIGO15\nCAMINA15\nCAMINA16'}
-                      className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] font-mono"
-                    />
-                  </Field>
-                  <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-                    Crea estos cupones en tu página (con el descuento de este premio) y pegalos aquí. Cada persona que canjea recibe uno
-                    distinto y lo pega en el campo cupón al pagar: los cupos son los cupones que cargues. Los Puntos se descuentan
-                    al canjear, así que no hay nada que confirmar en Camina.
-                  </p>
-                  <p className="text-[12px] font-semibold mt-2" style={{ color: '#2E9E7C' }}>
-                    {codigosLibres} sin usar · {codigosEntregados} entregados
-                    {codigosNuevos.length > 0 ? ` · se van a sumar ${codigosNuevos.length} al guardar` : ''}
-                  </p>
-                  {codigosLibres + codigosNuevos.length === 0 && (
-                    <p className="text-warn text-[12px] mt-1">Carga al menos un cupón para guardar.</p>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="mt-3 max-w-[220px]">
-                    <Field label="Cupos en total">
-                      <input
-                        value={onlineQuota}
-                        onChange={(e) => setOnlineQuota(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-                      />
-                    </Field>
-                  </div>
-                  <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-                    Pon los que quieras. Cuando se usan todos, el premio queda agotado. Si cancelas o vence un canje, ese cupo se libera.
-                  </p>
-                </>
-              )}
-            </div>
+          {!isFree && !online && (
+            <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
           )}
-        </div>
+        </Paso>
 
-        <div className="flex gap-3.5 mb-3.5">
-          <div className="flex-1">
-            <Field label="Costo en Puntos">
-              <input
-                value={costo}
-                onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))}
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-              />
-            </Field>
-          </div>
-          {!online && <div className="flex-1">
-            <Field label={ilimitado ? 'Cupones por día' : `Cupones por día${isFree ? ' (mín. 3)' : ''}`}>
-              <input
-                value={cupones}
-                onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))}
-                disabled={!isFree && ilimitado}
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] disabled:opacity-40"
-              />
-            </Field>
-          </div>}
-        </div>
-
-        {!isFree && !online && (
-          <label className="flex items-center gap-2 mb-4.5 cursor-pointer">
-            <input type="checkbox" checked={ilimitado} onChange={(e) => setIlimitado(e.target.checked)} />
-            <span className="text-[13px]">Cupones ilimitados — sin tope diario</span>
-          </label>
-        )}
-
-        <div className="bg-purple-light rounded-xl p-3.5 mb-3.5">
-          <p className="text-[12.5px] font-semibold mb-1" style={{ color: '#4A3D68' }}>
-            ⏰ Horas muertas: llena tu local cuando está vacío
-          </p>
-          <p className="text-[11.5px] mb-2.5 leading-4" style={{ color: '#4A3D68' }}>
-            Son las horas en que casi no entra nadie. Si el premio vale justo ahí, la gente camina hasta tu local cuando más
-            lo necesitas, y en las horas de mucho movimiento no regalas de más. Elige una franja o arma la tuya abajo.
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {FRANJAS_COMUNES.map((f) => {
-              const on = validFrom === f.from && validTo === f.to;
+        <Paso n={4} title="Cuándo vale" hint="Si no tocas nada, vale todos los días a toda hora.">
+          <span className="block text-[12.5px] font-semibold mb-1.5">Días</span>
+          <div className="flex gap-1.5 mb-4">
+            {DIAS.map((d, i) => {
+              const on = !!(diasMask & (1 << i));
               return (
                 <button
-                  key={f.id}
+                  key={i}
                   type="button"
-                  title={f.hint}
-                  onClick={() => aplicarFranja(f.from, f.to)}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
+                  onClick={() => toggleDia(i)}
+                  className="w-9 h-9 rounded-full text-[12px] font-bold"
                   style={{
-                    background: on ? '#8B4FD1' : 'var(--c-card)',
+                    background: on ? '#4FC3A8' : 'var(--c-card)',
                     color: on ? '#fff' : 'var(--c-muted)',
-                    borderColor: on ? '#8B4FD1' : 'var(--c-line)',
+                    border: `1px solid ${on ? '#4FC3A8' : 'var(--c-line)'}`,
                   }}
                 >
-                  {f.label} · {f.from}–{f.to}
+                  {d}
                 </button>
               );
             })}
-            <button
-              type="button"
-              title="Lunes a jueves, los días más flojos"
-              onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
-              className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
-              style={{
-                background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-card)',
-                color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : 'var(--c-muted)',
-                borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-line)',
-              }}
-            >
-              Solo lunes a jueves
-            </button>
           </div>
-          {sugerida ? (
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-              <p className="text-[11.5px]" style={{ color: '#4A3D68' }}>
-                Según tus canjes, de <strong>{sugerida.from} a {sugerida.to}</strong> es cuando menos te visitan.
-              </p>
-              <button
-                type="button"
-                onClick={() => aplicarFranja(sugerida.from, sugerida.to)}
-                className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
-                style={{ background: '#4FC3A8', color: '#fff' }}
-              >
-                Usar {sugerida.from}–{sugerida.to}
-              </button>
-            </div>
-          ) : (
-            <p className="text-[11px] mt-2" style={{ color: 'var(--c-muted)' }}>
-              {isFree
-                ? 'Con Paso Firme, Camina te sugiere tus horas más flojas según tus canjes.'
-                : 'Cuando tengas más canjes, aquí te vamos a sugerir tus horas más flojas.'}
-            </p>
-          )}
-        </div>
-
-        <label className="block text-[12.5px] font-semibold mb-1.5">Condiciones (opcional)</label>
-        <div className="flex gap-3.5 mb-3.5">
-          <div className="flex-1">
-            <Field label="Válido desde">
-              <TimeSelect
-                allowEmpty
-                value={validFrom}
-                onChange={setValidFrom}
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-              />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Desde">
+              <TimeSelect allowEmpty value={validFrom} onChange={setValidFrom} className={INPUT} />
             </Field>
-          </div>
-          <div className="flex-1">
             <Field label="Hasta">
-              <TimeSelect
-                allowEmpty
-                value={validTo}
-                onChange={setValidTo}
-                className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-              />
+              <TimeSelect allowEmpty value={validTo} onChange={setValidTo} className={INPUT} />
             </Field>
           </div>
-        </div>
-        <p className="text-[11px] text-muted mb-2">
-          Deja los dos vacíos si vale a cualquier hora. Fuera de este rango, a los usuarios les aparece
-          &ldquo;Fuera de horario&rdquo; y no lo pueden canjear.
-        </p>
-
-        <div className="flex gap-1.5 mb-4.5">
-          {DIAS.map((d, i) => {
-            const on = !!(diasMask & (1 << i));
-            return (
+          <div className="mt-4 border-t border-line pt-3.5">
+            <p className="text-[12.5px] font-semibold">⏰ Llena tu local en las horas flojas</p>
+            <p className="text-[11.5px] text-muted mb-2 leading-4">Si el premio vale cuando casi no entra nadie, la gente llega justo cuando más la necesitas.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {FRANJAS_COMUNES.map((f) => {
+                const on = validFrom === f.from && validTo === f.to;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    title={f.hint}
+                    onClick={() => aplicarFranja(f.from, f.to)}
+                    className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
+                    style={{
+                      background: on ? '#8B4FD1' : 'var(--c-card)',
+                      color: on ? '#fff' : 'var(--c-muted)',
+                      borderColor: on ? '#8B4FD1' : 'var(--c-line)',
+                    }}
+                  >
+                    {f.label} · {f.from}–{f.to}
+                  </button>
+                );
+              })}
               <button
-                key={i}
                 type="button"
-                onClick={() => toggleDia(i)}
-                className="w-9 h-9 rounded-full text-[12px] font-bold"
+                title="Lunes a jueves, los días más flojos"
+                onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
+                className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
                 style={{
-                  background: on ? '#4FC3A8' : 'var(--c-card)',
-                  color: on ? '#fff' : 'var(--c-muted)',
-                  border: `1px solid ${on ? '#4FC3A8' : 'var(--c-line)'}`,
+                  background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-card)',
+                  color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : 'var(--c-muted)',
+                  borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-line)',
                 }}
               >
-                {d}
+                Solo lunes a jueves
               </button>
-            );
-          })}
-        </div>
-
-        {!online && (
-          <label className="flex items-center gap-2 mb-5 cursor-pointer">
-            <input type="checkbox" checked={dineInOnly} onChange={(e) => setDineInOnly(e.target.checked)} />
-            <span className="text-[13px]">Solo para consumir en el local</span>
-          </label>
-        )}
-
-        {!online && (
-          <div className="mb-5">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={requiresBooking} onChange={(e) => setRequiresBooking(e.target.checked)} />
-              <span className="text-[13px]">Requiere reserva (coordinar por WhatsApp antes de ir)</span>
-            </label>
-            {requiresBooking && (
-              <>
-                <input
-                  type="text"
-                  value={bookingNote}
-                  maxLength={120}
-                  onChange={(e) => setBookingNote(e.target.value)}
-                  placeholder="Ej.: Solo con confirmación"
-                  className="w-full mt-2 rounded-xl border border-line px-3.5 py-2.5 text-[13px]"
-                />
-                <p className="text-[11px] text-muted mt-1">
-                  Se avisa a la persona en el premio. Necesitas tener tu WhatsApp en el perfil del comercio para que pueda escribirte.
+            </div>
+            {sugerida ? (
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <p className="text-[11.5px] text-muted">
+                  Según tus canjes, de <strong>{sugerida.from} a {sugerida.to}</strong> es cuando menos te visitan.
                 </p>
-              </>
+                <button
+                  type="button"
+                  onClick={() => aplicarFranja(sugerida.from, sugerida.to)}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                  style={{ background: '#4FC3A8', color: '#fff' }}
+                >
+                  Usar {sugerida.from}–{sugerida.to}
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </Paso>
+
+        <Paso n={5} title="Más opciones" hint="Opcional.">
+          {!online && (
+            <Opcion on={dineInOnly} onToggle={() => setDineInOnly((v) => !v)} title="Solo para consumir en el local" hint="No vale para llevar." first />
+          )}
+          {!online && (
+            <Opcion on={requiresBooking} onToggle={() => setRequiresBooking((v) => !v)} title="Con reserva" hint="Te escriben por WhatsApp antes de ir.">
+              <input
+                type="text"
+                value={bookingNote}
+                maxLength={120}
+                onChange={(e) => setBookingNote(e.target.value)}
+                placeholder="Ej.: Solo con confirmación"
+                aria-label="Nota de la reserva"
+                className={INPUT}
+              />
+            </Opcion>
+          )}
+          <Opcion on={online} onToggle={() => setOnline((v) => !v)} title="Premio online" hint="Se canjea sin ir al local: por WhatsApp, redes o tu página." first={online}>
+            <p className="text-[12.5px] font-semibold mb-1.5">¿Por dónde te escriben para cobrar?</p>
+            <div className="flex flex-wrap gap-1.5">
+              {CANALES_ONLINE.map((c) => {
+                const ok = c.tiene(business);
+                const on = onlineChannel === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    disabled={!ok}
+                    title={ok ? '' : c.falta}
+                    onClick={() => setOnlineChannel(c.id)}
+                    className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold border disabled:cursor-not-allowed"
+                    style={{
+                      background: on ? '#4FC3A8' : 'var(--c-card)',
+                      color: !ok ? 'var(--c-line)' : on ? '#fff' : 'var(--c-muted)',
+                      borderColor: on ? '#4FC3A8' : 'var(--c-line)',
+                    }}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+            {!canalOk && (
+              <p className="text-warn text-[12px] mt-2">
+                Elige un canal. Si no ves el tuyo, cárgalo primero en <a href="/perfil" className="underline">Perfil</a>.
+              </p>
             )}
-          </div>
-        )}
+            {esWeb ? (
+              <div className="mt-3">
+                <Field label="Tus cupones de la página (uno por línea)">
+                  <textarea
+                    value={codigosTexto}
+                    onChange={(e) => setCodigosTexto(e.target.value)}
+                    rows={5}
+                    placeholder={'AMIGO15\nCAMINA15\nCAMINA16'}
+                    className={`${INPUT} font-mono`}
+                  />
+                </Field>
+                <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+                  Cada persona que canjea recibe uno distinto y lo pega al pagar en tu página. No hay nada que confirmar en Camina.
+                </p>
+                <p className="text-[12px] font-semibold mt-2" style={{ color: 'var(--c-ok-text)' }}>
+                  {codigosLibres} sin usar · {codigosEntregados} entregados
+                  {codigosNuevos.length > 0 ? ` · se van a sumar ${codigosNuevos.length} al guardar` : ''}
+                </p>
+                {codigosLibres + codigosNuevos.length === 0 && <p className="text-warn text-[12px] mt-1">Carga al menos un cupón para guardar.</p>}
+              </div>
+            ) : (
+              <div className="mt-3 flex items-center gap-2.5">
+                <input
+                  value={onlineQuota}
+                  onChange={(e) => setOnlineQuota(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  aria-label="Cupos en total"
+                  className="w-20 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                />
+                <span className="text-[12px] text-muted leading-4">cupos en total. La persona te manda un código de 6 números y lo confirmas en Canjes (dura 7 días).</span>
+              </div>
+            )}
+          </Opcion>
+          {fansReady && (
+            <Opcion on={fansOnly} onToggle={() => setFansOnly((v) => !v)} title="Solo para tus Fans" hint="Un premio especial para tus clientes más fieles." />
+          )}
+        </Paso>
 
-        {fansReady && <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-3">
-          <div>
-            <p className="text-[13px] font-semibold">Solo para tus Fans</p>
-            <p className="text-[11px] text-muted">
-              {fansOnly ? 'Solo lo ven y lo canjean tus Fans (clientes con 20 puntos de nivel en tu local).' : 'Opcional: un premio especial para tus clientes más fieles.'}
-            </p>
+        <div className="bg-card border border-line rounded-2xl p-5">
+          <Opcion
+            on={active}
+            onToggle={() => setActive((v) => !v)}
+            title={active ? 'Premio activo' : 'Premio pausado'}
+            hint={active ? 'Se ve en la app y se puede canjear.' : 'No aparece en la app hasta que lo actives.'}
+            first
+          />
+          <div className="mt-4">
+            {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Sube una foto del premio para poder guardarlo.</p>}
+            {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
+            {saved && <p className="text-aqua text-[12.5px] mb-3">Guardado.</p>}
+            <button
+              onClick={handleSave}
+              disabled={saving || !nombre.trim() || !imageUrl || !canalOk || !cuposOnlineOk}
+              className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
+              style={{ background: '#241748', color: '#62F0B6' }}
+            >
+              {saving ? 'Guardando…' : 'Guardar premio'}
+            </button>
           </div>
-          <button
-            type="button"
-            aria-pressed={fansOnly}
-            aria-label="Solo para tus Fans"
-            onClick={() => setFansOnly((v) => !v)}
-            className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: fansOnly ? '#4FC3A8' : 'var(--c-line)' }}
-          >
-            <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: fansOnly ? '22px' : '2px' }} />
-          </button>
-        </div>}
-
-        <div className="flex items-center justify-between bg-bg rounded-xl px-3.5 py-3 mb-5">
-          <div>
-            <p className="text-[13px] font-semibold">{active ? 'Beneficio activo' : 'Beneficio desactivado'}</p>
-            <p className="text-[11px] text-muted">
-              {active ? 'Los usuarios lo ven y lo pueden canjear.' : 'No aparece en la app hasta que lo actives.'}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setActive((v) => !v)}
-            className="w-11 h-6 rounded-full relative shrink-0"
-            style={{ background: active ? '#4FC3A8' : 'var(--c-line)' }}
-          >
-            <span
-              className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
-              style={{ left: active ? '22px' : '2px' }}
-            />
-          </button>
         </div>
-
-        {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Sube una foto del beneficio para poder guardarlo: es lo que ven las personas antes de canjear.</p>}
-        {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
-        {saved && <p className="text-aqua text-[12.5px] mb-3">Guardado.</p>}
-
-        <button
-          onClick={handleSave}
-          disabled={saving || !nombre.trim() || !imageUrl || !canalOk || !cuposOnlineOk}
-          className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
-          style={{ background: '#241748', color: '#62F0B6' }}
-        >
-          {saving ? 'Guardando…' : 'Guardar cambios'}
-        </button>
       </div>
     </DashboardShell>
+  );
+}
+
+const INPUT = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]';
+
+// Cada parte del formulario es una tarjeta numerada: se llena de arriba hacia abajo.
+function Paso({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <section className="bg-card border border-line rounded-2xl p-5 mb-3.5">
+      <div className="flex items-start gap-2.5 mb-4">
+        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-extrabold" style={{ background: '#62F0B6', color: '#241748' }}>
+          {n}
+        </span>
+        <div>
+          <h2 className="text-[15px] font-bold leading-6 m-0">{title}</h2>
+          {hint && <p className="text-[12px] text-muted leading-4">{hint}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// Una opción de prender/apagar, siempre igual: título, una línea de ayuda y el interruptor.
+function Opcion({ on, onToggle, title, hint, first, children }: { on: boolean; onToggle: () => void; title: string; hint?: string; first?: boolean; children?: React.ReactNode }) {
+  return (
+    <div className={first ? '' : 'border-t border-line mt-3.5 pt-3.5'}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[13.5px] font-semibold">{title}</p>
+          {hint && <p className="text-[11.5px] text-muted leading-4">{hint}</p>}
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={title}
+          onClick={onToggle}
+          className="w-11 h-6 rounded-full relative shrink-0"
+          style={{ background: on ? '#4FC3A8' : 'var(--c-line)' }}
+        >
+          <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: on ? '22px' : '2px' }} />
+        </button>
+      </div>
+      {on && children ? <div className="mt-3">{children}</div> : null}
+    </div>
+  );
+}
+
+function Vista({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[12px] text-muted mt-2">
+      En la app se ve: <b style={{ color: 'var(--c-ok-text)' }}>{children}</b>
+    </p>
   );
 }
 
