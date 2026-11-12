@@ -43,3 +43,24 @@ end $$ language plpgsql;
 drop trigger if exists limit_catalog_items on public.business_catalog_items;
 create trigger limit_catalog_items before insert on public.business_catalog_items
   for each row execute function public.limit_catalog_items();
+
+-- Catálogo simple: el local pega un link (catálogo de WhatsApp, web, Drive) o sube un PDF; en la app sale un botón "Ver catálogo".
+alter table public.businesses add column if not exists catalog_url text
+  check (catalog_url is null or char_length(catalog_url) <= 500);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('business-catalogs', 'business-catalogs', true, 10 * 1024 * 1024, array['application/pdf'])
+on conflict (id) do update set file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "business-catalogs: owner write" on storage.objects;
+create policy "business-catalogs: owner write" on storage.objects for insert
+  with check (bucket_id = 'business-catalogs' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(storage.objects.name))[1] and b.owner_user_id = auth.uid()));
+drop policy if exists "business-catalogs: owner update" on storage.objects;
+create policy "business-catalogs: owner update" on storage.objects for update
+  using (bucket_id = 'business-catalogs' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(storage.objects.name))[1] and b.owner_user_id = auth.uid()));
+drop policy if exists "business-catalogs: owner read" on storage.objects;
+create policy "business-catalogs: owner read" on storage.objects for select
+  using (bucket_id = 'business-catalogs' and exists (
+    select 1 from public.businesses b where b.id::text = (storage.foldername(storage.objects.name))[1] and b.owner_user_id = auth.uid()));

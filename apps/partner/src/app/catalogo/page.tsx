@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Trash2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -22,7 +22,11 @@ const input = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 tex
 
 // Catálogo o menú del local (físico u online): lo que cargues aquí se ve en la ficha de tu local en la app.
 export default function CatalogoPage() {
-  const { business, role } = useBusinessAuth();
+  const { business, role, refreshBusiness, session } = useBusinessAuth();
+  const [link, setLink] = useState('');
+  const [linkMsg, setLinkMsg] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const pdfRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -42,6 +46,10 @@ export default function CatalogoPage() {
       .order('position')
       .order('created_at');
     setItems((data as Item[]) ?? []);
+  }, [business]);
+
+  useEffect(() => {
+    setLink(business?.catalog_url ?? '');
   }, [business]);
 
   useEffect(() => {
@@ -89,12 +97,54 @@ export default function CatalogoPage() {
     load();
   }
 
+  async function guardarLink(url: string | null) {
+    if (!business) return;
+    setLinkMsg(null);
+    let v = url?.trim() || null;
+    if (v && !/^https?:\/\//i.test(v)) v = `https://${v}`;
+    const { error: err } = await supabase.from('businesses').update({ catalog_url: v }).eq('id', business.id);
+    if (err) {
+      setLinkMsg(mensajeError(err));
+      return;
+    }
+    setLink(v ?? '');
+    setLinkMsg(v ? 'Listo: ya se ve el botón "Ver catálogo" en tu ficha.' : 'Catálogo quitado.');
+    if (session) await refreshBusiness(session.user.id, session.user.email);
+  }
+
+  async function subirPdf(file: File) {
+    if (!business) return;
+    setLinkMsg(null);
+    if (file.type !== 'application/pdf') return setLinkMsg('Elige un archivo PDF.');
+    if (file.size > 10 * 1024 * 1024) return setLinkMsg('El PDF pesa más de 10 MB. Achícalo e intenta de nuevo.');
+    setSubiendo(true);
+    const path = `${business.id}/catalogo-${Date.now()}.pdf`;
+    const { error: up } = await supabase.storage.from('business-catalogs').upload(path, file, { contentType: 'application/pdf' });
+    setSubiendo(false);
+    if (up) return setLinkMsg('No pudimos subir el PDF. Intenta de nuevo.');
+    await guardarLink(supabase.storage.from('business-catalogs').getPublicUrl(path).data.publicUrl);
+  }
+
   if (role === 'cashier') return <DashboardShell>{null}</DashboardShell>;
 
   return (
     <DashboardShell>
-      <TopBar title="Catálogo o menú" subtitle="Carga tus productos con foto y precio. Se ven en la ficha de tu local en la app, sea físico u online." />
+      <TopBar title="Catálogo o menú" subtitle="Que tus clientes vean tu catálogo o menú desde la app, sea tu local físico u online." />
       <div className="max-w-[560px]">
+        <div className="bg-card border border-line rounded-2xl p-5 mb-5 flex flex-col gap-3">
+          <p className="font-bold text-[14px]">Lo más fácil: tu catálogo ya hecho</p>
+          <p className="text-[12.5px] text-muted leading-5">Pega el link de tu catálogo (WhatsApp, tu web, Drive) o sube tu PDF. En la app sale un botón &ldquo;Ver catálogo&rdquo; en tu ficha.</p>
+          <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://wa.me/c/591..." className={input} />
+          <div className="flex gap-2">
+            <button onClick={() => guardarLink(link)} disabled={link.trim() === (business?.catalog_url ?? '')} className="flex-1 rounded-xl py-2.5 font-semibold text-[13.5px] disabled:opacity-50" style={{ background: '#241748', color: '#62F0B6' }}>Guardar link</button>
+            <button onClick={() => pdfRef.current?.click()} disabled={subiendo} className="flex-1 rounded-xl py-2.5 font-semibold text-[13.5px] border border-line bg-white">{subiendo ? 'Subiendo…' : 'Subir PDF'}</button>
+          </div>
+          <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) subirPdf(f); }} />
+          {business?.catalog_url && <button onClick={() => guardarLink(null)} className="text-[12px] underline text-muted self-start">Quitar catálogo</button>}
+          {linkMsg && <p className="text-[12.5px]">{linkMsg}</p>}
+        </div>
+
+        <p className="text-[12.5px] font-semibold mb-2">O carga tus productos uno por uno (opcional)</p>
         <div className="bg-card border border-line rounded-2xl p-5 mb-5 flex flex-col gap-3">
           <label>
             <span className="block text-[12.5px] font-semibold mb-1.5">Nombre del producto</span>

@@ -34,6 +34,7 @@ export interface Business {
   rejection_reason?: string | null;
   rejected_at?: string | null;
   tiktok?: string | null;
+  catalog_url?: string | null;
   hours_text: string | null;
   opening_hours: Record<string, { from: string; to: string; from2?: string; to2?: string } | null> | null;
   logo_url: string | null;
