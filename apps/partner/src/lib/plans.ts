@@ -49,7 +49,7 @@ export const PLANS: {
     blurb: 'Empieza a recibir clientes sin costo fijo.',
     features: [
       'Apareces en el mapa y tu categoría',
-      '1 premio gratis y, con él, 1 descuento',
+      '1 premio gratis y, con él, 1 más',
       'Mínimo 3 cupones por día',
       'Sin estadísticas',
     ],
@@ -90,7 +90,7 @@ export const PLANS: {
 // Qué significa cada beneficio del plan, en una línea simple (se muestra debajo de cada uno en la web y en el panel).
 export const PLAN_EXPLICA: Record<string, string> = {
   'Apareces en el mapa y tu categoría': 'Te encuentran en el mapa de la app.',
-  '1 premio gratis y, con él, 1 descuento': 'Un premio gratis y un descuento.',
+  '1 premio gratis y, con él, 1 más': 'Un premio gratis y otro a elección: regalo, descuento, 2x1 o combo.',
   'Mínimo 3 cupones por día': 'Al menos 3 canjes por día.',
   'Sin estadísticas': 'No ves números en el panel.',
   'Todo lo de Primer Paso': 'Mapa, premio y descuento.',

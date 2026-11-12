@@ -39,6 +39,11 @@ function bs(n: number) {
   return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
 }
 
+// Plan gratis: el premio Gratis "de verdad" (sin pedir compra).
+function esGratisPuro(b: { type: string; with_purchase?: string | null }) {
+  return b.type === 'gratis' && !b.with_purchase;
+}
+
 function cap(t: string) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
@@ -104,10 +109,11 @@ export default function BeneficioPage() {
     );
   }
 
-  // Plan gratis: primero 1 premio gratis; con un gratis activo se habilita 1 descuento (máx. 2 premios).
+  // Plan gratis: primero 1 premio Gratis de verdad (sin compra); con ese activo se habilita 1 premio más de cualquier
+  // otro tipo (regalo con compra, descuento, 2x1 o combo). Máximo 2. La base lo controla igual (0119).
   const activeBenefits = benefits.filter((b) => b.active);
-  const hasGratis = activeBenefits.some((b) => b.type === 'gratis');
-  const hasDescuento = activeBenefits.some((b) => b.type === 'descuento');
+  const hasGratis = activeBenefits.some(esGratisPuro);
+  const hasDescuento = activeBenefits.some((b) => !esGratisPuro(b));
   const atFreeLimit = isFree && hasGratis && hasDescuento;
 
   return (
@@ -118,12 +124,12 @@ export default function BeneficioPage() {
         <div className="flex items-start gap-3 bg-purple-light rounded-2xl px-4 py-3.5 mb-5">
           <Star size={16} color="#8B4FD1" className="mt-0.5 shrink-0" />
           <p className="text-[13px] leading-snug text-text">
-            <strong>Plan gratis: 1 premio gratis y 1 descuento.</strong>{' '}
+            <strong>Plan gratis: 1 premio gratis y, con él, 1 más.</strong>{' '}
             {hasGratis
               ? hasDescuento
                 ? 'Ya los tienes. Pasa a un plan de pago para sumar más.'
-                : 'Ya puedes crear tu descuento.'
-              : 'Crea primero el premio gratis para poder agregar el descuento.'}
+                : 'Ya puedes sumar tu segundo premio: regalo con compra, descuento, 2x1 o combo.'
+              : 'Empieza con un premio gratis (sin compra): después se habilita el segundo.'}
           </p>
         </div>
       )}
@@ -131,7 +137,7 @@ export default function BeneficioPage() {
       <button
         onClick={() => !atFreeLimit && setEditingId('new')}
         disabled={atFreeLimit}
-        title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 descuento' : ''}
+        title={atFreeLimit ? 'Con el plan Primer Paso tienes 1 premio gratis y 1 más' : ''}
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
@@ -231,8 +237,9 @@ function BeneficioForm({
   const [nombre, setNombre] = useState(benefit?.name ?? '');
   // Plan gratis: el descuento se habilita recién cuando hay un premio gratis activo, y es uno solo.
   const otherActive = otherBenefits.filter((b) => b.active);
-  const freeHasGratis = otherActive.some((b) => b.type === 'gratis');
-  const freeHasDescuento = otherActive.some((b) => b.type === 'descuento');
+  // Plan gratis: "gratis" es el premio Gratis sin compra; todo lo demás (regalo, descuento, 2x1, combo) es "el segundo".
+  const freeHasGratis = otherActive.some(esGratisPuro);
+  const freeHasDescuento = otherActive.some((b) => !esGratisPuro(b));
   const descuentoLocked = isFree && (!freeHasGratis || freeHasDescuento);
   const gratisLocked = isFree && freeHasGratis;
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
@@ -268,7 +275,7 @@ function BeneficioForm({
   }, []);
   const modo: 'gratis' | 'regalo' | 'descuento' | 'combo' = tipo === 'descuento' ? (esCombo ? 'combo' : 'descuento') : conCompra ? 'regalo' : 'gratis';
   // Ideas por rubro (solo al crear): llenan nombre, cómo se ofrece y Puntos. Se esconden las que el plan no permite.
-  const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'descuento' ? !descuentoLocked : !gratisLocked));
+  const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'gratis' ? !gratisLocked : !descuentoLocked));
   function usarIdea(i: IdeaPremio) {
     setNombre(i.nombre);
     elegirModo(i.modo);
@@ -287,7 +294,7 @@ function BeneficioForm({
   }
   function elegirModo(m: 'gratis' | 'regalo' | 'descuento' | 'combo') {
     const esDescuento = m === 'descuento' || m === 'combo';
-    if (esDescuento ? descuentoLocked : gratisLocked) return;
+    if (m === 'gratis' ? gratisLocked : descuentoLocked) return;
     setTipo(esDescuento ? 'descuento' : 'gratis');
     setConCompra(m === 'regalo');
     setEsCombo(m === 'combo');
@@ -488,8 +495,8 @@ function BeneficioForm({
           <Star size={15} color="#8B4FD1" />
           <p className="text-[12.5px] text-text">
             {freeHasGratis
-              ? '🔓 Ya tienes un premio gratis: este puede ser tu descuento.'
-              : '🔒 Crea primero un premio gratis: así se habilita el descuento.'}
+              ? '🔓 Ya tienes tu premio gratis: este puede ser tu segundo premio (regalo con compra, descuento, 2x1 o combo).'
+              : '🔒 Empieza con un premio gratis (sin compra): así se habilita el segundo.'}
           </p>
         </div>
       )}
@@ -547,7 +554,7 @@ function BeneficioForm({
             {(
               [
                 { id: 'gratis', t: 'Gratis', d: 'Se lo lleva sin pagar', tone: 'aqua', locked: gratisLocked },
-                { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: gratisLocked },
+                { id: 'regalo', t: 'Regalo con compra', d: 'Si compra algo más', tone: 'aqua', locked: descuentoLocked },
                 { id: 'descuento', t: 'Descuento', d: 'Paga menos', tone: 'purple', locked: descuentoLocked },
                 ...(comboReady ? [{ id: 'combo' as const, t: 'Combo Camina', d: 'Un combo a precio especial', tone: 'gold' as const, locked: descuentoLocked }] : []),
               ] as const
@@ -556,7 +563,7 @@ function BeneficioForm({
                 key={o.id}
                 type="button"
                 disabled={o.locked}
-                title={o.locked ? (o.id === 'descuento' ? (freeHasDescuento ? 'Con Primer Paso tienes un solo descuento' : 'Crea primero un premio gratis') : 'Ya tienes un premio gratis: este puede ser un descuento') : ''}
+                title={o.locked ? (o.id === 'gratis' ? 'Ya tienes tu premio gratis: este puede ser el segundo' : freeHasDescuento ? 'Con Primer Paso tienes un premio gratis y uno más' : 'Empieza con un premio gratis (sin compra)') : ''}
                 onClick={() => elegirModo(o.id)}
                 className="rounded-xl border px-2 py-2.5 text-center disabled:cursor-not-allowed"
                 style={choiceStyle(modo === o.id, o.tone, o.locked)}

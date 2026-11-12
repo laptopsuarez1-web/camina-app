@@ -738,7 +738,7 @@ export function AppsSimilares() {
         </div>
         <p className="lead">
           Es un dato de otra app, sin metodología publicada, y no es una promesa de resultados de Camina. Lo que sí podemos decirte es qué cambia entre planes:
-          con Primer Paso tienes un premio 100% gratis y, con él, un descuento; con Paso Firme y Paso Adelante puedes combinar regalos y descuentos y dar cupones sin límite, para que
+          con Primer Paso tienes un premio 100% gratis y, con él, uno más a elección; con Paso Firme y Paso Adelante puedes combinar regalos y descuentos y dar cupones sin límite, para que
           el premio sea la puerta y la compra extra quede de tu lado.
         </p>
       </div>

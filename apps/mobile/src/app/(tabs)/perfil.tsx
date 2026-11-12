@@ -8,12 +8,11 @@ import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { isHealthDataAvailable, getRequestStatusForAuthorization, requestAuthorization as requestHealthKitAuthorization, queryStatisticsForQuantity } from '@kingstinct/react-native-healthkit';
 import { getGrantedPermissions, getSdkStatus, initialize as initializeHealthConnect, requestPermission as requestHealthConnectPermission, openHealthConnectSettings, SdkAvailabilityStatus } from 'react-native-health-connect';
-import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target, Gift } from '@/components/icons';
+import { LogOut, UserPlus, Pencil, Bell, Heartbeat, MapPin, ChevronRight, Target } from '@/components/icons';
 import { DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL } from '@/constants/business-rules';
 import { GoalSheet } from '@/components/GoalSheet';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore, signOutUser } from '@/store/useAuthStore';
-import { useMyRedemptions } from '@/hooks/useBenefits';
 import { colors } from '@/theme/tokens';
 import { useFriendRequests, useFriends } from '@/hooks/useFriends';
 import { useBlocks } from '@/hooks/useModeration';
@@ -105,9 +104,6 @@ export default function PerfilScreen() {
   const emailVerified = useEmailVerified();
   const isDark = useColorScheme().colorScheme === 'dark';
   const { data: badges } = useMyBadges();
-  // Canjes ya entregados (los pendientes, vencidos y cancelados no cuentan en el número).
-  const { data: myRedemptions } = useMyRedemptions();
-  const canjes = (myRedemptions ?? []).filter((r) => r.status === 'confirmed').length;
   const { data: balance } = usePointsBalance();
   const { data: friendRequests } = useFriendRequests();
   const { data: friends } = useFriends();

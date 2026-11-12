@@ -380,7 +380,7 @@ export default function HomeScreen() {
             <View style={{ width: 0, height: 0, marginRight: 14, borderLeftWidth: 7, borderRightWidth: 7, borderBottomWidth: 8, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: colors.mint }} />
             <View style={{ backgroundColor: colors.mint, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, maxWidth: 230 }}>
               <Text style={{ color: colors.mintDark, fontSize: 12.5, fontWeight: '800' }}>Tu perfil está aquí</Text>
-              <Text style={{ color: colors.mintDark, fontSize: 11.5, lineHeight: 15 }}>Tus canjes, insignias y amigos. Toca para cerrar.</Text>
+              <Text style={{ color: colors.mintDark, fontSize: 11.5, lineHeight: 15 }}>Tus Puntos, insignias y amigos. Toca para cerrar.</Text>
             </View>
           </Press>
         ) : null}
