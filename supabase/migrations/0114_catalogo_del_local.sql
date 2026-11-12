@@ -39,7 +39,7 @@ begin
     raise exception 'Máximo 60 productos por local';
   end if;
   return new;
-end $$ language plpgsql;
+end $$ language plpgsql set search_path = public;
 drop trigger if exists limit_catalog_items on public.business_catalog_items;
 create trigger limit_catalog_items before insert on public.business_catalog_items
   for each row execute function public.limit_catalog_items();
