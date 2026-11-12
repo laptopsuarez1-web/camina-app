@@ -102,6 +102,14 @@ export default function TarjetasScreen() {
               <Text className="text-[13.5px] text-muted-light dark:text-muted-dark">Cuando uses tu primer premio, tu tarjeta anterior aparece aquí.</Text>
             )}
           </>
+        ) : !isLoading && !isError ? (
+          <EmptyState
+            mascot="sentado"
+            title="Tu primera tarjeta arranca con tu primer canje"
+            text="Cada canje suma un sello. Con 5 sellos te llevas un premio gratis."
+            actionLabel="Ver premios"
+            onAction={() => router.push('/(tabs)/canjes')}
+          />
         ) : null}
       </View>
     </ScrollView>

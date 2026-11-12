@@ -25,7 +25,7 @@ export function LevelCard({ businessId, name, logoUrl }: { businessId: string; n
             {data.level ? `Eres ${levelLabel(data.level)}` : 'Gana tu insignia de este local'}
           </Text>
           <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">
-            {!data.level ? 'Con tu primer canje eres Visitante.' : next ? `${data.points} de ${next.target} puntos para ${next.label}` : '¡Llegaste al nivel más alto!'}
+            {!data.level ? 'Con tu primer canje eres Visitante.' : next ? `${data.points} de ${next.target} puntos de nivel para ${next.label}` : '¡Llegaste al nivel más alto!'}
           </Text>
           {!!data.level && (
             <View className="h-2 rounded-full mt-2 overflow-hidden bg-line-light dark:bg-line-dark">

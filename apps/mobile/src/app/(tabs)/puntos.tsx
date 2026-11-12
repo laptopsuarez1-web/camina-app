@@ -179,7 +179,7 @@ export default function PuntosScreen() {
           </Text>
         </View>
         <Text className="text-muted-light dark:text-muted-dark text-[12px] mb-3.5 leading-relaxed">
-          Comparte tu link de invitación. Recibes 5 Puntos cuando tu amigo se registra y consigue su primer punto.
+          Comparte tu link de invitación. Recibes 5 Puntos cuando tu amigo se registra y consigue su primer Punto.
         </Text>
         <Press
           accessibilityRole="button"
@@ -250,7 +250,7 @@ export default function PuntosScreen() {
           <EmptyState
             illustration="puntos"
             title="Tus Puntos van a aparecer aquí"
-            text="Cada 1.000 pasos que camines sumas un punto, siempre que abras la app ese día. También ganas por desafíos e invitando amigos de grupo."
+            text="Cada 1.000 pasos que camines sumas un Punto, siempre que abras la app ese día. También ganas por desafíos e invitando amigos de grupo."
           />
         )}
       </View>

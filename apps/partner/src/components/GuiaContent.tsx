@@ -23,7 +23,7 @@ const REGLAS = [
   ['Una vez cada 14 días por comercio', 'Cada persona puede canjear en tu local una vez cada 14 días (dos semanas). Así el beneficio alcanza para más gente.'],
   ['Tarjeta de fidelidad (Paso Firme y Paso Adelante)', 'Camina tiene una tarjeta de fidelidad general: cada canje confirmado en cualquier comercio suma un sello. Con 5 sellos la persona elige un premio gratis entre los comercios que participan. Tú eliges en la sección Tarjeta de fidelidad el premio que ofreces: aparece entre las opciones que ven todos los clientes de Camina (más visibilidad para tu local). La persona tiene 30 días para canjearlo en tu local con tu código del local, y no se le descuentan Puntos. El premio lo pones tú.'],
   ['Cupones por día', 'Eliges cuántos cupones das por día, o ilimitados. Cuando se agotan, el beneficio aparece como agotado hasta el día siguiente.'],
-  ['Puntos justos', 'Como guía: 2,5 puntos equivalen a Bs 1, o sea que algo de Bs 10 ronda los 25 puntos. En la app se gana 1 punto cada 1.000 pasos, con un máximo de 20 por día.'],
+  ['Puntos justos', 'Como guía: 2,5 Puntos equivalen a Bs 1, o sea que algo de Bs 10 ronda los 25 Puntos. En la app se gana 1 Punto cada 1.000 pasos, con un máximo de 20 por día.'],
   ['Fotos para publicarte', 'Para aparecer en la app necesitamos tu logo y una foto de portada. Cada beneficio necesita su propia foto para poder guardarse.'],
   ['Avisos cercanos (Paso Adelante)', 'Hasta 3 por mes. Los revisamos antes de enviarlos, salen entre 8:00 y 21:00 y cada persona recibe como máximo 1 por semana. Nada de mensajes engañosos.'],
   ['Trato respetuoso', 'Las personas que canjean son clientes tuyos: atiéndelas como a cualquiera. Camina puede pausar comercios con quejas repetidas.'],

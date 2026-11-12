@@ -143,7 +143,7 @@ export default function InsigniasScreen() {
           </View>
         ))}
         <Text className="text-[12px] text-muted-light dark:text-muted-dark text-center mt-2">
-          {LEVELS.map((l) => `${l.label}: ${l.from === 1 ? 'primer canje' : `${l.from} puntos`}`).join(' · ')}
+          {LEVELS.map((l) => `${l.label}: ${l.from === 1 ? 'primer canje' : `${l.from} puntos de nivel`}`.replace(/ /g, '\u00A0')).join(' · ')}
         </Text>
       </Glass>
       {sheet ? <BadgeSheet badge={sheet} own={own} onClose={() => setSheet(null)} /> : null}
