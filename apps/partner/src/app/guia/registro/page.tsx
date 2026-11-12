@@ -139,7 +139,7 @@ export default function GuiaRegistroPage() {
       </Hoja>
 
       {/* 5. Primer premio */}
-      <Hoja n={5} etiqueta="PASO 4" titulo="Tu primer premio" bajada="Menú Mis beneficios → «Agregar beneficio». Es lo que la gente canjea con los Puntos que gana caminando. El formulario va en 5 pasos, de arriba hacia abajo.">
+      <Hoja n={5} etiqueta="PASO 4" titulo="Tu primer premio" bajada="Menú Mis premios → «Agregar premio». Es lo que la gente canjea con los Puntos que gana caminando. El formulario va en 5 pasos, de arriba hacia abajo.">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4mm' }}>
           <Captura src="p-form2.jpg" alt="Cómo lo ofreces" alto={74} />
           <Captura src="p-form3.jpg" alt="Cuánto cuesta" alto={74} />
@@ -151,7 +151,7 @@ export default function GuiaRegistroPage() {
         <Nota n={3}>Cuánto cuesta: como guía, 2,5 Puntos equivalen a Bs 1 (algo de Bs 10 ronda los 25 Puntos). Escribe cuánto vale en Bs y el panel te sugiere los Puntos.</Nota>
         <Nota n={4}>Cuándo vale: días y horario. Tip: si vale en tus horas flojas, la gente llega justo cuando más la necesitas.</Nota>
         <Nota n={5}>Con el plan gratis tienes 1 premio gratis y, con él, 1 descuento. Con los planes de pago, varios premios a la vez y cupones ilimitados.</Nota>
-        <Captura src="p-beneficios.jpg" alt="Mis beneficios" alto={58} />
+        <Captura src="p-beneficios.jpg" alt="Mis premios" alto={58} />
       </Hoja>
 
       {/* 6. Canjes */}

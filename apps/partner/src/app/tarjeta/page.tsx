@@ -99,7 +99,7 @@ export default function TarjetaPage() {
               </p>
               {benefits.length === 0 ? (
                 <p className="text-[13px] text-muted">
-                  Primero crea un premio en <Link href="/beneficio" className="underline font-semibold">Mis beneficios</Link>.
+                  Primero crea un premio en <Link href="/beneficio" className="underline font-semibold">Mis premios</Link>.
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">

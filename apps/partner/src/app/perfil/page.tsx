@@ -627,7 +627,7 @@ export default function PerfilPage() {
             {confirmingDelete ? (
               <div className="bg-warn-light rounded-xl p-4" style={{ background: '#FDEEE2' }}>
                 <p className="text-[12.5px] mb-3" style={{ color: 'var(--c-warn-text)' }}>
-                  Se borra tu negocio, tus beneficios y tu historial de canjes de Camina — esto no se puede
+                  Se borra tu negocio, tus premios y tu historial de canjes de Camina — esto no se puede
                   deshacer.
                 </p>
                 <div className="flex gap-2">

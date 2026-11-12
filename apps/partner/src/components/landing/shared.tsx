@@ -49,8 +49,8 @@ const CAP_DARK: Record<string, string> = Object.fromEntries(
 );
 
 type ShotProps = { src: string; alt: string; width: number; height: number; sizes?: string; priority?: boolean };
-export function Shot(props: ShotProps) {
-  return <Image {...props} />;
+export function Shot({ alt, ...props }: ShotProps) {
+  return <Image alt={alt} {...props} />;
 }
 
 export function Nav({ activo }: { activo: 'gente' | 'comercios' }) {

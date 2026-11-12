@@ -27,7 +27,7 @@ type NavItem = {
 const NAV_PRINCIPAL: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home },
   { href: '/canjes', label: 'Canjes', icon: Receipt },
-  { href: '/beneficio', label: 'Mis beneficios', icon: Gift },
+  { href: '/beneficio', label: 'Mis premios', icon: Gift },
   { href: '/perfil', label: 'Perfil del local', icon: Store },
   { href: '/ruta', label: 'Ruta del mes', icon: Route },
   { href: '/catalogo', label: 'Catálogo o menú', icon: ShoppingBag },
@@ -241,7 +241,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <p className="mt-1.5">
                   Cuando cargues tu primer{' '}
                   <Link href="/beneficio" className="font-semibold underline">
-                    beneficio
+                    premio
                   </Link>
                   , tu local va a aparecer también en Canjes y en el mapa.
                 </p>

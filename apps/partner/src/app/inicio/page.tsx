@@ -49,7 +49,7 @@ export default function InicioPage() {
       .eq('business_id', business.id)
       .eq('active', true)
       .then(async ({ data: benefits }) => {
-        // Los beneficios con cupones ilimitados no entran en esta cuenta — no
+        // Los premios con cupones ilimitados no entran en esta cuenta — no
         // tiene sentido mostrar "quedan X de ilimitados". Si TODOS son
         // ilimitados, la tarjeta se oculta (ver abajo).
         const limited = (benefits ?? []).filter((b) => b.daily_quota != null) as { id: string; daily_quota: number }[];

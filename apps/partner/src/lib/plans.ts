@@ -63,7 +63,7 @@ export const PLANS: {
       'Todo lo de Primer Paso',
       'Puedes combinar regalo y descuento',
       'Cupones ilimitados',
-      'Varios beneficios a la vez',
+      'Varios premios a la vez',
       'Estadísticas básicas',
       'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes',
     ],
@@ -87,7 +87,7 @@ export const PLANS: {
 ];
 
 
-// Qué significa cada beneficio, en una línea simple (se muestra debajo de cada uno en la web y en el panel).
+// Qué significa cada beneficio del plan, en una línea simple (se muestra debajo de cada uno en la web y en el panel).
 export const PLAN_EXPLICA: Record<string, string> = {
   'Apareces en el mapa y tu categoría': 'Te encuentran en el mapa de la app.',
   '1 premio gratis y, con él, 1 descuento': 'Un premio gratis y un descuento.',
@@ -96,7 +96,7 @@ export const PLAN_EXPLICA: Record<string, string> = {
   'Todo lo de Primer Paso': 'Mapa, premio y descuento.',
   'Puedes combinar regalo y descuento': 'Premios y descuentos al mismo tiempo.',
   'Cupones ilimitados': 'Sin tope de canjes por día.',
-  'Varios beneficios a la vez': 'Varios premios activos juntos.',
+  'Varios premios a la vez': 'Varios premios activos juntos.',
   'Estadísticas básicas': 'Ves tus canjes y tu mes.',
   'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': 'Clientes de otros locales pueden elegir tu premio.',
   'Todo lo de Paso Firme': 'Todo lo del plan anterior.',

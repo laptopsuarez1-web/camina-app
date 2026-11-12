@@ -105,7 +105,7 @@ export default function BeneficioPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Mis beneficios" subtitle="Los premios que ofreces. Así los ven los clientes en la app." />
+      <TopBar title="Mis premios" subtitle="Los premios que ofreces. Así los ven los clientes en la app." />
 
       {isFree && (
         <div className="flex items-start gap-3 bg-purple-light rounded-2xl px-4 py-3.5 mb-5">
@@ -128,7 +128,7 @@ export default function BeneficioPage() {
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
-        <Plus size={16} /> Agregar beneficio
+        <Plus size={16} /> Agregar premio
       </button>
 
       {loading && <p className="text-muted text-[13px]">Cargando…</p>}
@@ -136,7 +136,7 @@ export default function BeneficioPage() {
       {!loading && benefits.length === 0 && (
         <div className="bg-card border border-line rounded-2xl p-8 text-center max-w-[480px]">
           <p className="font-semibold text-[15px] mb-1">Todavía no tienes premios</p>
-          <p className="text-[13.5px] text-muted">Toca "Agregar beneficio" para crear el primero. Así tu local aparece en el mapa de la app.</p>
+          <p className="text-[13.5px] text-muted">Toca «Agregar premio» para crear el primero. Así tu local aparece en el mapa de la app.</p>
         </div>
       )}
 
@@ -325,7 +325,7 @@ function BeneficioForm({
     setValidTo(to);
     if (soloEntreSemana) setDiasMask(DIAS_ENTRE_SEMANA_MASK);
   }
-  // El upload de foto necesita una carpeta — para un beneficio nuevo todavía
+  // El upload de foto necesita una carpeta — para un premio nuevo todavía
   // no hay id, así que usamos la del comercio hasta el primer guardado.
   const [benefitId, setBenefitId] = useState<string | null>(benefit?.id ?? null);
 
@@ -417,10 +417,10 @@ function BeneficioForm({
         onClick={onCancel}
         className="flex items-center gap-1.5 text-[13px] font-semibold text-muted mb-3"
       >
-        <ChevronLeft size={16} /> Volver a mis beneficios
+        <ChevronLeft size={16} /> Volver a mis premios
       </button>
       <TopBar
-        title={benefitId ? 'Editar beneficio' : 'Nuevo beneficio'}
+        title={benefitId ? 'Editar premio' : 'Nuevo premio'}
         subtitle="Los premios que ofreces. Así los ven los clientes en la app."
       />
 
