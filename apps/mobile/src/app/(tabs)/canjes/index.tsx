@@ -58,6 +58,17 @@ import { Coin } from '@/components/ui/Coin';
 
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
 
+// Cuánto descuenta un premio de descuento, corto para la pastilla: "-20%", "-Bs 20" o el detalle que escribió el local.
+function discountTag(b: { type?: string | null; discount_percent?: number | string | null; discount_detail?: string | null }): string | null {
+  if (b.type !== 'descuento') return null;
+  const pct = Number(b.discount_percent);
+  if (pct > 0) return `-${Number.isInteger(pct) ? pct : pct.toFixed(1).replace('.', ',')}%`;
+  const d = (b.discount_detail ?? '').trim();
+  const bs = /(\d+(?:[.,]\d+)?)\s*(bs|bob)\b/i.exec(d) ?? /\bbs\.?\s*(\d+(?:[.,]\d+)?)/i.exec(d);
+  if (bs) return `-Bs ${bs[1]}`;
+  return d && d.length <= 14 ? d : 'Descuento';
+}
+
 export default function CanjesScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
   const { muted, favorite } = useThemeColors();
@@ -996,13 +1007,19 @@ export default function CanjesScreen() {
                   <View
                     key={b.id}
                     accessible
-                    accessibilityLabel={`${b.name}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
+                    accessibilityLabel={`${b.name}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
                     className="flex-row items-center bg-aqua-deep rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: 12 }}
+                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: discountTag(b) ? 5 : 12 }}
                   >
                     <Coin size={20} />
                     <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
                     <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
+                    {/* Si es un descuento, se dice cuánto: así nadie cree que el premio es gratis. */}
+                    {discountTag(b) ? (
+                      <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2 }}>
+                        <Text className="text-[12px] font-extrabold text-white">{discountTag(b)}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 ))}
               </ScrollView>
