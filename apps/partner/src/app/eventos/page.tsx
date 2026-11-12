@@ -188,6 +188,7 @@ export default function EventosPage() {
             {isAd
               ? <>Tu paquete cuesta <strong>Bs 400</strong> y incluye publicidad: eliges si va como <strong>banner</strong>, <strong>evento</strong> o <strong>desafío</strong>.</>
               : <>Cada publicación cuesta <strong>Bs 200</strong> y puede ser un <strong>evento</strong> o un <strong>desafío</strong>. Para publicidad en el banner de Inicio, hace falta el paquete de solo publicidad (Bs 400).</>}
+            {' '}<strong className="text-text">Por el lanzamiento, tu primer evento o desafío es gratis.</strong>
             {' '}Camina la revisa y la aprueba antes de mostrarla. En los desafíos, los pasos cuentan desde que la persona toca “Participar”. Al terminar, Camina sortea entre quienes cumplieron y te pasa los ganadores.
           </p>
         </div>

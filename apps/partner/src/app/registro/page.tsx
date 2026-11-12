@@ -269,7 +269,7 @@ export default function RegistroPage() {
               <div className="flex flex-col gap-2.5 mb-5">
                 {[
                   { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y descuentos para canje' },
-                  { v: 'events_only' as const, t: 'Solo quiero publicar un evento o sorteo', d: 'Publicidad dentro de la app, sin estar en el mapa (Bs 400 por publicación)' },
+                  { v: 'events_only' as const, t: 'Solo quiero publicar un evento o sorteo', d: 'Publicidad dentro de la app, sin estar en el mapa. La primera es gratis; después, Bs 400 por publicación' },
                 ].map((o) => (
                   <button
                     type="button"
