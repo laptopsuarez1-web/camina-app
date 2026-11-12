@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Camina · Dossier para negocios online</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+.cover { padding: 0; background: #120a26 }
+.cover .bg { position: absolute; inset: 0; background: url(a/plaza.jpg) center/cover; opacity: .55 }
+.cover .shade { position: absolute; inset: 0; background: linear-gradient(90deg, #160c33 0%, rgba(22,12,51,.92) 42%, rgba(22,12,51,.35) 75%, rgba(22,12,51,.2) 100%) }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px }
+.step .phone { width: 44mm }
+.step h3 { font-size: 18px; margin: 0; font-weight: 800 }
+.step p { margin: 0; font-size: 12.5px; color: #CFC4EE; line-height: 1.45; max-width: 64mm }
+.tipo { border-radius: 18px; padding: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12) }
+.tipo .t { font-family: Montserrat; font-weight: 900; font-size: 19px; color: #fff }
+.tipo .d { font-size: 12px; color: #CFC4EE; margin-top: 3px; line-height: 1.4 }
+.tipo .ej { margin-top: 10px; font-size: 12px; font-weight: 700; color: #1a0f3a; background: #62F0B6; border-radius: 10px; padding: 7px 9px; line-height: 1.3 }
+.plan { border-radius: 20px; padding: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); display: flex; flex-direction: column; gap: 6px }
+.plan .n { font-weight: 800; font-size: 15px }
+.plan .p { font-family: Montserrat; font-weight: 900; font-size: 26px }
+.plan ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; color: #D6CCF0; display: flex; flex-direction: column; gap: 5px }
+.plan li::before { content: '✓  '; color: #62F0B6; font-weight: 800 }
+.plan.f { background: linear-gradient(160deg, #2b1d63, #1d1347); border: 2px solid #62F0B6 }
+</style></head><body>
+
+<!-- 1. PORTADA -->
+<section class="pg cover">
+  <div class="bg" style="background-image:url(a/ciudad.jpg)"></div><div class="shade"></div>
+  <div style="position:absolute;left:16mm;top:14mm;display:flex;align-items:center;gap:10px"><img src="a/logo.png" style="height:13mm"><span class="big" style="font-size:24px;color:#62F0B6;letter-spacing:2px">CAMINA</span></div>
+  <div style="position:absolute;left:16mm;top:42mm;width:128mm">
+    <div class="kicker">Para tiendas que venden por internet · 2026</div>
+    <h1 style="font-size:50px">Clientes nuevos<br>para tu tienda,<br><span class="m">sin tener local.</span></h1>
+    <p class="lead" style="font-size:16px;max-width:122mm">¿Vendes por WhatsApp, Instagram, TikTok o tu página? En Camina la gente gana Puntos caminando y los cambia por premios. <b style="color:#fff">Si elige el tuyo, te escribe para comprarte.</b></p>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <span class="pill m">Sale el 1 de diciembre</span>
+      <span class="pill o">Tu tienda lista en 5 minutos</span>
+      <span class="pill o">Empiezas gratis</span>
+    </div>
+  </div>
+  <div style="position:absolute;right:30mm;top:16mm;width:58mm;transform:rotate(4deg)" class="phone"><img src="a/on-whatsapp.jpg"></div>
+  <div style="position:absolute;right:84mm;top:40mm;width:52mm;transform:rotate(-5deg)" class="phone"><img src="a/on-ficha.jpg"></div>
+  <img src="a/baifo.png" style="position:absolute;right:8mm;bottom:6mm;width:42mm">
+  <div class="foot" style="color:#B9AED9"><span>Dossier para negocios online · caminaapp.com</span><span>Hecha en Bolivia</span></div>
+</section>
+
+<!-- 2. CÓMO FUNCIONA -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>01 · Cómo funciona</span></div>
+  <div class="content">
+    <div class="kicker">En 30 segundos</div>
+    <h2>De un paso a <span class="m">tu chat</span>, en tres momentos.</h2>
+    <div class="grid3" style="margin-top:14px">
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/app-actividad.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">1</span><h3>Caminan</h3></div><p>La app cuenta los pasos sola. <b style="color:#fff">1.000 pasos = 1 Punto</b>, hasta 20 por día.</p></div>
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/on-ficha.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">2</span><h3>Eligen tu premio</h3></div><p>Tu tienda sale con la etiqueta <b style="color:#fff">Online</b> y tu canal de venta. Lo canjean con sus Puntos.</p></div>
+      <div class="step"><div class="phone" style="width:42mm"><img src="a/on-whatsapp.jpg"></div><div style="display:flex;gap:8px;align-items:center"><span class="num">3</span><h3>Te escriben</h3></div><p>Con un toque te mandan su código por tu canal. Ustedes coordinan el pago y la entrega.</p></div>
+    </div>
+  </div>
+  <div class="banner" style="position:absolute;left:16mm;right:16mm;bottom:14mm;text-align:center">No pagas publicidad: lo único que pones es el premio que tú eliges dar.</div>
+</section>
+
+<!-- 3. DOS FORMAS DE COBRAR -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>02 · Cómo se canjea</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div class="phone" style="width:58mm;flex-shrink:0"><img src="a/on-codigo.jpg"></div>
+    <div style="flex:1">
+      <div class="kicker">Elige la que va con tu tienda</div>
+      <h2>Dos formas de <span class="m">cobrar el premio.</span></h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="card"><span class="pill m" style="font-size:11px;padding:5px 10px">A · WhatsApp, Instagram, Facebook o TikTok</span>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">1</span><p>La persona canjea y recibe un <b style="color:#fff">código de 6 números</b> con el mensaje ya escrito.</p></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">2</span><p>Te escribe por tu canal. El código vale <b style="color:#fff">7 días</b>: tiempo para coordinar pago y entrega.</p></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">3</span><p>Lo confirmas en tu panel cuando quieras. Recién ahí se descuentan sus Puntos.</p></div>
+          </div></div>
+        <div class="card"><span class="pill o" style="font-size:11px;padding:5px 10px">B · Tu página web</span>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">1</span><p>Cargas en tu panel los <b style="color:#fff">cupones</b> que ya creaste en tu tienda.</p></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">2</span><p>Cada persona que canjea recibe uno distinto y lo pega al pagar en tu web.</p></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><span class="num" style="width:26px;height:26px;font-size:13px">3</span><p>No confirmas nada: los cupos son los cupones que cargaste.</p></div>
+          </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. LO QUE GANA TU TIENDA -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>03 · Lo que gana tu tienda</span></div>
+  <div class="content">
+    <div class="kicker">Personas reales, no likes</div>
+    <h2>Cada canje es <span class="m">un chat con un cliente.</span></h2>
+    <div class="grid4" style="margin-top:16px">
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/user-plus.svg)"></i></div><h3>Clientes nuevos</h3><p>Gente que nunca te había escrito. Puedes hacer un premio <b>solo para clientes nuevos</b>.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/message-circle.svg)"></i></div><h3>Te escriben directo</h3><p>Llegan a tu WhatsApp o tus redes con ganas de comprar: el mensaje ya viene escrito.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/repeat.svg)"></i></div><h3>Clientes que vuelven</h3><p>Suben de nivel contigo (Visitante, Habitual y Fan) y la tarjeta de fidelidad los trae de vuelta.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/instagram.svg)"></i></div><h3>Historias en Instagram</h3><p>Suben una foto de tu premio a su historia y ganan Puntos extra. Tu tienda sale en sus redes.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/smartphone.svg)"></i></div><h3>Tus redes a un toque</h3><p>Tu ficha muestra tu Instagram, Facebook, TikTok, WhatsApp y tu web.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/shield-check.svg)"></i></div><h3>Cupos bajo control</h3><p>Pones cuántos cupos en total y los días y horas. Cuando se usan todos, el premio se agota.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/bar-chart-3.svg)"></i></div><h3>Tus números claros</h3><p>Tu panel te muestra cuántos canjearon, los cupos usados y los cupones sin usar.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/trophy.svg)"></i></div><h3>Desafíos con tu marca</h3><p>Opcional: una meta de pasos con tu premio, para que miles caminen pensando en tu tienda.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. TÚ ELIGES EL PREMIO -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>04 · Tú eliges el premio</span></div>
+  <div class="content">
+    <div class="kicker">Tu tienda, tus reglas</div>
+    <h2>Premios que <span class="m">hacen vender.</span></h2>
+    <p class="lead">Eliges qué das, cuántos Puntos cuesta, cuántos cupos hay y en qué días. El panel te sugiere ideas.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px">
+      <div class="tipo"><div class="t">Envío gratis</div><div class="d">El clásico que convierte: quita la última excusa para comprar.</div><div class="ej">Envío gratis en tu pedido · 15 Puntos</div></div>
+      <div class="tipo"><div class="t">Descuento</div><div class="d">Un % o un monto en su compra.</div><div class="ej">15% en tu primer pedido · 20 Puntos</div></div>
+      <div class="tipo"><div class="t">2x1</div><div class="d">Se lleva 2 y paga 1. Ideal para mover stock.</div><div class="ej">2x1 en poleras básicas</div></div>
+      <div class="tipo"><div class="t">Regalo con compra</div><div class="d">Un extra que va con su pedido. Cada canje es una venta.</div><div class="ej">De regalo un llavero con tu pedido</div></div>
+      <div class="tipo" style="border-color:#E0B43A"><div class="t" style="color:#E0B43A">Combo Camina</div><div class="d">Un combo a precio especial, solo para quien canjea.</div><div class="ej" style="background:#E0B43A">Kit de 3 productos · Bs 99 (antes 130)</div></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <span class="pill o">✓ Solo para clientes nuevos</span><span class="pill o">✓ Cupos en total, sin tope por día</span><span class="pill o">✓ Solo los días y horas que elijas</span><span class="pill o">✓ Lo pausas cuando quieras</span>
+    </div>
+    <div class="card" style="margin-top:16px;display:flex;gap:14px;align-items:center"><div class="ic" style="margin:0"><i style="--u:url(a/ic/shield-check.svg)"></i></div><p style="font-size:15px">Cada persona puede volver a canjear en tu tienda recién a los <b style="color:#fff">14 días</b>. Las reglas las controla Camina en el servidor: nadie se las puede saltar.</p></div>
+  </div>
+</section>
+
+<!-- 6. EN 5 MINUTOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>05 · Tu tienda en la app</span></div>
+  <div class="content" style="display:flex;gap:12mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Te lo hacemos fácil</div>
+      <h2>Tu tienda en Camina<br>en <span class="m">5 minutos.</span></h2>
+      <div style="display:flex;flex-direction:column;gap:11px;margin-top:16px">
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">1</span><div style="font-size:13.5px;line-height:1.45"><b>Entra a caminaapp.com/registro</b><br><span class="muted">Elige «Soy un comercio» y «Solo online».</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">2</span><div style="font-size:13.5px;line-height:1.45"><b>Sube tu logo y tus redes</b><br><span class="muted">WhatsApp, Instagram, Facebook, TikTok o tu web.</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">3</span><div style="font-size:13.5px;line-height:1.45"><b>Crea tu premio online</b><br><span class="muted">Eliges el canal por donde te escriben y cuántos cupos das.</span></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><span class="num">4</span><div style="font-size:13.5px;line-height:1.45"><b>Lo revisamos y sales en la app</b><br><span class="muted">Te avisamos por correo apenas esté publicado.</span></div></div>
+      </div>
+      <div class="banner" style="margin-top:16px;font-size:14px">¿Sin tiempo? Mándanos tu logo y tus datos por WhatsApp y te la armamos nosotros.</div>
+    </div>
+    <div style="display:flex;gap:6mm;flex-shrink:0"><div class="phone" style="width:52mm"><img src="a/reg-tipo.jpg"></div><div class="phone" style="width:52mm;transform:translateY(10mm)"><img src="a/on-ficha.jpg"></div></div>
+  </div>
+</section>
+
+<!-- 7. PLANES -->
+<section class="pg alt">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>06 · Planes</span></div>
+  <div class="content">
+    <div class="kicker">Sin permanencia · sin comisión por canje</div>
+    <h2>Empiezas <span class="m">gratis.</span> Creces cuando quieras.</h2>
+    <div style="display:grid;grid-template-columns:1.15fr 1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <div class="plan f"><span class="pill g" style="align-self:flex-start">Cupo fundador · primeros 20</span><div class="p" style="color:#62F0B6">3 meses gratis</div><div class="n">del plan Paso Firme, desde el lanzamiento</div><ul><li>Te ayudamos a armar tu tienda y tus premios</li><li>Sales desde el primer día</li><li>Después sigues gratis o eliges plan</li></ul></div>
+      <div class="plan"><div class="n">Primer Paso</div><div class="p">Gratis</div><ul><li>Tu tienda en la app con la etiqueta Online</li><li>1 premio gratis y, con él, 1 más (envío gratis, descuento, 2x1 o combo)</li></ul></div>
+      <div class="plan"><div class="n">Paso Firme</div><div class="p">Bs 99<span style="font-size:14px">/mes</span></div><ul><li>Todo lo de Primer Paso</li><li>Varios premios a la vez</li><li>Estadísticas</li><li>Tu premio en la tarjeta de fidelidad de Camina</li></ul></div>
+      <div class="plan"><div class="n">Paso Adelante</div><div class="p">Bs 299<span style="font-size:14px">/mes</span></div><ul><li>Todo lo de Paso Firme</li><li>Primero en tu categoría</li><li>Difusión en las redes de Camina</li></ul></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/gift.svg)"></i></div><h3>Solo pones el premio</h3><p>Sin comisión por venta ni por canje.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/sparkles.svg)"></i></div><h3>Difusión de lanzamiento</h3><p>Las tiendas fundadoras salen en las redes de Camina.</p></div>
+      <div class="card"><div class="ic"><i style="--u:url(a/ic/message-circle.svg)"></i></div><h3>Te acompañamos</h3><p>Por WhatsApp, para armar tu tienda y tus primeros canjes.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px;font-size:11px">Precios de lanzamiento. Publicidad dentro de la app (opcional): banner en Inicio, evento o desafío por Bs 400; con un plan, cada evento o desafío cuesta Bs 200. Todo se publica con aprobación de Camina.</p>
+  </div>
+</section>
+
+<!-- 8. EMPECEMOS -->
+<section class="pg">
+  <div class="top"><span><img src="a/logo.png">Camina</span><span>07 · Empecemos</span></div>
+  <div class="content" style="display:flex;gap:14mm;align-items:center">
+    <div style="flex:1">
+      <div class="kicker">Sale el 1 de diciembre</div>
+      <h2 style="font-size:44px">Que la gente que camina<br><span class="m">termine en tu chat.</span></h2>
+      <p class="lead">Las primeras 20 tiendas salen como fundadoras, con 3 meses gratis de Paso Firme.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">1</span><span style="font-size:14px">Escanea el código y registra tu tienda (5 minutos).</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">2</span><span style="font-size:14px">O escríbenos y te la armamos nosotros.</span></div>
+        <div style="display:flex;gap:12px;align-items:center"><span class="num">3</span><span style="font-size:14px">El 1 de diciembre empiezan a llegar los mensajes.</span></div>
+      </div>
+    </div>
+    <div style="width:92mm;flex-shrink:0;display:flex;flex-direction:column;gap:10px;align-items:stretch">
+      <div style="background:#fff;border-radius:18px;padding:10px;text-align:center"><img src="a/qr-registro.svg" style="width:62mm"><div style="color:#200a52;font-weight:800;font-size:13px;margin-top:4px">caminaapp.com/registro</div></div>
+      <div class="card"><h3>Marcos Suárez · Creador de Camina</h3><p>WhatsApp +591 627 14286<br>caminaappbo@gmail.com · caminaapp.com</p></div>
+    </div>
+  </div>
+  <img src="a/baifo.png" style="position:absolute;left:150mm;bottom:4mm;width:30mm;opacity:.95">
+</section>
+</body></html>

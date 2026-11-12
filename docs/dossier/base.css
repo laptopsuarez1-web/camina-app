@@ -1,0 +1,32 @@
+@page { size: 297mm 210mm; margin: 0 }
+* { box-sizing: border-box }
+html, body { margin: 0; padding: 0; background: #0d0718 }
+body { font-family: 'Plus Jakarta Sans', sans-serif; color: #F0EBFA; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+.pg { width: 297mm; height: 210mm; position: relative; overflow: hidden; break-after: page; padding: 14mm 16mm 12mm;
+  background: radial-gradient(120% 90% at 85% 0%, #3a1f78 0%, #1d1240 45%, #120a26 100%) }
+.pg.alt { background: radial-gradient(110% 90% at 0% 100%, #173a33 0%, #1a1238 50%, #120a26 100%) }
+h1, h2, .big { font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1.02 }
+h2 { font-size: 34px }
+.m { color: #62F0B6 }
+.g { color: #E0B43A }
+.kicker { font-weight: 800; font-size: 11px; letter-spacing: 2.2px; text-transform: uppercase; color: #62F0B6; margin-bottom: 8px }
+.lead { font-size: 15px; line-height: 1.5; color: #D6CCF0; margin: 10px 0 0 }
+.muted { color: #B9AED9 }
+.top { position: absolute; top: 9mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #9d90c6; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700 }
+.top img { height: 7mm; vertical-align: middle; margin-right: 6px }
+.foot { position: absolute; bottom: 7mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 9.5px; color: #8E82AE }
+.content { position: absolute; top: 20mm; left: 16mm; right: 16mm; bottom: 15mm }
+.phone { border-radius: 26px; overflow: hidden; border: 3px solid #4a3a78; box-shadow: 0 18px 40px rgba(0,0,0,.45); background: #16101F }
+.phone img { display: block; width: 100%; height: auto }
+.card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 14px 16px }
+.card h3 { margin: 0 0 4px; font-size: 15.5px; font-weight: 800; color: #fff }
+.card p { margin: 0; font-size: 12.5px; line-height: 1.45; color: #CFC4EE }
+.ic { width: 34px; height: 34px; border-radius: 11px; background: rgba(98,240,182,.14); display: flex; align-items: center; justify-content: center; margin-bottom: 9px }
+.ic i { display: block; width: 19px; height: 19px; background: #62F0B6; -webkit-mask: var(--u) center/contain no-repeat; mask: var(--u) center/contain no-repeat }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 99px; padding: 7px 14px; font-weight: 800; font-size: 12.5px }
+.pill.m { background: #62F0B6; color: #1a0f3a }
+.pill.o { border: 1.5px solid rgba(98,240,182,.6); color: #62F0B6 }
+.pill.g { background: #E0B43A; color: #1a0f3a }
+.num { width: 30px; height: 30px; border-radius: 99px; background: #62F0B6; color: #1a0f3a; font-weight: 900; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
+.note { font-size: 9.5px; color: #8E82AE }
+.banner { border-radius: 16px; padding: 12px 18px; background: linear-gradient(90deg, #62F0B6, #4FC3A8); color: #1a0f3a; font-weight: 800; font-size: 15px }
