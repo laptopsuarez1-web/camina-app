@@ -35,8 +35,6 @@ export function HeaderLight() {
         style={{ height: 32 }}
       >
         <PointsCounter shown={noBalance ? null : shown} coinSize={20} textStyle={{ color: dark ? colors.dark.text : colors.light.text, fontWeight: '700', fontSize: 15 }} />
-        {/* Que se entienda qué es el número: "85 Puntos". */}
-        {noBalance ? null : <Text maxFontSizeMultiplier={1.3} style={{ color: dark ? colors.dark.muted : colors.light.muted, fontWeight: '600', fontSize: 13 }}>Puntos</Text>}
       </Press>
       </Animated.View>
       <View className="flex-row items-center gap-2.5">

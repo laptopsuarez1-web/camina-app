@@ -327,10 +327,6 @@ export default function HomeScreen() {
               style={{ height: 32 }}
             >
               <PointsCounter shown={balanceError && balance === undefined ? null : pointsPulse.shown} coinSize={18} textStyle={{ color: '#fff', fontWeight: '600', fontSize: 13 }} />
-              {/* "Puntos" al lado del número mientras es corto: con 4 cifras o más chocaría con el nombre CAMINA del centro. */}
-              {(balance ?? 0) < 1000 && !(balanceError && balance === undefined) ? (
-                <Text maxFontSizeMultiplier={1.3} style={{ color: 'rgba(255,255,255,0.75)', fontWeight: '600', fontSize: 12 }}>Puntos</Text>
-              ) : null}
             </Press>
             </Animated.View>
             {/* Nombre centrado entre los Puntos y la campana: letras gruesas (Montserrat Black), sin brillo. */}

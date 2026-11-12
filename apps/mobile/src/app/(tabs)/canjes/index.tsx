@@ -744,7 +744,6 @@ export default function CanjesScreen() {
             >
               <Coin size={20} />
               <Text style={{ fontWeight: '700', fontSize: 15, color: colors.light.text }}>{balanceText}</Text>
-              <Text maxFontSizeMultiplier={1.3} style={{ fontWeight: '600', fontSize: 13, color: colors.light.muted }}>Puntos</Text>
             </Press>
             <View className="flex-row items-center" style={{ gap: 10 }}>
               <BellButton color={colors.light.muted} bg="#fff" />
