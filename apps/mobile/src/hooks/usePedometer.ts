@@ -81,15 +81,30 @@ function useHealthKitSteps(enabled: boolean) {
 // ---------- Health Connect (Android) ----------
 export type HealthConnectStatus = 'checking' | 'unavailable' | 'denied' | 'error' | 'ok';
 
+// «permiso: Permission delegate not initialized», en una línea corta.
+function describeError(paso: string, e: unknown): string {
+  const msg = e instanceof Error ? e.message : String(e ?? '');
+  return `${paso}: ${msg.replace(/\s+/g, ' ').trim()}`.slice(0, 110);
+}
+
 function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<HealthConnectStatus>('checking');
+  // Qué falló, en una línea corta, para mostrarlo en el cartel de error y poder ayudar a quien lo ve.
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  // Cada vez que cambia, se vuelve a hacer todo el arranque (estado, permiso, lectura): el botón Reintentar lo usa.
+  const [attempt, setAttempt] = useState(0);
   const readRef = useRef<() => Promise<void>>(async () => {});
+  const errorRef = useRef(false);
+  useEffect(() => {
+    errorRef.current = status === 'error';
+  }, [status]);
 
   useEffect(() => {
     if (!enabled || Platform.OS !== 'android') return;
     let cancelled = false;
+    let paso = 'estado';
 
     async function readToday() {
       try {
@@ -99,7 +114,7 @@ function useHealthConnectSteps(enabled: boolean) {
         // Antes un fallo de lectura se tragaba en silencio y la pantalla mostraba 0 pasos como si fuera verdad.
         // Ahora se avisa (Reintentar) y queda registrado para saber la causa real.
         Sentry.captureException(e, { tags: { flujo: 'health_connect_lectura' } });
-        if (!cancelled) { setSteps(null); setStatus('error'); }
+        if (!cancelled) { setSteps(null); setErrorDetail(describeError('lectura', e)); setStatus('error'); }
       }
     }
 
@@ -107,16 +122,19 @@ function useHealthConnectSteps(enabled: boolean) {
     let interval: ReturnType<typeof setInterval> | null = null;
     (async () => {
       try {
+        paso = 'estado';
         const sdkStatus = await getSdkStatus();
         if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
           if (!cancelled) { setReady(false); setStatus('unavailable'); }
           return;
         }
+        paso = 'iniciar';
         const initialized = await initializeHealthConnect();
         if (!initialized) {
           if (!cancelled) { setReady(false); setStatus('unavailable'); }
           return;
         }
+        paso = 'permiso';
         const granted = await requestHealthConnectPermission([{ accessType: 'read', recordType: 'Steps' }]);
         if (!granted.some((p) => 'recordType' in p && p.recordType === 'Steps')) {
           if (!cancelled) { setReady(false); setStatus('denied'); }
@@ -125,12 +143,14 @@ function useHealthConnectSteps(enabled: boolean) {
         if (cancelled) return;
         setReady(true);
         setStatus('ok');
+        paso = 'lectura';
         syncYesterdayOnOpen();
         await readToday();
         interval = setInterval(readToday, POLL_MS);
-      } catch {
-        // Un fallo técnico no es lo mismo que negar el permiso.
-        if (!cancelled) { setReady(false); setStatus('error'); }
+      } catch (e) {
+        // Un fallo técnico no es lo mismo que negar el permiso. Se registra qué paso falló para saber la causa real.
+        Sentry.captureException(e, { tags: { flujo: 'health_connect_inicio', paso } });
+        if (!cancelled) { setReady(false); setErrorDetail(describeError(paso, e)); setStatus('error'); }
       }
     })();
 
@@ -138,9 +158,15 @@ function useHealthConnectSteps(enabled: boolean) {
       cancelled = true;
       if (interval) clearInterval(interval);
     };
-  }, [enabled]);
+  }, [enabled, attempt]);
 
-  return { steps, ready, status, refresh: () => readRef.current() };
+  // Con error, Reintentar repite todo el arranque (antes solo repetía la lectura, que falla igual si el arranque falló).
+  const refresh = useCallback(async () => {
+    if (errorRef.current) setAttempt((a) => a + 1);
+    else await readRef.current();
+  }, []);
+
+  return { steps, ready, status, errorDetail, refresh };
 }
 
 // ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
@@ -211,6 +237,7 @@ export function useTodaySteps() {
     available: boolean | null;
     source: StepSource;
     healthConnectStatus: HealthConnectStatus | null;
+    errorDetail?: string | null;
     live: boolean;
   };
   if (Platform.OS === 'ios') {
@@ -229,6 +256,7 @@ export function useTodaySteps() {
       available: healthConnect.status === 'checking' ? null : false,
       source: null,
       healthConnectStatus: healthConnect.status,
+      errorDetail: healthConnect.status === 'error' ? healthConnect.errorDetail : null,
       live: false,
     };
   }
