@@ -15,7 +15,7 @@ import { friendlyError } from '@/lib/errors';
 import { Eye, EyeSlash } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { VerifyEmailCard } from '@/components/VerifyEmailCard';
-import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
+import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, signInWithGoogleWeb, isAppleSignInAvailable, signInWithApple } from '@/lib/oauth';
 
 // Porteado 1:1 de renderLogin() en camina-full.html: fondo plano --authBg
 // (nada de gradiente ni glow), mismo logo, mismo orden de botones, mismo
@@ -115,6 +115,20 @@ export default function WelcomeScreen() {
   async function handleGoogle() {
     if (!googleOAuthConfigured) {
       Alert.alert('Google no está disponible ahora', 'Usa tu correo para continuar.');
+      return;
+    }
+    if (Platform.OS === 'android') {
+      setOauthProvider('google');
+      setOauthLoading(true);
+      try {
+        const res = await signInWithGoogleWeb();
+        if (res === 'ok') await afterAuth();
+      } catch (e) {
+        Sentry.captureException(e, { tags: { flujo: 'google_web_android' } });
+        Alert.alert('No pudimos iniciar sesión con Google', friendlyError(e, 'Intenta de nuevo o usa tu correo.'));
+      } finally {
+        setOauthLoading(false);
+      }
       return;
     }
     googleAnswered.current = false;
