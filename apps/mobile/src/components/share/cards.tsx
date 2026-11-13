@@ -250,7 +250,7 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
     return (
       <CardFrame theme={theme} format={format} label={`Hoy · ${shortDay(stats.rangeEnd)}`}>
         <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: 30 } : undefined}>
-        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{name ? `El día de ${name}` : 'Mi día'}</Text>
+        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{name ? `Mi día · ${name}` : 'Mi día'}</Text>
         <View style={{ alignItems: 'center', marginTop: story ? 0 : 2, marginBottom: story ? 0 : 6 }}>
           <Ring p={p} size={ringSize} pct={pct}>
             <Text style={{ fontSize: story ? 54 : 32, fontWeight: '800', color: p.ink, letterSpacing: -1.5 }}>{fmtInt(stats.steps)}</Text>
@@ -304,7 +304,7 @@ export function ResumenCard({ theme, format, data }: { theme: CardTheme; format:
   const body = (
     <>
       <View>
-        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{name ? `${week ? 'La semana' : 'El mes'} de ${name}` : week ? 'Mi semana' : 'Mi mes'}</Text>
+        <Text style={{ fontSize: story ? 14 : 12, fontWeight: '700', color: p.muted }}>{`${week ? 'Mi semana' : 'Mi mes'}${name ? ` · ${name}` : ''}`}</Text>
         <Text style={{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.12), flexShrink: 0, fontWeight: '800', color: p.ink, letterSpacing: -1.5, marginTop: 2 }} numberOfLines={1}>{fmtInt(stats.steps)}</Text>
         <Text style={{ fontSize: story ? 18 : 13, fontWeight: story ? '800' : '600', color: story ? p.ink : p.muted }}>{week ? 'pasos esta semana' : 'pasos este mes'}</Text>
         {story ? <View style={{ marginTop: 8 }}><Trend p={p} pct={stats.trendPct} what={week ? 'la anterior' : 'el mes pasado'} inline /></View> : null}
@@ -372,7 +372,7 @@ function ResumenOverlay({ data }: { data: ResumenData }) {
     : [{ label: 'Promedio', value: fmtInt(stats.avgPerDay), unit: 'pasos/día' }, { label: 'Distancia', value: fmtKm(stats.km), unit: 'km' }, weeklyRank ? { label: 'Ranking', value: `${weeklyRank}.º`, unit: 'esta semana' } : { label: 'Meta', value: `${stats.daysMet}/${stats.days}`, unit: 'días' }];
   return (
     <CardFrame theme="dark" format="overlay" label="">
-      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>{name ? `${title} de ${name}` : title} · {when}</Text>
+      <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>{title}{name ? ` · ${name}` : ''} · {when}</Text>
       <Text style={[{ fontSize: bigSize, lineHeight: Math.round(bigSize * 1.1), fontWeight: '800', color: '#FFFFFF', letterSpacing: -2, marginTop: 2 }, SHADOW]} numberOfLines={1}>{big}</Text>
       <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>pasos</Text>
       {period === 'month' ? null : (
