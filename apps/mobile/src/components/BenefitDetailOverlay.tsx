@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLatest } from '@/hooks/useLatest';
-import { Animated, Linking, PanResponder, ScrollView, View } from 'react-native';
+import { Animated, PanResponder, ScrollView, View } from 'react-native';
+import { openWhatsapp } from '@/lib/open-link';
 import { WhatsappIcon } from '@/components/icons';
 import { useColorScheme } from 'nativewind';
 import { Text } from '@/components/ui/Text';
@@ -95,7 +96,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
               <Press
                 accessibilityRole="link"
                 accessibilityLabel={`Escribir por WhatsApp a ${business.name}`}
-                onPress={() => Linking.openURL(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Hola, quiero ${b.requires_booking ? 'reservar' : 'coordinar'} mi premio "${b.name}" de Camina.`)}`)}
+                onPress={() => openWhatsapp(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Hola, quiero ${b.requires_booking ? 'reservar' : 'coordinar'} mi premio "${b.name}" de Camina.`)}`, business.phone ?? phoneDigits)}
                 className="flex-row items-center justify-center rounded-full border border-line-light dark:border-line-dark"
                 style={{ gap: 8, paddingVertical: 13 }}
               >

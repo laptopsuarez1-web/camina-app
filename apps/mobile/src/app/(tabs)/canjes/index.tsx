@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
 import { CatalogSection } from '@/components/CatalogSection';
 import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { openLink, openWhatsapp } from '@/lib/open-link';
 import { View, ScrollView, Modal, PanResponder, Alert, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -1360,7 +1361,7 @@ export default function CanjesScreen() {
                       onPress={() =>
                         profileGroup.business.lat != null && profileGroup.business.lng != null
                           ? openFullMap(profileGroup.business.lat, profileGroup.business.lng, profileGroup.business.name)
-                          : Linking.openURL(
+                          : openLink(
                               `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${profileGroup.business.name}, ${profileGroup.business.address}`)}`
                             )
                       }
@@ -1376,7 +1377,7 @@ export default function CanjesScreen() {
                     <Press
                       accessibilityRole="link"
                       accessibilityLabel={`Abrir el Instagram de ${profileGroup.business.name}`}
-                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.instagram!, 'https://instagram.com/'))}
+                      onPress={() => openLink(socialUrl(profileGroup.business.instagram!, 'https://instagram.com/'))}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
                       style={{ gap: 6, ...glassChip(isDark) }}
                     >
@@ -1386,7 +1387,7 @@ export default function CanjesScreen() {
                   ) : null}
                   {profileGroup.business.facebook ? (
                     <Press
-                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.facebook!, 'https://facebook.com/'))}
+                      onPress={() => openLink(socialUrl(profileGroup.business.facebook!, 'https://facebook.com/'))}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
                       style={{ gap: 6, ...glassChip(isDark) }}
                     >
@@ -1396,7 +1397,7 @@ export default function CanjesScreen() {
                   ) : null}
                   {profileGroup.business.tiktok ? (
                     <Press
-                      onPress={() => Linking.openURL(socialUrl(profileGroup.business.tiktok!, 'https://tiktok.com/@'))}
+                      onPress={() => openLink(socialUrl(profileGroup.business.tiktok!, 'https://tiktok.com/@'))}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
                       style={{ gap: 6, ...glassChip(isDark) }}
                     >
@@ -1406,7 +1407,7 @@ export default function CanjesScreen() {
                   ) : null}
                   {profileGroup.business.phone && profileGroup.business.phone.replace(/\D/g, '').length >= 7 ? (
                     <Press
-                      onPress={() => Linking.openURL(whatsappUrl(profileGroup.business.phone!))}
+                      onPress={() => openWhatsapp(whatsappUrl(profileGroup.business.phone!), profileGroup.business.phone!)}
                       accessibilityRole="link"
                       accessibilityLabel={`Escribir por WhatsApp a ${profileGroup.business.name}`}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
@@ -1418,7 +1419,7 @@ export default function CanjesScreen() {
                   ) : null}
                   {profileGroup.business.catalog_url ? (
                     <Press
-                      onPress={() => Linking.openURL(profileGroup.business.catalog_url!).catch(() => {})}
+                      onPress={() => openLink(profileGroup.business.catalog_url!)}
                       accessibilityRole="link"
                       accessibilityLabel={`Ver el catálogo de ${profileGroup.business.name}`}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
@@ -1429,7 +1430,7 @@ export default function CanjesScreen() {
                   ) : null}
                   {profileGroup.business.website ? (
                     <Press
-                      onPress={() => Linking.openURL(websiteUrl(profileGroup.business.website!))}
+                      onPress={() => openLink(websiteUrl(profileGroup.business.website!))}
                       accessibilityRole="link"
                       accessibilityLabel={`Abrir la página web de ${profileGroup.business.name}`}
                       className="flex-row items-center border rounded-full px-3.5 py-2"
@@ -1634,7 +1635,7 @@ export default function CanjesScreen() {
                 ) : null}
                 {profileGroup.business.google_review_url ? (
                   <Press
-                    onPress={() => Linking.openURL(profileGroup.business.google_review_url!)}
+                    onPress={() => openLink(profileGroup.business.google_review_url!)}
                     className="rounded-2xl items-center justify-center flex-row mt-8"
                     style={{ backgroundColor: '#FFF3D1', paddingVertical: 13, gap: 8 }}
                   >
@@ -1874,7 +1875,7 @@ export default function CanjesScreen() {
                   <ReviewStep
                     businessName={activeBenefit?.business.name ?? 'el local'}
                     onReview={() => {
-                      if (reviewUrl) Linking.openURL(reviewUrl);
+                      if (reviewUrl) void openLink(reviewUrl);
                       // +1 a tu nivel en el local (una vez por canje).
                       if (activeRedemption?.id) rewardReview(activeRedemption.id).catch(() => {});
                       setPaso('historia');
