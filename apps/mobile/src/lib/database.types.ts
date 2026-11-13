@@ -71,6 +71,8 @@ export interface Business {
   website: string | null;
   plan: BusinessPlan;
   approved: boolean;
+  // Local pausado por el dueño o el admin: no debe aparecer en Canjes ni en el mapa.
+  paused_at?: string | null;
   is_virtual: boolean;
   promo_video_url: string | null;
   ad_eligible: boolean;
