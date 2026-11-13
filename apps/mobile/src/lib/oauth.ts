@@ -2,6 +2,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
+import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 
@@ -25,7 +26,9 @@ const platformGoogleClientId = Platform.select({
   default: rawGoogleClientIds.webClientId,
 });
 
-export const googleOAuthConfigured = !!platformGoogleClientId;
+// En Android el login con Google va por el navegador y Supabase (ver signInWithGoogleWeb), que no necesita el
+// Client ID ni la huella SHA-1 de la app; por eso en Android el botón se muestra siempre.
+export const googleOAuthConfigured = Platform.OS === 'android' ? true : !!platformGoogleClientId;
 
 // useIdTokenAuthRequest tira un error al renderizar si falta el id de la plataforma actual; en la web sin
 // configurar eso dejaba la pantalla de login en blanco. Con un valor de relleno la pantalla abre igual, y
@@ -35,6 +38,34 @@ export const googleClientIds = {
   androidClientId: rawGoogleClientIds.androidClientId ?? 'sin-configurar',
   webClientId: rawGoogleClientIds.webClientId ?? 'sin-configurar',
 };
+
+// Login con Google en Android por el navegador (flujo web de Supabase). El flujo nativo exige que Google
+// conozca la huella SHA-1 de la firma con la que se instaló la app (distinta en Play que en EAS) y falla
+// antes de llegar a Supabase si no coincide. Este no depende de eso: Google vuelve a Supabase y Supabase
+// devuelve un código a camina://auth-callback, que se canjea por la sesión (PKCE).
+// Devuelve 'ok', 'cancelado', o tira un error con el motivo.
+export async function signInWithGoogleWeb(): Promise<'ok' | 'cancelado'> {
+  const redirectTo = Linking.createURL('auth-callback');
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+  if (error || !data?.url) throw error ?? new Error('Supabase no devolvió la dirección de Google.');
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  if (result.type !== 'success') return 'cancelado';
+  const url = new URL(result.url);
+  const authError = url.searchParams.get('error_description') ?? url.searchParams.get('error');
+  if (authError) throw new Error(authError);
+  const code = url.searchParams.get('code');
+  if (!code) throw new Error('Google no devolvió el código de acceso.');
+  // El escuchador global de enlaces (lib/auth-links.ts) puede canjear el mismo código primero: si ya hay sesión, listo.
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  if (exchangeError) {
+    const { data: s } = await supabase.auth.getSession();
+    if (!s.session) throw exchangeError;
+  }
+  return 'ok';
+}
 
 export async function completeGoogleSignIn(idToken: string) {
   return supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
