@@ -98,7 +98,7 @@ export default function HomeScreen() {
   const topInset = useSafeAreaInsets().top;
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, errorDetail: hcErrorDetail, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
+  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, errorDetail: hcErrorDetail, errorKind: hcErrorKind, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
   const isQa = useIsQa();
   const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
@@ -492,7 +492,9 @@ export default function HomeScreen() {
                   {healthConnectStatus === 'unavailable'
                     ? 'Es la app de Android que le pasa tus pasos a Camina.'
                     : healthConnectStatus === 'error'
-                      ? 'Health Connect no le respondió a Camina. Toca Reintentar; si sigue, abre sus ajustes y revisa que esté actualizado y que Camina tenga el permiso de Pasos.'
+                      ? hcErrorKind === 'service'
+                        ? 'Tu celular está apagando Health Connect, la app que guarda tus pasos. Deja Health Connect y Camina «sin restricciones» en los ajustes de batería, activa su inicio automático y actualiza Health Connect en la Play Store. Luego toca Reintentar.'
+                        : 'Health Connect no le respondió a Camina. Toca Reintentar; si sigue, abre sus ajustes y revisa que esté actualizado y que Camina tenga el permiso de Pasos.'
                       : 'Activa el permiso de Pasos para Camina en Health Connect y vuelve a abrir la app: sin eso no sumas Puntos.'}
                 </Text>
                 {healthConnectStatus === 'error' && hcErrorDetail ? (
@@ -520,9 +522,23 @@ export default function HomeScreen() {
               </Text>
             </Press>
             {healthConnectStatus === 'error' ? (
-              <Press accessibilityRole="button" onPress={() => openHealthConnectSettings()} className="pt-3 items-center">
-                <Text className="text-auth-muted text-[12.5px]">Abrir ajustes de Health Connect</Text>
-              </Press>
+              <>
+                {hcErrorKind === 'service' ? (
+                  <Press
+                    accessibilityRole="button"
+                    onPress={() => {
+                      // Lista de apps con la batería restringida: ahí se pone Health Connect y Camina en «sin restricciones».
+                      Linking.sendIntent('android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS').catch(() => Linking.openSettings());
+                    }}
+                    className="pt-3 items-center"
+                  >
+                    <Text className="text-auth-muted text-[12.5px]">Abrir ajustes de batería</Text>
+                  </Press>
+                ) : null}
+                <Press accessibilityRole="button" onPress={() => openHealthConnectSettings()} className="pt-3 items-center">
+                  <Text className="text-auth-muted text-[12.5px]">Abrir ajustes de Health Connect</Text>
+                </Press>
+              </>
             ) : null}
           </View>
         ) : Platform.OS === 'ios' && deviceSteps === 0 && boliviaHour() >= 9 ? (
