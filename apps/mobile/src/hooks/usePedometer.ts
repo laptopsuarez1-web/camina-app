@@ -87,12 +87,27 @@ function describeError(paso: string, e: unknown): string {
   return `${paso}: ${msg.replace(/\s+/g, ' ').trim()}`.slice(0, 110);
 }
 
+// Lo que Sentry mostró en celulares Tecno: Health Connect puede cortar la comunicación un momento («Binding to service
+// failed», «Binding died», «Null binding») y, en Android 14 o más, soltar un «Caller requires READ_STEPS» pasajero
+// aunque el permiso esté dado. Un fallo suelto no debe mostrar el cartel de error: se reintenta solo.
+export type HealthConnectErrorKind = 'service' | 'permission' | 'other';
+function errorKindOf(e: unknown): HealthConnectErrorKind {
+  const msg = e instanceof Error ? e.message : String(e ?? '');
+  if (/binding|remoteexception|null binding|service/i.test(msg)) return 'service';
+  if (/READ_STEPS|SecurityException|permission/i.test(msg)) return 'permission';
+  return 'other';
+}
+// Cuántas lecturas seguidas tienen que fallar antes de avisarle a la persona.
+const READ_FAILS_BEFORE_ALERT = 3;
+const READ_RETRY_MS = 3_000;
+
 function useHealthConnectSteps(enabled: boolean) {
   const [steps, setSteps] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<HealthConnectStatus>('checking');
   // Qué falló, en una línea corta, para mostrarlo en el cartel de error y poder ayudar a quien lo ve.
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<HealthConnectErrorKind | null>(null);
   // Cada vez que cambia, se vuelve a hacer todo el arranque (estado, permiso, lectura): el botón Reintentar lo usa.
   const [attempt, setAttempt] = useState(0);
   const readRef = useRef<() => Promise<void>>(async () => {});
@@ -105,16 +120,42 @@ function useHealthConnectSteps(enabled: boolean) {
     if (!enabled || Platform.OS !== 'android') return;
     let cancelled = false;
     let paso = 'estado';
+    let fails = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let permissionAsked = false;
 
     async function readToday() {
       try {
         const value = await readHealthConnectSteps(startOfToday(), new Date());
-        if (!cancelled) { setSteps(value); setStatus('ok'); }
+        fails = 0;
+        permissionAsked = false;
+        if (!cancelled) { setSteps(value); setErrorDetail(null); setErrorKind(null); setStatus('ok'); }
       } catch (e) {
         // Antes un fallo de lectura se tragaba en silencio y la pantalla mostraba 0 pasos como si fuera verdad.
-        // Ahora se avisa (Reintentar) y queda registrado para saber la causa real.
-        Sentry.captureException(e, { tags: { flujo: 'health_connect_lectura' } });
-        if (!cancelled) { setSteps(null); setErrorDetail(describeError('lectura', e)); setStatus('error'); }
+        // Queda registrado para saber la causa real; el aviso a la persona solo sale si el fallo se repite.
+        const kind = errorKindOf(e);
+        fails += 1;
+        Sentry.captureException(e, { tags: { flujo: 'health_connect_lectura', tipo: kind, intento: String(fails) } });
+        if (cancelled) return;
+        // «Caller requires READ_STEPS»: se vuelve a pedir el permiso una vez antes de rendirse.
+        if (kind === 'permission' && !permissionAsked) {
+          permissionAsked = true;
+          try {
+            await requestHealthConnectPermission([{ accessType: 'read', recordType: 'Steps' }]);
+          } catch {
+            // se sigue con el reintento de abajo
+          }
+        }
+        if (fails < READ_FAILS_BEFORE_ALERT) {
+          // Se conserva el último valor y se reintenta enseguida, sin mostrar nada.
+          if (retryTimer) clearTimeout(retryTimer);
+          retryTimer = setTimeout(() => { void readToday(); }, READ_RETRY_MS);
+          return;
+        }
+        setSteps(null);
+        setErrorDetail(describeError('lectura', e));
+        setErrorKind(kind);
+        setStatus(kind === 'permission' ? 'denied' : 'error');
       }
     }
 
@@ -149,14 +190,16 @@ function useHealthConnectSteps(enabled: boolean) {
         interval = setInterval(readToday, POLL_MS);
       } catch (e) {
         // Un fallo técnico no es lo mismo que negar el permiso. Se registra qué paso falló para saber la causa real.
-        Sentry.captureException(e, { tags: { flujo: 'health_connect_inicio', paso } });
-        if (!cancelled) { setReady(false); setErrorDetail(describeError(paso, e)); setStatus('error'); }
+        const kind = errorKindOf(e);
+        Sentry.captureException(e, { tags: { flujo: 'health_connect_inicio', paso, tipo: kind } });
+        if (!cancelled) { setReady(false); setErrorDetail(describeError(paso, e)); setErrorKind(kind); setStatus('error'); }
       }
     })();
 
     return () => {
       cancelled = true;
       if (interval) clearInterval(interval);
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, [enabled, attempt]);
 
@@ -166,7 +209,7 @@ function useHealthConnectSteps(enabled: boolean) {
     else await readRef.current();
   }, []);
 
-  return { steps, ready, status, errorDetail, refresh };
+  return { steps, ready, status, errorDetail, errorKind, refresh };
 }
 
 // ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
@@ -238,6 +281,7 @@ export function useTodaySteps() {
     source: StepSource;
     healthConnectStatus: HealthConnectStatus | null;
     errorDetail?: string | null;
+    errorKind?: HealthConnectErrorKind | null;
     live: boolean;
   };
   if (Platform.OS === 'ios') {
@@ -257,6 +301,7 @@ export function useTodaySteps() {
       source: null,
       healthConnectStatus: healthConnect.status,
       errorDetail: healthConnect.status === 'error' ? healthConnect.errorDetail : null,
+      errorKind: healthConnect.status === 'error' ? healthConnect.errorKind : null,
       live: false,
     };
   }
