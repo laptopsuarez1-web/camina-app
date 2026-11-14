@@ -27,6 +27,8 @@ import { readSensorDaySteps, requestSensorPermission, sensorStatus, type SensorS
 // no hay sensor de respaldo: sin Health Connect no se cuentan pasos.
 const POLL_MS = 15_000;
 const STEPS_CACHE_KEY = 'camina_steps_cache_v1';
+// Ya se pidió una vez, solo, el permiso de actividad física para el contador del teléfono.
+const SENSOR_ASKED_KEY = 'camina_sensor_permission_asked';
 
 function startOfToday() {
   return startOfDay(new Date());
@@ -129,10 +131,7 @@ function useHealthConnectSteps(enabled: boolean) {
 
     async function readToday() {
       try {
-        const [health, sensor] = await Promise.all([readHealthConnectSteps(startOfToday(), new Date()), readSensorDaySteps(new Date())]);
-        // El contador del teléfono cubre a quien tiene Health Connect vacío (ninguna app le escribe pasos).
-        const value = Math.max(health, sensor ?? 0);
-        sensorStatus().then((st) => { if (!cancelled) setSensor(st); }).catch(() => {});
+        const value = await readHealthConnectSteps(startOfToday(), new Date());
         fails = 0;
         permissionAsked = false;
         if (!cancelled) { setSteps(value); setErrorDetail(null); setErrorKind(null); setStatus('ok'); }
@@ -215,15 +214,59 @@ function useHealthConnectSteps(enabled: boolean) {
     else await readRef.current();
   }, []);
 
-  // Pide el permiso de actividad física y, si lo da, lee enseguida.
+  // ---- Contador de pasos del teléfono ----
+  // Se usa cuando Health Connect no tiene pasos de hoy, no está instalado o no dio permiso: así se cuenta igual,
+  // sin que la persona tenga que instalar Google Fit. Si hace falta el permiso de actividad física, se pide solo,
+  // una vez (después queda el botón del aviso de Inicio).
+  const [sensorSteps, setSensorSteps] = useState<number | null>(null);
+  const hcEmpty = status !== 'checking' && (status !== 'ok' || (steps ?? 0) === 0);
+
+  useEffect(() => {
+    if (!enabled || Platform.OS !== 'android') return;
+    sensorStatus().then(setSensor).catch(() => {});
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || Platform.OS !== 'android' || !hcEmpty) return;
+    let cancelled = false;
+    (async () => {
+      if ((await sensorStatus()) !== 'needs-permission') return;
+      if (await AsyncStorage.getItem(SENSOR_ASKED_KEY)) return;
+      await AsyncStorage.setItem(SENSOR_ASKED_KEY, '1');
+      await requestSensorPermission();
+      const st = await sensorStatus();
+      if (!cancelled) setSensor(st);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, hcEmpty]);
+
+  useEffect(() => {
+    if (!enabled || Platform.OS !== 'android' || sensor !== 'active') return;
+    let cancelled = false;
+    const tick = async () => {
+      const value = await readSensorDaySteps(new Date());
+      if (!cancelled && value != null) setSensorSteps(value);
+    };
+    // Ayer también se cierra con el contador si Health Connect no está (si está, ya lo hace su arranque).
+    syncYesterdayOnOpen();
+    void tick();
+    const id = setInterval(tick, POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [enabled, sensor]);
+
+  // Botón del aviso de Inicio: pide el permiso y, si lo da, empieza a contar.
   const enableSensor = useCallback(async () => {
     const ok = await requestSensorPermission();
     setSensor(await sensorStatus());
-    if (ok) await readRef.current();
     return ok;
   }, []);
 
-  return { steps, ready, status, errorDetail, errorKind, refresh, sensor, enableSensor };
+  return { steps, ready, status, errorDetail, errorKind, refresh, sensor, sensorSteps, enableSensor };
 }
 
 // ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
@@ -305,9 +348,13 @@ export function useTodaySteps() {
       result = { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? 'sensor' : null, healthConnectStatus: null, live: sensorAvailable === true };
     }
   } else if (healthConnect.ready && healthConnect.steps != null) {
+    const steps = Math.max(healthConnect.steps, healthConnect.sensor === 'active' ? healthConnect.sensorSteps ?? 0 : 0);
     // Android: Health Connect (se descartan los cargados a mano) y, si está vacío, el contador del propio teléfono,
     // que nadie puede editar. Se usa el que tenga más.
-    result = { steps: healthConnect.steps, available: true, source: 'health-connect', healthConnectStatus: 'ok', live: true };
+    result = { steps, available: true, source: steps > healthConnect.steps ? 'sensor' : 'health-connect', healthConnectStatus: 'ok', live: true };
+  } else if (healthConnect.sensor === 'active' && healthConnect.sensorSteps != null) {
+    // Sin Health Connect (no está, no dio permiso o falló): cuenta el teléfono y no se muestra ningún error.
+    result = { steps: healthConnect.sensorSteps, available: true, source: 'sensor', healthConnectStatus: 'ok', live: true };
   } else {
     result = {
       steps: 0,

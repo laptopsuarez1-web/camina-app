@@ -490,7 +490,7 @@ export default function HomeScreen() {
           </Press>
         </View>
 
-        {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' ? (
+        {healthConnectStatus && healthConnectStatus !== 'ok' && healthConnectStatus !== 'checking' && phoneCounter !== 'needs-permission' ? (
           <View className="mx-5 mt-4 rounded-2xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
             <View className="flex-row items-center" style={{ gap: 12, marginBottom: 10 }}>
               <Image accessible={false} source={require('@/../assets/icon.png')} style={{ width: 40, height: 40, borderRadius: 20 }} />
@@ -565,7 +565,7 @@ export default function HomeScreen() {
               Toca aquí para abrir Salud. Ahí toca tu foto (arriba a la derecha) &gt; Apps &gt; Camina y activa Pasos.
             </Text>
           </Press>
-        ) : Platform.OS === 'android' && healthConnectStatus === 'ok' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
+        ) : Platform.OS === 'android' && (healthConnectStatus === 'ok' ? deviceSteps === 0 && new Date().getHours() >= 9 : healthConnectStatus !== 'checking' && phoneCounter === 'needs-permission') ? (
           // Health Connect solo guarda los pasos que le escribe otra app (Google Fit, Samsung Health...). Si no hay ninguna,
           // lee 0 sin error: en Android viejos pasa siempre. Si esta versión trae el contador del teléfono, se ofrece eso
           // (un permiso y listo); si no, se explica cómo activar Google Fit.
