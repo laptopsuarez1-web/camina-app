@@ -35,6 +35,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
 import { registerDevice } from '@/lib/device';
+import { reportStepSources } from '@/lib/steps-report';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -104,6 +105,8 @@ export default function HomeScreen() {
   // pasos, y no se podía distinguir a quien no abre la app de quien la abre y no le cuentan los pasos.
   useEffect(() => {
     if (userId && Platform.OS !== 'web') registerDevice(userId).catch(() => {});
+    // Y en Android, en qué quedó la fuente de pasos (Health Connect vacío, sin permiso, contador del teléfono...).
+    if (userId) setTimeout(() => { void reportStepSources(userId); }, 6000);
   }, [userId]);
   const { sensorStatus: phoneCounter, enableSensor, steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, errorDetail: hcErrorDetail, errorKind: hcErrorKind, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.

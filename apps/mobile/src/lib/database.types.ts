@@ -366,6 +366,10 @@ export type Database = {
         Returns: void;
       };
       register_device: { Args: { p_device_id: string }; Returns: string };
+      report_step_sources: {
+        Args: { p_platform: string; p_app_build: string | null; p_health_connect: string; p_health_connect_steps: number | null; p_phone_counter: string; p_phone_counter_steps: number | null };
+        Returns: undefined;
+      };
       admin_release_device: { Args: { p_device_id: string }; Returns: void };
       claim_reto: { Args: { p_reto_id: string }; Returns: number };
       register_push_token: { Args: { p_token: string; p_platform: string }; Returns: void };
