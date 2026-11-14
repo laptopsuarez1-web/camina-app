@@ -1,7 +1,7 @@
 // lib/story-rules.ts: cuándo un canje muestra el botón de la historia de Instagram y cómo se limpia el usuario.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { storyStateFor, normalizeHandle, STORY_WINDOW_DAYS } from '../src/lib/story-rules.ts';
+import { storyStateFor, normalizeHandle, igHandle, STORY_WINDOW_DAYS } from '../src/lib/story-rules.ts';
 
 const now = Date.parse('2026-10-12T15:00:00Z');
 const hoursAgo = (h: number) => new Date(now - h * 3_600_000).toISOString();
@@ -31,4 +31,12 @@ test('el usuario de Instagram se guarda sin @, sin espacios y en minúsculas', (
   assert.equal(normalizeHandle('no vale'), '');
   assert.equal(normalizeHandle('@'), '');
   assert.equal(normalizeHandle('a'.repeat(31)), '');
+});
+
+test('igHandle: el Instagram del local como @usuario', () => {
+  assert.equal(igHandle('https://www.instagram.com/fripaps.tarija/'), '@fripaps.tarija');
+  assert.equal(igHandle('@coco_barber'), '@coco_barber');
+  assert.equal(igHandle('bloom'), '@bloom');
+  assert.equal(igHandle(''), null);
+  assert.equal(igHandle('no es un usuario!'), null);
 });

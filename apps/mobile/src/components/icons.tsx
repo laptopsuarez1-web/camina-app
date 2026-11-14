@@ -64,6 +64,7 @@ import { EyeSlash as EyeSlash_ } from 'phosphor-react-native/src/icons/EyeSlash'
 import { Heartbeat as Heartbeat_ } from 'phosphor-react-native/src/icons/Heartbeat';
 import { X as X_ } from 'phosphor-react-native/src/icons/X';
 import { Camera as Camera_ } from 'phosphor-react-native/src/icons/Camera';
+import { HandsClapping as HandsClapping_ } from 'phosphor-react-native/src/icons/HandsClapping';
 import { Image as Image_ } from 'phosphor-react-native/src/icons/Image';
 import { ChartBar as ChartBar_ } from 'phosphor-react-native/src/icons/ChartBar';
 import { Ticket as Ticket_ } from 'phosphor-react-native/src/icons/Ticket';
@@ -190,6 +191,7 @@ export const Instagram = make(InstagramLogo_);
 export const Globe = make(Globe_);
 export const ChartBar = make(ChartBar_);
 export const Camera = make(Camera_);
+export const HandsClapping = make(HandsClapping_);
 export const ImageIcon = make(Image_);
 export const Eye = make(Eye_);
 export const EyeSlash = make(EyeSlash_);

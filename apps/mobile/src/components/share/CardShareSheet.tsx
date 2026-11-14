@@ -3,10 +3,11 @@ import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, w
 import { buzz } from '@/lib/haptics';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert, Image, Modal, ScrollView, View, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { Copy, DownloadSimple, Share2, X } from '@/components/icons';
-import { pickSharePhoto } from '@/lib/pick-share-photo';
+import { Camera, Copy, DownloadSimple, ImageIcon, Share2, X } from '@/components/icons';
+import { pickStoryPhoto } from '@/lib/story';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { friendlyError } from '@/lib/errors';
 import { copyCardImage, saveCardToGallery, shareCard } from '@/lib/share-image';
@@ -73,8 +74,12 @@ export function CardShareSheet({
   defaultFormat?: CardFormat;
 }) {
   const { height: screenH, width: screenW } = useWindowDimensions();
-  const [theme, setTheme] = useState<CardTheme>('light');
-  const [format, setFormat] = useState<CardFormat>(defaultFormat);
+  // Oscura por defecto: los colores de Camina.
+  const [theme, setTheme] = useState<CardTheme>('dark');
+  // Tres formas de compartir: la tarjeta de historia, tu foto con tus datos encima (como Strava) o solo el sticker.
+  type Mode = 'story' | 'photo' | 'sticker';
+  const [mode, setMode] = useState<Mode>(defaultFormat === 'overlay' ? 'sticker' : 'story');
+  const format: CardFormat = mode === 'story' ? defaultFormat === 'square' ? 'square' : 'story' : 'overlay';
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState<'img' | null>(null);
   const [saved, setSaved] = useState(false);
@@ -82,6 +87,7 @@ export function CardShareSheet({
   const [photo, setPhoto] = useState<string | null>(null);
   const stickerRef = useRef<View>(null);
   const overlay = format === 'overlay';
+  const withPhoto = mode === 'photo';
   const shotRef = useRef<View>(null);
 
   // La vista previa "se asienta" al abrir la hoja y cada vez que cambia de formato o de tema: se nota qué cambió.
@@ -124,9 +130,9 @@ export function CardShareSheet({
     }
   }
 
-  async function choosePhoto() {
+  async function choosePhoto(source: 'camera' | 'library') {
     try {
-      const uri = await pickSharePhoto();
+      const uri = await pickStoryPhoto(source);
       if (uri) setPhoto(uri);
     } catch (e) {
       Alert.alert('No pudimos abrir tus fotos', friendlyError(e, 'Revisa el permiso de fotos e intenta de nuevo.'));
@@ -163,62 +169,66 @@ export function CardShareSheet({
           </View>
           <ScrollView style={{ flexShrink: 1 }} contentContainerClassName="px-5 pb-10" showsVerticalScrollIndicator={false} bounces keyboardShouldPersistTaps="handled">
             {extras}
-            <Seg label="Formato" value={format} onChange={setFormat} options={[{ value: 'story', label: 'Historia' }, { value: 'overlay', label: 'Transparente' }]} />
-            {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Clara' }, { value: 'dark', label: 'Oscura' }]} />}
+            <Seg
+              label="Formato"
+              value={mode}
+              onChange={setMode}
+              options={[{ value: 'story', label: 'Historia' }, { value: 'photo', label: 'Con tu foto' }, { value: 'sticker', label: 'Sticker' }]}
+            />
+            {overlay ? null : <Seg label="Tarjeta" value={theme} onChange={setTheme} options={[{ value: 'dark', label: 'Oscura' }, { value: 'light', label: 'Clara' }]} />}
 
             {/* Vista previa: la misma tarjeta, achicada. */}
-            <Animated.View accessible accessibilityLabel="Vista previa de la tarjeta" style={[popStyle, { alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 8, backgroundColor: overlay ? '#3B3552' : undefined }]}>
-              {/* Fondo de ejemplo detrás de la tarjeta transparente: ahí va tu foto. */}
-              {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} /> : null}
-              {overlay && !photo ? <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, opacity: 0.5, backgroundColor: '#8F86B3' }} /> : null}
+            <Animated.View accessible accessibilityLabel="Vista previa de la tarjeta" style={[popStyle, { alignSelf: 'center', width: CARD_W * scale, height: h * scale, borderRadius: 18 * scale, overflow: 'hidden', marginVertical: 14, backgroundColor: overlay ? '#2A2340' : undefined }]}>
+              {withPhoto && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }} /> : null}
+              {withPhoto && photo ? <LinearGradient pointerEvents="none" colors={['rgba(18,10,30,0)', 'rgba(18,10,30,0.7)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%' }} /> : null}
+              {overlay && !(withPhoto && photo) ? (
+                <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: '#6F6696', alignItems: 'center', paddingTop: 70 * scale }}>
+                  {withPhoto ? <Camera size={34} color="rgba(255,255,255,0.75)" /> : null}
+                  {withPhoto ? <Text style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '700', fontSize: 12.5, marginTop: 6 }}>Aquí va tu foto</Text> : null}
+                </View>
+              ) : null}
               <View style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h, transformOrigin: 'top left', transform: [{ scale }] }} pointerEvents="none">
                 {render({ theme, format })}
               </View>
             </Animated.View>
 
-            {overlay ? (
-              <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-4 flex-row items-center justify-center mt-2" style={{ gap: 8, backgroundColor: copied === 'img' ? '#16604F' : '#1F7A66' }}>
-                <Copy size={19} color="#fff" weight="bold" />
-                <Text className="text-white font-bold text-[15.5px]">{copied === 'img' ? '¡Copiada! Pégala en tu historia' : 'Copiar para pegar como sticker'}</Text>
-              </Press>
-            ) : null}
-            <View className="flex-row mt-2.5" style={{ gap: 8 }}>
-              <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} className="rounded-2xl py-4 px-5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
-                <DownloadSimple size={18} color="#8B4FD1" weight="bold" />
-                <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
-              </Press>
-              <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: overlay ? '#8B4FD1' : '#1F7A66', opacity: busy ? 0.7 : 1 }}>
-                {busy ? <Spinner color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
-                <Text className="text-white font-bold text-[15px]">Compartir imagen</Text>
-              </Press>
-            </View>
-            {overlay ? (
-              <View className="rounded-2xl mt-3 p-3.5 bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 6 }}>
-                <Text className="text-[13px] font-extrabold text-text-light dark:text-text-dark">Cómo usar la versión transparente</Text>
-                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">1. Toca «Copiar para pegar como sticker».</Text>
-                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">2. En Instagram, crea tu historia con tu foto o video, abre los stickers y toca «Agregar sticker». También funciona en WhatsApp y otras apps.</Text>
-                <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">¿Prefieres una sola imagen? Carga una foto aquí abajo para ver cómo queda y toca «Guardar» o «Compartir imagen».</Text>
+            {withPhoto ? (
+              // Como en Strava: sacas una foto (o eliges una) y tus datos van encima. Sale como una sola imagen.
+              <View className="flex-row mb-2.5" style={{ gap: 8 }}>
+                <Press accessibilityRole="button" onPress={() => choosePhoto('camera')} className="flex-1 rounded-2xl py-3.5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 7 }}>
+                  <Camera size={17} color="#8B4FD1" weight="bold" />
+                  <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Otra foto' : 'Sacar foto'}</Text>
+                </Press>
+                <Press accessibilityRole="button" onPress={() => choosePhoto('library')} className="flex-1 rounded-2xl py-3.5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 7 }}>
+                  <ImageIcon size={17} color="#8B4FD1" weight="bold" />
+                  <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>De la galería</Text>
+                </Press>
               </View>
-            ) : (
-              <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5">
-                La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.
-              </Text>
-            )}
-
-            {overlay ? (
-              <>
-                <View className="flex-row mt-2.5" style={{ gap: 8 }}>
-                  <Press accessibilityRole="button" onPress={choosePhoto} className="flex-1 rounded-2xl py-3.5 items-center bg-purple-light-light dark:bg-purple-light-dark">
-                    <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{photo ? 'Cambiar foto' : 'Cargar foto para ver cómo queda'}</Text>
-                  </Press>
-                  {photo ? (
-                    <Press accessibilityRole="button" accessibilityLabel="Quitar la foto de fondo" onPress={() => setPhoto(null)} className="rounded-2xl px-5 items-center justify-center bg-purple-light-light dark:bg-purple-light-dark">
-                      <X size={14} color="#8B4FD1" />
-                    </Press>
-                  ) : null}
-                </View>
-              </>
             ) : null}
+            {mode === 'sticker' ? (
+              <Press accessibilityRole="button" onPress={copyImage} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: copied === 'img' ? '#16604F' : '#1F7A66' }}>
+                <Copy size={19} color="#fff" weight="bold" />
+                <Text className="text-white font-bold text-[15.5px]">{copied === 'img' ? '¡Copiado! Pégalo en tu historia' : 'Copiar para pegar como sticker'}</Text>
+              </Press>
+            ) : (
+              <View className="flex-row" style={{ gap: 8 }}>
+                <Press accessibilityRole="button" accessibilityLabel="Guardar en la galería" onPress={save} disabled={withPhoto && !photo} className="rounded-2xl py-4 px-5 flex-row items-center justify-center bg-purple-light-light dark:bg-purple-light-dark" style={{ gap: 7, opacity: withPhoto && !photo ? 0.5 : 1 }}>
+                  <DownloadSimple size={18} color="#8B4FD1" weight="bold" />
+                  <Text className="font-bold text-[14px]" style={{ color: '#8B4FD1' }}>{saved ? '¡Guardada!' : 'Guardar'}</Text>
+                </Press>
+                <Press accessibilityRole="button" accessibilityState={{ busy }} onPress={share} disabled={busy || (withPhoto && !photo)} className="flex-1 rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: '#1F7A66', opacity: withPhoto && !photo ? 0.5 : 1 }}>
+                  {busy ? <Spinner color="#fff" /> : <Share2 size={18} color="#fff" weight="bold" />}
+                  <Text className="text-white font-bold text-[15px]">Compartir en historias</Text>
+                </Press>
+              </View>
+            )}
+            <Text className="text-[11.5px] text-center text-muted-light dark:text-muted-dark mt-2.5" style={{ lineHeight: 16 }}>
+              {mode === 'sticker'
+                ? 'Copia el sticker, crea tu historia en Instagram con tu foto o video y pégalo con «Agregar sticker».'
+                : withPhoto && !photo
+                  ? 'Saca una foto o elige una: tus datos van encima, como una sola imagen.'
+                  : 'La imagen se arma en tu teléfono. Eliges dónde compartirla: Instagram, WhatsApp o guardarla.'}
+            </Text>
           </ScrollView>
         </View>
       </View>
@@ -226,11 +236,12 @@ export function CardShareSheet({
       {/* Tarjeta a tamaño real, fuera de pantalla, para capturarla en 1080 px. */}
       <View pointerEvents="none" style={{ position: 'absolute', left: -5000, top: 0 }}>
         <View ref={shotRef} collapsable={false} style={{ width: CARD_W, height: h }}>
-          {overlay && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h }} /> : null}
+          {withPhoto && photo ? <Image source={{ uri: photo }} accessible={false} resizeMode="cover" style={{ position: 'absolute', left: 0, top: 0, width: CARD_W, height: h }} /> : null}
+          {withPhoto && photo ? <LinearGradient pointerEvents="none" colors={['rgba(18,10,30,0)', 'rgba(18,10,30,0.7)']} style={{ position: 'absolute', left: 0, bottom: 0, width: CARD_W, height: h * 0.62 }} /> : null}
           {visible ? render({ theme, format }) : null}
         </View>
         {/* Sin foto: es lo que se copia como sticker (fondo transparente). */}
-        {overlay ? (
+        {mode === 'sticker' ? (
           <View ref={stickerRef} collapsable={false} style={{ width: CARD_W, height: h, position: 'absolute', top: h + 20 }}>
             {visible ? render({ theme, format }) : null}
           </View>

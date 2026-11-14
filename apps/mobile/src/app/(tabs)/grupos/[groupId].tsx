@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible';
 import { backSkipping, WIZARD_STEPS } from '@/lib/nav-back';
-import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Plus, Flame, Check, IconBubble } from '@/components/icons';
+import { ChevronLeft, ChevronRight, Share2, MenuIcon, Send, Trophy, Plus, Flame, Check, IconBubble, HandsClapping } from '@/components/icons';
 import { CrownMark } from '@/components/CrownMark';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useRuta } from '@/hooks/useRuta';
@@ -21,6 +21,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useGroupDetail, useGroupNotes, usePostGroupNote, useGroupHistory } from '@/hooks/useGroupDetail';
 import { GroupShareSheet } from '@/components/friends/GroupShareSheet';
 import { GroupShareImageSheet } from '@/components/share/GroupShareImageSheet';
+import { GroupWeekShareSheet } from '@/components/share/GroupWeekShareSheet';
+import { useCheer, useGroupCheers } from '@/hooks/useCheers';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { useBlocks, reportContent, REPORT_REASONS } from '@/hooks/useModeration';
 import { colors } from '@/theme/tokens';
@@ -107,6 +109,11 @@ export default function GroupDetailScreen() {
   });
   const joinChallenge = useJoinChallenge(groupId);
   const { data: history } = useGroupHistory(groupId);
+  // Semana que se comparte como imagen (resultado del grupo): la del cierre de semana o una de «Semanas anteriores».
+  const [weekShare, setWeekShare] = useState<string | null>(null);
+  // Aplausos de hoy (como los «kudos» de Strava): null si el servidor todavía no los tiene.
+  const { data: cheers } = useGroupCheers(groupId);
+  const cheer = useCheer(groupId);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const [sheet, setSheet] = useState<{ title: string; actions: SheetAction[] } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -226,6 +233,7 @@ export default function GroupDetailScreen() {
       const photo = (id: string) => data.members.find((m) => m.id === id)?.photoUrl ?? null;
       celebrate({
         kind: 'group-week',
+        onShare: () => setWeekShare(week),
         name: data.group.name,
         weekLabel: `${start.getDate()} ${mes(start)} al ${sunday.getDate()} ${mes(sunday)}`,
         podium: rows.filter((r) => r.rank <= 3).slice(0, 3).map((r) => ({ id: r.user_id, name: r.name, photoUrl: photo(r.user_id), steps: r.steps })),
@@ -802,6 +810,33 @@ export default function GroupDetailScreen() {
                   {m.steps.toLocaleString('es-BO')}
                 </Text>
               </View>
+              {cheers ? (() => {
+                const c = cheers[m.id];
+                const mineDone = !!c?.mine;
+                if (m.id === userId) {
+                  return (
+                    <View accessible accessibilityLabel={`${c?.cheers ?? 0} aplausos hoy`} className="flex-row items-center" style={{ gap: 3, minWidth: 40, justifyContent: 'center', opacity: c?.cheers ? 1 : 0.4 }}>
+                      <HandsClapping size={16} color={warnText} weight="fill" />
+                      <Text className="text-[12px] font-bold" style={{ color: warnText }}>{c?.cheers ?? 0}</Text>
+                    </View>
+                  );
+                }
+                return (
+                  <Press
+                    accessibilityRole="button"
+                    accessibilityLabel={mineDone ? `Ya aplaudiste a ${m.name} hoy` : `Aplaudir a ${m.name}`}
+                    accessibilityState={{ disabled: mineDone }}
+                    disabled={mineDone}
+                    onPress={() => cheer.mutate(m.id)}
+                    hitSlop={6}
+                    className="flex-row items-center rounded-full px-2 py-1"
+                    style={{ gap: 3, minWidth: 40, justifyContent: 'center', backgroundColor: mineDone ? 'rgba(245,198,69,0.18)' : 'transparent', borderWidth: 1, borderColor: mineDone ? 'rgba(245,198,69,0.5)' : 'rgba(150,140,190,0.35)' }}
+                  >
+                    <HandsClapping size={15} color={mineDone ? warnText : muted} weight={mineDone ? 'fill' : 'regular'} />
+                    {c?.cheers ? <Text className="text-[12px] font-bold" style={{ color: mineDone ? warnText : muted }}>{c.cheers}</Text> : null}
+                  </Press>
+                );
+              })() : null}
               {m.id !== userId ? (
                 <Press accessibilityRole="button" accessibilityLabel={`Opciones de ${m.name}`} onPress={() => openMemberMenu(m)} hitSlop={10} className="pl-1">
                   <Text className="text-muted-light dark:text-muted-dark text-[18px] font-bold">⋯</Text>
@@ -852,6 +887,12 @@ export default function GroupDetailScreen() {
                     <Text importantForAccessibility="no" className="text-[12px] text-muted-light dark:text-muted-dark">{rows[0]?.name}</Text>
                   </View>
                 </Press>
+                {open ? (
+                  <Press accessibilityRole="button" accessibilityLabel="Compartir el resultado de esta semana como imagen" onPress={() => setWeekShare(week)} className="flex-row items-center self-start rounded-full px-3 py-1.5 mb-1.5" style={{ gap: 6, backgroundColor: theme.accentDeep }}>
+                    <Share2 size={13} color="#fff" weight="bold" />
+                    <Text className="text-white font-bold text-[12px]">Compartir resultado</Text>
+                  </Press>
+                ) : null}
                 {open &&
                   rows.map((r) => (
                     <View key={r.user_id} className="flex-row items-center py-1" style={{ gap: 10 }}>
@@ -969,7 +1010,23 @@ export default function GroupDetailScreen() {
         </Press>
       </View>
       <ActionSheet visible={!!sheet} title={sheet?.title} actions={sheet?.actions ?? []} onClose={() => setSheet(null)} />
-      <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
+      {weekShare ? (() => {
+        const start = new Date(weekShare + 'T12:00:00');
+        const end = new Date(start.getTime() + 6 * 86400000);
+        const f = (d: Date) => d.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' }).replace('.', '');
+        return (
+          <GroupWeekShareSheet
+            visible
+            onClose={() => setWeekShare(null)}
+            groupName={data.group.name}
+            weekLabel={`${f(start)} – ${f(end)}`}
+            rows={(history ?? []).filter((r) => r.week_start === weekShare)}
+            userId={userId}
+            inviteCode={data.group.invite_code}
+          />
+        );
+      })() : null}
+      <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} inviteCode={data.group.invite_code} />
       <GroupDrawer
         visible={drawerOpen}
         onClose={() => setDrawerOpen(false)}

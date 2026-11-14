@@ -8,6 +8,7 @@ import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { Grow, Stagger, useCountUp } from '@/components/share/slide-motion';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
+import { STEP_LENGTH_METERS } from '@/constants/business-rules';
 
 // Tarjetas que la persona comparte como imagen (historias, WhatsApp, donde quiera). Se dibujan siempre a 360 px de ancho
 // (9:16 para historias, 1:1 para chats) y se capturan a 1080 px. Los colores son propios: no cambian con el modo de la app.
@@ -47,8 +48,8 @@ export const palette = (t: CardTheme): Pal => PAL[t];
 // ---------- Marco común ----------
 
 export function CardFrame({
-  theme, format, label, progress, children,
-}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode }) {
+  theme, format, label, progress, children, noFooter,
+}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode; noFooter?: boolean }) {
   const p = PAL[theme];
   const story = format !== 'square';
   if (format === 'overlay') {
@@ -60,6 +61,7 @@ export function CardFrame({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 18 }}>
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 20, height: 20, borderRadius: 10 }} />
             <Text style={[{ fontFamily: WORDMARK_FAMILY, fontSize: 12, letterSpacing: 2.2, color: '#FFFFFF', fontWeight: '900' }, SHADOW]}>CAMINA</Text>
+            <Text style={[{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.9)' }, SHADOW]}>· caminaapp.com</Text>
           </View>
         </View>
       </View>
@@ -89,6 +91,11 @@ export function CardFrame({
           </View>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
+        {/* Cada tarjeta que se comparte invita a descargar la app (salvo que ya lleve la franja para sumarse al grupo). */}
+        {noFooter ? null : <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: story ? 10 : 6 }}>
+          <Text style={{ fontSize: story ? 11 : 9.5, fontWeight: '700', color: p.muted }}>Gana premios caminando ·</Text>
+          <Text style={{ fontSize: story ? 11 : 9.5, fontWeight: '800', color: p.accent }}>caminaapp.com</Text>
+        </View>}
       </View>
     </View>
   );
@@ -401,7 +408,22 @@ export type GroupCardData = {
   members: { id: string; label: string; steps: number; isMe: boolean }[];
   target: number;
   total: number;
+  // Código para sumarse al grupo (si la persona elige invitar en la imagen).
+  inviteCode?: string | null;
 };
+
+// Franja para que quien ve la historia se sume al grupo.
+function InviteStrip({ p, code, compact }: { p: Pal; code: string; compact?: boolean }) {
+  return (
+    <View style={{ marginTop: compact ? 6 : 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: p.accent, borderRadius: compact ? 12 : 16, paddingVertical: compact ? 6 : 9, paddingHorizontal: compact ? 10 : 14 }}>
+      <View>
+        <Text style={{ fontSize: compact ? 10.5 : 12.5, fontWeight: '800', color: p.onBar === '#FFFFFF' ? '#FFFFFF' : '#12281F' }}>Súmate a nuestro grupo</Text>
+        <Text style={{ fontSize: compact ? 9 : 10, fontWeight: '700', color: p.onBar === '#FFFFFF' ? 'rgba(255,255,255,0.85)' : 'rgba(18,40,31,0.75)' }}>Descarga Camina en caminaapp.com</Text>
+      </View>
+      <Text style={{ fontSize: compact ? 12 : 15, fontWeight: '900', letterSpacing: 1.5, color: p.onBar === '#FFFFFF' ? '#FFFFFF' : '#12281F' }}>{code}</Text>
+    </View>
+  );
+}
 
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo no quede encimada.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
@@ -439,6 +461,7 @@ function GroupOverlay({ data }: { data: GroupCardData }) {
           </View>
         ))}
       </View>
+      {data.inviteCode ? <Text style={[{ fontSize: 14, fontWeight: '800', color: '#62F0B6', marginTop: 12 }, SHADOW]}>Súmate a nuestro grupo · código {data.inviteCode}</Text> : null}
     </CardFrame>
   );
 }
@@ -450,7 +473,8 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   const { members } = data;
   const top = members.slice(0, 3);
   const podium = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
-  const rest = story ? members.slice(3, 8) : [];
+  // Con el código para sumarse va una franja más: se muestran menos filas para que todo entre.
+  const rest = story ? members.slice(3, data.inviteCode ? 5 : 8) : [];
   const max = Math.max(...members.map((m) => m.steps), 1);
   const pct = data.target > 0 ? Math.min(1, data.total / data.target) : 0;
   const leader = members[0];
@@ -458,8 +482,8 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   const gap = leader && me && leader.id !== me.id ? leader.steps - me.steps : 0;
   const done = pct >= 1;
   return (
-    <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
-      <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: 30 } : undefined}>
+    <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`} noFooter={!!data.inviteCode}>
+      <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: data.inviteCode ? 2 : 30 } : undefined}>
       <View>
       <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
       <Text style={{ fontSize: story ? 32 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
@@ -488,7 +512,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
       ) : null}
       </View>
-      {story ? (
+      {story && !data.inviteCode ? (
         // Comparativo corto, para que la historia se entienda sin abrir la app.
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
           <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
@@ -507,6 +531,124 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
         <Text style={{ fontSize: story ? 12 : 10, fontWeight: '600', color: p.muted, marginTop: story ? 7 : 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
       </View>
+      {data.inviteCode ? <InviteStrip p={p} code={data.inviteCode} compact={!story} /> : null}
+      </View>
+    </CardFrame>
+  );
+}
+
+// ---------- Resultado de la semana del grupo ----------
+
+export type GroupWeekData = {
+  groupName: string;
+  weekLabel: string;
+  // De mejor a peor. `label` ya viene listo (inicial o primer nombre).
+  rows: { id: string; label: string; steps: number; isMe: boolean }[];
+  total: number;
+  inviteCode?: string | null;
+};
+
+export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: GroupWeekData }) {
+  const winner = data.rows[0];
+  const me = data.rows.find((r) => r.isMe);
+  const myRank = me ? data.rows.indexOf(me) + 1 : 0;
+  if (format === 'overlay') {
+    return (
+      <CardFrame theme="dark" format="overlay" label="">
+        <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>Resultado de la semana · {data.weekLabel}</Text>
+        <Text style={[{ fontSize: 30, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1, marginTop: 2 }, SHADOW]} numberOfLines={2}>{data.groupName}</Text>
+        {winner ? <View style={{ marginTop: 10 }}><CrownMark size={30} /></View> : null}
+        {winner ? <Text style={[{ fontSize: 22, fontWeight: '800', color: '#F5C645', marginTop: 2 }, SHADOW]}>Ganó {winner.isMe ? 'yo' : winner.label} · {fmtInt(winner.steps)}</Text> : null}
+        {me && myRank > 1 ? <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginTop: 4 }, SHADOW]}>Yo quedé {myRank}.º con {fmtInt(me.steps)} pasos</Text> : null}
+        {data.inviteCode ? <Text style={[{ fontSize: 14, fontWeight: '800', color: '#62F0B6', marginTop: 10 }, SHADOW]}>Súmate a nuestro grupo · código {data.inviteCode}</Text> : null}
+      </CardFrame>
+    );
+  }
+  const p = PAL[theme];
+  const story = format !== 'square';
+  const max = Math.max(...data.rows.map((r) => r.steps), 1);
+  return (
+    <CardFrame theme={theme} format={format} label={`Semana · ${data.weekLabel}`} noFooter={!!data.inviteCode}>
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Resultado de la semana</Text>
+          <Text style={{ fontSize: story ? 30 : 19, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={2}>{data.groupName}</Text>
+        </View>
+        {winner ? (
+          <View style={{ alignItems: 'center', marginTop: story ? 6 : 2 }}>
+            <View style={{ position: 'relative', alignItems: 'center' }}>
+              <View style={{ position: 'absolute', top: story ? -26 : -18 }}><CrownMark size={story ? 34 : 24} /></View>
+              <View style={{ width: story ? 84 : 52, height: story ? 84 : 52, borderRadius: 99, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: p.gold }}>
+                <Text style={{ fontSize: story ? 36 : 22, fontWeight: '900', color: p.onBar }}>{winner.label.slice(0, 1).toUpperCase()}</Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: story ? 13 : 11, fontWeight: '800', color: p.gold, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: story ? 10 : 6 }}>Ganó la semana</Text>
+            <Text style={{ fontSize: story ? 28 : 18, fontWeight: '800', color: p.ink }} numberOfLines={1}>{winner.isMe ? 'Yo' : winner.label}</Text>
+            <Text style={{ fontSize: story ? 15 : 12, fontWeight: '700', color: p.muted }}>{fmtInt(winner.steps)} pasos</Text>
+          </View>
+        ) : null}
+        <View style={{ gap: story ? 7 : 4, marginTop: story ? 10 : 4 }}>
+          {data.rows.slice(1, story ? 7 : 4).map((r, i) => (
+            <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={{ width: 24, fontSize: 11, fontWeight: '800', color: r.isMe ? p.accent : p.muted }}>{i + 2}.º</Text>
+              <Text style={{ width: story ? 74 : 56, fontSize: 11.5, fontWeight: r.isMe ? '800' : '600', color: r.isMe ? p.accent : p.ink }} numberOfLines={1}>{r.isMe ? 'Yo' : r.label}</Text>
+              <View style={{ flex: 1, height: 7, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
+                <View style={{ width: `${Math.max(4, (r.steps / max) * 100)}%`, height: 7, borderRadius: 4, backgroundColor: r.isMe ? p.accent : p.bar }} />
+              </View>
+              <Text style={{ width: 46, textAlign: 'right', fontSize: 10.5, fontWeight: '700', color: p.ink }}>{fmtInt(r.steps)}</Text>
+            </View>
+          ))}
+        </View>
+        {story ? (
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+            <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
+            <Tile p={p} small stack label="Mi puesto" value={myRank ? `${myRank}.º de ${data.rows.length}` : '–'} />
+          </View>
+        ) : null}
+        {data.inviteCode ? <InviteStrip p={p} code={data.inviteCode} compact={!story} /> : null}
+      </View>
+    </CardFrame>
+  );
+}
+
+// ---------- Récord personal ----------
+
+export type RecordData = { steps: number; prevBest: number; prevBestDay: string | null; dayKey: string; name: string | null };
+
+export function RecordCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: RecordData }) {
+  const km = (data.steps * STEP_LENGTH_METERS) / 1000;
+  const up = data.prevBest > 0 ? data.steps - data.prevBest : 0;
+  if (format === 'overlay') {
+    return (
+      <CardFrame theme="dark" format="overlay" label="">
+        <TrophyArt size={64} />
+        <Text style={[{ fontSize: 15, fontWeight: '800', color: '#F5C645', marginTop: 8 }, SHADOW]}>¡Nuevo récord personal!</Text>
+        <Text style={[{ fontSize: 64, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 }, SHADOW]}>{fmtInt(data.steps)}</Text>
+        <Text style={[{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>pasos en un día · {fmtKm(km)} km</Text>
+        {up > 0 ? <Text style={[{ fontSize: 14, fontWeight: '700', color: '#62F0B6', marginTop: 4 }, SHADOW]}>{fmtInt(up)} más que mi mejor día</Text> : null}
+      </CardFrame>
+    );
+  }
+  const p = PAL[theme];
+  const story = format !== 'square';
+  return (
+    <CardFrame theme={theme} format={format} label={shortDay(data.dayKey)}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TrophyArt size={story ? 120 : 66} />
+        <Text style={{ fontSize: story ? 15 : 12, fontWeight: '800', color: p.gold, letterSpacing: 1.6, textTransform: 'uppercase', marginTop: story ? 16 : 8 }}>Nuevo récord personal</Text>
+        {data.name ? <Text style={{ fontSize: story ? 15 : 12, fontWeight: '700', color: p.muted, marginTop: 4 }}>{data.name}</Text> : null}
+        <Text style={{ fontSize: fitSize(fmtInt(data.steps), story ? 84 : 54, CARD_W - 60), fontWeight: '900', color: p.ink, letterSpacing: -2.5, marginTop: story ? 6 : 2 }}>{fmtInt(data.steps)}</Text>
+        <Text style={{ fontSize: story ? 17 : 13, fontWeight: '700', color: p.muted }}>pasos en un día</Text>
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: story ? 26 : 12, alignSelf: 'stretch' }}>
+          <Tile p={p} small={!story} stack label="Distancia*" value={`${fmtKm(km)} km`} />
+          <Tile p={p} small={!story} stack label={data.prevBestDay ? `Antes: ${shortDay(data.prevBestDay)}` : 'Antes'} value={data.prevBest > 0 ? fmtInt(data.prevBest) : '–'} />
+        </View>
+        {up > 0 && story ? (
+          <View style={{ marginTop: 12, backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 14, paddingVertical: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: p.accent }}>↑ {fmtInt(up)} pasos más que mi mejor día</Text>
+          </View>
+        ) : null}
+        {story ? <Text style={{ fontSize: 9.5, color: p.muted, marginTop: 10 }}>* Estimado a partir de tus pasos.</Text> : null}
       </View>
     </CardFrame>
   );

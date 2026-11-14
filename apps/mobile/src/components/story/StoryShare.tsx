@@ -11,11 +11,13 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-rea
 import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
+import { igHandle } from '@/lib/story-rules';
 
 // Historias de Instagram por un canje: la persona sube una foto de lo que canjeó, etiqueta a Camina
 // y, cuando el equipo la ve, se le acreditan STORY_REWARD Puntos. La acreditación es manual (panel).
 export const STORY_REWARD = 5;
 export const CAMINA_INSTAGRAM = '@caminaapp';
+
 
 // Letra del nombre CAMINA (Montserrat Black) si ya cargó; si no, negrita del sistema.
 function wordmark() {
@@ -177,6 +179,8 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
 export function StoryComposer({
   photo,
   businessName,
+  businessLogo,
+  businessInstagram,
   benefitName,
   onClose,
   onPublish,
@@ -190,6 +194,9 @@ export function StoryComposer({
   shotRef?: Ref<View>;
   busy?: boolean;
   businessName: string;
+  // Logo y usuario de Instagram del local: el sticker lleva el logo y se invita a etiquetar también al local.
+  businessLogo?: string | null;
+  businessInstagram?: string | null;
   benefitName: string;
   onClose: () => void;
   onPublish: () => void;
@@ -223,13 +230,16 @@ export function StoryComposer({
           <View style={{ position: 'absolute', left: 14, right: 14, bottom: 18, alignItems: 'center' }}>
             <View style={{ transform: [{ rotate: '-2deg' }], borderRadius: 22, borderWidth: 1.5, borderColor: '#62F0B6', overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
               <LinearGradient colors={['#3B2577', '#200A52']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingLeft: 10, paddingRight: 16, gap: 10 }}>
-                <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(98,240,182,0.14)', alignItems: 'center', justifyContent: 'center' }}>
-                  <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 34, height: 34 }} />
+                <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(98,240,182,0.14)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {businessLogo
+                    ? <Image source={{ uri: businessLogo }} accessible={false} style={{ width: 42, height: 42, borderRadius: 21 }} />
+                    : <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 34, height: 34 }} />}
                 </View>
                 <View style={{ maxWidth: 210 }}>
                   <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: 14.5 }}>{benefitName}</Text>
                   <Text numberOfLines={1} style={{ color: '#62F0B6', fontWeight: '700', fontSize: 12.5, marginTop: 1 }}>en {businessName}</Text>
-                  <Text style={{ color: '#C4B8E8', fontWeight: '600', fontSize: 10.5, marginTop: 2 }}>Lo gané caminando · {CAMINA_INSTAGRAM}</Text>
+                  <Text numberOfLines={1} style={{ color: '#C4B8E8', fontWeight: '600', fontSize: 10.5, marginTop: 2 }}>Lo gané caminando · {CAMINA_INSTAGRAM}</Text>
+                  {igHandle(businessInstagram) ? <Text numberOfLines={1} style={{ color: '#62F0B6', fontWeight: '700', fontSize: 10.5, marginTop: 1 }}>{igHandle(businessInstagram)}</Text> : null}
                 </View>
               </LinearGradient>
             </View>
@@ -239,7 +249,7 @@ export function StoryComposer({
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
-          Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
+          Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>{igHandle(businessInstagram) ? <> y a <Text style={{ color: '#fff', fontWeight: '800' }}>{igHandle(businessInstagram)}</Text></> : null}. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
         <Press accessibilityRole="button" accessibilityState={{ busy: !!busy }} disabled={busy} onPress={onPublish} className="rounded-2xl py-4 flex-row items-center justify-center" style={{ gap: 8, backgroundColor: colors.aquaDeep, opacity: busy ? 0.7 : 1 }}>
           <Instagram size={18} color="#fff" weight="bold" />

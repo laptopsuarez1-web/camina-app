@@ -36,7 +36,7 @@ export type PodiumPerson = CinePerson & { steps: number };
 // podium: los 3 primeros de la semana (índice 0 = 1.º). Si falta, los otros escalones quedan vacíos.
 export type RankingResultCinematic = { kind: 'ranking-result'; position: number; steps: number; weekLabel: string; me: CinePerson; podium?: PodiumPerson[]; onRanking?: () => void };
 // Cierre de la semana de un grupo: podio del grupo con fotos, tu puesto y los pasos de todos.
-export type GroupWeekCinematic = { kind: 'group-week'; name: string; weekLabel: string; podium: PodiumPerson[]; meId: string; myRank: number; mySteps: number; members: number; total: number; onOpen?: () => void };
+export type GroupWeekCinematic = { kind: 'group-week'; name: string; weekLabel: string; podium: PodiumPerson[]; meId: string; myRank: number; mySteps: number; members: number; total: number; onOpen?: () => void; onShare?: () => void };
 
 const INK = '#2a1650';
 const INK_SOFT = '#6b5a8a';
@@ -737,6 +737,8 @@ export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: (
     : `Quedaste ${c.myRank}.º de ${c.members} en ${c.name}.${c.podium[0] ? ` Ganó ${c.podium[0].name.split(' ')[0]}.` : ''}`;
   // Igual que en el ranking global: se comparte el resultado de la semana con el texto listo.
   const share = () => {
+    // Con la tarjeta de imagen (si la pantalla del grupo la ofrece); si no, el texto listo.
+    if (c.onShare) { onDone(); c.onShare(); return; }
     const text = won
       ? `Gané la semana en ${c.name} en Camina con ${c.mySteps.toLocaleString('es-BO')} pasos. ¿Quién me alcanza?`
       : `Quedé ${c.myRank}.º en ${c.name} en Camina con ${c.mySteps.toLocaleString('es-BO')} pasos esta semana. ¿Te animas?`;

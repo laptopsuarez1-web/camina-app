@@ -6,7 +6,7 @@ import { dayKey, rangeLabel } from '@/lib/share-stats';
 // Compartir el ranking del grupo como imagen (pantalla del grupo). Los integrantes salen con su inicial; los nombres son opcionales
 // y, si se activan, solo el primer nombre: nunca apellidos ni fotos de otras personas.
 export function GroupShareImageSheet({
-  visible, onClose, groupName, members, userId, target,
+  visible, onClose, groupName, members, userId, target, inviteCode,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -14,8 +14,11 @@ export function GroupShareImageSheet({
   members: { id: string; name: string; steps: number }[];
   userId: string | undefined;
   target: number;
+  inviteCode?: string | null;
 }) {
   const [withNames, setWithNames] = useState(false);
+  // Con el código del grupo en la imagen: quien la ve en historias o en WhatsApp se puede sumar.
+  const [invite, setInvite] = useState(true);
 
   const data = useMemo(() => {
     const now = new Date();
@@ -33,8 +36,9 @@ export function GroupShareImageSheet({
       })),
       target,
       total: members.reduce((a, m) => a + m.steps, 0),
+      inviteCode: invite ? inviteCode ?? null : null,
     };
-  }, [groupName, members, userId, target, withNames]);
+  }, [groupName, members, userId, target, withNames, invite, inviteCode]);
 
   return (
     <CardShareSheet
@@ -42,7 +46,12 @@ export function GroupShareImageSheet({
       onClose={onClose}
       title="Compartir el ranking"
       filename="camina-grupo"
-      extras={<Toggle label="Mostrar nombres" hint="Apagado: tus compañeros salen solo con su inicial." value={withNames} onChange={setWithNames} />}
+      extras={
+        <>
+          <Toggle label="Mostrar nombres" hint="Apagado: tus compañeros salen solo con su inicial." value={withNames} onChange={setWithNames} />
+          {inviteCode ? <Toggle label="Invitar a sumarse" hint="Pone el código del grupo para que se unan desde la app." value={invite} onChange={setInvite} /> : null}
+        </>
+      }
       render={({ theme, format }) => <GroupCard theme={theme} format={format} data={data} />}
     />
   );
