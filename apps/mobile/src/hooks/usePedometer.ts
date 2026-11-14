@@ -18,6 +18,7 @@ import { Sentry } from '@/lib/monitoring';
 import { syncYesterdayOnOpen } from '@/lib/steps-sync';
 import { boliviaDay } from '@/lib/bolivia';
 import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
+import { readSensorDaySteps, requestSensorPermission, sensorStatus, type SensorStatus } from '@/lib/sensor-steps';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
 // escriben ahí, no solo el sensor del teléfono) y Health Connect en Android
@@ -110,6 +111,8 @@ function useHealthConnectSteps(enabled: boolean) {
   const [errorKind, setErrorKind] = useState<HealthConnectErrorKind | null>(null);
   // Cada vez que cambia, se vuelve a hacer todo el arranque (estado, permiso, lectura): el botón Reintentar lo usa.
   const [attempt, setAttempt] = useState(0);
+  // Contador de pasos del teléfono: si existe en esta versión y si ya tiene el permiso de actividad física.
+  const [sensor, setSensor] = useState<SensorStatus>('unavailable');
   const readRef = useRef<() => Promise<void>>(async () => {});
   const errorRef = useRef(false);
   useEffect(() => {
@@ -126,7 +129,10 @@ function useHealthConnectSteps(enabled: boolean) {
 
     async function readToday() {
       try {
-        const value = await readHealthConnectSteps(startOfToday(), new Date());
+        const [health, sensor] = await Promise.all([readHealthConnectSteps(startOfToday(), new Date()), readSensorDaySteps(new Date())]);
+        // El contador del teléfono cubre a quien tiene Health Connect vacío (ninguna app le escribe pasos).
+        const value = Math.max(health, sensor ?? 0);
+        sensorStatus().then((st) => { if (!cancelled) setSensor(st); }).catch(() => {});
         fails = 0;
         permissionAsked = false;
         if (!cancelled) { setSteps(value); setErrorDetail(null); setErrorKind(null); setStatus('ok'); }
@@ -209,7 +215,15 @@ function useHealthConnectSteps(enabled: boolean) {
     else await readRef.current();
   }, []);
 
-  return { steps, ready, status, errorDetail, errorKind, refresh };
+  // Pide el permiso de actividad física y, si lo da, lee enseguida.
+  const enableSensor = useCallback(async () => {
+    const ok = await requestSensorPermission();
+    setSensor(await sensorStatus());
+    if (ok) await readRef.current();
+    return ok;
+  }, []);
+
+  return { steps, ready, status, errorDetail, errorKind, refresh, sensor, enableSensor };
 }
 
 // ---------- Fallback iOS: sensor del teléfono (CoreMotion) ----------
@@ -291,8 +305,8 @@ export function useTodaySteps() {
       result = { steps: iosSensorSteps, available: sensorAvailable, source: sensorAvailable ? 'sensor' : null, healthConnectStatus: null, live: sensorAvailable === true };
     }
   } else if (healthConnect.ready && healthConnect.steps != null) {
-    // Android: los pasos SOLO salen de Health Connect (la fuente oficial de Android),
-    // así se pueden descartar los cargados a mano. No hay sensor de respaldo.
+    // Android: Health Connect (se descartan los cargados a mano) y, si está vacío, el contador del propio teléfono,
+    // que nadie puede editar. Se usa el que tenga más.
     result = { steps: healthConnect.steps, available: true, source: 'health-connect', healthConnectStatus: 'ok', live: true };
   } else {
     result = {
@@ -319,7 +333,7 @@ export function useTodaySteps() {
 
   // `steps` es lo que se muestra (con el último valor conocido mientras carga);
   // `live` indica si viene de la fuente real — solo eso se manda al servidor.
-  return { ...result, steps: result.live ? result.steps : Math.max(result.steps, cached ?? 0), refresh };
+  return { ...result, steps: result.live ? result.steps : Math.max(result.steps, cached ?? 0), refresh, sensorStatus: healthConnect.sensor, enableSensor: healthConnect.enableSensor };
 }
 
 // ---------- Historial de pasos por día (solo para mostrar en Actividad) ----------
