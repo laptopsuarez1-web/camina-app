@@ -3,7 +3,7 @@
 // entre dos lecturas son los pasos de ese rato, y se reparten entre los días que abarca ese rato según el tiempo.
 
 export type SensorState = {
-  boot: number | null; // cuándo se prendió el celular (ms) en la última lectura
+  boot: number | null; // cuándo se prendió el celular (ms) en la última lectura (solo informativo)
   last: number | null; // número del contador en la última lectura
   at: number | null; // cuándo fue la última lectura (ms)
   days: Record<string, number>; // pasos acumulados por día (YYYY-MM-DD de Bolivia)
@@ -11,10 +11,12 @@ export type SensorState = {
 
 export const EMPTY_SENSOR_STATE: SensorState = { boot: null, last: null, at: null, days: {} };
 
-// Si la hora de encendido cambia más que esto, el celular se reinició (el cálculo varía unos milisegundos entre lecturas).
-const SAME_BOOT_MS = 2 * 60_000;
 // Un rato entre dos lecturas no puede tener más pasos que esto: si pasa, es un dato raro y no se suma.
 const MAX_DELTA = 100_000;
+// Nadie camina más rápido que esto de forma sostenida (correr rápido son unos 180 pasos por minuto).
+const MAX_STEPS_PER_MIN = 250;
+// Margen para lecturas muy seguidas.
+const RATE_SLACK = 300;
 const DAYS_KEPT = 4;
 
 type DayFns = { dayOf: (ms: number) => string; startOfDay: (ms: number) => number };
@@ -49,20 +51,25 @@ export function applyReading(state: SensorState, reading: { count: number; bootM
   if (!Number.isFinite(count) || count < 0) return state;
   let delta = 0;
   let from = now;
-  const known = state.boot != null && state.last != null && state.at != null;
-  const sameBoot = known && Math.abs(bootMs - state.boot!) < SAME_BOOT_MS && count >= state.last!;
-  if (sameBoot) {
+  const known = state.last != null && state.at != null;
+  // El contador solo vuelve atrás si el celular se reinició. La hora de encendido NO se usa para decidirlo: se calcula
+  // con el reloj del teléfono, y alguien podría cambiar la hora para que parezca un reinicio y cobrar los pasos dos veces.
+  if (known && count >= state.last!) {
     delta = count - state.last!;
     from = state.at!;
   } else if (known) {
     // Se reinició el celular: el contador volvió a cero, todo lo que marca es posterior al encendido.
     delta = count;
     from = Math.max(bootMs, state.at!);
-  } else if (bootMs >= fns.startOfDay(now)) {
+  } else if (bootMs >= fns.startOfDay(now) && bootMs <= now) {
     // Primera lectura y el celular se prendió hoy: lo que marca es de hoy.
     delta = count;
     from = bootMs;
   }
+  // Tope por tiempo: en un rato no se pueden haber caminado más pasos que los posibles a paso de carrera.
+  if (delta > MAX_DELTA) delta = 0; // dato raro del teléfono: no se suma
+  const minutes = Math.max(0, (now - Math.min(from, now)) / 60_000);
+  delta = Math.min(delta, Math.floor(minutes * MAX_STEPS_PER_MIN) + RATE_SLACK);
   // Primera lectura con el celular prendido desde antes de hoy: solo se toma como punto de partida.
   const days = { ...state.days };
   if (delta > 0 && delta <= MAX_DELTA) {

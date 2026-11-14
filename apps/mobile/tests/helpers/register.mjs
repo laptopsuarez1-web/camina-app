@@ -26,6 +26,8 @@ const REPLACED = {
   '@/lib/monitoring': 'monitoring.mts',
   'expo-secure-store': 'secure-store.mts',
   'expo-image': 'expo-image.mts',
+  'expo-sensors': 'expo-sensors.mts',
+  '../../modules/step-counter': 'step-counter.mts',
 };
 
 registerHooks({

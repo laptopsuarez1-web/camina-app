@@ -58,3 +58,33 @@ test('guarda solo los últimos días', () => {
 test('splitByDay: todo dentro del mismo día', () => {
   assert.deepEqual(splitByDay(700, t('2026-11-14T13:00:00Z'), t('2026-11-14T15:00:00Z'), fns), { '2026-11-14': 700 });
 });
+
+test('trampa: cambiar la hora del teléfono no hace contar los pasos dos veces', () => {
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 50_000, bootMs: BOOT }, t('2026-11-14T13:00:00Z'), fns);
+  s = applyReading(s, { count: 50_400, bootMs: BOOT }, t('2026-11-14T14:00:00Z'), fns);
+  // Adelanta el reloj 3 horas: la hora de encendido calculada se corre 3 horas, pero el contador sigue igual.
+  s = applyReading(s, { count: 50_500, bootMs: BOOT + 3 * 3_600_000 }, t('2026-11-14T17:00:00Z'), fns);
+  assert.deepEqual(s.days, { '2026-11-14': 500 });
+});
+
+test('trampa: atrasar la hora no suma nada extra', () => {
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 50_000, bootMs: BOOT }, t('2026-11-14T13:00:00Z'), fns);
+  s = applyReading(s, { count: 51_000, bootMs: BOOT - 86_400_000 }, t('2026-11-13T13:00:00Z'), fns);
+  // Con el reloj para atrás no hay tiempo transcurrido: se suma como mucho el margen, nunca de más.
+  assert.ok(Object.values(s.days).reduce((a, b) => a + b, 0) <= 1000);
+});
+
+test('trampa: un salto de pasos imposible para el tiempo pasado se recorta', () => {
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 1000, bootMs: BOOT }, t('2026-11-14T13:00:00Z'), fns);
+  // 30.000 pasos en 10 minutos no se puede: se recorta a 10 x 250 + 300.
+  s = applyReading(s, { count: 31_000, bootMs: BOOT }, t('2026-11-14T13:10:00Z'), fns);
+  assert.deepEqual(s.days, { '2026-11-14': 2800 });
+});
+
+test('trampa: la misma lectura repetida no suma', () => {
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 1000, bootMs: BOOT }, t('2026-11-14T13:00:00Z'), fns);
+  s = applyReading(s, { count: 1500, bootMs: BOOT }, t('2026-11-14T14:00:00Z'), fns);
+  s = applyReading(s, { count: 1500, bootMs: BOOT }, t('2026-11-14T14:00:00Z'), fns);
+  s = applyReading(s, { count: 1500, bootMs: BOOT }, t('2026-11-14T15:00:00Z'), fns);
+  assert.deepEqual(s.days, { '2026-11-14': 500 });
+});
