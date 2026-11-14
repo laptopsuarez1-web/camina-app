@@ -178,25 +178,35 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
 // Pantalla completa con la foto en formato historia (9:16) y el sticker de Camina, lista para publicar.
 type StickerProps = { businessName: string; businessLogo?: string | null; businessInstagram?: string | null; benefitName: string; costPoints?: number | null };
 const fmtSteps = (pts: number) => (pts * 1000).toLocaleString('es-BO');
-const SHADOW = { textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 8 } as const;
+const SHADOW = { textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6 } as const;
 
 
-// Limpio, como Strava: solo texto blanco sobre la foto, datos con su etiqueta chica arriba, y la marca chica al pie.
+// Limpio, como Strava: chico, texto blanco sobre la foto, etiquetas en mayúscula fina y la marca mínima al pie.
 function CleanSticker({ businessName, benefitName, costPoints }: StickerProps) {
-  const stat = (label: string, value: string, big?: boolean) => (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={{ color: 'rgba(255,255,255,0.8)', fontWeight: '600', fontSize: 11.5, ...SHADOW }}>{label}</Text>
-      <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: big ? 26 : 19, letterSpacing: -0.3, marginTop: 1, ...SHADOW }}>{value}</Text>
-    </View>
-  );
+  const label = { color: 'rgba(255,255,255,0.75)', fontWeight: '700' as const, fontSize: 8.5, letterSpacing: 1.3, ...SHADOW };
+  const value = { color: '#fff', fontWeight: '700' as const, fontSize: 13.5, marginTop: 2, ...SHADOW };
   return (
-    <View style={{ position: 'absolute', left: 20, right: 20, bottom: 30, alignItems: 'center', gap: 12 }}>
-      {stat('Premio', benefitName, true)}
-      {stat('En', businessName)}
-      {costPoints ? stat('Pagado con', `${fmtSteps(costPoints)} pasos`) : null}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 18, height: 18, tintColor: '#fff' }} />
-        <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 2.2, ...wordmark(), ...SHADOW }}>CAMINA</Text>
+    <View style={{ position: 'absolute', left: 24, right: 24, bottom: 34, alignItems: 'center' }}>
+      <Text style={label}>PREMIO</Text>
+      <Text numberOfLines={1} style={{ ...value, fontSize: 17, letterSpacing: -0.2 }}>{benefitName}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+        <View style={{ alignItems: 'center', paddingHorizontal: 14 }}>
+          <Text style={label}>EN</Text>
+          <Text numberOfLines={1} style={value}>{businessName}</Text>
+        </View>
+        {costPoints ? (
+          <>
+            <View style={{ width: 1, height: 26, backgroundColor: 'rgba(255,255,255,0.45)' }} />
+            <View style={{ alignItems: 'center', paddingHorizontal: 14 }}>
+              <Text style={label}>PASOS</Text>
+              <Text style={value}>{fmtSteps(costPoints)}</Text>
+            </View>
+          </>
+        ) : null}
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12, opacity: 0.95 }}>
+        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 12, height: 12, tintColor: '#fff' }} />
+        <Text style={{ color: '#fff', fontSize: 8.5, letterSpacing: 1.8, ...wordmark(), ...SHADOW }}>CAMINA</Text>
       </View>
     </View>
   );
@@ -247,7 +257,7 @@ export function StoryComposer({
         <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
-          <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.45)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%' }} />
+          <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '35%' }} />
           <CleanSticker businessName={businessName} businessLogo={businessLogo} businessInstagram={businessInstagram} benefitName={benefitName} costPoints={costPoints} />
         </View>
       </View>
