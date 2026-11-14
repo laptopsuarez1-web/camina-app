@@ -6,6 +6,7 @@ import {
 } from '@kingstinct/react-native-healthkit';
 import { aggregateRecord, readRecords } from 'react-native-health-connect';
 import { Pedometer } from 'expo-sensors';
+import { readSensorDaySteps } from '@/lib/sensor-steps';
 
 // Lectura de pasos de un rango en la fuente real del teléfono (Salud en iPhone, Health Connect en Android),
 // descontando los pasos cargados a mano (antifraude). Lo usan Inicio (cada 15 s) y la sincronización en segundo plano, siempre con el día de hoy.
@@ -66,6 +67,14 @@ export async function readDaySteps(day: Date): Promise<number | null> {
     const sensor = await Pedometer.getStepCountAsync(start, to).then((r) => r.steps).catch(() => 0);
     return Math.max(health, sensor);
   }
-  if (Platform.OS === 'android') return readHealthConnectSteps(start, to);
+  if (Platform.OS === 'android') {
+    // Health Connect o el contador del teléfono (cuando nadie le escribe pasos a Health Connect), lo que tenga más.
+    const sensor = await readSensorDaySteps(day);
+    const health = await readHealthConnectSteps(start, to).catch((e) => {
+      if (sensor == null) throw e;
+      return 0;
+    });
+    return Math.max(health, sensor ?? 0);
+  }
   return null;
 }

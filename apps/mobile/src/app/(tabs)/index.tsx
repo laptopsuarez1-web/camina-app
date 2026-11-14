@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from 'nativewind';
-import { View, ScrollView, Image, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Image, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { PointsCounter, usePointsPulse } from '@/components/ui/PointsCounter';
@@ -34,6 +34,7 @@ import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
+import { registerDevice } from '@/lib/device';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -99,7 +100,12 @@ export default function HomeScreen() {
   const topInset = useSafeAreaInsets().top;
   const profile = useAuthStore((s) => s.profile);
   const userId = useAuthStore((s) => s.session?.user.id);
-  const { steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, errorDetail: hcErrorDetail, errorKind: hcErrorKind, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
+  // Cada vez que se abre la app queda registrado, aunque el teléfono dé 0 pasos. Antes solo se registraba al subir
+  // pasos, y no se podía distinguir a quien no abre la app de quien la abre y no le cuentan los pasos.
+  useEffect(() => {
+    if (userId && Platform.OS !== 'web') registerDevice(userId).catch(() => {});
+  }, [userId]);
+  const { sensorStatus: phoneCounter, enableSensor, steps: deviceSteps, available: deviceAvailable, healthConnectStatus: hcStatus, errorDetail: hcErrorDetail, errorKind: hcErrorKind, live: deviceLive, refresh: refreshSteps } = useTodaySteps();
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
   const isQa = useIsQa();
   const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
@@ -558,37 +564,66 @@ export default function HomeScreen() {
           </Press>
         ) : Platform.OS === 'android' && healthConnectStatus === 'ok' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
           // Health Connect solo guarda los pasos que le escribe otra app (Google Fit, Samsung Health...). Si no hay ninguna,
-          // lee 0 sin error: en Android viejos pasa siempre. Se explica qué hacer y se lleva directo a instalar Google Fit.
+          // lee 0 sin error: en Android viejos pasa siempre. Si esta versión trae el contador del teléfono, se ofrece eso
+          // (un permiso y listo); si no, se explica cómo activar Google Fit.
           <View className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-            <Text className="text-white font-bold text-[13.5px]">Tu teléfono no está guardando pasos</Text>
-            <Text className="text-auth-muted text-[12.5px] leading-[18px] mt-1">
-              Camina los lee de Health Connect, y hoy está vacío. Hace falta una app que los cuente:{'\n'}
-              1. Instala Google Fit y ábrelo con tu cuenta.{'\n'}
-              2. En Google Fit: Perfil &gt; Ajustes &gt; Health Connect y activa Pasos.{'\n'}
-              3. Camina unos minutos y vuelve a abrir Camina.
-            </Text>
-            <View className="flex-row mt-3" style={{ gap: 8 }}>
-              <Press
-                accessibilityRole="button"
-                onPress={() =>
-                  Linking.openURL(`market://details?id=${GOOGLE_FIT_PACKAGE}`).catch(() =>
-                    Linking.openURL(`https://play.google.com/store/apps/details?id=${GOOGLE_FIT_PACKAGE}`).catch(() => {}),
-                  )
-                }
-                className="flex-1 rounded-full py-2.5 items-center"
-                style={{ backgroundColor: colors.mint }}
-              >
-                <Text className="font-bold text-[13px]" style={{ color: '#1a0f3a' }}>Instalar Google Fit</Text>
-              </Press>
-              <Press
-                accessibilityRole="button"
-                onPress={() => openHealthConnectSettings()}
-                className="flex-1 rounded-full py-2.5 items-center"
-                style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)' }}
-              >
-                <Text className="text-white font-bold text-[13px]">Abrir Health Connect</Text>
-              </Press>
-            </View>
+            {phoneCounter === 'active' ? (
+              <>
+                <Text className="text-white font-bold text-[13.5px]">Listo, Camina ya cuenta tus pasos</Text>
+                <Text className="text-auth-muted text-[12.5px] leading-[18px] mt-1">
+                  Desde ahora usa el contador de tu teléfono. Camina un rato y vuelve a abrir la app: tus pasos aparecen aquí. Ábrela todos los días para que se sumen tus Puntos.
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text className="text-white font-bold text-[13.5px]">Tu teléfono no está guardando pasos</Text>
+                <Text className="text-auth-muted text-[12.5px] leading-[18px] mt-1">
+                  {phoneCounter === 'needs-permission'
+                    ? 'Camina puede contarlos con el contador de tu teléfono. Toca «Contar con mi teléfono» y acepta el permiso de actividad física.'
+                    : 'Camina los lee de Health Connect, y hoy está vacío. Hace falta una app que los cuente:\n1. Instala Google Fit y ábrelo con tu cuenta.\n2. En Google Fit: Perfil > Ajustes > Health Connect y activa Pasos.\n3. Camina unos minutos y vuelve a abrir Camina.'}
+                </Text>
+                <View className="flex-row mt-3" style={{ gap: 8 }}>
+                  {phoneCounter === 'needs-permission' ? (
+                    <Press
+                      accessibilityRole="button"
+                      onPress={() => {
+                        enableSensor().then((ok) => {
+                          if (!ok) Alert.alert('Falta el permiso', 'Para contar tus pasos, Camina necesita el permiso de actividad física. Puedes darlo en Ajustes > Apps > Camina > Permisos.');
+                        });
+                      }}
+                      className="flex-1 rounded-full py-2.5 items-center"
+                      style={{ backgroundColor: colors.mint }}
+                    >
+                      <Text className="font-bold text-[13px]" style={{ color: '#1a0f3a' }}>Contar con mi teléfono</Text>
+                    </Press>
+                  ) : null}
+                  <Press
+                    accessibilityRole="button"
+                    onPress={() =>
+                      Linking.openURL(`market://details?id=${GOOGLE_FIT_PACKAGE}`).catch(() =>
+                        Linking.openURL(`https://play.google.com/store/apps/details?id=${GOOGLE_FIT_PACKAGE}`).catch(() => {}),
+                      )
+                    }
+                    className="flex-1 rounded-full py-2.5 items-center"
+                    style={phoneCounter === 'needs-permission' ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)' } : { backgroundColor: colors.mint }}
+                  >
+                    <Text className="font-bold text-[13px]" style={{ color: phoneCounter === 'needs-permission' ? '#fff' : '#1a0f3a' }}>
+                      {phoneCounter === 'needs-permission' ? 'Usar Google Fit' : 'Instalar Google Fit'}
+                    </Text>
+                  </Press>
+                  {phoneCounter === 'needs-permission' ? null : (
+                    <Press
+                      accessibilityRole="button"
+                      onPress={() => openHealthConnectSettings()}
+                      className="flex-1 rounded-full py-2.5 items-center"
+                      style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)' }}
+                    >
+                      <Text className="text-white font-bold text-[13px]">Abrir Health Connect</Text>
+                    </Press>
+                  )}
+                </View>
+              </>
+            )}
           </View>
         ) : available === false ? (
           <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
