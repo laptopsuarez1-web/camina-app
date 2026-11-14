@@ -680,7 +680,7 @@ export default function CanjesScreen() {
   const story = useStoryFlow();
   function startStoryFromCode() {
     if (!activeRedemption || !activeBenefit) return;
-    const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name, businessLogo: activeBenefit.business.logo_url, businessInstagram: activeBenefit.business.instagram };
+    const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name, businessLogo: activeBenefit.business.logo_url, businessInstagram: activeBenefit.business.instagram, costPoints: activeBenefit.cost_points };
     // La hoja para elegir la foto es otro panel: se abre cuando el del código terminó de cerrarse.
     runAfterClose(afterCodeClose, true, () => story.start(target));
     setActiveRedemption(null);

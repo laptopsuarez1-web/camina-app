@@ -43,7 +43,7 @@ export default function MisCanjesScreen() {
             redemptions={redemptions as unknown as RedemptionRow[] | undefined}
             loading={isLoading}
             storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
-            onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje', businessLogo: r.business?.logo_url ?? null, businessInstagram: r.business?.instagram ?? null })}
+            onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje', businessLogo: r.business?.logo_url ?? null, businessInstagram: r.business?.instagram ?? null, costPoints: r.cost_points })}
           />
           <Press accessibilityRole="button" onPress={() => router.push('/(tabs)/tarjetas')} className="mx-5">
             <Glass className="rounded-3xl flex-row items-center p-4" style={{ gap: 12 }}>
