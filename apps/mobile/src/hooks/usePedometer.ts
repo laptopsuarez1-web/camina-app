@@ -19,6 +19,7 @@ import { syncYesterdayOnOpen } from '@/lib/steps-sync';
 import { boliviaDay } from '@/lib/bolivia';
 import { STEP_COUNT_IDENTIFIER, startOfDay, readHealthKitSteps, readHealthConnectSteps } from '@/lib/health-steps';
 import { readSensorDaySteps, requestSensorPermission, sensorStatus, type SensorStatus } from '@/lib/sensor-steps';
+import { probeAndroidSetup } from '@/lib/android-steps-probe';
 
 // Fuente real de pasos: HealthKit en iOS (agrega TODAS las apps/wearables que
 // escriben ahí, no solo el sensor del teléfono) y Health Connect en Android
@@ -217,7 +218,7 @@ function useHealthConnectSteps(enabled: boolean) {
   // ---- Contador de pasos del teléfono ----
   // Se usa cuando Health Connect no tiene pasos de hoy, no está instalado o no dio permiso: así se cuenta igual,
   // sin que la persona tenga que instalar Google Fit. Si hace falta el permiso de actividad física, se pide solo,
-  // una vez (después queda el botón del aviso de Inicio).
+  // una vez y solo si Health Connect no tiene pasos de ningún día reciente (después queda el botón del aviso de Inicio).
   const [sensorSteps, setSensorSteps] = useState<number | null>(null);
   const hcEmpty = status !== 'checking' && (status !== 'ok' || (steps ?? 0) === 0);
 
@@ -232,6 +233,9 @@ function useHealthConnectSteps(enabled: boolean) {
     (async () => {
       if ((await sensorStatus()) !== 'needs-permission') return;
       if (await AsyncStorage.getItem(SENSOR_ASKED_KEY)) return;
+      // Solo si Health Connect de verdad no sirve: ningún paso guardado en 7 días, no instalado o sin permiso.
+      // Con 0 pasos hoy pero pasos otros días (un Samsung a las 7 de la mañana) no se pregunta nada.
+      if ((await probeAndroidSetup()) === 'active') return;
       await AsyncStorage.setItem(SENSOR_ASKED_KEY, '1');
       await requestSensorPermission();
       const st = await sensorStatus();
