@@ -33,6 +33,7 @@ import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
+import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
 import { AvatarImage } from '@/components/ui/AvatarImage';
@@ -556,18 +557,39 @@ export default function HomeScreen() {
             </Text>
           </Press>
         ) : Platform.OS === 'android' && healthConnectStatus === 'ok' && deviceSteps === 0 && new Date().getHours() >= 9 ? (
-          // Health Connect solo guarda los pasos que le pasa otra app (Google Fit, Samsung Health...). Si no hay ninguna, lee 0 sin error.
-          <Press
-            accessibilityRole="button"
-            onPress={() => openHealthConnectSettings()}
-            className="mx-5 mt-4 rounded-2xl p-3.5"
-            style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-          >
-            <Text className="text-white font-bold text-[13px]">¿No ves tus pasos?</Text>
-            <Text className="text-auth-muted text-[12px] leading-4 mt-0.5">
-              Camina los lee de Health Connect, que los recibe de una app que los cuente (Google Fit o Samsung Health). Toca aquí para revisar que Camina tenga permiso y que haya una app guardando tus pasos.
+          // Health Connect solo guarda los pasos que le escribe otra app (Google Fit, Samsung Health...). Si no hay ninguna,
+          // lee 0 sin error: en Android viejos pasa siempre. Se explica qué hacer y se lleva directo a instalar Google Fit.
+          <View className="mx-5 mt-4 rounded-2xl p-3.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+            <Text className="text-white font-bold text-[13.5px]">Tu teléfono no está guardando pasos</Text>
+            <Text className="text-auth-muted text-[12.5px] leading-[18px] mt-1">
+              Camina los lee de Health Connect, y hoy está vacío. Hace falta una app que los cuente:{'\n'}
+              1. Instala Google Fit y ábrelo con tu cuenta.{'\n'}
+              2. En Google Fit: Perfil &gt; Ajustes &gt; Health Connect y activa Pasos.{'\n'}
+              3. Camina unos minutos y vuelve a abrir Camina.
             </Text>
-          </Press>
+            <View className="flex-row mt-3" style={{ gap: 8 }}>
+              <Press
+                accessibilityRole="button"
+                onPress={() =>
+                  Linking.openURL(`market://details?id=${GOOGLE_FIT_PACKAGE}`).catch(() =>
+                    Linking.openURL(`https://play.google.com/store/apps/details?id=${GOOGLE_FIT_PACKAGE}`).catch(() => {}),
+                  )
+                }
+                className="flex-1 rounded-full py-2.5 items-center"
+                style={{ backgroundColor: colors.mint }}
+              >
+                <Text className="font-bold text-[13px]" style={{ color: '#1a0f3a' }}>Instalar Google Fit</Text>
+              </Press>
+              <Press
+                accessibilityRole="button"
+                onPress={() => openHealthConnectSettings()}
+                className="flex-1 rounded-full py-2.5 items-center"
+                style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)' }}
+              >
+                <Text className="text-white font-bold text-[13px]">Abrir Health Connect</Text>
+              </Press>
+            </View>
+          </View>
         ) : available === false ? (
           <Text className="text-auth-muted text-center text-[12px] mt-3 px-8">
             Este dispositivo no tiene podómetro disponible.
