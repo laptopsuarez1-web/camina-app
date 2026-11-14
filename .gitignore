@@ -21,3 +21,5 @@ supabase/.temp/
 # Generados automáticamente por next dev
 apps/partner/AGENTS.md
 apps/partner/CLAUDE.md
+# Los módulos nativos propios (apps/mobile/modules) sí van al repositorio: no se generan solos.
+!apps/mobile/modules/**/android/
