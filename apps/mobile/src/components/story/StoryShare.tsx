@@ -180,77 +180,23 @@ type StickerProps = { businessName: string; businessLogo?: string | null; busine
 const fmtSteps = (pts: number) => (pts * 1000).toLocaleString('es-BO');
 const SHADOW = { textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 8 } as const;
 
-function LocalLogo({ uri, size }: { uri?: string | null; size: number }) {
-  return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden', backgroundColor: '#2A1F52', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#62F0B6' }}>
-      {uri ? <Image source={{ uri }} accessible={false} style={{ width: size, height: size }} /> : <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: size * 0.75, height: size * 0.75 }} />}
+
+// Limpio, como Strava: solo texto blanco sobre la foto, datos con su etiqueta chica arriba, y la marca chica al pie.
+function CleanSticker({ businessName, benefitName, costPoints }: StickerProps) {
+  const stat = (label: string, value: string, big?: boolean) => (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ color: 'rgba(255,255,255,0.8)', fontWeight: '600', fontSize: 11.5, ...SHADOW }}>{label}</Text>
+      <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: big ? 26 : 19, letterSpacing: -0.3, marginTop: 1, ...SHADOW }}>{value}</Text>
     </View>
   );
-}
-
-// Ticket: tarjeta clara, inclinada, con muescas de ticket y un sello «Canjeado» encima.
-function TicketSticker({ businessName, businessLogo, businessInstagram, benefitName, costPoints }: StickerProps) {
-  const ig = igHandle(businessInstagram);
   return (
-    <View style={{ position: 'absolute', left: 18, right: 18, bottom: 26, alignItems: 'center' }}>
-      <View style={{ transform: [{ rotate: '-4deg' }], alignSelf: 'stretch' }}>
-        <View style={{ backgroundColor: '#FBF8FF', borderRadius: 20, paddingTop: 14, paddingBottom: 12, paddingHorizontal: 16, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <LocalLogo uri={businessLogo} size={38} />
-            <View style={{ flex: 1 }}>
-              <Text numberOfLines={1} style={{ color: '#291C47', fontWeight: '800', fontSize: 14 }}>{businessName}</Text>
-              {ig ? <Text numberOfLines={1} style={{ color: '#6B5A8A', fontWeight: '600', fontSize: 11 }}>{ig}</Text> : null}
-            </View>
-          </View>
-          <Text style={{ color: '#1F7A66', fontWeight: '800', fontSize: 10.5, letterSpacing: 1.4, marginTop: 12 }}>LO GANÉ CAMINANDO</Text>
-          <Text numberOfLines={2} style={{ color: '#200A52', fontSize: 24, lineHeight: 27, marginTop: 2, ...wordmark() }}>{benefitName}</Text>
-          {/* Línea punteada con las muescas del ticket a los costados. */}
-          <View style={{ marginTop: 12, marginHorizontal: -16, flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#3a2f55', marginLeft: -8 }} />
-            <View style={{ flex: 1, borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#D9CFF0', marginHorizontal: 6 }} />
-            <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#3a2f55', marginRight: -8 }} />
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-            <View>
-              <Text style={{ color: '#6B5A8A', fontWeight: '700', fontSize: 10 }}>PAGADO CON</Text>
-              <Text style={{ color: '#200A52', fontWeight: '900', fontSize: 16 }}>{costPoints ? `${fmtSteps(costPoints)} pasos` : 'mis pasos'}</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: '#200A52', fontSize: 12, letterSpacing: 1.6, ...wordmark() }}>CAMINA</Text>
-              <Text style={{ color: '#6B5A8A', fontWeight: '600', fontSize: 10 }}>{CAMINA_INSTAGRAM}</Text>
-            </View>
-          </View>
-        </View>
-        {/* Sello. */}
-        <View style={{ position: 'absolute', right: -4, top: -22, transform: [{ rotate: '14deg' }], width: 74, height: 74, borderRadius: 37, backgroundColor: '#62F0B6', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FBF8FF' }}>
-          <Text style={{ color: '#12281F', fontWeight: '900', fontSize: 10.5, letterSpacing: 0.6 }}>CANJEADO</Text>
-          <Text style={{ color: '#12281F', fontWeight: '800', fontSize: 9 }}>con Camina</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// Grande: sin tarjeta, texto grande sobre la foto (como las historias de Strava).
-function BoldSticker({ businessName, businessLogo, businessInstagram, benefitName, costPoints }: StickerProps) {
-  const ig = igHandle(businessInstagram);
-  return (
-    <View style={{ position: 'absolute', left: 20, right: 20, bottom: 24 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-        <LocalLogo uri={businessLogo} size={34} />
-        <View>
-          <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: 14, ...SHADOW }}>{businessName}</Text>
-          {ig ? <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', fontSize: 11, ...SHADOW }}>{ig}</Text> : null}
-        </View>
-      </View>
-      <Text style={{ color: '#62F0B6', fontWeight: '800', fontSize: 11, letterSpacing: 1.6, marginTop: 14, ...SHADOW }}>LO GANÉ CAMINANDO</Text>
-      <Text numberOfLines={2} style={{ color: '#fff', fontSize: 34, lineHeight: 36, marginTop: 2, ...wordmark(), ...SHADOW }}>{benefitName}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
-        <View style={{ backgroundColor: '#62F0B6', borderRadius: 99, paddingHorizontal: 11, paddingVertical: 5 }}>
-          <Text style={{ color: '#12281F', fontWeight: '900', fontSize: 12.5 }}>{costPoints ? `${fmtSteps(costPoints)} pasos` : 'Con mis pasos'}</Text>
-        </View>
-        <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 1.6, ...wordmark(), ...SHADOW }}>CAMINA</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', fontSize: 11, ...SHADOW }}>{CAMINA_INSTAGRAM}</Text>
+    <View style={{ position: 'absolute', left: 20, right: 20, bottom: 30, alignItems: 'center', gap: 12 }}>
+      {stat('Premio', benefitName, true)}
+      {stat('En', businessName)}
+      {costPoints ? stat('Pagado con', `${fmtSteps(costPoints)} pasos`) : null}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 18, height: 18, tintColor: '#fff' }} />
+        <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 2.2, ...wordmark(), ...SHADOW }}>CAMINA</Text>
       </View>
     </View>
   );
@@ -286,8 +232,6 @@ export function StoryComposer({
   onChangePhoto: () => void;
   topInset?: number;
 }) {
-  // Dos estilos para la historia: ticket (tarjeta clara inclinada con sello) o grande (texto grande sobre la foto).
-  const [look, setLook] = useState<'ticket' | 'grande'>('ticket');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
@@ -302,29 +246,13 @@ export function StoryComposer({
         {/* Así se va a ver en Instagram: foto a pantalla completa y la cápsula del canje abajo. */}
         <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
-          {/* Degradé abajo para que el sticker se lea sobre cualquier foto (más fuerte en el estilo grande, que va sin tarjeta). */}
-          <LinearGradient pointerEvents="none" colors={['rgba(18,10,30,0)', look === 'grande' ? 'rgba(18,10,30,0.85)' : 'rgba(18,10,30,0.45)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: look === 'grande' ? '55%' : '40%' }} />
-          {/* Marca arriba: el logo de Camina con su nombre. */}
-          <View style={{ position: 'absolute', top: 16, left: 0, right: 0, alignItems: 'center' }}>
-            <View className="flex-row items-center" style={{ gap: 7, backgroundColor: 'rgba(18,10,30,0.55)', paddingVertical: 6, paddingLeft: 6, paddingRight: 12, borderRadius: 999 }}>
-              <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 22, height: 22 }} />
-              <Text style={{ color: '#62F0B6', fontSize: 13, letterSpacing: 1.2, ...wordmark() }}>CAMINA</Text>
-            </View>
-          </View>
-          {look === 'ticket'
-            ? <TicketSticker businessName={businessName} businessLogo={businessLogo} businessInstagram={businessInstagram} benefitName={benefitName} costPoints={costPoints} />
-            : <BoldSticker businessName={businessName} businessLogo={businessLogo} businessInstagram={businessInstagram} benefitName={benefitName} costPoints={costPoints} />}
+          {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
+          <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.45)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%' }} />
+          <CleanSticker businessName={businessName} businessLogo={businessLogo} businessInstagram={businessInstagram} benefitName={benefitName} costPoints={costPoints} />
         </View>
       </View>
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
-        <View className="flex-row self-center rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-          {(['ticket', 'grande'] as const).map((k) => (
-            <Press key={k} accessibilityRole="button" accessibilityState={{ selected: look === k }} onPress={() => setLook(k)} className="rounded-full px-4 py-1.5" style={{ backgroundColor: look === k ? '#1F7A66' : 'transparent' }}>
-              <Text className="font-bold text-[13px]" style={{ color: look === k ? '#fff' : '#C4B8E8' }}>{k === 'ticket' ? 'Ticket' : 'Grande'}</Text>
-            </Press>
-          ))}
-        </View>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
           Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>{igHandle(businessInstagram) ? <> y a <Text style={{ color: '#fff', fontWeight: '800' }}>{igHandle(businessInstagram)}</Text></> : null}. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
