@@ -24,7 +24,7 @@ function MapaLlegar({ lat, lng, logo }: { lat: number; lng: number; logo: string
       const foto = logo ? `<img src="${logo}" style="width:100%;height:100%;object-fit:cover" />` : '';
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:42px;height:42px;border-radius:50%;border:3px solid #fff;background:#8B4FD1;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.45)">${foto}</div><div style="width:0;height:0;margin:-2px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid #fff"></div>`,
+        html: `<div style="width:42px;height:42px;border-radius:12px;border:3px solid #fff;background:#2c2150;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.45)">${foto}</div><div style="width:0;height:0;margin:-2px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid #fff"></div>`,
         iconSize: [42, 56],
         iconAnchor: [21, 54],
       });
@@ -36,7 +36,12 @@ function MapaLlegar({ lat, lng, logo }: { lat: number; lng: number; logo: string
       map?.remove();
     };
   }, [lat, lng, logo]);
-  return <div ref={el} className="h-[170px] rounded-[22px] overflow-hidden bg-[#1d1b2e]" />;
+  return (
+    <>
+      <style>{`.camina-mapa::after{content:"";position:absolute;inset:0;z-index:450;pointer-events:none;background:#5a35b8;mix-blend-mode:color;opacity:.85}.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.25) brightness(.85)}`}</style>
+      <div ref={el} className="camina-mapa relative h-[170px] rounded-[22px] overflow-hidden bg-[#1c1030]" />
+    </>
+  );
 }
 
 // Vista previa de la ficha del local igual que en la última versión de la app (portada, logo, datos, contacto,
@@ -66,7 +71,7 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
         </span>
       </div>
       <div className="px-5 pb-8" style={{ marginTop: -36 }}>
-        <div className="relative w-[84px] h-[84px] rounded-full border-[3px] border-[#f2c94c] bg-card overflow-hidden flex items-center justify-center">
+        <div className="relative w-[84px] h-[84px] rounded-[24px] bg-card overflow-hidden flex items-center justify-center">
           {business.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
@@ -147,7 +152,11 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
                         <p className="text-[16px] font-bold leading-tight">{b.name}</p>
                         <p className="text-[12.5px] text-muted mt-0.5">{t === 'descuento' ? 'Descuento' : 'Gratis'}</p>
                         {b.description && <p className="text-[12.5px] text-muted leading-[17px] mt-1 line-clamp-3">{b.description}</p>}
-                        <p className="text-[14px] font-extrabold text-[#2E9E7C] mt-2">🪙 {b.cost_points} Puntos</p>
+                        <p className="text-[14px] font-extrabold mt-2 flex items-center gap-1.5">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/partners/coin.png" alt="" width={20} height={20} className="rounded-full" />
+                          {b.cost_points}
+                        </p>
                       </div>
                     </div>
                     <div className="mt-3 rounded-2xl bg-[#1f7d68] text-white text-center font-bold text-[14px] py-[11px]">Canjear</div>

@@ -23,10 +23,19 @@ export interface VistaLocal {
 
 const CENTRO_TARIJA: [number, number] = [-21.5355, -64.7296];
 const MARCO = 'relative w-[300px] h-[600px] rounded-[34px] border-[7px] border-[#241748] bg-[#150d2b] overflow-hidden shadow-2xl text-[#f1ecfb] shrink-0';
+const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TINTE = `.camina-mapa::after{content:"";position:absolute;inset:0;z-index:450;pointer-events:none;background:#5a35b8;mix-blend-mode:color;opacity:.85}.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.25) brightness(.85)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
 
+// Moneda de Puntos de la app (las huellas en el círculo verde).
+export function Moneda({ size = 18 }: { size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/partners/coin.png" alt="" width={size} height={size} className="rounded-full shrink-0" style={{ width: size, height: size }} />;
+}
+
+// Logo del local: cuadrado con las esquinas redondeadas, igual que en la app.
 function Logo({ url, size }: { url: string | null; size: number }) {
   return (
-    <span className="rounded-full border-2 border-[#f2c94c] bg-[#2c2150] overflow-hidden flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+    <span className="bg-[#2c2150] overflow-hidden flex items-center justify-center shrink-0" style={{ width: size, height: size, borderRadius: size * 0.28 }}>
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" className="w-full h-full object-cover" />
@@ -37,7 +46,8 @@ function Logo({ url, size }: { url: string | null; size: number }) {
   );
 }
 
-function SlideMapa({ v }: { v: VistaLocal }) {
+// Mapa oscuro morado como el de la app. Con `pin` pone el logo del local como pin (cuadrado con punta).
+function MapaOscuro({ v, pin, zoom = 17, interactivo = true }: { v: VistaLocal; pin: boolean; zoom?: number; interactivo?: boolean }) {
   const el = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let cancelled = false;
@@ -46,13 +56,13 @@ function SlideMapa({ v }: { v: VistaLocal }) {
       const L = (await import('leaflet')).default;
       if (cancelled || !el.current) return;
       const centro: [number, number] = v.lat != null && v.lng != null ? [v.lat, v.lng] : CENTRO_TARIJA;
-      map = L.map(el.current, { zoomControl: false, attributionControl: false }).setView(centro, v.lat != null ? 17 : 14);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-      if (v.lat != null && v.lng != null) {
+      map = L.map(el.current, { zoomControl: false, attributionControl: false, dragging: interactivo, touchZoom: interactivo, scrollWheelZoom: false, doubleClickZoom: interactivo }).setView(centro, v.lat != null ? zoom : 14);
+      L.tileLayer(TILES, { maxZoom: 19 }).addTo(map);
+      if (pin && v.lat != null && v.lng != null) {
         const foto = v.logo_url ? `<img src="${v.logo_url}" style="width:100%;height:100%;object-fit:cover" />` : '';
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:#8B4FD1;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.45);animation:camina-pin .6s ease-out">${foto}</div><div style="width:0;height:0;margin:-2px auto 0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #fff"></div>`,
+          html: `<div style="width:46px;height:46px;border-radius:13px;border:3px solid #fff;background:#2c2150;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.5);animation:camina-pin .6s ease-out">${foto}</div><div style="width:0;height:0;margin:-1px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #fff"></div>`,
           iconSize: [46, 60],
           iconAnchor: [23, 58],
         });
@@ -64,25 +74,71 @@ function SlideMapa({ v }: { v: VistaLocal }) {
       cancelled = true;
       map?.remove();
     };
-  }, [v.lat, v.lng, v.logo_url]);
+  }, [v.lat, v.lng, v.logo_url, pin, zoom, interactivo]);
+  return (
+    <>
+      <style>{TINTE}</style>
+      <div ref={el} className="camina-mapa absolute inset-0 z-0 bg-[#1c1030]" />
+    </>
+  );
+}
 
+function PremioFila({ v }: { v: VistaLocal }) {
+  if (!v.premio) return null;
+  return (
+    <div className="flex items-center gap-2.5 bg-[#16352f] rounded-2xl px-2 py-1.5">
+      <span className="w-[38px] h-[38px] rounded-xl bg-[#2c2150] overflow-hidden shrink-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {v.premio.image_url && <img src={v.premio.image_url} alt="" className="w-full h-full object-cover" />}
+      </span>
+      <span className="font-semibold text-[12.5px] flex-1 min-w-0 truncate">{v.premio.name}</span>
+      <span className="flex items-center gap-1 font-bold text-[12.5px] shrink-0">
+        <Moneda size={18} />
+        {v.premio.cost}
+      </span>
+    </div>
+  );
+}
+
+function SlideMapa({ v }: { v: VistaLocal }) {
   return (
     <div className={MARCO}>
-      <style>{'@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}'}</style>
-      <div ref={el} className="absolute inset-0 z-0" />
-      <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
-        <span className="bg-[#2c2150]/95 rounded-full px-3 py-1.5 text-[12px] font-bold">142 Puntos</span>
-        <span className="bg-white text-[#291c47] rounded-full px-3 py-1.5 text-[11.5px] font-bold">Explorar el mapa</span>
-      </div>
-      <div className="absolute bottom-3 left-3 right-3 z-10 bg-[#21173f] rounded-2xl p-3 flex items-center gap-3 border border-[#3a2c63]">
-        <Logo url={v.logo_url} size={44} />
-        <div className="min-w-0">
-          <p className="font-bold text-[14px] truncate">{v.name}</p>
-          <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Local'}{v.address ? ` · ${v.address}` : ''}</p>
-          {v.premio && <p className="text-[#62f0b6] text-[11.5px] font-semibold truncate">{v.premio.name}</p>}
+      <MapaOscuro v={v} pin />
+      <div className="absolute top-3 left-3 right-3 z-10">
+        <div className="bg-[#fff] text-[#6e6a85] rounded-full px-4 py-2 text-[12px] flex items-center gap-2">
+          <span>🔍</span> Buscar locales y premios
+        </div>
+        <div className="flex gap-1.5 mt-2 overflow-hidden">
+          {['Abierto ahora', 'Te alcanza', 'Favoritos'].map((t) => (
+            <span key={t} className="bg-[#fff] text-[#291c47] rounded-full px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap">{t}</span>
+          ))}
         </div>
       </div>
-      {v.lat == null && <p className="absolute top-14 left-3 right-3 z-10 bg-[#3b2a22] text-[#f0c39a] text-[11.5px] rounded-xl px-3 py-2">Falta marcar la ubicación para que aparezca el pin.</p>}
+      <div className="absolute bottom-3 left-3 right-3 z-10 bg-[#241a45]/95 rounded-3xl p-3 border border-[#3a2c63]">
+        <div className="flex items-center gap-3 mb-2.5">
+          <Logo url={v.logo_url} size={50} />
+          <div className="min-w-0">
+            <p className="font-bold text-[15px] truncate">{v.name}</p>
+            <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Local'}</p>
+            {v.address && <p className="text-[#62f0b6] text-[11px] truncate">{v.address}</p>}
+            <p className="text-[#62f0b6] text-[11px]">Abierto ahora</p>
+          </div>
+        </div>
+        <PremioFila v={v} />
+        <div className="mt-2.5 rounded-2xl bg-[#1f7d68] text-white text-center font-bold text-[13px] py-2.5">Ver local y premios ›</div>
+      </div>
+      {v.lat == null && <p className="absolute top-24 left-3 right-3 z-10 bg-[#3b2a22] text-[#f0c39a] text-[11.5px] rounded-xl px-3 py-2">Falta marcar la ubicación para que aparezca el pin.</p>}
+    </div>
+  );
+}
+
+function BarraInferior() {
+  const items = ['Inicio', 'Actividad', 'Comunidad', 'Eventos', 'Canjes'];
+  return (
+    <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 rounded-full bg-[#2c2150]/90 border border-[#3a2c63] backdrop-blur flex items-center justify-between px-1.5 py-1.5">
+      {items.map((t) => (
+        <span key={t} className={`text-[9.5px] font-semibold rounded-full px-2 py-2 ${t === 'Canjes' ? 'bg-[#3d3070] text-[#62f0b6]' : 'text-[#a99bcf]'}`}>{t}</span>
+      ))}
     </div>
   );
 }
@@ -90,35 +146,56 @@ function SlideMapa({ v }: { v: VistaLocal }) {
 function SlideCanjes({ v }: { v: VistaLocal }) {
   return (
     <div className={MARCO}>
-      <div className="px-4 pt-5">
-        <p className="font-extrabold text-[22px]">Canjear</p>
-        <p className="text-[#a99bcf] text-[12px] mb-3">142 Puntos disponibles</p>
+      <div className="relative h-[170px] overflow-hidden rounded-b-[28px]">
+        <MapaOscuro v={v} pin={false} zoom={14} interactivo={false} />
+        <span className="absolute top-3 left-3 z-10 bg-[#fff] text-[#291c47] rounded-full pl-1.5 pr-3 py-1 text-[13px] font-extrabold flex items-center gap-1.5">
+          <Moneda size={22} /> 142
+        </span>
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 bg-[#fff] text-[#291c47] rounded-full px-4 py-2 text-[12px] font-bold whitespace-nowrap">Explorar el mapa</span>
+      </div>
+      <div className="px-3 pt-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="font-extrabold text-[24px] leading-tight">Canjes</p>
+            <p className="text-[#a99bcf] text-[12px] mb-2.5">142 Puntos disponibles</p>
+          </div>
+          <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1">🎟 Mis canjes</span>
+        </div>
+        <div className="flex gap-1.5 mb-3 overflow-hidden">
+          {['🔍', 'Categoría ⌄', 'Más cercanos ⌄', 'Abierto ahora'].map((t) => (
+            <span key={t} className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap">{t}</span>
+          ))}
+        </div>
         <div className="rounded-3xl overflow-hidden border border-[#3a2c63] bg-[#21173f]">
-          <div className="h-[130px] bg-[#2c2150]">
+          <div className="h-[112px] bg-[#2c2150] w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {v.cover_url ? <img src={v.cover_url} alt="" className="w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-[#a99bcf] text-[12px]">Sin portada</div>}
+            {v.cover_url ? <img src={v.cover_url} alt="" className="block w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-[#a99bcf] text-[12px]">Sin portada</div>}
           </div>
           <div className="p-3">
-            <div className="flex items-center gap-2.5">
-              <Logo url={v.logo_url} size={42} />
+            <div className="flex items-start gap-2.5">
+              <Logo url={v.logo_url} size={54} />
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-[14.5px] truncate">{v.name}</p>
+                <p className="font-bold text-[15px] truncate">{v.name}</p>
                 <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Categoría'}</p>
+                {v.address && <p className="text-[#62f0b6] text-[11px] truncate">📍 {v.address}</p>}
+                <p className="text-[#62f0b6] text-[11.5px] font-semibold">Disponible ahora</p>
               </div>
-              <Heart size={17} className="text-[#a99bcf] shrink-0" />
-              <ChevronRight size={16} className="text-[#a99bcf] shrink-0" />
+              <div className="flex flex-col items-center gap-2 text-[#a99bcf] shrink-0">
+                <Heart size={17} />
+                <ChevronRight size={17} />
+              </div>
             </div>
-            {v.address && <p className="text-[#a99bcf] text-[11.5px] mt-1.5 truncate">{v.address}</p>}
-            <p className="text-[#62f0b6] text-[11.5px] font-semibold mt-0.5">Disponible ahora</p>
             {v.premio && (
-              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#1f7d68] rounded-full px-3 py-1.5 text-[11.5px] font-bold max-w-full">
-                <span>🪙</span><span className="truncate">{v.premio.cost} {v.premio.name}</span>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#1f7d68] rounded-full pl-1 pr-3 py-1 text-[12px] max-w-full">
+                <Moneda size={20} />
+                <span className="font-extrabold">{v.premio.cost}</span>
+                <span className="font-semibold truncate">{v.premio.name}</span>
               </div>
             )}
           </div>
         </div>
-        <div className="mt-3 h-[70px] rounded-2xl bg-[#21173f] opacity-60" />
       </div>
+      <BarraInferior />
     </div>
   );
 }

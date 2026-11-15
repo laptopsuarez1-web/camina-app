@@ -106,7 +106,7 @@ const ASI = 'Así se ve su local en la app. Aparece en el mapa y en la lista de 
 
 const VISTAS: { img: string; titulo: string; texto: string }[] = [
   { img: 'canjes-dark', titulo: '1. Aparece en Canjes', texto: 'Su local sale en la lista y en el mapa de la app, con su portada, su logo y el premio. Así lo encuentran las personas cerca.' },
-  { img: 'ficha-dark', titulo: '2. Su ficha y su premio', texto: 'La persona abre la ficha: descripción, horario, cómo llegar y los premios que el dueño eligió, con su botón Canjear.' },
+  { img: 'mapa-dark', titulo: '2. En el mapa, con sus premios', texto: 'Su logo aparece como pin en el mapa. La persona lo toca y ve sus premios con el botón Ver local y premios.' },
   { img: 'canje-calificar-v3-dark', titulo: '3. Después del canje', texto: 'Cuando canjea, la app invita a dejar una reseña en Google Maps. Eso le trae más visibilidad al local.' },
   { img: 'canje-historia-v3-dark', titulo: '4. Historia en Instagram', texto: 'La persona puede subir una historia etiquetando a @caminaapp. Eso muestra el local a más gente.' },
 ];
@@ -119,7 +119,7 @@ function AsiSeVe() {
         {VISTAS.map((v) => (
           <figure key={v.img} className="snap-center shrink-0 w-[236px] bg-card border border-line rounded-2xl p-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/partners/${v.img}.jpg`} alt={v.titulo} width={780} height={1688} loading="lazy" className="w-full h-auto rounded-xl" />
+            <img src={`/partners/${v.img}.jpg`} alt={v.titulo} width={780} height={1691} loading="lazy" className="w-full h-auto rounded-xl" />
             <figcaption className="px-1 pt-2.5 pb-1">
               <p className="font-bold text-text text-[14px] mb-1">{v.titulo}</p>
               <p className="text-muted text-[12.5px] leading-snug">{v.texto}</p>
