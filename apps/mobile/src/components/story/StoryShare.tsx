@@ -218,7 +218,7 @@ export function StoryComposer({
   topInset?: number;
 }) {
   // Tres estilos para elegir el adorno de la historia.
-  const [look, setLook] = useState<StickerLook>('sello');
+  const [look, setLook] = useState<StickerLook>('texto');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
