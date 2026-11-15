@@ -646,43 +646,48 @@ const RANK_H = [124, 88, 60];
 // Colores del podio: oro, plata y bronce.
 const MEDAL: [string, string][] = [['#FFE7A3', '#E2B33C'], ['#EEF1F6', '#AEB6C4'], ['#F3C9A4', '#C9824E']];
 
-// Columnas del podio en morado (el color de la app) con una franja arriba del color de la medalla.
-// Suben con un rebote; después cae la cara de cada uno y, en el 1.º, la corona.
-const POD_DARK: [string, string][] = [['#5B3BB0', '#33236A'], ['#45317F', '#2A1E52'], ['#3E2C73', '#271C4D']];
-const POD_LIGHT: [string, string][] = [['#C9B4F5', '#E9DEFA'], ['#D9CCF7', '#EFE8FC'], ['#DDD1F7', '#F1EBFC']];
+const MEDAL_INK = ['#5a3d00', '#3a4150', '#5a2d0c'];
 
 function MyStep({ tl, delay, rank, me, mine, other }: { tl: Timeline; delay: number; rank: number; me: CinePerson; mine: boolean; other?: PodiumPerson }) {
   const p = usePalette();
-  const grow = useBeat(tl, delay, { spring: true });
-  const h = RANK_H[rank - 1];
-  const g = useAnimatedStyle(() => ({ height: Math.max(0, h * grow.value) }));
+  const grow = useBeat(tl, delay, { duration: 560 });
+  const g = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - Math.min(1, grow.value)) * RANK_H[rank - 1] }] }));
   const winner = rank === 1;
-  const medal = MEDAL[rank - 1][1];
-  const person = mine ? me : other;
-  const size = winner ? 58 : 50;
   return (
-    <View style={{ width: 98, alignItems: 'center' }}>
-      <View style={{ height: 104, justifyContent: 'flex-end', alignItems: 'center' }}>
-        {person ? (
-          <Reveal tl={tl} delay={delay + 420} pop from={0.3} style={{ alignItems: 'center' }}>
-            {winner ? <Reveal tl={tl} delay={delay + 820} dy={-30} style={{ position: 'absolute', top: -32, zIndex: 2 }}><CrownMark size={40} /></Reveal> : null}
-            <Avatar p={person} size={size} ring={mine ? colors.mint : medal} />
-            <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: '800', color: mine ? p.accent : p.text, marginTop: 4, maxWidth: 94 }}>{mine ? 'Tú' : person.name.split(' ')[0]}</Text>
-            {!mine && other ? <Text numberOfLines={1} style={{ fontSize: 10.5, color: p.muted, fontVariant: ['tabular-nums'] }}>{other.steps.toLocaleString('es-BO')}</Text> : null}
+    <View style={{ width: 96, alignItems: 'center' }}>
+      <View style={{ height: 92, justifyContent: 'flex-end', alignItems: 'center' }}>
+        {mine ? (
+          <Reveal tl={tl} delay={delay + 380} dy={-40} style={{ alignItems: 'center' }}>
+            {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -36 }}><CrownMark size={44} /></Reveal> : null}
+            <Avatar p={me} size={54} ring={MEDAL[rank - 1][1]} />
+            <Text style={{ fontSize: 11.5, fontWeight: '800', color: p.text, marginTop: 3 }}>Tú</Text>
+          </Reveal>
+        ) : other ? (
+          // Los otros del podio: su foto, su nombre y sus pasos.
+          <Reveal tl={tl} delay={delay + 380} dy={-30} style={{ alignItems: 'center' }}>
+            {winner ? <Reveal tl={tl} delay={delay + 800} dy={-40} style={{ position: 'absolute', top: -30 }}><CrownMark size={36} /></Reveal> : null}
+            <Avatar p={other} size={44} ring={MEDAL[rank - 1][1]} />
+            <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: p.text, marginTop: 3, maxWidth: 92 }}>{other.name.split(' ')[0]}</Text>
+            <Text numberOfLines={1} style={{ fontSize: 10, color: p.muted, fontVariant: ['tabular-nums'] }}>{other.steps.toLocaleString('es-BO')}</Text>
           </Reveal>
         ) : (
           // Sin dato de esa persona: un lugar vacío, para que el podio no se vea cortado.
           <Reveal tl={tl} delay={delay + 300} style={{ alignItems: 'center', marginBottom: 16 }}>
-            <View style={{ width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
+            <View style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
           </Reveal>
         )}
       </View>
-      <View style={{ width: '100%', height: h, justifyContent: 'flex-end', marginTop: 8 }}>
-        <Animated.View style={[{ width: '100%', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }, g]}>
-          <LinearGradient colors={(p.dark ? POD_DARK : POD_LIGHT)[rank - 1]} style={{ height: h, alignItems: 'center', paddingTop: 12, opacity: person ? 1 : 0.6 }}>
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: mine ? colors.mint : medal }} />
-            <Text style={{ ...display(winner ? 30 : 24), color: person ? medal : p.muted }}>{rank}</Text>
-          </LinearGradient>
+      <View style={{ width: '100%', height: RANK_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14, marginTop: 6 }}>
+        <Animated.View style={[{ flex: 1 }, g]}>
+          {mine || other ? (
+            <LinearGradient colors={MEDAL[rank - 1]} style={{ flex: 1, alignItems: 'center', paddingTop: 8, opacity: mine ? 1 : 0.55 }}>
+              <Text style={{ ...display(24), color: MEDAL_INK[rank - 1] }}>{rank}</Text>
+            </LinearGradient>
+          ) : (
+            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8, opacity: 0.75 }}>
+              <Text style={{ ...display(24), color: p.muted }}>{rank}</Text>
+            </View>
+          )}
         </Animated.View>
       </View>
     </View>
