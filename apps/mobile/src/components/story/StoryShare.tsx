@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState, type Ref } from 'react';
-import { Keyboard, Platform, ScrollView, View, Image, type ImageSourcePropType } from 'react-native';
+import { Keyboard, Platform, View, Image, type ImageSourcePropType } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -11,7 +11,7 @@ import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/compo
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
 import { igHandle } from '@/lib/story-rules';
-import { STICKER_LOOKS, StorySticker, type StickerLook } from '@/components/story/StoryStickers';
+import { StorySticker } from '@/components/story/StoryStickers';
 
 // Historias de Instagram por un canje: la persona sube una foto de lo que canjeó, etiqueta a Camina
 // y, cuando el equipo la ve, se le acreditan STORY_REWARD Puntos. La acreditación es manual (panel).
@@ -171,18 +171,8 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
 }
 
 // Pantalla completa con la foto en formato historia (9:16) y el sticker de Camina, lista para publicar.
-const SHADOW = { textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6 } as const;
 
 
-// A quién etiquetar, chiquito arriba (lo mismo en los tres estilos).
-function Tags({ businessInstagram }: { businessInstagram?: string | null }) {
-  const ig = igHandle(businessInstagram);
-  return (
-    <Text style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 10.5, ...SHADOW }}>
-      {ig ? `${ig} · ` : ''}{CAMINA_INSTAGRAM}
-    </Text>
-  );
-}
 
 
 
@@ -217,8 +207,6 @@ export function StoryComposer({
   onChangePhoto: () => void;
   topInset?: number;
 }) {
-  // Tres estilos para elegir el adorno de la historia.
-  const [look, setLook] = useState<StickerLook>('texto');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
@@ -235,19 +223,11 @@ export function StoryComposer({
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
           <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.2)']} locations={[0, 0.2, 0.8, 1]} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
-          <Tags businessInstagram={businessInstagram} />
-          <StorySticker look={look} photo={photo} businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} />
+          <StorySticker photo={photo} businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} />
         </View>
       </View>
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 2 }}>
-          {STICKER_LOOKS.map(({ key, label }) => (
-            <Press key={key} accessibilityRole="button" accessibilityState={{ selected: look === key }} onPress={() => setLook(key)} className="rounded-full px-4 py-1.5" style={{ backgroundColor: look === key ? '#1F7A66' : 'rgba(255,255,255,0.08)' }}>
-              <Text className="font-bold text-[13px]" style={{ color: look === key ? '#fff' : '#C4B8E8' }}>{label}</Text>
-            </Press>
-          ))}
-        </ScrollView>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
           Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>{igHandle(businessInstagram) ? <> y a <Text style={{ color: '#fff', fontWeight: '800' }}>{igHandle(businessInstagram)}</Text></> : null}. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
