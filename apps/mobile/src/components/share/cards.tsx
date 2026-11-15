@@ -1,10 +1,9 @@
-import React, { type ReactNode } from 'react';
+import React, { useId, type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
-import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient as SvgLinear, Polyline, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { CrownMark } from '@/components/CrownMark';
 import { FlameArt, TrophyArt } from '@/components/share/art';
-import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { Grow, Stagger, useCountUp } from '@/components/share/slide-motion';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
@@ -24,7 +23,7 @@ const PAL = {
   light: {
     bg: ['#FCFBFF', '#F8F6FC', '#F5F3FB'] as const,
     ink: '#291C47', muted: '#655483', accent: '#1F7A66', accentSoft: 'rgba(31,122,102,0.12)',
-    tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)',
+    tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)', rule: 'rgba(41,28,71,0.12)',
     bar: '#4FC3A8', barBest: '#1F7A66', barOff: '#D4C8EC', goal: 'rgba(41,28,71,0.35)',
     track: 'rgba(91,49,163,0.12)', mark: '#8B4FD1', flame: '#E0782A', gold: '#B77A0B',
     logo: '#5B6B99', logoOpacity: 0.15, onBar: '#FFFFFF',
@@ -33,7 +32,7 @@ const PAL = {
   dark: {
     bg: ['#15141B', '#1A1822', '#201C2B'] as const,
     ink: '#F4EFFF', muted: '#B3A6D6', accent: '#62F0B6', accentSoft: 'rgba(98,240,182,0.14)',
-    tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)',
+    tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)', rule: 'rgba(255,255,255,0.14)',
     bar: '#62F0B6', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
@@ -52,6 +51,7 @@ export function CardFrame({
 }: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode; noFooter?: boolean }) {
   const p = PAL[theme];
   const story = format !== 'square';
+  const gid = useId().replace(/[^a-zA-Z0-9]/g, '');
   if (format === 'overlay') {
     // Sin fondo ni logo grande: solo el contenido abajo y la marca chica, para que se vea la foto de atrás.
     return (
@@ -69,16 +69,21 @@ export function CardFrame({
   }
   return (
     <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden', backgroundColor: p.bg[1] }}>
-      {/* El mismo fondo que lleva la app (Olas): perlado arriba y tres olas al pie. */}
-      <AmbientBackground dark={theme === 'dark'} />
-      {/* El logo de Camina grande y apagado de fondo, cortado por el borde. */}
-      {story ? null : <Image
-        source={require('@/../assets/logo-mint.png')}
-        accessible={false}
-        style={story
-          ? { position: 'absolute', left: 112, top: 268, width: 340, height: 340, tintColor: p.logo, opacity: p.logoOpacity }
-          : { position: 'absolute', left: 170, top: 100, width: 250, height: 250, tintColor: p.logo, opacity: p.logoOpacity }}
-      />}
+      {/* Fondo limpio: degradé liso con un brillo suave arriba (sin olas ni logo de fondo). */}
+      <Svg width={CARD_W} height={cardHeight(format)} style={{ position: 'absolute', left: 0, top: 0 }}>
+        <Defs>
+          <SvgLinear id={`${gid}b`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={theme === 'dark' ? '#221840' : '#FBF9FF'} />
+            <Stop offset="1" stopColor={theme === 'dark' ? '#110B20' : '#F1ECFA'} />
+          </SvgLinear>
+          <RadialGradient id={`${gid}g`} cx="0.85" cy="0.05" r="0.75">
+            <Stop offset="0" stopColor={p.bar} stopOpacity={theme === 'dark' ? 0.22 : 0.18} />
+            <Stop offset="1" stopColor={p.bar} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect x={0} y={0} width={CARD_W} height={cardHeight(format)} fill={`url(#${gid}b)`} />
+        <Rect x={0} y={0} width={CARD_W} height={cardHeight(format)} fill={`url(#${gid}g)`} />
+      </Svg>
       {/* Zona segura de Instagram: arriba y abajo queda libre lo que tapan la barra y la caja de respuesta. */}
       <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 50 : 14, paddingHorizontal: story ? 22 : 18 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: story ? 18 : 8 }}>
@@ -86,9 +91,7 @@ export function CardFrame({
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 22, height: 22, borderRadius: 11 }} />
             <Text style={{ fontFamily: WORDMARK_FAMILY, fontSize: 13, letterSpacing: 2.2, color: p.ink, fontWeight: '900' }}>CAMINA</Text>
           </View>
-          <View style={{ backgroundColor: p.pill, borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4 }}>
-            <Text style={{ fontSize: 10.5, fontWeight: '700', color: p.ink }}>{label}</Text>
-          </View>
+          <Text style={{ fontSize: 10.5, fontWeight: '700', color: p.muted, letterSpacing: 0.3 }}>{label}</Text>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
         {/* Cada tarjeta que se comparte invita a descargar la app (salvo que ya lleve la franja para sumarse al grupo). */}
@@ -112,8 +115,8 @@ function fitSize(text: string, base: number, maxW: number) {
 
 function Tile({ p, label, value, unit, style, stack, small }: { p: Pal; label: string; value: string; unit?: string; style?: ViewStyle; stack?: boolean; small?: boolean }) {
   return (
-    <View style={[{ flex: 1, backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 16, paddingVertical: 7, paddingHorizontal: small ? 9 : 11 }, style]}>
-      <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }} numberOfLines={1}>{label}</Text>
+    <View style={[{ flex: 1, paddingVertical: 6 }, style]}>
+      <Text style={{ fontSize: 8.5, fontWeight: '800', color: p.muted, letterSpacing: 1.1, textTransform: 'uppercase' }} numberOfLines={1}>{label}</Text>
       <View style={stack ? { marginTop: 1 } : { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 1 }}>
         <Text style={{ fontSize: small ? 17 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.4 }} numberOfLines={1}>{value}</Text>
         {unit ? <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }} numberOfLines={1}>{unit}</Text> : null}
@@ -126,9 +129,9 @@ function TileGrid({ p, tiles }: { p: Pal; tiles: { label: string; value: string;
   const rows: (typeof tiles)[] = [];
   for (let i = 0; i < tiles.length; i += 2) rows.push(tiles.slice(i, i + 2));
   return (
-    <View style={{ gap: 8 }}>
+    <View>
       {rows.map((row, i) => (
-        <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
+        <View key={i} style={{ flexDirection: 'row', gap: 14, borderTopWidth: 1, borderColor: p.rule, paddingTop: 2 }}>
           {row.map((t) => <Tile key={t.label} p={p} {...t} />)}
           {row.length === 1 ? <View style={{ flex: 1 }} /> : null}
         </View>
@@ -436,7 +439,7 @@ function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: s
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
       {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: compact ? 3 : 4 }} numberOfLines={1}>{label}</Text> : <View style={{ height: 4 }} />}
-      <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
+      <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: 'transparent', borderColor: isMe ? p.accent : 'transparent', borderWidth: isMe ? 1.5 : 0, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
         <Text style={{ fontSize: compact ? (big ? 22 : 18) : big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>
       </View>
@@ -521,7 +524,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
       ) : null}
       {!story ? <View style={{ flex: 1 }} /> : null}
       {/* Meta del grupo: barra de progreso, igual que en la pantalla del grupo (sin aro). */}
-      <View style={{ marginTop: story ? 12 : 10, marginBottom: story ? 0 : 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: story ? 20 : 16, padding: story ? 14 : 9 }}>
+      <View style={{ marginTop: story ? 12 : 10, marginBottom: story ? 0 : 6, borderTopWidth: 1, borderColor: p.rule, paddingTop: story ? 12 : 8 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: story ? 9 : 6 }}>
           <Text style={{ fontSize: story ? 15 : 11, fontWeight: story ? '800' : '700', color: p.ink }}>Meta del grupo</Text>
           <Text style={{ fontSize: story ? 15 : 11, fontWeight: '800', color: p.accent }}>{done ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
@@ -575,7 +578,7 @@ export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; forma
           <Text style={{ fontSize: story ? 30 : 19, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={2}>{data.groupName}</Text>
         </View>
         {winner ? (
-          <View style={{ alignItems: 'center', marginTop: story ? 6 : 2 }}>
+          <View style={{ alignItems: 'center', marginTop: story ? 34 : 20 }}>
             <View style={{ position: 'relative', alignItems: 'center' }}>
               <View style={{ position: 'absolute', top: story ? -26 : -18 }}><CrownMark size={story ? 34 : 24} /></View>
               <View style={{ width: story ? 84 : 52, height: story ? 84 : 52, borderRadius: 99, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: p.gold }}>
@@ -693,12 +696,12 @@ function Kicker({ p, children }: { p: Pal; children: ReactNode }) {
   return <Text style={{ fontSize: 14, fontWeight: '700', color: p.muted, marginBottom: 4 }}>{children}</Text>;
 }
 function Panel({ p, children, style }: { p: Pal; children: ReactNode; style?: ViewStyle }) {
-  return <View style={[{ backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 20, padding: 14 }, style]}>{children}</View>;
+  return <View style={[{ paddingVertical: 4 }, style]}>{children}</View>;
 }
 function PanelTitle({ p, children, right }: { p: Pal; children: ReactNode; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-      <Text style={{ fontSize: 12, fontWeight: '800', color: p.ink }}>{children}</Text>
+      <Text style={{ fontSize: 8.5, fontWeight: '800', color: p.muted, letterSpacing: 1.1, textTransform: 'uppercase' }}>{children}</Text>
       {right}
     </View>
   );
