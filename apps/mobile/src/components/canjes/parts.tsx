@@ -170,6 +170,7 @@ export function pinSize(featured?: boolean) {
 export function MapMarker({ name, logoUrl, category, featured, onLoaded }: { name: string; logoUrl?: string | null; category?: string | null; featured?: boolean; onLoaded?: () => void }) {
   const { head, w, h } = pinSize(featured);
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const border = featured ? 4 : 3;
   const ring = featured ? GOLD : '#fff';
   const showLogo = !!logoUrl && !failed;
@@ -207,12 +208,14 @@ export function MapMarker({ name, logoUrl, category, featured, onLoaded }: { nam
           <CatIcon size={featured ? 28 : 24} color="#fff" weight="fill" />
           {showLogo ? (
             <Image
+              key={attempt}
               source={{ uri: logoUrl! }}
               resizeMode="cover"
               // Sin fundido: en Android el pin se "fotografía" y un fundido de 300 ms lo capturaba con el logo todavía invisible (círculo blanco).
               fadeDuration={0}
               onLoad={onLoaded}
-              onError={() => setFailed(true)}
+              // Si el logo falla, se reintenta 3 veces (con pausa) antes de rendirse; así un corte de red momentáneo no deja el ícono de respaldo.
+              onError={() => (attempt < 3 ? setTimeout(() => setAttempt((a) => a + 1), 1500 * (attempt + 1)) : setFailed(true))}
               style={{ position: 'absolute', top: 0, left: 0, width: head - border * 2, height: head - border * 2 }}
             />
           ) : null}
@@ -454,7 +457,7 @@ export function BusinessMarker({ business, coordinate, onPress }: { business: Bu
     // cuadro, y con varios pines (y varios mapas montados) eso trababa la pantalla. El logo ya viene precargado.
     // Si el logo se pinta tarde (después del tope), se vuelve a "fotografiar" el pin para que no quede con el ícono de respaldo.
     setTracking(true);
-    const t = setTimeout(() => setTracking(false), logo === 'ok' ? (painted ? 500 : 4000) : 600);
+    const t = setTimeout(() => setTracking(false), logo === 'ok' ? (painted ? 500 : 20000) : 600);
     return () => clearTimeout(t);
   }, [logo, painted]);
   if (logo === 'wait') return null;
