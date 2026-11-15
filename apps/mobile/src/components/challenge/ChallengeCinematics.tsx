@@ -19,6 +19,7 @@ import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
 import { brandFontsReady, WORDMARK_FAMILY } from '@/theme/fonts';
 import { buzz } from '@/lib/haptics';
+import { BurstCore, BURST_MS, ConfettiCannons } from '@/components/celebrations/Effects';
 
 // Cinemáticas de los desafíos de grupo: crear (boleto con sello EN MARCHA), sumarse (tu foto entra al aro y tus Puntos al bote)
 // y terminar (podio; con corona y monedas si ganaste, más calmo si no). Todo corre en el hilo de UI con Reanimated.
@@ -129,76 +130,23 @@ export function Stamp({ tl, delay, rotate = 0, style, children }: { tl: Timeline
   return <Animated.View style={[style, a]}>{children}</Animated.View>;
 }
 
-// Una partícula del destello: puede ser punto, rayita o confeti cuadrado. Sale disparada, cae un poco por gravedad,
-// gira y se apaga. Todo en el hilo de la UI (Reanimated).
-function SparkDot({ k, angle, radius, color, shape, size, spin, fall }: {
-  k: SharedValue<number>; angle: number; radius: number; color: string; shape: 0 | 1 | 2; size: number; spin: number; fall: number;
-}) {
-  const a = useAnimatedStyle(() => {
-    const t = k.value;
-    const out = 1 - Math.pow(1 - t, 2.2);
-    return {
-      opacity: t <= 0 || t >= 1 ? 0 : t < 0.08 ? t * 12 : t > 0.7 ? (1 - t) / 0.3 : 1,
-      transform: [
-        { translateX: Math.cos(angle) * radius * out },
-        { translateY: Math.sin(angle) * radius * out + fall * t * t },
-        { rotate: `${spin * t + (angle * 180) / Math.PI}deg` },
-        { scale: shape === 1 ? 1 : 0.5 + 0.7 * (1 - Math.abs(0.4 - t)) },
-      ],
-    };
-  });
-  const dims = shape === 1 ? { width: size * 2.6, height: Math.max(2, size * 0.42), borderRadius: 2 } : shape === 2 ? { width: size, height: size * 0.62, borderRadius: 1.5 } : { width: size, height: size, borderRadius: size / 2 };
-  return <Animated.View style={[{ position: 'absolute', backgroundColor: color, left: -dims.width / 2, top: -dims.height / 2 }, dims, a]} />;
-}
-
-// Onda que se abre desde el centro del destello.
-function Shock({ k, radius, color, lag }: { k: SharedValue<number>; radius: number; color: string; lag: number }) {
-  const a = useAnimatedStyle(() => {
-    const t = Math.max(0, Math.min(1, (k.value - lag) / (1 - lag)));
-    return { opacity: t <= 0 || t >= 1 ? 0 : (1 - t) * 0.8, transform: [{ scale: 0.15 + t * 1.0 }] };
-  });
-  return <Animated.View style={[{ position: 'absolute', width: radius * 2, height: radius * 2, left: -radius, top: -radius, borderRadius: radius, borderWidth: 2.5, borderColor: color }, a]} />;
-}
-
-// Destello: brillo central, dos ondas y partículas de varias formas que salen, giran y caen. Con reducir movimiento no se dibuja.
+// Destello centrado en el punto donde se pone (ver Effects). Tocar para saltar lo deja terminado.
 export function Burst({ tl, delay, palette, count = 12, radius = 80, style }: { tl: Timeline; delay: number; palette: string[]; count?: number; radius?: number; style?: ViewStyle }) {
   const k = useSharedValue(0);
   useEffect(() => {
     if (tl.reduced) return;
-    k.value = withDelay(delay, withTiming(1, { duration: 1300, easing: Easing.linear }));
+    k.value = withDelay(delay, withTiming(1, { duration: BURST_MS, easing: Easing.linear }));
     tl.onSkip(() => { cancelAnimation(k); k.value = 1; });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const glow = useAnimatedStyle(() => {
-    const t = k.value;
-    return { opacity: t <= 0 || t >= 0.5 ? 0 : t < 0.1 ? t * 3 : (0.5 - t) * 0.75, transform: [{ scale: 0.4 + t * 1.4 }] };
-  });
   if (tl.reduced) return null;
-  const n = Math.round(count * 1.75);
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: 0, height: 0 }, style]}>
-      <Animated.View style={[{ position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0], opacity: 0 }, glow]} />
-      <Shock k={k} radius={radius * 0.6} color={palette[0]} lag={0} />
-      <Shock k={k} radius={radius * 0.85} color={palette[1 % palette.length]} lag={0.12} />
-      {Array.from({ length: n }, (_, i) => {
-        const r = ((i * 7919) % 100) / 100;
-        return (
-          <SparkDot key={i} k={k}
-            angle={(i / n) * Math.PI * 2 + r * 0.5}
-            radius={radius * (0.7 + r * 0.75)}
-            color={palette[i % palette.length]}
-            shape={(i % 3) as 0 | 1 | 2}
-            size={4 + (i % 4) * 1.6}
-            spin={(i % 2 ? 1 : -1) * (180 + r * 360)}
-            fall={30 + r * 50}
-          />
-        );
-      })}
+      <BurstCore k={k} palette={palette} radius={radius} count={count} />
     </View>
   );
 }
 
-// Moneda que viaja en arco desde (dx, dy) relativo a su lugar final, y se apaga al llegar.
 export function FlyingCoin({ tl, delay, dx, dy, size = 22, onLand }: { tl: Timeline; delay: number; dx: number; dy: number; size?: number; onLand?: () => void }) {
   const k = useSharedValue(0);
   useEffect(() => {
@@ -300,7 +248,6 @@ export function Stage({ tl, children, announce, align = 'center', confetti }: { 
       <View style={{ flex: 1 }}>
         {/* El mismo fondo de la app (degradé y olas). */}
         <AmbientBackground />
-        {confetti ? <Confetti tl={tl} delay={confetti.at} palette={confetti.palette} /> : null}
         <Press
           accessible={false}
           feedback="none"
@@ -309,48 +256,16 @@ export function Stage({ tl, children, announce, align = 'center', confetti }: { 
         >
           {children}
         </Press>
+        {confetti ? <Confetti tl={tl} delay={confetti.at} palette={confetti.palette} /> : null}
       </View>
     </Animated.View>
   );
 }
 
-// Lluvia de confeti a lo ancho de la pantalla (el momento de festejo). Rectángulos y puntos que caen balanceándose y girando.
-function ConfettiPiece({ k, x, delay, color, w, h, sway, spin, speed }: { k: SharedValue<number>; x: number; delay: number; color: string; w: number; h: number; sway: number; spin: number; speed: number }) {
-  const a = useAnimatedStyle(() => {
-    const t = Math.max(0, Math.min(1, (k.value - delay) / (1 - delay)));
-    return {
-      opacity: t <= 0 ? 0 : t > 0.85 ? (1 - t) / 0.15 : 1,
-      transform: [
-        { translateY: -40 + t * speed },
-        { translateX: Math.sin(t * Math.PI * 3 + x) * sway },
-        { rotate: `${t * spin}deg` },
-        { scaleX: Math.cos(t * Math.PI * 4 + x) },
-      ],
-    };
-  });
-  return <Animated.View style={[{ position: 'absolute', top: 0, left: `${x * 100}%`, width: w, height: h, borderRadius: h < 6 ? 3 : 2, backgroundColor: color }, a]} />;
-}
-export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 22 }: { tl: Timeline; delay: number; palette?: string[]; count?: number }) {
-  const k = useSharedValue(0);
-  useEffect(() => {
-    if (tl.reduced) return;
-    k.value = withDelay(delay, withTiming(1, { duration: 3400, easing: Easing.linear }));
-    tl.onSkip(() => { cancelAnimation(k); k.value = 1; });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+// Confeti de festejo: dos cañones desde las esquinas de abajo (ver Effects).
+export function Confetti({ tl, delay, palette = CAMINA_SPARKS, count = 64 }: { tl: Timeline; delay: number; palette?: string[]; count?: number }) {
   if (tl.reduced) return null;
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: '15%', right: '15%', bottom: '35%', overflow: 'hidden' }}>
-      {Array.from({ length: count }, (_, i) => {
-        const r = ((i * 7919) % 1000) / 1000;
-        const dot = i % 4 === 0;
-        return (
-          <ConfettiPiece key={i} k={k} x={((i * 0.618) % 1)} delay={r * 0.35} color={palette[i % palette.length]}
-            w={dot ? 6 : 5 + (i % 3) * 1.5} h={dot ? 6 : 9 + (i % 3) * 2} sway={10 + r * 16} spin={(i % 2 ? 1 : -1) * (180 + r * 240)} speed={380 + r * 220} />
-        );
-      })}
-    </View>
-  );
+  return <ConfettiCannons palette={palette} delay={delay} count={count} onSkip={tl.onSkip} />;
 }
 
 export function Eyebrow({ children, color }: { children: string; color: string }) {

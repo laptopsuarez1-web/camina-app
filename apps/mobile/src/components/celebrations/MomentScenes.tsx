@@ -9,7 +9,7 @@ import { Press } from '@/components/ui/Press';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Coin } from '@/components/ui/Coin';
 import { Glass } from '@/components/ui/Glass';
-import { Flame, Trophy } from '@/components/icons';
+import { Trophy } from '@/components/icons';
 import { IllArt } from '@/components/ui/IllustratedIcons';
 import { CrownMark } from '@/components/CrownMark';
 import { colors } from '@/theme/tokens';
@@ -407,7 +407,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   const tl = useTimeline(3200);
   const days = useCount(tl, 1, c.days, 500, 1500);
   const grow = useBeat(tl, 300, { duration: 1700 });
-  const flame = big ? '#FFB92E' : colors.warn;
+  const flame = big ? '#FFB92E' : colors.mint;
   const flameStyle = useAnimatedStyle(() => ({ transform: [{ scale: 0.35 + 0.65 * grow.value }, { translateY: (1 - grow.value) * 20 }] }));
   const glow = useAnimatedStyle(() => ({ opacity: grow.value, transform: [{ scale: 0.6 + 0.4 * grow.value }] }));
   useEffect(() => {
@@ -419,7 +419,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   }, []);
   const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
+    <Stage tl={tl} confetti={{ at: 2000, palette: big ? [GOLD, '#FFD97A', '#FFF1B8', colors.mint] : [colors.mint, '#FFD97A', '#B7A6F0', '#FFFFFF'] }} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
       <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
@@ -428,7 +428,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
         <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, flameStyle]}>
           <IllArt kind="flame" size={150} />
         </Animated.View>
-        <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.warn, '#FFD97A', '#FFF1B8']} count={20} radius={120} style={{ left: '50%', top: '50%' }} />
+        <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.mint, '#FFD97A', '#B7A6F0']} count={20} radius={130} style={{ left: '50%', top: '50%' }} />
       </View>
       {/* El número va debajo de la llama, bien grande, para que no se pierda contra el dibujo. */}
       <View accessible accessibilityLabel={`${c.days} días seguidos`} style={{ alignItems: 'center', marginTop: 6 }}>
@@ -443,7 +443,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={2450} dy={20} style={{ alignSelf: 'stretch', marginTop: 30 }}>
-        <MainButton bg={flame} label="Compartir mi racha" onPress={share} />
+        <MainButton gold={big} label="Compartir mi racha" onPress={share} />
         <LinkButton label="Seguir caminando" onPress={onDone} color={p.accent} />
       </Reveal>
     </Stage>
@@ -465,22 +465,22 @@ export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone:
   }, []);
   const share = () => { Share.share({ message: `Completé ${c.weeks === 1 ? 'una semana' : `${c.weeks} semanas`} seguidas cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
+    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.mint, '#FFD97A', '#B7A6F0', '#FFFFFF'] }} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha semanal</Eyebrow></Reveal>
-      <Reveal tl={tl} delay={300} pop from={0.4} style={{ marginTop: 18 }}>
-        <IllArt kind="flame" size={104} />
-      </Reveal>
+      <View style={{ marginTop: 18, alignItems: 'center', justifyContent: 'center' }}>
+        <Reveal tl={tl} delay={300} pop from={0.4}>
+          <IllArt kind="flame" size={104} />
+        </Reveal>
+        <Burst tl={tl} delay={2000} palette={[colors.mint, '#FFD97A', '#B7A6F0']} count={18} radius={120} style={{ left: '50%', top: '50%' }} />
+      </View>
       <View accessible accessibilityLabel="7 de 7 días" style={{ flexDirection: 'row', gap: 6, alignSelf: 'stretch', marginTop: 26 }}>
         {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <Reveal key={i} tl={tl} delay={500 + i * 190} pop from={0.3} style={{ flex: 1 }}>
-            <View style={{ height: 44, borderRadius: 12, backgroundColor: colors.warn, alignItems: 'center', justifyContent: 'center' }}>
-              {i === 6 ? <Text style={{ fontWeight: '900', fontSize: 14, color: '#fff' }}>+{c.points}</Text> : <Flame size={18} color="#fff" weight="fill" />}
+            <View style={{ height: 44, borderRadius: 12, backgroundColor: 'rgba(98,240,182,0.16)', borderWidth: 1.5, borderColor: 'rgba(98,240,182,0.55)', alignItems: 'center', justifyContent: 'center' }}>
+              {i === 6 ? <Text style={{ fontWeight: '900', fontSize: 14, color: colors.mint }}>+{c.points}</Text> : <IllArt kind="flame" size={24} />}
             </View>
           </Reveal>
         ))}
-      </View>
-      <View style={{ height: 0, alignSelf: 'stretch', alignItems: 'flex-end' }}>
-        <Burst tl={tl} delay={2000} palette={[colors.warn, '#FFD97A', '#FFF1B8', colors.aqua]} count={18} radius={110} style={{ right: 26, top: -30 }} />
       </View>
       <Reveal tl={tl} delay={2000} pop from={0.6} style={{ marginTop: 34 }}>
         <Text style={{ ...display(30), color: p.text, textAlign: 'center' }}>¡Semana completa!</Text>
@@ -497,7 +497,7 @@ export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone:
         </Text>
       </Reveal>
       <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 28 }}>
-        <MainButton bg={colors.warn} label="Compartir mi racha" onPress={share} />
+        <MainButton label="Compartir mi racha" onPress={share} />
         <LinkButton label="Seguir caminando" onPress={onDone} color={p.accent} />
       </Reveal>
     </Stage>
@@ -526,15 +526,15 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <Stage tl={tl} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
+    <Stage tl={tl} confetti={{ at: 1950, palette: [GOLD, '#FFD97A', '#FFF1B8', colors.mint] }} announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{`Meta del grupo · ${c.name}`}</Eyebrow></Reveal>
-      <Reveal tl={tl} delay={1950} pop from={0.3} style={{ marginTop: 12 }}>
-        <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
-          <Trophy size={48} color="#FFD97A" weight="fill" />
-        </View>
-      </Reveal>
-      <View style={{ position: 'absolute', top: '36%', left: '50%' }} pointerEvents="none">
-        <Burst tl={tl} delay={1950} palette={GOLD_SPARKS} count={20} radius={130} />
+      <View style={{ marginTop: 12, alignItems: 'center', justifyContent: 'center' }}>
+        <Reveal tl={tl} delay={1950} pop from={0.3}>
+          <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 2, borderColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
+            <Trophy size={48} color="#FFD97A" weight="fill" />
+          </View>
+        </Reveal>
+        <Burst tl={tl} delay={1950} palette={GOLD_SPARKS} count={20} radius={130} style={{ left: '50%', top: '50%' }} />
       </View>
       <View accessible accessibilityLabel={`${steps} de ${c.target} pasos`} style={{ alignSelf: 'stretch', marginTop: 22 }}>
         <Text allowFontScaling={false} style={{ ...display(40), color: p.text, textAlign: 'center', fontVariant: ['tabular-nums'] }}>{steps.toLocaleString('es-BO')}</Text>
@@ -546,21 +546,23 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
       <Reveal tl={tl} delay={2050} pop from={0.6} style={{ marginTop: 24 }}>
         <Text style={{ ...display(28), color: p.text, textAlign: 'center' }}>¡Lo lograron juntos!</Text>
       </Reveal>
-      <Glass className="rounded-3xl" style={{ alignSelf: 'stretch', marginTop: 16, gap: 8, padding: 12 }}>
-        {top.map((q, i) => (
-          <Reveal key={q.id} tl={tl} delay={2200 + i * 110} dy={10}>
-            <View accessible accessibilityLabel={`${q.name}: ${q.steps} pasos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Avatar p={q} size={30} />
-              <Text numberOfLines={1} style={{ width: 70, fontSize: 12.5, fontWeight: '700', color: p.text }}>{q.id === meId ? 'Tú' : q.name.split(' ')[0]}</Text>
-              <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
-                <View style={{ width: `${Math.max(6, (q.steps / maxSteps) * 100)}%`, height: '100%', borderRadius: 4, backgroundColor: i === 0 ? GOLD : colors.aqua }} />
+      <Reveal tl={tl} delay={2150} dy={14} style={{ alignSelf: 'stretch', marginTop: 16 }}>
+        <Glass className="rounded-3xl" style={{ gap: 8, padding: 12 }}>
+          {top.map((q, i) => (
+            <Reveal key={q.id} tl={tl} delay={2200 + i * 110} dy={10}>
+              <View accessible accessibilityLabel={`${q.name}: ${q.steps} pasos`} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Avatar p={q} size={30} />
+                <Text numberOfLines={1} style={{ width: 70, fontSize: 12.5, fontWeight: '700', color: p.text }}>{q.id === meId ? 'Tú' : q.name.split(' ')[0]}</Text>
+                <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
+                  <View style={{ width: `${Math.max(6, (q.steps / maxSteps) * 100)}%`, height: '100%', borderRadius: 4, backgroundColor: i === 0 ? GOLD : colors.aqua }} />
+                </View>
+                <Text style={{ width: 56, textAlign: 'right', fontSize: 12, color: p.muted, fontVariant: ['tabular-nums'] }}>{q.steps.toLocaleString('es-BO')}</Text>
               </View>
-              <Text style={{ width: 56, textAlign: 'right', fontSize: 12, color: p.muted, fontVariant: ['tabular-nums'] }}>{q.steps.toLocaleString('es-BO')}</Text>
-            </View>
-          </Reveal>
-        ))}
-        {rest > 0 ? <Reveal tl={tl} delay={2200 + top.length * 110}><Text style={{ fontSize: 12, color: p.muted, textAlign: 'center' }}>y {rest} {rest === 1 ? 'persona más' : 'personas más'}</Text></Reveal> : null}
-      </Glass>
+            </Reveal>
+          ))}
+          {rest > 0 ? <Reveal tl={tl} delay={2200 + top.length * 110}><Text style={{ fontSize: 12, color: p.muted, textAlign: 'center' }}>y {rest} {rest === 1 ? 'persona más' : 'personas más'}</Text></Reveal> : null}
+        </Glass>
+      </Reveal>
       <Reveal tl={tl} delay={2450} dy={20} style={{ alignSelf: 'stretch', marginTop: 26 }}>
         {c.onShare ? <MainButton label="Compartir con el grupo" onPress={() => { c.onShare?.(); onDone(); }} /> : <MainButton label="Genial" onPress={onDone} />}
         {c.onShare ? <LinkButton label="Seguir" onPress={onDone} color={p.accent} /> : null}
