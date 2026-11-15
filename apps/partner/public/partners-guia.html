@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Camina Partners</title>
+<script>try{var t=localStorage.getItem('camina-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@800;900&display=swap">
+<style>
+/* Layout: guía de bolsillo para el celular. Barra de pestañas fija arriba, una sección a la vez, botones de copiar en cada mensaje. */
+:root{
+  --bg:#f6f4fc; --card:#ffffff; --fg:#1d1a2e; --muted:#645f7c; --line:#e1dcf2;
+  --brand:#5b3fd0; --brand-ink:#ffffff; --soft:#ece7fb; --ok:#1f7a4d; --okbg:#e3f4ea; --no:#b3261e; --nobg:#fbe9e7;
+  --head:'Montserrat','Arial Black',sans-serif; --body:'Inter',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12101c; --card:#1b1829; --fg:#efecfa; --muted:#a29cbd; --line:#2d2942;
+  --brand:#9d86ff; --brand-ink:#12101c; --soft:#262139; --ok:#6fd5a0; --okbg:#173326; --no:#ff9a92; --nobg:#3a1f1d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12101c; --card:#1b1829; --fg:#efecfa; --muted:#a29cbd; --line:#2d2942;
+  --brand:#9d86ff; --brand-ink:#12101c; --soft:#262139; --ok:#6fd5a0; --okbg:#173326; --no:#ff9a92; --nobg:#3a1f1d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:680px;margin:0 auto}
+header{padding-top:20px}
+.logo{font:900 22px var(--head);letter-spacing:.04em;color:var(--brand)}
+h1{font:800 28px/1.15 var(--head);margin:6px 0 4px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 14px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;display:flex;gap:8px;overflow-x:auto;padding:10px 0;border-bottom:1px solid var(--line);scrollbar-width:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+nav a{flex:none;padding:8px 14px;border-radius:999px;background:var(--soft);color:var(--fg);text-decoration:none;font-weight:600;font-size:14px;border:1px solid transparent}
+nav a[aria-current="true"]{background:var(--brand);color:var(--brand-ink)}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+section{display:none;padding-top:18px}
+section.on{display:block}
+h2{font:800 22px/1.2 var(--head);margin:0 0 6px}
+h3{font:600 17px/1.3 var(--body);margin:22px 0 8px}
+p{margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 12px}
+.say{background:var(--soft);border-radius:14px;padding:14px 16px;margin:0 0 12px;font-size:18px;line-height:1.5}
+.say b{color:var(--brand)}
+.tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.copy{margin-top:10px;font:600 14px var(--body);background:var(--brand);color:var(--brand-ink);border:0;border-radius:10px;padding:10px 16px;min-height:44px;cursor:pointer}
+.copy.done{background:var(--ok);color:#fff}
+.say .copy,.card .copy{display:block}
+.ok,.no{border-radius:12px;padding:12px 14px;margin:0 0 10px}
+.ok{background:var(--okbg)} .no{background:var(--nobg)}
+.ok h3,.no h3{margin:0 0 6px}
+.ok h3{color:var(--ok)} .no h3{color:var(--no)}
+ul{margin:0;padding-left:20px} li{margin:4px 0}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 10px}
+summary{padding:14px 16px;font-weight:600;cursor:pointer;min-height:44px}
+details>div{padding:0 16px 14px}
+.pay{width:100%;border-collapse:collapse;margin:8px 0}
+.pay td{padding:10px 8px;border-bottom:1px solid var(--line)}
+.pay td:last-child{text-align:right;font:800 20px var(--head);color:var(--brand);font-variant-numeric:tabular-nums}
+.step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border:0}
+.step input{width:26px;height:26px;margin-top:2px;accent-color:var(--brand)}
+.step label{cursor:pointer;min-width:0}
+.step small{display:block;color:var(--muted)}
+.clock{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--brand);color:var(--brand-ink);border-radius:14px;padding:14px 16px;margin:12px 0}
+.clock output{font:900 34px var(--head);font-variant-numeric:tabular-nums}
+.clock button{background:var(--brand-ink);color:var(--brand);border:0;border-radius:10px;font:600 15px var(--body);padding:10px 16px;min-height:44px;cursor:pointer}
+.minute{font:800 13px var(--head);color:var(--brand);letter-spacing:.06em;margin:18px 0 0}
+form{display:grid;gap:10px}
+label.f{display:grid;gap:4px;font-weight:600;font-size:14px}
+input[type=text],select{font:16px var(--body);padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);min-height:46px;width:100%}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--soft);border-radius:12px;padding:12px 14px;font:15px/1.5 var(--body);margin:0}
+.fine{font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">CAMINA</div>
+  <h1>Camina Partners</h1>
+  <p class="sub">Guía del embajador: todo lo que necesitas para sumar un local en 5 minutos. Ábrela en el celular y léela en la visita.</p>
+</header>
+
+<nav id="tabs" aria-label="Secciones">
+  <a href="#inicio">Inicio</a>
+  <a href="#visita">Qué decir</a>
+  <a href="#dudas">Dudas del dueño</a>
+  <a href="#carga">Cargar en 5 min</a>
+  <a href="#reglas">No prometer</a>
+  <a href="#reportar">Reportar</a>
+  <a href="#cobrar">Cobrar</a>
+</nav>
+
+<section id="s_inicio">
+  <h2>Qué es Camina</h2>
+  <p>Una app de Tarija que premia a la gente por caminar. Cada 1.000 pasos gana 1 Punto, y los Puntos se canjean por premios en locales de la ciudad. Se lanza el <b>1 de diciembre</b>.</p>
+  <p>Tu trabajo: sumar locales. Le muestras al dueño cómo funciona y dejas su local cargado desde su celular, en unos 5 minutos.</p>
+  <h3>Cómo es una visita buena</h3>
+  <div class="card">
+    <div class="step"><span><b>1</b></span><div><b>Saludas y pides al dueño</b><small>Quien decide. Mejor entre 15:00 y 18:00, lejos de la hora de almuerzo.</small></div></div>
+    <div class="step"><span><b>2</b></span><div><b>Dices el guion de 30 segundos</b><small>Pestaña "Qué decir". Lo lees del celular, no hace falta saberlo de memoria.</small></div></div>
+    <div class="step"><span><b>3</b></span><div><b>Si dice sí, cargan el local juntos</b><small>Pestaña "Cargar en 5 min". Con el celular del dueño.</small></div></div>
+    <div class="step"><span><b>4</b></span><div><b>Pegas el afiche y reportas</b><small>Pestaña "Reportar". Con eso queda registrado que el local lo trajiste tú.</small></div></div>
+  </div>
+  <h3>Qué llevar</h3>
+  <ul>
+    <li>Tu celular con datos o wifi y esta guía abierta.</li>
+    <li>El afiche "Aquí se canjea" impreso.</li>
+    <li>Al dueño le pides: su celular con su correo abierto, y que se saque contigo una foto del premio.</li>
+  </ul>
+</section>
+
+<section id="s_visita">
+  <h2>Qué decir</h2>
+  <p class="sub">Frases listas. Usa tus palabras si te salen más naturales, pero no cambies lo que dice el premio ni el costo.</p>
+
+  <span class="tag">Guion de 30 segundos</span>
+  <div class="say" id="g1">Hola, buenas tardes. Soy <b>[tu nombre]</b>, de <b>Camina</b>, una app de Tarija que premia a la gente por caminar. La gente junta puntos con sus pasos y los canjea en locales como el suyo.<br><br>Usted elige el premio (un café, un descuento, lo que quiera), los días, la hora y cuántos da por día. Lo pone justo en las <b>horas en que el local está más tranquilo</b>. Es gratis para empezar y sin contrato.<br><br>¿Le muestro en 2 minutos cómo se ve en el celular?
+    <button class="copy" data-t="g1">Copiar</button></div>
+
+  <span class="tag">Si no está el dueño (WhatsApp)</span>
+  <div class="say" id="g2">Hola, soy [tu nombre], de Camina, una app de Tarija que premia con puntos a la gente por caminar, y se canjean en locales. Pasé por [local] y me gustaría mostrarle cómo sumarlo (es gratis y toma unos 5 minutos). ¿Qué día y hora le queda cómodo?
+    <button class="copy" data-t="g2">Copiar</button></div>
+
+  <span class="tag">Para mostrar en 20 segundos</span>
+  <div class="card">
+    <ul>
+      <li>La persona camina y gana Puntos.</li>
+      <li>Viene a su local y escribe el <b>código de su local</b> (4 números) en la app. Tiene que estar ahí, en el local.</li>
+      <li>El canje queda registrado con fecha y hora. Usted entrega el premio.</li>
+    </ul>
+  </div>
+
+  <span class="tag">Si dice "lo pienso"</span>
+  <div class="say" id="g3">Claro. ¿Me da su WhatsApp y le mando un resumen? Le escribo el [día] para ver qué decidió.
+    <button class="copy" data-t="g3">Copiar</button></div>
+  <p class="fine">Anota el día y escribe ese día, sin falta.</p>
+
+  <span class="tag">Cierre cuando dice que sí</span>
+  <div class="say" id="g4">Perfecto. Lo dejamos andando ahora con su celular. Son unos 5 minutos: elegimos su premio, tomamos una foto y queda listo para revisión.
+    <button class="copy" data-t="g4">Copiar</button></div>
+</section>
+
+<section id="s_dudas">
+  <h2>Dudas del dueño</h2>
+  <p class="sub">Toca la duda y lee la respuesta.</p>
+
+  <details><summary>"No tengo tiempo."</summary><div>
+    <div class="say" style="font-size:16px">Lo entiendo. Por eso lo cargamos ahora mismo, en 5 minutos, desde su celular, y yo le ayudo. Después no tiene que hacer casi nada: solo entregar el premio cuando alguien venga. ¿Lo hacemos ahora o paso el [día]?</div></div></details>
+  <details><summary>"Ya tengo tarjeta de fidelidad."</summary><div>
+    <div class="say" style="font-size:16px">Perfecto, y no la cambia. Una tarjeta premia a quien ya viene; Camina le trae personas nuevas que todavía no son sus clientes. Pueden convivir.</div></div></details>
+  <details><summary>"No entiendo de tecnología."</summary><div>
+    <div class="say" style="font-size:16px">No instala nada. Es una página web que abre desde su celular, como cuando abre Facebook. Yo le ayudo a cargarlo ahora, y los pasos son siempre los mismos.</div></div></details>
+  <details><summary>"¿Cuánto cuesta?"</summary><div>
+    <div class="say" style="font-size:16px">Empezar es gratis y sin contrato. Los primeros comercios tienen 3 meses gratis de un plan completo. Lo único que cuesta es el premio que usted elige, y solo cuando alguien lo canjea. Más adelante hay planes de pago opcionales: Bs 100 y Bs 300 al mes.</div></div></details>
+  <details><summary>"Me van a pedir gratis todo el día."</summary><div>
+    <div class="say" style="font-size:16px">Usted decide cuántos cupones da por día, qué días y a qué hora. En su hora pico, el premio no se puede canjear. Y la misma persona solo puede volver a canjear en su local después de 7 días.</div></div></details>
+  <details><summary>"¿Cuánta gente usa la app?"</summary><div>
+    <div class="say" style="font-size:16px">Es nueva, se lanza el 1 de diciembre en Tarija. Por eso estamos sumando primero a los locales: los primeros son los que más se van a ver.</div></div></details>
+  <details><summary>"¿Y si alguien hace trampa?"</summary><div>
+    <div class="say" style="font-size:16px">El cliente tiene que estar en su local y escribir el código de su local. Cada canje queda guardado con fecha y hora en su panel. Si quiere cambiar el código, hay un botón "Cambiar código".</div></div></details>
+  <details><summary>"¿Me van a cobrar después?"</summary><div>
+    <div class="say" style="font-size:16px">No. Hoy empezar es gratis. Si algún día quiere más (premios sin límite, que lo destaquen), hay planes opcionales y usted decide. Sin contrato: lo pausa o lo cancela cuando quiera.</div></div></details>
+  <details><summary>"Lo voy a pensar."</summary><div>
+    <div class="say" style="font-size:16px">Claro. ¿Me da su WhatsApp y le mando un resumen? Le escribo el [día] para ver qué decidió.</div></div></details>
+</section>
+
+<section id="s_carga">
+  <h2>Cargar el local en 5 minutos</h2>
+  <p class="sub">Primero solo lo mínimo para que el local salga. El logo y la portada se suben después, el mismo día.</p>
+
+  <div class="clock"><output id="clk" aria-live="off">5:00</output><button id="clkbtn" type="button">Empezar reloj</button></div>
+
+  <p class="minute">MINUTO 0 A 1: CREAR LA CUENTA</p>
+  <div class="card">
+    <div class="step"><input type="checkbox" id="c1"><label for="c1">En el celular del dueño abre <b>caminaapp.com/alta</b><small>Elige "Soy un comercio" y luego "Tienda física".</small></label></div>
+    <div class="step"><input type="checkbox" id="c2"><label for="c2">Pon el nombre del local, tipo de comercio, ciudad, dirección y su WhatsApp</label></div>
+    <div class="step"><input type="checkbox" id="c3"><label for="c3">Pon <b>su</b> correo y una clave que él recuerde (mínimo 6 caracteres). Toca "Crear cuenta"<small>Entra directo al panel. El correo de verificación le llega después, no hay que esperarlo.</small></label></div>
+  </div>
+
+  <p class="minute">MINUTO 1 A 2: DATOS DEL LOCAL</p>
+  <div class="card">
+    <div class="step"><input type="checkbox" id="c4"><label for="c4">En <b>Perfil del local</b>, escribe la descripción (qué ofrece y qué lo hace especial)<small>Entre 15 y 500 letras. Dos frases bastan.</small></label></div>
+    <div class="step"><input type="checkbox" id="c5"><label for="c5">Pon el horario: días y hora de apertura y cierre</label></div>
+    <div class="step"><input type="checkbox" id="c6"><label for="c6"><b>Ubicación:</b> parado dentro del local, toca "Usar mi ubicación actual" y acepta el permiso<small>Sin esto el local no sale en el mapa de la app.</small></label></div>
+  </div>
+
+  <p class="minute">MINUTO 2 A 4: EL PREMIO</p>
+  <div class="card">
+    <div class="step"><input type="checkbox" id="c7"><label for="c7">Menú <b>Beneficio</b>. Elige "Gratis" (regala algo) o "Descuento" (un % o 2x1)<small>Lo elige el dueño, no tú. Sugerencia: algo que le cueste poco y traiga gente en su hora floja.</small></label></div>
+    <div class="step"><input type="checkbox" id="c8"><label for="c8">Pon nombre y descripción cortos del premio</label></div>
+    <div class="step"><input type="checkbox" id="c9"><label for="c9">Toma ahí mismo la <b>foto cuadrada del premio</b> (es obligatoria)<small>De día, cerca de una ventana, sin texto encima.</small></label></div>
+    <div class="step"><input type="checkbox" id="c10"><label for="c10">Define <b>cupones por día</b>, <b>días</b> y <b>horario</b><small>Aquí va la hora floja del dueño. Pregúntale: "¿cuándo está más vacío su local?"</small></label></div>
+  </div>
+
+  <p class="minute">MINUTO 4 A 5: CERRAR</p>
+  <div class="card">
+    <div class="step"><input type="checkbox" id="c11"><label for="c11">Muéstrale su <b>código del local</b> (4 números)<small>Es el que los clientes escriben en la app. Si quiere otro, "Cambiar código".</small></label></div>
+    <div class="step"><input type="checkbox" id="c12"><label for="c12">Pega el afiche "Aquí se canjea" en el mostrador</label></div>
+    <div class="step"><input type="checkbox" id="c13"><label for="c13">Reporta el local por WhatsApp<small>Pestaña "Reportar". Sin este mensaje no se registra que lo trajiste tú.</small></label></div>
+  </div>
+
+  <h3>Después, el mismo día</h3>
+  <div class="card">
+    <ul>
+      <li>Sube el <b>logo</b> (o una foto de la fachada si no tiene) y la <b>portada</b> (foto horizontal del local).</li>
+      <li>Si tiene Instagram, Facebook o link de Google Maps, agrégalos.</li>
+    </ul>
+    <p class="fine" style="margin-top:8px">El local queda en revisión y Camina lo aprueba, normalmente el mismo día. Si falta algo, el panel le dice qué. Los nombres de los botones pueden cambiar un poco, pero el orden es este.</p>
+  </div>
+  <div class="no"><h3>Si algo falla</h3>No sigas improvisando. Saca una captura de pantalla y mándala al WhatsApp de Camina.</div>
+</section>
+
+<section id="s_reglas">
+  <h2>Qué decir y qué no prometer</h2>
+  <div class="ok"><h3>Sí puedes decir</h3><ul>
+    <li>Es gratis para empezar y sin contrato.</li>
+    <li>Usted elige el premio, los días, la hora y los cupones.</li>
+    <li>Cada canje queda registrado con fecha y hora.</li>
+    <li>La persona tiene que estar en su local y poner el código.</li>
+    <li>Es una app nueva que se lanza el 1 de diciembre en Tarija.</li>
+  </ul></div>
+  <div class="no"><h3>Nunca prometas</h3><ul>
+    <li>"Va a vender más" o "se va a llenar de clientes".</li>
+    <li>Cuánto dinero va a ganar.</li>
+    <li>Cantidad de usuarios, descargas o canjes.</li>
+    <li>Funciones o fechas que hoy no están en la app.</li>
+    <li>Que nunca va a pagar nada, para siempre.</li>
+  </ul></div>
+  <span class="tag">Cuando te presionen</span>
+  <div class="say" id="g5">No le puedo asegurar ventas. Lo que sí le aseguro es que no hay contrato, que usted controla el premio y que puede pausarlo cuando quiera.
+    <button class="copy" data-t="g5">Copiar</button></div>
+  <div class="no"><h3>Reglas que te sacan del programa</h3><ul>
+    <li>Cargar un local sin que el dueño lo sepa, o poner un premio que él no eligió.</li>
+    <li>Canjear tú (o tu familia) en un local que trajiste.</li>
+    <li>Crear cuentas falsas. Un celular, una cuenta.</li>
+  </ul></div>
+</section>
+
+<section id="s_reportar">
+  <h2>Reportar un local</h2>
+  <p class="sub">Llena los datos, copia el mensaje y mándalo al WhatsApp de Camina. Gana el local quien lo reporta primero.</p>
+  <form id="rf" autocomplete="off">
+    <label class="f" for="cod">Tu código de embajador<input type="text" id="cod" placeholder="EMB-03" inputmode="text"></label>
+    <label class="f" for="loc">Nombre del local<input type="text" id="loc" placeholder="Café Central"></label>
+    <label class="f" for="due">Nombre del dueño<input type="text" id="due" placeholder="María Pérez"></label>
+    <label class="f" for="zon">Zona<input type="text" id="zon" placeholder="Centro"></label>
+    <label class="f" for="pla">Plan con el que entró
+      <select id="pla"><option>Plan gratis</option><option>Cupo fundador</option><option>Plan de Bs 100</option><option>Plan de Bs 300</option></select></label>
+  </form>
+  <h3>Tu mensaje</h3>
+  <pre id="msg"></pre>
+  <button class="copy" id="cpmsg" type="button" data-t="msg">Copiar mensaje</button>
+  <p class="fine" style="margin-top:12px">Si no te dieron tu código todavía, escríbele a Camina por WhatsApp pidiendo "EMBAJADOR".</p>
+</section>
+
+<section id="s_cobrar">
+  <h2>Cuánto cobras</h2>
+  <p class="sub">Se paga una vez por cada local activo. El monto depende del plan que toma el local.</p>
+  <div class="card">
+    <table class="pay">
+      <tr><td>Local con plan gratis</td><td>Bs 20</td></tr>
+      <tr><td>Local con cupo fundador</td><td>Bs 25</td></tr>
+      <tr><td>Local que paga el plan de Bs 100</td><td>Bs 40</td></tr>
+      <tr><td>Local que paga el plan de Bs 300</td><td>Bs 120</td></tr>
+    </table>
+  </div>
+  <h3>Un local está activo cuando</h3>
+  <ul>
+    <li>Está aprobado y publicado.</li>
+    <li>Tiene un premio cargado.</li>
+    <li>Tuvo un primer canje de una persona real (no tú, ni tu familia, ni el dueño).</li>
+  </ul>
+  <h3>Reglas del pago</h3>
+  <ul>
+    <li>Se paga los viernes lo que quedó activo esa semana, por transferencia/QR o en efectivo.</li>
+    <li>Si el local mejora de plan dentro de 60 días, cobras la diferencia cuando haga su primer pago.</li>
+    <li><b>Bonos:</b> +Bs 50 al llegar a 5 locales activos y +Bs 100 más al llegar a 10.</li>
+    <li>Un local, un embajador: gana quien lo reportó primero. No cuentan locales que ya están en Camina.</li>
+    <li>Para que el primer canje llegue rápido, invita a amigos que ya caminen con la app a canjear en tu local (cada uno con su cuenta).</li>
+    <li>Eres embajador independiente: tú eliges tus horarios. En caso de duda decide Camina.</li>
+  </ul>
+  <h3>Dónde visitar primero</h3>
+  <ul>
+    <li><b>Qué tipo:</b> cafeterías y heladerías, pastelerías, barberías y peluquerías, gimnasios, comida rápida, fotocopiadoras y librerías cerca de universidades.</li>
+    <li><b>Dónde:</b> el Centro y alrededor de la plaza, cerca de las universidades, avenidas con muchos locales juntos y tu propio barrio.</li>
+    <li><b>Evita al inicio:</b> cadenas y franquicias, y locales donde nunca está el dueño.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var ids=['inicio','visita','dudas','carga','reglas','reportar','cobrar'];
+  function show(){
+    var h=(location.hash||'#inicio').slice(1); if(ids.indexOf(h)<0) h='inicio';
+    ids.forEach(function(i){document.getElementById('s_'+i).classList.toggle('on',i===h)});
+    document.querySelectorAll('#tabs a').forEach(function(a){
+      var on=a.getAttribute('href')==='#'+h; a.setAttribute('aria-current',on?'true':'false'); if(on&&a.scrollIntoView) a.scrollIntoView({inline:'center',block:'nearest'});});
+    setTimeout(function(){window.scrollTo(0,0)},0);
+  }
+  window.addEventListener('hashchange',show); show();
+
+  function copy(text,btn){
+    var label=btn.textContent;
+    function ok(){btn.classList.add('done');btn.textContent='Copiado';setTimeout(function(){btn.classList.remove('done');btn.textContent=label},1600)}
+    function fb(el){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selecciónalo y copia'}
+    var el=document.getElementById(btn.dataset.t);
+    try{navigator.clipboard.writeText(text).then(ok,function(){fb(el)})}catch(e){fb(el)}
+  }
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.dataset.t);
+      var t=el.cloneNode(true); t.querySelectorAll('button').forEach(function(x){x.remove()});
+      t.querySelectorAll('br').forEach(function(x){x.replaceWith('\n')});
+      copy(t.textContent.trim(),b);
+    });
+  });
+
+  // reporte
+  var f=['cod','loc','due','zon','pla'].map(function(i){return document.getElementById(i)});
+  function build(){
+    var v=f.map(function(x){return x.value.trim()});
+    document.getElementById('msg').textContent=(v[0]||'EMB-__')+' | '+(v[1]||'Nombre del local')+' | '+(v[2]||'Dueño')+' | '+(v[3]||'Zona')+' | '+v[4];
+  }
+  f.forEach(function(x){x.addEventListener('input',build);x.addEventListener('change',build)}); build();
+  try{var s=localStorage.getItem('emb-cod'); if(s){f[0].value=s;build()} f[0].addEventListener('input',function(){try{localStorage.setItem('emb-cod',f[0].value)}catch(e){}})}catch(e){}
+
+  // reloj
+  var clk=document.getElementById('clk'),btn=document.getElementById('clkbtn'),t=null,left=300;
+  function draw(){var m=Math.floor(left/60),s=left%60;clk.textContent=m+':'+(s<10?'0':'')+s}
+  btn.addEventListener('click',function(){
+    if(t){clearInterval(t);t=null;left=300;draw();btn.textContent='Empezar reloj';return}
+    btn.textContent='Reiniciar';
+    t=setInterval(function(){if(left>0){left--;draw()}},1000);
+  });
+  // checklist por sesión
+  try{document.querySelectorAll('.step input').forEach(function(c){
+    c.checked=sessionStorage.getItem(c.id)==='1';
+    c.addEventListener('change',function(){try{sessionStorage.setItem(c.id,c.checked?'1':'0')}catch(e){}});
+  })}catch(e){}
+})();
+</script>
+</body>
+</html>
