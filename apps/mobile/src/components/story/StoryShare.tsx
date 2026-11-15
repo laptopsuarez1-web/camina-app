@@ -177,38 +177,29 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
 
 // Pantalla completa con la foto en formato historia (9:16) y el sticker de Camina, lista para publicar.
 type StickerProps = { businessName: string; businessLogo?: string | null; businessInstagram?: string | null; benefitName: string; costPoints?: number | null };
-const fmtSteps = (pts: number) => (pts * 1000).toLocaleString('es-BO');
 const SHADOW = { textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6 } as const;
 
 
-// Limpio, como Strava: chico, texto blanco sobre la foto, etiquetas en mayúscula fina y la marca mínima al pie.
-function CleanSticker({ businessName, benefitName, costPoints }: StickerProps) {
-  const label = { color: 'rgba(255,255,255,0.75)', fontWeight: '700' as const, fontSize: 8.5, letterSpacing: 1.3, ...SHADOW };
-  const value = { color: '#fff', fontWeight: '700' as const, fontSize: 13.5, marginTop: 2, ...SHADOW };
+// Como las historias de Pasito: la foto limpia, arriba chiquito a quién se etiqueta y abajo una pastilla «CAMINA × logo del local».
+function CleanSticker({ businessName, businessLogo, businessInstagram }: StickerProps) {
+  const ig = igHandle(businessInstagram);
   return (
-    <View style={{ position: 'absolute', left: 24, right: 24, bottom: 34, alignItems: 'center' }}>
-      <Text style={label}>PREMIO</Text>
-      <Text numberOfLines={1} style={{ ...value, fontSize: 17, letterSpacing: -0.2 }}>{benefitName}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-        <View style={{ alignItems: 'center', paddingHorizontal: 14 }}>
-          <Text style={label}>EN</Text>
-          <Text numberOfLines={1} style={value}>{businessName}</Text>
+    <>
+      <Text style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 10.5, ...SHADOW }}>
+        {ig ? `${ig} ♡ ` : ''}{CAMINA_INSTAGRAM}
+      </Text>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 30, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#241748', borderRadius: 999, paddingLeft: 16, paddingRight: 5, paddingVertical: 5, borderWidth: 1.5, borderColor: '#62F0B6' }}>
+          <Text style={{ color: '#62F0B6', fontSize: 15, letterSpacing: 0.6, ...wordmark() }}>CAMINA</Text>
+          <Text style={{ color: '#62F0B6', fontSize: 11, fontWeight: '700' }}>×</Text>
+          <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: '#fff', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+            {businessLogo
+              ? <Image source={{ uri: businessLogo }} accessibilityLabel={businessName} style={{ width: 30, height: 30 }} />
+              : <Text style={{ color: '#241748', fontWeight: '900', fontSize: 13 }}>{businessName.slice(0, 1).toUpperCase()}</Text>}
+          </View>
         </View>
-        {costPoints ? (
-          <>
-            <View style={{ width: 1, height: 26, backgroundColor: 'rgba(255,255,255,0.45)' }} />
-            <View style={{ alignItems: 'center', paddingHorizontal: 14 }}>
-              <Text style={label}>PASOS</Text>
-              <Text style={value}>{fmtSteps(costPoints)}</Text>
-            </View>
-          </>
-        ) : null}
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12, opacity: 0.95 }}>
-        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 12, height: 12, tintColor: '#fff' }} />
-        <Text style={{ color: '#fff', fontSize: 8.5, letterSpacing: 1.8, ...wordmark(), ...SHADOW }}>CAMINA</Text>
-      </View>
-    </View>
+    </>
   );
 }
 
@@ -257,7 +248,7 @@ export function StoryComposer({
         <View ref={shotRef} collapsable={false} style={{ flex: 1, aspectRatio: 9 / 16, maxWidth: '100%', borderRadius: 22, overflow: 'hidden', backgroundColor: '#000' }}>
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
-          <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '35%' }} />
+          <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.2)']} locations={[0, 0.2, 0.8, 1]} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
           <CleanSticker businessName={businessName} businessLogo={businessLogo} businessInstagram={businessInstagram} benefitName={benefitName} costPoints={costPoints} />
         </View>
       </View>

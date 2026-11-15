@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:transparent}
+.s{display:inline-block;padding:40px;position:relative}
+.w{font-family:Montserrat;font-weight:900;letter-spacing:-1px;line-height:1;position:relative}
+/* Palabra gruesa con borde claro y sombra corrida, como el sticker de la referencia. */
+.w1{font-size:220px;color:#241748;-webkit-text-stroke:0;paint-order:stroke fill;text-shadow:
+ 0 0 0 #62F0B6}
+.chunk{position:relative;display:inline-block}
+.chunk span{position:absolute;left:0;top:0}
+.chunk .o{-webkit-text-stroke:34px var(--o);color:var(--o)}
+.chunk .sh{-webkit-text-stroke:34px var(--sh);color:var(--sh);transform:translate(10px,12px)}
+.chunk .f{position:relative;color:var(--f);-webkit-text-stroke:0}
+.badge{width:520px;height:520px;border-radius:50%;background:#241748;border:16px solid #62F0B6;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:12px 14px 0 #120a26}
+.pill{display:inline-flex;align-items:center;gap:22px;background:#241748;border:6px solid #62F0B6;border-radius:999px;padding:18px 18px 18px 50px;box-shadow:8px 10px 0 #120a26}
+.pill .t{font-family:Montserrat;font-weight:900;font-size:76px;color:#62F0B6;letter-spacing:-1px}
+.pill .x{font-family:Montserrat;font-weight:900;font-size:44px;color:#62F0B6}
+.pill .lg{width:110px;height:110px;border-radius:28px;background:#fff;overflow:hidden}
+.pill .lg img{width:110px;height:110px;object-fit:cover}
+.circle{width:420px;height:420px;border-radius:50%;background:#62F0B6;display:flex;align-items:center;justify-content:center;border:14px solid #fff;box-shadow:10px 12px 0 #241748}
+</style></head><body>
+<!-- 1: CAMINA morado con borde menta -->
+<div class="s" id="s1"><div class="chunk w" style="font-size:230px;--o:#62F0B6;--sh:#241748;--f:#241748"><span class="sh">CAMINA</span><span class="o">CAMINA</span><span class="f">CAMINA</span></div></div>
+<!-- 2: CAMINA menta con borde blanco -->
+<div class="s" id="s2"><div class="chunk w" style="font-size:230px;--o:#FFFFFF;--sh:#241748;--f:#62F0B6"><span class="sh">CAMINA</span><span class="o">CAMINA</span><span class="f">CAMINA</span></div></div>
+<!-- 3: CAMINA blanco con borde morado -->
+<div class="s" id="s3"><div class="chunk w" style="font-size:230px;--o:#241748;--sh:#62F0B6;--f:#FFFFFF"><span class="sh">CAMINA</span><span class="o">CAMINA</span><span class="f">CAMINA</span></div></div>
+<!-- 4: insignia redonda con Baifo -->
+<div class="s" id="s4"><div class="badge"><img src="baifo.png" style="height:270px;margin-top:-20px"><div class="w" style="font-size:74px;color:#62F0B6;letter-spacing:1px;margin-top:6px">CAMINA</div></div></div>
+<!-- 5: logo de los pies en círculo -->
+<div class="s" id="s5"><div class="circle"><img src="logo-mint.png" style="width:280px;filter:brightness(0) saturate(100%) invert(10%) sepia(40%) saturate(3000%) hue-rotate(245deg)"></div></div>
+<!-- 6: pastilla CAMINA × local (ejemplo Fripap's) -->
+<div class="s" id="s6"><div class="pill"><span class="t">CAMINA</span><span class="x">×</span><span class="lg"><img src="foto-fripaps.jpg"></span></div></div>
+</body></html>
