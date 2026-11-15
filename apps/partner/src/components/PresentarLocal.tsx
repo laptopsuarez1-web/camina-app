@@ -24,7 +24,7 @@ export interface VistaLocal {
 const CENTRO_TARIJA: [number, number] = [-21.5355, -64.7296];
 const MARCO = 'relative w-[300px] h-[600px] rounded-[34px] border-[7px] border-[#241748] bg-[#150d2b] overflow-hidden shadow-2xl text-[#f1ecfb] shrink-0';
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TINTE = `.camina-mapa::after{content:"";position:absolute;inset:0;z-index:450;pointer-events:none;background:#5a35b8;mix-blend-mode:color;opacity:.85}.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.25) brightness(.85)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
+const TINTE = `.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.7) sepia(1) hue-rotate(215deg) saturate(3.5) brightness(.75)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
 
 // Moneda de Puntos de la app (las huellas en el círculo verde).
 export function Moneda({ size = 18 }: { size?: number }) {
@@ -58,6 +58,12 @@ function MapaOscuro({ v, pin, zoom = 17, interactivo = true }: { v: VistaLocal; 
       const centro: [number, number] = v.lat != null && v.lng != null ? [v.lat, v.lng] : CENTRO_TARIJA;
       map = L.map(el.current, { zoomControl: false, attributionControl: false, dragging: interactivo, touchZoom: interactivo, scrollWheelZoom: false, doubleClickZoom: interactivo }).setView(centro, v.lat != null ? zoom : 14);
       L.tileLayer(TILES, { maxZoom: 19 }).addTo(map);
+      // Tinte morado del mapa de la app: una capa encima de las calles y debajo del pin.
+      const tinte = map.createPane('tinte');
+      tinte.style.zIndex = '250';
+      tinte.style.mixBlendMode = 'color';
+      tinte.style.pointerEvents = 'none';
+      L.rectangle([[-89, -179], [89, 179]], { pane: 'tinte', stroke: false, fillColor: '#6a3fd0', fillOpacity: 0.9, interactive: false }).addTo(map);
       if (pin && v.lat != null && v.lng != null) {
         const foto = v.logo_url ? `<img src="${v.logo_url}" style="width:100%;height:100%;object-fit:cover" />` : '';
         const icon = L.divIcon({
