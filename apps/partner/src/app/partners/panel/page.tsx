@@ -33,7 +33,7 @@ function Inicio({ partner }: { partner: Partner }) {
       </p>
 
       <Link href="/partners/panel/reportar" className="flex items-center justify-center gap-2 bg-[var(--c-btn-bg)] text-[var(--c-btn-text)] rounded-2xl py-4 font-bold text-[15px] mb-5">
-        <PlusCircle size={18} /> Reportar un local
+        <PlusCircle size={18} /> Cargar un local
       </Link>
 
       <div className="grid grid-cols-2 gap-3 mb-3">

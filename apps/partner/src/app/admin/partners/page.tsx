@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AdminShell } from '@/components/AdminShell';
+import { FichaPreview } from '@/components/FichaPreview';
+import type { Benefit, Business } from '@/lib/supabase';
 import { PLAN_KINDS, ESTADO_LABEL, bs, fecha, planLabel, type PartnerLead, type PartnerTotals, type PlanKind, type LeadStatus } from '@/lib/partners';
 
 type Fila = {
@@ -26,6 +28,7 @@ function LeadFila({ lead, onSaved }: { lead: PartnerLead; onSaved: () => void })
   const [nota, setNota] = useState(lead.admin_note ?? '');
   const [busy, setBusy] = useState(false);
   const [enCamina, setEnCamina] = useState<string | null>(null);
+  const [ver, setVer] = useState(false);
   const cambio = estado !== lead.status || plan !== lead.plan_kind || nota !== (lead.admin_note ?? '');
 
   // Avisa si el WhatsApp del dueño ya aparece en un comercio de Camina (para confirmar que el local de verdad se cargó).
@@ -53,6 +56,25 @@ function LeadFila({ lead, onSaved }: { lead: PartnerLead; onSaved: () => void })
       </p>
       {lead.note && <p className="text-muted text-[12px]">Nota del partner: {lead.note}</p>}
       {enCamina && <p className="text-[12px] mt-0.5" style={{ color: 'var(--c-ok-text)' }}>Está en Camina: {enCamina}</p>}
+      <button type="button" onClick={() => setVer(!ver)} className="text-purple text-[12.5px] font-semibold mt-1.5">{ver ? 'Ocultar ficha' : 'Ver datos y cómo queda'}</button>
+      {ver && (
+        <div className="grid md:grid-cols-[1fr_360px] gap-4 mt-2 items-start">
+          <div className="text-[12.5px] text-text space-y-1">
+            <p><b>Categoría:</b> {lead.category || '—'}</p>
+            <p><b>Dirección:</b> {lead.address || '—'}</p>
+            <p><b>Horario:</b> {lead.hours_text || '—'}</p>
+            <p><b>Instagram:</b> {lead.instagram || '—'}</p>
+            <p><b>Ubicación:</b> {lead.lat != null && lead.lng != null ? <a className="underline" target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps?q=${lead.lat},${lead.lng}`}>{lead.lat.toFixed(5)}, {lead.lng.toFixed(5)}</a> : '—'}{lead.maps_url ? <> · <a className="underline" target="_blank" rel="noopener noreferrer" href={lead.maps_url}>link de Maps</a></> : null}</p>
+            <p><b>Descripción:</b> {lead.description || '—'}</p>
+            <p><b>Premio:</b> {lead.benefit_name ? `${lead.benefit_name} (${lead.benefit_kind}, ${lead.benefit_cost} Puntos, ${lead.benefit_quota} por día)` : '—'}</p>
+            {lead.benefit_description && <p><b>Detalle del premio:</b> {lead.benefit_description}</p>}
+          </div>
+          <FichaPreview
+            business={{ id: lead.id, name: lead.business_name, category: lead.category ?? 'Categoría', description: lead.description, address: lead.address, lat: lead.lat, lng: lead.lng, phone: lead.owner_phone, instagram: lead.instagram, hours_text: lead.hours_text, logo_url: lead.logo_url, cover_url: lead.cover_url, is_virtual: false } as unknown as Business}
+            benefits={lead.benefit_name ? ([{ id: 'b', name: lead.benefit_name, description: lead.benefit_description, cost_points: lead.benefit_cost ?? 10, image_url: lead.benefit_image_url, active: true }] as unknown as Benefit[]) : []}
+          />
+        </div>
+      )}
       <div className="flex flex-wrap gap-2 mt-2 items-center">
         <select aria-label="Estado" value={estado} onChange={(e) => setEstado(e.target.value as LeadStatus)} className={CAMPO}>
           {ESTADOS.map((s) => <option key={s} value={s}>{ESTADO_LABEL[s]}</option>)}

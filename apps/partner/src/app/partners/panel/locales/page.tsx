@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { Eye } from 'lucide-react';
 import { PartnerShell } from '@/components/PartnerShell';
+import { PresentarLocal, type VistaLocal } from '@/components/PresentarLocal';
 import { ESTADO_LABEL, bs, fecha, planLabel, type Partner, type PartnerLead } from '@/lib/partners';
 
 const TONO: Record<PartnerLead['status'], { bg: string; fg: string }> = {
@@ -15,6 +17,7 @@ const TONO: Record<PartnerLead['status'], { bg: string; fg: string }> = {
 
 function Lista({ partner }: { partner: Partner }) {
   const [leads, setLeads] = useState<PartnerLead[] | null>(null);
+  const [vista, setVista] = useState<VistaLocal | null>(null);
 
   useEffect(() => {
     supabase
@@ -50,11 +53,28 @@ function Lista({ partner }: { partner: Partner }) {
               </div>
               {l.status === 'activo' && <p className="text-[13px] mt-2" style={{ color: 'var(--c-ok-text)' }}>Te corresponden {bs(l.amount_bs)}.</p>}
               {l.status === 'publicado' && <p className="text-muted text-[12.5px] mt-2">Falta el primer canje real. Invita a un amigo que camine con la app a canjear ahí.</p>}
+              <button
+                type="button"
+                onClick={() =>
+                  setVista({
+                    name: l.business_name, category: l.category, description: l.description, address: l.address, hours_text: l.hours_text,
+                    instagram: l.instagram, phone: l.owner_phone, logo_url: l.logo_url, cover_url: l.cover_url, lat: l.lat, lng: l.lng,
+                    premio: l.benefit_name ? { name: l.benefit_name, description: l.benefit_description, cost: l.benefit_cost ?? 10, image_url: l.benefit_image_url, kind: l.benefit_kind } : null,
+                  })
+                }
+                className="flex items-center gap-1.5 mt-2 bg-mint text-mint-dark rounded-lg px-3.5 py-2 text-[13px] font-bold"
+              >
+                <Eye size={15} /> Mostrar al dueño
+              </button>
+              {l.status === 'reportado' && (
+                <Link href={`/partners/panel/reportar?id=${l.id}`} className="inline-block mt-2 text-purple text-[13px] font-semibold">Editar datos y ver cómo queda</Link>
+              )}
               {l.admin_note && <p className="text-[12.5px] mt-2 rounded-lg px-3 py-2" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>Camina dice: {l.admin_note}</p>}
             </div>
           ))}
         </div>
       )}
+      {vista && <PresentarLocal vista={vista} onClose={() => setVista(null)} />}
     </>
   );
 }
