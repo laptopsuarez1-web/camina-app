@@ -10,8 +10,8 @@ import { useCelebrationStore, type Celebration, type ToastIcon } from '@/store/u
 import { Check, Flame, Gift, Users, Trophy } from '@/components/icons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
-import { useReducedMotion } from 'react-native-reanimated';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
+import { BurstFx, ConfettiCannons } from '@/components/celebrations/Effects';
 import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScene';
 import { EventJoinedScene, FriendMadeScene, GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 
@@ -23,63 +23,6 @@ const coin = require('@/../assets/camina-coin.png');
 function wordmark(size: number) {
   if (!brandFontsReady()) return { fontWeight: '900' as const, fontSize: size };
   return { fontFamily: WORDMARK_FAMILY, fontWeight: Platform.OS === 'web' ? ('900' as const) : ('normal' as const), fontSize: size };
-}
-
-// Destello: brillo, dos ondas y partículas de varias formas (puntos, rayitas, confeti) que salen, giran y caen un poco.
-function Sparks({ x, y, radius, palette, delay = 0, count = 12 }: { x: number | string; y: number; radius: number; palette: string[]; delay?: number; count?: number }) {
-  // Con "reducir movimiento" este adorno no se dibuja.
-  const reducedMotion = useReducedMotion();
-  const t = useState(() => new Animated.Value(0))[0];
-  useEffect(() => {
-    Animated.timing(t, { toValue: 1, duration: 1300, delay, easing: Easing.linear, useNativeDriver: true }).start();
-  }, [t, delay]);
-  const n = Math.round(count * 1.75);
-  const ring = (r: number, color: string, lag: number) => (
-    <Animated.View
-      style={{
-        position: 'absolute', width: r * 2, height: r * 2, left: -r, top: -r, borderRadius: r, borderWidth: 2.5, borderColor: color,
-        opacity: t.interpolate({ inputRange: [0, lag, lag + 0.05, 1], outputRange: [0, 0, 0.8, 0] }),
-        transform: [{ scale: t.interpolate({ inputRange: [0, lag, 1], outputRange: [0.15, 0.15, 1.15] }) }],
-      }}
-    />
-  );
-  if (reducedMotion) return null;
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: x as number, top: y, width: 0, height: 0 }}>
-      <Animated.View
-        style={{
-          position: 'absolute', width: radius * 1.2, height: radius * 1.2, left: -radius * 0.6, top: -radius * 0.6, borderRadius: radius, backgroundColor: palette[0],
-          opacity: t.interpolate({ inputRange: [0, 0.08, 0.5, 1], outputRange: [0, 0.3, 0, 0] }),
-          transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [0.4, 2] }) }],
-        }}
-      />
-      {ring(radius * 0.6, palette[0], 0)}
-      {ring(radius * 0.85, palette[1 % palette.length], 0.12)}
-      {Array.from({ length: n }, (_, i) => {
-        const r0 = ((i * 7919) % 100) / 100;
-        const a = (i / n) * Math.PI * 2 + r0 * 0.5;
-        const r = radius * (0.7 + r0 * 0.75);
-        const shape = i % 3;
-        const size = 4 + (i % 4) * 1.6;
-        const dims = shape === 1 ? { width: size * 2.6, height: Math.max(2, size * 0.42), borderRadius: 2 } : shape === 2 ? { width: size, height: size * 0.62, borderRadius: 1.5 } : { width: size, height: size, borderRadius: size / 2 };
-        const fall = 30 + r0 * 50;
-        return (
-          <Animated.View
-            key={i}
-            style={{
-              position: 'absolute', left: -dims.width / 2, top: -dims.height / 2, ...dims, backgroundColor: palette[i % palette.length],
-              opacity: t.interpolate({ inputRange: [0, 0.08, 0.7, 1], outputRange: [0, 1, 1, 0] }),
-              transform: [
-                { translateX: t.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, Math.cos(a) * r * 0.78, Math.cos(a) * r] }) },
-                { translateY: t.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, Math.sin(a) * r * 0.78 + fall * 0.25, Math.sin(a) * r + fall] }) },
-                { rotate: t.interpolate({ inputRange: [0, 1], outputRange: [`${(a * 180) / Math.PI}deg`, `${(a * 180) / Math.PI + (i % 2 ? 1 : -1) * (180 + r0 * 360)}deg`] }) },
-              ],
-            }}
-          />
-        );
-      })}
-    </View>
-  );
 }
 
 // Halo que late detrás del ícono principal.
@@ -102,45 +45,12 @@ function Halo({ size, color }: { size: number; color: string }) {
   );
 }
 
-// Monedas que caen desde arriba cuando hay Puntos.
-function CoinRain({ count = 10 }: { count?: number }) {
-  // Con "reducir movimiento" este adorno no se dibuja.
-  const reducedMotion = useReducedMotion();
-  const t = useState(() => new Animated.Value(0))[0];
-  useEffect(() => {
-    Animated.timing(t, { toValue: 1, duration: 1800, delay: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }).start();
-  }, [t]);
-  if (reducedMotion) return null;
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 0 }}>
-      {Array.from({ length: count }, (_, i) => {
-        const x = ((i * 37) % 100) / 100;
-        const d = ((i * 53) % 40) / 100;
-        return (
-          <Animated.Image
-            key={i}
-            source={coin}
-            style={{
-              position: 'absolute', left: `${6 + x * 86}%`, top: -40, width: 22 + (i % 3) * 4, height: 22 + (i % 3) * 4, borderRadius: 14,
-              opacity: t.interpolate({ inputRange: [0, d, d + 0.05, 0.92, 1], outputRange: [0, 0, 1, 1, 0] }),
-              transform: [
-                { translateY: t.interpolate({ inputRange: [0, d, 1], outputRange: [0, 0, 640 + (i % 4) * 60] }) },
-                { rotate: t.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${(i % 2 ? 1 : -1) * 280}deg`] }) },
-              ],
-            }}
-          />
-        );
-      })}
-    </View>
-  );
-}
-
 // Avisa al lector de pantalla y, si se pide, le lleva el foco al título (para las hojas que tapan la pantalla).
 function useAnnounce(message: string, focusTitle: boolean) {
   const titleRef = useRef<Text>(null);
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(message);
-    if (!focusTitle) return;
+    if (!focusTitle || Platform.OS === 'web') return;
     const id = setTimeout(() => {
       const node = findNodeHandle(titleRef.current);
       if (node) AccessibilityInfo.setAccessibilityFocus(node);
@@ -277,14 +187,13 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
             </Defs>
             <Circle cx={160} cy={160} r={160} fill="url(#sheetGlow)" />
           </Svg>
-          {c.points ? <CoinRain count={8} /> : null}
           <View style={{ width: 96, height: 96, alignItems: 'center', justifyContent: 'center' }}>
             <Halo size={96} color="#62F0B6" />
             <DrawnRing size={96} color="#62F0B6" delay={200} />
             <Animated.View style={{ width: 66, height: 66, borderRadius: 33, backgroundColor: '#62F0B6', alignItems: 'center', justifyContent: 'center', transform: [{ scale: check }] }}>
               <Check size={34} color="#14093a" />
             </Animated.View>
-            {c.sparks !== false && <Sparks x={48} y={48} radius={110} palette={['#62F0B6', '#FFD97A', '#C4B8E8', '#8B4FD1']} delay={700} count={14} />}
+            {c.sparks !== false && <BurstFx style={{ left: 48, top: 48 }} radius={110} palette={['#62F0B6', '#FFD97A', '#C4B8E8']} delay={650} count={14} />}
           </View>
           <Animated.View style={[{ alignItems: 'center', marginTop: 18 }, rise]}>
             <Text ref={titleRef} accessibilityRole="header" style={{ color: '#fff', ...wordmark(22), textAlign: 'center', letterSpacing: 0.3 }}>{c.title.toUpperCase()}</Text>
@@ -296,6 +205,7 @@ function Sheet({ c, onDone }: { c: Extract<Celebration, { kind: 'sheet' }>; onDo
           </Press>
         </LinearGradient>
       </Animated.View>
+      {c.points && c.sparks !== false ? <ConfettiCannons palette={['#62F0B6', GOLD, '#FFD97A', '#B7A6F0']} delay={550} count={44} /> : null}
     </View>
   );
 }
@@ -314,7 +224,6 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
   return (
     <Animated.View accessibilityViewIsModal style={{ position: 'absolute', inset: 0, opacity: fade }}>
       <LinearGradient colors={['#2A1F4D', '#15112A']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
-        <CoinRain count={12} />
         {/* Trofeo, rayos y destello comparten el mismo centro. */}
         <View style={{ width: 104, height: 104, alignItems: 'center', justifyContent: 'center' }}>
           <Halo size={104} color={GOLD} />
@@ -326,7 +235,7 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
           >
             <Trophy size={52} color="#FFD97A" />
           </Animated.View>
-          <Sparks x={52} y={52} radius={95} palette={GOLD_SPARKS} delay={350} count={16} />
+          <BurstFx style={{ left: 52, top: 52 }} radius={110} palette={GOLD_SPARKS} delay={300} count={16} />
         </View>
         <Text ref={titleRef} accessibilityRole="header" style={{ color: '#fff', ...wordmark(24), marginTop: 30, textAlign: 'center' }}>{c.title}</Text>
         {c.body ? <Text style={{ color: '#B9B0D4', fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>{c.body}</Text> : null}
@@ -336,6 +245,7 @@ function Win({ c, onDone }: { c: Extract<Celebration, { kind: 'win' }>; onDone: 
           <Text style={{ color: '#3a2a00', fontWeight: '900', fontSize: 15 }}>¡Genial!</Text>
         </Press>
       </LinearGradient>
+      <ConfettiCannons palette={[GOLD, '#FFD97A', '#FFF1B8', '#62F0B6']} delay={250} />
     </Animated.View>
   );
 }
