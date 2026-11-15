@@ -91,7 +91,7 @@ function PremioFila({ v }: { v: VistaLocal }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {v.premio.image_url && <img src={v.premio.image_url} alt="" className="w-full h-full object-cover" />}
       </span>
-      <span className="font-semibold text-[12.5px] flex-1 min-w-0 truncate">{v.premio.name}</span>
+      <span className="font-semibold text-[12.5px] flex-1 min-w-0 leading-tight">{v.premio.name}</span>
       <span className="flex items-center gap-1 font-bold text-[12.5px] shrink-0">
         <Moneda size={18} />
         {v.premio.cost}
@@ -232,7 +232,7 @@ function SlidePremio({ v }: { v: VistaLocal }) {
           <>
             <p className="font-extrabold text-[19px] leading-tight">{p.name}</p>
             <p className="text-[#a99bcf] text-[12.5px] mt-1">{p.description || (p.kind === 'descuento' ? 'Descuento' : 'Premio gratis')}</p>
-            <p className="text-[#62f0b6] font-bold text-[14px] mt-2">{p.cost} Puntos</p>
+            <p className="font-extrabold text-[15px] mt-2 flex items-center gap-1.5"><Moneda size={22} />{p.cost}</p>
             <div className="mt-4 bg-[#1f7d68] rounded-xl py-3 text-center font-bold text-[14px]">Canjear</div>
             <p className="text-[#a99bcf] text-[11.5px] mt-3 text-center">Al canjear, la persona escribe el código de tu local estando ahí.</p>
           </>
