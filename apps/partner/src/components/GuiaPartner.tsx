@@ -102,8 +102,48 @@ function Reloj() {
   );
 }
 
+const ASI = 'Así se ve su local en la app. Aparece en el mapa y en la lista de Canjes, con su logo, su portada y su premio. La persona llega, escribe el código de su local y usted le entrega el premio. Después la app le invita a dejarle una reseña en Google Maps y a subir una historia a Instagram.';
+
+const VISTAS: { img: string; titulo: string; texto: string }[] = [
+  { img: 'canjes-dark', titulo: '1. Aparece en Canjes', texto: 'Su local sale en la lista y en el mapa de la app, con su portada, su logo y el premio. Así lo encuentran las personas cerca.' },
+  { img: 'ficha-dark', titulo: '2. Su ficha y su premio', texto: 'La persona abre la ficha: descripción, horario, cómo llegar y los premios que el dueño eligió, con su botón Canjear.' },
+  { img: 'canje-calificar-v3-dark', titulo: '3. Después del canje', texto: 'Cuando canjea, la app invita a dejar una reseña en Google Maps. Eso le trae más visibilidad al local.' },
+  { img: 'canje-historia-v3-dark', titulo: '4. Historia en Instagram', texto: 'La persona puede subir una historia etiquetando a @caminaapp. Eso muestra el local a más gente.' },
+];
+
+function AsiSeVe() {
+  return (
+    <>
+      <p className="text-muted text-[13.5px] mb-3">Muéstrale esto al dueño desde tu celular. Son capturas reales de locales ya publicados en la app (ejemplo: Bloom).</p>
+      <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-1 px-1">
+        {VISTAS.map((v) => (
+          <figure key={v.img} className="snap-center shrink-0 w-[236px] bg-card border border-line rounded-2xl p-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/partners/${v.img}.jpg`} alt={v.titulo} width={780} height={1688} loading="lazy" className="w-full h-auto rounded-xl" />
+            <figcaption className="px-1 pt-2.5 pb-1">
+              <p className="font-bold text-text text-[14px] mb-1">{v.titulo}</p>
+              <p className="text-muted text-[12.5px] leading-snug">{v.texto}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mt-2 mb-1.5">Qué decirle mientras se lo muestras</p>
+      <Frase texto={ASI}>{ASI}</Frase>
+      <div className="bg-card border border-line rounded-2xl px-4 py-3.5 text-[14px] text-text">
+        <p className="font-semibold mb-1">Cómo canjea la persona en su local</p>
+        <ul className="list-disc pl-5 space-y-1 text-muted">
+          <li>Va a su local, elige el premio en la app y toca &quot;Canjear&quot;.</li>
+          <li>Escribe el <b className="text-text">código del local</b> (4 números). Tiene que estar ahí, en el local.</li>
+          <li>El canje queda guardado con fecha y hora, y el dueño entrega el premio.</li>
+        </ul>
+      </div>
+    </>
+  );
+}
+
 const TABS = [
   { id: 'decir', label: 'Qué decir' },
+  { id: 'asi', label: 'Así se ve un local' },
   { id: 'dudas', label: 'Dudas del dueño' },
   { id: 'carga', label: 'Cargar en 5 min' },
   { id: 'prometer', label: 'No prometer' },
@@ -158,6 +198,8 @@ export function GuiaPartner() {
             <Frase texto={G4}>{G4}</Frase>
           </>
         )}
+
+        {tab === 'asi' && <AsiSeVe />}
 
         {tab === 'dudas' && (
           <div className="flex flex-col gap-2.5">
