@@ -127,11 +127,11 @@ function SlideFicha({ v }: { v: VistaLocal }) {
     phone: v.phone, instagram: v.instagram, hours_text: v.hours_text, logo_url: v.logo_url, cover_url: v.cover_url, is_virtual: false,
   } as unknown as Business;
   const premios = v.premio
-    ? ([{ id: 'p', name: v.premio.name, description: v.premio.description, cost_points: v.premio.cost, image_url: v.premio.image_url, active: true }] as unknown as Benefit[])
+    ? ([{ id: 'p', name: v.premio.name, description: v.premio.description, cost_points: v.premio.cost, image_url: v.premio.image_url, active: true, type: v.premio.kind ?? 'gratis' }] as unknown as Benefit[])
     : [];
   return (
-    <div className="w-[300px] h-[600px] overflow-y-auto rounded-[34px] shrink-0 shadow-2xl bg-[var(--c-bg)]">
-      <FichaPreview business={negocio} benefits={premios} />
+    <div className="w-[300px] h-[600px] overflow-y-auto overscroll-contain rounded-[34px] border-[7px] border-[#241748] shrink-0 shadow-2xl bg-[#150d2b]">
+      <FichaPreview business={negocio} benefits={premios} oscuro enMarco={false} />
     </div>
   );
 }
