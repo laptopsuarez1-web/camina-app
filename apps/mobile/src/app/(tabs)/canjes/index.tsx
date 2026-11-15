@@ -40,6 +40,7 @@ import { colors } from '@/theme/tokens';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, DAILY_POINTS_CAP, DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
+import { LegendCard } from '@/components/LegendCard';
 import { VerifyEmailCard } from '@/components/VerifyEmailCard';
 import { useEmailVerified } from '@/hooks/useEmailVerified';
 import { SkeletonGroup, SkeletonBusinessCard } from '@/components/ui/Skeleton';
@@ -679,7 +680,7 @@ export default function CanjesScreen() {
   const story = useStoryFlow();
   function startStoryFromCode() {
     if (!activeRedemption || !activeBenefit) return;
-    const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name };
+    const target = { redemptionId: activeRedemption.id, businessName: activeBenefit.business.name, benefitName: activeBenefit.name, businessLogo: activeBenefit.business.logo_url, businessInstagram: activeBenefit.business.instagram, costPoints: activeBenefit.cost_points };
     // La hoja para elegir la foto es otro panel: se abre cuando el del código terminó de cerrarse.
     runAfterClose(afterCodeClose, true, () => story.start(target));
     setActiveRedemption(null);
@@ -1353,6 +1354,7 @@ export default function CanjesScreen() {
                 ) : null}
 
                 <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
+                <LegendCard businessId={profileGroup.business.id} />
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
                   {profileGroup.business.address ? (

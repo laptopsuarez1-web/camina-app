@@ -366,6 +366,9 @@ export type Database = {
         Returns: void;
       };
       register_device: { Args: { p_device_id: string }; Returns: string };
+      cheer_member: { Args: { p_group: string; p_to: string }; Returns: number };
+      group_cheers_today: { Args: { p_group: string }; Returns: { to_user: string; cheers: number; mine: boolean }[] };
+      business_legend: { Args: { p_business: string }; Returns: Record<string, unknown> };
       report_step_sources: {
         Args: { p_platform: string; p_app_build: string | null; p_health_connect: string; p_health_connect_steps: number | null; p_phone_counter: string; p_phone_counter_steps: number | null };
         Returns: undefined;

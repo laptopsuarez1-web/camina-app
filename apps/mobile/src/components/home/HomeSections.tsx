@@ -212,7 +212,7 @@ export type RedemptionRow = {
   created_at: string;
   confirmed_at?: string | null;
   benefit: { name: string } | null;
-  business: { id?: string; name: string; logo_url: string | null; category: string; plan?: string | null } | null;
+  business: { id?: string; name: string; logo_url: string | null; category: string; plan?: string | null; instagram?: string | null } | null;
 };
 
 const STATUS_LABEL: Record<RedemptionRow['status'], string> = {

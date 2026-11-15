@@ -42,7 +42,11 @@ export function GroupShareImageSheet({
       onClose={onClose}
       title="Compartir el ranking"
       filename="camina-grupo"
-      extras={<Toggle label="Mostrar nombres" hint="Apagado: tus compañeros salen solo con su inicial." value={withNames} onChange={setWithNames} />}
+      extras={
+        <>
+          <Toggle label="Mostrar nombres" hint="Apagado: tus compañeros salen solo con su inicial." value={withNames} onChange={setWithNames} />
+        </>
+      }
       render={({ theme, format }) => <GroupCard theme={theme} format={format} data={data} />}
     />
   );

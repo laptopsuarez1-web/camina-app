@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { friendlyError } from '@/lib/errors';
 import { loadSavedHandle, pickStoryPhoto, shareToInstagram, submitStory } from '@/lib/story';
 
-export type StoryTarget = { redemptionId: string; businessName: string; benefitName: string };
+export type StoryTarget = { redemptionId: string; businessName: string; benefitName: string; businessLogo?: string | null; businessInstagram?: string | null; costPoints?: number | null };
 
 type Step = 'idle' | 'pick' | 'compose' | 'confirm' | 'done';
 
@@ -123,6 +123,9 @@ export function useStoryFlow() {
             <StoryComposer
               photo={{ uri: photo }}
               businessName={target.businessName}
+              businessLogo={target.businessLogo ?? null}
+              businessInstagram={target.businessInstagram ?? null}
+              costPoints={target.costPoints ?? null}
               benefitName={target.benefitName}
               topInset={topInset}
               shotRef={shotRef}

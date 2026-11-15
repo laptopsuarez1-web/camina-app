@@ -1,13 +1,13 @@
-import React, { type ReactNode } from 'react';
+import React, { useId, type ReactNode } from 'react';
 import { Image, View, type ViewStyle } from 'react-native';
-import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient as SvgLinear, Polyline, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { CrownMark } from '@/components/CrownMark';
 import { FlameArt, TrophyArt } from '@/components/share/art';
-import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { WORDMARK_FAMILY } from '@/theme/fonts';
 import { Grow, Stagger, useCountUp } from '@/components/share/slide-motion';
 import { fmtInt, fmtKm, rangeLabel, shortDay, weekdayName, weeklyTotals, type ShareStats } from '@/lib/share-stats';
+import { STEP_LENGTH_METERS } from '@/constants/business-rules';
 
 // Tarjetas que la persona comparte como imagen (historias, WhatsApp, donde quiera). Se dibujan siempre a 360 px de ancho
 // (9:16 para historias, 1:1 para chats) y se capturan a 1080 px. Los colores son propios: no cambian con el modo de la app.
@@ -23,7 +23,7 @@ const PAL = {
   light: {
     bg: ['#FCFBFF', '#F8F6FC', '#F5F3FB'] as const,
     ink: '#291C47', muted: '#655483', accent: '#1F7A66', accentSoft: 'rgba(31,122,102,0.12)',
-    tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)',
+    tile: 'rgba(255,255,255,0.74)', tileLine: 'rgba(255,255,255,0.95)', pill: 'rgba(255,255,255,0.8)', rule: 'rgba(41,28,71,0.12)',
     bar: '#4FC3A8', barBest: '#1F7A66', barOff: '#D4C8EC', goal: 'rgba(41,28,71,0.35)',
     track: 'rgba(91,49,163,0.12)', mark: '#8B4FD1', flame: '#E0782A', gold: '#B77A0B',
     logo: '#5B6B99', logoOpacity: 0.15, onBar: '#FFFFFF',
@@ -32,7 +32,7 @@ const PAL = {
   dark: {
     bg: ['#15141B', '#1A1822', '#201C2B'] as const,
     ink: '#F4EFFF', muted: '#B3A6D6', accent: '#62F0B6', accentSoft: 'rgba(98,240,182,0.14)',
-    tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)',
+    tile: 'rgba(255,255,255,0.08)', tileLine: 'rgba(255,255,255,0.14)', pill: 'rgba(255,255,255,0.12)', rule: 'rgba(255,255,255,0.14)',
     bar: '#62F0B6', barBest: '#FFFFFF', barOff: 'rgba(255,255,255,0.18)', goal: 'rgba(255,255,255,0.5)',
     track: 'rgba(255,255,255,0.14)', mark: '#C9ADF5', flame: '#F2985C', gold: '#F5C645',
     logo: '#C9ADF5', logoOpacity: 0.1, onBar: '#12281F',
@@ -47,10 +47,11 @@ export const palette = (t: CardTheme): Pal => PAL[t];
 // ---------- Marco común ----------
 
 export function CardFrame({
-  theme, format, label, progress, children,
-}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode }) {
+  theme, format, label, progress, children, noFooter,
+}: { theme: CardTheme; format: CardFormat; label: string; progress?: { index: number; total: number }; children: ReactNode; noFooter?: boolean }) {
   const p = PAL[theme];
   const story = format !== 'square';
+  const gid = useId().replace(/[^a-zA-Z0-9]/g, '');
   if (format === 'overlay') {
     // Sin fondo ni logo grande: solo el contenido abajo y la marca chica, para que se vea la foto de atrás.
     return (
@@ -60,6 +61,7 @@ export function CardFrame({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 18 }}>
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 20, height: 20, borderRadius: 10 }} />
             <Text style={[{ fontFamily: WORDMARK_FAMILY, fontSize: 12, letterSpacing: 2.2, color: '#FFFFFF', fontWeight: '900' }, SHADOW]}>CAMINA</Text>
+            <Text style={[{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.9)' }, SHADOW]}>· caminaapp.com</Text>
           </View>
         </View>
       </View>
@@ -67,16 +69,21 @@ export function CardFrame({
   }
   return (
     <View style={{ width: CARD_W, height: cardHeight(format), overflow: 'hidden', backgroundColor: p.bg[1] }}>
-      {/* El mismo fondo que lleva la app (Olas): perlado arriba y tres olas al pie. */}
-      <AmbientBackground dark={theme === 'dark'} />
-      {/* El logo de Camina grande y apagado de fondo, cortado por el borde. */}
-      {story ? null : <Image
-        source={require('@/../assets/logo-mint.png')}
-        accessible={false}
-        style={story
-          ? { position: 'absolute', left: 112, top: 268, width: 340, height: 340, tintColor: p.logo, opacity: p.logoOpacity }
-          : { position: 'absolute', left: 170, top: 100, width: 250, height: 250, tintColor: p.logo, opacity: p.logoOpacity }}
-      />}
+      {/* Fondo limpio: degradé liso con un brillo suave arriba (sin olas ni logo de fondo). */}
+      <Svg width={CARD_W} height={cardHeight(format)} style={{ position: 'absolute', left: 0, top: 0 }}>
+        <Defs>
+          <SvgLinear id={`${gid}b`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={theme === 'dark' ? '#221840' : '#FBF9FF'} />
+            <Stop offset="1" stopColor={theme === 'dark' ? '#110B20' : '#F1ECFA'} />
+          </SvgLinear>
+          <RadialGradient id={`${gid}g`} cx="0.85" cy="0.05" r="0.75">
+            <Stop offset="0" stopColor={p.bar} stopOpacity={theme === 'dark' ? 0.22 : 0.18} />
+            <Stop offset="1" stopColor={p.bar} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect x={0} y={0} width={CARD_W} height={cardHeight(format)} fill={`url(#${gid}b)`} />
+        <Rect x={0} y={0} width={CARD_W} height={cardHeight(format)} fill={`url(#${gid}g)`} />
+      </Svg>
       {/* Zona segura de Instagram: arriba y abajo queda libre lo que tapan la barra y la caja de respuesta. */}
       <View style={{ flex: 1, paddingTop: story ? 64 : 18, paddingBottom: story ? 50 : 14, paddingHorizontal: story ? 22 : 18 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: story ? 18 : 8 }}>
@@ -84,11 +91,14 @@ export function CardFrame({
             <Image source={require('@/../assets/icon.png')} accessible={false} style={{ width: 22, height: 22, borderRadius: 11 }} />
             <Text style={{ fontFamily: WORDMARK_FAMILY, fontSize: 13, letterSpacing: 2.2, color: p.ink, fontWeight: '900' }}>CAMINA</Text>
           </View>
-          <View style={{ backgroundColor: p.pill, borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4 }}>
-            <Text style={{ fontSize: 10.5, fontWeight: '700', color: p.ink }}>{label}</Text>
-          </View>
+          <Text style={{ fontSize: 10.5, fontWeight: '700', color: p.muted, letterSpacing: 0.3 }}>{label}</Text>
         </View>
         <View style={{ flex: 1 }}>{children}</View>
+        {/* Cada tarjeta que se comparte invita a descargar la app (salvo que ya lleve la franja para sumarse al grupo). */}
+        {noFooter ? null : <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: story ? 10 : 6 }}>
+          <Text style={{ fontSize: story ? 11 : 9.5, fontWeight: '700', color: p.muted }}>Gana premios caminando ·</Text>
+          <Text style={{ fontSize: story ? 11 : 9.5, fontWeight: '800', color: p.accent }}>caminaapp.com</Text>
+        </View>}
       </View>
     </View>
   );
@@ -105,8 +115,8 @@ function fitSize(text: string, base: number, maxW: number) {
 
 function Tile({ p, label, value, unit, style, stack, small }: { p: Pal; label: string; value: string; unit?: string; style?: ViewStyle; stack?: boolean; small?: boolean }) {
   return (
-    <View style={[{ flex: 1, backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 16, paddingVertical: 7, paddingHorizontal: small ? 9 : 11 }, style]}>
-      <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }} numberOfLines={1}>{label}</Text>
+    <View style={[{ flex: 1, paddingVertical: 6 }, style]}>
+      <Text style={{ fontSize: 8.5, fontWeight: '800', color: p.muted, letterSpacing: 1.1, textTransform: 'uppercase' }} numberOfLines={1}>{label}</Text>
       <View style={stack ? { marginTop: 1 } : { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 1 }}>
         <Text style={{ fontSize: small ? 17 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.4 }} numberOfLines={1}>{value}</Text>
         {unit ? <Text style={{ fontSize: 10.5, fontWeight: '600', color: p.muted }} numberOfLines={1}>{unit}</Text> : null}
@@ -119,9 +129,9 @@ function TileGrid({ p, tiles }: { p: Pal; tiles: { label: string; value: string;
   const rows: (typeof tiles)[] = [];
   for (let i = 0; i < tiles.length; i += 2) rows.push(tiles.slice(i, i + 2));
   return (
-    <View style={{ gap: 8 }}>
+    <View>
       {rows.map((row, i) => (
-        <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
+        <View key={i} style={{ flexDirection: 'row', gap: 14, borderTopWidth: 1, borderColor: p.rule, paddingTop: 2 }}>
           {row.map((t) => <Tile key={t.label} p={p} {...t} />)}
           {row.length === 1 ? <View style={{ flex: 1 }} /> : null}
         </View>
@@ -403,6 +413,7 @@ export type GroupCardData = {
   total: number;
 };
 
+
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo no quede encimada.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
   const d = compact ? (big ? 44 : 36) : big ? 54 : 44;
@@ -414,7 +425,7 @@ function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: s
         <Text style={{ fontSize: compact ? (big ? 19 : 16) : big ? 22 : 18, fontWeight: '800', color: isMe ? (p === PAL.dark ? '#12281F' : '#fff') : p.ink }}>{label.slice(0, 1).toUpperCase()}</Text>
       </View>
       {isMe || label.length > 1 ? <Text style={{ fontSize: 11, fontWeight: '700', color: p.ink, marginTop: compact ? 3 : 4 }} numberOfLines={1}>{label}</Text> : <View style={{ height: 4 }} />}
-      <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: p.tile, borderColor: isMe ? p.accent : p.tileLine, borderWidth: isMe ? 1.5 : 1, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
+      <View style={{ width: '88%', marginTop: compact ? 4 : 5, borderRadius: 14, backgroundColor: 'transparent', borderColor: isMe ? p.accent : 'transparent', borderWidth: isMe ? 1.5 : 0, alignItems: 'center', paddingVertical: compact ? (big ? 7 : 5) : big ? 14 : 9 }}>
         <Text style={{ fontSize: compact ? (big ? 22 : 18) : big ? 26 : 20, fontWeight: '800', color: p.ink }}>{rank}.º</Text>
         <Text style={{ fontSize: 10, fontWeight: '600', color: p.muted }}>{fmtInt(steps)}</Text>
       </View>
@@ -497,7 +508,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
       ) : null}
       {!story ? <View style={{ flex: 1 }} /> : null}
       {/* Meta del grupo: barra de progreso, igual que en la pantalla del grupo (sin aro). */}
-      <View style={{ marginTop: story ? 12 : 10, marginBottom: story ? 0 : 6, backgroundColor: p.tile, borderColor: done ? p.accent : p.tileLine, borderWidth: done ? 1.5 : 1, borderRadius: story ? 20 : 16, padding: story ? 14 : 9 }}>
+      <View style={{ marginTop: story ? 12 : 10, marginBottom: story ? 0 : 6, borderTopWidth: 1, borderColor: p.rule, paddingTop: story ? 12 : 8 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: story ? 9 : 6 }}>
           <Text style={{ fontSize: story ? 15 : 11, fontWeight: story ? '800' : '700', color: p.ink }}>Meta del grupo</Text>
           <Text style={{ fontSize: story ? 15 : 11, fontWeight: '800', color: p.accent }}>{done ? '¡Meta cumplida!' : `${Math.round(pct * 100)} %`}</Text>
@@ -507,6 +518,120 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
         <Text style={{ fontSize: story ? 12 : 10, fontWeight: '600', color: p.muted, marginTop: story ? 7 : 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
       </View>
+      </View>
+    </CardFrame>
+  );
+}
+
+// ---------- Resultado de la semana del grupo ----------
+
+export type GroupWeekData = {
+  groupName: string;
+  weekLabel: string;
+  // De mejor a peor. `label` ya viene listo (inicial o primer nombre).
+  rows: { id: string; label: string; steps: number; isMe: boolean }[];
+  total: number;
+};
+
+export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: GroupWeekData }) {
+  const winner = data.rows[0];
+  const me = data.rows.find((r) => r.isMe);
+  const myRank = me ? data.rows.indexOf(me) + 1 : 0;
+  if (format === 'overlay') {
+    return (
+      <CardFrame theme="dark" format="overlay" label="">
+        <Text style={[{ fontSize: 13, fontWeight: '800', color: '#62F0B6' }, SHADOW]}>Resultado de la semana · {data.weekLabel}</Text>
+        <Text style={[{ fontSize: 30, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1, marginTop: 2 }, SHADOW]} numberOfLines={2}>{data.groupName}</Text>
+        {winner ? <View style={{ marginTop: 10 }}><CrownMark size={30} /></View> : null}
+        {winner ? <Text style={[{ fontSize: 22, fontWeight: '800', color: '#F5C645', marginTop: 2 }, SHADOW]}>Ganó {winner.isMe ? 'yo' : winner.label} · {fmtInt(winner.steps)}</Text> : null}
+        {me && myRank > 1 ? <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginTop: 4 }, SHADOW]}>Yo quedé {myRank}.º con {fmtInt(me.steps)} pasos</Text> : null}
+      </CardFrame>
+    );
+  }
+  const p = PAL[theme];
+  const story = format !== 'square';
+  const max = Math.max(...data.rows.map((r) => r.steps), 1);
+  return (
+    <CardFrame theme={theme} format={format} label={`Semana · ${data.weekLabel}`}>
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Resultado de la semana</Text>
+          <Text style={{ fontSize: story ? 30 : 19, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={2}>{data.groupName}</Text>
+        </View>
+        {winner ? (
+          <View style={{ alignItems: 'center', marginTop: story ? 34 : 20 }}>
+            <View style={{ position: 'relative', alignItems: 'center' }}>
+              <View style={{ position: 'absolute', top: story ? -26 : -18 }}><CrownMark size={story ? 34 : 24} /></View>
+              <View style={{ width: story ? 84 : 52, height: story ? 84 : 52, borderRadius: 99, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: p.gold }}>
+                <Text style={{ fontSize: story ? 36 : 22, fontWeight: '900', color: p.onBar }}>{winner.label.slice(0, 1).toUpperCase()}</Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: story ? 13 : 11, fontWeight: '800', color: p.gold, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: story ? 10 : 6 }}>Ganó la semana</Text>
+            <Text style={{ fontSize: story ? 28 : 18, fontWeight: '800', color: p.ink }} numberOfLines={1}>{winner.isMe ? 'Yo' : winner.label}</Text>
+            <Text style={{ fontSize: story ? 15 : 12, fontWeight: '700', color: p.muted }}>{fmtInt(winner.steps)} pasos</Text>
+          </View>
+        ) : null}
+        <View style={{ gap: story ? 7 : 4, marginTop: story ? 10 : 4 }}>
+          {data.rows.slice(1, story ? 7 : 4).map((r, i) => (
+            <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={{ width: 24, fontSize: 11, fontWeight: '800', color: r.isMe ? p.accent : p.muted }}>{i + 2}.º</Text>
+              <Text style={{ width: story ? 74 : 56, fontSize: 11.5, fontWeight: r.isMe ? '800' : '600', color: r.isMe ? p.accent : p.ink }} numberOfLines={1}>{r.isMe ? 'Yo' : r.label}</Text>
+              <View style={{ flex: 1, height: 7, borderRadius: 4, backgroundColor: p.track, overflow: 'hidden' }}>
+                <View style={{ width: `${Math.max(4, (r.steps / max) * 100)}%`, height: 7, borderRadius: 4, backgroundColor: r.isMe ? p.accent : p.bar }} />
+              </View>
+              <Text style={{ width: 46, textAlign: 'right', fontSize: 10.5, fontWeight: '700', color: p.ink }}>{fmtInt(r.steps)}</Text>
+            </View>
+          ))}
+        </View>
+        {story ? (
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+            <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
+            <Tile p={p} small stack label="Mi puesto" value={myRank ? `${myRank}.º de ${data.rows.length}` : '–'} />
+          </View>
+        ) : null}
+      </View>
+    </CardFrame>
+  );
+}
+
+// ---------- Récord personal ----------
+
+export type RecordData = { steps: number; prevBest: number; prevBestDay: string | null; dayKey: string; name: string | null };
+
+export function RecordCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: RecordData }) {
+  const km = (data.steps * STEP_LENGTH_METERS) / 1000;
+  const up = data.prevBest > 0 ? data.steps - data.prevBest : 0;
+  if (format === 'overlay') {
+    return (
+      <CardFrame theme="dark" format="overlay" label="">
+        <TrophyArt size={64} />
+        <Text style={[{ fontSize: 15, fontWeight: '800', color: '#F5C645', marginTop: 8 }, SHADOW]}>¡Nuevo récord personal!</Text>
+        <Text style={[{ fontSize: 64, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 }, SHADOW]}>{fmtInt(data.steps)}</Text>
+        <Text style={[{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }, SHADOW]}>pasos en un día · {fmtKm(km)} km</Text>
+        {up > 0 ? <Text style={[{ fontSize: 14, fontWeight: '700', color: '#62F0B6', marginTop: 4 }, SHADOW]}>{fmtInt(up)} más que mi mejor día</Text> : null}
+      </CardFrame>
+    );
+  }
+  const p = PAL[theme];
+  const story = format !== 'square';
+  return (
+    <CardFrame theme={theme} format={format} label={shortDay(data.dayKey)}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TrophyArt size={story ? 120 : 66} />
+        <Text style={{ fontSize: story ? 15 : 12, fontWeight: '800', color: p.gold, letterSpacing: 1.6, textTransform: 'uppercase', marginTop: story ? 16 : 8 }}>Nuevo récord personal</Text>
+        {data.name ? <Text style={{ fontSize: story ? 15 : 12, fontWeight: '700', color: p.muted, marginTop: 4 }}>{data.name}</Text> : null}
+        <Text style={{ fontSize: fitSize(fmtInt(data.steps), story ? 84 : 54, CARD_W - 60), fontWeight: '900', color: p.ink, letterSpacing: -2.5, marginTop: story ? 6 : 2 }}>{fmtInt(data.steps)}</Text>
+        <Text style={{ fontSize: story ? 17 : 13, fontWeight: '700', color: p.muted }}>pasos en un día</Text>
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: story ? 26 : 12, alignSelf: 'stretch' }}>
+          <Tile p={p} small={!story} stack label="Distancia*" value={`${fmtKm(km)} km`} />
+          <Tile p={p} small={!story} stack label={data.prevBestDay ? `Antes: ${shortDay(data.prevBestDay)}` : 'Antes'} value={data.prevBest > 0 ? fmtInt(data.prevBest) : '–'} />
+        </View>
+        {up > 0 && story ? (
+          <View style={{ marginTop: 12, backgroundColor: p.accentSoft, borderRadius: 99, paddingHorizontal: 14, paddingVertical: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: p.accent }}>↑ {fmtInt(up)} pasos más que mi mejor día</Text>
+          </View>
+        ) : null}
+        {story ? <Text style={{ fontSize: 9.5, color: p.muted, marginTop: 10 }}>* Estimado a partir de tus pasos.</Text> : null}
       </View>
     </CardFrame>
   );
@@ -551,12 +676,12 @@ function Kicker({ p, children }: { p: Pal; children: ReactNode }) {
   return <Text style={{ fontSize: 14, fontWeight: '700', color: p.muted, marginBottom: 4 }}>{children}</Text>;
 }
 function Panel({ p, children, style }: { p: Pal; children: ReactNode; style?: ViewStyle }) {
-  return <View style={[{ backgroundColor: p.tile, borderColor: p.tileLine, borderWidth: 1, borderRadius: 20, padding: 14 }, style]}>{children}</View>;
+  return <View style={[{ paddingVertical: 4 }, style]}>{children}</View>;
 }
 function PanelTitle({ p, children, right }: { p: Pal; children: ReactNode; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-      <Text style={{ fontSize: 12, fontWeight: '800', color: p.ink }}>{children}</Text>
+      <Text style={{ fontSize: 8.5, fontWeight: '800', color: p.muted, letterSpacing: 1.1, textTransform: 'uppercase' }}>{children}</Text>
       {right}
     </View>
   );

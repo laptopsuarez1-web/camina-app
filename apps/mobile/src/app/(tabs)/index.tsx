@@ -35,6 +35,9 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
 import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
 import { registerDevice } from '@/lib/device';
+import { usePersonalRecord } from '@/hooks/usePersonalRecord';
+import { RecordShareSheet } from '@/components/share/RecordShareSheet';
+import { TrophyArt } from '@/components/share/art';
 import { reportStepSources } from '@/lib/steps-report';
 import { plural } from '@/lib/format';
 import { boliviaDay, boliviaHour } from '@/lib/bolivia';
@@ -112,6 +115,9 @@ export default function HomeScreen() {
   // Cuenta de prueba: siempre tiene pasos de sobra para poder probar canjes.
   const isQa = useIsQa();
   const steps = isQa ? Math.max(deviceSteps, 15000) : deviceSteps;
+  // Récord personal: hoy supera su mejor día (como los récords de Strava). Se puede compartir como tarjeta.
+  const record = usePersonalRecord(steps);
+  const [recordShareOpen, setRecordShareOpen] = useState(false);
   const live = isQa ? true : deviceLive;
   const available = isQa ? true : deviceAvailable;
   const healthConnectStatus = isQa ? 'ok' : hcStatus;
@@ -636,6 +642,26 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <View className="pt-5 pb-2">
+        {record.isRecord ? (
+          <Press
+            accessibilityRole="button"
+            accessibilityLabel={`Nuevo récord personal: ${steps} pasos. Compartir`}
+            onPress={() => setRecordShareOpen(true)}
+            className="flex-row items-center mx-5 mb-4 rounded-2xl px-3.5 py-3"
+            style={{ gap: 12, backgroundColor: isDark ? 'rgba(245,198,69,0.14)' : '#FFF3D1', borderWidth: 1, borderColor: isDark ? 'rgba(245,198,69,0.4)' : '#F3D9A0' }}
+          >
+            <TrophyArt size={44} />
+            <View className="flex-1">
+              <Text className="text-[14px] font-extrabold" style={{ color: isDark ? '#F5D77A' : '#7A5206' }}>¡Nuevo récord personal!</Text>
+              <Text className="text-[12.5px]" style={{ color: isDark ? '#E0BC63' : colors.goldInk }}>
+                {steps.toLocaleString('es-BO')} pasos: tu mejor día{record.prevBest > 0 ? ` (antes ${record.prevBest.toLocaleString('es-BO')})` : ''}.
+              </Text>
+            </View>
+            <View className="rounded-full px-3 py-1.5" style={{ backgroundColor: '#F5C645' }}>
+              <Text className="text-[12.5px] font-extrabold" style={{ color: '#3B2A05' }}>Compartir</Text>
+            </View>
+          </Press>
+        ) : null}
         <PushPromptCard earnedSomething={pointsToday > 0 || goalMet || (streak ?? 0) > 0} />
         {/* El evento del mes, siempre a mano en Inicio. */}
         {ruta && ruta.eligible_count >= 3 ? <RutaHomeCard state={ruta} onOpen={() => router.push('/(tabs)/ruta')} onParticipate={() => router.push({ pathname: '/(tabs)/ruta', params: { unirme: '1' } })} /> : null}
@@ -718,13 +744,19 @@ export default function HomeScreen() {
               loading={redemptionsLoading}
               onSeeAll={() => router.push('/(tabs)/mis-canjes')}
               storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
-              onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje' })}
+              onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje', businessLogo: r.business?.logo_url ?? null, businessInstagram: r.business?.instagram ?? null, costPoints: r.cost_points })}
             />
           </View>
         )}
         {story.element}
 
       </View>
+      <RecordShareSheet
+        visible={recordShareOpen}
+        onClose={() => setRecordShareOpen(false)}
+        firstName={profile?.full_name?.trim().split(/\s+/)[0] || null}
+        data={{ steps, prevBest: record.prevBest, prevBestDay: record.prevBestDay, dayKey: boliviaDay(new Date()) }}
+      />
     </ScrollView>
     <GoalSheet visible={goalOpen} goal={goal} isDark={isDark} onClose={() => setGoalOpen(false)} />
     <StreaksSheet visible={streaksOpen} racha={streaks?.racha ?? 0} meta={streaks?.meta ?? 0} week={streaks?.week} stepsToday={steps} goal={goal} isDark={isDark} onClose={() => setStreaksOpen(false)} />

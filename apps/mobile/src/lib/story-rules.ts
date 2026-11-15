@@ -22,3 +22,11 @@ export function normalizeHandle(raw: string): string {
   const h = raw.trim().replace(/^@+/, '').toLowerCase();
   return /^[a-z0-9._]{1,30}$/.test(h) ? h : '';
 }
+// El Instagram del local como «@usuario», venga como usuario o como link. null si no hay o no se entiende.
+export function igHandle(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = v.trim();
+  const m = /instagram\.com\/([A-Za-z0-9._]+)/i.exec(t);
+  const user = (m ? m[1] : t.replace(/^@/, '')).replace(/\/+$/, '');
+  return /^[A-Za-z0-9._]{1,30}$/.test(user) ? `@${user}` : null;
+}
