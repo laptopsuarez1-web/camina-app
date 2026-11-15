@@ -1022,11 +1022,10 @@ export default function GroupDetailScreen() {
             weekLabel={`${f(start)} – ${f(end)}`}
             rows={(history ?? []).filter((r) => r.week_start === weekShare)}
             userId={userId}
-            inviteCode={data.group.invite_code}
           />
         );
       })() : null}
-      <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} inviteCode={data.group.invite_code} />
+      <GroupShareImageSheet visible={rankShareOpen} onClose={() => setRankShareOpen(false)} groupName={data.group.name} members={data.members} userId={userId} target={challengeTarget} />
       <GroupDrawer
         visible={drawerOpen}
         onClose={() => setDrawerOpen(false)}

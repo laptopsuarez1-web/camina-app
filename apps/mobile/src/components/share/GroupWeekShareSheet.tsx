@@ -5,7 +5,7 @@ import { GroupWeekCard } from '@/components/share/cards';
 // Compartir el resultado de la semana pasada del grupo (quién ganó y en qué puesto quedaste).
 // Como en el ranking: los compañeros salen con su inicial salvo que se active «Mostrar nombres».
 export function GroupWeekShareSheet({
-  visible, onClose, groupName, weekLabel, rows, userId, inviteCode,
+  visible, onClose, groupName, weekLabel, rows, userId,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -13,10 +13,8 @@ export function GroupWeekShareSheet({
   weekLabel: string;
   rows: { user_id: string; name: string; steps: number }[];
   userId: string | undefined;
-  inviteCode?: string | null;
 }) {
   const [withNames, setWithNames] = useState(true);
-  const [invite, setInvite] = useState(true);
   const data = useMemo(() => ({
     groupName,
     weekLabel,
@@ -27,8 +25,7 @@ export function GroupWeekShareSheet({
       label: r.user_id === userId || withNames ? r.name.trim().split(/\s+/)[0] || 'Caminante' : (r.name.trim()[0] ?? 'C').toUpperCase(),
     })),
     total: rows.reduce((a, r) => a + r.steps, 0),
-    inviteCode: invite ? inviteCode ?? null : null,
-  }), [groupName, weekLabel, rows, userId, withNames, invite, inviteCode]);
+  }), [groupName, weekLabel, rows, userId, withNames]);
   return (
     <CardShareSheet
       visible={visible}
@@ -38,7 +35,6 @@ export function GroupWeekShareSheet({
       extras={
         <>
           <Toggle label="Mostrar nombres" hint="Apagado: tus compañeros salen solo con su inicial." value={withNames} onChange={setWithNames} />
-          {inviteCode ? <Toggle label="Invitar a sumarse" hint="Pone el código del grupo para que se unan desde la app." value={invite} onChange={setInvite} /> : null}
         </>
       }
       render={({ theme, format }) => <GroupWeekCard theme={theme} format={format} data={data} />}

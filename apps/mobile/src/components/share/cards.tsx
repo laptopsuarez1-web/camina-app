@@ -411,22 +411,8 @@ export type GroupCardData = {
   members: { id: string; label: string; steps: number; isMe: boolean }[];
   target: number;
   total: number;
-  // Código para sumarse al grupo (si la persona elige invitar en la imagen).
-  inviteCode?: string | null;
 };
 
-// Franja para que quien ve la historia se sume al grupo.
-function InviteStrip({ p, code, compact }: { p: Pal; code: string; compact?: boolean }) {
-  return (
-    <View style={{ marginTop: compact ? 6 : 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: p.accent, borderRadius: compact ? 12 : 16, paddingVertical: compact ? 6 : 9, paddingHorizontal: compact ? 10 : 14 }}>
-      <View>
-        <Text style={{ fontSize: compact ? 10.5 : 12.5, fontWeight: '800', color: p.onBar === '#FFFFFF' ? '#FFFFFF' : '#12281F' }}>Súmate a nuestro grupo</Text>
-        <Text style={{ fontSize: compact ? 9 : 10, fontWeight: '700', color: p.onBar === '#FFFFFF' ? 'rgba(255,255,255,0.85)' : 'rgba(18,40,31,0.75)' }}>Descarga Camina en caminaapp.com</Text>
-      </View>
-      <Text style={{ fontSize: compact ? 12 : 15, fontWeight: '900', letterSpacing: 1.5, color: p.onBar === '#FFFFFF' ? '#FFFFFF' : '#12281F' }}>{code}</Text>
-    </View>
-  );
-}
 
 // compact: en la cuadrada el podio va más bajo para que la meta del grupo no quede encimada.
 function Medal({ p, label, rank, steps, isMe, big, compact }: { p: Pal; label: string; rank: number; steps: number; isMe: boolean; big?: boolean; compact?: boolean }) {
@@ -464,7 +450,6 @@ function GroupOverlay({ data }: { data: GroupCardData }) {
           </View>
         ))}
       </View>
-      {data.inviteCode ? <Text style={[{ fontSize: 14, fontWeight: '800', color: '#62F0B6', marginTop: 12 }, SHADOW]}>Súmate a nuestro grupo · código {data.inviteCode}</Text> : null}
     </CardFrame>
   );
 }
@@ -476,8 +461,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   const { members } = data;
   const top = members.slice(0, 3);
   const podium = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
-  // Con el código para sumarse va una franja más: se muestran menos filas para que todo entre.
-  const rest = story ? members.slice(3, data.inviteCode ? 5 : 8) : [];
+  const rest = story ? members.slice(3, 8) : [];
   const max = Math.max(...members.map((m) => m.steps), 1);
   const pct = data.target > 0 ? Math.min(1, data.total / data.target) : 0;
   const leader = members[0];
@@ -485,8 +469,8 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
   const gap = leader && me && leader.id !== me.id ? leader.steps - me.steps : 0;
   const done = pct >= 1;
   return (
-    <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`} noFooter={!!data.inviteCode}>
-      <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: data.inviteCode ? 2 : 30 } : undefined}>
+    <CardFrame theme={theme} format={format} label={`Grupo · ${data.weekLabel}`}>
+      <View style={story ? { flex: 1, justifyContent: 'space-between', paddingBottom: 30 } : undefined}>
       <View>
       <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Ranking del grupo · {members.length} {members.length === 1 ? 'integrante' : 'integrantes'}</Text>
       <Text style={{ fontSize: story ? 32 : 20, fontWeight: '800', color: p.ink, letterSpacing: -0.8, marginTop: 2 }} numberOfLines={story ? 2 : 1}>{data.groupName}</Text>
@@ -515,7 +499,7 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
       ) : null}
       </View>
-      {story && !data.inviteCode ? (
+      {story ? (
         // Comparativo corto, para que la historia se entienda sin abrir la app.
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
           <Tile p={p} small stack label="Pasos del grupo" value={fmtInt(data.total)} />
@@ -534,7 +518,6 @@ export function GroupCard({ theme, format, data }: { theme: CardTheme; format: C
         </View>
         <Text style={{ fontSize: story ? 12 : 10, fontWeight: '600', color: p.muted, marginTop: story ? 7 : 5 }}>{fmtInt(data.total)} de {fmtInt(data.target)} pasos</Text>
       </View>
-      {data.inviteCode ? <InviteStrip p={p} code={data.inviteCode} compact={!story} /> : null}
       </View>
     </CardFrame>
   );
@@ -548,7 +531,6 @@ export type GroupWeekData = {
   // De mejor a peor. `label` ya viene listo (inicial o primer nombre).
   rows: { id: string; label: string; steps: number; isMe: boolean }[];
   total: number;
-  inviteCode?: string | null;
 };
 
 export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; format: CardFormat; data: GroupWeekData }) {
@@ -563,7 +545,6 @@ export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; forma
         {winner ? <View style={{ marginTop: 10 }}><CrownMark size={30} /></View> : null}
         {winner ? <Text style={[{ fontSize: 22, fontWeight: '800', color: '#F5C645', marginTop: 2 }, SHADOW]}>Ganó {winner.isMe ? 'yo' : winner.label} · {fmtInt(winner.steps)}</Text> : null}
         {me && myRank > 1 ? <Text style={[{ fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginTop: 4 }, SHADOW]}>Yo quedé {myRank}.º con {fmtInt(me.steps)} pasos</Text> : null}
-        {data.inviteCode ? <Text style={[{ fontSize: 14, fontWeight: '800', color: '#62F0B6', marginTop: 10 }, SHADOW]}>Súmate a nuestro grupo · código {data.inviteCode}</Text> : null}
       </CardFrame>
     );
   }
@@ -571,7 +552,7 @@ export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; forma
   const story = format !== 'square';
   const max = Math.max(...data.rows.map((r) => r.steps), 1);
   return (
-    <CardFrame theme={theme} format={format} label={`Semana · ${data.weekLabel}`} noFooter={!!data.inviteCode}>
+    <CardFrame theme={theme} format={format} label={`Semana · ${data.weekLabel}`}>
       <View style={{ flex: 1, justifyContent: 'space-between' }}>
         <View>
           <Text style={{ fontSize: story ? 14 : 11.5, fontWeight: '700', color: p.muted }}>Resultado de la semana</Text>
@@ -608,7 +589,6 @@ export function GroupWeekCard({ theme, format, data }: { theme: CardTheme; forma
             <Tile p={p} small stack label="Mi puesto" value={myRank ? `${myRank}.º de ${data.rows.length}` : '–'} />
           </View>
         ) : null}
-        {data.inviteCode ? <InviteStrip p={p} code={data.inviteCode} compact={!story} /> : null}
       </View>
     </CardFrame>
   );
