@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Eye, MapPin, MessageCircle, X, ImagePlus } from 'lucide-react';
+import { CheckCircle2, Eye, MapPin, MessageCircle, ImagePlus } from 'lucide-react';
 import { supabase, type Benefit, type Business } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import { CATEGORIAS } from '@/lib/categories';
 import { FichaPreview } from '@/components/FichaPreview';
+import { PresentarLocal, type VistaLocal } from '@/components/PresentarLocal';
+import { MapPicker } from '@/components/MapPicker';
 import { PLAN_KINDS, partnersWa, bs, type Partner, type PartnerLead, type PlanKind } from '@/lib/partners';
 
 const CAMPO = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[14px] text-text';
@@ -92,7 +94,7 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
   const [gpsMsg, setGpsMsg] = useState<string | null>(null);
-  const [verMovil, setVerMovil] = useState(false);
+  const [presentar, setPresentar] = useState(false);
 
   // La ficha tal como la ve la gente en la app, armada con lo que se va escribiendo.
   const negocio = useMemo(
@@ -132,6 +134,23 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
     [premio, premioDesc, costo, fotoPremio.url, tipo],
   );
 
+  const vistaLocal: VistaLocal = {
+    name: local.trim() || 'Nombre del local',
+    category: categoria || null,
+    description: descripcion.trim() || null,
+    address: direccion.trim() || null,
+    hours_text: horario.trim() || null,
+    instagram: instagram.trim() || null,
+    phone: tel,
+    logo_url: logo.url,
+    cover_url: portada.url,
+    lat: pos?.lat ?? null,
+    lng: pos?.lng ?? null,
+    premio: premio.trim()
+      ? { name: premio.trim(), description: premioDesc.trim() || null, cost: Number(costo) || 10, image_url: fotoPremio.url, kind: tipo }
+      : null,
+  };
+
   const faltan = [
     descripcion.trim().length < 15 && 'la descripción (mínimo 15 letras)',
     !categoria && 'la categoría',
@@ -144,11 +163,6 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
     premio.trim() && !fotoPremio.url && 'la foto del premio',
   ].filter(Boolean) as string[];
 
-  useEffect(() => {
-    const cerrar = (e: KeyboardEvent) => e.key === 'Escape' && setVerMovil(false);
-    window.addEventListener('keydown', cerrar);
-    return () => window.removeEventListener('keydown', cerrar);
-  }, []);
 
   function ubicar() {
     setGpsMsg('Buscando tu ubicación…');
@@ -243,6 +257,10 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
       <h1 className="text-[22px] font-bold text-text mb-1">{lead ? 'Editar datos del local' : 'Cargar un local'}</h1>
       <p className="text-muted text-[13.5px] mb-5">Llena los datos con el dueño y mira cómo queda su local en la app. Camina lo revisa y lo publica.</p>
 
+      <button type="button" onClick={() => setPresentar(true)} className="flex items-center justify-center gap-2 w-full max-w-[460px] bg-mint text-mint-dark rounded-xl py-3.5 font-bold text-[14.5px] mb-5">
+        <Eye size={18} /> Mostrar al dueño cómo quedaría
+      </button>
+
       <div className="lg:grid lg:grid-cols-[minmax(0,460px)_360px] lg:gap-8 items-start">
         <form onSubmit={guardar} className="flex flex-col gap-3 min-w-0 pb-24 lg:pb-0">
           <p className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--c-purple-text)' }}>El local y su dueño</p>
@@ -293,6 +311,13 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
             </button>
             {gpsMsg && <p className="text-muted text-[12px] mt-1">{gpsMsg}</p>}
           </div>
+          {pos && (
+            <div>
+              <p className="text-[13px] font-semibold text-text mb-1">Pin en el mapa</p>
+              <MapPicker value={pos} onChange={setPos} />
+              <p className="text-muted text-[12px] mt-1">Toca el mapa o arrastra el pin para ajustarlo a la puerta del local.</p>
+            </div>
+          )}
           <label className={ETIQ}>Link de Google Maps (opcional)
             <input value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} placeholder="https://maps.app.goo.gl/..." className={CAMPO} />
           </label>
@@ -341,17 +366,10 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
         <div className="hidden lg:block sticky top-6">{vista}</div>
       </div>
 
-      <button type="button" onClick={() => setVerMovil(true)} className="lg:hidden fixed bottom-4 right-4 z-30 flex items-center gap-2 bg-mint text-mint-dark rounded-full px-5 py-3 font-bold text-[14px] shadow-lg">
-        <Eye size={18} /> Ver cómo queda
+      <button type="button" onClick={() => setPresentar(true)} className="lg:hidden fixed bottom-4 right-4 z-30 flex items-center gap-2 bg-mint text-mint-dark rounded-full px-5 py-3 font-bold text-[14px] shadow-lg">
+        <Eye size={18} /> Mostrar al dueño
       </button>
-      {verMovil && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 overflow-y-auto p-3" onClick={() => setVerMovil(false)}>
-          <div className="relative max-w-[400px] mx-auto my-4" onClick={(e) => e.stopPropagation()}>
-            <button type="button" onClick={() => setVerMovil(false)} aria-label="Cerrar" className="absolute -top-1 right-0 w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center z-10"><X size={18} /></button>
-            <div className="pt-8">{vista}</div>
-          </div>
-        </div>
-      )}
+      {presentar && <PresentarLocal vista={vistaLocal} onClose={() => setPresentar(false)} />}
     </>
   );
 }
