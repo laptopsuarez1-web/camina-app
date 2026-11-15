@@ -977,12 +977,12 @@ export default function CanjesScreen() {
                   cachePolicy="memory-disk"
                   accessibilityIgnoresInvertColors
                   contentFit="cover"
-                  style={{ height: 132, marginTop: -16, marginHorizontal: -16, marginBottom: 14, borderTopLeftRadius: 24 - cardBorder(g.business), borderTopRightRadius: 24 - cardBorder(g.business) }}
+                  style={{ height: 132 + cardBorder(g.business), marginTop: -16 - cardBorder(g.business), marginHorizontal: -16 - cardBorder(g.business), marginBottom: 14, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
                 />
               ) : null}
               {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
                   el borde se repite por encima de todo, del mismo ancho y color. */}
-              {g.business.cover_url ? (
+              {g.business.cover_url && isFeatured(g.business) ? (
                 <View
                   pointerEvents="none"
                   className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
