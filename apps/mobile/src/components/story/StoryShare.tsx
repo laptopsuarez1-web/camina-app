@@ -207,8 +207,7 @@ export function StoryComposer({
   onChangePhoto: () => void;
   topInset?: number;
 }) {
-  // Cuatro estilos con piezas de Camina (Baifo, anillo, pin, monedas): la persona elige.
-  const [look, setLook] = useState<StickerLook>('baifo');
+  const [look, setLook] = useState<StickerLook>('nombre');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
