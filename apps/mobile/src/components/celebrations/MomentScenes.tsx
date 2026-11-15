@@ -16,7 +16,7 @@ import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { participantsLabel } from '@/lib/promo';
 import {
-  type Timeline, Burst, CAMINA_SPARKS, display, Eyebrow, FlyingCoin, GOLD, GOLD_SPARKS, GroupOrbit, LinkButton, MainButton, Avatar, Reveal, ringPeople, Stage, Stamp,
+  type Timeline, Burst, CAMINA_SPARKS, display, Eyebrow, FlyingCoin, GOLD, GOLD_SPARKS, LinkButton, MainButton, Avatar, Reveal, Stage, Stamp,
   useBeat, useCount, usePalette, useTimeline, DrawRing, EASE, type CinePerson,
 } from '@/components/challenge/ChallengeCinematics';
 
@@ -46,20 +46,6 @@ const first = (name: string) => name.trim().split(/\s+/)[0] || name;
 function usePaper() {
   const p = usePalette();
   return { paper: p.dark ? '#F6F2FF' : '#FFFFFF', line: p.dark ? 'rgba(255,255,255,0.0)' : 'rgba(91,49,163,0.16)' };
-}
-
-function Letters({ tl, text, delay, size, color }: { tl: Parameters<typeof Reveal>[0]['tl']; text: string; delay: number; size: number; color: string }) {
-  const letters = Array.from(text);
-  const small = letters.length > 16;
-  return (
-    <View accessible accessibilityLabel={text} style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {letters.map((ch, i) => (
-        <Reveal key={i} tl={tl} delay={delay + Math.min(i, 14) * 60} pop from={0.6}>
-          <Text style={{ ...display(small ? size - 6 : size), color, lineHeight: (small ? size - 6 : size) * 1.2 }}>{ch === ' ' ? ' ' : ch}</Text>
-        </Reveal>
-      ))}
-    </View>
-  );
 }
 
 // Perforación del boleto: línea punteada con dos muescas a los lados.
@@ -221,43 +207,104 @@ export function EventJoinedScene({ c, onDone }: { c: EventJoinedCinematic; onDon
 // 3) Unirse a un grupo
 // =====================================================================
 
+// Fila de caras del grupo, encimadas. Los demás entran desde los costados; justo antes de que llegues se abren
+// y tu cara cae en el hueco del medio con un rebote. Si hay más gente de la que entra, al final va una burbuja "+N".
+const STACK_S = 72;
+const STACK_STEP = 56;
+
+function StackFace({ tl, delay, openAt, x, shift, side, edge, children }: { tl: Timeline; delay: number; openAt: number; x: number; shift: number; side: number; edge: string; children: React.ReactNode }) {
+  const e = useBeat(tl, delay, { duration: 460 });
+  const o = useBeat(tl, openAt, { spring: true });
+  const a = useAnimatedStyle(() => ({
+    opacity: Math.min(1, e.value * 1.4),
+    transform: [{ translateX: x + shift * (1 - o.value) + side * 36 * (1 - e.value) }, { scale: 0.85 + 0.15 * e.value }],
+  }));
+  return (
+    <Animated.View style={[{ position: 'absolute', left: -STACK_S / 2, top: 10, width: STACK_S, height: STACK_S, borderRadius: STACK_S / 2, borderWidth: 3, borderColor: edge, overflow: 'hidden' }, a]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+function DropFace({ tl, delay, x, children }: { tl: Timeline; delay: number; x: number; children: React.ReactNode }) {
+  const d = useBeat(tl, delay, { spring: true });
+  const a = useAnimatedStyle(() => ({
+    opacity: Math.min(1, d.value * 3),
+    transform: [{ translateX: x }, { translateY: (1 - d.value) * -90 }, { scale: 0.7 + 0.3 * Math.min(1.08, d.value) }],
+  }));
+  return <Animated.View style={[{ position: 'absolute', left: -(STACK_S + 6) / 2, top: 7, zIndex: 5 }, a]}>{children}</Animated.View>;
+}
+
+function JoinStack({ tl, me, others, meDelay, edge, bubble }: { tl: Timeline; me: CinePerson; others: CinePerson[]; meDelay: number; edge: string; bubble: { bg: string; color: string } }) {
+  const shown = others.slice(0, others.length > 4 ? 3 : 4);
+  const extra = others.length - shown.length;
+  const meIndex = Math.ceil(shown.length / 2);
+  const n = shown.length + 1 + (extra > 0 ? 1 : 0);
+  const slotX = (i: number) => (i - (n - 1) / 2) * STACK_STEP;
+  const width = (n - 1) * STACK_STEP + STACK_S + 20;
+  return (
+    <View style={{ width, height: STACK_S + 24, alignItems: 'center' }}>
+      <View style={{ position: 'absolute', left: width / 2, top: 0 }}>
+        {shown.map((q, j) => {
+          const slot = j < meIndex ? j : j + 1;
+          const side = j < meIndex ? -1 : 1;
+          return (
+            <StackFace key={q.id} tl={tl} delay={250 + j * 90} openAt={meDelay - 180} x={slotX(slot)} shift={-side * (STACK_STEP / 2)} side={side} edge={edge}>
+              <Avatar p={q} size={STACK_S - 6} />
+            </StackFace>
+          );
+        })}
+        {extra > 0 ? (
+          <StackFace tl={tl} delay={250 + shown.length * 90} openAt={meDelay - 180} x={slotX(n - 1)} shift={-STACK_STEP / 2} side={1} edge={edge}>
+            <View style={{ flex: 1, backgroundColor: bubble.bg, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: bubble.color, fontWeight: '900', fontSize: 17 }}>+{extra}</Text>
+            </View>
+          </StackFace>
+        ) : null}
+        <DropFace tl={tl} delay={meDelay} x={slotX(meIndex)}>
+          <View style={{ borderRadius: (STACK_S + 6) / 2, borderWidth: 3, borderColor: edge }}>
+            <Avatar p={me} size={STACK_S} ring={colors.mint} />
+          </View>
+        </DropFace>
+        <Burst tl={tl} delay={meDelay + 260} palette={[colors.mint, '#FFD97A', '#B7A6F0']} count={10} radius={70} style={{ left: slotX(meIndex), top: 10 + STACK_S / 2 }} />
+      </View>
+    </View>
+  );
+}
+
 export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDone: () => void }) {
   const p = usePalette();
-  const tl = useTimeline(3300);
-  const { shown, extra } = ringPeople(c.others);
-  const total = useCount(tl, Math.max(1, c.total - 1), c.total, 1550, 450);
+  const tl = useTimeline(2900);
+  const ME_AT = 1150;
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
-    buzz.medium();
-    tl.at(1450, buzz.light);
-    tl.at(1950, buzz.success);
+    buzz.light();
+    tl.at(ME_AT + 200, buzz.medium);
+    tl.at(ME_AT + 450, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const edge = p.dark ? '#1A1328' : '#F4EFFF';
   return (
     <Stage tl={tl} announce={`Ya eres parte de ${c.name}. ${c.total} caminantes.`}>
-      <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>{c.name}</Eyebrow></Reveal>
-      <View style={{ marginTop: 22 }}>
-        <GroupOrbit
-          tl={tl}
-          people={shown}
-          extra={extra}
-          me={c.me}
-          meDelay={900}
-          center={
-            <View accessible accessibilityLabel={`${c.total} caminantes`} style={{ alignItems: 'center' }}>
-              <Text style={{ ...display(54), color: p.text, fontVariant: ['tabular-nums'], lineHeight: 60 }}>{total}</Text>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: p.muted }}>{c.total === 1 ? 'caminante' : 'caminantes'}</Text>
-            </View>
-          }
-        />
+      <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>Te uniste a</Eyebrow></Reveal>
+      <Reveal tl={tl} delay={180} pop from={0.85} style={{ marginTop: 6 }}>
+        <Text numberOfLines={2} style={{ ...display(32), color: p.text, textAlign: 'center' }}>{c.name}</Text>
+      </Reveal>
+      <View style={{ marginTop: 30 }}>
+        <JoinStack tl={tl} me={c.me} others={c.others} meDelay={ME_AT} edge={edge} bubble={{ bg: p.glass, color: p.text }} />
       </View>
-      <Reveal tl={tl} delay={2000} pop from={0.6} style={{ marginTop: 26 }}>
+      <Reveal tl={tl} delay={ME_AT + 250} style={{ marginTop: 6 }}>
+        <Text accessible accessibilityLabel={`${c.total} caminantes`} style={{ fontSize: 14, fontWeight: '800', color: p.accent, textAlign: 'center', fontVariant: ['tabular-nums'] }}>
+          {c.total} {c.total === 1 ? 'caminante' : 'caminantes'}
+        </Text>
+      </Reveal>
+      <Reveal tl={tl} delay={ME_AT + 450} pop from={0.7} style={{ marginTop: 28 }}>
         <Text style={{ ...display(28), color: p.text, textAlign: 'center' }}>¡Ya eres parte del grupo!</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2200}>
+      <Reveal tl={tl} delay={ME_AT + 600}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 6, lineHeight: 20, maxWidth: 290 }}>{c.goalText ?? 'Caminar juntos suma más.'}</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2450} dy={20} style={{ alignSelf: 'stretch', marginTop: 28 }}>
+      <Reveal tl={tl} delay={ME_AT + 800} dy={20} style={{ alignSelf: 'stretch', marginTop: 30 }}>
         <MainButton label="Ver el grupo" onPress={onDone} />
       </Reveal>
     </Stage>
@@ -268,69 +315,80 @@ export function GroupJoinedScene({ c, onDone }: { c: GroupJoinedCinematic; onDon
 // 4) Crear un grupo
 // =====================================================================
 
-// Grupo creado, en el mismo estilo que "Desafío creado": sin aro ni confeti. El nombre aparece letra por letra, tu cara
-// llega primero y los lugares vacíos (+) se invitan tocándolos; debajo, la meta de la semana que eligieron (el número
-// sube hasta la meta). Tocar el código lo copia.
+// Lugar vacío para invitar: sale de atrás de tu cara hacia su lugar y queda latiendo suave.
+function InviteSlot({ tl, delay, x, color, onPress }: { tl: Timeline; delay: number; x: number; color: string; onPress: () => void }) {
+  const k = useBeat(tl, delay, { spring: true });
+  const a = useAnimatedStyle(() => ({ opacity: Math.min(1, k.value * 1.5), transform: [{ translateX: x * k.value }, { scale: 0.5 + 0.5 * k.value }] }));
+  return (
+    <Animated.View style={[{ position: 'absolute', left: -25, top: 11 }, a]}>
+      <Press accessibilityRole="button" accessibilityLabel="Invitar a alguien" onPress={onPress}
+        style={{ width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', borderColor: color, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ color, fontSize: 22, fontWeight: '800', marginTop: -2 }}>+</Text>
+      </Press>
+    </Animated.View>
+  );
+}
+
+// Grupo creado: tu cara aparece en el medio, de atrás salen los lugares para invitar, abajo la meta de la semana
+// (vacía: empieza a contar hoy) y el código. Tocar el código lo copia.
 export function GroupCreatedScene({ c, onDone }: { c: GroupCreatedCinematic; onDone: () => void }) {
   const p = usePalette();
   const [copied, setCopied] = useState(false);
-  const tl = useTimeline(3200);
+  const tl = useTimeline(2600);
   useEffect(() => {
     if (tl.reduced) { buzz.success(); return; }
     buzz.light();
-    tl.at(900, buzz.selection);
-    tl.at(1900, buzz.success);
+    tl.at(450, buzz.medium);
+    tl.at(1500, buzz.success);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const goalCount = useCount(tl, 0, c.target ?? 0, 1200, 800);
   const invite = () => { onDone(); c.onInvite?.(); };
+  const slots = [-130, -70, 70, 130];
   return (
     <Stage tl={tl} announce={`Grupo ${c.name} creado. Código ${Array.from(c.code).join(' ')}.`}>
       <Reveal tl={tl} delay={100}><Eyebrow color={p.muted}>Nuevo grupo</Eyebrow></Reveal>
-      <View style={{ marginTop: 8 }}>
-        <Letters tl={tl} text={c.name} delay={250} size={30} color={p.text} />
-      </View>
+      <Reveal tl={tl} delay={180} pop from={0.85} style={{ marginTop: 6 }}>
+        <Text numberOfLines={2} style={{ ...display(32), color: p.text, textAlign: 'center' }}>{c.name}</Text>
+      </Reveal>
 
-      {/* Tu cara y los lugares para invitar. */}
-      <View style={{ flexDirection: 'row', marginTop: 24, alignItems: 'center', gap: 10 }}>
-        <Reveal tl={tl} delay={700} pop from={0.4}><Avatar p={c.me} size={60} ring={colors.mint} /></Reveal>
-        {[0, 1, 2, 3].map((i) => (
-          <Reveal key={i} tl={tl} delay={850 + i * 110} pop from={0.4}>
-            <Press accessibilityRole="button" accessibilityLabel="Invitar a alguien" onPress={invite}
-              style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderStyle: 'dashed', borderColor: p.muted, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: p.muted, fontSize: 22, fontWeight: '800', marginTop: -2 }}>+</Text>
-            </Press>
+      <View style={{ width: 300, height: 72, marginTop: 26 }}>
+        <View style={{ position: 'absolute', left: 150, top: 0 }}>
+          {slots.map((x, i) => <InviteSlot key={x} tl={tl} delay={750 + i * 70} x={x} color={p.muted} onPress={invite} />)}
+          <Reveal tl={tl} delay={450} pop from={0.4} style={{ position: 'absolute', left: -36, top: 0 }}>
+            <Avatar p={c.me} size={72} ring={colors.mint} />
           </Reveal>
-        ))}
+        </View>
       </View>
 
-      {/* La meta de la semana del grupo: el número sube hasta la meta que eligieron. */}
       {c.target ? (
-        <Reveal tl={tl} delay={1100} style={{ alignSelf: 'stretch', marginTop: 24 }}>
-          <View style={{ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine, alignItems: 'center' }}>
-            <Text style={{ color: p.accent, fontWeight: '800', fontSize: 11, letterSpacing: 1.4 }}>META DE LA SEMANA</Text>
-            <Text style={{ ...display(28), color: p.text, marginTop: 4, fontVariant: ['tabular-nums'] }}>{goalCount.toLocaleString('es-BO')}</Text>
-            <Text style={{ color: p.muted, fontSize: 12.5 }}>pasos entre todos · cuenta desde hoy</Text>
+        <Reveal tl={tl} delay={1150} style={{ alignSelf: 'stretch', marginTop: 24 }}>
+          <View style={{ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, backgroundColor: p.glass, borderWidth: 1, borderColor: p.glassLine }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <Text style={{ color: p.muted, fontWeight: '700', fontSize: 12.5 }}>Meta de la semana</Text>
+              <Text style={{ color: p.text, fontWeight: '900', fontSize: 16, fontVariant: ['tabular-nums'] }}>{c.target.toLocaleString('es-BO')} pasos</Text>
+            </View>
+            <View style={{ height: 8, borderRadius: 4, backgroundColor: p.glassLine, marginTop: 10 }} />
+            <Text style={{ color: p.muted, fontSize: 12, marginTop: 7 }}>Entre todos · empieza a contar hoy</Text>
           </View>
         </Reveal>
       ) : null}
 
-      <Reveal tl={tl} delay={1950} pop from={0.6} style={{ marginTop: 18 }}>
-        <Text style={{ ...display(26), color: p.text, textAlign: 'center' }}>¡Grupo creado!</Text>
+      <Reveal tl={tl} delay={1500} pop from={0.7} style={{ marginTop: 22 }}>
+        <Text style={{ ...display(28), color: p.text, textAlign: 'center' }}>¡Grupo creado!</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2150}>
+      <Reveal tl={tl} delay={1650}>
         <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 4, lineHeight: 20, maxWidth: 280 }}>Invita a tus amigos: caminar juntos suma más.</Text>
       </Reveal>
-      <Reveal tl={tl} delay={2300} pop from={0.8} style={{ marginTop: 12 }}>
+      <Reveal tl={tl} delay={1800} pop from={0.85} style={{ marginTop: 14 }}>
         {/* Tocar el código lo copia. */}
         <Press accessibilityRole="button" accessibilityLabel={`Código ${Array.from(c.code).join(' ')}. Toca para copiarlo`}
           onPress={async () => { await Clipboard.setStringAsync(c.code); buzz.success(); setCopied(true); }}
-          style={{ paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: p.glass, borderWidth: 1, borderColor: copied ? colors.mint : p.glassLine, alignItems: 'center' }}>
-          <Text style={{ ...display(18), color: p.text, letterSpacing: 5 }}>{c.code}</Text>
+          style={{ paddingHorizontal: 20, paddingVertical: 9, borderRadius: 999, backgroundColor: p.glass, borderWidth: 1, borderColor: copied ? colors.mint : p.glassLine, alignItems: 'center' }}>
+          <Text style={{ ...display(20), color: p.text, letterSpacing: 6 }}>{c.code}</Text>
           <Text style={{ fontSize: 11, fontWeight: '700', color: copied ? p.accent : p.muted, marginTop: 1 }}>{copied ? '¡Código copiado!' : 'Toca para copiar'}</Text>
         </Press>
       </Reveal>
-      <Reveal tl={tl} delay={2500} dy={20} style={{ alignSelf: 'stretch', marginTop: 20 }}>
+      <Reveal tl={tl} delay={1950} dy={20} style={{ alignSelf: 'stretch', marginTop: 22 }}>
         <MainButton label="Invitar amigos" onPress={invite} />
         <LinkButton label="Ir al grupo" onPress={onDone} color={p.accent} />
       </Reveal>
@@ -587,62 +645,66 @@ const RANK_H = [124, 88, 60];
 
 // Colores del podio: oro, plata y bronce.
 const MEDAL: [string, string][] = [['#FFE7A3', '#E2B33C'], ['#EEF1F6', '#AEB6C4'], ['#F3C9A4', '#C9824E']];
-const MEDAL_INK = ['#5a3d00', '#3a4150', '#5a2d0c'];
+
+// Columnas del podio en morado (el color de la app) con una franja arriba del color de la medalla.
+// Suben con un rebote; después cae la cara de cada uno y, en el 1.º, la corona.
+const POD_DARK: [string, string][] = [['#5B3BB0', '#33236A'], ['#45317F', '#2A1E52'], ['#3E2C73', '#271C4D']];
+const POD_LIGHT: [string, string][] = [['#C9B4F5', '#E9DEFA'], ['#D9CCF7', '#EFE8FC'], ['#DDD1F7', '#F1EBFC']];
 
 function MyStep({ tl, delay, rank, me, mine, other }: { tl: Timeline; delay: number; rank: number; me: CinePerson; mine: boolean; other?: PodiumPerson }) {
   const p = usePalette();
-  const grow = useBeat(tl, delay, { duration: 560 });
-  const g = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - Math.min(1, grow.value)) * RANK_H[rank - 1] }] }));
+  const grow = useBeat(tl, delay, { spring: true });
+  const h = RANK_H[rank - 1];
+  const g = useAnimatedStyle(() => ({ height: Math.max(0, h * grow.value) }));
   const winner = rank === 1;
+  const medal = MEDAL[rank - 1][1];
+  const person = mine ? me : other;
+  const size = winner ? 58 : 50;
   return (
-    <View style={{ width: 96, alignItems: 'center' }}>
-      <View style={{ height: 92, justifyContent: 'flex-end', alignItems: 'center' }}>
-        {mine ? (
-          <Reveal tl={tl} delay={delay + 380} dy={-40} style={{ alignItems: 'center' }}>
-            {winner ? <Reveal tl={tl} delay={delay + 900} dy={-50} style={{ position: 'absolute', top: -36 }}><CrownMark size={44} /></Reveal> : null}
-            <Avatar p={me} size={54} ring={MEDAL[rank - 1][1]} />
-            <Text style={{ fontSize: 11.5, fontWeight: '800', color: p.text, marginTop: 3 }}>Tú</Text>
-          </Reveal>
-        ) : other ? (
-          // Los otros del podio: su foto, su nombre y sus pasos.
-          <Reveal tl={tl} delay={delay + 380} dy={-30} style={{ alignItems: 'center' }}>
-            {winner ? <Reveal tl={tl} delay={delay + 800} dy={-40} style={{ position: 'absolute', top: -30 }}><CrownMark size={36} /></Reveal> : null}
-            <Avatar p={other} size={44} ring={MEDAL[rank - 1][1]} />
-            <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: p.text, marginTop: 3, maxWidth: 92 }}>{other.name.split(' ')[0]}</Text>
-            <Text numberOfLines={1} style={{ fontSize: 10, color: p.muted, fontVariant: ['tabular-nums'] }}>{other.steps.toLocaleString('es-BO')}</Text>
+    <View style={{ width: 98, alignItems: 'center' }}>
+      <View style={{ height: 104, justifyContent: 'flex-end', alignItems: 'center' }}>
+        {person ? (
+          <Reveal tl={tl} delay={delay + 420} pop from={0.3} style={{ alignItems: 'center' }}>
+            {winner ? <Reveal tl={tl} delay={delay + 820} dy={-30} style={{ position: 'absolute', top: -32, zIndex: 2 }}><CrownMark size={40} /></Reveal> : null}
+            <Avatar p={person} size={size} ring={mine ? colors.mint : medal} />
+            <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: '800', color: mine ? p.accent : p.text, marginTop: 4, maxWidth: 94 }}>{mine ? 'Tú' : person.name.split(' ')[0]}</Text>
+            {!mine && other ? <Text numberOfLines={1} style={{ fontSize: 10.5, color: p.muted, fontVariant: ['tabular-nums'] }}>{other.steps.toLocaleString('es-BO')}</Text> : null}
           </Reveal>
         ) : (
           // Sin dato de esa persona: un lugar vacío, para que el podio no se vea cortado.
           <Reveal tl={tl} delay={delay + 300} style={{ alignItems: 'center', marginBottom: 16 }}>
-            <View style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
+            <View style={{ width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderStyle: 'dashed', borderColor: p.track }} />
           </Reveal>
         )}
       </View>
-      <View style={{ width: '100%', height: RANK_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14, marginTop: 6 }}>
-        <Animated.View style={[{ flex: 1 }, g]}>
-          {mine || other ? (
-            <LinearGradient colors={MEDAL[rank - 1]} style={{ flex: 1, alignItems: 'center', paddingTop: 8, opacity: mine ? 1 : 0.55 }}>
-              <Text style={{ ...display(24), color: MEDAL_INK[rank - 1] }}>{rank}</Text>
-            </LinearGradient>
-          ) : (
-            <View style={{ flex: 1, backgroundColor: p.pod, alignItems: 'center', paddingTop: 8, opacity: 0.75 }}>
-              <Text style={{ ...display(24), color: p.muted }}>{rank}</Text>
-            </View>
-          )}
+      <View style={{ width: '100%', height: h, justifyContent: 'flex-end', marginTop: 8 }}>
+        <Animated.View style={[{ width: '100%', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }, g]}>
+          <LinearGradient colors={(p.dark ? POD_DARK : POD_LIGHT)[rank - 1]} style={{ height: h, alignItems: 'center', paddingTop: 12, opacity: person ? 1 : 0.6 }}>
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: mine ? colors.mint : medal }} />
+            <Text style={{ ...display(winner ? 30 : 24), color: person ? medal : p.muted }}>{rank}</Text>
+          </LinearGradient>
         </Animated.View>
       </View>
     </View>
   );
 }
 
-function StatChip({ tl, delay, value, label }: { tl: Timeline; delay: number; value: string; label: string }) {
+// Tres datos en una fila, separados por líneas finas (sin cajas).
+function StatRow({ tl, delay, items }: { tl: Timeline; delay: number; items: { value: string; label: string }[] }) {
   const p = usePalette();
   return (
-    <Reveal tl={tl} delay={delay} dy={14} style={{ flex: 1 }}>
-      <Glass accessible accessibilityLabel={`${label}: ${value}`} className="rounded-2xl" style={{ paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center' }}>
-        <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 17, fontWeight: '900', color: p.text, fontVariant: ['tabular-nums'] }}>{value}</Text>
-        <Text style={{ fontSize: 11, color: p.muted, marginTop: 1 }}>{label}</Text>
-      </Glass>
+    <Reveal tl={tl} delay={delay} dy={12} style={{ alignSelf: 'stretch', marginTop: 18 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1, borderColor: p.glassLine }}>
+        {items.map((it, i) => (
+          <View key={it.label} style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+            {i > 0 ? <View style={{ width: 1, height: 28, backgroundColor: p.glassLine }} /> : null}
+            <View accessible accessibilityLabel={`${it.label}: ${it.value}`} style={{ flex: 1, alignItems: 'center' }}>
+              <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 17, fontWeight: '900', color: p.text, fontVariant: ['tabular-nums'] }}>{it.value}</Text>
+              <Text style={{ fontSize: 11, color: p.muted, marginTop: 1 }}>{it.label}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
     </Reveal>
   );
 }
@@ -700,11 +762,7 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
         <Text style={{ fontSize: 13.5, color: p.muted, textAlign: 'center', marginTop: 6, lineHeight: 19, maxWidth: 290 }}>{t.sub}</Text>
       </Reveal>
 
-      <View style={{ flexDirection: 'row', gap: 8, alignSelf: 'stretch', marginTop: 16 }}>
-        <StatChip tl={tl} delay={podium ? 2450 : 1800} value={`${c.position}.º`} label="Puesto" />
-        <StatChip tl={tl} delay={podium ? 2550 : 1900} value={c.steps.toLocaleString('es-BO')} label="Pasos" />
-        <StatChip tl={tl} delay={podium ? 2650 : 2000} value={Math.round(c.steps / 7).toLocaleString('es-BO')} label="Por día" />
-      </View>
+      <StatRow tl={tl} delay={podium ? 2450 : 1800} items={[{ value: `${c.position}.º`, label: 'Puesto' }, { value: c.steps.toLocaleString('es-BO'), label: 'Pasos' }, { value: Math.round(c.steps / 7).toLocaleString('es-BO'), label: 'Por día' }]} />
 
       <Reveal tl={tl} delay={podium ? 2900 : 2200} dy={20} style={{ alignSelf: 'stretch', marginTop: 18 }}>
         <MainButton gold={podium} label="Compartir" onPress={share} />
@@ -763,11 +821,7 @@ export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: (
       <Reveal tl={tl} delay={2100}>
         <Text style={{ fontSize: 13.5, color: p.muted, textAlign: 'center', marginTop: 6, lineHeight: 19, maxWidth: 300 }}>{sub}</Text>
       </Reveal>
-      <View style={{ flexDirection: 'row', gap: 8, alignSelf: 'stretch', marginTop: 16 }}>
-        <StatChip tl={tl} delay={2200} value={`${c.myRank}.º`} label="Tu puesto" />
-        <StatChip tl={tl} delay={2300} value={c.mySteps.toLocaleString('es-BO')} label="Tus pasos" />
-        <StatChip tl={tl} delay={2400} value={c.total.toLocaleString('es-BO')} label="Del grupo" />
-      </View>
+      <StatRow tl={tl} delay={2200} items={[{ value: `${c.myRank}.º`, label: 'Tu puesto' }, { value: c.mySteps.toLocaleString('es-BO'), label: 'Tus pasos' }, { value: c.total.toLocaleString('es-BO'), label: 'Del grupo' }]} />
       <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 18 }}>
         <MainButton gold={won} label="Compartir" onPress={share} />
         <LinkButton label={c.onOpen ? 'Ver el grupo' : 'Genial'} onPress={() => { onDone(); c.onOpen?.(); }} color={p.accent} />
