@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Store, PlusCircle, BookOpen, Wallet, LogOut, MessageCircle } from 'lucide-react';
+import { Home, Store, PlusCircle, BookOpen, Wallet, LogOut, MessageCircle, FolderOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import { usePartnerAuth, partnersWa, type Partner } from '@/lib/partners';
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/partners/panel/reportar', label: 'Cargar un local', icon: PlusCircle },
   { href: '/partners/panel/locales', label: 'Mis locales', icon: Store },
   { href: '/partners/panel/guia', label: 'Guía y qué decir', icon: BookOpen },
+  { href: '/partners/panel/material', label: 'Material para mostrar', icon: FolderOpen },
   { href: '/partners/panel/cobros', label: 'Mis cobros', icon: Wallet },
 ];
 
