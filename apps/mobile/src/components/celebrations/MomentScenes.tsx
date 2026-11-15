@@ -419,7 +419,7 @@ export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => v
   }, []);
   const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} confetti={{ at: 2000, palette: big ? [GOLD, '#FFD97A', '#FFF1B8', colors.mint] : [colors.mint, '#FFD97A', '#B7A6F0', '#FFFFFF'] }} announce={`${c.days} días seguidos de racha.`}>
+    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
       <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
@@ -465,7 +465,7 @@ export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone:
   }, []);
   const share = () => { Share.share({ message: `Completé ${c.weeks === 1 ? 'una semana' : `${c.weeks} semanas`} seguidas cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
   return (
-    <Stage tl={tl} confetti={{ at: 2000, palette: [colors.mint, '#FFD97A', '#B7A6F0', '#FFFFFF'] }} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
+    <Stage tl={tl} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
       <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha semanal</Eyebrow></Reveal>
       <View style={{ marginTop: 18, alignItems: 'center', justifyContent: 'center' }}>
         <Reveal tl={tl} delay={300} pop from={0.4}>

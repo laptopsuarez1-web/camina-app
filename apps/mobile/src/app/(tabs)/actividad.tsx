@@ -14,6 +14,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreaks } from '@/hooks/useStreak';
 import { StreakCard } from '@/components/activity/StreakCard';
+import { TrendChart } from '@/components/activity/TrendChart';
+import { rollingAverage } from '@/lib/trend-line';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { HeaderLight } from '@/components/ui/HeaderLight';
@@ -36,6 +38,7 @@ import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
 import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
+const MESES_CORTO = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 // Los días de Actividad son días de Bolivia; las fechas "de calendario" (hoy menos N días) se arman con boliviaToday().
 function localKey(d: Date) {
@@ -49,7 +52,8 @@ function useStepsHistory() {
     enabled: !!userId,
     queryFn: async () => {
       const since = boliviaToday();
-      since.setDate(since.getDate() - 34);
+      // 30 días del gráfico más 6 antes, para que el promedio de 7 días del primer día también esté completo.
+      since.setDate(since.getDate() - 36);
       const { data, error } = await supabase
         .from('steps_daily')
         .select('day, steps, goal')
@@ -187,6 +191,22 @@ export default function ActividadScreen() {
 
   // Escala con margen sobre la meta para que la línea punteada siempre se vea.
   const chartMax = Math.max(goal * 1.15, ...chartDays.map((d) => d.steps));
+
+  // "30 días": curva con el promedio de 7 días de cada día (usa los 6 días anteriores al rango).
+  const trend = useMemo(() => {
+    const history: number[] = [];
+    for (let i = range + 5; i >= 0; i--) {
+      const d = boliviaToday();
+      d.setDate(d.getDate() - i);
+      history.push(byDay.get(localKey(d)) ?? 0);
+    }
+    return rollingAverage(history, 7, range);
+  }, [byDay, range]);
+  const trendStart = (() => {
+    const d = boliviaToday();
+    d.setDate(d.getDate() - (range - 1));
+    return `${d.getDate()} ${MESES_CORTO[d.getMonth()]}`;
+  })();
   const rangeTotal = chartDays.reduce((a, d) => a + d.steps, 0);
 
   const calendarWeeks = useMemo(() => {
@@ -315,7 +335,10 @@ export default function ActividadScreen() {
           </SkeletonGroup>
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
-            <View className="flex-row items-end" style={{ gap: range === 7 ? 8 : 2, height: CHART_H + 40 }}>
+            {range === 30 ? (
+              <TrendChart values={trend} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} dayLabel={dayLabel} />
+            ) : (
+            <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40 }}>
               {chartDays.map((d, i) => {
                 const hit = d.steps >= goalFor(d.key);
                 return (
@@ -365,8 +388,9 @@ export default function ActividadScreen() {
                 );
               })}
             </View>
+            )}
             {/* Línea punteada de la meta diaria: va después de las barras para quedar por encima de ellas */}
-            {goal <= chartMax && (
+            {range === 7 && goal <= chartMax && (
               <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
                 <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: '#2c1366', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
                   <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
