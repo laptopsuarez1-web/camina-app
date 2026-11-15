@@ -13,7 +13,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 const NAV = [
   { href: '/partners/panel', label: 'Inicio', icon: Home },
-  { href: '/partners/panel/reportar', label: 'Reportar un local', icon: PlusCircle },
+  { href: '/partners/panel/reportar', label: 'Cargar un local', icon: PlusCircle },
   { href: '/partners/panel/locales', label: 'Mis locales', icon: Store },
   { href: '/partners/panel/guia', label: 'Guía y qué decir', icon: BookOpen },
   { href: '/partners/panel/cobros', label: 'Mis cobros', icon: Wallet },

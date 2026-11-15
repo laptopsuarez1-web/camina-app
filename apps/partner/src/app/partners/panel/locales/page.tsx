@@ -50,6 +50,9 @@ function Lista({ partner }: { partner: Partner }) {
               </div>
               {l.status === 'activo' && <p className="text-[13px] mt-2" style={{ color: 'var(--c-ok-text)' }}>Te corresponden {bs(l.amount_bs)}.</p>}
               {l.status === 'publicado' && <p className="text-muted text-[12.5px] mt-2">Falta el primer canje real. Invita a un amigo que camine con la app a canjear ahí.</p>}
+              {l.status === 'reportado' && (
+                <Link href={`/partners/panel/reportar?id=${l.id}`} className="inline-block mt-2 text-purple text-[13px] font-semibold">Editar datos y ver cómo queda</Link>
+              )}
               {l.admin_note && <p className="text-[12.5px] mt-2 rounded-lg px-3 py-2" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>Camina dice: {l.admin_note}</p>}
             </div>
           ))}

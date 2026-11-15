@@ -56,6 +56,22 @@ export interface PartnerLead {
   reported_at: string;
   published_at: string | null;
   activated_at: string | null;
+  category: string | null;
+  address: string | null;
+  description: string | null;
+  hours_text: string | null;
+  instagram: string | null;
+  maps_url: string | null;
+  lat: number | null;
+  lng: number | null;
+  logo_url: string | null;
+  cover_url: string | null;
+  benefit_kind: 'gratis' | 'descuento' | null;
+  benefit_name: string | null;
+  benefit_description: string | null;
+  benefit_image_url: string | null;
+  benefit_cost: number | null;
+  benefit_quota: number | null;
 }
 
 export interface PartnerPayment {
