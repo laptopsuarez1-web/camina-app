@@ -1,7 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { brandFontsReady, WORDMARK_FAMILY } from '@/theme/fonts';
 import { useEffect, useState, type Ref } from 'react';
-import { Keyboard, Platform, View, Image, type ImageSourcePropType } from 'react-native';
+import { Keyboard, Platform, ScrollView, View, Image, type ImageSourcePropType } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Rect, Stop } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -12,6 +11,7 @@ import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/compo
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
 import { igHandle } from '@/lib/story-rules';
+import { STICKER_LOOKS, StorySticker, type StickerLook } from '@/components/story/StoryStickers';
 
 // Historias de Instagram por un canje: la persona sube una foto de lo que canjeó, etiqueta a Camina
 // y, cuando el equipo la ve, se le acreditan STORY_REWARD Puntos. La acreditación es manual (panel).
@@ -19,11 +19,6 @@ export const STORY_REWARD = 5;
 export const CAMINA_INSTAGRAM = '@caminaapp';
 
 
-// Letra del nombre CAMINA (Montserrat Black) si ya cargó; si no, negrita del sistema.
-function wordmark() {
-  if (!brandFontsReady()) return { fontWeight: '900' as const };
-  return { fontFamily: WORDMARK_FAMILY, fontWeight: Platform.OS === 'web' ? ('900' as const) : ('normal' as const) };
-}
 
 export type { StoryState };
 
@@ -176,13 +171,8 @@ export function StoryStep({ onStory, onSkip }: { onStory: () => void; onSkip: ()
 }
 
 // Pantalla completa con la foto en formato historia (9:16) y el sticker de Camina, lista para publicar.
-type StickerProps = { businessName: string; businessLogo?: string | null; businessInstagram?: string | null; benefitName: string; costPoints?: number | null };
 const SHADOW = { textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6 } as const;
 
-
-const PIE_IZQ = require('@/../assets/pie-izq-mint.png');
-const PIE_DER = require('@/../assets/pie-der-mint.png');
-type Look = 'sello' | 'recibo' | 'huellas';
 
 // A quién etiquetar, chiquito arriba (lo mismo en los tres estilos).
 function Tags({ businessInstagram }: { businessInstagram?: string | null }) {
@@ -194,83 +184,8 @@ function Tags({ businessInstagram }: { businessInstagram?: string | null }) {
   );
 }
 
-// Sello redondo «Ganado caminando», torcido en la esquina como un sello de verdad, con las huellas al centro.
-function SealSticker({ businessName, benefitName }: StickerProps) {
-  const R = 58;
-  return (
-    <View style={{ position: 'absolute', right: 16, bottom: 22, alignItems: 'center' }}>
-      <View style={{ transform: [{ rotate: '-12deg' }], width: R * 2, height: R * 2, borderRadius: R, borderWidth: 3, borderColor: '#62F0B6', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(36,23,72,0.82)' }}>
-        <View style={{ position: 'absolute', top: 6, left: 6, right: 6, bottom: 6, borderRadius: R, borderWidth: 1, borderColor: 'rgba(98,240,182,0.6)', borderStyle: 'dashed' }} />
-        <Text style={{ color: '#62F0B6', fontWeight: '900', fontSize: 9.5, letterSpacing: 1.6 }}>GANADO</Text>
-        <View style={{ flexDirection: 'row', gap: 3, marginVertical: 3 }}>
-          <Image source={PIE_IZQ} accessible={false} resizeMode="contain" style={{ width: 11, height: 22, marginTop: 4 }} />
-          <Image source={PIE_DER} accessible={false} resizeMode="contain" style={{ width: 11, height: 22 }} />
-        </View>
-        <Text style={{ color: '#62F0B6', fontWeight: '900', fontSize: 9.5, letterSpacing: 1.6 }}>CAMINANDO</Text>
-      </View>
-      <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '700', fontSize: 11, marginTop: 8, maxWidth: 150, textAlign: 'center', ...SHADOW }}>{benefitName}</Text>
-      <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', fontSize: 10, maxWidth: 150, textAlign: 'center', ...SHADOW }}>en {businessName}</Text>
-    </View>
-  );
-}
 
-// Mini recibo: un ticket blanco chiquito con el borde de abajo dentado.
-function ReceiptSticker({ businessName, benefitName, costPoints }: StickerProps) {
-  const line = (a: string, b: string, bold?: boolean) => (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 4 }}>
-      <Text numberOfLines={1} style={{ flexShrink: 1, color: '#2a2340', fontSize: 10.5, fontWeight: bold ? '900' : '600', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>{a}</Text>
-      <Text style={{ color: '#2a2340', fontSize: 10.5, fontWeight: bold ? '900' : '600', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>{b}</Text>
-    </View>
-  );
-  return (
-    <View style={{ position: 'absolute', left: 18, bottom: 24, width: 168, transform: [{ rotate: '-3deg' }] }}>
-      <View style={{ backgroundColor: '#FCFBF7', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
-        <Text style={{ color: '#241748', fontSize: 12, letterSpacing: 2, textAlign: 'center', ...wordmark() }}>CAMINA</Text>
-        <View style={{ borderTopWidth: 1, borderStyle: 'dashed', borderColor: '#B9B2C8', marginTop: 6 }} />
-        {line(benefitName, '1')}
-        {line(businessName, '')}
-        {costPoints ? line('Pasos', (costPoints * 1000).toLocaleString('es-BO')) : null}
-        <View style={{ borderTopWidth: 1, borderStyle: 'dashed', borderColor: '#B9B2C8', marginTop: 6 }} />
-        {line('PAGADO', 'CAMINANDO', true)}
-      </View>
-      {/* Borde dentado del ticket. */}
-      <View style={{ flexDirection: 'row', overflow: 'hidden', height: 6 }}>
-        {Array.from({ length: 14 }, (_, i) => (
-          <View key={i} style={{ width: 12, height: 12, backgroundColor: '#FCFBF7', transform: [{ rotate: '45deg' }], marginTop: -6 }} />
-        ))}
-      </View>
-    </View>
-  );
-}
 
-// Huellas: unas pisadas menta que suben por la foto hasta el logo del local.
-function StepsSticker({ businessName, businessLogo, benefitName }: StickerProps) {
-  const steps = [
-    { x: 40, y: 0, l: true }, { x: 62, y: 34, l: false }, { x: 44, y: 70, l: true }, { x: 70, y: 104, l: false },
-  ];
-  return (
-    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 24, alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 34, height: 34, borderRadius: 17, overflow: 'hidden', borderWidth: 2, borderColor: '#62F0B6', backgroundColor: '#fff' }}>
-          {businessLogo ? <Image source={{ uri: businessLogo }} accessible={false} style={{ width: 30, height: 30 }} /> : null}
-        </View>
-        <View>
-          <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '800', fontSize: 13, maxWidth: 200, ...SHADOW }}>{benefitName}</Text>
-          <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '600', fontSize: 10.5, maxWidth: 200, ...SHADOW }}>en {businessName} · llegué caminando</Text>
-        </View>
-      </View>
-      <View style={{ width: 120, height: 130, marginTop: 6 }}>
-        {steps.map((st, i) => (
-          <Image key={i} source={st.l ? PIE_IZQ : PIE_DER} accessible={false} resizeMode="contain" style={{ position: 'absolute', left: st.x, top: st.y, width: 13, height: 26, opacity: 1 - i * 0.18, transform: [{ rotate: st.l ? '-14deg' : '10deg' }] }} />
-        ))}
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <Image source={require('@/../assets/logo-mint.png')} accessible={false} style={{ width: 12, height: 12, tintColor: '#fff' }} />
-        <Text style={{ color: '#fff', fontSize: 8.5, letterSpacing: 1.8, ...wordmark(), ...SHADOW }}>CAMINA</Text>
-      </View>
-    </View>
-  );
-}
 
 export function StoryComposer({
   photo,
@@ -303,7 +218,7 @@ export function StoryComposer({
   topInset?: number;
 }) {
   // Tres estilos para elegir el adorno de la historia.
-  const [look, setLook] = useState<Look>('sello');
+  const [look, setLook] = useState<StickerLook>('sello');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
@@ -321,20 +236,18 @@ export function StoryComposer({
           {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
           <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.2)']} locations={[0, 0.2, 0.8, 1]} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
           <Tags businessInstagram={businessInstagram} />
-          {look === 'sello' ? <SealSticker businessName={businessName} benefitName={benefitName} costPoints={costPoints} /> : null}
-          {look === 'recibo' ? <ReceiptSticker businessName={businessName} benefitName={benefitName} costPoints={costPoints} /> : null}
-          {look === 'huellas' ? <StepsSticker businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} /> : null}
+          <StorySticker look={look} photo={photo} businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} />
         </View>
       </View>
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
-        <View className="flex-row self-center rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-          {([['sello', 'Sello'], ['recibo', 'Recibo'], ['huellas', 'Huellas']] as const).map(([k, l]) => (
-            <Press key={k} accessibilityRole="button" accessibilityState={{ selected: look === k }} onPress={() => setLook(k)} className="rounded-full px-4 py-1.5" style={{ backgroundColor: look === k ? '#1F7A66' : 'transparent' }}>
-              <Text className="font-bold text-[13px]" style={{ color: look === k ? '#fff' : '#C4B8E8' }}>{l}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 2 }}>
+          {STICKER_LOOKS.map(({ key, label }) => (
+            <Press key={key} accessibilityRole="button" accessibilityState={{ selected: look === key }} onPress={() => setLook(key)} className="rounded-full px-4 py-1.5" style={{ backgroundColor: look === key ? '#1F7A66' : 'rgba(255,255,255,0.08)' }}>
+              <Text className="font-bold text-[13px]" style={{ color: look === key ? '#fff' : '#C4B8E8' }}>{label}</Text>
             </Press>
           ))}
-        </View>
+        </ScrollView>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
           Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>{igHandle(businessInstagram) ? <> y a <Text style={{ color: '#fff', fontWeight: '800' }}>{igHandle(businessInstagram)}</Text></> : null}. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
