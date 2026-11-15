@@ -10,8 +10,8 @@ const OSCURO = {
   '--c-aqua-light': '#16352f', '--c-purple-light': '#2c2150',
 } as React.CSSProperties;
 
-// Mapa "Cómo llegar" de la ficha: se puede mover y acercar, con el logo del local como pin.
-function MapaLlegar({ lat, lng, logo }: { lat: number; lng: number; logo: string | null }) {
+// Mapa "Cómo llegar" de la ficha: se puede mover y acercar, con el pin del local.
+function MapaLlegar({ lat, lng }: { lat: number; lng: number }) {
   const el = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let cancelled = false;
@@ -21,12 +21,11 @@ function MapaLlegar({ lat, lng, logo }: { lat: number; lng: number; logo: string
       if (cancelled || !el.current) return;
       map = L.map(el.current, { zoomControl: false, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 17);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-      const foto = logo ? `<img src="${logo}" style="width:100%;height:100%;object-fit:cover" />` : '';
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:42px;height:42px;border-radius:12px;border:3px solid #fff;background:#2c2150;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.45)">${foto}</div><div style="width:0;height:0;margin:-2px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid #fff"></div>`,
-        iconSize: [42, 56],
-        iconAnchor: [21, 54],
+        html: `<div style="width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#a56be8;box-shadow:0 3px 10px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center"><div style="width:14px;height:14px;border-radius:50%;border:2px solid #fff"></div></div><div style="width:0;height:0;margin:-2px auto 0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid #fff"></div>`,
+        iconSize: [40, 52],
+        iconAnchor: [20, 50],
       });
       L.marker([lat, lng], { icon }).addTo(map);
       setTimeout(() => map?.invalidateSize(), 150);
@@ -35,13 +34,8 @@ function MapaLlegar({ lat, lng, logo }: { lat: number; lng: number; logo: string
       cancelled = true;
       map?.remove();
     };
-  }, [lat, lng, logo]);
-  return (
-    <>
-      <style>{`.camina-mapa::after{content:"";position:absolute;inset:0;z-index:450;pointer-events:none;background:#5a35b8;mix-blend-mode:color;opacity:.85}.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.25) brightness(.85)}`}</style>
-      <div ref={el} className="camina-mapa relative h-[170px] rounded-[22px] overflow-hidden bg-[#1c1030]" />
-    </>
-  );
+  }, [lat, lng]);
+  return <div ref={el} className="h-[200px] rounded-[22px] overflow-hidden bg-[#e8e4ef]" />;
 }
 
 // Vista previa de la ficha del local igual que en la última versión de la app (portada, logo, datos, contacto,
@@ -71,7 +65,7 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
         </span>
       </div>
       <div className="px-5 pb-8" style={{ marginTop: -36 }}>
-        <div className="relative w-[84px] h-[84px] rounded-[24px] bg-card overflow-hidden flex items-center justify-center">
+        <div className="relative w-[100px] h-[100px] rounded-[26px] bg-card overflow-hidden flex items-center justify-center">
           {business.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
@@ -80,7 +74,7 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
           )}
         </div>
         <div className="flex items-center justify-between mt-3">
-          <p className="text-[24px] font-extrabold leading-tight tracking-tight">{business.name}</p>
+          <p className="text-[27px] font-extrabold leading-tight tracking-tight">{business.name}</p>
           <span className="w-10 h-10 rounded-full border border-line bg-card flex items-center justify-center shrink-0 text-muted">
             <Heart size={19} />
           </span>
@@ -91,6 +85,19 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
         ) : (
           <p className="text-[12.5px] text-warn mt-3">Falta la descripción del local.</p>
         )}
+        <div className="mt-4 flex items-center gap-3.5 rounded-3xl border border-line bg-card px-4 py-4">
+          <span className="w-[58px] h-[58px] rounded-full bg-purple-light ring-4 ring-[#8b4fd1]/30 overflow-hidden flex items-center justify-center shrink-0">
+            {business.logo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <p className="font-bold text-[15.5px] leading-tight">Gana tu insignia de este local</p>
+            <p className="text-muted text-[12.5px] mt-0.5">Con tu primer canje eres Visitante.</p>
+            <p className="text-muted text-[11.5px] mt-1.5">Canje +2 · Calificar +1 · Historia +1</p>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2 mt-4">
           {business.address && (
             <span className={`${chip} !bg-aqua-light !border-transparent text-[#2E9E7C]`}>
@@ -99,7 +106,7 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
           )}
           {business.hours_text && (
             <span className={chip}>
-              <Clock size={14} /> {business.hours_text}
+              <Clock size={14} /> {business.hours_text} ⌄
             </span>
           )}
           {business.instagram && (
@@ -152,11 +159,11 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
                         <p className="text-[16px] font-bold leading-tight">{b.name}</p>
                         <p className="text-[12.5px] text-muted mt-0.5">{t === 'descuento' ? 'Descuento' : 'Gratis'}</p>
                         {b.description && <p className="text-[12.5px] text-muted leading-[17px] mt-1 line-clamp-3">{b.description}</p>}
-                        <p className="text-[14px] font-extrabold mt-2 flex items-center gap-1.5">
+                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#1f7d68] text-white pl-1 pr-3 py-1 text-[14px] font-extrabold">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src="/partners/coin.png" alt="" width={20} height={20} className="rounded-full" />
+                          <img src="/partners/coin.png" alt="" width={22} height={22} className="rounded-full" />
                           {b.cost_points}
-                        </p>
+                        </span>
                       </div>
                     </div>
                     <div className="mt-3 rounded-2xl bg-[#1f7d68] text-white text-center font-bold text-[14px] py-[11px]">Canjear</div>
@@ -170,7 +177,10 @@ export function FichaPreview({ business, benefits, oscuro, enMarco = true }: { b
         {business.lat != null && business.lng != null ? (
           <div className="mt-8">
             <p className="text-[17px] font-bold mb-3">Cómo llegar</p>
-            <MapaLlegar lat={business.lat} lng={business.lng} logo={business.logo_url} />
+            <MapaLlegar lat={business.lat} lng={business.lng} />
+            <p className="text-[19px] font-bold mt-3.5 leading-tight">{business.name}</p>
+            {business.address && <p className="text-muted text-[14px] mt-0.5">{business.address}</p>}
+            <div className="mt-3.5 rounded-2xl bg-[#2c2150] text-[#a98bf0] font-bold text-[15px] py-3.5 text-center">➤ Cómo llegar</div>
           </div>
         ) : (
           !business.is_virtual && <p className="text-[12px] text-warn mt-5">Sin ubicación: el local no aparece en el mapa.</p>

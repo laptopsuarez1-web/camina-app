@@ -86,14 +86,14 @@ function MapaOscuro({ v, pin, zoom = 17, interactivo = true }: { v: VistaLocal; 
 function PremioFila({ v }: { v: VistaLocal }) {
   if (!v.premio) return null;
   return (
-    <div className="flex items-center gap-2.5 bg-[#16352f] rounded-2xl px-2 py-1.5">
-      <span className="w-[38px] h-[38px] rounded-xl bg-[#2c2150] overflow-hidden shrink-0">
+    <div className="flex items-center gap-2.5 bg-[#213a33] rounded-2xl px-2 py-2">
+      <span className="w-[40px] h-[40px] rounded-xl bg-[#2c2150] overflow-hidden shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {v.premio.image_url && <img src={v.premio.image_url} alt="" className="w-full h-full object-cover" />}
       </span>
-      <span className="font-semibold text-[12.5px] flex-1 min-w-0 leading-tight">{v.premio.name}</span>
-      <span className="flex items-center gap-1 font-bold text-[12.5px] shrink-0">
-        <Moneda size={18} />
+      <span className="font-bold text-[13px] flex-1 min-w-0 leading-tight">{v.premio.name}</span>
+      <span className="flex items-center gap-1.5 font-extrabold text-[14px] shrink-0 pr-1">
+        <Moneda size={20} />
         {v.premio.cost}
       </span>
     </div>
@@ -101,33 +101,37 @@ function PremioFila({ v }: { v: VistaLocal }) {
 }
 
 function SlideMapa({ v }: { v: VistaLocal }) {
+  const chip = 'bg-[#fff] text-[#291c47] rounded-full px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap flex items-center gap-1';
   return (
     <div className={MARCO}>
       <MapaOscuro v={v} pin />
-      <div className="absolute top-3 left-3 right-3 z-10">
-        <div className="bg-[#fff] text-[#6e6a85] rounded-full px-4 py-2 text-[12px] flex items-center gap-2">
-          <span>🔍</span> Buscar locales y premios
+      <div className="absolute top-3 left-3 right-0 z-10">
+        <div className="flex items-center gap-2 pr-3">
+          <span className="w-9 h-9 rounded-full bg-[#fff] text-[#291c47] flex items-center justify-center shrink-0"><X size={16} /></span>
+          <div className="flex-1 bg-[#fff] text-[#7c6a9c] rounded-full px-3.5 py-2 text-[12px]">🔍 Buscar locales y premios</div>
         </div>
         <div className="flex gap-1.5 mt-2 overflow-hidden">
-          {['Abierto ahora', 'Te alcanza', 'Favoritos'].map((t) => (
-            <span key={t} className="bg-[#fff] text-[#291c47] rounded-full px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap">{t}</span>
-          ))}
+          <span className={chip}>Abierto ahora</span>
+          <span className={chip}><Moneda size={15} /> Te alcanza</span>
+          <span className={chip}><span className="text-[#62c9a0]">♥</span> Favoritos</span>
         </div>
       </div>
-      <div className="absolute bottom-3 left-3 right-3 z-10 bg-[#241a45]/95 rounded-3xl p-3 border border-[#3a2c63]">
-        <div className="flex items-center gap-3 mb-2.5">
-          <Logo url={v.logo_url} size={50} />
+      <div className="absolute bottom-3 left-2.5 right-2.5 z-10 bg-[#2a2142]/95 rounded-[26px] px-3 pt-2 pb-3 border border-[#3a2c63]">
+        <div className="mx-auto mb-2 w-8 h-1 rounded-full bg-[#4a3d6e]" />
+        <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#3a2f5c] flex items-center justify-center"><X size={14} /></span>
+        <div className="flex items-center gap-3 mb-2.5 pr-8">
+          <Logo url={v.logo_url} size={56} />
           <div className="min-w-0">
-            <p className="font-bold text-[15px] truncate">{v.name}</p>
-            <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Local'}</p>
-            {v.address && <p className="text-[#62f0b6] text-[11px] truncate">{v.address}</p>}
-            <p className="text-[#62f0b6] text-[11px]">Abierto ahora</p>
+            <p className="font-extrabold text-[17px] truncate">{v.name}</p>
+            <p className="text-[#a99bcf] text-[12px] truncate">{v.category ?? 'Local'}</p>
+            {v.address && <p className="text-[#62f0b6] text-[11.5px] truncate">📍 {v.address}</p>}
+            <p className="text-[#a99bcf] text-[11.5px]">Abierto ahora</p>
           </div>
         </div>
         <PremioFila v={v} />
-        <div className="mt-2.5 rounded-2xl bg-[#1f7d68] text-white text-center font-bold text-[13px] py-2.5">Ver local y premios ›</div>
+        <div className="mt-2.5 rounded-full bg-[#1f7d68] text-white text-center font-bold text-[14px] py-3">Ver local y premios ›</div>
       </div>
-      {v.lat == null && <p className="absolute top-24 left-3 right-3 z-10 bg-[#3b2a22] text-[#f0c39a] text-[11.5px] rounded-xl px-3 py-2">Falta marcar la ubicación para que aparezca el pin.</p>}
+      {v.lat == null && <p className="absolute top-28 left-3 right-3 z-10 bg-[#3b2a22] text-[#f0c39a] text-[11.5px] rounded-xl px-3 py-2">Falta marcar la ubicación para que aparezca el pin.</p>}
     </div>
   );
 }
@@ -210,7 +214,10 @@ function SlideFicha({ v }: { v: VistaLocal }) {
     : [];
   return (
     <div className="w-[300px] h-[600px] overflow-y-auto overscroll-contain rounded-[34px] border-[7px] border-[#241748] shrink-0 shadow-2xl bg-[#150d2b]">
-      <FichaPreview business={negocio} benefits={premios} oscuro enMarco={false} />
+      {/* La ficha se arma al ancho de un celular (390) y se achica para entrar en el marco, como se ve en la app. */}
+      <div style={{ width: 390, zoom: 286 / 390 }}>
+        <FichaPreview business={negocio} benefits={premios} oscuro enMarco={false} />
+      </div>
     </div>
   );
 }
