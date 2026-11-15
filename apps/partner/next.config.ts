@@ -33,17 +33,14 @@ const nextConfig: NextConfig = {
     return [
       { source: "/alta", destination: "/registro" },
       { source: "/comercios/registro", destination: "/registro" },
-      // caminaapp.com/partners: guía oculta para los embajadores de Camina. No tiene enlaces desde la web ni aparece en buscadores;
-      // el link se manda directo por WhatsApp. El contenido está en public/partners-guia.html.
-      { source: "/partners", destination: "/partners-guia.html" },
     ];
   },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      // La guía de partners es privada: que Google no la guarde.
+      // La zona de partners es privada: que Google no la guarde (el link se manda directo por WhatsApp).
+      { source: "/partners/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
       { source: "/partners", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
-      { source: "/partners-guia.html", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
       // iPhone lee este archivo para abrir la app directo al tocar caminaapp.com/r/... o /join-group/... (universal links).
       { source: "/.well-known/apple-app-site-association", headers: [{ key: "Content-Type", value: "application/json" }] },
       // Android lee este archivo para verificar los vínculos directos (App Links) de la app.

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram, Users, Gift } from 'lucide-react';
+import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram, Users, Gift, Handshake } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/admin/eventos', label: 'Desafíos y eventos', icon: PartyPopper },
   { href: '/admin/ruta', label: 'Premio de la Ruta', icon: Gift },
   { href: '/admin/historias', label: 'Historias', icon: Instagram },
+  { href: '/admin/partners', label: 'Partners', icon: Handshake },
   { href: '/admin/cuentas', label: 'Cuentas', icon: Users },
   { href: '/admin/reportes', label: 'Reportes', icon: Flag },
   { href: '/admin/alertas', label: 'Alertas', icon: Radar },

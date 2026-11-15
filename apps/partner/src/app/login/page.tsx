@@ -38,7 +38,15 @@ export default function LoginPage() {
     const { data: ownBusiness } = userId
       ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
       : { data: null };
+    // Quien es partner (embajador) y no tiene comercio va a su panel de partners.
+    const { data: partnerRow } = userId && !ownBusiness && !adminCheck
+      ? await supabase.from('partners').select('id').eq('user_id', userId).maybeSingle()
+      : { data: null };
     setLoading(false);
+    if (partnerRow) {
+      router.replace('/partners/panel');
+      return;
+    }
     if (!ownBusiness && adminCheck) {
       router.replace('/admin');
       return;
