@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, MapPin, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, X } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import type { Benefit, Business } from '@/lib/supabase';
 import { FichaPreview } from '@/components/FichaPreview';
@@ -93,7 +93,7 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
       <div className="px-4 pt-5">
         <p className="font-extrabold text-[22px]">Canjear</p>
         <p className="text-[#a99bcf] text-[12px] mb-3">142 Puntos disponibles</p>
-        <div className="rounded-2xl overflow-hidden border border-[#f2c94c] bg-[#21173f]">
+        <div className="rounded-3xl overflow-hidden border border-[#3a2c63] bg-[#21173f]">
           <div className="h-[130px] bg-[#2c2150]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {v.cover_url ? <img src={v.cover_url} alt="" className="w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-[#a99bcf] text-[12px]">Sin portada</div>}
@@ -101,16 +101,18 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
           <div className="p-3">
             <div className="flex items-center gap-2.5">
               <Logo url={v.logo_url} size={42} />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="font-bold text-[14.5px] truncate">{v.name}</p>
                 <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Categoría'}</p>
               </div>
+              <Heart size={17} className="text-[#a99bcf] shrink-0" />
+              <ChevronRight size={16} className="text-[#a99bcf] shrink-0" />
             </div>
             {v.address && <p className="text-[#a99bcf] text-[11.5px] mt-1.5 truncate">{v.address}</p>}
             <p className="text-[#62f0b6] text-[11.5px] font-semibold mt-0.5">Disponible ahora</p>
             {v.premio && (
               <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#1f7d68] rounded-full px-3 py-1.5 text-[11.5px] font-bold max-w-full">
-                <span className="truncate">{v.premio.cost} · {v.premio.name}</span>
+                <span>🪙</span><span className="truncate">{v.premio.cost} {v.premio.name}</span>
               </div>
             )}
           </div>
