@@ -80,6 +80,7 @@ export const PLANS: {
       'Primero en tu categoría',
       'Notificaciones push a usuarios cerca',
       'Difusión de tu local en las redes de Camina',
+      'Un desafío para la comunidad de Camina',
       'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes',
       'Elegible para videos publicitarios con una agencia de marketing para promocionar tu local y Camina',
     ],
@@ -104,6 +105,7 @@ export const PLAN_EXPLICA: Record<string, string> = {
   'Primero en tu categoría': 'Sales arriba al buscar tu rubro.',
   'Notificaciones push a usuarios cerca': 'Avisamos a la gente que está cerca.',
   'Difusión de tu local en las redes de Camina': 'Te publicamos en nuestras redes.',
+  'Un desafío para la comunidad de Camina': 'Creas un reto de pasos con tu premio y toda la comunidad camina por él.',
   'Elegible para videos publicitarios con una agencia de marketing para promocionar tu local y Camina': 'Puedes salir en un video de una agencia.',
 };
 

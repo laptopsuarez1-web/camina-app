@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Copy, Check, Eye, PlayCircle } from 'lucide-react';
 import { PresentarLocal, type VistaLocal } from '@/components/PresentarLocal';
+import { PLANS, PLAN_EXPLICA } from '@/lib/plans';
 
 function Copiar({ texto }: { texto: string }) {
   const [ok, setOk] = useState(false);
@@ -190,6 +191,7 @@ const PASOS_VISITA: { t: string; d: string; link?: { href: string; label: string
 const TABS = [
   { id: 'ofrecer', label: 'Cómo ofrecer' },
   { id: 'gana', label: 'Qué gana el local' },
+  { id: 'planes', label: 'Planes' },
   { id: 'decir', label: 'Qué decir' },
   { id: 'asi', label: 'Así se ve un local' },
   { id: 'dudas', label: 'Dudas del dueño' },
@@ -255,26 +257,45 @@ export function GuiaPartner() {
                 </div>
               ))}
             </div>
-            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-1.5">Los planes (si pregunta)</p>
-            <div className="bg-card border border-line rounded-2xl divide-y divide-line mb-3">
-              {[
-                ['Primer Paso', 'Gratis', 'Sale en el mapa con su premio. Mínimo 3 cupones por día.'],
-                ['Paso Firme', 'Bs 99 al mes', 'Premios y descuentos a la vez, cupones sin límite y sus números en el panel.'],
-                ['Paso Adelante', 'Bs 299 al mes', 'Pin destacado, primero en su categoría y avisos a gente cerca.'],
-              ].map(([n, pr, d]) => (
-                <div key={n} className="px-4 py-3">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-semibold text-text text-[14.5px]">{n}</p>
-                    <p className="font-extrabold text-[14px]" style={{ color: 'var(--c-purple-text)' }}>{pr}</p>
-                  </div>
-                  <p className="text-muted text-[12.5px] leading-snug mt-0.5">{d}</p>
-                </div>
-              ))}
-            </div>
+            <button type="button" onClick={() => setTab('planes')} className="w-full text-left bg-card border border-line rounded-2xl px-4 py-3.5 mb-3">
+              <p className="font-semibold text-text text-[14.5px]">Ver los planes y todo lo que incluye cada uno →</p>
+              <p className="text-muted text-[12.5px] mt-0.5">Gratis, Bs 99 y Bs 299 al mes.</p>
+            </button>
             <p className="text-[13px] rounded-xl px-4 py-3 mb-3" style={{ background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)' }}>
               <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de un plan completo. Después pueden seguir gratis con Primer Paso.
             </p>
             <p className="text-muted text-[12.5px]">Para la explicación completa, manda el dossier desde “Material para mostrar”.</p>
+          </>
+        )}
+
+        {tab === 'planes' && (
+          <>
+            <p className="text-muted text-[13.5px] mb-3">Todo lo que trae cada plan, explicado simple. Empezar es gratis; el dueño elige si quiere más.</p>
+            <div className="flex flex-col gap-3 mb-4">
+              {PLANS.map((pl) => (
+                <div key={pl.id} className={`rounded-2xl px-4 py-4 border ${pl.featured ? 'border-[#62f0b6]/60 bg-card' : 'border-line bg-card'}`}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-bold text-text text-[17px]">{pl.name}</p>
+                    <p className="font-extrabold text-[16px]" style={{ color: 'var(--c-purple-text)' }}>{pl.price}</p>
+                  </div>
+                  <p className="text-muted text-[13px] mt-0.5 mb-2.5">{pl.blurb}</p>
+                  <ul className="flex flex-col gap-2">
+                    {pl.features.map((f) => (
+                      <li key={f} className="flex gap-2.5">
+                        <Check size={16} className="text-aqua shrink-0 mt-0.5" />
+                        <span className="min-w-0">
+                          <span className="block text-text text-[14px] leading-snug">{f}</span>
+                          {PLAN_EXPLICA[f] && <span className="block text-muted text-[12.5px] leading-snug">{PLAN_EXPLICA[f]}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p className="text-[13px] rounded-xl px-4 py-3" style={{ background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)' }}>
+              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de un plan completo. Después pueden seguir gratis con Primer Paso.
+            </p>
           </>
         )}
 
