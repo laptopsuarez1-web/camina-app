@@ -50,20 +50,22 @@ export function AmigosBody() {
               {requests!.length === 1 ? '1 solicitud' : `${requests!.length} solicitudes`}
             </Text>
             {requests!.map((r, i) => (
-              <View key={r.user_id} className="flex-row items-center px-4 py-3" style={{ gap: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: line }}>
-                <Press accessibilityRole="button" accessibilityLabel={`Ver perfil de ${r.full_name}`} onPress={() => router.push({ pathname: '/(tabs)/amigos/[userId]', params: { userId: r.user_id } })} className="flex-row items-center flex-1" style={{ gap: 12 }}>
+              <View key={r.user_id} className="px-4 py-3" style={{ gap: 10, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: line }}>
+                <Press accessibilityRole="button" accessibilityLabel={`Ver perfil de ${r.full_name}`} onPress={() => router.push({ pathname: '/(tabs)/amigos/[userId]', params: { userId: r.user_id } })} className="flex-row items-center" style={{ gap: 12 }}>
                   <PersonAvatar name={r.full_name} photoUrl={r.photo_url} size={42} />
                   <View className="flex-1">
                     <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark" numberOfLines={1}>{r.full_name}</Text>
                     <Text className="text-[12.5px] text-muted-light dark:text-muted-dark">Quiere ser tu amigo</Text>
                   </View>
                 </Press>
-                <Press accessibilityRole="button" accessibilityLabel={`Aceptar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, true)} className="rounded-full px-3.5 py-2" style={{ backgroundColor: colors.aquaDeep }}>
-                  <Text style={{ color: '#fff', fontSize: 12.5, fontWeight: '700' }}>Aceptar</Text>
-                </Press>
-                <Press accessibilityRole="button" accessibilityLabel={`Rechazar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, false)} className="rounded-full px-3.5 py-2" style={{ borderWidth: 1, borderColor: line }}>
-                  <Text style={{ color: muted, fontSize: 12.5, fontWeight: '700' }}>No</Text>
-                </Press>
+                <View className="flex-row" style={{ gap: 10 }}>
+                  <Press accessibilityRole="button" accessibilityLabel={`Aceptar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, true)} className="flex-1 rounded-full py-2.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
+                    <Text style={{ color: '#fff', fontSize: 13.5, fontWeight: '700' }}>Aceptar</Text>
+                  </Press>
+                  <Press accessibilityRole="button" accessibilityLabel={`Rechazar a ${r.full_name}`} disabled={respond.isPending} onPress={() => answer(r, false)} className="flex-1 rounded-full py-2.5 items-center" style={{ borderWidth: 1, borderColor: line }}>
+                    <Text style={{ color: muted, fontSize: 13.5, fontWeight: '700' }}>Rechazar</Text>
+                  </Press>
+                </View>
               </View>
             ))}
           </Glass>
