@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Copy, Check, Eye, PlayCircle } from 'lucide-react';
 import { PresentarLocal, type VistaLocal } from '@/components/PresentarLocal';
 import { PLANS, PLAN_EXPLICA } from '@/lib/plans';
+import { partnersWa } from '@/lib/partners';
 
 function Copiar({ texto }: { texto: string }) {
   const [ok, setOk] = useState(false);
@@ -188,10 +189,73 @@ const PASOS_VISITA: { t: string; d: string; link?: { href: string; label: string
   { t: 'Cierra bien', d: 'Pega el afiche "Aquí se canjea", guarda el local en tu panel y despídete con tu WhatsApp por si tiene dudas.' },
 ];
 
+// Links para instalar la app antes del lanzamiento (los pasa Camina).
+const LINK_ANDROID = '';
+const LINK_TESTFLIGHT_APP = 'https://apps.apple.com/app/testflight/id899247664';
+const LINK_IOS = '';
+
+const MSG_ANDROID = 'Hola! Para instalar Camina en Android pásame el correo de Gmail que usas en tu Play Store (el de tu celular). Con ese correo te habilitamos y te mando el link oficial de descarga.';
+const MSG_IOS = `Hola! Para instalar Camina en iPhone:\n1. Descarga TestFlight de la App Store: ${LINK_TESTFLIGHT_APP}\n2. Después abre este link y toca Aceptar e Instalar: ${LINK_IOS || '[link de Camina]'}`;
+
+function Descargar() {
+  const [correo, setCorreo] = useState('');
+  const pedido = `Hola! Soy partner de Camina. Por favor habiliten este correo de Play Store para descargar la app en Android: ${correo.trim()}`;
+  return (
+    <>
+      <p className="text-muted text-[13.5px] mb-4">Antes del lanzamiento la app se instala con un link especial. Primero pregunta: <b className="text-text">¿tu celular es Android o iPhone?</b></p>
+
+      <p className="text-[12px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--c-purple-text)' }}>Android</p>
+      <ol className="flex flex-col gap-2 mb-3">
+        {[
+          ['Pídele el correo de Gmail que usa en Play Store', 'Es el correo con el que entra a la Play Store de ese celular (Play Store → su foto arriba a la derecha).'],
+          ['Mándanos ese correo', 'Escríbelo abajo y toca el botón: nos llega por WhatsApp y lo habilitamos.'],
+          ['Pásale el link oficial de descarga', 'Con el correo habilitado, abre el link en su celular, toca "Aceptar" y luego "Descargar" en Play Store.'],
+        ].map(([t, d], i) => (
+          <li key={t} className="flex gap-3 bg-card border border-line rounded-2xl px-4 py-3">
+            <span className="w-6 h-6 rounded-full bg-mint text-mint-dark font-extrabold text-[12px] flex items-center justify-center shrink-0">{i + 1}</span>
+            <div><p className="font-semibold text-text text-[14px]">{t}</p><p className="text-muted text-[12.5px] mt-0.5">{d}</p></div>
+          </li>
+        ))}
+      </ol>
+      <div className="bg-card border border-line rounded-2xl p-3.5 mb-3">
+        <input value={correo} onChange={(e) => setCorreo(e.target.value)} type="email" inputMode="email" autoCapitalize="none" placeholder="correo@gmail.com" aria-label="Correo de Play Store" className="w-full rounded-xl p-3 border border-line bg-[var(--c-bg)] text-text" />
+        <a href={/\S+@\S+\.\S+/.test(correo) ? partnersWa(pedido) : undefined} target="_blank" rel="noopener noreferrer" aria-disabled={!/\S+@\S+\.\S+/.test(correo)}
+          className={`mt-2.5 block text-center rounded-xl py-3 font-bold text-[14px] ${/\S+@\S+\.\S+/.test(correo) ? 'bg-mint text-mint-dark' : 'bg-purple-light text-muted pointer-events-none'}`}>
+          Mandar el correo a Camina
+        </a>
+      </div>
+      {LINK_ANDROID ? (
+        <Frase texto={LINK_ANDROID}><p className="break-all">{LINK_ANDROID}</p></Frase>
+      ) : null}
+      <Frase texto={MSG_ANDROID}>{MSG_ANDROID}</Frase>
+
+      <p className="text-[12px] font-bold uppercase tracking-wider mt-5 mb-2" style={{ color: 'var(--c-purple-text)' }}>iPhone</p>
+      <ol className="flex flex-col gap-2 mb-3">
+        {[
+          ['Que descargue TestFlight', 'Es la app oficial de Apple para probar apps. Está gratis en la App Store.'],
+          ['Que abra el link de Camina', 'Se abre en TestFlight: toca "Aceptar" y luego "Instalar".'],
+          ['Listo', 'Camina queda instalada como cualquier app. Las actualizaciones llegan solas por TestFlight.'],
+        ].map(([t, d], i) => (
+          <li key={t} className="flex gap-3 bg-card border border-line rounded-2xl px-4 py-3">
+            <span className="w-6 h-6 rounded-full bg-mint text-mint-dark font-extrabold text-[12px] flex items-center justify-center shrink-0">{i + 1}</span>
+            <div><p className="font-semibold text-text text-[14px]">{t}</p><p className="text-muted text-[12.5px] mt-0.5">{d}</p></div>
+          </li>
+        ))}
+      </ol>
+      <div className="flex gap-2 mb-3">
+        <a href={LINK_TESTFLIGHT_APP} target="_blank" rel="noopener noreferrer" className="flex-1 text-center rounded-xl py-3 font-bold text-[13.5px] bg-[var(--c-btn-bg)] text-[var(--c-btn-text)]">1. Bajar TestFlight</a>
+        {LINK_IOS ? <a href={LINK_IOS} target="_blank" rel="noopener noreferrer" className="flex-1 text-center rounded-xl py-3 font-bold text-[13.5px] bg-mint text-mint-dark">2. Instalar Camina</a> : null}
+      </div>
+      <Frase texto={MSG_IOS}><p className="whitespace-pre-line">{MSG_IOS}</p></Frase>
+    </>
+  );
+}
+
 const TABS = [
   { id: 'ofrecer', label: 'Cómo ofrecer' },
   { id: 'gana', label: 'Qué gana el local' },
   { id: 'planes', label: 'Planes' },
+  { id: 'app', label: 'Descargar la app' },
   { id: 'decir', label: 'Qué decir' },
   { id: 'asi', label: 'Así se ve un local' },
   { id: 'dudas', label: 'Dudas del dueño' },
@@ -267,6 +331,8 @@ export function GuiaPartner() {
             <p className="text-muted text-[12.5px]">Para la explicación completa, manda el dossier desde “Material para mostrar”.</p>
           </>
         )}
+
+        {tab === 'app' && <Descargar />}
 
         {tab === 'planes' && (
           <>
