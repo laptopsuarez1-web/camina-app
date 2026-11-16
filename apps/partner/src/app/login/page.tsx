@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
+
+const EMAIL_KEY = 'camina_comercio_email';
 
 const SOPORTE_WHATSAPP = `https://wa.me/59162714286?text=${encodeURIComponent('Hola! Tengo una consulta sobre el panel de comercios de Camina.')}`;
 
@@ -15,7 +17,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [listo, setListo] = useState(false);
   const router = useRouter();
+
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +32,7 @@ export default function LoginPage() {
       return;
     }
 
+    try { localStorage.setItem(EMAIL_KEY, email.trim()); } catch {}
     await irAlPanel(data.session?.user.id);
   }
 
@@ -65,6 +70,24 @@ export default function LoginPage() {
     router.replace('/inicio');
   }
 
+  // Si ya tiene la sesión abierta en este celular, entra directo a su panel. Si no, se acuerda del último correo.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        void irAlPanel(data.session.user.id);
+        return;
+      }
+      try {
+        const guardado = localStorage.getItem(EMAIL_KEY);
+        if (guardado) setEmail(guardado);
+      } catch {}
+      setListo(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!listo) return <div className="min-h-screen bg-auth-bg" />;
+
   return (
     <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
@@ -77,6 +100,10 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
+          inputMode="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          autoComplete="email"
           placeholder="Email del comercio"
           required
           className="bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5"

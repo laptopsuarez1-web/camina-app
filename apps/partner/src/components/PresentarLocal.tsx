@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Heart, MapPin, Search, Ticket, X } from 'lucide-react';
+import { BarChart3, Bell, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Crosshair, Heart, Home, Map as MapIcon, MapPin, Search, ShoppingBag, Ticket, Users, X } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import type { Benefit, Business } from '@/lib/supabase';
 import { FichaPreview } from '@/components/FichaPreview';
@@ -22,7 +22,7 @@ export interface VistaLocal {
 }
 
 const CENTRO_TARIJA: [number, number] = [-21.5355, -64.7296];
-const MARCO = 'relative w-[300px] h-[600px] rounded-[34px] border-[7px] border-[#241748] bg-[#150d2b] overflow-hidden shadow-2xl text-[#f1ecfb] shrink-0';
+const MARCO = 'relative w-[300px] h-[600px] rounded-[34px] border-[7px] border-[#241748] bg-[#150d2b] overflow-hidden shadow-2xl text-[#f1ecfb] shrink-0 max-sm:w-full max-sm:h-full max-sm:rounded-none max-sm:border-0 max-sm:shadow-none';
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TINTE = `.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.8) saturate(.4)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
 
@@ -115,7 +115,7 @@ function SlideMapa({ v }: { v: VistaLocal }) {
   const chip = 'bg-[#fff] text-[#291c47] rounded-full px-3 py-1.5 text-[11.5px] font-bold whitespace-nowrap flex items-center gap-1';
   return (
     <div className={MARCO}>
-      <MapaOscuro v={v} pin />
+      <MapaOscuro v={v} pin interactivo={false} />
       <div className="absolute top-3 left-3 right-0 z-10">
         <div className="flex items-center gap-2 pr-3">
           <span className="w-9 h-9 rounded-full bg-[#fff] text-[#291c47] flex items-center justify-center shrink-0"><X size={16} /></span>
@@ -128,6 +128,7 @@ function SlideMapa({ v }: { v: VistaLocal }) {
         </div>
       </div>
       <div className="absolute bottom-3 left-2.5 right-2.5 z-10 bg-[#2a2142]/95 rounded-[26px] px-3 pt-2 pb-3 border border-[#3a2c63]">
+        <span className="absolute -top-14 right-1 w-11 h-11 rounded-full bg-[#fff] text-[#3a2c63] flex items-center justify-center shadow-lg"><Crosshair size={20} /></span>
         <div className="mx-auto mb-2 w-8 h-1 rounded-full bg-[#4a3d6e]" />
         <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#3a2f5c] flex items-center justify-center"><X size={14} /></span>
         <div className="flex items-center gap-3 mb-2.5 pr-8">
@@ -147,67 +148,102 @@ function SlideMapa({ v }: { v: VistaLocal }) {
 }
 
 function BarraInferior() {
-  const items = ['Inicio', 'Actividad', 'Comunidad', 'Eventos', 'Canjes'];
+  const items = [
+    { t: 'Inicio', I: Home },
+    { t: 'Actividad', I: BarChart3 },
+    { t: 'Comunidad', I: Users },
+    { t: 'Eventos', I: CalendarDays },
+    { t: 'Canjes', I: ShoppingBag },
+  ];
   return (
-    <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 rounded-full bg-[#2c2150]/90 border border-[#3a2c63] backdrop-blur flex items-center justify-between px-1.5 py-1.5">
-      {items.map((t) => (
-        <span key={t} className={`text-[9.5px] font-semibold rounded-full px-2 py-2 ${t === 'Canjes' ? 'bg-[#3d3070] text-[#62f0b6]' : 'text-[#a99bcf]'}`}>{t}</span>
+    <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 rounded-[26px] bg-[#2c2150]/95 border border-[#3a2c63] backdrop-blur flex items-center justify-between px-1 py-1">
+      {items.map(({ t, I }) => (
+        <span key={t} className={`flex-1 flex flex-col items-center gap-0.5 text-[9.5px] font-semibold rounded-[20px] py-1.5 ${t === 'Canjes' ? 'bg-[#3d3070] text-[#62f0b6]' : 'text-[#c9bfe6]'}`}>
+          <I size={17} strokeWidth={2.2} />
+          {t}
+        </span>
       ))}
     </div>
   );
 }
 
+// Canjes como en la app: arriba el mapa con los Puntos, la campana y tu foto; abajo la lista de locales.
+// La lista se desliza hacia abajo como en la app (el local va primero; abajo, otros locales de Tarija sin datos).
 function SlideCanjes({ v }: { v: VistaLocal }) {
   return (
     <div className={MARCO}>
-      <div className="relative h-[170px] overflow-hidden rounded-b-[28px]">
-        <MapaOscuro v={v} pin={false} zoom={14} interactivo={false} />
-        <span className="absolute top-3 left-3 z-10 bg-[#fff] text-[#291c47] rounded-full pl-1.5 pr-3 py-1 text-[13px] font-extrabold flex items-center gap-1.5">
-          <Moneda size={22} /> 142
-        </span>
-        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 bg-[#fff] text-[#291c47] rounded-full px-4 py-2 text-[12px] font-bold whitespace-nowrap">Explorar el mapa</span>
-      </div>
-      <div className="px-3 pt-3">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="font-extrabold text-[24px] leading-tight">Canjes</p>
-            <p className="text-[#a99bcf] text-[12px] mb-2.5">142 Puntos disponibles</p>
+      <div className="absolute inset-0 overflow-y-auto overscroll-contain pb-[86px] [scrollbar-width:none]">
+        <div className="relative h-[178px] overflow-hidden rounded-b-[28px]">
+          <MapaOscuro v={v} pin={false} zoom={14} interactivo={false} />
+          <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
+            <span className="bg-[#fff] text-[#291c47] rounded-full pl-1.5 pr-3 py-1 text-[13px] font-extrabold flex items-center gap-1.5">
+              <Moneda size={22} /> 142
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-[#fff] text-[#7c6a9c] flex items-center justify-center"><Bell size={15} /></span>
+              <span className="w-8 h-8 rounded-full bg-[#62f0b6] text-[#12281f] flex items-center justify-center text-[13px] font-extrabold">A</span>
+            </span>
           </div>
-          <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1 flex items-center gap-1.5"><Ticket size={14} className="text-[#62f0b6]" /> Mis canjes</span>
+          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 bg-[#fff] text-[#291c47] rounded-full px-4 py-2 text-[12px] font-bold whitespace-nowrap flex items-center gap-1.5">
+            <MapIcon size={14} /> Explorar el mapa
+          </span>
         </div>
-        <div className="flex gap-1.5 mb-3 overflow-hidden">
-          <span className="border border-[#3a2c63] rounded-full w-[34px] flex items-center justify-center shrink-0"><Search size={14} /></span>
-          {['Categoría', 'Más cercanos', 'Abierto ahora'].map((t) => (
-            <span key={t} className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap flex items-center gap-1">{t}{t !== 'Abierto ahora' && <ChevronDown size={13} />}</span>
-          ))}
-        </div>
-        <div className="rounded-3xl overflow-hidden border border-[#3a2c63] bg-[#21173f]">
-          <div className="h-[112px] bg-[#2c2150] w-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {v.cover_url ? <img src={v.cover_url} alt="" className="block w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-[#a99bcf] text-[12px]">Sin portada</div>}
+        <div className="px-3 pt-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="font-extrabold text-[24px] leading-tight">Canjes</p>
+              <p className="text-[#a99bcf] text-[12px] mb-2.5">142 Puntos disponibles</p>
+            </div>
+            <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1 flex items-center gap-1.5"><Ticket size={14} className="text-[#62f0b6]" /> Mis canjes</span>
           </div>
-          <div className="p-3">
-            <div className="flex items-start gap-2.5">
-              <Logo url={v.logo_url} size={54} />
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-[15px] truncate">{v.name}</p>
-                <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Categoría'}</p>
-                {v.address && <p className="text-[#62f0b6] text-[11px] truncate flex items-center gap-1"><MapPin size={11} className="shrink-0" /> {v.address}</p>}
-                <p className="text-[#62f0b6] text-[11.5px] font-semibold">Disponible ahora</p>
+          <div className="flex gap-1.5 mb-3 overflow-hidden">
+            <span className="border border-[#3a2c63] rounded-full w-[34px] flex items-center justify-center shrink-0"><Search size={14} /></span>
+            {['Categoría', 'Más cercanos', 'Abierto ahora'].map((t) => (
+              <span key={t} className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap flex items-center gap-1">{t}{t !== 'Abierto ahora' && <ChevronDown size={13} />}</span>
+            ))}
+          </div>
+          <div className="rounded-3xl overflow-hidden border-2 border-[#62f0b6]/60 bg-[#21173f] shadow-[0_0_0_4px_rgba(98,240,182,0.08)]">
+            <div className="h-[128px] bg-[#2c2150] w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {v.cover_url ? <img src={v.cover_url} alt="" className="block w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-[#a99bcf] text-[12px]">Sin portada</div>}
+            </div>
+            <div className="p-3">
+              <div className="flex items-start gap-2.5">
+                <span className="rounded-[18px] border-2 border-[#3a2c63]"><Logo url={v.logo_url} size={56} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-[15px] truncate">{v.name}</p>
+                  <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Categoría'}</p>
+                  {v.address && <p className="text-[#62f0b6] text-[11px] truncate flex items-center gap-1"><MapPin size={11} className="shrink-0" /> {v.address}</p>}
+                  <p className="text-[#62f0b6] text-[11.5px] font-semibold">Disponible ahora · 350 m</p>
+                </div>
+                <div className="flex flex-col items-center gap-2 text-[#a99bcf] shrink-0">
+                  <Heart size={17} />
+                  <ChevronRight size={17} />
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-2 text-[#a99bcf] shrink-0">
-                <Heart size={17} />
-                <ChevronRight size={17} />
+              {v.premio && (
+                <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#1f7d68] rounded-full pl-1 pr-3 py-1 text-[12px] max-w-full">
+                  <Moneda size={20} />
+                  <span className="font-extrabold">{v.premio.cost}</span>
+                  <span className="font-semibold truncate">{v.premio.name}</span>
+                  {v.premio.kind === 'descuento' && <span className="ml-0.5 rounded-full bg-[#2a9a80] px-1.5 text-[10.5px] font-extrabold">Desc.</span>}
+                </div>
+              )}
+            </div>
+          </div>
+          {[0, 1].map((k) => (
+            <div key={k} className="mt-3 rounded-3xl overflow-hidden border border-[#3a2c63] bg-[#21173f] opacity-60">
+              <div className="h-[96px] bg-[#2c2150]" />
+              <div className="p-3 flex items-center gap-2.5">
+                <span className="w-[48px] h-[48px] rounded-[14px] bg-[#2c2150] shrink-0" />
+                <div className="flex-1">
+                  <span className="block h-3 w-28 rounded bg-[#3a2c63]" />
+                  <span className="block h-2.5 w-16 rounded bg-[#2f2556] mt-2" />
+                </div>
               </div>
             </div>
-            {v.premio && (
-              <div className="mt-2.5 inline-flex items-center gap-1.5 bg-[#1f7d68] rounded-full pl-1 pr-3 py-1 text-[12px] max-w-full">
-                <Moneda size={20} />
-                <span className="font-extrabold">{v.premio.cost}</span>
-                <span className="font-semibold truncate">{v.premio.name}</span>
-              </div>
-            )}
-          </div>
+          ))}
+          <p className="text-center text-[#a99bcf] text-[11px] mt-3">Más locales de Tarija</p>
         </div>
       </div>
       <BarraInferior />
@@ -216,6 +252,16 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
 }
 
 function SlideFicha({ v }: { v: VistaLocal }) {
+  const caja = useRef<HTMLDivElement>(null);
+  const [ancho, setAncho] = useState(286);
+  useEffect(() => {
+    const el = caja.current;
+    if (!el) return;
+    const medir = () => setAncho(el.clientWidth || 286);
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const negocio = {
     id: 'v', name: v.name, category: v.category ?? 'Categoría', description: v.description, address: v.address, lat: v.lat, lng: v.lng,
     phone: v.phone, instagram: v.instagram, hours_text: v.hours_text, logo_url: v.logo_url, cover_url: v.cover_url, is_virtual: false,
@@ -224,9 +270,9 @@ function SlideFicha({ v }: { v: VistaLocal }) {
     ? ([{ id: 'p', name: v.premio.name, description: v.premio.description, cost_points: v.premio.cost, image_url: v.premio.image_url, active: true, type: v.premio.kind ?? 'gratis' }] as unknown as Benefit[])
     : [];
   return (
-    <div className="w-[300px] h-[600px] overflow-y-auto overscroll-contain rounded-[34px] border-[7px] border-[#241748] shrink-0 shadow-2xl bg-[#150d2b]">
-      {/* La ficha se arma al ancho de un celular (390) y se achica para entrar en el marco, como se ve en la app. */}
-      <div style={{ width: 390, zoom: 286 / 390 }}>
+    <div ref={caja} className="w-[300px] h-[600px] overflow-y-auto overscroll-contain rounded-[34px] border-[7px] border-[#241748] shrink-0 shadow-2xl bg-[#150d2b] [scrollbar-width:none] max-sm:w-full max-sm:h-full max-sm:rounded-none max-sm:border-0 max-sm:shadow-none">
+      {/* La ficha se arma al ancho de un celular (390) y se ajusta al ancho de la pantalla o del marco, como se ve en la app. */}
+      <div style={{ width: 390, zoom: ancho / 390 }}>
         <FichaPreview business={negocio} benefits={premios} oscuro enMarco={false} />
       </div>
     </div>

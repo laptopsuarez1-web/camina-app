@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import Link from 'next/link';
+import { Copy, Check, Eye, PlayCircle } from 'lucide-react';
+import { PresentarLocal, type VistaLocal } from '@/components/PresentarLocal';
 
 function Copiar({ texto }: { texto: string }) {
   const [ok, setOk] = useState(false);
@@ -44,7 +46,7 @@ const DUDAS: [string, string][] = [
   ['"No tengo tiempo."', 'Lo entiendo. Por eso lo cargamos ahora mismo, en 5 minutos, desde su celular, y yo le ayudo. Después no tiene que hacer casi nada: solo entregar el premio cuando alguien venga. ¿Lo hacemos ahora o paso el [día]?'],
   ['"Ya tengo tarjeta de fidelidad."', 'Perfecto, y no la cambia. Una tarjeta premia a quien ya viene; Camina le trae personas nuevas que todavía no son sus clientes. Pueden convivir.'],
   ['"No entiendo de tecnología."', 'No instala nada. Es una página web que abre desde su celular, como cuando abre Facebook. Yo le ayudo a cargarlo ahora, y los pasos son siempre los mismos.'],
-  ['"¿Cuánto cuesta?"', 'Empezar es gratis y sin contrato. Los primeros comercios tienen 3 meses gratis de un plan completo. Lo único que cuesta es el premio que usted elige, y solo cuando alguien lo canjea. Más adelante hay planes de pago opcionales: Bs 100 y Bs 300 al mes.'],
+  ['"¿Cuánto cuesta?"', 'Empezar es gratis y sin contrato. Los primeros comercios tienen 3 meses gratis de un plan completo. Lo único que cuesta es el premio que usted elige, y solo cuando alguien lo canjea. Si después quiere más, hay planes opcionales: Paso Firme (Bs 99 al mes) y Paso Adelante (Bs 299 al mes).'],
   ['"Me van a pedir gratis todo el día."', 'Usted decide cuántos cupones da por día, qué días y a qué hora. En su hora pico, el premio no se puede canjear. Y la misma persona solo puede volver a canjear en su local después de 7 días.'],
   ['"¿Cuánta gente usa la app?"', 'Es nueva, se lanza el 1 de diciembre en Tarija. Por eso estamos sumando primero a los locales: los primeros son los que más se van a ver.'],
   ['"¿Y si alguien hace trampa?"', 'El cliente tiene que estar en su local y escribir el código de su local. Cada canje queda guardado con fecha y hora en su panel. Si quiere cambiar el código, hay un botón "Cambiar código".'],
@@ -111,13 +113,35 @@ const VISTAS: { img: string; titulo: string; texto: string }[] = [
   { img: 'canje-historia-v3-dark', titulo: '4. Historia en Instagram', texto: 'La persona puede subir una historia etiquetando a @caminaapp. Eso muestra el local a más gente.' },
 ];
 
+// Local de ejemplo para mostrar cómo se ve en la app, a pantalla completa y deslizando.
+const EJEMPLO: VistaLocal = {
+  name: "Fripap's",
+  category: 'Comida rápida',
+  description: 'Salchipapas, hamburguesas y papas fritas hechas al momento en el centro de Tarija.',
+  address: 'Centro',
+  hours_text: 'Lun a Sáb 12:00 - 22:00',
+  instagram: 'fripaps.tarija',
+  phone: '70000000',
+  logo_url: '/web/locales/fripaps-logo.jpg',
+  cover_url: '/web/locales/fripaps-cover.jpg',
+  lat: -21.5349,
+  lng: -64.7311,
+  premio: { name: 'Salchipapa clásica', description: 'Con tu compra de una bebida.', cost: 25, image_url: '/web/locales/fripaps-b1.jpg', kind: 'gratis' },
+};
+
 function AsiSeVe() {
+  const [ver, setVer] = useState(false);
   return (
     <>
-      <p className="text-muted text-[13.5px] mb-3">Muéstrale esto al dueño desde tu celular. Son capturas reales de locales ya publicados en la app (ejemplo: Bloom).</p>
+      <button type="button" onClick={() => setVer(true)} className="flex items-center justify-center gap-2 w-full bg-mint text-mint-dark rounded-2xl py-4 font-bold text-[15px] mb-2">
+        <Eye size={18} /> Ver un local de ejemplo como en la app
+      </button>
+      <p className="text-muted text-[12.5px] mb-4 text-center">Se abre a pantalla completa: desliza con el dedo para pasar del mapa a Canjes, la ficha del local y su premio. Para mostrar el local del dueño con sus fotos, usa “Mostrar al dueño” en Cargar un local.</p>
+      {ver && <PresentarLocal vista={EJEMPLO} onClose={() => setVer(false)} />}
+      <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-1.5">Capturas reales de la app</p>
       <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-1 px-1">
         {VISTAS.map((v) => (
-          <figure key={v.img} className="snap-center shrink-0 w-[236px] bg-card border border-line rounded-2xl p-2.5">
+          <figure key={v.img} className="snap-center shrink-0 w-[min(78vw,280px)] bg-card border border-line rounded-2xl p-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/partners/${v.img}.jpg`} alt={v.titulo} width={780} height={1691} loading="lazy" className="w-full h-auto rounded-xl" />
             <figcaption className="px-1 pt-2.5 pb-1">
@@ -141,7 +165,31 @@ function AsiSeVe() {
   );
 }
 
+// Los beneficios que importan al dueño, dichos simple. Sin prometer ventas.
+const GANA: { t: string; d: string }[] = [
+  { t: 'Gente nueva que llega caminando', d: 'La app muestra su local en el mapa y en la lista de Canjes a personas que caminan cerca. Muchos todavía no son sus clientes.' },
+  { t: 'Paga solo cuando alguien canjea', d: 'Empezar es gratis y sin contrato. Lo único que pone es el premio, y solo cuando una persona viene a buscarlo.' },
+  { t: 'Él controla todo', d: 'Elige el premio, los días, la hora y cuántos da por día. Lo puede poner en su hora floja, cuando el local está vacío.' },
+  { t: 'Su local se ve lindo en la app', d: 'Con logo, portada, fotos del premio, horario, WhatsApp, Instagram y el botón Cómo llegar.' },
+  { t: 'Reseñas y publicidad gratis', d: 'Después de canjear, la app invita a dejar una reseña en Google Maps y a subir una historia en Instagram mostrando su local.' },
+  { t: 'Clientes que vuelven', d: 'Cada local tiene su insignia: la persona sube de nivel cada vez que vuelve a canjear o lo califica.' },
+  { t: 'Seguro y sin trampas', d: 'Para canjear hay que estar en el local y escribir su código de 4 números. Cada canje queda guardado con fecha y hora.' },
+];
+
+const PASOS_VISITA: { t: string; d: string; link?: { href: string; label: string } }[] = [
+  { t: 'Entra y pregunta por el dueño', d: 'Si no está, pide su WhatsApp y usa el mensaje de "Si no está el dueño". Mejor entre las 15:00 y las 18:00.' },
+  { t: 'Di el guion de 30 segundos', d: 'Está en "Qué decir". Léelo tal cual, sin apurarte.' },
+  { t: 'Muéstrale el video para comercios', d: 'Dura un minuto y explica todo por ti.', link: { href: '/partners/panel/material', label: 'Abrir videos' } },
+  { t: 'Muéstrale cómo quedaría su local', d: 'En "Cargar un local" pon el nombre y toca "Mostrar al dueño". Si todavía no quiere, usa el local de ejemplo de "Así se ve un local".', link: { href: '/partners/panel/reportar', label: 'Cargar un local' } },
+  { t: 'Explícale qué gana (3 cosas)', d: 'Gente nueva que llega caminando, paga solo cuando alguien canjea y él elige el premio y la hora. El resto está en "Qué gana el local".' },
+  { t: 'Responde sus dudas', d: 'Las respuestas listas están en "Dudas del dueño". Nunca prometas ventas.' },
+  { t: 'Si dice que sí, cárgalo en 5 minutos', d: 'Con su celular, siguiendo "Cargar en 5 min". Que él elija el premio.' },
+  { t: 'Cierra bien', d: 'Pega el afiche "Aquí se canjea", guarda el local en tu panel y despídete con tu WhatsApp por si tiene dudas.' },
+];
+
 const TABS = [
+  { id: 'ofrecer', label: 'Cómo ofrecer' },
+  { id: 'gana', label: 'Qué gana el local' },
   { id: 'decir', label: 'Qué decir' },
   { id: 'asi', label: 'Así se ve un local' },
   { id: 'dudas', label: 'Dudas del dueño' },
@@ -151,7 +199,7 @@ const TABS = [
 ] as const;
 
 export function GuiaPartner() {
-  const [tab, setTab] = useState<(typeof TABS)[number]['id']>('decir');
+  const [tab, setTab] = useState<(typeof TABS)[number]['id']>('ofrecer');
   const [marcados, setMarcados] = useState<Record<string, boolean>>({});
 
   return (
@@ -174,6 +222,62 @@ export function GuiaPartner() {
       </div>
 
       <div className="max-w-[640px]">
+        {tab === 'ofrecer' && (
+          <>
+            <p className="text-muted text-[13.5px] mb-3">La visita completa dura unos 10 minutos. Sigue estos pasos en orden.</p>
+            <ol className="flex flex-col gap-2.5">
+              {PASOS_VISITA.map((p, i) => (
+                <li key={p.t} className="flex gap-3 bg-card border border-line rounded-2xl px-4 py-3.5">
+                  <span className="w-7 h-7 rounded-full bg-mint text-mint-dark font-extrabold text-[13px] flex items-center justify-center shrink-0">{i + 1}</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-text text-[14.5px] leading-tight">{p.t}</p>
+                    <p className="text-muted text-[13px] leading-snug mt-1">{p.d}</p>
+                    {p.link && (
+                      <Link href={p.link.href} className="inline-flex items-center gap-1.5 mt-2 text-[13px] font-bold" style={{ color: 'var(--c-purple-text)' }}>
+                        <PlayCircle size={15} /> {p.link.label}
+                      </Link>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+
+        {tab === 'gana' && (
+          <>
+            <p className="text-muted text-[13.5px] mb-3">Explícalo con tus palabras. Lo más importante va primero.</p>
+            <div className="flex flex-col gap-2.5 mb-5">
+              {GANA.map((g) => (
+                <div key={g.t} className="bg-card border border-line rounded-2xl px-4 py-3.5">
+                  <p className="font-semibold text-text text-[14.5px]">{g.t}</p>
+                  <p className="text-muted text-[13px] leading-snug mt-0.5">{g.d}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-1.5">Los planes (si pregunta)</p>
+            <div className="bg-card border border-line rounded-2xl divide-y divide-line mb-3">
+              {[
+                ['Primer Paso', 'Gratis', 'Sale en el mapa con su premio. Mínimo 3 cupones por día.'],
+                ['Paso Firme', 'Bs 99 al mes', 'Premios y descuentos a la vez, cupones sin límite y sus números en el panel.'],
+                ['Paso Adelante', 'Bs 299 al mes', 'Pin destacado, primero en su categoría y avisos a gente cerca.'],
+              ].map(([n, pr, d]) => (
+                <div key={n} className="px-4 py-3">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-semibold text-text text-[14.5px]">{n}</p>
+                    <p className="font-extrabold text-[14px]" style={{ color: 'var(--c-purple-text)' }}>{pr}</p>
+                  </div>
+                  <p className="text-muted text-[12.5px] leading-snug mt-0.5">{d}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[13px] rounded-xl px-4 py-3 mb-3" style={{ background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)' }}>
+              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de un plan completo. Después pueden seguir gratis con Primer Paso.
+            </p>
+            <p className="text-muted text-[12.5px]">Para la explicación completa, manda el dossier desde “Material para mostrar”.</p>
+          </>
+        )}
+
         {tab === 'decir' && (
           <>
             <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-1.5">Guion de 30 segundos</p>

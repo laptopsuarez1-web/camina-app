@@ -1,11 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MessageCircle, Footprints, Store, Wallet } from 'lucide-react';
 import { PLAN_KINDS, partnersWa } from '@/lib/partners';
+import { supabase } from '@/lib/supabase';
 
 export default function PartnersPage() {
+  const router = useRouter();
+  // Quien ya entró alguna vez en este celular va directo a su panel.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/partners/panel');
+    });
+  }, [router]);
   return (
     <div className="min-h-screen bg-auth-bg text-white">
       <div className="max-w-[560px] mx-auto px-6 py-10 flex flex-col items-center">
