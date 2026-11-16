@@ -8,7 +8,7 @@ import { Text } from '@/components/ui/Text';
 import { colors } from '@/theme/tokens';
 import { areaPath, chartPoints, smoothPath, trendScale } from '@/lib/trend-line';
 
-// Gráfico de "30 días" de Actividad: una curva con el promedio de 7 días, con el área rellena en degradé
+// Gráfico de "30 días" de Actividad: una curva con los pasos de cada día, con el área rellena en degradé
 // y un punto en el día de hoy. Se dibuja de izquierda a derecha la primera vez en la sesión.
 // Deslizar el dedo sobre la curva muestra cada día (como en la bolsa): una línea y un punto siguen al dedo y
 // arriba se ve la fecha y los pasos de ese día. Tocar sin deslizar abre el detalle del día.

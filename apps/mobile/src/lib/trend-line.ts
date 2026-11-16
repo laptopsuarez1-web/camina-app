@@ -1,5 +1,6 @@
-// Cuentas del gráfico de 30 días de Actividad: una curva con el promedio de los últimos 7 días de cada día,
-// para que se vea si la persona va subiendo o bajando sin el ruido de día a día.
+// Cuentas del gráfico de 30 días de Actividad: una curva con los pasos de cada día.
+// Cada punto está a la altura exacta de los pasos de ese día, en la misma escala que la línea de la meta:
+// lo que supera la meta queda arriba de la línea y lo que no, abajo.
 
 // Promedio móvil: para cada día, el promedio de ese día y los `window - 1` anteriores.
 // `history` trae días extra al principio (los anteriores al rango) para que los primeros puntos también tengan 7 días.
@@ -27,15 +28,15 @@ export function chartPoints(values: number[], width: number, height: number, max
   }));
 }
 
-// Escala del gráfico: deja aire arriba y abajo de la curva y siempre incluye la meta, para que su línea se vea.
+// Escala del gráfico: siempre desde 0 (así la altura es proporcional a los pasos) hasta un poco más que el
+// mejor día o la meta, lo que sea mayor, para que la línea de la meta siempre se vea.
 export function trendScale(values: number[], goal: number): { min: number; max: number } {
   const hi = Math.max(goal, ...values, 1);
-  const lo = Math.min(goal, ...values);
-  const pad = Math.max((hi - lo) * 0.35, hi * 0.08);
-  return { min: Math.max(0, lo - pad), max: hi + pad };
+  return { min: 0, max: hi * 1.1 };
 }
 
-// Curva suave que pasa por todos los puntos (curvas de Bézier con el punto de control a mitad de camino en x).
+// Curva suave que pasa exactamente por cada punto. Entre dos días la curva solo sube o solo baja
+// (los puntos de control tienen la altura de cada extremo), así no inventa picos ni valles que no existen.
 export function smoothPath(p: Pt[]): string {
   if (p.length === 0) return '';
   const f = (n: number) => Math.round(n * 10) / 10;
