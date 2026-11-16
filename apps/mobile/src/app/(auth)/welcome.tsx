@@ -6,6 +6,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Sentry } from '@/lib/monitoring';
@@ -23,11 +24,17 @@ import { Google, googleClientIds, googleOAuthConfigured, completeGoogleSignIn, s
 // hacen algo de verdad (auth de Supabase) en vez de saltar directo a la app.
 type AuthKind = 'login' | 'signup';
 
+const LAST_EMAIL_KEY = 'camina_last_email';
+
 export default function WelcomeScreen() {
   const { modo } = useLocalSearchParams<{ modo?: string }>();
   const [authKind, setAuthKind] = useState<AuthKind>(modo === 'login' ? 'login' : 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // El último correo con el que entró en este teléfono queda escrito (si cierra sesión, solo pone la clave).
+  useEffect(() => {
+    AsyncStorage.getItem(LAST_EMAIL_KEY).then((v) => { if (v) setEmail((e) => e || v); }).catch(() => {});
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifyStep, setVerifyStep] = useState<string | null>(null);
@@ -217,6 +224,7 @@ export default function WelcomeScreen() {
         Alert.alert('No pudimos iniciar sesión', friendlyError(inError));
         return;
       }
+      AsyncStorage.setItem(LAST_EMAIL_KEY, email.trim()).catch(() => {});
       setVerifyStep(email.trim());
       return;
     }
@@ -231,6 +239,7 @@ export default function WelcomeScreen() {
       Alert.alert('No pudimos iniciar sesión', friendlyError(error));
       return;
     }
+    AsyncStorage.setItem(LAST_EMAIL_KEY, email.trim()).catch(() => {});
     await afterAuth();
   }
 
