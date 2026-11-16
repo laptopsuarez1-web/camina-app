@@ -6,6 +6,24 @@ const BASE = 'https://caminaapp.com';
 
 type Doc = { titulo: string; para: string; href: string };
 
+// Videos para mostrar en la visita (formato historia, se ven bien en el celular).
+const VIDEOS: { titulo: string; para: string; cuando: string; src: string; poster: string }[] = [
+  {
+    titulo: 'Video para comercios',
+    para: 'Qué gana el local: clientes nuevos que llegan caminando y solo pone el premio.',
+    cuando: 'Muéstraselo al dueño al empezar la visita (1 minuto).',
+    src: '/partners/material/video-comercios.mp4',
+    poster: '/partners/material/video-comercios.jpg',
+  },
+  {
+    titulo: 'Video para la gente',
+    para: 'Cómo la gente camina, junta Puntos y los canjea en locales de Tarija.',
+    cuando: 'Para que el dueño entienda qué ve el cliente, o para mandarlo a sus empleados.',
+    src: '/partners/material/video-gente.mp4',
+    poster: '/partners/material/video-gente.jpg',
+  },
+];
+
 const GRUPOS: { titulo: string; docs: Doc[] }[] = [
   {
     titulo: 'Para locales (lo que más vas a usar)',
@@ -41,12 +59,34 @@ function Compartir({ titulo, href }: { titulo: string; href: string }) {
   );
 }
 
-// Material de Camina para mostrar o enviar al dueño: dossiers y guías.
+// Material de Camina para mostrar o enviar al dueño: videos, dossiers y guías.
 export function MaterialPartner() {
   return (
     <>
       <h1 className="text-[22px] font-bold text-text mb-1">Material para mostrar</h1>
       <p className="text-muted text-[13.5px] mb-5">Muéstralo en tu celular durante la visita o envíaselo al dueño por WhatsApp.</p>
+
+      <div className="mb-7">
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-2">Videos (muéstralos en tu celular)</p>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+          {VIDEOS.map((v) => (
+            <div key={v.src} className="bg-card border border-line rounded-2xl p-3">
+              <video
+                src={v.src}
+                poster={v.poster}
+                controls
+                playsInline
+                preload="none"
+                className="w-full max-w-[300px] mx-auto aspect-[9/16] rounded-xl bg-[#150d2b] object-cover block"
+              />
+              <p className="font-bold text-text text-[15px] leading-tight mt-3">{v.titulo}</p>
+              <p className="text-muted text-[12.5px] leading-snug mt-0.5">{v.para}</p>
+              <p className="text-[12.5px] leading-snug mt-1.5" style={{ color: 'var(--c-purple-text)' }}>{v.cuando}</p>
+              <Compartir titulo={v.titulo} href={v.src} />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {GRUPOS.map((g) => (
         <div key={g.titulo} className="mb-6">

@@ -65,8 +65,8 @@ export function PartnerShell({ children }: { children: (p: Partner) => React.Rea
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !session) router.replace('/partners/login');
-  }, [loading, session, router]);
+    if (!loading && !session) router.replace(`/partners/login?volver=${encodeURIComponent(pathname)}`);
+  }, [loading, session, router, pathname]);
 
   async function salir() {
     await supabase.auth.signOut({ scope: 'local' });

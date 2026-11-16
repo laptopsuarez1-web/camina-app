@@ -25,7 +25,11 @@ const nextConfig: NextConfig = {
   },
   // caminaapp.com/dossier: link corto al dossier para comercios (para mandarlo por Instagram o Facebook, que no aceptan PDF).
   async redirects() {
-    return [{ source: "/dossier", destination: "/dossier-camina.pdf", permanent: false }];
+    return [
+      { source: "/dossier", destination: "/dossier-camina.pdf", permanent: false },
+      // caminaapp.com/p: link corto para que un partner entre a su panel (si ya entró antes, abre directo).
+      { source: "/p", destination: "/partners/panel", permanent: false },
+    ];
   },
   // caminaapp.com/alta: el link para que un comercio se registre. En Android, la app de Camina abre por sí sola todo link que
   // empiece con /r (por ejemplo /registro) y el comercio no podía registrarse; /alta no empieza con /r, así que abre en el navegador.
