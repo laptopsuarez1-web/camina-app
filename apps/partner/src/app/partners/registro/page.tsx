@@ -67,7 +67,7 @@ export default function PartnersRegistroPage() {
       <form onSubmit={crear} className="w-full max-w-[320px] flex flex-col gap-2.5">
         <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" required aria-label="Tu nombre" autoComplete="name" className={CAMPO} />
         <input value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Tu WhatsApp (ej. 71234567)" inputMode="tel" required aria-label="Tu WhatsApp" autoComplete="tel" className={CAMPO} />
-        <input value={zona} onChange={(e) => setZona(e.target.value)} placeholder="Tu zona o barrio (opcional)" aria-label="Tu zona" className={CAMPO} />
+        <input value={zona} onChange={(e) => setZona(e.target.value)} placeholder="Tu zona (opcional)" aria-label="Tu zona" className={CAMPO} />
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Tu correo" required aria-label="Tu correo" autoComplete="email" className={CAMPO} />
         <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Elige una contraseña (mínimo 8)" autoComplete="new-password" required className={CAMPO} />
         {yaExiste && (

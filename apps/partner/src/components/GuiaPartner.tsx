@@ -48,7 +48,7 @@ const DUDAS: [string, string][] = [
   ['"No tengo tiempo."', 'Lo entiendo. Por eso lo cargamos ahora mismo, en 5 minutos, desde su celular, y yo le ayudo. Después no tiene que hacer casi nada: solo entregar el premio cuando alguien venga. ¿Lo hacemos ahora o paso el [día]?'],
   ['"Ya tengo tarjeta de fidelidad."', 'Perfecto, y no la cambia. Una tarjeta premia a quien ya viene; Camina le trae personas nuevas que todavía no son sus clientes. Pueden convivir.'],
   ['"No entiendo de tecnología."', 'No instala nada. Es una página web que abre desde su celular, como cuando abre Facebook. Yo le ayudo a cargarlo ahora, y los pasos son siempre los mismos.'],
-  ['"¿Cuánto cuesta?"', 'Empezar es gratis y sin contrato. Los primeros comercios tienen 3 meses gratis de un plan completo. Lo único que cuesta es el premio que usted elige, y solo cuando alguien lo canjea. Si después quiere más, hay planes opcionales: Paso Firme (Bs 99 al mes) y Paso Adelante (Bs 299 al mes).'],
+  ['"¿Cuánto cuesta?"', 'Empezar es gratis y sin contrato. Los primeros comercios tienen 3 meses gratis de Paso Firme. Lo único que cuesta es el premio que usted elige, y solo cuando alguien lo canjea. Si después quiere más, hay planes opcionales: Paso Firme (Bs 99 al mes) y Paso Adelante (Bs 299 al mes).'],
   ['"Me van a pedir gratis todo el día."', 'Usted decide cuántos cupones da por día, qué días y a qué hora. En su hora pico, el premio no se puede canjear. Y la misma persona solo puede volver a canjear en su local después de 7 días.'],
   ['"¿Cuánta gente usa la app?"', 'Es nueva, se lanza el 1 de diciembre en Tarija. Por eso estamos sumando primero a los locales: los primeros son los que más se van a ver.'],
   ['"¿Y si alguien hace trampa?"', 'El cliente tiene que estar en su local y escribir el código de su local. Cada canje queda guardado con fecha y hora en su panel. Si quiere cambiar el código, hay un botón "Cambiar código".'],
@@ -328,7 +328,7 @@ export function GuiaPartner() {
               <p className="text-muted text-[12.5px] mt-0.5">Gratis, Bs 99 y Bs 299 al mes.</p>
             </button>
             <p className="text-[13px] rounded-xl px-4 py-3 mb-3" style={{ background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)' }}>
-              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de un plan completo. Después pueden seguir gratis con Primer Paso.
+              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de Paso Firme. Después pueden seguir gratis con Primer Paso.
             </p>
             <p className="text-muted text-[12.5px]">Para la explicación completa, manda el dossier desde “Material para mostrar”.</p>
           </>
@@ -362,7 +362,7 @@ export function GuiaPartner() {
               ))}
             </div>
             <p className="text-[13px] rounded-xl px-4 py-3" style={{ background: 'var(--c-aqua-light)', color: 'var(--c-ok-text)' }}>
-              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de un plan completo. Después pueden seguir gratis con Primer Paso.
+              <b>Cupo fundador:</b> los primeros comercios tienen 3 meses gratis de Paso Firme. Después pueden seguir gratis con Primer Paso.
             </p>
           </>
         )}
@@ -489,7 +489,7 @@ export function GuiaPartner() {
             </div>
             <div className="bg-card border border-line rounded-2xl px-4 py-3.5 mb-3">
               <p className="font-semibold text-text mb-1.5">Dónde empezar</p>
-              <p className="text-muted text-[14px]">El Centro y alrededor de la plaza (muchos locales juntos), cerca de las universidades, avenidas con muchos locales seguidos y tu propio barrio, donde conoces a los dueños.</p>
+              <p className="text-muted text-[14px]">El Centro y alrededor de la plaza (muchos locales juntos), cerca de las universidades, avenidas con muchos locales seguidos y tu propia zona, donde conoces a los dueños.</p>
             </div>
             <div className="bg-card border border-line rounded-2xl px-4 py-3.5">
               <p className="font-semibold text-text mb-1.5">Mejor momento y a quién evitar</p>

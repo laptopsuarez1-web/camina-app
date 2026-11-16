@@ -12,10 +12,10 @@ export type PlanKind = 'gratis' | 'fundador' | 'plan_100' | 'plan_300';
 export type LeadStatus = 'reportado' | 'publicado' | 'activo' | 'rechazado';
 
 export const PLAN_KINDS: { id: PlanKind; label: string; amount: number }[] = [
-  { id: 'gratis', label: 'Plan gratis', amount: 20 },
+  { id: 'gratis', label: 'Plan gratis (Primer Paso)', amount: 20 },
   { id: 'fundador', label: 'Cupo fundador', amount: 25 },
-  { id: 'plan_100', label: 'Plan de Bs 100', amount: 40 },
-  { id: 'plan_300', label: 'Plan de Bs 300', amount: 120 },
+  { id: 'plan_100', label: 'Paso Firme (Bs 99 al mes)', amount: 40 },
+  { id: 'plan_300', label: 'Paso Adelante (Bs 299 al mes)', amount: 120 },
 ];
 
 export const planLabel = (k: PlanKind) => PLAN_KINDS.find((p) => p.id === k)?.label ?? k;

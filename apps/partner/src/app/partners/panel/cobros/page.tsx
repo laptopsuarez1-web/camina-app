@@ -42,7 +42,7 @@ function Cobros({ partner }: { partner: Partner }) {
       <div className="bg-card border border-line rounded-2xl divide-y divide-line max-w-[460px] mb-3">
         {PLAN_KINDS.map((p) => (
           <div key={p.id} className="flex items-center justify-between px-4 py-3">
-            <span className="text-text text-[14px]">Local con {p.label.charAt(0).toLowerCase() + p.label.slice(1)}</span>
+            <span className="text-text text-[14px]">{p.label}</span>
             <span className="font-extrabold text-[18px] text-text">{bs(p.amount)}</span>
           </div>
         ))}
