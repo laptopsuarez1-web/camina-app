@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient as SvgGradient, Path, Stop, Circle } from 'react-native-svg';
+import Svg, { Defs, LinearGradient as SvgGradient, Path, Stop, Circle, Line } from 'react-native-svg';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { buzz } from '@/lib/haptics';
 import { Text } from '@/components/ui/Text';
-import { Press } from '@/components/ui/Press';
 import { colors } from '@/theme/tokens';
 import { areaPath, chartPoints, smoothPath, trendScale } from '@/lib/trend-line';
 
 // Gráfico de "30 días" de Actividad: una curva con el promedio de 7 días, con el área rellena en degradé
 // y un punto en el día de hoy. Se dibuja de izquierda a derecha la primera vez en la sesión.
-// Tocar un tramo abre el detalle de ese día (igual que las barras de 7 días).
+// Deslizar el dedo sobre la curva muestra cada día (como en la bolsa): una línea y un punto siguen al dedo y
+// arriba se ve la fecha y los pasos de ese día. Tocar sin deslizar abre el detalle del día.
 
 let drawn = false;
 
-export function TrendChart({ values, days, goal, height, startLabel, onSelect, dayLabel }: {
+export function TrendChart({ values, days, goal, height, startLabel, onSelect, onScrub }: {
   values: number[];
   days: { key: string; steps: number; isToday: boolean }[];
   goal: number;
   height: number;
   startLabel: string;
   onSelect: (key: string) => void;
-  dayLabel: (key: string) => string;
+  // Día que se está mirando con el dedo (índice en `days`), o null al soltar.
+  onScrub?: (index: number | null) => void;
 }) {
   const [w, setW] = useState(0);
   const reduced = useReducedMotion();
@@ -39,6 +42,36 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, d
   const goalY = height - ((goal - min) / (max - min)) * height;
   // La etiqueta de la meta va del lado donde la curva no la tapa: abajo si la curva pasa por encima de la meta.
   const curveAbove = values.length > 0 && values[0] >= goal;
+
+  const [sel, setSel] = useState<number | null>(null);
+  const indexAt = (x: number) => {
+    if (w <= 0 || values.length === 0) return 0;
+    return Math.max(0, Math.min(values.length - 1, Math.round((x / w) * (values.length - 1))));
+  };
+  const mirar = (x: number) => {
+    const i = indexAt(x);
+    if (i === sel) return;
+    buzz.selection();
+    setSel(i);
+    onScrub?.(i);
+  };
+  const soltar = () => {
+    setSel(null);
+    onScrub?.(null);
+  };
+  // Solo arranca con un movimiento de lado: así la pantalla se sigue pudiendo deslizar hacia abajo.
+  const pan = Gesture.Pan()
+    .runOnJS(true)
+    .activeOffsetX([-6, 6])
+    .failOffsetY([-14, 14])
+    .onStart((e) => mirar(e.x))
+    .onUpdate((e) => mirar(e.x))
+    .onFinalize(() => soltar());
+  const tap = Gesture.Tap()
+    .runOnJS(true)
+    .onEnd((e, ok) => { if (ok && days.length) onSelect(days[indexAt(e.x)].key); });
+  const gesto = Gesture.Exclusive(pan, tap);
+  const marca = sel != null ? pts[sel] : null;
   return (
     <View style={{ height: height + 40, paddingTop: 20 }} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       {w > 0 ? (
@@ -52,7 +85,9 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, d
             </Defs>
             <Path d={areaPath(pts, height)} fill="url(#trendFill)" transform="translate(6,0)" />
             <Path d={smoothPath(pts)} stroke={colors.mint} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" fill="none" transform="translate(6,0)" />
-            {last ? <Circle cx={last.x + 6} cy={last.y} r={5.5} fill={colors.mint} stroke="#2A1A55" strokeWidth={3} /> : null}
+            {marca ? <Line x1={marca.x + 6} x2={marca.x + 6} y1={0} y2={height} stroke="rgba(255,255,255,0.55)" strokeWidth={1.5} /> : null}
+            {marca ? <Circle cx={marca.x + 6} cy={marca.y} r={7} fill={colors.mint} stroke="#2A1A55" strokeWidth={3} /> : null}
+            {last && !marca ? <Circle cx={last.x + 6} cy={last.y} r={5.5} fill={colors.mint} stroke="#2A1A55" strokeWidth={3} /> : null}
           </Svg>
         </Animated.View>
       ) : null}
@@ -65,19 +100,15 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, d
         <Text className="text-[12px]" style={{ color: colors.authMuted }}>{startLabel}</Text>
         <Text className="text-[12px]" style={{ color: '#fff', fontWeight: '800' }}>Hoy</Text>
       </View>
-      {/* Zonas táctiles: una por día, a lo ancho del gráfico. */}
-      <View style={{ position: 'absolute', left: 0, right: 0, top: 0, height: height + 28, flexDirection: 'row' }}>
-        {days.map((d) => (
-          <Press
-            key={d.key}
-            feedback="none"
-            onPress={() => onSelect(d.key)}
-            style={{ flex: 1 }}
-            accessibilityRole="button"
-            accessibilityLabel={`${d.isToday ? 'Hoy' : dayLabel(d.key)}: ${d.steps.toLocaleString('es-BO')} pasos. Ver detalle`}
-          />
-        ))}
-      </View>
+      {/* Zona del dedo: deslizar para ver cada día; tocar para abrir el detalle. */}
+      <GestureDetector gesture={gesto}>
+        <View
+          accessible
+          accessibilityRole="adjustable"
+          accessibilityLabel={`Pasos de los últimos ${days.length} días. Desliza el dedo sobre la curva para ver cada día.`}
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, height: height + 28 }}
+        />
+      </GestureDetector>
     </View>
   );
 }

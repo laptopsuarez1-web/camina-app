@@ -112,6 +112,8 @@ export default function ActividadScreen() {
   const firstName = profile?.full_name?.trim().split(/\s+/)[0] || null;
   const goal = Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL);
   const [range, setRange] = useState<7 | 30>(7);
+  // Día que se está mirando con el dedo sobre la curva de 30 días (null = mostrar el total).
+  const [scrub, setScrub] = useState<number | null>(null);
 
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
@@ -202,6 +204,14 @@ export default function ActividadScreen() {
     }
     return rollingAverage(history, 7, range);
   }, [byDay, range]);
+  // Día que se mira con el dedo: fecha larga, pasos de ese día y su promedio de 7 días.
+  const scrubDay = (() => {
+    if (range !== 30 || scrub == null || !chartDays[scrub]) return null;
+    const d = new Date(`${chartDays[scrub].key}T00:00:00`);
+    const dia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][d.getDay()];
+    const mes = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][d.getMonth()];
+    return { label: chartDays[scrub].isToday ? 'Hoy' : `${dia} ${d.getDate()} de ${mes}`, steps: chartDays[scrub].steps, avg: trend[scrub] ?? 0 };
+  })();
   const trendStart = (() => {
     const d = boliviaToday();
     d.setDate(d.getDate() - (range - 1));
@@ -291,6 +301,15 @@ export default function ActividadScreen() {
       >
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
+            {/* El total queda siempre montado (sin volver a animarse al soltar); el día que se mira va encima. */}
+            {scrubDay ? (
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 2 }}>
+                <Text className="text-auth-muted text-xs mb-1">{scrubDay.label}</Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display}>{scrubDay.steps.toLocaleString('es-BO')}</Text>
+                <Text className="text-auth-muted text-xs mt-0.5">pasos · promedio de 7 días: {Math.round(scrubDay.avg).toLocaleString('es-BO')}</Text>
+              </View>
+            ) : null}
+            <View style={{ opacity: scrubDay ? 0 : 1 }}>
             <Text className="text-auth-muted text-xs mb-1">{range === 7 ? 'Esta semana' : 'Últimos 30 días'}</Text>
             <AnimatedNumber id={`actividad-total-${range}`} value={rangeTotal} ready={!isLoading} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2} className="text-white" style={typo.display} />
             <View className="flex-row flex-wrap items-center mt-0.5" style={{ columnGap: 8 }}>
@@ -301,6 +320,7 @@ export default function ActividadScreen() {
                   <Text className="text-auth-muted text-xs">{Math.abs(weekTrendPct)}% vs. la anterior</Text>
                 </View>
               ) : null}
+            </View>
             </View>
           </View>
           {/* Selector 7 / 30 días dentro de la tarjeta: cambia el único gráfico de la pantalla. */}
@@ -336,7 +356,7 @@ export default function ActividadScreen() {
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {range === 30 ? (
-              <TrendChart values={trend} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} dayLabel={dayLabel} />
+              <TrendChart values={trend} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} onScrub={setScrub} />
             ) : (
             <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40 }}>
               {chartDays.map((d, i) => {
