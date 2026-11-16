@@ -63,7 +63,7 @@ export default function PartnersPage() {
         <div className="w-full bg-auth-bg-soft rounded-2xl divide-y divide-white/10 mb-3">
           {PLAN_KINDS.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-3">
-              <span className="text-[14px]">Local con {p.label.charAt(0).toLowerCase() + p.label.slice(1)}</span>
+              <span className="text-[14px]">{p.label}</span>
               <span className="text-mint font-extrabold text-[20px]">Bs {p.amount}</span>
             </div>
           ))}

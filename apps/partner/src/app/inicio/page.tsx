@@ -208,7 +208,7 @@ export default function InicioPage() {
       {business && resumen && (
         <details className="group mb-5">
           <summary className="cursor-pointer list-none flex items-center justify-between bg-card border border-line rounded-2xl px-4.5 py-3.5 text-sm font-semibold">
-            Ver el resumen completo de {mes}
+            {mes ? `Ver el resumen completo de ${mes}` : "Ver el resumen completo del mes"}
             <ChevronRight size={16} className="transition-transform group-open:rotate-90" />
           </summary>
           <div className="mt-3.5">
