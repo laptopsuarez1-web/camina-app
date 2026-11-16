@@ -67,6 +67,9 @@ function useStepsHistory() {
 }
 
 const CHART_H = 110;
+// Barras de 7 días: distancia de la base al borde de abajo (letra del día de 16 px + 6 de margen) y ancho de la columna de la meta.
+const BAR_BASE = 22;
+const GOAL_GUTTER = 44;
 
 // Colores del calendario: verde (abrió la app y cumplió), rojo (abrió la app y no llegó), gris (no abrió la app).
 const CAL_BG = { met: colors.mint, miss: '#F4A8A2', idle: '#D3D3DA', none: colors.light.line };
@@ -359,7 +362,8 @@ export default function ActividadScreen() {
             {range === 30 ? (
               <TrendChart values={chartDays.map((d) => d.steps)} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} onScrub={setScrub} />
             ) : (
-            <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40 }}>
+            // En 7 días queda a la derecha una columna angosta para la etiqueta de la meta, así no tapa ninguna barra.
+            <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40, marginRight: range === 7 ? GOAL_GUTTER : 0 }}>
               {chartDays.map((d, i) => {
                 const hit = d.steps >= goalFor(d.key);
                 return (
@@ -376,11 +380,15 @@ export default function ActividadScreen() {
                     ) : null}
                     <GrowIn id="actividad-barras" index={i} count={chartDays.length}>
                     {(() => {
+                      // Altura exactamente proporcional a los pasos (escala desde 0). Solo 4 px mínimos para que un día en 0 se vea.
+                      const h = Math.max(4, (d.steps / chartMax) * CHART_H);
+                      // Las esquinas nunca más redondas que media barra: una barra baja no se ve como una pastilla.
+                      const top = Math.min(range === 7 ? 11 : 3, h / 2);
                       const barStyle = {
                         width: '100%' as const,
-                        height: Math.max(4, (d.steps / chartMax) * CHART_H),
-                        borderTopLeftRadius: range === 7 ? 11 : 3,
-                        borderTopRightRadius: range === 7 ? 11 : 3,
+                        height: h,
+                        borderTopLeftRadius: top,
+                        borderTopRightRadius: top,
                         borderBottomLeftRadius: 3,
                         borderBottomRightRadius: 3,
                       };
@@ -412,9 +420,11 @@ export default function ActividadScreen() {
             )}
             {/* Línea punteada de la meta diaria: va después de las barras para quedar por encima de ellas */}
             {range === 7 && goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
-                <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: '#2c1366', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
-                  <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
+              // La base de las barras está 22 px arriba (16 de la letra del día + 6 de margen): la línea usa la misma base.
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: GOAL_GUTTER, bottom: BAR_BASE + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
+                <View style={{ position: 'absolute', left: '100%', marginLeft: 6, top: -14, width: GOAL_GUTTER - 6 }}>
+                  <Text className="text-[10px]" style={{ color: colors.authMuted, lineHeight: 12 }}>meta</Text>
+                  <Text className="text-[12px] font-bold" style={{ color: colors.mint, lineHeight: 14 }}>{goal.toLocaleString('es-BO')}</Text>
                 </View>
               </View>
             )}
