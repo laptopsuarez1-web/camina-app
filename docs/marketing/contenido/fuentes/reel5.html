@@ -1,0 +1,141 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box } html, body { margin: 0; background: #000 }
+#st { width: 1080px; height: 1920px; position: relative; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; color: #F0EBFA; background: linear-gradient(165deg, #2c1a63 0%, #1b1140 45%, #110922 100%) }
+#glow { position: absolute; width: 1400px; height: 1400px; border-radius: 50%; background: radial-gradient(circle, rgba(98,240,182,.20), rgba(98,240,182,0) 62%); left: -160px; top: 500px }
+#bar { position: absolute; left: 72px; right: 72px; top: 150px; display: flex; gap: 10px }
+#bar i { flex: 1; height: 8px; border-radius: 9px; background: rgba(255,255,255,.18); overflow: hidden; display: block }
+#bar i b { display: block; height: 100%; width: 0; background: #62F0B6; border-radius: 9px }
+#brand { position: absolute; left: 72px; top: 184px; display: flex; align-items: center; gap: 16px; font-family: Montserrat; font-weight: 900; font-size: 34px; letter-spacing: 4px; color: #62F0B6 }
+#brand img { height: 62px }
+#tag { position: absolute; right: 72px; top: 198px; font-weight: 800; font-size: 26px; letter-spacing: 2px; color: #B9AED9; text-transform: uppercase }
+.sc { position: absolute; inset: 0; display: none }
+h1 { position: absolute; left: 40px; right: 40px; text-align: center; top: 196px; margin: 0; font-family: Montserrat; font-weight: 900; font-size: 84px; line-height: 1.05; letter-spacing: -2px; white-space: nowrap }
+h1 b, .big b { color: #62F0B6; font-weight: 900 }
+p.sub { position: absolute; left: 40px; right: 40px; text-align: center; top: 400px; margin: 0; white-space: nowrap; font-size: 38px; line-height: 1.28; font-weight: 600; color: #D6CCF0 }
+p.sub b { color: #fff; font-weight: 800 }
+.phone { position: absolute; border: 8px solid #4a3a78; border-radius: 58px; overflow: hidden; background: #16101F; box-shadow: 0 40px 120px rgba(0,0,0,.55) }
+.scr { position: relative; will-change: transform } .scr img { display: block; width: 100% }
+.hl { position: absolute; border: 6px solid #62F0B6; border-radius: 34px; box-shadow: 0 0 0 9999px rgba(10,5,25,.45) }
+.tap { position: absolute; width: 130px; height: 130px; margin: -65px 0 0 -65px; border-radius: 50%; border: 8px solid #62F0B6; background: rgba(98,240,182,.25) }
+.chip { position: absolute; background: #62F0B6; color: #1a0f3a; font-weight: 800; font-size: 40px; padding: 20px 38px; border-radius: 99px; white-space: nowrap; box-shadow: 0 20px 60px rgba(0,0,0,.5) }
+.chip.dark { background: #2a1f52; color: #fff; border: 3px solid #62F0B6 }
+.mini { position: absolute; background: rgba(20,12,45,.9); color: #B9AED9; font-weight: 700; font-size: 24px; padding: 10px 18px; border-radius: 99px; border: 2px solid #43357a }
+.code { position: absolute; left: 110px; width: 860px; background: #241a4b; border: 3px solid #62F0B6; border-radius: 48px; padding: 44px 40px 48px; text-align: center; box-shadow: 0 40px 120px rgba(0,0,0,.6) }
+.code .l { font-size: 30px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; color: #B9AED9 }
+.code .ds { display: flex; justify-content: center; gap: 22px; margin-top: 26px }
+.code .ds span { width: 150px; height: 180px; border-radius: 30px; background: #16101F; border: 3px solid #43357a; display: flex; align-items: center; justify-content: center }
+.code .ds em { font-style: normal; font-family: Montserrat; font-weight: 900; font-size: 120px; color: #fff; display: block }
+.code .ok { display: inline-block; margin-top: 34px; background: #62F0B6; color: #1a0f3a; font-weight: 800; font-size: 44px; padding: 20px 44px; border-radius: 99px }
+.hook { position: absolute; left: 72px; right: 72px; top: 520px; text-align: center }
+.hook .a { font-family: Montserrat; font-weight: 900; font-size: 92px; line-height: 1.08; letter-spacing: -2px }
+.hook .num { font-family: Montserrat; font-weight: 900; font-size: 280px; line-height: 1; letter-spacing: -8px; color: #62F0B6; margin-top: 30px }
+.hook .u { font-family: Montserrat; font-weight: 900; font-size: 84px; color: #62F0B6; margin-top: 4px }
+.hook .q { font-family: Montserrat; font-weight: 900; font-size: 112px; line-height: 1.05; letter-spacing: -3px; margin-top: 90px }
+.hook .ans { display: inline-block; margin-top: 90px; background: #62F0B6; color: #1a0f3a; font-weight: 800; font-size: 52px; padding: 28px 46px; border-radius: 40px; line-height: 1.2 }
+.end { position: absolute; left: 72px; right: 72px; top: 400px; text-align: center }
+.end .logo { width: 220px }
+.end .big { font-family: Montserrat; font-weight: 900; font-size: 108px; line-height: 1.04; letter-spacing: -3px; margin-top: 46px }
+.end .l2 { font-size: 46px; font-weight: 700; color: #D6CCF0; margin-top: 34px; line-height: 1.3 }
+.end .cta { display: inline-block; margin-top: 46px; background: #62F0B6; color: #1a0f3a; font-family: Montserrat; font-weight: 900; font-size: 54px; padding: 30px 48px; border-radius: 99px }
+.end .baifo { width: 300px; margin-top: 40px }
+.end .note { font-size: 38px; font-weight: 700; color: #fff; margin-top: 36px; line-height: 1.3 }
+
+#ph { position: absolute; left: 270px; top: 468px; width: 539px; height: 1179px; border-radius: 80px; background: #0b0812; box-shadow: 0 0 0 3px #6a59a3, 0 0 90px rgba(98,240,182,.18), 0 50px 140px rgba(0,0,0,.6); display: none; will-change: transform }
+#ph .btn { position: absolute; width: 6px; background: #6a59a3; border-radius: 4px }
+#ph .scrn { position: absolute; left: 12px; top: 12px; width: 515px; height: 1155px; border-radius: 68px; overflow: hidden; background: #16101F }
+#sb { height: 38px; position: relative; color: #fff; font-weight: 800; font-size: 19px }
+#sb .tm { position: absolute; left: 44px; top: 9px } #sb .cam { position: absolute; left: 50%; top: 9px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #05030a; box-shadow: 0 0 0 2px rgba(255,255,255,.06) }
+#sb .bat { position: absolute; right: 40px; top: 11px; width: 30px; height: 15px; border: 2px solid rgba(255,255,255,.85); border-radius: 5px } #sb .bat i { position: absolute; left: 2px; top: 2px; bottom: 2px; width: 17px; background: #fff; border-radius: 2px } #sb .bat::after { content: ''; position: absolute; right: -6px; top: 3px; width: 3px; height: 5px; background: rgba(255,255,255,.85); border-radius: 0 2px 2px 0 }
+#sb .sig { position: absolute; right: 82px; top: 11px; display: flex; gap: 3px; align-items: flex-end; height: 15px } #sb .sig i { width: 4px; background: #fff; border-radius: 1px }
+#vw { position: relative; width: 515px; height: 1117px; overflow: hidden } #fr, #fr2 { position: absolute; left: 0; top: 0; display: block; width: 515px; height: 1117px } #fr2 { display: none }
+#tp { position: absolute; width: 96px; height: 96px; margin: -48px 0 0 -48px; border-radius: 50%; border: 6px solid #62F0B6; background: rgba(98,240,182,.28); display: none }
+
+h1 .w { display: inline-block; will-change: transform }
+.blob { position: absolute; border-radius: 50%; filter: blur(10px) } #blob1 { width: 900px; height: 900px; left: -420px; top: 120px; background: radial-gradient(circle, rgba(124,92,255,.30), rgba(124,92,255,0) 65%) } #blob2 { width: 800px; height: 800px; right: -380px; top: 1100px; background: radial-gradient(circle, rgba(224,180,58,.14), rgba(224,180,58,0) 65%) }
+#ring { position: absolute; left: 540px; top: 1058px; width: 760px; height: 760px; margin: -380px 0 0 -380px; border-radius: 50%; border: 10px solid #62F0B6; opacity: 0 }
+#shine { position: absolute; top: -20%; left: 0; width: 160px; height: 140%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.16), rgba(255,255,255,0)); transform: translateX(-300px) rotate(18deg); pointer-events: none }
+.cf { position: absolute; width: 18px; height: 26px; border-radius: 5px; display: none }
+.hook { left: 60px; right: 60px } .hook .a { font-size: 112px } .hook .num { font-size: 340px; letter-spacing: -10px } .hook .u { font-size: 104px } .hook .q { font-size: 128px; margin-top: 70px } .hook .ans { font-size: 62px; margin-top: 80px; padding: 34px 54px } .hook .a span { display: inline-block }
+.end .logo { width: 250px } .end .big { font-size: 124px } .end .cta { font-size: 60px } .end .l2 { font-size: 50px } .end .note { font-size: 44px } .end .baifo { width: 340px }
+</style></head><body><div id="st"><div id="glow"></div><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="ring"></div>
+<div id="ph"><div class="btn" style="left:-6px;top:230px;height:70px"></div><div class="btn" style="left:-6px;top:320px;height:70px"></div><div class="btn" style="right:-6px;top:280px;height:110px"></div><div class="scrn"><div id="sb"><span class="tm">9:41</span><span class="cam"></span><span class="sig"><i style="height:5px"></i><i style="height:8px"></i><i style="height:11px"></i><i style="height:14px"></i></span><span class="bat"><i></i></span></div><div id="vw"><img id="fr2"><img id="fr"></div><div id="tp"></div><div id="shine"></div></div></div></div>
+<script src="cap/clips.js"></script><script src="vo.js"></script><script>
+const V = new URLSearchParams(location.search).get('v') || 'gente';
+const K = 515 / 393, SB = 38;
+const T = (h, sub) => `<h1>${h}</h1>` + (sub ? `<p class="sub" data-in="0.45">${sub}</p>` : '');
+// Cada tramo: [título, bajada, [[grabación, desde, hasta, velocidad], ...]]
+const VIDEOS = {
+  gente: { tag: '',
+    hook: [3.2, `<div class="hook ctr"><div class="a"><span data-in="0">Ayer</span> <span data-in="0">caminaste</span></div><div class="num" data-in="0" data-count="1000,6000,0.1,1.35">1.000</div><div class="u" data-in="0">pasos</div><div class="q" data-in="1.55" data-fx="pop">¿Qué ganaste?</div></div>`],
+    segs: [
+      ['Camina cuenta<br><b>tus pasos sola.</b>', 'Con tu teléfono. Tú solo camina.', [['inicio', 0, 9, 1.15]]],
+      ['1.000 pasos<br><b>= 1 Punto.</b>', 'Hasta <b>20 Puntos</b> por día.', [['actividad', 0, 9, 1.15]]],
+      ['Cambia tus Puntos<br><b>por premios.</b>', 'En locales de Tarija.', [['canjes', 0, 9, 1.3], ['ficha', 0, 9, 1.3]]],
+      ['Escribe el código<br><b>y listo.</b>', 'El canje se confirma al instante.', [['canje', 0, 99, 1.25]]],
+      ['La Ruta<br><b>del mes.</b>', '3 locales para visitar, con sorteo e insignia.', [['rutacard', 0, 9, 1.1], ['ruta', 0, 2.2, 1]]],
+      ['Con amigos<br><b>rinde más.</b>', 'Grupos y ranking de la semana.', [['grupos', 0, 9, 1.3], ['ranking', 0, 9, 1.2]]],
+      ['Tu perfil,<br><b>tus insignias.</b>', 'De tus locales favoritos.', [['perfil', 0, 9, 1.2], ['insignias', 0.8, 9, 1.3]]],
+    ],
+    end: [4.2, `<div class="end ctr"><img class="logo" src="img/logo.png" data-in="0" data-fx="pop"><div class="big" data-in="0.2">Tus pasos<br><b>ya valen.</b></div><div class="l2" data-in="0.6">Premios reales en locales de Tarija.</div><div class="cta" data-in="1.0" data-fx="pop">Sale el 1 de diciembre</div><br><img class="baifo" src="img/baifo.png" data-in="1.3"></div>`] },
+  comercios: { tag: '',
+    hook: [3.9, `<div class="hook ctr"><div class="a"><span data-in="0">¿Cuánto pagas</span><br><span data-in="0.35" data-fx="slam">para que un</span><br><span data-in="0.7" data-fx="slam" style="color:#62F0B6">cliente nuevo</span><br><span data-in="1.05" data-fx="slam">entre a tu local?</span></div><div class="ans" data-in="2.0" data-fx="pop">Con Camina:<br>solo pones el premio.</div></div>`],
+    segs: [
+      ['La gente camina<br><b>y junta Puntos.</b>', 'La app cuenta sus pasos sola.', [['inicio', 0, 3.6, 1.2]]],
+      ['Gente nueva<br><b>en tu puerta.</b>', 'Tu local sale con su foto, su horario y sus premios.', [['canjes', 0, 9, 1.3], ['ficha', 0, 9, 1.3]]],
+      ['Tú eliges<br><b>el premio.</b>', 'Gratis, regalo, descuento, 2x1 o Combo Camina.', [['pform', 0, 9, 1.1]]],
+      ['Le dices tu código<br><b>y listo.</b>', 'Sin máquinas ni papeles.', [['canje', 1.4, 8.6, 1.3]]],
+      ['Clientes<br><b>que vuelven.</b>', 'Niveles en tu local: Visitante, Habitual y Fan.', [['insignias', 0, 9, 0.9]]],
+      ['Publicidad<br><b>que no pagas.</b>', 'Reseñas en Google Maps e historias en Instagram.', [['resena', 0, 9, 1.15], ['historia', 0, 9, 1.15]]],
+      ['La Ruta del mes<br><b>te trae más gente.</b>', 'Cada mes, la gente sale a visitar locales.', [['ruta', 0, 1.6, 1], ['pruta', 0, 9, 1.4]]],
+      ['Y ves cuánta gente<br><b>te trajo Camina.</b>', 'Nuevos, los que volvieron y más. Datos de ejemplo.', [['pinicio', 0, 9, 1.3]]],
+    ],
+    end: [4.6, `<div class="end ctr"><img class="logo" src="img/logo.png" data-in="0" data-fx="pop"><div class="big" data-in="0.2">Tu local<br>en Camina<br><b>en 5 minutos.</b></div><div class="cta" data-in="0.8" data-fx="pop">caminaapp.com/registro</div><div class="note" data-in="1.3">Primeros 20 comercios:<br>3 meses gratis del plan Paso Firme.</div><div class="l2" data-in="1.7">Sin comisión por canje.</div></div>`] },
+};
+const vid = VIDEOS[V]; const st = document.getElementById('st'); 
+const scenes = []; const items = []; let acc = 0;
+const add = (d, html) => { const el = document.createElement('div'); el.className = 'sc'; el.innerHTML = html; st.appendChild(el); scenes.push({ el, t0: acc, t1: acc + d }); acc += d; };
+const VOD = VO[V]; add(Math.max(vid.hook[0], VOD[0] + 0.6), vid.hook[1]); const PH0 = acc;
+vid.segs.forEach(([h, sub, its], si) => { const need = VOD[si + 1] + 0.55; const base = its.reduce((s, [c, a, b, sp]) => s + (Math.min(b, CLIPS[c].dur) - a) / sp, 0); const k = base < need ? Math.max(base / need, 0.62) : 1; let d = 0; its.forEach(([c, a, b, sp], ii) => { const cl = CLIPS[c]; b = Math.min(b, cl.dur); sp *= k; items.push({ name: c, cl, a, b, sp, T0: acc + d, T1: acc + d + (b - a) / sp }); d += (b - a) / sp; if (ii === its.length - 1 && d < need) { items[items.length - 1].T1 += need - d; d = need; } }); add(d, T(h, sub)); });
+const PH1 = acc; const SEGS = scenes.slice(1).map((s) => s.t0);
+let wi = 0; const wrap = (n) => { [...n.childNodes].forEach((c) => { if (c.nodeType === 3) { const f = document.createDocumentFragment(); c.textContent.split(/(\s+)/).forEach((p) => { if (!p.trim()) { f.appendChild(document.createTextNode(p)); return; } const s = document.createElement('span'); s.className = 'w'; s.textContent = p; s.dataset.in = (wi++ * 0.05).toFixed(2); s.dataset.fx = 'word'; f.appendChild(s); }); c.replaceWith(f); } else if (c.tagName !== 'BR') wrap(c); }); };
+document.querySelectorAll('h1').forEach((x) => { wi = 0; wrap(x); });
+const rnd = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const CF = Array.from({ length: 46 }, (_, i) => { const e = document.createElement('div'); e.className = 'cf'; e.style.background = ['#62F0B6', '#E0B43A', '#7C5CFF', '#ffffff'][i % 4]; st.appendChild(e); return e; }); add(Math.max(vid.end[0], VOD[VOD.length - 1] + 0.9), vid.end[1]); scenes[scenes.length - 1].last = true; window.DUR = acc; const cj = items.find((x) => x.name === 'canje' && x.a <= 5.6 && x.b > 5.6); const TC = -9; const G = (it, ct) => it.T0 + (ct - it.a) / it.sp; const EV = { segs: SEGS, end: PH1, dur: acc, taps: [], keys: [], ok: [], hook: [...scenes[0].el.querySelectorAll('[data-in]')].map((e) => +e.dataset.in).filter((x) => x > 0), endPops: [...scenes[scenes.length - 1].el.querySelectorAll('[data-fx=pop]')].map((e) => PH1 + +e.dataset.in), cuts: items.filter((x, i) => i && items[i - 1].name !== x.name).map((x) => x.T0), count: scenes[0].el.querySelector('[data-count]') ? [0.1, 1.35] : null }; items.forEach((it) => { it.cl.taps.forEach((p) => { if (p.t >= it.a && p.t < it.b) EV.taps.push(G(it, p.t)); }); if (it.name === 'canje') { [1.72, 2.14, 2.56, 2.98].forEach((k) => { if (k >= it.a && k < it.b) EV.keys.push(G(it, k)); }); if (4.5 >= it.a && 4.5 < it.b) EV.ok.push(G(it, 4.5)); } }); EV.vo = [0.15, ...SEGS.map((x) => x + 0.25), PH1 + 0.35]; window.EV = EV;
+
+const cl = (x) => Math.min(1, Math.max(0, x)); const eo = (x) => 1 - Math.pow(1 - cl(x), 3);
+const back = (x) => { x = cl(x); const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+window.fit = () => document.querySelectorAll('.sc').forEach((sc) => { const h = sc.querySelector('h1'); if (!h) return; sc.style.display = 'block'; let f = 88; h.style.fontSize = f + 'px'; h.style.whiteSpace = 'nowrap'; while (h.scrollWidth > h.clientWidth && f > 50) { f -= 2; h.style.fontSize = f + 'px'; } const sub = sc.querySelector('p.sub'); if (sub) { sub.style.top = (196 + h.offsetHeight + 16) + 'px'; let g = 40; while (sub.scrollWidth > sub.clientWidth && g > 26) { g -= 1; sub.style.fontSize = g + 'px'; } } sc.style.display = 'none'; }); document.querySelectorAll('.ctr').forEach((c) => { const sc = c.parentElement; sc.style.display = 'block'; c.style.top = Math.round((1920 - c.offsetHeight) / 2 - 70) + 'px'; sc.style.display = 'none'; });
+const ph = document.getElementById('ph'), fr = document.getElementById('fr'), sb = document.getElementById('sb'), tp = document.getElementById('tp'); let curF = '';
+window.seek = async (t) => {
+  document.getElementById('glow').style.transform = `translate(${Math.sin(t * 0.35) * 220}px, ${Math.cos(t * 0.28) * 260}px)`;
+  scenes.forEach((s) => {
+    const { el, t0, t1 } = s; if (t < t0 || t >= t1) { el.style.display = 'none'; return; }
+    el.style.display = 'block'; const u = t - t0; const out = s.last ? 0 : cl((t - (t1 - 0.25)) / 0.25);
+    el.style.opacity = 1 - out; el.style.transform = `translateY(${-40 * out * out}px)`;
+    el.querySelectorAll('[data-in]').forEach((e) => {
+      const d = +e.dataset.in, fx = e.dataset.fx || 'up'; const first = t0 === 0 && d === 0;
+      const p = first ? 1 : cl((u - d) / 0.5); e.style.opacity = first ? 1 : cl((u - d) / 0.22);
+      const q = cl((u - d) / 0.38); e.style.transform = fx === 'up' ? `translateY(${(1 - eo(p)) * 60}px)` : fx === 'pop' ? `scale(${0.5 + 0.5 * back(p)})` : fx === 'word' ? `translateY(${(1 - eo(q)) * 30}px)` : fx === 'slam' ? `translateY(${(1 - eo(q)) * 50}px)` : 'none';
+    });
+    el.querySelectorAll('[data-count]').forEach((e) => { const [a, b, c0, c1] = e.dataset.count.split(',').map(Number); e.textContent = fmt(a + (b - a) * eo((u - c0) / (c1 - c0))); });
+  });
+  const ca = t - TC; CF.forEach((e, i) => { if (ca < 0 || ca > 1.9) { e.style.display = 'none'; return; } const an = rnd(i) * Math.PI * 2, v = 520 + rnd(i + 50) * 760; e.style.display = 'block'; e.style.left = 540 + Math.cos(an) * v * ca * (1 - ca * 0.18) + 'px'; e.style.top = 1180 + Math.sin(an) * v * ca - 520 * ca + 1050 * ca * ca + 'px'; e.style.opacity = cl((1.9 - ca) / 0.5); e.style.transform = `rotate(${ca * (300 + rnd(i + 9) * 500)}deg) scale(${0.7 + rnd(i + 3) * 0.8})`; });
+  if (t < PH0 || t >= PH1) { ph.style.display = 'none'; document.getElementById('ring').style.opacity = 0; return; }
+  ph.style.display = 'block'; const pin = eo((t - PH0) / 0.6), pout = cl((t - (PH1 - 0.3)) / 0.3);
+  const seg = SEGS.filter((x) => x <= t + 1e-6).pop() ?? PH0; const sg = t - seg; const pop = t - PH0 < 0.7 ? 1 : 0.9 + 0.1 * back(sg / 0.5);
+  ph.style.opacity = Math.min(cl((t - PH0) / 0.25), 1 - pout);
+  ph.style.transform = `translateY(${(1 - eo((t - PH0) / 0.6)) * 420 + pout * pout * 140}px)`;
+  document.getElementById('blob1').style.transform = `translate(${Math.sin(t * 0.4) * 160}px, ${Math.cos(t * 0.33) * 200}px)`; document.getElementById('blob2').style.transform = `translate(${Math.cos(t * 0.37) * 150}px, ${Math.sin(t * 0.29) * 180}px)`;
+  const it = items.find((x) => t >= x.T0 && t < x.T1) || items[items.length - 1]; const ct = Math.min(it.b, it.a + (t - it.T0) * it.sp);
+  let f = it.cl.frames[0]; for (const x of it.cl.frames) { if (x.t <= ct + 1e-4) f = x; else break; }
+  sb.style.background = f.c;
+  if (f.f !== curF) { curF = f.f; fr.src = 'cap/' + f.f; try { await fr.decode(); } catch (e) {} }
+  const ix = items.indexOf(it), pv = items[ix - 1], sl = cl((t - it.T0) / 0.32), fr2 = document.getElementById('fr2');
+  if (pv && pv.name !== it.name && sl < 1) { const lf = pv.cl.frames.filter((x) => x.t <= pv.b + 1e-4).pop(); if (fr2.dataset.f !== lf.f) { fr2.dataset.f = lf.f; fr2.src = 'cap/' + lf.f; try { await fr2.decode(); } catch (e) {} } const e2 = eo(sl); fr2.style.display = 'block'; fr2.style.transform = `translateX(${-30 * e2}%) scale(${1 - 0.06 * e2})`; fr2.style.opacity = 1 - e2 * 0.6; fr.style.transform = `translateX(${(1 - e2) * 100}%)`; } else { fr2.style.display = 'none'; fr.style.transform = 'none'; }
+  const tap = it.cl.taps.find((x) => ct - x.t >= -0.12 && ct - x.t < 0.42);
+  if (tap) { const g = (ct - tap.t + 0.12) / 0.54; tp.style.display = 'block'; tp.style.left = tap.x * K + 'px'; tp.style.top = SB + tap.y * K + 'px'; tp.style.opacity = g < 0.25 ? g * 4 : 1 - (g - 0.25) / 0.75; tp.style.transform = `scale(${0.55 + g * 0.8})`; } else tp.style.display = 'none';
+};
+</script></body></html>
