@@ -6,11 +6,6 @@ const BASE = 'https://caminaapp.com';
 
 type Doc = { titulo: string; para: string; href: string };
 
-const VIDEOS: { titulo: string; para: string; src: string; poster: string }[] = [
-  { titulo: 'Video para comercios', para: 'Muéstralo al dueño: qué gana su local con Camina (30 segundos).', src: '/partners/material/video-comercios.mp4', poster: '/partners/material/video-comercios.jpg' },
-  { titulo: 'Video de lanzamiento', para: 'Cómo la gente camina, junta Puntos y canjea en los locales (40 segundos).', src: '/partners/material/video-lanzamiento.mp4', poster: '/partners/material/video-lanzamiento.jpg' },
-];
-
 const GRUPOS: { titulo: string; docs: Doc[] }[] = [
   {
     titulo: 'Para locales (lo que más vas a usar)',
@@ -46,24 +41,12 @@ function Compartir({ titulo, href }: { titulo: string; href: string }) {
   );
 }
 
-// Material de Camina para mostrar o enviar al dueño: videos y dossiers.
+// Material de Camina para mostrar o enviar al dueño: dossiers y guías.
 export function MaterialPartner() {
   return (
     <>
       <h1 className="text-[22px] font-bold text-text mb-1">Material para mostrar</h1>
       <p className="text-muted text-[13.5px] mb-5">Muéstralo en tu celular durante la visita o envíaselo al dueño por WhatsApp.</p>
-
-      <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-2">Videos</p>
-      <div className="grid gap-3 sm:grid-cols-2 mb-6">
-        {VIDEOS.map((v) => (
-          <div key={v.src} className="bg-card border border-line rounded-2xl p-3">
-            <video src={v.src} poster={v.poster} controls playsInline preload="none" className="w-full max-h-[460px] rounded-xl bg-black" />
-            <p className="font-bold text-text text-[14.5px] mt-2.5">{v.titulo}</p>
-            <p className="text-muted text-[12.5px] leading-snug">{v.para}</p>
-            <Compartir titulo={v.titulo} href={v.src} />
-          </div>
-        ))}
-      </div>
 
       {GRUPOS.map((g) => (
         <div key={g.titulo} className="mb-6">

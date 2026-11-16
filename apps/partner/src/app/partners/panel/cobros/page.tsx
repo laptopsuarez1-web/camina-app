@@ -49,7 +49,7 @@ function Cobros({ partner }: { partner: Partner }) {
       </div>
       <ul className="text-muted text-[13px] list-disc pl-5 mb-6 max-w-[520px] space-y-1">
         <li>Local activo = publicado, con premio cargado y un primer canje real (no tuyo, ni de tu familia, ni del dueño).</li>
-        <li>Si el local mejora de plan dentro de 60 días, cobras la diferencia.</li>
+        <li>Cobras una sola vez por cada local. No hay pagos por renovación ni porcentajes.</li>
         <li>Bonos: +Bs 50 al llegar a 5 locales activos y +Bs 100 más al llegar a 10.</li>
         <li>Un local, un partner: gana quien lo reportó primero.</li>
         <li>Quien canjee en sus propios locales, cree cuentas falsas o cargue un local sin permiso del dueño sale del programa y no cobra lo pendiente.</li>
