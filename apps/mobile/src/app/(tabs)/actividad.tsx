@@ -194,7 +194,8 @@ export default function ActividadScreen() {
   // Escala con margen sobre la meta para que la línea punteada siempre se vea.
   const chartMax = Math.max(goal * 1.15, ...chartDays.map((d) => d.steps));
 
-  // "30 días": curva con el promedio de 7 días de cada día (usa los 6 días anteriores al rango).
+  // Promedio de 7 días de cada día del rango (usa los 6 días anteriores); se muestra como dato al deslizar el dedo.
+  // La curva dibuja los pasos de cada día, no este promedio, para que la altura coincida con el número que se ve.
   const trend = useMemo(() => {
     const history: number[] = [];
     for (let i = range + 5; i >= 0; i--) {
@@ -356,7 +357,7 @@ export default function ActividadScreen() {
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {range === 30 ? (
-              <TrendChart values={trend} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} onScrub={setScrub} />
+              <TrendChart values={chartDays.map((d) => d.steps)} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} onScrub={setScrub} />
             ) : (
             <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40 }}>
               {chartDays.map((d, i) => {
