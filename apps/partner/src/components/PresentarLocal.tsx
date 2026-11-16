@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Heart, MapPin, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Heart, MapPin, Search, Ticket, X } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import type { Benefit, Business } from '@/lib/supabase';
 import { FichaPreview } from '@/components/FichaPreview';
@@ -24,7 +24,7 @@ export interface VistaLocal {
 const CENTRO_TARIJA: [number, number] = [-21.5355, -64.7296];
 const MARCO = 'relative w-[300px] h-[600px] rounded-[34px] border-[7px] border-[#241748] bg-[#150d2b] overflow-hidden shadow-2xl text-[#f1ecfb] shrink-0';
 const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TINTE = `.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.7) sepia(1) hue-rotate(215deg) saturate(3.5) brightness(.75)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
+const TINTE = `.camina-mapa .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.8) saturate(.4)}@keyframes camina-pin{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}`;
 
 // Moneda de Puntos de la app (las huellas en el círculo verde).
 export function Moneda({ size = 18 }: { size?: number }) {
@@ -52,19 +52,21 @@ function MapaOscuro({ v, pin, zoom = 17, interactivo = true }: { v: VistaLocal; 
   useEffect(() => {
     let cancelled = false;
     let map: import('leaflet').Map | null = null;
+    let ro: ResizeObserver | null = null;
     (async () => {
       const L = (await import('leaflet')).default;
       if (cancelled || !el.current) return;
       const centro: [number, number] = v.lat != null && v.lng != null ? [v.lat, v.lng] : CENTRO_TARIJA;
-      map = L.map(el.current, { zoomControl: false, attributionControl: false, dragging: interactivo, touchZoom: interactivo, scrollWheelZoom: false, doubleClickZoom: interactivo }).setView(centro, v.lat != null ? zoom : 14);
+      map = L.map(el.current, { zoomControl: false, attributionControl: false, dragging: interactivo, touchZoom: interactivo, scrollWheelZoom: false, doubleClickZoom: interactivo }).setView(centro, zoom);
       L.tileLayer(TILES, { maxZoom: 19 }).addTo(map);
       // Tinte morado del mapa de la app: una capa encima de las calles y debajo del pin.
       const tinte = map.createPane('tinte');
       tinte.style.zIndex = '250';
-      tinte.style.mixBlendMode = 'color';
       tinte.style.pointerEvents = 'none';
-      L.rectangle([[-89, -179], [89, 179]], { pane: 'tinte', stroke: false, fillColor: '#6a3fd0', fillOpacity: 0.9, interactive: false }).addTo(map);
-      if (pin && v.lat != null && v.lng != null) {
+      const capa = document.createElement('div');
+      capa.style.cssText = 'position:absolute;left:-5000px;top:-5000px;width:10000px;height:10000px;background:rgba(48,14,120,.6)';
+      tinte.appendChild(capa);
+      if (pin) {
         const foto = v.logo_url ? `<img src="${v.logo_url}" style="width:100%;height:100%;object-fit:cover" />` : '';
         const icon = L.divIcon({
           className: '',
@@ -75,9 +77,12 @@ function MapaOscuro({ v, pin, zoom = 17, interactivo = true }: { v: VistaLocal; 
         L.marker(centro, { icon }).addTo(map);
       }
       setTimeout(() => map?.invalidateSize(), 150);
+      ro = new ResizeObserver(() => map?.invalidateSize());
+      ro.observe(el.current);
     })();
     return () => {
       cancelled = true;
+      ro?.disconnect();
       map?.remove();
     };
   }, [v.lat, v.lng, v.logo_url, pin, zoom, interactivo]);
@@ -114,7 +119,7 @@ function SlideMapa({ v }: { v: VistaLocal }) {
       <div className="absolute top-3 left-3 right-0 z-10">
         <div className="flex items-center gap-2 pr-3">
           <span className="w-9 h-9 rounded-full bg-[#fff] text-[#291c47] flex items-center justify-center shrink-0"><X size={16} /></span>
-          <div className="flex-1 bg-[#fff] text-[#7c6a9c] rounded-full px-3.5 py-2 text-[12px]">🔍 Buscar locales y premios</div>
+          <div className="flex-1 bg-[#fff] text-[#7c6a9c] rounded-full px-3.5 py-2 text-[12px] flex items-center gap-1.5"><Search size={14} /> Buscar locales y premios</div>
         </div>
         <div className="flex gap-1.5 mt-2 overflow-hidden">
           <span className={chip}>Abierto ahora</span>
@@ -130,14 +135,13 @@ function SlideMapa({ v }: { v: VistaLocal }) {
           <div className="min-w-0">
             <p className="font-extrabold text-[17px] truncate">{v.name}</p>
             <p className="text-[#a99bcf] text-[12px] truncate">{v.category ?? 'Local'}</p>
-            {v.address && <p className="text-[#62f0b6] text-[11.5px] truncate">📍 {v.address}</p>}
+            {v.address && <p className="text-[#62f0b6] text-[11.5px] truncate flex items-center gap-1"><MapPin size={11} className="shrink-0" /> {v.address}</p>}
             <p className="text-[#a99bcf] text-[11.5px]">Abierto ahora</p>
           </div>
         </div>
         <PremioFila v={v} />
         <div className="mt-2.5 rounded-full bg-[#1f7d68] text-white text-center font-bold text-[14px] py-3">Ver local y premios ›</div>
       </div>
-      {v.lat == null && <p className="absolute top-28 left-3 right-3 z-10 bg-[#3b2a22] text-[#f0c39a] text-[11.5px] rounded-xl px-3 py-2">Falta marcar la ubicación para que aparezca el pin.</p>}
     </div>
   );
 }
@@ -169,11 +173,12 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
             <p className="font-extrabold text-[24px] leading-tight">Canjes</p>
             <p className="text-[#a99bcf] text-[12px] mb-2.5">142 Puntos disponibles</p>
           </div>
-          <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1">🎟 Mis canjes</span>
+          <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1 flex items-center gap-1.5"><Ticket size={14} className="text-[#62f0b6]" /> Mis canjes</span>
         </div>
         <div className="flex gap-1.5 mb-3 overflow-hidden">
-          {['🔍', 'Categoría ⌄', 'Más cercanos ⌄', 'Abierto ahora'].map((t) => (
-            <span key={t} className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap">{t}</span>
+          <span className="border border-[#3a2c63] rounded-full w-[34px] flex items-center justify-center shrink-0"><Search size={14} /></span>
+          {['Categoría', 'Más cercanos', 'Abierto ahora'].map((t) => (
+            <span key={t} className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold whitespace-nowrap flex items-center gap-1">{t}{t !== 'Abierto ahora' && <ChevronDown size={13} />}</span>
           ))}
         </div>
         <div className="rounded-3xl overflow-hidden border border-[#3a2c63] bg-[#21173f]">
@@ -187,7 +192,7 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-[15px] truncate">{v.name}</p>
                 <p className="text-[#a99bcf] text-[11.5px] truncate">{v.category ?? 'Categoría'}</p>
-                {v.address && <p className="text-[#62f0b6] text-[11px] truncate">📍 {v.address}</p>}
+                {v.address && <p className="text-[#62f0b6] text-[11px] truncate flex items-center gap-1"><MapPin size={11} className="shrink-0" /> {v.address}</p>}
                 <p className="text-[#62f0b6] text-[11.5px] font-semibold">Disponible ahora</p>
               </div>
               <div className="flex flex-col items-center gap-2 text-[#a99bcf] shrink-0">
