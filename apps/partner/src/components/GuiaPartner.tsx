@@ -190,9 +190,9 @@ const PASOS_VISITA: { t: string; d: string; link?: { href: string; label: string
 ];
 
 // Links para instalar la app antes del lanzamiento (los pasa Camina).
-const LINK_ANDROID = '';
+const LINK_ANDROID = 'https://play.google.com/store/apps/details?id=bo.camina.app';
 const LINK_TESTFLIGHT_APP = 'https://apps.apple.com/app/testflight/id899247664';
-const LINK_IOS = '';
+const LINK_IOS = 'https://testflight.apple.com/join/FhPvhKSr';
 
 const MSG_ANDROID = 'Hola! Para instalar Camina en Android pásame el correo de Gmail que usas en tu Play Store (el de tu celular). Con ese correo te habilitamos y te mando el link oficial de descarga.';
 const MSG_IOS = `Hola! Para instalar Camina en iPhone:\n1. Descarga TestFlight de la App Store: ${LINK_TESTFLIGHT_APP}\n2. Después abre este link y toca Aceptar e Instalar: ${LINK_IOS || '[link de Camina]'}`;
@@ -224,9 +224,11 @@ function Descargar() {
           Mandar el correo a Camina
         </a>
       </div>
-      {LINK_ANDROID ? (
-        <Frase texto={LINK_ANDROID}><p className="break-all">{LINK_ANDROID}</p></Frase>
-      ) : null}
+      <a href={LINK_ANDROID} target="_blank" rel="noopener noreferrer" className="block text-center rounded-xl py-3 mb-2 font-bold text-[13.5px] bg-[var(--c-btn-bg)] text-[var(--c-btn-text)]">Abrir el link de descarga (Android)</a>
+      <Frase texto={`Ya te habilitamos. Descarga Camina desde este link oficial (ábrelo en tu celular, con la misma cuenta de Gmail): ${LINK_ANDROID}`}>
+        <p className="text-[13px] text-muted mb-1">Mensaje con el link, para cuando ya esté habilitado:</p>
+        <p className="break-all">Ya te habilitamos. Descarga Camina desde este link oficial (ábrelo en tu celular, con la misma cuenta de Gmail): {LINK_ANDROID}</p>
+      </Frase>
       <Frase texto={MSG_ANDROID}>{MSG_ANDROID}</Frase>
 
       <p className="text-[12px] font-bold uppercase tracking-wider mt-5 mb-2" style={{ color: 'var(--c-purple-text)' }}>iPhone</p>
@@ -246,7 +248,7 @@ function Descargar() {
         <a href={LINK_TESTFLIGHT_APP} target="_blank" rel="noopener noreferrer" className="flex-1 text-center rounded-xl py-3 font-bold text-[13.5px] bg-[var(--c-btn-bg)] text-[var(--c-btn-text)]">1. Bajar TestFlight</a>
         {LINK_IOS ? <a href={LINK_IOS} target="_blank" rel="noopener noreferrer" className="flex-1 text-center rounded-xl py-3 font-bold text-[13.5px] bg-mint text-mint-dark">2. Instalar Camina</a> : null}
       </div>
-      <Frase texto={MSG_IOS}><p className="whitespace-pre-line">{MSG_IOS}</p></Frase>
+      <Frase texto={MSG_IOS}><p className="whitespace-pre-line break-all">{MSG_IOS}</p></Frase>
     </>
   );
 }
