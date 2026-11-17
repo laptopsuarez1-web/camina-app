@@ -3,7 +3,7 @@
 -- «aparecer en el ranking» (profiles.ranking_visible, true por defecto: es lo mismo que ya ve el ranking global).
 -- Los días (actividad día a día), la fecha de amistad y los grupos en común siguen siendo solo para amigos.
 -- Idempotente: sí. No requiere build nuevo.
--- Cómo se revierte: volver a correr friend_card de 0079.
+-- Cómo se revierte: volver a correr friend_card de 0079 y user_badges de 0083 (o la última que la redefina).
 create or replace function friend_card(p_user uuid) returns jsonb as $f$
 declare
   v_me uuid := auth.uid();
@@ -67,3 +67,30 @@ begin
   return v_out;
 end;
 $f$ language plpgsql stable security definer set search_path = public;
+
+-- Insignias: si la persona apagó «aparecer en el ranking», quien no es su amigo tampoco ve sus insignias.
+-- Ella misma y sus amigos las siguen viendo. El fondo (banner) se sigue devolviendo siempre.
+create or replace function public.user_badges(p_user uuid)
+returns jsonb
+language sql
+stable security definer
+set search_path to 'public'
+as $f$
+  with v as (
+    select p_user = auth.uid()
+        or coalesce((select ranking_visible from profiles where id = p_user), true)
+        or exists (select 1 from friendships f where f.status = 'accepted'
+                   and ((f.requester_id = auth.uid() and f.addressee_id = p_user) or (f.requester_id = p_user and f.addressee_id = auth.uid()))) as ok
+  )
+  select jsonb_build_object(
+    'featured', case when (select ok from v) then (select featured_badge from profiles where id = p_user) end,
+    'banner_url', (select case when profile_bg = 'foto' then profile_banner_url end from profiles where id = p_user),
+    'routes', case when (select ok from v) then coalesce((select jsonb_agg(jsonb_build_object('month', month, 'completed_at', completed_at) order by month desc)
+                        from route_participants where user_id = p_user and completed_at is not null), '[]'::jsonb) else '[]'::jsonb end,
+    'locals', case when (select ok from v) then coalesce((select jsonb_agg(x order by x->>'points' desc) from (
+        select jsonb_build_object('business_id', b.id, 'name', b.name, 'logo_url', b.logo_url, 'category', b.category,
+          'points', sum(l.points)::int, 'level', level_name(sum(l.points)::int)) x
+        from business_level_points l join businesses b on b.id = l.business_id
+        where l.user_id = p_user group by b.id) t), '[]'::jsonb) else '[]'::jsonb end
+  );
+$f$;
