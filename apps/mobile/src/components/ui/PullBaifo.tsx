@@ -1,79 +1,70 @@
 import { useEffect } from 'react';
-import { Image, Platform, Text, View, useWindowDimensions } from 'react-native';
+import { Image, Platform, useWindowDimensions } from 'react-native';
 import Svg, { Ellipse, G, Rect } from 'react-native-svg';
-import Animated, { Easing, cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { PULL_FULL_AT, pullDistance } from '@/store/useRefreshStore';
-import { colors } from '@/theme/tokens';
-import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
+import Animated, {
+  Easing, cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue,
+  withDelay, withRepeat, withSequence, withTiming,
+} from 'react-native-reanimated';
+import { pullDistance } from '@/store/useRefreshStore';
 
 const FESTEJA = require('@/../assets/baifo/festeja.webp');
 const RATIO = 287 / 420;
-const BAIFO_H = 68;
-const WORD_H = 46; // alto de la franja de la palabra CAMINA
-const ROOM = WORD_H + BAIFO_H + 18; // lugar que se abre arriba mientras recarga: todo queda bajo la barra de estado
-const SKY_H = ROOM + 70; // alto del cielo con nubes (también cubre lo que se estira de más)
-const JUMP = 14;
+const BAIFO_H = 60;
+const JUMP = 12;
+// iPhone ya deja ~60 pt libres arriba mientras recarga; solo se suma un poquito para que el salto no se corte.
+const ROOM = 24;
+const SKY_H = 200; // cielo con nubes (también cubre lo que se estira de más)
+const SHOW_AT = 70; // puntos de estirar para que el Baifo quede entero
 
 // "Tirar para actualizar" en iPhone. Vive justo ARRIBA del contenido (primer hijo del ScrollView) y se mueve con él:
-// - al estirar, la palabra CAMINA se pinta de menta de izquierda a derecha (y vibra suave al llenarse, ver PULL_SCROLL);
-// - mientras recarga se abre lugar, el Baifo salta sobre CAMINA y pasan nubes lentas de fondo;
-// - al terminar se cierra el lugar y todo queda tapado por el contenido.
-// Reanimated en el hilo de la UI, sin módulos nativos. Con "reducir movimiento" no salta ni se mueven las nubes.
+// - al estirar, el Baifo aparece y crece de a poco siguiendo el dedo (nada de golpes);
+// - mientras recarga salta tranquilo (~1 por segundo) y pasan nubes lentas de fondo;
+// - al terminar todo se cierra suave y queda tapado por el contenido.
+// Sin vibración. Con "reducir movimiento" no salta ni se mueven las nubes.
 // En Android la pantalla no se estira (ahí queda el circulito nativo), así que no se dibuja.
 export function PullBaifo({ refreshing }: { refreshing: boolean }) {
   const { width } = useWindowDimensions();
   const reduced = useReducedMotion();
   const room = useSharedValue(0);
-  const full = useSharedValue(0);
+  const on = useSharedValue(0);
   const jump = useSharedValue(0);
   const sky = useSharedValue(0);
 
   useEffect(() => {
     if (refreshing) {
-      room.value = withTiming(ROOM, { duration: 300, easing: Easing.out(Easing.cubic) });
-      full.value = 1;
+      room.value = withTiming(ROOM, { duration: 450, easing: Easing.inOut(Easing.quad) });
+      on.value = withTiming(1, { duration: 250 });
       if (!reduced) {
-        // Salto de velocidad media: sube 0,36 s, baja 0,36 s y descansa un instante en el piso.
-        jump.value = withRepeat(withSequence(
+        // Empieza a saltar recién cuando ya se acomodó; sube 0,36 s, baja 0,36 s y descansa un instante.
+        jump.value = withDelay(300, withRepeat(withSequence(
           withTiming(1, { duration: 360, easing: Easing.out(Easing.quad) }),
           withTiming(0, { duration: 360, easing: Easing.in(Easing.quad) }),
           withTiming(0, { duration: 240 }),
-        ), -1);
+        ), -1));
         sky.value = withRepeat(withTiming(1, { duration: 18000, easing: Easing.linear }), -1, false);
       }
       return;
     }
-    room.value = withTiming(0, { duration: 280, easing: Easing.inOut(Easing.cubic) });
+    room.value = withTiming(0, { duration: 450, easing: Easing.inOut(Easing.quad) });
+    on.value = withTiming(0, { duration: 350 });
     cancelAnimation(jump);
-    jump.value = withTiming(0, { duration: 160 });
+    jump.value = withTiming(0, { duration: 200 });
     cancelAnimation(sky);
-    const id = setTimeout(() => { full.value = 0; }, 400);
-    return () => clearTimeout(id);
-  }, [refreshing, reduced, room, full, jump, sky]);
+  }, [refreshing, reduced, room, on, jump, sky]);
 
   const space = useAnimatedStyle(() => ({ height: room.value }));
-  // Todo el conjunto se apoya en el borde de arriba del contenido (que baja con `room`).
   const stage = useAnimatedStyle(() => ({ top: room.value - SKY_H }));
-  const fill = useAnimatedStyle(() => {
-    const x = Math.min(1, Math.max(0, (pullDistance.value - 20) / (PULL_FULL_AT - 20)));
-    return { width: Math.max(x, full.value) * width };
+  const baifo = useAnimatedStyle(() => {
+    const p = Math.max(Math.min(1, Math.max(0, (pullDistance.value - 10) / (SHOW_AT - 10))), on.value);
+    return {
+      opacity: p,
+      transform: [{ translateY: -JUMP * jump.value + (1 - p) * 10 }, { scale: 0.7 + 0.3 * p }],
+    };
   });
-  const baifo = useAnimatedStyle(() => ({ transform: [{ translateY: -JUMP * jump.value }] }));
   const cloudsFar = useAnimatedStyle(() => ({ transform: [{ translateX: -sky.value * width }] }));
   const cloudsNear = useAnimatedStyle(() => ({ transform: [{ translateX: -((sky.value * 2) % 1) * width }] }));
 
   if (Platform.OS !== 'ios') return null;
-  const word = (color: string) => (
-    <Text
-      allowFontScaling={false}
-      style={{
-        width, textAlign: 'center', color, fontSize: 36, lineHeight: 42, letterSpacing: 2,
-        ...(brandFontsReady() ? { fontFamily: WORDMARK_FAMILY, fontWeight: 'normal' as const } : { fontWeight: '900' as const }),
-      }}
-    >
-      CAMINA
-    </Text>
-  );
   return (
     <>
       <Animated.View style={space} />
@@ -84,26 +75,18 @@ export function PullBaifo({ refreshing }: { refreshing: boolean }) {
         style={[{ position: 'absolute', left: 0, width, height: SKY_H, overflow: 'hidden' }, stage]}
       >
         {/* Nubes: dos tiras repetidas que se deslizan lento (la de adelante un poco más rápido). */}
-        <Animated.View style={[{ position: 'absolute', top: 8, left: 0, width: width * 2, height: SKY_H, flexDirection: 'row' }, cloudsFar]}>
+        <Animated.View style={[{ position: 'absolute', top: 40, left: 0, width: width * 2, height: SKY_H, flexDirection: 'row' }, cloudsFar]}>
           <Clouds width={width} height={SKY_H} seed={0} opacity={0.45} />
           <Clouds width={width} height={SKY_H} seed={0} opacity={0.45} />
         </Animated.View>
-        <Animated.View style={[{ position: 'absolute', top: 30, left: 0, width: width * 2, height: SKY_H, flexDirection: 'row' }, cloudsNear]}>
+        <Animated.View style={[{ position: 'absolute', top: 70, left: 0, width: width * 2, height: SKY_H, flexDirection: 'row' }, cloudsNear]}>
           <Clouds width={width} height={SKY_H} seed={1} opacity={0.6} />
           <Clouds width={width} height={SKY_H} seed={1} opacity={0.6} />
         </Animated.View>
 
-        <Animated.View style={[{ position: 'absolute', bottom: WORD_H + 2, left: 0, width, alignItems: 'center' }, baifo]}>
+        <Animated.View style={[{ position: 'absolute', bottom: 4, left: 0, width, alignItems: 'center' }, baifo]}>
           <Image source={FESTEJA} resizeMode="contain" style={{ height: BAIFO_H, width: BAIFO_H * RATIO }} />
         </Animated.View>
-
-        {/* CAMINA apagado y, encima, la versión menta recortada de izquierda a derecha. */}
-        <View style={{ position: 'absolute', bottom: 4, left: 0, width, height: 42 }}>
-          {word('rgba(240,235,250,0.13)')}
-          <Animated.View style={[{ position: 'absolute', top: 0, left: 0, height: 42, overflow: 'hidden' }, fill]}>
-            {word(colors.mint)}
-          </Animated.View>
-        </View>
       </Animated.View>
     </>
   );
