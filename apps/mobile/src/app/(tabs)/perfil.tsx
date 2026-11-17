@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import * as Notifications from 'expo-notifications';
 import { View, ScrollView, Switch, Alert, Linking, Platform, Modal } from 'react-native';
@@ -258,7 +259,7 @@ export default function PerfilScreen() {
   const chev = <ChevronRight size={14} color={isDark ? colors.dark.muted : colors.light.muted} />;
 
   return (
-    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       {/* 1) Tu portada: el fondo que elegiste (o tu foto), tu foto, nombre, zona y lo que escribiste de ti. */}
       <ProfileBanner bg={profile?.profile_bg} photoUrl={profile?.profile_banner_url} style={{ paddingBottom: 22 }} artPad={24}>
         <Text accessibilityRole="header" className="text-white text-[15px] font-bold mb-4" style={{ opacity: 0.85 }}>Perfil</Text>

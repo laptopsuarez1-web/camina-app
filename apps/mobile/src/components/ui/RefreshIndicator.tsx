@@ -1,67 +1,73 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform } from 'react-native';
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/theme/tokens';
-import { useRefreshStore } from '@/store/useRefreshStore';
+import { pullDistance, useRefreshStore } from '@/store/useRefreshStore';
 
-const FESTEJA = require('@/../assets/baifo/festeja.webp');
+const COLOR = require('@/../assets/baifo/festeja.webp');
+const GRIS = require('@/../assets/baifo/festeja-gris.webp');
 const RATIO = 287 / 420;
-const SIZE = 68; // círculo
-const BAIFO_H = 48;
-const HOP = 9; // altura del salto
+const BAIFO_H = 52;
+const BAIFO_W = BAIFO_H * RATIO;
+const HOP = 8; // altura del salto
 const LOOP = 720; // ms por salto
+const FULL_AT = 110; // a cuántos puntos de estirar queda todo a color (más o menos donde iPhone dispara la recarga)
 
-// Indicador de "tirar para actualizar": el Baifo salta de alegría dentro de un círculo mientras se recargan los datos.
-// Una sola pose (festeja) en bucle. Todo en JS con Reanimated (corre en el hilo de la UI), sin módulos nativos.
-// Con "reducir movimiento" el Baifo queda quieto.
+// "Tirar para actualizar" en iPhone: al estirar la pantalla hacia abajo aparece el Baifo en el hueco de arriba,
+// en blanco y negro, y se va llenando de color desde los pies mientras más se estira. Cuando arranca la recarga
+// queda a color y salta de alegría hasta que termina; después la pantalla sube y lo tapa.
+// Una sola pose (festeja). Todo en Reanimated (hilo de la UI), sin módulos nativos. Con "reducir movimiento" no salta.
+// En Android la pantalla no se estira (el gesto nativo dibuja su propio círculo), así que ahí no se dibuja.
 export function RefreshIndicator() {
   const refreshing = useRefreshStore((s) => s.refreshing);
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
-  const show = useSharedValue(0);
+  const full = useSharedValue(0);
   const p = useSharedValue(0);
 
   useEffect(() => {
     if (refreshing) {
-      show.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) });
+      full.value = withTiming(1, { duration: 180 });
       p.value = 0;
       if (!reduced) p.value = withRepeat(withTiming(1, { duration: LOOP, easing: Easing.linear }), -1, false);
       return;
     }
-    show.value = withTiming(0, { duration: 200, easing: Easing.in(Easing.cubic) });
-    // Ya escondido, el salto se detiene: no gasta nada mientras no se recarga.
-    const id = setTimeout(() => { cancelAnimation(p); p.value = 0; }, 220);
+    // Termina el salto en curso de forma suave y lo deja quieto (no gasta nada mientras no se recarga).
+    cancelAnimation(p);
+    p.value = withTiming(0, { duration: 160 });
+    const id = setTimeout(() => { full.value = 0; }, 450);
     return () => clearTimeout(id);
   }, [refreshing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const wrap = useAnimatedStyle(() => ({ opacity: show.value, transform: [{ translateY: (show.value - 1) * 14 }, { scale: 0.85 + show.value * 0.15 }] }));
-  const baifo = useAnimatedStyle(() => {
+  const top = insets.top + 6;
+  // El recorte deja ver al Baifo solo en el hueco que se abre arriba: nunca tapa el contenido.
+  const clip = useAnimatedStyle(() => ({ height: Math.max(0, pullDistance.value + insets.top + 10) }));
+  const fill = useAnimatedStyle(() => {
+    const byPull = Math.min(1, Math.max(0, (pullDistance.value - 20) / (FULL_AT - 20)));
+    return { height: Math.max(byPull, full.value) * BAIFO_H };
+  });
+  const hop = useAnimatedStyle(() => {
     // 80% del ciclo en el aire (curva suave), 20% aterrizando con un pequeño aplastón.
     const air = p.value < 0.8 ? Math.sin((p.value / 0.8) * Math.PI) : 0;
     const land = p.value >= 0.8 ? Math.sin(((p.value - 0.8) / 0.2) * Math.PI) : 0;
     return { transform: [{ translateY: -air * HOP }, { scaleY: 1 - land * 0.07 + air * 0.03 }, { scaleX: 1 + land * 0.05 }] };
   });
+
+  if (Platform.OS === 'android') return null;
   return (
-    <View
+    <Animated.View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ position: 'absolute', top: insets.top + 8, left: 0, right: 0, alignItems: 'center', zIndex: 50 }}
+      style={[{ position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden', alignItems: 'center', zIndex: 50 }, clip]}
     >
-      <Animated.View
-        style={[
-          {
-            width: SIZE, height: SIZE, borderRadius: SIZE / 2,
-            backgroundColor: colors.authBgSoft, borderWidth: 1, borderColor: 'rgba(98,240,182,0.35)',
-            alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 5,
-            shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6,
-          },
-          wrap,
-        ]}
-      >
-        <Animated.Image source={FESTEJA} resizeMode="contain" style={[{ height: BAIFO_H, aspectRatio: RATIO, transformOrigin: 'bottom' }, baifo]} />
+      <Animated.View style={[{ position: 'absolute', top: top + HOP, width: BAIFO_W, height: BAIFO_H, transformOrigin: 'bottom' }, hop]}>
+        <Animated.Image source={GRIS} resizeMode="contain" style={{ position: 'absolute', bottom: 0, width: BAIFO_W, height: BAIFO_H }} />
+        {/* La parte a color crece desde los pies hacia arriba. */}
+        <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0, overflow: 'hidden' }, fill]}>
+          <Animated.Image source={COLOR} resizeMode="contain" style={{ position: 'absolute', bottom: 0, width: BAIFO_W, height: BAIFO_H }} />
+        </Animated.View>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }

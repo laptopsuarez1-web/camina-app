@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { View, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -80,7 +81,7 @@ export default function NotificacionesScreen() {
   useFocusEffect(useCallback(() => () => { markAllSeen(); }, [markAllSeen]));
 
   return (
-    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader style={{ paddingBottom: 24 }}>
         <View className="flex-row items-center gap-3">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useColorScheme } from 'nativewind';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -263,7 +264,7 @@ export default function ActividadScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       {/* Compartir es una acción secundaria: va como botón redondo al lado del título, igual que el "+" de Comunidad. */}
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <View className="flex-1">

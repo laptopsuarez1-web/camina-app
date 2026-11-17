@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView, Alert, AccessibilityInfo, Platform, useWindowDimensions } from 'react-native';
@@ -101,7 +102,7 @@ export default function EventosScreen() {
   return (
     <View className="flex-1">
       <HeaderLight />
-      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <ScreenTitle>Eventos</ScreenTitle>
       <Segmented options={TABS} value={tab} onChange={setTab} />
       <Text className="text-muted-light dark:text-muted-dark mb-4" style={typo.body}>

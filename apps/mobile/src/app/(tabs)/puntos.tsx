@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, AccessibilityInfo, Platform } from 'react-native';
@@ -117,7 +118,7 @@ export default function PuntosScreen() {
   }
 
   return (
-    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

@@ -37,7 +37,7 @@ import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
-import { HIDDEN_SPINNER, useReportRefreshing } from '@/store/useRefreshStore';
+import { HIDDEN_SPINNER, useReportRefreshing, PULL_SCROLL } from '@/store/useRefreshStore';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, DAILY_POINTS_CAP, DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
@@ -698,7 +698,7 @@ export default function CanjesScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: tabSpace }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
+        {...PULL_SCROLL} refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={async () => {
