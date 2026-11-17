@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { GrowIn } from '@/components/ui/GrowIn';
 import { colors } from '@/theme/tokens';
-import { GoalLine } from '@/components/activity/GoalLine';
+import { GoalLine, GOAL_GUTTER } from '@/components/activity/GoalLine';
 import { longDayLabel } from '@/components/activity/DayStrip';
 
 export type BarDay = { key: string; steps: number; label: string; isToday: boolean };
@@ -23,7 +23,7 @@ export function WeekBars({ days, goal, goalFor, height, selectedKey, onSelect, s
   // Escala con margen sobre la meta para que la línea punteada siempre se vea.
   const max = Math.max(goal * 1.15, ...days.map((d) => d.steps));
   return (
-    <View style={{ height: height + 40 }}>
+    <View style={{ height: height + 40, paddingLeft: GOAL_GUTTER }}>
       <View className="flex-row items-end" style={{ gap: 8, height: height + 40 }}>
         {days.map((d, i) => {
           const hit = d.steps >= (goalFor ? goalFor(d.key) : goal);
@@ -69,7 +69,9 @@ export function WeekBars({ days, goal, goalFor, height, selectedKey, onSelect, s
         })}
       </View>
       {/* Va después de las barras para quedar por encima de ellas. */}
-      <GoalLine lit={streakLit} goal={goal} bottom={20 + (goal / max) * height} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: GOAL_GUTTER, right: 0, top: 0, bottom: 0 }}>
+        <GoalLine lit={streakLit} goal={goal} bottom={20 + (goal / max) * height} />
+      </View>
     </View>
   );
 }

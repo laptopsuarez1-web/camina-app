@@ -7,7 +7,7 @@ import { buzz } from '@/lib/haptics';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/theme/tokens';
 import { areaPath, chartPoints, smoothPath, trendScale } from '@/lib/trend-line';
-import { GoalLine } from '@/components/activity/GoalLine';
+import { GoalLine, GOAL_GUTTER } from '@/components/activity/GoalLine';
 
 // Gráfico de "30 días" de Actividad: una curva con los pasos de cada día, con el área rellena en degradé
 // y un punto en el día de hoy. Se dibuja de izquierda a derecha la primera vez en la sesión.
@@ -78,6 +78,7 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
   const marcadoIdx = selectedKey != null ? days.findIndex((d) => d.key === selectedKey) : -1;
   const marca = sel != null ? pts[sel] : marcadoIdx >= 0 ? pts[marcadoIdx] : null;
   return (
+    <View style={{ paddingLeft: GOAL_GUTTER }}>
     <View style={{ height: height + 40, paddingTop: 20 }} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       {w > 0 ? (
         <Animated.View style={[{ height: height + 8, overflow: 'hidden', marginLeft: -6, paddingLeft: 6 }, reveal]}>
@@ -110,6 +111,7 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
           style={{ position: 'absolute', left: 0, right: 0, top: 0, height: height + 28 }}
         />
       </GestureDetector>
+    </View>
     </View>
   );
 }
