@@ -5,6 +5,7 @@ import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import { exchangeCodeOnce } from '@/lib/auth-links';
 
 // Necesario para que el navegador de auth (Google) se cierre solo al volver
 // a la app con el resultado — sin esto, promptAsync() nunca resuelve.
@@ -58,12 +59,9 @@ export async function signInWithGoogleWeb(): Promise<'ok' | 'cancelado'> {
   if (authError) throw new Error(authError);
   const code = url.searchParams.get('code');
   if (!code) throw new Error('Google no devolvió el código de acceso.');
-  // El escuchador global de enlaces (lib/auth-links.ts) puede canjear el mismo código primero: si ya hay sesión, listo.
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  if (exchangeError) {
-    const { data: s } = await supabase.auth.getSession();
-    if (!s.session) throw exchangeError;
-  }
+  // El escuchador global de enlaces (lib/auth-links.ts) recibe el mismo código: comparten una sola llamada.
+  const { error: exchangeError } = await exchangeCodeOnce(code);
+  if (exchangeError) throw exchangeError;
   return 'ok';
 }
 
