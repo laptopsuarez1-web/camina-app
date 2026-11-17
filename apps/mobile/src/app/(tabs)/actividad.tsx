@@ -35,6 +35,7 @@ import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { ResumenShareSheet } from '@/components/share/ResumenShareSheet';
 import { WrappedViewer } from '@/components/share/WrappedViewer';
+import { WalkingLegendCard } from '@/components/LegendCard';
 import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
 import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
@@ -424,6 +425,8 @@ export default function ActividadScreen() {
             : `${goalPct} % de tu meta · faltan ${(goal - stepsToday).toLocaleString('es-BO')} pasos`}
         </Text>
       </Glass>
+
+      <WalkingLegendCard />
 
       <Glass className="rounded-3xl p-4 mb-7">
         <Text accessibilityRole="header" className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">
