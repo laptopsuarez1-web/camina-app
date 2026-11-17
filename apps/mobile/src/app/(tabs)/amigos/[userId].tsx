@@ -215,14 +215,18 @@ export default function FriendProfileScreen() {
         </ProfileBanner>
 
         {/* Insignias: son públicas, las ve cualquiera (amigo o no). Van primero, montadas sobre el banner. */}
-        {hasBadges ? (
+        {hasBadges && showData ? (
           <View className="mx-5 -mt-7 mb-1"><BadgesCard badges={badges} own={!!isSelf} userId={userId} /></View>
         ) : null}
 
-        {card && !showData && card.streak != null ? statsCard(hasBadges ? 'mt-2' : '-mt-7') : null}
+        {/* Quien no es amigo: arriba la tarjeta de números (si la persona aparece en el ranking) y debajo las insignias. */}
+        {card && !showData && card.streak != null ? statsCard('-mt-7') : null}
+        {card && !showData && hasBadges ? (
+          <View className={`mx-5 ${card.streak != null ? 'mt-3' : '-mt-7'}`}><BadgesCard badges={badges} own={false} userId={userId} /></View>
+        ) : null}
 
         {card && !showData && (
-          <Glass className={`rounded-3xl p-4 mx-5 ${card.streak != null ? 'mt-3' : hasBadges ? 'mt-2' : '-mt-7'}`} style={{ gap: 10 }}>
+          <Glass className={`rounded-3xl p-4 mx-5 ${hasBadges ? 'mt-0' : card.streak != null ? 'mt-3' : '-mt-7'}`} style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
               {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver la actividad del otro día a día y se podrán invitar a grupos.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver la actividad del otro día a día y se podrán invitar a grupos.' : `Agrega a ${first} a tus amigos para ver su actividad día a día, compararte y mandarle invitaciones a tus grupos.`}
             </Text>
