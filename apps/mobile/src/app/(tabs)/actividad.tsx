@@ -18,6 +18,8 @@ import { useTodaySteps, useHealthDailySteps } from '@/hooks/usePedometer';
 import { useStreaks } from '@/hooks/useStreak';
 import { StreakCard } from '@/components/activity/StreakCard';
 import { TrendChart } from '@/components/activity/TrendChart';
+import { WeekBars } from '@/components/activity/WeekBars';
+import { DayStrip } from '@/components/activity/DayStrip';
 import { rollingAverage } from '@/lib/trend-line';
 import { celebrate } from '@/store/useCelebrationStore';
 import { useCommunityAverage, useMyWeeklyRank } from '@/hooks/useGlobalRanking';
@@ -29,7 +31,6 @@ import { boliviaToday } from '@/lib/bolivia';
 import { calendarDayState, type CalendarState } from '@/lib/activity-calendar';
 import { STEP_LENGTH_METERS, KCAL_PER_STEP, MIN_DAILY_GOAL, DEFAULT_DAILY_GOAL, STREAK_BONUS_DAYS } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
-import { GrowIn } from '@/components/ui/GrowIn';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
@@ -37,6 +38,7 @@ import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { ResumenShareSheet } from '@/components/share/ResumenShareSheet';
 import { WrappedViewer } from '@/components/share/WrappedViewer';
+import { WalkingLegendCard } from '@/components/LegendCard';
 import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
 import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
@@ -146,7 +148,10 @@ export default function ActividadScreen() {
   const openedDays = useMemo(() => new Set((history ?? []).map((h) => h.day)), [history]);
   const firstDay = (history ?? []).reduce<string>((min, h) => (h.day < min ? h.day : min), localDay());
   const todayKey = localDay();
+  // Día abierto desde el calendario (ventana de detalle).
   const [selected, setSelected] = useState<string | null>(null);
+  // Día marcado en el gráfico: su detalle va en la franja de abajo. Arranca en hoy.
+  const [chartSel, setChartSel] = useState<string>(() => localDay());
 
   const km = (stepsToday * STEP_LENGTH_METERS) / 1000;
   const kcal = Math.round(stepsToday * KCAL_PER_STEP);
@@ -194,8 +199,8 @@ export default function ActividadScreen() {
     return days;
   }, [byDay, range]);
 
-  // Escala con margen sobre la meta para que la línea punteada siempre se vea.
-  const chartMax = Math.max(goal * 1.15, ...chartDays.map((d) => d.steps));
+  // Si el día marcado quedó fuera del rango (pasar de 30 a 7 días), se marca hoy.
+  const stripDay = chartDays.find((d) => d.key === chartSel) ?? chartDays[chartDays.length - 1];
 
   // Promedio de 7 días de cada día del rango (usa los 6 días anteriores); se muestra como dato al deslizar el dedo.
   // La curva dibuja los pasos de cada día, no este promedio, para que la altura coincida con el número que se ve.
@@ -361,69 +366,21 @@ export default function ActividadScreen() {
         ) : (
           <View style={{ height: CHART_H + 40, marginTop: 14 }}>
             {range === 30 ? (
-              <TrendChart values={chartDays.map((d) => d.steps)} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setSelected} onScrub={setScrub} />
+              <TrendChart values={chartDays.map((d) => d.steps)} days={chartDays} goal={goal} height={CHART_H} startLabel={trendStart} onSelect={setChartSel} onScrub={setScrub} selectedKey={stripDay?.key} streakLit={(streak ?? 0) > 0} />
             ) : (
-            <View className="flex-row items-end" style={{ gap: 8, height: CHART_H + 40 }}>
-              {chartDays.map((d, i) => {
-                const hit = d.steps >= goalFor(d.key);
-                return (
-                  <Press
-                    key={d.key}
-                    onPress={() => setSelected(d.key)}
-                    className="flex-1 items-center justify-end"
-                    style={{ height: '100%' }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${d.isToday ? 'Hoy' : dayLabel(d.key)}: ${d.steps.toLocaleString('es-BO')} pasos${hit ? ', meta cumplida' : ''}. Ver detalle`}
-                  >
-                    {d.isToday && range === 7 ? (
-                      <Text className="text-[12px] font-bold text-white mb-1">{d.steps.toLocaleString('es-BO')}</Text>
-                    ) : null}
-                    <GrowIn id="actividad-barras" index={i} count={chartDays.length}>
-                    {(() => {
-                      const barStyle = {
-                        width: '100%' as const,
-                        height: Math.max(4, (d.steps / chartMax) * CHART_H),
-                        borderTopLeftRadius: range === 7 ? 11 : 3,
-                        borderTopRightRadius: range === 7 ? 11 : 3,
-                        borderBottomLeftRadius: 3,
-                        borderBottomRightRadius: 3,
-                      };
-                      // En 7 días las barras llevan degradé suave; en 30 días (30 barras finas) van de color liso.
-                      if (range !== 7) {
-                        return <View style={{ ...barStyle, backgroundColor: d.isToday ? colors.mint : hit ? colors.aqua : 'rgba(79,195,168,0.4)', ...(d.isToday ? { borderWidth: 1.5, borderColor: '#fff' } : {}) }} />;
-                      }
-                      const grad = d.isToday ? ['#A4F7DB', colors.mint] : hit ? ['#6FE0BF', '#3FAE95'] : ['rgba(79,195,168,0.5)', 'rgba(79,195,168,0.22)'];
-                      return (
-                        <LinearGradient
-                          colors={grad as [string, string]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={{ ...barStyle, ...(d.isToday ? { shadowColor: colors.mint, shadowOpacity: 0.55, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } } : {}) }}
-                        />
-                      );
-                    })()}
-                    </GrowIn>
-                    <Text
-                      className="text-[12px] mt-1.5"
-                      style={{ height: 16, color: d.isToday ? '#fff' : colors.authMuted, fontWeight: d.isToday ? '800' : '500' }}
-                    >
-                      {range === 7 ? (d.isToday ? 'Hoy' : d.label) : ''}
-                    </Text>
-                  </Press>
-                );
-              })}
-            </View>
-            )}
-            {/* Línea punteada de la meta diaria: va después de las barras para quedar por encima de ellas */}
-            {range === 7 && goal <= chartMax && (
-              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 20 + (goal / chartMax) * CHART_H, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
-                <View style={{ position: 'absolute', left: 0, top: -27, backgroundColor: '#2c1366', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
-                  <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
-                </View>
-              </View>
+              <WeekBars days={chartDays} goal={goal} goalFor={goalFor} height={CHART_H} selectedKey={stripDay?.key ?? null} onSelect={setChartSel} streakLit={(streak ?? 0) > 0} />
             )}
           </View>
         )}
+        {!isLoading && stripDay ? (
+          <DayStrip
+            dayKey={stripDay.key}
+            isToday={stripDay.isToday}
+            steps={stripDay.steps}
+            goal={goalFor(stripDay.key)}
+            opened={stripDay.isToday || openedDays.has(stripDay.key)}
+          />
+        ) : null}
       </LinearGradient>
 
       {/* Con la comunidad en 0 o sin diferencia no hay nada que comparar: no se muestra "supera por 0 pasos". */}
@@ -472,6 +429,8 @@ export default function ActividadScreen() {
             : `${goalPct} % de tu meta · faltan ${(goal - stepsToday).toLocaleString('es-BO')} pasos`}
         </Text>
       </Glass>
+
+      <WalkingLegendCard />
 
       <Glass className="rounded-3xl p-4 mb-7">
         <Text accessibilityRole="header" className="font-bold text-[13.5px] mb-3 text-text-light dark:text-text-dark">

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Spinner } from '@/components/ui/Spinner';
+import { LogoLoader } from '@/components/ui/LogoLoader';
 import { View } from 'react-native';
 import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ONBOARDING_SEEN_KEY } from '@/constants/onboarding';
 import { ProfileRetry } from '@/components/ProfileRetry';
-import { colors } from '@/theme/tokens';
 
 export default function Index() {
   const { session, profile, profileError, initializing } = useAuthStore();
@@ -26,7 +25,7 @@ export default function Index() {
   if (initializing || onboardingSeen === null) {
     return (
       <View className="flex-1 items-center justify-center bg-bg-light dark:bg-bg-dark">
-        <Spinner accessibilityLabel="Cargando" color={colors.aqua} />
+        <LogoLoader />
       </View>
     );
   }

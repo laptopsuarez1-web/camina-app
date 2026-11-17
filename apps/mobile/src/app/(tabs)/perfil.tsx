@@ -333,7 +333,7 @@ export default function PerfilScreen() {
         <Glass className="rounded-2xl overflow-hidden mb-4">
           <Row
             label="Permisos"
-            hint="Pasos, notificaciones, ubicación y ranking"
+            hint="Pasos, avisos, ubicación y perfil público"
             onPress={() => setPermsOpen(true)}
             right={
               <View className="flex-row items-center" style={{ gap: 6 }}>
@@ -388,10 +388,10 @@ export default function PerfilScreen() {
         />
         <View className="flex-row items-center justify-between p-3.5 border-t border-line-light dark:border-line-dark" style={{ gap: 12 }}>
           <View className="flex-1">
-            <Text className="text-[14px] text-text-light dark:text-text-dark">Aparecer en el ranking</Text>
-            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Que otros vean tu nombre y tus pasos en el ranking.</Text>
+            <Text className="text-[14px] text-text-light dark:text-text-dark">Perfil público y ranking</Text>
+            <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5">Que quien no es tu amigo vea tu racha, promedio, meta e insignias, y aparecer en el ranking.</Text>
           </View>
-          <Switch accessibilityLabel="Aparecer en el ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
+          <Switch accessibilityLabel="Perfil público y ranking" value={profile?.ranking_visible ?? true} onValueChange={(v) => { buzz.selection(); toggleRanking(v); }} trackColor={{ true: colors.aqua, false: isDark ? colors.dark.line : colors.light.line }} />
         </View>
           </Glass>
         </View>

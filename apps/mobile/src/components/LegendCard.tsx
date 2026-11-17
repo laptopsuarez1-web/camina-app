@@ -30,21 +30,54 @@ export function LegendCard({ businessId }: { businessId: string }) {
   const mes = MESES[Number(data.month.slice(5, 7)) - 1] ?? '';
   const missing = data.visits - data.my_visits + 1;
   return (
-    <View className="mt-3 rounded-2xl px-3.5 py-3 flex-row items-center" style={{ gap: 12, backgroundColor: 'rgba(245,198,69,0.12)', borderWidth: 1, borderColor: 'rgba(245,198,69,0.4)' }}>
+    <LegendBox
+      className="mt-3"
+      title={`Leyenda de ${mes}`}
+      line={`${data.is_me ? '¡Eres tú!' : data.name} · ${data.visits} ${plural(data.visits, 'visita', 'visitas')}`}
+      sub={
+        data.is_me
+          ? 'Eres quien más visitó este local este mes.'
+          : data.my_visits > 0
+            ? `Llevas ${data.my_visits}. Con ${missing} ${plural(missing, 'visita', 'visitas')} más le quitas el puesto.`
+            : 'Quien más visita el local en el mes se queda con la corona.'
+      }
+    />
+  );
+}
+
+// Tarjeta dorada de «Leyenda» (la usan la ficha del local y Actividad).
+export function LegendBox({ title, line, sub, className }: { title: string; line: string; sub: string; className?: string }) {
+  return (
+    <View className={`${className ?? ''} rounded-2xl px-3.5 py-3 flex-row items-center`} style={{ gap: 12, backgroundColor: 'rgba(245,198,69,0.12)', borderWidth: 1, borderColor: 'rgba(245,198,69,0.4)' }}>
       <CrownMark size={34} />
       <View className="flex-1">
-        <Text className="text-[11px] font-extrabold uppercase" style={{ color: '#E0B43A', letterSpacing: 1.2 }}>Leyenda de {mes}</Text>
-        <Text className="text-[14.5px] font-extrabold text-text-light dark:text-text-dark">
-          {data.is_me ? '¡Eres tú!' : data.name} · {data.visits} {plural(data.visits, 'visita', 'visitas')}
-        </Text>
-        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
-          {data.is_me
-            ? 'Eres quien más visitó este local este mes.'
-            : data.my_visits > 0
-              ? `Llevas ${data.my_visits}. Con ${missing} ${plural(missing, 'visita', 'visitas')} más le quitas el puesto.`
-              : 'Quien más visita el local en el mes se queda con la corona.'}
-        </Text>
+        <Text className="text-[11px] font-extrabold uppercase" style={{ color: '#E0B43A', letterSpacing: 1.2 }}>{title}</Text>
+        <Text className="text-[14.5px] font-extrabold text-text-light dark:text-text-dark">{line}</Text>
+        <Text className="text-[12px] text-muted-light dark:text-muted-dark">{sub}</Text>
       </View>
     </View>
+  );
+}
+
+// Leyenda del mes caminando: la ve solo quien más caminó el mes que terminó, los días 1 a 7 del mes nuevo. Migración 0125.
+export function WalkingLegendCard() {
+  const { data } = useQuery({
+    queryKey: ['walking-legend'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<{ month: string; steps: number; is_me: boolean } | null> => {
+      const { data, error } = await supabase.rpc('walking_legend' as never);
+      if (error || !data) return null;
+      return data as unknown as { month: string; steps: number; is_me: boolean };
+    },
+  });
+  if (!data || !data.is_me || data.steps <= 0) return null;
+  const mes = MESES[Number(data.month.slice(5, 7)) - 1] ?? '';
+  return (
+    <LegendBox
+      className="mb-3"
+      title={`Leyenda de ${mes}`}
+      line={`¡Eres tú! · ${data.steps.toLocaleString('es-BO')} pasos`}
+      sub={`Eres quien más caminó en ${mes}.`}
+    />
   );
 }
