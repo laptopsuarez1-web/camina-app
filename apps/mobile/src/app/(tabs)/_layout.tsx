@@ -10,6 +10,7 @@ import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
+import { TabsWarmup } from '@/components/TabsWarmup';
 import { healOldPhotos } from '@/lib/avatar';
 
 // Un error dentro de las pestañas muestra la pantalla de error sin perder la barra de sesión.
@@ -116,6 +117,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
     <CelebrationHost />
+    <TabsWarmup />
     </View>
   );
 }

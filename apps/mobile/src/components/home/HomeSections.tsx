@@ -4,7 +4,7 @@ import { View, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { router } from 'expo-router';
-import * as Location from 'expo-location';
+import { getCachedPosition, loadPositionIfAllowed } from '@/lib/last-position';
 import { useColorScheme } from 'nativewind';
 import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { Glass } from '@/components/ui/Glass';
@@ -68,19 +68,11 @@ function formatDistance(m: number) {
 }
 
 export function useHomePosition() {
-  const [pos, setPos] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [pos, setPos] = useState<{ latitude: number; longitude: number } | null>(() => getCachedPosition());
   useEffect(() => {
     let alive = true;
-    (async () => {
-      try {
-        const perm = await Location.getForegroundPermissionsAsync();
-        if (!perm.granted) return;
-        const p = (await Location.getLastKnownPositionAsync()) ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }));
-        if (alive && p) setPos({ latitude: p.coords.latitude, longitude: p.coords.longitude });
-      } catch {
-        // sin GPS: simplemente no se muestran distancias
-      }
-    })();
+    // Sin permiso o sin GPS: simplemente no se muestran distancias.
+    loadPositionIfAllowed().then((p) => { if (alive && p) setPos(p); });
     return () => { alive = false; };
   }, []);
   return pos;

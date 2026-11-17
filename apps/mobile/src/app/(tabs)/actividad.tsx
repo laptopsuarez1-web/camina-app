@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { View, ScrollView, Modal, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { BaifoMascot } from '@/components/ui/BaifoMascot';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, IconBubble, ChevronUp, ChevronDown, ChevronRight, Share2 } from '@/components/icons';
@@ -40,6 +40,7 @@ import { ResumenShareSheet } from '@/components/share/ResumenShareSheet';
 import { WrappedViewer } from '@/components/share/WrappedViewer';
 import { WalkingLegendCard } from '@/components/LegendCard';
 import { useWrapped, wrappedMonthStart } from '@/hooks/useWrapped';
+import { useStepsHistory } from '@/hooks/useStepsHistory';
 import { monthName as wrappedMonthName } from '@/lib/share-stats';
 
 const DIAS_CORTO = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 0=lunes
@@ -48,27 +49,6 @@ const MESES_CORTO = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'se
 // Los días de Actividad son días de Bolivia; las fechas "de calendario" (hoy menos N días) se arman con boliviaToday().
 function localKey(d: Date) {
   return localDay(d);
-}
-
-function useStepsHistory() {
-  const userId = useAuthStore((s) => s.session?.user.id);
-  return useQuery({
-    queryKey: ['steps-history-full', userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const since = boliviaToday();
-      // 30 días del gráfico más 6 antes, para que el promedio de 7 días del primer día también esté completo.
-      since.setDate(since.getDate() - 36);
-      const { data, error } = await supabase
-        .from('steps_daily')
-        .select('day, steps, goal')
-        .eq('user_id', userId!)
-        .gte('day', localKey(since))
-        .order('day', { ascending: true });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
 }
 
 const CHART_H = 110;
@@ -372,7 +352,8 @@ export default function ActividadScreen() {
             )}
           </View>
         )}
-        {!isLoading && stripDay ? (
+        {/* La franja de hoy ya se puede mostrar mientras carga el historial (los pasos de hoy vienen del teléfono): así la tarjeta no crece de golpe. */}
+        {stripDay ? (
           <DayStrip
             dayKey={stripDay.key}
             isToday={stripDay.isToday}

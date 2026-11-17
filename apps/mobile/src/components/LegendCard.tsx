@@ -60,8 +60,8 @@ export function LegendBox({ title, line, sub, className }: { title: string; line
 }
 
 // Leyenda del mes caminando: la ve solo quien más caminó el mes que terminó, los días 1 a 7 del mes nuevo. Migración 0125.
-export function WalkingLegendCard() {
-  const { data } = useQuery({
+export function useWalkingLegend() {
+  return useQuery({
     queryKey: ['walking-legend'],
     staleTime: 60_000,
     queryFn: async (): Promise<{ month: string; steps: number; is_me: boolean } | null> => {
@@ -70,6 +70,10 @@ export function WalkingLegendCard() {
       return data as unknown as { month: string; steps: number; is_me: boolean };
     },
   });
+}
+
+export function WalkingLegendCard() {
+  const { data } = useWalkingLegend();
   if (!data || !data.is_me || data.steps <= 0) return null;
   const mes = MESES[Number(data.month.slice(5, 7)) - 1] ?? '';
   return (

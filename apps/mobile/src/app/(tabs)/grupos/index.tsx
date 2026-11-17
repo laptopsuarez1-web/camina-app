@@ -24,7 +24,7 @@ import { colors } from '@/theme/tokens';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { HeaderLight } from '@/components/ui/HeaderLight';
 import { Glass } from '@/components/ui/Glass';
-import { SkeletonGroup, SkeletonRow } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonGroup } from '@/components/ui/Skeleton';
 import { typo } from '@/theme/type';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Segmented } from '@/components/ui/Segmented';
@@ -85,7 +85,7 @@ export default function GruposScreen() {
   });
 
   const my = (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId));
-  const { data: week } = useMyGroupsWeek(my, userId);
+  const { data: week, isLoading: weekLoading } = useMyGroupsWeek(my, userId);
 
   return (
     <KeyboardSafe className="flex-1">
@@ -145,8 +145,26 @@ export default function GruposScreen() {
       )}
 
       {isLoading && (
-        <SkeletonGroup style={{ gap: 8 }}>
-          {[0, 1].map((i) => <SkeletonRow key={i} chip={false} />)}
+        // Misma forma y alto que la tarjeta de un grupo (nombre, meta de la semana y caras): al llegar los grupos nada se corre.
+        <SkeletonGroup style={{ gap: 12, marginBottom: 28 }}>
+          {[0, 1].map((i) => (
+            <Glass key={i} className="rounded-3xl p-4 gap-3">
+              <View className="flex-row items-center gap-3">
+                <Skeleton width={44} height={44} radius={14} />
+                <View style={{ flex: 1, gap: 6 }}>
+                  <Skeleton width="55%" height={14} />
+                  <Skeleton width="35%" height={11} />
+                </View>
+              </View>
+              <View className="gap-1.5">
+                <Skeleton height={12} width="100%" />
+                <Skeleton height={6} radius={3} />
+              </View>
+              <View className="flex-row">
+                {[0, 1, 2].map((j) => <Skeleton key={j} width={28} height={28} radius={14} style={{ marginLeft: j === 0 ? 0 : -8 }} />)}
+              </View>
+            </Glass>
+          ))}
         </SkeletonGroup>
       )}
 
@@ -193,7 +211,7 @@ export default function GruposScreen() {
                   {(g as { banner_url?: string | null }).banner_url ? (
                     // Con portada: la foto difuminada de fondo (el detalle se ve adentro del grupo) y un velo para que se lea.
                     <>
-                      <Image source={{ uri: (g as { banner_url?: string | null }).banner_url! }} cachePolicy="memory-disk" contentFit="cover" blurRadius={18} style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10 }} />
+                      <Image source={{ uri: (g as { banner_url?: string | null }).banner_url! }} cachePolicy="memory-disk" transition={180} contentFit="cover" blurRadius={18} style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10 }} />
                       <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.35)', 'rgba(10,6,20,0.6)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
                     </>
                   ) : null}
@@ -217,6 +235,24 @@ export default function GruposScreen() {
                       </View>
                     )}
                   </View>
+
+                  {/* Mientras llega la semana, se guarda el mismo lugar (meta y caras) para que las tarjetas no crezcan de golpe. */}
+                  {!w && weekLoading && (
+                    <>
+                      <View className="gap-1.5">
+                        <View className="flex-row justify-between items-center">
+                          <Text className="text-auth-muted text-xs">{target > 0 ? 'Meta de la semana' : 'Pasos de la semana'}</Text>
+                          <Skeleton onDark width={target > 0 ? 96 : 48} height={12} radius={6} />
+                        </View>
+                        {target > 0 && <View className="h-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }} />}
+                      </View>
+                      <View className="flex-row">
+                        {Array.from({ length: Math.min(count, 4) }, (_, i) => (
+                          <Skeleton key={i} onDark width={28} height={28} radius={14} style={{ marginLeft: i === 0 ? 0 : -8, borderWidth: 2, borderColor: colors.authBg }} />
+                        ))}
+                      </View>
+                    </>
+                  )}
 
                   {w && (
                     target > 0 ? (
