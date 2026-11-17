@@ -7,15 +7,16 @@ import { buzz } from '@/lib/haptics';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/theme/tokens';
 import { areaPath, chartPoints, smoothPath, trendScale } from '@/lib/trend-line';
+import { GoalLine, GOAL_GUTTER } from '@/components/activity/GoalLine';
 
 // Gráfico de "30 días" de Actividad: una curva con los pasos de cada día, con el área rellena en degradé
 // y un punto en el día de hoy. Se dibuja de izquierda a derecha la primera vez en la sesión.
 // Deslizar el dedo sobre la curva muestra cada día (como en la bolsa): una línea y un punto siguen al dedo y
-// arriba se ve la fecha y los pasos de ese día. Tocar sin deslizar abre el detalle del día.
+// arriba se ve la fecha y los pasos de ese día. Tocar (o soltar el dedo) deja marcado ese día; el detalle va en la franja de abajo.
 
 let drawn = false;
 
-export function TrendChart({ values, days, goal, height, startLabel, onSelect, onScrub }: {
+export function TrendChart({ values, days, goal, height, startLabel, onSelect, onScrub, selectedKey, streakLit = false }: {
   values: number[];
   days: { key: string; steps: number; isToday: boolean }[];
   goal: number;
@@ -24,6 +25,10 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
   onSelect: (key: string) => void;
   // Día que se está mirando con el dedo (índice en `days`), o null al soltar.
   onScrub?: (index: number | null) => void;
+  // Día marcado (queda con su línea y punto cuando no hay dedo encima).
+  selectedKey?: string | null;
+  // Llama encendida en la línea de la meta.
+  streakLit?: boolean;
 }) {
   const [w, setW] = useState(0);
   const reduced = useReducedMotion();
@@ -40,8 +45,6 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
   const pts = w > 0 ? chartPoints(values, w, height, max, min) : [];
   const last = pts[pts.length - 1];
   const goalY = height - ((goal - min) / (max - min)) * height;
-  // La etiqueta de la meta va del lado donde la curva no la tapa: abajo si la curva pasa por encima de la meta.
-  const curveAbove = values.length > 0 && values[0] >= goal;
 
   const [sel, setSel] = useState<number | null>(null);
   const indexAt = (x: number) => {
@@ -56,6 +59,7 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
     onScrub?.(i);
   };
   const soltar = () => {
+    if (sel != null && days[sel]) onSelect(days[sel].key);
     setSel(null);
     onScrub?.(null);
   };
@@ -71,8 +75,10 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
     .runOnJS(true)
     .onEnd((e, ok) => { if (ok && days.length) onSelect(days[indexAt(e.x)].key); });
   const gesto = Gesture.Exclusive(pan, tap);
-  const marca = sel != null ? pts[sel] : null;
+  const marcadoIdx = selectedKey != null ? days.findIndex((d) => d.key === selectedKey) : -1;
+  const marca = sel != null ? pts[sel] : marcadoIdx >= 0 ? pts[marcadoIdx] : null;
   return (
+    <View style={{ paddingLeft: GOAL_GUTTER }}>
     <View style={{ height: height + 40, paddingTop: 20 }} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       {w > 0 ? (
         <Animated.View style={[{ height: height + 8, overflow: 'hidden', marginLeft: -6, paddingLeft: 6 }, reveal]}>
@@ -91,16 +97,12 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
           </Svg>
         </Animated.View>
       ) : null}
-      <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 20 + goalY, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}>
-        <View style={{ position: 'absolute', left: 0, ...(curveAbove ? { top: 5 } : { top: -27 }), backgroundColor: '#2c1366', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
-          <Text className="text-[12px] font-bold" style={{ color: colors.mint }}>meta {goal.toLocaleString('es-BO')}</Text>
-        </View>
-      </View>
+      <GoalLine lit={streakLit} goal={goal} top={20 + goalY} />
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
         <Text className="text-[12px]" style={{ color: colors.authMuted }}>{startLabel}</Text>
         <Text className="text-[12px]" style={{ color: '#fff', fontWeight: '800' }}>Hoy</Text>
       </View>
-      {/* Zona del dedo: deslizar para ver cada día; tocar para abrir el detalle. */}
+      {/* Zona del dedo: deslizar para ver cada día; tocar para marcar un día. */}
       <GestureDetector gesture={gesto}>
         <View
           accessible
@@ -109,6 +111,7 @@ export function TrendChart({ values, days, goal, height, startLabel, onSelect, o
           style={{ position: 'absolute', left: 0, right: 0, top: 0, height: height + 28 }}
         />
       </GestureDetector>
+    </View>
     </View>
   );
 }
