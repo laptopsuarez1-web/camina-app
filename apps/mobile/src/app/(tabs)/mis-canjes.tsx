@@ -1,4 +1,5 @@
 import { View, ScrollView } from 'react-native';
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { PullBaifo } from '@/components/ui/PullBaifo';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,7 +30,7 @@ export default function MisCanjesScreen() {
 
   return (
     <View className="flex-1">
-      <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabSpace }}>
+      <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabSpace }}>
       <PullBaifo refreshing={pull.props.refreshing} />
         <View className="flex-row items-center justify-between mb-5 px-5">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={10} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)' }}>

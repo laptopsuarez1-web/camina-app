@@ -15,7 +15,7 @@ import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { CaminaCardView } from '@/components/loyalty/CaminaCardView';
 import { PrizeSheet } from '@/components/loyalty/PrizeSheet';
 import { useCaminaCard, useChooseCaminaPrize } from '@/hooks/useCaminaCard';
-import { HIDDEN_SPINNER } from '@/store/useRefreshStore';
+import { HIDDEN_SPINNER, PULL_SCROLL } from '@/store/useRefreshStore';
 import type { CaminaPastCard } from '@/lib/database.types';
 
 const dayFmt = new Intl.DateTimeFormat('es-BO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/La_Paz' });
@@ -51,7 +51,7 @@ export default function TarjetasScreen() {
     <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
-      refreshControl={
+      {...PULL_SCROLL} refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={async () => {

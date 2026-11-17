@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { PullBaifo } from '@/components/ui/PullBaifo';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -119,7 +120,7 @@ export default function PuntosScreen() {
   }
 
   return (
-    <ScrollView refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
+    <ScrollView {...PULL_SCROLL} refreshControl={pull} showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
       <PullBaifo refreshing={pull.props.refreshing} />
       <DarkHeader>
         <View className="flex-row items-center gap-3" style={{ marginBottom: 28 }}>
