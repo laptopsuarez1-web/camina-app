@@ -7,14 +7,14 @@ import { pullDistance, useRefreshStore } from '@/store/useRefreshStore';
 const COLOR = require('@/../assets/baifo/festeja.webp');
 const GRIS = require('@/../assets/baifo/festeja-gris.webp');
 const RATIO = 287 / 420;
-const BAIFO_H = 52;
+const BAIFO_H = 72;
 const BAIFO_W = BAIFO_H * RATIO;
-const HOP = 8; // altura del salto
-const LOOP = 720; // ms por salto
+const HOP = 5; // salto suave
+const LOOP = 1100; // ms por salto (tranquilo)
 const FULL_AT = 110; // a cuántos puntos de estirar queda todo a color (más o menos donde iPhone dispara la recarga)
 
 // "Tirar para actualizar" en iPhone: al estirar la pantalla hacia abajo aparece el Baifo en el hueco de arriba,
-// en blanco y negro, y se va llenando de color desde los pies mientras más se estira. Cuando arranca la recarga
+// en blanco y negro, y el color va apareciendo suave mientras más se estira. Cuando arranca la recarga
 // queda a color y salta de alegría hasta que termina; después la pantalla sube y lo tapa.
 // Una sola pose (festeja). Todo en Reanimated (hilo de la UI), sin módulos nativos. Con "reducir movimiento" no salta.
 // En Android la pantalla no se estira (el gesto nativo dibuja su propio círculo), así que ahí no se dibuja.
@@ -35,22 +35,25 @@ export function RefreshIndicator() {
     // Termina el salto en curso de forma suave y lo deja quieto (no gasta nada mientras no se recarga).
     cancelAnimation(p);
     p.value = withTiming(0, { duration: 160 });
-    const id = setTimeout(() => { full.value = 0; }, 450);
+    const id = setTimeout(() => { full.value = withTiming(0, { duration: 250 }); }, 500);
     return () => clearTimeout(id);
   }, [refreshing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const top = insets.top + 6;
+  // En iPhone el Baifo ocupa el hueco oscuro y el margen de arriba de la pantalla, justo sobre el encabezado.
+  const top = Math.max(insets.top - 4, 4);
   // El recorte deja ver al Baifo solo en el hueco que se abre arriba: nunca tapa el contenido.
-  const clip = useAnimatedStyle(() => ({ height: Math.max(0, pullDistance.value + insets.top + 10) }));
-  const fill = useAnimatedStyle(() => {
-    const byPull = Math.min(1, Math.max(0, (pullDistance.value - 20) / (FULL_AT - 20)));
-    return { height: Math.max(byPull, full.value) * BAIFO_H };
+  const clip = useAnimatedStyle(() => ({ height: Math.max(0, pullDistance.value + insets.top + 12) }));
+  // El color aparece de a poco sobre todo el Baifo (fundido suave), sin cortes.
+  const color = useAnimatedStyle(() => {
+    const x = Math.min(1, Math.max(0, (pullDistance.value - 30) / (FULL_AT - 30)));
+    const eased = x * x * (3 - 2 * x); // entra y termina suave
+    return { opacity: Math.max(eased, full.value) };
   });
   const hop = useAnimatedStyle(() => {
     // 80% del ciclo en el aire (curva suave), 20% aterrizando con un pequeño aplastón.
     const air = p.value < 0.8 ? Math.sin((p.value / 0.8) * Math.PI) : 0;
     const land = p.value >= 0.8 ? Math.sin(((p.value - 0.8) / 0.2) * Math.PI) : 0;
-    return { transform: [{ translateY: -air * HOP }, { scaleY: 1 - land * 0.07 + air * 0.03 }, { scaleX: 1 + land * 0.05 }] };
+    return { transform: [{ translateY: -air * HOP }, { scaleY: 1 - land * 0.03 }, { scaleX: 1 + land * 0.02 }] };
   });
 
   if (Platform.OS === 'android') return null;
@@ -63,10 +66,7 @@ export function RefreshIndicator() {
     >
       <Animated.View style={[{ position: 'absolute', top: top + HOP, width: BAIFO_W, height: BAIFO_H, transformOrigin: 'bottom' }, hop]}>
         <Animated.Image source={GRIS} resizeMode="contain" style={{ position: 'absolute', bottom: 0, width: BAIFO_W, height: BAIFO_H }} />
-        {/* La parte a color crece desde los pies hacia arriba. */}
-        <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0, overflow: 'hidden' }, fill]}>
-          <Animated.Image source={COLOR} resizeMode="contain" style={{ position: 'absolute', bottom: 0, width: BAIFO_W, height: BAIFO_H }} />
-        </Animated.View>
+        <Animated.Image source={COLOR} resizeMode="contain" style={[{ position: 'absolute', bottom: 0, width: BAIFO_W, height: BAIFO_H }, color]} />
       </Animated.View>
     </Animated.View>
   );
