@@ -56,6 +56,7 @@ import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { WORDMARK_FAMILY, brandFontsReady } from '@/theme/fonts';
 import { CoinFlight, coinFlightPath, type CoinFlightPath } from '@/components/home/CoinFlight';
 import { Coin } from '@/components/ui/Coin';
+import { PROFILE_HINT_KEY, notifyProfileHintDone } from '@/lib/tab-tour';
 
 // Color de los Puntos del día: el aro fino, el chip "+N Puntos" y "Tope de hoy" usan este mismo verde.
 const POINTS_COLOR = '#2CFFAE';
@@ -97,7 +98,6 @@ function LinkRow({
   );
 }
 
-const PROFILE_HINT_KEY = 'camina_profile_hint_seen';
 
 export default function HomeScreen() {
   const isDark = useColorScheme().colorScheme === 'dark';
@@ -161,6 +161,7 @@ export default function HomeScreen() {
   const hideProfileHint = () => {
     setProfileHint(false);
     AsyncStorage.setItem(PROFILE_HINT_KEY, '1').catch(() => {});
+    notifyProfileHintDone();
   };
 
   useEffect(() => {
