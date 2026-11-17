@@ -33,6 +33,7 @@ import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
+import { HIDDEN_SPINNER, useReportRefreshing } from '@/store/useRefreshStore';
 import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
 import { registerDevice } from '@/lib/device';
 import { usePersonalRecord } from '@/hooks/usePersonalRecord';
@@ -123,6 +124,7 @@ export default function HomeScreen() {
   const healthConnectStatus = isQa ? 'ok' : hcStatus;
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  useReportRefreshing(refreshing);
   async function onRefresh() {
     setRefreshing(true);
     await Promise.all([refreshSteps(), queryClient.invalidateQueries()]);
@@ -322,7 +324,7 @@ export default function HomeScreen() {
     <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.mint} colors={[colors.aqua]} progressBackgroundColor={colors.authBgSoft} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...HIDDEN_SPINNER} />}
     >
       <LinearGradient
         colors={colors.headerGradient}

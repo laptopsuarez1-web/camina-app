@@ -9,6 +9,7 @@ import { registerDevice } from '@/lib/device';
 import { scheduleWrappedReminder } from '@/lib/wrapped-reminder';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
+import { RefreshIndicator } from '@/components/ui/RefreshIndicator';
 import { CelebrationHost } from '@/components/CelebrationHost';
 import { healOldPhotos } from '@/lib/avatar';
 
@@ -115,6 +116,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="amigos/index" options={{ href: null }} />
       <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
+    <RefreshIndicator />
     <CelebrationHost />
     </View>
   );

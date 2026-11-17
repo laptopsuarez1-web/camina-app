@@ -14,7 +14,7 @@ import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { CaminaCardView } from '@/components/loyalty/CaminaCardView';
 import { PrizeSheet } from '@/components/loyalty/PrizeSheet';
 import { useCaminaCard, useChooseCaminaPrize } from '@/hooks/useCaminaCard';
-import { colors } from '@/theme/tokens';
+import { HIDDEN_SPINNER, useReportRefreshing } from '@/store/useRefreshStore';
 import type { CaminaPastCard } from '@/lib/database.types';
 
 const dayFmt = new Intl.DateTimeFormat('es-BO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/La_Paz' });
@@ -44,6 +44,7 @@ export default function TarjetasScreen() {
   const choose = useChooseCaminaPrize();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  useReportRefreshing(refreshing);
   const [prizeOpen, setPrizeOpen] = useState(false);
 
   return (
@@ -58,7 +59,7 @@ export default function TarjetasScreen() {
             await queryClient.invalidateQueries({ queryKey: ['camina-card'] });
             setRefreshing(false);
           }}
-          tintColor={colors.aqua}
+          {...HIDDEN_SPINNER}
         />
       }
     >
