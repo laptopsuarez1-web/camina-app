@@ -59,7 +59,7 @@ export function LegendBox({ title, line, sub, className }: { title: string; line
   );
 }
 
-// Leyenda del mes caminando: solo la ve quien más pasos lleva este mes entre todos. Migración 0124.
+// Leyenda del mes caminando: la ve solo quien más caminó el mes que terminó, los días 1 a 7 del mes nuevo. Migración 0125.
 export function WalkingLegendCard() {
   const { data } = useQuery({
     queryKey: ['walking-legend'],
@@ -77,7 +77,7 @@ export function WalkingLegendCard() {
       className="mb-3"
       title={`Leyenda de ${mes}`}
       line={`¡Eres tú! · ${data.steps.toLocaleString('es-BO')} pasos`}
-      sub="Eres quien más caminó este mes."
+      sub={`Eres quien más caminó en ${mes}.`}
     />
   );
 }
