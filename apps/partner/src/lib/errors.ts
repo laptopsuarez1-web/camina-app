@@ -3,7 +3,7 @@
 // '...') pasan tal cual.
 
 const TRADUCCIONES: [RegExp, string][] = [
-  [/invalid login credentials/i, 'El correo o la contraseña no coinciden. Revisalos e intenta de nuevo.'],
+  [/invalid login credentials/i, 'El correo o la contraseña no coinciden. Si entraste a la app con Google o Apple y nunca elegiste una contraseña, toca "¿Olvidaste tu contraseña?" para crear una con ese mismo correo.'],
   [/email not confirmed/i, 'Todavía no confirmaste tu correo. Busca el mail de Camina (mira también en Spam) y toca el link.'],
   [/user already registered|already been registered|already exists/i, 'Ese correo ya tiene una cuenta. Inicia sesión o toca "¿Olvidaste tu contraseña?".'],
   [/password should be at least|password.*(short|length)/i, 'La contraseña tiene que tener al menos 8 caracteres.'],
