@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import Svg, { Line } from 'react-native-svg';
 import { IllArt } from '@/components/ui/IllustratedIcons';
 import { colors } from '@/theme/tokens';
 
@@ -15,8 +16,12 @@ export function GoalLine({ lit, goal, top, bottom }: { lit: boolean; goal: numbe
       pointerEvents="none"
       accessible
       accessibilityLabel={`Meta diaria: ${goal.toLocaleString('es-BO')} pasos${lit ? ', racha activa' : ''}`}
-      style={{ position: 'absolute', left: -8, right: 0, top, bottom, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.45)' }}
+      style={{ position: 'absolute', left: -8, right: 0, top, bottom, height: 0 }}
     >
+      {/* La raya se dibuja con SVG: en iPhone un borde punteado de un solo lado (borderTop + dashed) no se ve. */}
+      <Svg width="100%" height={4} style={{ position: 'absolute', left: 0, right: 0, top: -2 }}>
+        <Line x1="0" x2="100%" y1="2" y2="2" stroke={colors.mint} strokeWidth={1.5} strokeDasharray="6 5" />
+      </Svg>
       <View
         style={{
           position: 'absolute', left: 8 - GOAL_GUTTER, top: -13, width: 24, height: 24, borderRadius: 12,
