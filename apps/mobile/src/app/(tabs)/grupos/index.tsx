@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { PULL_SCROLL } from '@/store/useRefreshStore';
+
+import { PullBaifo } from '@/components/ui/PullBaifo';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Image } from 'expo-image';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -88,7 +89,8 @@ export default function GruposScreen() {
   return (
     <KeyboardSafe className="flex-1">
       <HeaderLight />
-      <ScrollView {...PULL_SCROLL} refreshControl={pull} ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <ScrollView refreshControl={pull} ref={scrollRef} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="p-5 pt-3" contentContainerStyle={{ paddingBottom: tabSpace }}>
+      <PullBaifo refreshing={pull.props.refreshing} />
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <View className="flex-1">
           <ScreenTitle>Comunidad</ScreenTitle>

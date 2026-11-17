@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { PullBaifo } from '@/components/ui/PullBaifo';
 import { useColorScheme } from 'nativewind';
 import { View, ScrollView, Image, Linking, RefreshControl, Animated, Easing, Platform, AccessibilityInfo, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -33,7 +34,7 @@ import { useMyWeeklyRank } from '@/hooks/useGlobalRanking';
 import { useFriendRequests } from '@/hooks/useFriends';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { colors } from '@/theme/tokens';
-import { HIDDEN_SPINNER, useReportRefreshing, PULL_SCROLL } from '@/store/useRefreshStore';
+import { HIDDEN_SPINNER } from '@/store/useRefreshStore';
 import { GOOGLE_FIT_PACKAGE } from '@/lib/android-steps-setup';
 import { registerDevice } from '@/lib/device';
 import { usePersonalRecord } from '@/hooks/usePersonalRecord';
@@ -124,7 +125,6 @@ export default function HomeScreen() {
   const healthConnectStatus = isQa ? 'ok' : hcStatus;
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
-  useReportRefreshing(refreshing);
   async function onRefresh() {
     setRefreshing(true);
     await Promise.all([refreshSteps(), queryClient.invalidateQueries()]);
@@ -324,8 +324,9 @@ export default function HomeScreen() {
     <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
-      {...PULL_SCROLL} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...HIDDEN_SPINNER} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...HIDDEN_SPINNER} />}
     >
+      <PullBaifo refreshing={refreshing} />
       <LinearGradient
         colors={colors.headerGradient}
         start={{ x: 0.15, y: -0.1 }}
