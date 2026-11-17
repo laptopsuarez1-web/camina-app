@@ -1,4 +1,5 @@
 import { BaifoMascot } from '@/components/ui/BaifoMascot';
+import { PullBaifo } from '@/components/ui/PullBaifo';
 import { DEFAULT_CITY, cityRegion } from '@/constants/cities';
 import { Spinner } from '@/components/ui/Spinner';
 import { rankLocales } from '@/lib/rank-locales';
@@ -37,6 +38,7 @@ import { BusinessHours } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
+import { HIDDEN_SPINNER, PULL_SCROLL } from '@/store/useRefreshStore';
 import { REDEMPTION_CODE_TTL_MINUTES, ONLINE_CODE_TTL_DAYS, BUSINESS_REDEMPTION_COOLDOWN_DAYS, DAILY_POINTS_CAP, DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL, POINTS_PER_STEP_UNIT } from '@/constants/business-rules';
 import { Glass } from '@/components/ui/Glass';
 import { LocalCodeSheet } from '@/components/LocalCodeSheet';
@@ -696,7 +698,7 @@ export default function CanjesScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: tabSpace }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
+        {...PULL_SCROLL} refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={async () => {
@@ -704,10 +706,11 @@ export default function CanjesScreen() {
               await queryClient.invalidateQueries();
               setRefreshing(false);
             }}
-            tintColor={colors.aqua}
+            {...HIDDEN_SPINNER}
           />
         }
       >
+      <PullBaifo refreshing={refreshing} />
         {/* Tarjeta de mapa: vista previa que abre el mapa completo */}
         <View style={{ height: 250, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', backgroundColor: '#1d1b2e' }}>
           {/* Un solo mapa de Google vivo a la vez: en iPhone, un mapa tapado por un panel (mapa completo, ficha, fotos)

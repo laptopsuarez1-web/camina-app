@@ -1,4 +1,5 @@
 import { View, ScrollView, RefreshControl } from 'react-native';
+import { PullBaifo } from '@/components/ui/PullBaifo';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,7 +15,7 @@ import { BusinessAvatar } from '@/components/CategoryAvatar';
 import { CaminaCardView } from '@/components/loyalty/CaminaCardView';
 import { PrizeSheet } from '@/components/loyalty/PrizeSheet';
 import { useCaminaCard, useChooseCaminaPrize } from '@/hooks/useCaminaCard';
-import { colors } from '@/theme/tokens';
+import { HIDDEN_SPINNER, PULL_SCROLL } from '@/store/useRefreshStore';
 import type { CaminaPastCard } from '@/lib/database.types';
 
 const dayFmt = new Intl.DateTimeFormat('es-BO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/La_Paz' });
@@ -50,7 +51,7 @@ export default function TarjetasScreen() {
     <ScrollView showsVerticalScrollIndicator={false}
       className="flex-1"
       contentContainerStyle={{ paddingBottom: tabSpace }}
-      refreshControl={
+      {...PULL_SCROLL} refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={async () => {
@@ -58,10 +59,11 @@ export default function TarjetasScreen() {
             await queryClient.invalidateQueries({ queryKey: ['camina-card'] });
             setRefreshing(false);
           }}
-          tintColor={colors.aqua}
+          {...HIDDEN_SPINNER}
         />
       }
     >
+      <PullBaifo refreshing={refreshing} />
       <DarkHeader>
         <View className="flex-row items-center gap-3">
           <Press accessibilityRole="button" accessibilityLabel="Volver" onPress={() => router.back()} hitSlop={8} className="w-8 h-8 rounded-full bg-white/10 items-center justify-center">

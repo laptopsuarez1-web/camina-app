@@ -1,4 +1,7 @@
 import { useState } from 'react';
+
+import { PULL_SCROLL } from '@/store/useRefreshStore';
+import { PullBaifo } from '@/components/ui/PullBaifo';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Alert, ScrollView, View } from 'react-native';
 import { BadgeSheet } from '@/components/badges/BadgeSheet';
@@ -53,7 +56,8 @@ export default function InsigniasScreen() {
   }
 
   return (
-    <ScrollView refreshControl={pull} className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
+    <ScrollView {...PULL_SCROLL} refreshControl={pull} className="flex-1" style={{ flex: 1 }} showsVerticalScrollIndicator={false} alwaysBounceVertical contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: tabSpace + 16 }}>
+      <PullBaifo refreshing={pull.props.refreshing} />
       <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
         <Press accessibilityRole="button" accessibilityLabel="Volver" hitSlop={10} onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/perfil'))}
           className="w-10 h-10 rounded-full items-center justify-center bg-purple-light dark:bg-card-dark">
