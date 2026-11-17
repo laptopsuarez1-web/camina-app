@@ -149,6 +149,43 @@ export default function FriendProfileScreen() {
   }
 
   const hasBadges = !!(badges?.routes.length || badges?.locals.length);
+  // Tarjeta Racha / Promedio diario / Meta: la ven los amigos y, si la persona aparece en el ranking, cualquiera.
+  const statsCard = (top: string) => !card ? null : (
+    dark ? (
+              <Glass className={`rounded-3xl mx-5 ${top} py-3.5`}>
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              </Glass>
+            ) : (
+              <View
+                className={`rounded-3xl mx-5 ${top} py-3.5`}
+                style={{ borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backgroundColor: '#F7F4FF', shadowColor: colors.purpleDeep, shadowOpacity: 0.13, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
+              >
+              <View className="flex-row">
+                {[
+                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
+                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
+                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
+                ].map((s, i) => (
+                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
+                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              </View>
+            )
+  );
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerStyle={{ paddingBottom: tabSpace }}>
@@ -182,10 +219,12 @@ export default function FriendProfileScreen() {
           <View className="mx-5 -mt-7 mb-1"><BadgesCard badges={badges} own={!!isSelf} userId={userId} /></View>
         ) : null}
 
+        {card && !showData && card.streak != null ? statsCard(hasBadges ? 'mt-2' : '-mt-7') : null}
+
         {card && !showData && (
-          <Glass className={`rounded-3xl p-4 mx-5 ${hasBadges ? 'mt-2' : '-mt-7'}`} style={{ gap: 10 }}>
+          <Glass className={`rounded-3xl p-4 mx-5 ${card.streak != null ? 'mt-3' : hasBadges ? 'mt-2' : '-mt-7'}`} style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
-              {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver los pasos del otro.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver los pasos del otro.' : 'Agrega a esta persona a tus amigos para ver su racha y sus pasos. Solo los amigos que aceptaron los ven.'}
+              {card.relation === 'pending_out' ? 'Le mandaste una solicitud. Cuando acepte, van a ver la actividad del otro día a día y se podrán invitar a grupos.' : card.relation === 'pending_in' ? 'Quiere ser tu amigo. Si aceptas, van a ver la actividad del otro día a día y se podrán invitar a grupos.' : `Agrega a ${first} a tus amigos para ver su actividad día a día, compararte y mandarle invitaciones a tus grupos.`}
             </Text>
             {card.relation === 'none' && (
               <Press accessibilityRole="button" disabled={send.isPending} onPress={() => send.mutate(userId!, { onSuccess: (r) => { if (r === 'accepted') friendsNow(); }, onError: fail('No se pudo enviar') })} className="rounded-2xl py-3.5 items-center" style={{ backgroundColor: colors.aquaDeep }}>
@@ -214,40 +253,7 @@ export default function FriendProfileScreen() {
           <>
             {/* En claro la tarjeta NO usa el vidrio nativo: en iPhone el vidrio refracta el encabezado oscuro que tiene detrás y deja una banda oscura sobre los números.
                 Es una tarjeta de superficie lila-blanca (mismo borde, radio y sombra que el vidrio). En oscuro sigue el vidrio de siempre. */}
-            {dark ? (
-              <Glass className={`rounded-3xl mx-5 ${hasBadges ? 'mt-2' : '-mt-7'} py-3.5`}>
-              <View className="flex-row">
-                {[
-                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
-                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
-                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
-                ].map((s, i) => (
-                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
-                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
-                  </View>
-                ))}
-              </View>
-              </Glass>
-            ) : (
-              <View
-                className={`rounded-3xl mx-5 ${hasBadges ? 'mt-2' : '-mt-7'} py-3.5`}
-                style={{ borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backgroundColor: '#F7F4FF', shadowColor: colors.purpleDeep, shadowOpacity: 0.13, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}
-              >
-              <View className="flex-row">
-                {[
-                  { value: `${card.streak ?? 0} ${card.streak === 1 ? 'día' : 'días'}`, label: 'Racha' },
-                  { value: (card.avg_week ?? 0).toLocaleString('es-BO'), label: 'Promedio diario' },
-                  { value: (card.goal ?? 0).toLocaleString('es-BO'), label: 'Meta' },
-                ].map((s, i) => (
-                  <View key={s.label} className="flex-1 items-center" style={{ borderLeftWidth: i === 0 ? 0 : 1, borderLeftColor: line }}>
-                    <Text style={{ fontSize: 19, fontWeight: '800', color: text, fontVariant: ['tabular-nums'] }}>{s.value}</Text>
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark">{s.label}</Text>
-                  </View>
-                ))}
-              </View>
-              </View>
-            )}
+            {statsCard(hasBadges ? 'mt-2' : '-mt-7')}
 
             <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
               <Text accessibilityRole="header" style={[typo.section, { color: text }]}>{span === 'semana' ? 'Esta semana' : 'Último mes'}</Text>
