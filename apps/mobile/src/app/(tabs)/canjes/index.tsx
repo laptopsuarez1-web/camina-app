@@ -54,6 +54,8 @@ import { useCaminaCard } from '@/hooks/useCaminaCard';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Image as CachedImage } from 'expo-image';
+import { MapRevealBox } from '@/components/ui/MapReveal';
+import { getCachedPosition, setCachedPosition } from '@/lib/last-position';
 import { friendlyError, friendlyServerError } from '@/lib/errors';
 import { plural } from '@/lib/format';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -280,27 +282,38 @@ export default function CanjesScreen() {
 
   // El mapa se centra en la ubicación real del usuario (Camina no es solo de
   // Tarija), con Tarija de respaldo si no da permiso o falla el GPS.
-  const [baseRegion, setMapRegion] = useState<ReturnType<typeof cityRegion> | null>(null);
-  const [hasGps, setHasGps] = useState(false);
+  // Si Inicio ya tiene la ubicación, Canjes abre directo ordenado por cercanía (sin reacomodar la lista al llegar el GPS).
+  const [baseRegion, setMapRegion] = useState<ReturnType<typeof cityRegion> | null>(() => {
+    const c = getCachedPosition();
+    return c ? { latitude: c.latitude, longitude: c.longitude, latitudeDelta: 0.045, longitudeDelta: 0.045 } : null;
+  });
+  const [hasGps, setHasGps] = useState(() => !!getCachedPosition());
   useEffect(() => {
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
+          setHasGps(false);
           setMapRegion(cityRegion(useAuthStore.getState().profile?.city));
           return;
         }
+        const set = (p: { latitude: number; longitude: number }) => {
+          setCachedPosition(p);
+          setHasGps(true);
+          setMapRegion({ latitude: p.latitude, longitude: p.longitude, latitudeDelta: 0.045, longitudeDelta: 0.045 });
+        };
+        let start = getCachedPosition();
+        if (!start) {
+          // Primero la última posición del teléfono (al instante); después la lectura precisa.
+          const last = await Location.getLastKnownPositionAsync().catch(() => null);
+          if (last) { start = last.coords; set(start); }
+        }
         const position = await Location.getCurrentPositionAsync({});
         shareCoarseLocation();
-        setHasGps(true);
-        setMapRegion({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          latitudeDelta: 0.045,
-          longitudeDelta: 0.045,
-        });
+        // Solo se reordena si la persona se movió de verdad (más de 400 m): evita el salto de la lista por unos metros.
+        if (!start || distanceMeters(start, position.coords.latitude, position.coords.longitude) > 400) set(position.coords);
       } catch {
-        setMapRegion(cityRegion(useAuthStore.getState().profile?.city));
+        if (!getCachedPosition()) setMapRegion(cityRegion(useAuthStore.getState().profile?.city));
       }
     })();
   }, []);
@@ -713,8 +726,10 @@ export default function CanjesScreen() {
           {/* Un solo mapa de Google vivo a la vez: en iPhone, un mapa tapado por un panel (mapa completo, ficha, fotos)
               sigue dibujando detrás y, con dos o tres a la vez, el mapa a la vista se traba. Tapado, se desmonta. */}
           {mapRegion && (mapOpen || profileGroup) ? null : mapRegion ? (
+            // Tapado con el fondo de la tarjeta hasta que carga: así no se ve blanco al abrir Canjes.
+            <MapRevealBox key={`${mapRegion.latitude.toFixed(4)},${mapRegion.longitude.toFixed(4)}`} color="#1d1b2e">{(reveal) => (
             <MapView
-              key={`${mapRegion.latitude.toFixed(4)},${mapRegion.longitude.toFixed(4)}`}
+              {...reveal}
               provider={PROVIDER_GOOGLE}
               style={{ flex: 1 }}
               initialRegion={mapRegion}
@@ -729,6 +744,7 @@ export default function CanjesScreen() {
                 <BusinessMarker key={b.id} business={b} coordinate={previewPins.get(b.id)} />
               ))}
             </MapView>
+            )}</MapRevealBox>
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
               <Spinner color={colors.aqua} accessibilityLabel="Cargando" />
@@ -975,6 +991,8 @@ export default function CanjesScreen() {
                 <CachedImage
                   source={{ uri: g.business.cover_url }}
                   cachePolicy="memory-disk"
+                  // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
+                  transition={180}
                   accessibilityIgnoresInvertColors
                   contentFit="cover"
                   style={{ height: 132 + cardBorder(g.business), marginTop: -16 - cardBorder(g.business), marginHorizontal: -16 - cardBorder(g.business), marginBottom: 14, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}

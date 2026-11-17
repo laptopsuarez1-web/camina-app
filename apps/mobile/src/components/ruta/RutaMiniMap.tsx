@@ -3,6 +3,7 @@ import { Image, Platform, View, type LayoutChangeEvent } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { MysteryPin, RutaPin } from './RutaPin';
+import { useMapReveal } from '@/components/ui/MapReveal';
 
 type Place = { name: string; logo_url: string | null; lat: number | null; lng: number | null };
 
@@ -62,6 +63,7 @@ export function WebCityMap({ center, zoom = 15, overlay }: {
 // los botones de arriba ni el texto de abajo. No dice qué locales participan.
 function MysteryMap({ places, padBottom, pinSize }: { places: Place[]; padBottom: number; pinSize: number }) {
   const c = cityCenter(places);
+  const { cover, onMapReady, onMapLoaded } = useMapReveal('#17112a');
   return (
     <View pointerEvents="none" style={{ position: 'absolute', inset: 0 }}>
       {Platform.OS === 'web' ? (
@@ -72,6 +74,8 @@ function MysteryMap({ places, padBottom, pinSize }: { places: Place[]; padBottom
           style={{ flex: 1 }}
           customMapStyle={DARK_MAP_STYLE}
           initialRegion={{ latitude: c.lat, longitude: c.lng, latitudeDelta: 0.022, longitudeDelta: 0.022 }}
+          onMapReady={onMapReady}
+          onMapLoaded={onMapLoaded}
           scrollEnabled={false}
           zoomEnabled={false}
           pitchEnabled={false}
@@ -80,6 +84,7 @@ function MysteryMap({ places, padBottom, pinSize }: { places: Place[]; padBottom
           liteMode={Platform.OS === 'android'}
         />
       )}
+      {Platform.OS === 'web' ? null : cover}
       <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: padBottom }}>
         {SPOTS.map(([x, y], i) => (
           <View key={i} style={{ position: 'absolute', left: `${4 + x * 82}%`, top: `${14 + y * 110}%` }}>
@@ -102,6 +107,7 @@ function PlacesMap({ places, padBottom, pinSize, route }: { places: Place[]; pad
   const [tracks, setTracks] = useState(true);
   const real = places.filter((p) => p.lat != null && p.lng != null);
   const pts = real;
+  const { cover, onMapReady, onMapLoaded } = useMapReveal('#17112a');
   useEffect(() => {
     const t = setTimeout(() => setTracks(false), 2500);
     return () => clearTimeout(t);
@@ -130,12 +136,14 @@ function PlacesMap({ places, padBottom, pinSize, route }: { places: Place[]; pad
         style={{ flex: 1 }}
         customMapStyle={DARK_MAP_STYLE}
         initialRegion={{ latitude: lat, longitude: lng, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
-        onMapReady={() =>
+        onMapReady={() => {
           ref.current?.fitToCoordinates(pts.map((p) => ({ latitude: p.lat!, longitude: p.lng! })), {
             edgePadding: { top: 70, right: 50, bottom: 50 + padBottom, left: 50 },
             animated: false,
-          })
-        }
+          });
+          onMapReady();
+        }}
+        onMapLoaded={onMapLoaded}
         scrollEnabled={false}
         zoomEnabled={false}
         pitchEnabled={false}
@@ -149,6 +157,7 @@ function PlacesMap({ places, padBottom, pinSize, route }: { places: Place[]; pad
           </Marker>
         ))}
       </MapView>
+      {cover}
     </View>
   );
 }
