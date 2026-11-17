@@ -84,6 +84,7 @@ export default function WelcomeScreen() {
   // (expo-auth-session no avisa cuando falla), a los 20 s se avisa en vez de dejar el botón girando para siempre.
   const googleWatchdog = useRef<ReturnType<typeof setTimeout> | null>(null);
   const googleAnswered = useRef(false);
+  const googleInFlight = useRef(false);
   function clearGoogleWatchdog() {
     if (googleWatchdog.current) clearTimeout(googleWatchdog.current);
     googleWatchdog.current = null;
@@ -120,6 +121,16 @@ export default function WelcomeScreen() {
   }, [googleResponse]);
 
   async function handleGoogle() {
+    if (googleInFlight.current) return;
+    googleInFlight.current = true;
+    try {
+      await runGoogle();
+    } finally {
+      googleInFlight.current = false;
+    }
+  }
+
+  async function runGoogle() {
     if (!googleOAuthConfigured) {
       Alert.alert('Google no está disponible ahora', 'Usa tu correo para continuar.');
       return;
@@ -159,6 +170,7 @@ export default function WelcomeScreen() {
   }
 
   async function handleApple() {
+    if (oauthLoading) return;
     setOauthLoading(true);
     setOauthProvider('apple');
     try {
@@ -196,7 +208,19 @@ export default function WelcomeScreen() {
     router.replace(joinedGroupId ? { pathname: '/(tabs)/grupos/[groupId]', params: { groupId: joinedGroupId } } : '/(tabs)');
   }
 
+  // Doble toque: setLoading llega tarde y dos toques seguidos mandaban dos altas/ingresos.
+  const submitting = useRef(false);
   async function handleSubmit() {
+    if (submitting.current) return;
+    submitting.current = true;
+    try {
+      await submitCredentials();
+    } finally {
+      submitting.current = false;
+    }
+  }
+
+  async function submitCredentials() {
     if (!email.trim() || password.length < 8) {
       Alert.alert('Faltan datos', 'Ingresa tu correo y una contraseña de al menos 8 caracteres.');
       return;

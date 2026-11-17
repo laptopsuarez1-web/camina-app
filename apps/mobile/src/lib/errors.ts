@@ -2,7 +2,7 @@
 // mensajes en inglés ("Invalid login credentials", "Network request failed") que no se deben
 // mostrar tal cual: se traducen por código y, si no se conoce, se usa un texto genérico.
 const BY_CODE: Record<string, string> = {
-  invalid_credentials: 'El correo o la contraseña no son correctos.',
+  invalid_credentials: 'El correo o la contraseña no son correctos. Si te registraste con Google o Apple, usa ese botón; si no, toca "¿Olvidaste tu contraseña?".',
   user_already_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
   email_exists: 'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
   weak_password: 'La contraseña es muy corta. Usa al menos 8 caracteres.',
