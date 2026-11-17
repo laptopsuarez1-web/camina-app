@@ -47,7 +47,17 @@ function Warm({ userId }: { userId: string }) {
   // Comunidad: los grupos y el resumen de la semana de cada uno (meta, caras, puesto).
   const { data: groups } = useGroups();
   const my = useMemo(() => (groups ?? []).filter((g) => g.group_members.some((m: { user_id: string }) => m.user_id === userId)), [groups, userId]);
-  useMyGroupsWeek(my, userId);
+  const { data: week } = useMyGroupsWeek(my, userId);
+  // Fotos de la lista de Comunidad (foto y portada del grupo, caras de los miembros): así no aparecen de a una.
+  useEffect(() => {
+    const urls = new Set<string>();
+    for (const g of my as { photo_url?: string | null; banner_url?: string | null }[]) {
+      if (g.photo_url) urls.add(g.photo_url);
+      if (g.banner_url) urls.add(g.banner_url);
+    }
+    for (const w of Object.values(week ?? {})) for (const a of w.avatars) if (a.photoUrl) urls.add(a.photoUrl);
+    if (urls.size) Image.prefetch([...urls], 'memory-disk').catch(() => {});
+  }, [my, week]);
   const firstGroups = my.slice(0, 4);
   useGroupInvites();
   useFriendRequests();

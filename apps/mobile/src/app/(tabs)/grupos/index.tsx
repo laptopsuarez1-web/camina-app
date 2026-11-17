@@ -207,7 +207,7 @@ export default function GruposScreen() {
                   {(g as { banner_url?: string | null }).banner_url ? (
                     // Con portada: la foto difuminada de fondo (el detalle se ve adentro del grupo) y un velo para que se lea.
                     <>
-                      <Image source={{ uri: (g as { banner_url?: string | null }).banner_url! }} cachePolicy="memory-disk" contentFit="cover" blurRadius={18} style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10 }} />
+                      <Image source={{ uri: (g as { banner_url?: string | null }).banner_url! }} cachePolicy="memory-disk" transition={180} contentFit="cover" blurRadius={18} style={{ position: 'absolute', top: -10, left: -10, right: -10, bottom: -10 }} />
                       <LinearGradient pointerEvents="none" colors={['rgba(10,6,20,0.35)', 'rgba(10,6,20,0.6)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
                     </>
                   ) : null}
