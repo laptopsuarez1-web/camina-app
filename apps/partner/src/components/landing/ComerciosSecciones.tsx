@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO } from '@/lib/plans';
-import { InView, Kinetic, Parallax } from './Motion';
+import { InView, Kinetic } from './Motion';
 import Trail from './Trail';
-import { Shot, CAP, Deslizable, FloatCards, WA } from './shared';
+import { Shot, CAP, Deslizable, WA } from './shared';
 
 const WA_DUDA = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
 
@@ -21,11 +21,10 @@ export function HeroComercio() {
             <Link className="lp-btn mint" href="/registro" data-medir="comercios_hero_sumar">Sumar mi comercio</Link>
           </div>
         </div>
-        <div className="stage">
-          <Parallax speed={0.06}>
-            <div className="phone hero-phone"><Shot src={CAP.canjes.replace('.jpg', '-dark.jpg')} alt="Pantalla de canjes con comercios y descuentos" width={780} height={1688} priority sizes="280px" /></div>
-          </Parallax>
-          <FloatCards para="comercios" />
+        <div className="fan" aria-label="Pantallas reales de la app: canjes, ficha del local y calificación">
+          <div className="phone f-l"><Shot src={CAP.fichaLocal.replace('.jpg', '-dark.jpg')} alt="Pantalla: ficha del local" width={780} height={1688} sizes="(min-width:900px) 200px, 34vw" /></div>
+          <div className="phone f-c"><Shot src={CAP.canjes.replace('.jpg', '-dark.jpg')} alt="Pantalla: lista de canjes con comercios y descuentos" width={780} height={1688} priority sizes="(min-width:900px) 250px, 42vw" /></div>
+          <div className="phone f-r"><Shot src={CAP.resenaHistoria.replace('.jpg', '-dark.jpg')} alt="Pantalla: la app invita a calificar tu local" width={780} height={1688} sizes="(min-width:900px) 200px, 34vw" /></div>
         </div>
       </div>
     </section>

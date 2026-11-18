@@ -314,3 +314,11 @@
 .lp-comercios .idea-card .lp-cta{justify-content:center}
 @media(min-width:760px){.lp.lp-comercios .gana{grid-template-columns:repeat(3,1fr);gap:16px}.lp.lp-comercios .gana li{padding:24px}.lp.lp-comercios .gana h3{font-size:20px}.lp.lp-comercios .gana p{font-size:15.5px}}
 .lp-comercios .gana + .gal-nota{margin-top:16px}
+
+/* Para comercios: tres pantallas reales en abanico. */
+.lp-comercios .fan{display:flex;justify-content:center;align-items:center;padding:8px 0 28px}
+.lp.lp-comercios .fan .phone{flex:none;width:34%;max-width:210px}
+.lp.lp-comercios .fan .f-c{width:42%;max-width:260px;margin:0 -6%;z-index:2}
+.lp.lp-comercios .fan .f-l{transform:rotate(-7deg) translateY(26px)}
+.lp.lp-comercios .fan .f-r{transform:rotate(7deg) translateY(26px)}
+@media(min-width:900px){.lp-comercios .fan{padding:0}}
