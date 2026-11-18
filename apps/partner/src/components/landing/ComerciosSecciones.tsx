@@ -33,12 +33,12 @@ export function HeroComercio() {
 }
 
 const GANA_NEGOCIO = [
-  ['Llega gente nueva', 'Te descubren en el mapa de la app. Con la Ruta del mes, personas nuevas llegan a comprar sin que des descuento.'],
+  ['Llega gente nueva', 'Te descubren en el mapa de la app. Además, la Ruta del mes le asigna 3 locales sorpresa a cada persona que decide participar y el tuyo puede tocarle. Es una oportunidad, no una garantía: cada persona decide si compra.'],
   ['Personas que vienen caminando', 'Cada canje es alguien que caminó hasta tu local, con ganas de conocerte.'],
   ['Tú pones el beneficio', 'Un descuento o un regalo, con tus cupos por día, tus días y tus horarios.'],
   ['Más visibilidad', 'Tu ficha con fotos, horarios y redes, y tu pin en el mapa de Camina.'],
-  ['Vuelven a comprar', 'Camina te muestra quién vuelve y los premia como clientes Visitante, Habitual y Fan.'],
-  ['Una comunidad que busca beneficios', 'Personas que caminan cada día y te recomiendan con reseñas en Google Maps e historias.'],
+  ['Vuelven a comprar', 'Cada persona sube de nivel en tu local: Visitante desde su primer punto, Habitual con 10 y Fan con 20. Suman los canjes y visitas confirmados, las reseñas y las historias. Son puntos de nivel, no Puntos de Camina.'],
+  ['Una comunidad que busca beneficios', 'Personas que caminan cada día. Después de un canje pueden, si quieren, calificar tu local en Google Maps (con el link que cargas en tu ficha) y subir una historia a Instagram. Depende de cada persona.'],
 ];
 export function GanaNegocio() {
   return (
@@ -110,6 +110,13 @@ export function AsiSeVeNegocio() {
 }
 
 // Planes y precios: mismos datos de lib/plans.ts, sin cambios. El cupo fundador va primero para que se vea.
+// Textos de esta página para tres puntos de los planes (más claros). Precios, planes y reglas no cambian; panel y registro siguen con los suyos.
+const TEXTO_PLAN: Record<string, [string, string]> = {
+  'Mínimo 3 cupones por día': ['Mínimo 3 cupos por día', 'Son cupos que quedan disponibles para tus clientes. No son clientes garantizados.'],
+  '1 premio gratis y, con él, 1 más': ['1 premio gratis y 1 descuento', 'Primero creas un premio gratis y después puedes sumar un descuento. Máximo 2 premios.'],
+  'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': ['Tarjeta de fidelidad Camina', 'Cada canje en cualquier comercio suma un sello. Con 5 sellos la persona elige un premio gratis entre los comercios que participan, y el tuyo aparece entre esas opciones. Tú pones el premio y no se descuentan Puntos.'],
+};
+
 export function PlanesComercio() {
   return (
     <section className="lp-sec alt" id="planes">
@@ -131,7 +138,10 @@ export function PlanesComercio() {
               <p className="price">{p.price}</p>
               {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}</p>}
               <p className="blurb">{p.blurb}</p>
-              <ul>{p.features.map((f) => <li key={f}>{f}{PLAN_EXPLICA[f] ? <small className="plan-exp">{PLAN_EXPLICA[f]}</small> : null}</li>)}</ul>
+              <ul>{p.features.map((f) => {
+                const [t, e] = TEXTO_PLAN[f] ?? [f, PLAN_EXPLICA[f]];
+                return <li key={f}>{t}{e ? <small className="plan-exp">{e}</small> : null}</li>;
+              })}</ul>
               <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href={`/registro?plan=${p.id}`}>
                 {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme y elegir este plan'}
               </Link>
