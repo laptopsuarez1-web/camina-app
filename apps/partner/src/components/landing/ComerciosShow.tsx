@@ -76,7 +76,6 @@ export function HeroComercio() {
           <p className="sub">En Camina, las personas ganan Puntos por caminar y los canjean en comercios de su zona. Suma el tuyo.</p>
           <div className="lp-cta">
             <Link className="lp-btn mint cx-btn" href="/registro" data-medir="comercios_hero_sumar">Sumar mi comercio</Link>
-            <span className="cx-free">Empieza gratis</span>
           </div>
         </div>
 
