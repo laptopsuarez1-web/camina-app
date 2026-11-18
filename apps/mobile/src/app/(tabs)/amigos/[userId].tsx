@@ -9,13 +9,11 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { GoalBar } from '@/components/ui/GoalBar';
 import { PersonAvatar } from '@/components/friends/PersonAvatar';
-import { ChevronLeft, ChevronRight, DotsThree, Check, X } from '@/components/icons';
+import { ChevronLeft, ChevronRight, DotsThree } from '@/components/icons';
 import { useTabBarSpace } from '@/components/ui/GlassTabBar';
 import { useFriendCard, useFriendActions, useFriendExtras, type Friend } from '@/hooks/useFriends';
 import { useQueryClient } from '@tanstack/react-query';
 import { REPORT_REASONS, reportContent, useBlocks } from '@/hooks/useModeration';
-import { buildDayCells, compactSteps, WEEK_LABELS, type DayCell } from '@/lib/friend-week';
-import { localDay } from '@/lib/format';
 import { friendlyServerError } from '@/lib/errors';
 import { useAuthStore } from '@/store/useAuthStore';
 import { celebrate } from '@/store/useCelebrationStore';
@@ -24,27 +22,13 @@ import { typo } from '@/theme/type';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { BadgesCard } from '@/components/badges/BadgesCard';
 import { useUserBadges } from '@/hooks/useBadges';
-
-// Círculo de un día: verde con tilde = llegó a la meta, rojo = abrió la app y no llegó, gris = no abrió la app, vacío = todavía no.
-function DayDot({ cell, size }: { cell: DayCell; size: number }) {
-  const { dark, line } = useThemeColors();
-  const fill = cell.state === 'met' ? colors.aquaDeep : cell.state === 'miss' ? (dark ? 'rgba(255,131,136,0.28)' : '#FBDADB') : cell.state === 'idle' ? (dark ? 'rgba(255,255,255,0.12)' : '#E7E1F0') : 'transparent';
-  return (
-    <View
-      style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: fill, borderWidth: cell.state === 'none' ? 1.5 : 0, borderColor: cell.isToday ? colors.aqua : line, alignItems: 'center', justifyContent: 'center' }}
-    >
-      {cell.state === 'met' ? <Check size={Math.round(size * 0.42)} color="#fff" /> : cell.state === 'miss' ? <X size={Math.round(size * 0.36)} color={dark ? colors.dangerSoft : colors.dangerInk} /> : null}
-    </View>
-  );
-}
+import { FriendActivityCard } from '@/components/friends/FriendActivityCard';
 
 // Promedio de pasos por día de los últimos `n` días (con el día de hoy ya contado).
 function periodAvg(days: { day: string; steps: number }[], n: number) {
   const recent = [...days].sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, n);
   return recent.length ? Math.round(recent.reduce((t, d) => t + d.steps, 0) / recent.length) : 0;
 }
-
-const STATE_TEXT: Record<DayCell['state'], string> = { met: 'llegó a la meta', miss: 'no llegó a la meta', idle: 'no abrió la app', none: 'sin datos' };
 
 export default function FriendProfileScreen() {
   const tabSpace = useTabBarSpace();
@@ -72,7 +56,6 @@ export default function FriendProfileScreen() {
   // Para el comparativo: mi propia ficha (trae mi promedio) y, de ella, los Puntos y los grupos en común.
   const { data: myCard } = useFriendCard(card?.relation === 'friend' ? meId : undefined);
   const { data: extras } = useFriendExtras(userId, card?.relation === 'friend');
-  const [span, setSpan] = useState<'semana' | 'mes'>('semana');
   const [menu, setMenu] = useState(false);
   const [cmpSpan, setCmpSpan] = useState<'semana' | 'mes'>('semana');
   const [reasons, setReasons] = useState(false);
@@ -83,7 +66,6 @@ export default function FriendProfileScreen() {
   const isSelf = card?.relation === 'self';
   const isFriend = card?.relation === 'friend';
   const showData = isSelf || isFriend;
-  const cells = buildDayCells(card?.days ?? [], localDay(), span === 'semana' ? 1 : 5);
 
   function confirmRemove() {
     Alert.alert(`¿Quitar a ${card?.full_name}?`, 'Dejan de ver los pasos del otro. No le avisamos.', [
@@ -214,11 +196,6 @@ export default function FriendProfileScreen() {
           </View>
         </ProfileBanner>
 
-        {/* Insignias: son públicas, las ve cualquiera (amigo o no). Van primero, montadas sobre el banner. */}
-        {hasBadges && showData ? (
-          <View className="mx-5 -mt-7 mb-1"><BadgesCard badges={badges} own={!!isSelf} userId={userId} /></View>
-        ) : null}
-
         {/* Quien no es amigo: arriba la tarjeta de números (si la persona aparece en el ranking) y debajo las insignias. */}
         {card && !showData && card.streak != null ? statsCard('-mt-7') : null}
         {card && !showData && hasBadges ? (
@@ -257,55 +234,16 @@ export default function FriendProfileScreen() {
           <>
             {/* En claro la tarjeta NO usa el vidrio nativo: en iPhone el vidrio refracta el encabezado oscuro que tiene detrás y deja una banda oscura sobre los números.
                 Es una tarjeta de superficie lila-blanca (mismo borde, radio y sombra que el vidrio). En oscuro sigue el vidrio de siempre. */}
-            {statsCard(hasBadges ? 'mt-2' : '-mt-7')}
+            {statsCard('-mt-7')}
+            {hasBadges ? (
+              <View className="mx-5 mt-3"><BadgesCard badges={badges} own={!!isSelf} userId={userId} /></View>
+            ) : null}
 
-            <View className="flex-row items-center justify-between mx-5 mt-5 mb-2.5">
-              <Text accessibilityRole="header" style={[typo.section, { color: text }]}>{span === 'semana' ? 'Esta semana' : 'Último mes'}</Text>
-              <View className="flex-row" style={{ gap: 6 }}>
-                {(['semana', 'mes'] as const).map((k) => (
-                  <Press
-                    key={k}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: span === k }}
-                    haptic="selection"
-                    onPress={() => setSpan(k)}
-                    className="rounded-full px-3 py-1.5"
-                    style={{ backgroundColor: span === k ? colors.aquaDeep : 'transparent', borderWidth: 1, borderColor: span === k ? colors.aquaDeep : line }}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: span === k ? '#fff' : text }}>{k === 'semana' ? '7 días' : 'Mes'}</Text>
-                  </Press>
-                ))}
-              </View>
+            {/* Su actividad: la misma tarjeta de la pantalla Actividad (barras de 7 días y curva de 30 días). */}
+            <Text accessibilityRole="header" className={`mx-5 ${hasBadges ? 'mt-3' : 'mt-6'} mb-2.5`} style={[typo.section, { color: text }]}>Actividad</Text>
+            <View className="mx-5">
+              <FriendActivityCard days={card.days ?? []} goal={card.goal ?? 0} streak={card.streak ?? 0} />
             </View>
-
-            <Glass className="rounded-3xl mx-5 px-2.5 py-4">
-              {span === 'semana' ? (
-                <View className="flex-row justify-between">
-                  {cells.map((c) => (
-                    <View key={c.key} accessible accessibilityLabel={`${c.label} ${c.key.slice(8)}: ${c.steps.toLocaleString('es-BO')} pasos, ${STATE_TEXT[c.state]}`} className="items-center" style={{ gap: 6, flex: 1 }}>
-                      <DayDot cell={c} size={38} />
-                      <Text className="text-[12px] font-bold text-muted-light dark:text-muted-dark">{c.label}</Text>
-                      <Text className="text-[12px] text-muted-light dark:text-muted-dark" style={{ fontVariant: ['tabular-nums'] }}>{c.state === 'none' && c.steps === 0 ? '·' : compactSteps(c.steps)}</Text>
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <View style={{ gap: 8 }}>
-                  <View className="flex-row justify-between">
-                    {WEEK_LABELS.map((l) => <Text key={l} className="flex-1 text-center text-[12px] font-bold text-muted-light dark:text-muted-dark">{l}</Text>)}
-                  </View>
-                  {Array.from({ length: 5 }, (_, w) => (
-                    <View key={w} className="flex-row justify-between">
-                      {cells.slice(w * 7, w * 7 + 7).map((c) => (
-                        <View key={c.key} accessible accessibilityLabel={`${c.key.slice(8)}: ${c.steps.toLocaleString('es-BO')} pasos, ${STATE_TEXT[c.state]}`} className="flex-1 items-center">
-                          <DayDot cell={c} size={32} />
-                        </View>
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              )}
-            </Glass>
             {isFriend && myCard ? (
               <>
                 <View className="flex-row items-center justify-between mx-5 mt-6 mb-2.5">
