@@ -406,8 +406,8 @@ export function DescargaGente() {
             <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
           </div>
           <div className="lp-cta">
-            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
-            <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
+            <a className="lp-btn mint" href={EMAIL_AVISAME} data-medir="descargar_avisame">Avísame cuando salga</a>
+            <Link className="lp-btn ghost" href="/comercios" data-medir="inicio_tengo_comercio_final">Tengo un comercio</Link>
           </div>
         </div>
         <MarcaFinal />
@@ -554,8 +554,8 @@ export function SoyComercio() {
         <Kinetic text="¿Tienes un *comercio?*" />
         <p className="lead">Suma tu local a Camina y recibe personas que ya van caminando por tu zona.</p>
         <div className="lp-cta">
-          <Link className="lp-btn dark" href="/comercios">Ver cómo sumarme</Link>
-          <Link className="lp-btn line" href="/registro">Registrar mi comercio</Link>
+          <Link className="lp-btn dark" href="/comercios" data-medir="inicio_ver_comercios">Ver cómo sumarme</Link>
+          <Link className="lp-btn line" href="/registro" data-medir="registro_comercio_inicio">Registrar mi comercio</Link>
         </div>
       </div>
     </section>
@@ -893,11 +893,11 @@ export function HeroGente() {
       <Trail className="hero-trail" n={22} flat />
       <div className="wrap">
         <div className="copy">
-          <Kinetic as="h1" text="Tu caminata de todos los días ahora vale *Puntos.*" />
-          <p className="sub">Camina cuenta tus pasos y los convierte en Puntos que canjeas por descuentos o premios gratis en los comercios de tu ciudad. Tú solo camina, y es gratis.</p>
-          <div className="stores">
-            <span className="store" aria-disabled="true"><small>Próximamente en</small>App Store</span>
-            <span className="store" aria-disabled="true"><small>Próximamente en</small>Google Play</span>
+          <Kinetic as="h1" text="Camina, suma puntos y *gana* *premios.*" />
+          <p className="sub">Camina cuenta tus pasos y los convierte en Puntos que canjeas por descuentos o premios gratis en los comercios de tu ciudad. Es gratis.</p>
+          <div className="lp-cta">
+            <a className="lp-btn mint" href="#descargar" data-medir="inicio_quiero_usar">Quiero usar Camina</a>
+            <Link className="lp-btn ghost" href="/comercios" data-medir="inicio_tengo_comercio">Tengo un comercio</Link>
           </div>
         </div>
       </div>
@@ -1064,8 +1064,8 @@ export function CierreGente() {
           </div>
           <p className="free-line">Gratis para todos</p>
           <div className="lp-cta">
-            <a className="lp-btn mint" href={EMAIL_AVISAME}>Avísame cuando salga</a>
-            <Link className="lp-btn ghost" href="/comercios">Tengo un comercio</Link>
+            <a className="lp-btn mint" href={EMAIL_AVISAME} data-medir="descargar_avisame">Avísame cuando salga</a>
+            <Link className="lp-btn ghost" href="/comercios" data-medir="inicio_tengo_comercio_final">Tengo un comercio</Link>
           </div>
         </div>
         <MarcaFinal />

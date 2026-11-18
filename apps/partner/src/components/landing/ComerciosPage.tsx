@@ -22,8 +22,8 @@ export default function ComerciosPage() {
                 Camina premia a las personas por caminar y las lleva a los comercios de su zona. Suma el tuyo y elige qué dar: un descuento o un regalo.
               </p>
               <div className="lp-cta">
-                <Link className="lp-btn mint" href="/registro">Registrar mi comercio</Link>
-                <a className="lp-btn ghost" href={WA_COMERCIO}>Tengo una duda</a>
+                <Link className="lp-btn mint" href="/registro" data-medir="registro_comercio_hero">Registrar mi comercio</Link>
+                <a className="lp-btn ghost" href={WA_COMERCIO} data-medir="comercios_duda_whatsapp">Tengo una duda</a>
               </div>
             </div>
             <div className="stage">
