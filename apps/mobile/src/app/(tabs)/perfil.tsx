@@ -422,6 +422,7 @@ export default function PerfilScreen() {
         <SectionLabel>Ayuda</SectionLabel>
         <Glass className="rounded-2xl overflow-hidden mb-4">
           <Row label="Escribir a soporte" hint={SUPPORT_EMAIL} onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Camina`)} right={chev} />
+          <Row label="Conoce Camina · caminaapp.com" onPress={() => Linking.openURL('https://caminaapp.com')} right={chev} />
           <Row label="Términos y privacidad" onPress={() => router.push('/legal')} right={chev} last={blocks.list.length === 0} />
           {blocks.list.length > 0 && (
             <View className="px-4 py-3 border-t border-line-light dark:border-line-dark">
