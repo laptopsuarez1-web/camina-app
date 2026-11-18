@@ -3,7 +3,6 @@ import ComerciosPage from '@/components/landing/ComerciosPage';
 
 export const metadata: Metadata = {
   title: 'Camina para comercios — Tus próximos clientes ya están caminando',
-  alternates: { canonical: '/comercios' },
   description: 'Suma tu comercio a Camina: aparece en el mapa, elige tu descuento o regalo y recibe personas que ya van caminando por tu zona.',
   openGraph: {
     title: 'Camina para comercios',

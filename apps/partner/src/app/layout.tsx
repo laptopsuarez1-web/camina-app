@@ -18,22 +18,22 @@ const jakarta = localFont({
 // nombre interno del proyecto.
 export const metadata: Metadata = {
   metadataBase: new URL('https://caminaapp.com'),
-  title: { default: 'Camina — Camina, suma puntos y gana premios', template: '%s' },
-  description: 'Camina cuenta tus pasos y los convierte en Puntos para canjear descuentos y premios en comercios de Bolivia. Gratis.',
+  title: 'Camina — Panel de comercios',
+  description: 'Gestiona tus premios, tus canjes y tu plan en Camina.',
   applicationName: 'Camina',
   openGraph: {
     type: 'website',
     siteName: 'Camina',
     locale: 'es_BO',
-    title: 'Camina — Camina, suma puntos y gana premios',
-    description: 'Tus pasos se convierten en Puntos que canjeas por descuentos y premios en comercios de tu ciudad.',
-    images: [{ url: '/web/og.jpg', width: 1200, height: 630, alt: 'Camina: camina, suma puntos y gana premios' }],
+    title: 'Camina — Panel de comercios',
+    description: 'Registra tu comercio, publica tus premios y valida canjes en Camina.',
+    images: [{ url: '/camina-logo.png', alt: 'Camina' }],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Camina — Camina, suma puntos y gana premios',
-    description: 'Tus pasos se convierten en Puntos que canjeas por descuentos y premios en comercios de tu ciudad.',
-    images: ['/web/og.jpg'],
+    card: 'summary',
+    title: 'Camina — Panel de comercios',
+    description: 'Registra tu comercio, publica tus premios y valida canjes en Camina.',
+    images: ['/camina-logo.png'],
   },
 };
 
