@@ -138,13 +138,11 @@ export default function InicioPage() {
       </div>
 
       {/* Solo tres números, sin palabras raras. */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
-        <StatCard label={mes ? `Personas que trajo Camina en ${mes}` : 'Personas que trajo Camina este mes'} value={resumen ? resumen.personas : '—'} accent="#4FC3A8" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-5">
         <StatCard label={mes ? `Canjes en ${mes}` : 'Canjes este mes'} value={resumen ? resumen.canjes : '—'} accent="var(--c-text)" />
-        {todayQuotaTotal != null ? (
+        <StatCard label="Visitas de la Ruta del mes" value={resumen ? resumen.ruta : '—'} accent="var(--c-text)" />
+        {todayQuotaTotal != null && (
           <StatCard label="Cupones que quedan hoy" value={`${todayQuotaLeft ?? 0} de ${todayQuotaTotal}`} accent="#4FC3A8" />
-        ) : (
-          <StatCard label="Visitas de la Ruta del mes" value={resumen ? resumen.ruta : '—'} accent="var(--c-text)" />
         )}
       </div>
 
@@ -195,14 +193,6 @@ export default function InicioPage() {
           {redemptions.length === 0 && <p className="text-muted text-[13px] py-2">Todavía no hay canjes. Cuando alguien use un premio, lo ves aquí.</p>}
         </div>
       </div>
-
-      <Link href="/cuenta" className="flex items-center justify-between bg-card border border-line rounded-2xl px-4.5 py-3.5 mb-5 text-sm">
-        <span>
-          <span className="block font-semibold">Mi correo y contraseña</span>
-          <span className="block text-muted text-[12.5px] mt-0.5">Cámbialos cuando quieras.</span>
-        </span>
-        <ChevronRight size={16} />
-      </Link>
 
       {/* El detalle sigue disponible, pero cerrado: no abruma al entrar. */}
       {business && resumen && (
