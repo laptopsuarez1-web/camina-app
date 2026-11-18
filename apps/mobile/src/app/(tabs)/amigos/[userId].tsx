@@ -202,6 +202,12 @@ export default function FriendProfileScreen() {
           <View className={`mx-5 ${card.streak != null ? 'mt-3' : '-mt-7'}`}><BadgesCard badges={badges} own={false} userId={userId} /></View>
         ) : null}
 
+        {/* Quien no es amigo: arriba la tarjeta de números (si la persona aparece en el ranking) y debajo las insignias. */}
+        {card && !showData && card.streak != null ? statsCard('-mt-7') : null}
+        {card && !showData && hasBadges ? (
+          <View className={`mx-5 ${card.streak != null ? 'mt-3' : '-mt-7'}`}><BadgesCard badges={badges} own={false} userId={userId} /></View>
+        ) : null}
+
         {card && !showData && (
           <Glass className={`rounded-3xl p-4 mx-5 ${hasBadges ? 'mt-0' : card.streak != null ? 'mt-3' : '-mt-7'}`} style={{ gap: 10 }}>
             <Text className="text-[13px] text-center text-muted-light dark:text-muted-dark" style={{ lineHeight: 18 }}>
