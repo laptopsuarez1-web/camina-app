@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ImagePlus } from 'lucide-react';
+import { ImagePlus, Store, Globe, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -264,13 +264,13 @@ export default function RegistroPage() {
 
           {actual === 'tipo' && (
             <>
-              <h1 className="text-[22px] font-bold mb-1">¿Cómo quieres usar Camina?</h1>
-              <p className="text-muted text-[13px] mb-5">Elige qué quieres sumar a Camina.</p>
+              <h1 className="text-[22px] font-bold mb-1">¿Qué tienes para la gente que camina?</h1>
+              <p className="text-muted text-[13px] mb-5">Elige lo que más se parece a ti. Después te pedimos solo lo necesario.</p>
               <div className="flex flex-col gap-3 mb-6">
                 {[
-                  { id: 'fisico', k: 'commerce' as const, virtual: false, t: 'Comercio físico', d: 'Suma tu local y ofrece premios o descuentos.' },
-                  { id: 'online', k: 'commerce' as const, virtual: true, t: 'Tienda online', d: 'Suma tu tienda y ofrece premios o descuentos por internet.' },
-                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Productora de eventos', d: 'Publica tus eventos o sorteos dentro de la app.' },
+                  { id: 'fisico', k: 'commerce' as const, virtual: false, t: 'Tengo un local', d: 'Recibe visitas de gente que llega caminando y dale premios por venir.', ico: Store },
+                  { id: 'online', k: 'commerce' as const, virtual: true, t: 'Vendo por internet', d: 'Da premios que se canjean por tu WhatsApp, tus redes o tu página.', ico: Globe },
+                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Organizo eventos', d: 'Publica eventos, desafíos y sorteos para quienes caminan con Camina.', ico: PartyPopper },
                 ].map((o) => {
                   const on = kind === o.k && (o.k === 'events_only' || esVirtual === o.virtual);
                   return (
@@ -285,8 +285,15 @@ export default function RegistroPage() {
                       className="text-left rounded-2xl p-5 border-2 text-text"
                       style={{ borderColor: on ? 'var(--color-aqua)' : 'var(--c-line)', background: on ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
                     >
-                      <p className="font-bold text-[16px]">{o.t}</p>
-                      <p className="text-muted text-[13px] mt-1 leading-5">{o.d}</p>
+                      <div className="flex items-start gap-3.5">
+                        <span className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: on ? '#62F0B6' : 'var(--c-purple-light)' }}>
+                          <o.ico size={20} color={on ? '#12281f' : '#8B4FD1'} />
+                        </span>
+                        <span>
+                          <span className="block font-bold text-[16px]">{o.t}</span>
+                          <span className="block text-muted text-[13px] mt-1 leading-5">{o.d}</span>
+                        </span>
+                      </div>
                     </button>
                   );
                 })}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
+import { Gift, Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
@@ -166,7 +166,7 @@ export default function BeneficioPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={b.image_url} alt={b.name} className="w-[76px] h-[76px] rounded-2xl object-cover shrink-0" />
             ) : (
-              <div className="w-[76px] h-[76px] rounded-2xl bg-bg shrink-0" />
+              <div className="w-[76px] h-[76px] rounded-2xl bg-purple-light shrink-0 flex items-center justify-center"><Gift size={26} color="#8B4FD1" /></div>
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -821,7 +821,7 @@ function BeneficioForm({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={imageUrl} alt="" className="w-full h-[170px] object-cover" />
                 ) : (
-                  <div className="w-full h-[120px] bg-[#241748]" />
+                  <div className="w-full h-[120px] bg-purple-light flex items-center justify-center"><Gift size={38} color="#8B4FD1" /></div>
                 )}
                 <div className="p-4">
                   <p className="text-[16px] font-bold leading-tight">{nombre.trim() || 'Sin nombre'}</p>
