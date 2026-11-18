@@ -1,8 +1,21 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { PLANS, PLAN_EXPLICA, WHATSAPP_NUMBER, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO } from '@/lib/plans';
 import { InView, Kinetic } from './Motion';
 import Trail from './Trail';
 import { Shot, CAP, Deslizable, WA } from './shared';
+
+// Marco de iPhone con isla dinámica alrededor de una captura real de la app.
+function IPhone({ src, alt, prioridad, sizes, className = '' }: { src: string; alt: string; prioridad?: boolean; sizes: string; className?: string }) {
+  return (
+    <div className={`ip ${className}`}>
+      <div className="ip-screen">
+        <span className="ip-island" aria-hidden="true" />
+        <Shot src={src} alt={alt} width={780} height={1688} sizes={sizes} priority={prioridad} />
+      </div>
+    </div>
+  );
+}
 
 const WA_DUDA = WA('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.');
 
@@ -22,15 +35,16 @@ export function HeroComercio() {
           </div>
         </div>
         <div className="fan" aria-label="Pantallas reales de la app: canjes, ficha del local y calificación">
-          <div className="phone f-l"><Shot src={CAP.fichaLocal.replace('.jpg', '-dark.jpg')} alt="Pantalla: ficha del local" width={780} height={1688} sizes="(min-width:900px) 200px, 34vw" /></div>
-          <div className="phone f-c"><Shot src={CAP.canjes.replace('.jpg', '-dark.jpg')} alt="Pantalla: lista de canjes con comercios y descuentos" width={780} height={1688} priority sizes="(min-width:900px) 250px, 42vw" /></div>
-          <div className="phone f-r"><Shot src={CAP.resenaHistoria.replace('.jpg', '-dark.jpg')} alt="Pantalla: la app invita a calificar tu local" width={780} height={1688} sizes="(min-width:900px) 200px, 34vw" /></div>
+          <IPhone className="f-l" src={CAP.fichaLocal.replace('.jpg', '-dark.jpg')} alt="Pantalla: ficha del local" sizes="(min-width:900px) 190px, 30vw" />
+          <IPhone className="f-c" src={CAP.canjes.replace('.jpg', '-dark.jpg')} alt="Pantalla: lista de canjes con comercios y descuentos" sizes="(min-width:900px) 250px, 40vw" prioridad />
+          <IPhone className="f-r" src={CAP.resenaHistoria.replace('.jpg', '-dark.jpg')} alt="Pantalla: la app invita a calificar tu local" sizes="(min-width:900px) 190px, 30vw" />
         </div>
       </div>
     </section>
   );
 }
 
+const NIVELES = ['Visitante · desde el 1.er punto', 'Habitual · 10 puntos', 'Fan · 20 puntos'];
 const GANA_NEGOCIO = [
   ['Llega gente nueva', 'Te descubren en el mapa de la app. Además, la Ruta del mes le asigna 3 locales sorpresa a cada persona que decide participar y el tuyo puede tocarle. Es una oportunidad, no una garantía: cada persona decide si compra.'],
   ['Personas que vienen caminando', 'Cada canje es alguien que caminó hasta tu local, con ganas de conocerte.'],
@@ -50,9 +64,16 @@ export function GanaNegocio() {
             <InView as="li" key={t} delay={(i % 2) * 90}>
               <h3>{t}</h3>
               <p>{d}</p>
+              {t === 'Vuelven a comprar' && <div className="chips niveles">{NIVELES.map((n) => <span key={n}>{n}</span>)}</div>}
             </InView>
           ))}
         </ul>
+        <InView className="ruta-card" delay={80}>
+          <p className="kick">Ruta del mes · sin pagar plan</p>
+          <h3>Tu local puede aparecer en la Ruta del mes, aunque estés en el plan gratis.</h3>
+          <p>Cada mes, las personas que participan reciben 3 locales sorpresa para visitar y tu local puede ser uno de ellos. Tú no das descuento ni regalo: si compran, pagan como cualquier cliente.</p>
+          <p className="ruta-aviso">Es una oportunidad de visibilidad, no una garantía de visitas ni de compras.</p>
+        </InView>
         <p className="gal-nota">Camina te trae personas, pero no garantiza ventas: los resultados dependen de tu local y de lo que ofrezcas.</p>
       </div>
     </section>
@@ -116,12 +137,57 @@ const TEXTO_PLAN: Record<string, [string, string]> = {
   'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': ['Tarjeta de fidelidad Camina', 'Cada canje en cualquier comercio suma un sello. Con 5 sellos la persona elige un premio gratis entre los comercios que participan, y el tuyo aparece entre esas opciones. Tú pones el premio y no se descuentan Puntos.'],
 };
 
+type Vista = { src: string; alt: string; t: string; d: string; app?: boolean };
+const VISTAS: Record<string, Vista[]> = {
+  primer_paso: [
+    { src: '/web/cap/ficha-local-dark.jpg', alt: 'Pantalla de la app: ficha de un comercio', t: 'Tu ficha en la app', d: 'Fotos, horarios, tus descuentos y cómo llegar.', app: true },
+    { src: '/guia-registro/p-mapa.jpg', alt: 'Panel: ubicación del local en el mapa', t: 'Tu lugar en el mapa', d: 'Marcas dónde está tu local y apareces en el mapa de Camina.' },
+  ],
+  paso_firme: [
+    { src: '/guia-registro/p-estadisticas.jpg', alt: 'Panel: estadísticas de canjes', t: 'Estadísticas básicas', d: 'Canjes por día y horas con más visitas.' },
+    { src: '/guia-registro/p-canjes.jpg', alt: 'Panel: canjes confirmados', t: 'Tus canjes', d: 'Tu código del local y cada canje confirmado.' },
+    { src: '/guia-registro/p-tarjeta.jpg', alt: 'Panel: tarjeta de fidelidad', t: 'Tarjeta de fidelidad', d: 'Eliges el premio que aparece entre las opciones de los clientes.' },
+  ],
+  paso_adelante: [
+    { src: '/web/cap/canjes-dark.jpg', alt: 'Pantalla de la app: local destacado con borde dorado', t: 'Pin destacado y primero', d: 'Tu local sale arriba en su categoría, con borde dorado.', app: true },
+    { src: '/guia-registro/p-avisos.jpg', alt: 'Panel: avisos cercanos', t: 'Avisos cercanos', d: 'Mandas un aviso a quienes caminan cerca de tu local.' },
+    { src: '/guia-registro/p-eventos.jpg', alt: 'Panel: desafíos y eventos', t: 'Desafíos y eventos', d: 'Publicas un desafío o un evento para la comunidad.' },
+  ],
+};
+
+function VerIncluye({ plan }: { plan: string }) {
+  const vistas = VISTAS[plan];
+  if (!vistas) return null;
+  return (
+    <details className="plan-ver">
+      <summary>Ver qué incluye</summary>
+      <div className="plan-ver-row">
+        {vistas.map((v) => (
+          <figure key={v.src} className={v.app ? 'pv-app' : 'pv-panel'}>
+            {v.app ? (
+              <IPhone src={v.src} alt={v.alt} sizes="140px" />
+            ) : (
+              <Image src={v.src} alt={v.alt} width={1920} height={1230} sizes="260px" />
+            )}
+            <figcaption><b>{v.t}</b>{v.d}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="plan-ver-nota">Capturas reales de Camina; los datos son de ejemplo.</p>
+    </details>
+  );
+}
+
 export function PlanesComercio() {
   return (
     <section className="lp-sec alt" id="planes">
       <div className="wrap">
         <p className="kick">Planes</p>
         <Kinetic text="Elige cómo *empezar.*" />
+        <div className="gratis-card">
+          <h3>Aparecer en Camina es gratis.</h3>
+          <p>Con Primer Paso tu local ya está en el mapa de la app, con tu ficha y tu primer premio. No necesitas pagar para formar parte de Camina. Los planes de pago suman herramientas y beneficios extra.</p>
+        </div>
         {CUPO_FUNDADOR_ABIERTO && (
           <div className="fund fund-top">
             <b>Los primeros 20 comercios tienen 3 meses gratis de Paso Firme.</b>
@@ -141,6 +207,7 @@ export function PlanesComercio() {
                 const [t, e] = TEXTO_PLAN[f] ?? [f, PLAN_EXPLICA[f]];
                 return <li key={f}>{t}{e ? <small className="plan-exp">{e}</small> : null}</li>;
               })}</ul>
+              <VerIncluye plan={p.id} />
               <Link className={`lp-btn ${p.id === 'primer_paso' ? 'dark' : 'mint'} plan-cta`} href={`/registro?plan=${p.id}`}>
                 {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme y elegir este plan'}
               </Link>
