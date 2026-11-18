@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ImagePlus, Store, Globe, PartyPopper } from 'lucide-react';
+import { ImagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -264,40 +264,47 @@ export default function RegistroPage() {
 
           {actual === 'tipo' && (
             <>
-              <h1 className="text-[22px] font-bold mb-1">¿Qué tienes para la gente que camina?</h1>
-              <p className="text-muted text-[13px] mb-5">Elige lo que más se parece a ti. Después te pedimos solo lo necesario.</p>
-              <div className="flex flex-col gap-3 mb-6">
+              <h1 className="text-[22px] font-bold mb-1">¿Cómo quieres usar Camina?</h1>
+              <p className="text-muted text-[13px] mb-5">Elige el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
+              <div className="flex flex-col gap-2.5 mb-5">
                 {[
-                  { id: 'fisico', k: 'commerce' as const, virtual: false, t: 'Tengo un local', d: 'Recibe visitas de gente que llega caminando y dale premios por venir.', ico: Store },
-                  { id: 'online', k: 'commerce' as const, virtual: true, t: 'Vendo por internet', d: 'Da premios que se canjean por tu WhatsApp, tus redes o tu página.', ico: Globe },
-                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Organizo eventos', d: 'Publica eventos, desafíos y sorteos para quienes caminan con Camina.', ico: PartyPopper },
-                ].map((o) => {
-                  const on = kind === o.k && (o.k === 'events_only' || esVirtual === o.virtual);
-                  return (
-                    <button
-                      type="button"
-                      key={o.id}
-                      onClick={() => {
-                        setKind(o.k);
-                        if (o.k === 'commerce') setEsVirtual(o.virtual);
-                      }}
-                      aria-pressed={on}
-                      className="text-left rounded-2xl p-5 border-2 text-text"
-                      style={{ borderColor: on ? 'var(--color-aqua)' : 'var(--c-line)', background: on ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
-                    >
-                      <div className="flex items-start gap-3.5">
-                        <span className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: on ? '#62F0B6' : 'var(--c-purple-light)' }}>
-                          <o.ico size={20} color={on ? '#12281f' : '#8B4FD1'} />
-                        </span>
-                        <span>
-                          <span className="block font-bold text-[16px]">{o.t}</span>
-                          <span className="block text-muted text-[13px] mt-1 leading-5">{o.d}</span>
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                  { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y descuentos para canje' },
+                  { v: 'events_only' as const, t: 'Productora de eventos', d: 'Publica tus eventos o sorteos dentro de la app' },
+                ].map((o) => (
+                  <button
+                    type="button"
+                    key={o.v}
+                    onClick={() => setKind(o.v)}
+                    className="text-left rounded-xl p-3.5 border-2 text-text"
+                    style={{ borderColor: kind === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: kind === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
+                  >
+                    <p className="font-bold text-[14px]">{o.t}</p>
+                    <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
+                  </button>
+                ))}
               </div>
+              {kind === 'commerce' && (
+                <>
+                  <p className="text-[13px] font-semibold mb-2">¿Tu comercio es físico u online?</p>
+                  <div className="grid grid-cols-2 gap-2.5 mb-5">
+                    {[
+                      { v: false, t: 'Tienda física', d: 'Atiendo en una dirección' },
+                      { v: true, t: 'Solo online', d: 'Vendo únicamente por internet' },
+                    ].map((o) => (
+                      <button
+                        type="button"
+                        key={o.t}
+                        onClick={() => setEsVirtual(o.v)}
+                        className="text-left rounded-xl p-3.5 border-2 text-text"
+                        style={{ borderColor: esVirtual === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: esVirtual === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
+                      >
+                        <p className="font-bold text-[14px]">{o.t}</p>
+                        <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => {
