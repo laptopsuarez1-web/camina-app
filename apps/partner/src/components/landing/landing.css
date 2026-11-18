@@ -306,3 +306,11 @@
 .lp-gente .dudas p{margin-top:0;padding:0 20px 18px}
 .lp.lp-gente .lp-nav .wrap{background:linear-gradient(145deg,rgba(48,30,92,.94),rgba(24,12,52,.94))}
 .lp-gente .pasitos{margin-top:28px}
+
+/* Para comercios: 5 pasos en una fila y cupo fundador arriba de los planes. */
+.lp-comercios .fund-top{margin:24px 0 8px}
+.lp-comercios .lp-hero .lp-cta{justify-content:flex-start}
+@media(min-width:900px){.lp.lp-comercios .flow-5{grid-template-columns:repeat(5,1fr);gap:16px}.lp.lp-comercios .flow-5 li{padding:20px}.lp.lp-comercios .flow-5 h3{font-size:19px}}
+.lp-comercios .idea-card .lp-cta{justify-content:center}
+@media(min-width:760px){.lp.lp-comercios .gana{grid-template-columns:repeat(3,1fr);gap:16px}.lp.lp-comercios .gana li{padding:24px}.lp.lp-comercios .gana h3{font-size:20px}.lp.lp-comercios .gana p{font-size:15.5px}}
+.lp-comercios .gana + .gal-nota{margin-top:16px}

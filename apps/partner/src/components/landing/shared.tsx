@@ -864,7 +864,7 @@ export function MasParaGente() {
 // Deslizable con pantallas reales (mismo formato que "Así se ve Camina").
 // Cada pantalla: [título, texto, captura] o [título, texto, imagen fija, video] (video grabado de la app real).
 type Pant = readonly [string, string, string] | readonly [string, string, string, string];
-function Deslizable({ id, pant, nota }: { id: string; pant: readonly Pant[]; nota?: string }) {
+export function Deslizable({ id, pant, nota }: { id: string; pant: readonly Pant[]; nota?: string }) {
   return (
     <>
       <div className="gal" id={id} tabIndex={0} aria-label="Pantallas de la app (desliza para ver más)">
