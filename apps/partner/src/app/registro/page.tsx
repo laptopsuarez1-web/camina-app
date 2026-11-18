@@ -270,7 +270,7 @@ export default function RegistroPage() {
                 {[
                   { id: 'fisico', k: 'commerce' as const, virtual: false, t: 'Comercio físico', d: 'Suma tu local y ofrece premios o descuentos.' },
                   { id: 'online', k: 'commerce' as const, virtual: true, t: 'Tienda online', d: 'Suma tu tienda y ofrece premios o descuentos por internet.' },
-                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Productora de eventos', d: 'Publica tus eventos o sorteos dentro de la app. El primero es gratis; después, Bs 400 por publicación.' },
+                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Productora de eventos', d: 'Publica tus eventos o sorteos dentro de la app.' },
                 ].map((o) => {
                   const on = kind === o.k && (o.k === 'events_only' || esVirtual === o.virtual);
                   return (
