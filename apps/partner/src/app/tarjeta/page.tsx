@@ -75,7 +75,7 @@ export default function TarjetaPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Tarjeta de fidelidad" subtitle={`Camina tiene una tarjeta de fidelidad general: cada canje confirmado, en cualquier comercio, suma un sello. Con ${goal} sellos la persona elige un premio gratis entre los comercios que participan. Tú eliges el tuyo y aparece entre sus opciones.`} />
+      <TopBar title="Tarjeta de fidelidad" subtitle={`Cada canje confirmado suma un sello. Con ${goal} sellos, la persona elige un premio entre los comercios que participan.`} />
 
       {locked ? (
         <div className="bg-card border border-line rounded-2xl p-6 max-w-[520px]">

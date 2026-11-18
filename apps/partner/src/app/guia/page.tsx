@@ -18,27 +18,29 @@ export default function GuiaPage() {
     <DashboardShell>
       <TopBar title="Guía y reglas" subtitle="Todo lo que necesitas para atender canjes sin dudas." />
       <div className="max-w-[720px]">
-        <a
-          href="/guia-camina-comercios.pdf"
-          download
-          className="inline-flex items-center gap-2 bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-6"
-        >
-          <Download size={15} /> Descargar la guía en PDF
-        </a>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event(ABRIR_GUIA))}
-          className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-6 ml-2"
-        >
-          <Sparkles size={15} /> Ver la guía rápida
-        </button>
-        <a
-          href="/guia-registro-comercios.pdf"
-          download
-          className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px] mb-6 ml-2"
-        >
-          <Download size={15} /> Guía de registro (PDF)
-        </a>
+        <div className="flex flex-wrap gap-2 mb-6">
+          <a
+            href="/guia-camina-comercios.pdf"
+            download
+            className="inline-flex items-center gap-2 bg-mint text-mint-dark rounded-[10px] px-4 py-2.5 font-semibold text-[13px]"
+          >
+            <Download size={15} /> Guía en PDF
+          </a>
+          <a
+            href="/guia-registro-comercios.pdf"
+            download
+            className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px]"
+          >
+            <Download size={15} /> Guía de registro (PDF)
+          </a>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(ABRIR_GUIA))}
+            className="inline-flex items-center gap-2 border border-line bg-card rounded-[10px] px-4 py-2.5 font-semibold text-[13px]"
+          >
+            <Sparkles size={15} /> Ver la guía rápida
+          </button>
+        </div>
 
         <GuiaContent />
 

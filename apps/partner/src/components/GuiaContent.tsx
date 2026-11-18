@@ -31,7 +31,7 @@ const REGLAS = [
 ];
 
 const FAQ = [
-  ['¿Cómo cambio mi horario?', 'Perfil del local → Horarios. Marcas los días que abres y la hora de apertura y cierre.'],
+  ['¿Cómo cambio mi horario?', 'Mi local → paso 4, Horarios. Marcas los días que abres y la hora de apertura y cierre.'],
   ['¿Cómo subo o pauso un premio?', 'Mis premios → eliges el premio → "Activo" para pausarlo o reactivarlo.'],
   ['¿Puedo cambiar de plan?', 'Sí, cuando quieras desde Plan. Empiezas gratis en Primer Paso.'],
   ['¿Dónde veo cuánta gente canjeó?', 'En Inicio y en Estadísticas (según tu plan).'],

@@ -1,27 +1,33 @@
 'use client';
 
-import { ideasParaRubro, etiquetaIdea, type IdeaPremio } from '@/lib/ideas-premio';
 import { useEffect, useState } from 'react';
-import { Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
+import { Gift, Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { mensajeError } from '@/lib/errors';
-import { FRANJAS_COMUNES, DIAS_ENTRE_SEMANA_MASK, franjaFloja } from '@/lib/horasMuertas';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DIAS_LARGO = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+const TITULOS_PASO = ['Qué ofreces', 'La oferta', 'Condiciones', 'Revisar'];
+const AYUDA_PASO = [
+  'Elige cómo es tu premio. Lo demás viene después.',
+  'Nombre, foto (opcional) y cuántos Puntos cuesta.',
+  'Cuándo vale y quién puede canjearlo. Si no tocas nada, vale todos los días.',
+  'Mira cómo lo ven en la app y publícalo.',
+];
 
 // Cómo empieza la frase del "Regalo con tu compra". Vacío = frase libre.
 const INICIOS = [
-  { inicio: 'llevando', label: 'Llevando…', ejemplo: '2 salchipapas' },
-  { inicio: 'con tu', label: 'Con tu…', ejemplo: 'corte de cabello' },
-  { inicio: 'si pides', label: 'Si pides…', ejemplo: 'un combo familiar' },
-  { inicio: 'al comprar', label: 'Al comprar…', ejemplo: 'cualquier café' },
-  { inicio: '', label: 'Mi frase', ejemplo: 'en tu segunda visita del mes' },
+  { inicio: 'llevando', label: 'Llevando…', ejemplo: 'lo que se lleva' },
+  { inicio: 'con tu', label: 'Con tu…', ejemplo: 'lo que se lleva' },
+  { inicio: 'si pides', label: 'Si pides…', ejemplo: 'lo que se lleva' },
+  { inicio: 'al comprar', label: 'Al comprar…', ejemplo: 'lo que se lleva' },
+  { inicio: '', label: 'Mi frase', ejemplo: 'tu frase' },
 ];
 
 // Botones de elegir (Gratis/Descuento, % u otro): se leen bien en claro y en oscuro.
@@ -141,7 +147,7 @@ export default function BeneficioPage() {
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
-        <Plus size={16} /> Agregar premio
+        <Plus size={16} /> Crear premio
       </button>
 
       {loading && <p className="text-muted text-[13px]">Cargando…</p>}
@@ -149,7 +155,7 @@ export default function BeneficioPage() {
       {!loading && benefits.length === 0 && (
         <div className="bg-card border border-line rounded-2xl p-8 text-center max-w-[480px]">
           <p className="font-semibold text-[15px] mb-1">Todavía no tienes premios</p>
-          <p className="text-[13.5px] text-muted">Toca «Agregar premio» para crear el primero. Así tu local aparece en el mapa de la app.</p>
+          <p className="text-[13.5px] text-muted">Toca «Crear premio» para hacer el primero. Así tu local aparece en el mapa de la app.</p>
         </div>
       )}
 
@@ -160,7 +166,7 @@ export default function BeneficioPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={b.image_url} alt={b.name} className="w-[76px] h-[76px] rounded-2xl object-cover shrink-0" />
             ) : (
-              <div className="w-[76px] h-[76px] rounded-2xl bg-bg shrink-0" />
+              <div className="w-[76px] h-[76px] rounded-2xl bg-purple-light shrink-0 flex items-center justify-center"><Gift size={26} color="#8B4FD1" /></div>
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
@@ -244,7 +250,7 @@ function BeneficioForm({
   const gratisLocked = isFree && freeHasGratis;
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
   const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | '2x1' | 'texto'>(
-    benefit?.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
+    benefit == null || benefit.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
   );
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(
     benefit?.discount_percent != null ? String(benefit.discount_percent) : '20'
@@ -274,24 +280,6 @@ function BeneficioForm({
     supabase.from('benefits').select('combo_items').limit(1).then(({ error }) => setComboReady(!error));
   }, []);
   const modo: 'gratis' | 'regalo' | 'descuento' | 'combo' = tipo === 'descuento' ? (esCombo ? 'combo' : 'descuento') : conCompra ? 'regalo' : 'gratis';
-  // Ideas por rubro (solo al crear): llenan nombre, cómo se ofrece y Puntos. Se esconden las que el plan no permite.
-  const ideas = benefit ? [] : ideasParaRubro(business.category).filter((i) => (i.modo === 'gratis' ? !gratisLocked : !descuentoLocked));
-  function usarIdea(i: IdeaPremio) {
-    setNombre(i.nombre);
-    elegirModo(i.modo);
-    if (i.regalo) {
-      setInicio(i.regalo.inicio);
-      setCompra(i.regalo.resto);
-    }
-    if (i.modo === 'descuento') {
-      if (i.dosxuno) setDescuentoModo('2x1');
-      else {
-        setDescuentoModo('porcentaje');
-        setDescuentoPorcentaje(String(i.porcentaje ?? 10));
-      }
-    }
-    setCosto(String(i.puntos));
-  }
   function elegirModo(m: 'gratis' | 'regalo' | 'descuento' | 'combo') {
     const esDescuento = m === 'descuento' || m === 'combo';
     if (m === 'gratis' ? gratisLocked : descuentoLocked) return;
@@ -300,10 +288,6 @@ function BeneficioForm({
     setEsCombo(m === 'combo');
     if (m === 'combo' && !nombre.trim()) setNombre('Combo Camina');
   }
-  const [valorBs, setValorBs] = useState('');
-  // Guía, no regla: 2,5 Puntos por Bs (con el tope de 20 Puntos ganados por
-  // día, algo de Bs 10 ya le lleva más de un día caminando).
-  const puntosSugeridos = valorBs.trim() ? Math.ceil(Number(valorBs) * 2.5) : null;
   const [validFrom, setValidFrom] = useState(benefit?.valid_from?.slice(0, 5) ?? '');
   const [validTo, setValidTo] = useState(benefit?.valid_to?.slice(0, 5) ?? '');
   const [diasMask, setDiasMask] = useState(benefit?.valid_days_mask ?? 127);
@@ -346,31 +330,6 @@ function BeneficioForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  // Canjes confirmados por hora (últimos 60 días), para sugerir la franja más floja. Solo planes
-  // con estadísticas, igual que la página de Estadísticas.
-  const [sugerida, setSugerida] = useState<ReturnType<typeof franjaFloja>>(null);
-  useEffect(() => {
-    if (isFree) return;
-    const since = new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString();
-    supabase
-      .from('redemptions')
-      .select('created_at, confirmed_at')
-      .eq('business_id', businessId)
-      .eq('status', 'confirmed')
-      .gte('created_at', since)
-      .then(({ data }) => {
-        const byHour = new Array(24).fill(0) as number[];
-        for (const r of (data as { created_at: string; confirmed_at: string | null }[] | null) ?? []) {
-          byHour[new Date(r.confirmed_at ?? r.created_at).getHours()] += 1;
-        }
-        setSugerida(franjaFloja(byHour));
-      });
-  }, [businessId, isFree]);
-  function aplicarFranja(from: string, to: string, soloEntreSemana = false) {
-    setValidFrom(from);
-    setValidTo(to);
-    if (soloEntreSemana) setDiasMask(DIAS_ENTRE_SEMANA_MASK);
-  }
   // El upload de foto necesita una carpeta — para un premio nuevo todavía
   // no hay id, así que usamos la del comercio hasta el primer guardado.
   const [benefitId, setBenefitId] = useState<string | null>(benefit?.id ?? null);
@@ -379,12 +338,68 @@ function BeneficioForm({
     setDiasMask((prev) => (prev & (1 << bit) ? prev & ~(1 << bit) : prev | (1 << bit)));
   }
 
+  const [paso, setPaso] = useState(1);
+  const [pasoError, setPasoError] = useState<string | null>(null);
+  function irAPaso(n: number) {
+    setPasoError(null);
+    setPaso(n);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  // Cada paso se revisa antes de seguir, con un mensaje que dice qué corregir.
+  function continuar() {
+    setPasoError(null);
+    if (paso === 1) {
+      if (modo === 'combo') {
+        if (comboItems.trim().length < 3) return setPasoError('Escribe qué trae el combo.');
+        if (!(Number(comboPrecio) > 0) || !(Number(comboNormal) > Number(comboPrecio))) return setPasoError('El precio con Camina tiene que ser menor que el precio normal.');
+      }
+      if (modo === 'regalo' && compra.trim().length < 2) return setPasoError('Completa la frase de tu premio.');
+      if (modo === 'descuento') {
+        if (descuentoModo === 'porcentaje' && !(Number(descuentoPorcentaje) > 0)) return setPasoError('Escribe el porcentaje de descuento.');
+        if (descuentoModo === 'texto' && !descuento.trim()) return setPasoError('Escribe el descuento.');
+      }
+    }
+    if (paso === 2) {
+      if (!nombre.trim()) return setPasoError('Ponle un nombre a tu premio.');
+      if (!(Number(costo) > 0)) return setPasoError('Escribe cuántos Puntos cuesta.');
+      if (!online && !(isFree ? Number(cupones) >= 3 : ilimitado || Number(cupones) >= 1)) {
+        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Escribe cuántos cupones das por día, o activa «Cupones ilimitados».');
+      }
+    }
+    if (paso === 3) {
+      if (!canalOk) return setPasoError('Elige por dónde te escriben para cobrar. Si no ves el tuyo, cárgalo primero en Mi local.');
+      if (!cuposOnlineOk) return setPasoError(esWeb ? 'Carga al menos un cupón de tu página.' : 'Escribe cuántos cupos das en total.');
+    }
+    irAPaso(paso + 1);
+  }
+  const ofertaTexto =
+    modo === 'combo'
+      ? `${nombre.trim() || 'Combo Camina'} a ${bs(Number(comboPrecio) || 0)}${Number(comboNormal) > Number(comboPrecio) ? ` (antes ${bs(Number(comboNormal))})` : ''}`
+      : modo === 'regalo'
+        ? `De regalo ${frase}`
+        : modo === 'descuento'
+          ? descuentoModo === 'porcentaje'
+            ? `${Number(descuentoPorcentaje) || 0}% de descuento`
+            : descuentoModo === '2x1'
+              ? '2x1'
+              : descuento.trim() || 'Descuento'
+          : 'Gratis';
+  const diasTxt = diasMask === 127 ? 'todos los días' : DIAS_LARGO.filter((_, i) => diasMask & (1 << i)).join(', ') || 'ningún día';
+  const resumenCuando = online ? 'Online, sin horario' : `${diasTxt}${validFrom && validTo ? `, de ${validFrom} a ${validTo}` : ', a toda hora'}`;
+  const resumenCupos = online
+    ? esWeb
+      ? `${codigosLibres + codigosNuevos.length} cupones de tu página`
+      : `${Number(onlineQuota) || 0} en total`
+    : !isFree && ilimitado
+      ? 'Ilimitados'
+      : `${Number(cupones) || 0} por día`;
+
   async function handleSave() {
     setError(null);
     setSaved(false);
     if (modo === 'combo') {
       if (comboItems.trim().length < 3) {
-        setError('Escribe qué trae el combo (por ejemplo: «Salchipapa clásica + gaseosa personal»).');
+        setError('Escribe qué trae el combo.');
         return;
       }
       if (!(Number(comboPrecio) > 0) || !(Number(comboNormal) > Number(comboPrecio))) {
@@ -393,7 +408,7 @@ function BeneficioForm({
       }
     }
     if (modo === 'regalo' && compra.trim().length < 2) {
-      setError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
+      setError('Completa la frase de tu premio.');
       return;
     }
     setSaving(true);
@@ -486,8 +501,8 @@ function BeneficioForm({
         <ChevronLeft size={16} /> Volver a mis premios
       </button>
       <TopBar
-        title={benefitId ? 'Editar premio' : 'Nuevo premio'}
-        subtitle="Los premios que ofreces. Así los ven los clientes en la app."
+        title={benefitId ? 'Editar premio' : 'Crear premio'}
+        subtitle="En 4 pasos cortos. Así lo ven los clientes en la app."
       />
 
       {isFree && (
@@ -502,54 +517,11 @@ function BeneficioForm({
       )}
 
       <div className="max-w-[540px]">
-        <Paso n={1} title="Tu premio" hint="Es lo primero que ven en la app.">
-          {ideas.length > 0 && (
-            <div className="bg-bg rounded-xl p-3 mb-4">
-              <p className="text-[12.5px] font-semibold mb-2">💡 ¿No se te ocurre? Toca una idea para tu rubro</p>
-              <div className="flex flex-wrap gap-1.5">
-                {ideas.map((i) => (
-                  <button
-                    key={i.nombre}
-                    type="button"
-                    onClick={() => usarIdea(i)}
-                    className="rounded-full px-3 py-1.5 text-[12px] font-semibold border text-left"
-                    style={nombre === i.nombre ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-text)' }}
-                  >
-                    {etiquetaIdea(i)}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-muted mt-2">Después cambias lo que quieras: el nombre, los Puntos o la foto.</p>
-            </div>
-          )}
-          <ImageUpload
-            bucket="benefit-images"
-            path={`${businessId}/${benefitId ?? 'new'}-photo`}
-            value={imageUrl}
-            onUploaded={setImageUrl}
-            label="Foto del premio (obligatoria)"
-            shape="wide"
-          />
-          <div className="mt-4">
-            <Field label="Nombre">
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Salchipapa clásica" className={INPUT} />
-            </Field>
-          </div>
-          <div className="mt-4">
-            <Field label="Descripción (opcional)">
-              <textarea
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                rows={3}
-                maxLength={300}
-                placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas."
-                className={INPUT}
-              />
-            </Field>
-          </div>
-        </Paso>
+        <PasoCabecera paso={paso} total={4} titulos={TITULOS_PASO} ayuda={AYUDA_PASO} onIr={irAPaso} />
 
-        <Paso n={2} title="Cómo lo ofreces" hint="Elige una opción.">
+        {paso === 1 && (
+          <>
+        <Paso title="¿Qué le das a la persona?" hint="Elige una opción.">
           <div className={`grid gap-2 ${comboReady ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {(
               [
@@ -608,21 +580,21 @@ function BeneficioForm({
           {modo === 'combo' && (
             <div className="mt-4">
               <Field label="¿Qué trae el combo?">
-                <input value={comboItems} onChange={(e) => setComboItems(e.target.value.slice(0, 120))} placeholder="Ej: Salchipapa clásica + gaseosa personal" className={INPUT} />
+                <input value={comboItems} onChange={(e) => setComboItems(e.target.value.slice(0, 120))} placeholder="Escribe qué incluye el combo" className={INPUT} />
               </Field>
               <div className="grid grid-cols-2 gap-3 mt-3">
                 <Field label="Precio normal (Bs)">
-                  <input value={comboNormal} onChange={(e) => setComboNormal(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="32" inputMode="decimal" className={INPUT} />
+                  <input value={comboNormal} onChange={(e) => setComboNormal(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="Bs" inputMode="decimal" className={INPUT} />
                 </Field>
                 <Field label="Precio con Camina (Bs)">
-                  <input value={comboPrecio} onChange={(e) => setComboPrecio(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="25" inputMode="decimal" className={INPUT} />
+                  <input value={comboPrecio} onChange={(e) => setComboPrecio(e.target.value.replace(/[^\d.,]/g, '').replace(',', '.'))} placeholder="Bs" inputMode="decimal" className={INPUT} />
                 </Field>
               </div>
               <Vista>
                 «{nombre.trim() || 'Combo Camina'} · {Number(comboPrecio) > 0 ? bs(Number(comboPrecio)) : 'Bs 25'}
                 {Number(comboNormal) > Number(comboPrecio) ? ` (antes ${bs(Number(comboNormal))})` : ''}»
               </Vista>
-              <p className="text-[11.5px] text-muted mt-1 leading-4">Sirve para mover lo que más te conviene vender. La persona paga el combo en tu local.</p>
+              <p className="text-[11.5px] text-muted mt-1 leading-4">La persona paga el combo en tu local.</p>
             </div>
           )}
 
@@ -656,13 +628,44 @@ function BeneficioForm({
                   <Vista>«2x1 en {nombre.trim() || 'tu premio'}»</Vista>
                 </>
               ) : (
-                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej: Bs 10 de descuento" aria-label="Detalle del descuento" className={INPUT} />
+                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Escribe el descuento" aria-label="Detalle del descuento" className={INPUT} />
               )}
             </div>
           )}
         </Paso>
+          </>
+        )}
 
-        <Paso n={3} title="Cuánto cuesta" hint="En Puntos de Camina. Se gana 1 Punto cada 1.000 pasos (máx. 20 por día).">
+        {paso === 2 && (
+          <>
+        <Paso title="Tu premio" hint="Es lo primero que ven en la app.">
+          <ImageUpload
+            bucket="benefit-images"
+            path={`${businessId}/${benefitId ?? 'new'}-photo`}
+            value={imageUrl}
+            onUploaded={setImageUrl}
+            label="Foto del premio (opcional)"
+            shape="wide"
+          />
+          <div className="mt-4">
+            <Field label="Nombre">
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del premio" className={INPUT} />
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Descripción (opcional)">
+              <textarea
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                rows={3}
+                maxLength={300}
+                placeholder="Cuenta qué incluye el premio"
+                className={INPUT}
+              />
+            </Field>
+          </div>
+        </Paso>
+        <Paso title="Cuánto cuesta" hint="En Puntos de Camina.">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
@@ -678,34 +681,16 @@ function BeneficioForm({
               </Field>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2 mt-3 bg-bg rounded-xl px-3 py-2.5">
-            <span className="text-[12.5px] text-muted">¿Cuánto vale en Bs?</span>
-            <input
-              value={valorBs}
-              onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
-              placeholder="Bs"
-              aria-label="Valor en Bs"
-              className="w-20 bg-white border border-line rounded-[8px] px-2.5 py-1.5 text-[12.5px]"
-            />
-            {puntosSugeridos !== null ? (
-              <button
-                type="button"
-                onClick={() => setCosto(String(puntosSugeridos))}
-                className="rounded-full px-3 py-1 text-[12px] font-semibold"
-                style={{ background: '#4FC3A8', color: '#fff' }}
-              >
-                Usar {puntosSugeridos} Puntos
-              </button>
-            ) : (
-              <span className="text-[11.5px] text-muted">y te sugerimos los Puntos</span>
-            )}
-          </div>
           {!isFree && !online && (
             <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
           )}
         </Paso>
+          </>
+        )}
 
-        <Paso n={4} title="Cuándo vale" hint="Si no tocas nada, vale todos los días a toda hora.">
+        {paso === 3 && (
+          <>
+        <Paso title="Cuándo vale" hint="Si no tocas nada, vale todos los días a toda hora.">
           <span className="block text-[12.5px] font-semibold mb-1.5">Días</span>
           <div className="flex gap-1.5 mb-4">
             {DIAS.map((d, i) => {
@@ -735,62 +720,8 @@ function BeneficioForm({
               <TimeSelect allowEmpty value={validTo} onChange={setValidTo} className={INPUT} />
             </Field>
           </div>
-          <div className="mt-4 border-t border-line pt-3.5">
-            <p className="text-[12.5px] font-semibold">⏰ Llena tu local en las horas flojas</p>
-            <p className="text-[11.5px] text-muted mb-2 leading-4">Si el premio vale cuando casi no entra nadie, la gente llega justo cuando más la necesitas.</p>
-            <div className="flex flex-wrap gap-1.5">
-              {FRANJAS_COMUNES.map((f) => {
-                const on = validFrom === f.from && validTo === f.to;
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    title={f.hint}
-                    onClick={() => aplicarFranja(f.from, f.to)}
-                    className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
-                    style={{
-                      background: on ? '#8B4FD1' : 'var(--c-card)',
-                      color: on ? '#fff' : 'var(--c-muted)',
-                      borderColor: on ? '#8B4FD1' : 'var(--c-line)',
-                    }}
-                  >
-                    {f.label} · {f.from}–{f.to}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                title="Lunes a jueves, los días más flojos"
-                onClick={() => setDiasMask(DIAS_ENTRE_SEMANA_MASK)}
-                className="rounded-full px-2.5 py-1 text-[12px] font-semibold border"
-                style={{
-                  background: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-card)',
-                  color: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#fff' : 'var(--c-muted)',
-                  borderColor: diasMask === DIAS_ENTRE_SEMANA_MASK ? '#8B4FD1' : 'var(--c-line)',
-                }}
-              >
-                Solo lunes a jueves
-              </button>
-            </div>
-            {sugerida ? (
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                <p className="text-[11.5px] text-muted">
-                  Según tus canjes, de <strong>{sugerida.from} a {sugerida.to}</strong> es cuando menos te visitan.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => aplicarFranja(sugerida.from, sugerida.to)}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
-                  style={{ background: '#4FC3A8', color: '#fff' }}
-                >
-                  Usar {sugerida.from}–{sugerida.to}
-                </button>
-              </div>
-            ) : null}
-          </div>
         </Paso>
-
-        <Paso n={5} title="Más opciones" hint="Opcional.">
+        <Paso title="Más opciones" hint="Opcional.">
           {!online && (
             <Opcion on={dineInOnly} onToggle={() => setDineInOnly((v) => !v)} title="Solo para consumir en el local" hint="No vale para llevar." first />
           )}
@@ -801,7 +732,7 @@ function BeneficioForm({
                 value={bookingNote}
                 maxLength={120}
                 onChange={(e) => setBookingNote(e.target.value)}
-                placeholder="Ej.: Solo con confirmación"
+                placeholder="Aclaración para la reserva"
                 aria-label="Nota de la reserva"
                 className={INPUT}
               />
@@ -879,8 +810,41 @@ function BeneficioForm({
             <Opcion on={fansOnly} onToggle={() => setFansOnly((v) => !v)} title="Solo para tus Fans" hint="Un premio especial para tus clientes más fieles." />
           )}
         </Paso>
+          </>
+        )}
 
-        <div className="bg-card border border-line rounded-2xl p-5">
+        {paso === 4 && (
+          <>
+            <Paso title="Así lo van a ver" hint="Revisa que todo esté bien antes de guardar.">
+              <div className="rounded-2xl border border-line overflow-hidden bg-bg">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="" className="w-full h-[170px] object-cover" />
+                ) : (
+                  <div className="w-full h-[120px] bg-purple-light flex items-center justify-center"><Gift size={38} color="#8B4FD1" /></div>
+                )}
+                <div className="p-4">
+                  <p className="text-[16px] font-bold leading-tight">{nombre.trim() || 'Sin nombre'}</p>
+                  <p className="text-[13.5px] font-semibold mt-1" style={{ color: 'var(--c-ok-text)' }}>{ofertaTexto}</p>
+                  {descripcion.trim() && <p className="text-[12.5px] text-muted mt-1.5 leading-5">{descripcion.trim()}</p>}
+                  <p className="text-[12.5px] mt-2.5"><b>{Number(costo) || 0} Puntos</b> para canjearlo</p>
+                </div>
+              </div>
+              <p className="text-[11.5px] text-muted mt-2">Vista aproximada de cómo lo ve una persona en Camina.</p>
+            </Paso>
+            <Paso title="Resumen">
+              <ul className="text-[13px] leading-6 flex flex-col">
+                <li><b>Qué da:</b> {ofertaTexto}</li>
+                <li><b>Cuándo vale:</b> {resumenCuando}</li>
+                <li><b>Cupones:</b> {resumenCupos}</li>
+                {dineInOnly && !online && <li><b>Solo</b> para consumir en el local</li>}
+                {requiresBooking && !online && <li><b>Con reserva</b> por WhatsApp</li>}
+                {soloNuevos && <li><b>Solo</b> para clientes nuevos</li>}
+                {fansOnly && fansReady && <li><b>Solo</b> para tus Fans</li>}
+                {online && <li><b>Online</b> por {CANALES_ONLINE.find((c) => c.id === onlineChannel)?.label ?? 'redes'}</li>}
+              </ul>
+            </Paso>
+        <div className="bg-card border border-line rounded-2xl p-5 mb-3.5">
           <Opcion
             on={active}
             onToggle={() => setActive((v) => !v)}
@@ -889,18 +853,37 @@ function BeneficioForm({
             first
           />
           <div className="mt-4">
-            {!imageUrl && <p className="text-warn text-[12.5px] mb-3">Sube una foto del premio para poder guardarlo.</p>}
             {error && <p className="text-warn text-[12.5px] mb-3">{error}</p>}
             {saved && <p className="text-aqua text-[12.5px] mb-3">Guardado.</p>}
             <button
               onClick={handleSave}
-              disabled={saving || !nombre.trim() || !imageUrl || !canalOk || !cuposOnlineOk}
+              disabled={saving || !nombre.trim() || !canalOk || !cuposOnlineOk}
               className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
               style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
             >
-              {saving ? 'Guardando…' : 'Guardar premio'}
+              {saving ? 'Guardando…' : active ? 'Publicar premio' : 'Guardar premio (pausado)'}
             </button>
           </div>
+        </div>
+          </>
+        )}
+
+        {pasoError && <p className="text-warn text-[12.5px] mb-3">{pasoError}</p>}
+        <div className="flex gap-2.5 mb-8">
+          {paso > 1 ? (
+            <button type="button" onClick={() => irAPaso(paso - 1)} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line">
+              Atrás
+            </button>
+          ) : (
+            <button type="button" onClick={onCancel} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line">
+              Cancelar
+            </button>
+          )}
+          {paso < 4 && (
+            <button type="button" onClick={continuar} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+              Continuar
+            </button>
+          )}
         </div>
       </div>
     </DashboardShell>
@@ -910,20 +893,33 @@ function BeneficioForm({
 const INPUT = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]';
 
 // Cada parte del formulario es una tarjeta numerada: se llena de arriba hacia abajo.
-function Paso({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+function Paso({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="bg-card border border-line rounded-2xl p-5 mb-3.5">
-      <div className="flex items-start gap-2.5 mb-4">
-        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-extrabold" style={{ background: '#62F0B6', color: '#241748' }}>
-          {n}
-        </span>
-        <div>
-          <h2 className="text-[15px] font-bold leading-6 m-0">{title}</h2>
-          {hint && <p className="text-[12px] text-muted leading-4">{hint}</p>}
-        </div>
+      <div className="mb-4">
+        <h2 className="text-[15px] font-bold leading-6 m-0">{title}</h2>
+        {hint && <p className="text-[12px] text-muted leading-4">{hint}</p>}
       </div>
       {children}
     </section>
+  );
+}
+
+function PasoCabecera({ paso, total, titulos, ayuda, onIr }: { paso: number; total: number; titulos: string[]; ayuda: string[]; onIr: (n: number) => void }) {
+  return (
+    <div className="mb-4">
+      <div className="flex gap-1.5 mb-2.5" role="list" aria-label="Pasos">
+        {titulos.map((t, i) => (
+          <button key={t} type="button" role="listitem" onClick={() => onIr(i + 1)} aria-label={`Paso ${i + 1}: ${t}`} aria-current={i + 1 === paso ? 'step' : undefined} className="flex-1 text-left">
+            <span className="block h-1.5 rounded-full" style={{ background: i + 1 <= paso ? '#62F0B6' : 'var(--c-line)' }} />
+            <span className={`block text-[11px] mt-1 truncate ${i + 1 === paso ? 'font-bold text-text' : 'text-muted'}`}>{t}</span>
+          </button>
+        ))}
+      </div>
+      <p className="text-[12px] text-muted font-semibold">Paso {paso} de {total}</p>
+      <h2 className="text-[19px] font-bold m-0">{titulos[paso - 1]}</h2>
+      <p className="text-[13px] text-muted mt-0.5">{ayuda[paso - 1]}</p>
+    </div>
   );
 }
 

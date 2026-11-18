@@ -26,9 +26,9 @@ type NavItem = {
 // Menú corto: lo de todos los días arriba, el resto en "Más".
 const NAV_PRINCIPAL: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home },
-  { href: '/canjes', label: 'Canjes', icon: Receipt },
+  { href: '/perfil', label: 'Mi local', icon: Store },
   { href: '/beneficio', label: 'Mis premios', icon: Gift },
-  { href: '/perfil', label: 'Perfil del local', icon: Store },
+  { href: '/canjes', label: 'Canjes', icon: Receipt },
   { href: '/ruta', label: 'Ruta del mes', icon: Route },
   { href: '/catalogo', label: 'Catálogo o menú', icon: ShoppingBag },
 ];
@@ -219,7 +219,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {faltan.length > 0 ? (
             <>
               <p className="mb-2">
-                Camina puede aprobarlo igual, pero te recomendamos cargar{' '}
+                Camina puede aprobarlo igual, pero todavía falta cargar{' '}
                 <strong>{listaEnCastellano(faltan.map((f) => f.texto))}</strong>.
               </p>
               <div className="flex flex-wrap gap-1.5">

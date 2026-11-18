@@ -118,7 +118,7 @@ export default function GuiaRegistroPage() {
       </Hoja>
 
       {/* 3. Datos y fotos */}
-      <Hoja n={3} etiqueta="PASO 2" titulo="Datos del local y fotos" bajada="Menú Perfil del local: es lo que la gente ve en la ficha de tu local en la app. Más abajo cargas tus horarios (con «Horario partido» si cierras al mediodía), tu WhatsApp y tus redes.">
+      <Hoja n={3} etiqueta="PASO 2" titulo="Datos del local y fotos" bajada="Menú Mi local: es lo que la gente ve en la ficha de tu local en la app. Más abajo cargas tus horarios (con «Horario partido» si cierras al mediodía), tu WhatsApp y tus redes.">
         <Captura src="p-perfil.jpg" alt="Perfil del local" alto={140} />
         <div style={{ background: C.fondo, borderRadius: 10, padding: '8px 10px', fontSize: 10.5, color: C.suave, lineHeight: 1.45 }}>
           <b style={{ color: C.texto }}>Tamaños:</b> logo cuadrado (mínimo unos 500 × 500 px) · portada horizontal 16:9 (por ejemplo 1600 × 900) · fotos del local hasta 1600 px · foto del premio cuadrada (por ejemplo 1000 × 1000). PNG o JPG: la app las achica sola. Sácalas de día, cerca de una ventana y sin texto encima.
@@ -130,7 +130,7 @@ export default function GuiaRegistroPage() {
       </Hoja>
 
       {/* 4. Mapa */}
-      <Hoja n={4} etiqueta="PASO 3" titulo="Ubica tu local en el mapa" bajada="En Perfil del local, «Dónde estás». Sin ubicación, tu local no aparece en el mapa de la app.">
+      <Hoja n={4} etiqueta="PASO 3" titulo="Ubica tu local en el mapa" bajada="En Mi local, paso 2, «Ubicación». Sin ubicación, tu local no aparece en el mapa de la app.">
         <Captura src="p-mapa.jpg" alt="Ubicación en el mapa" alto={165} />
         <Nota n={1}>Lo más fácil: parado en tu local, toca «Usar mi ubicación actual».</Nota>
         <Nota n={2}>Desde el mapa: acerca el mapa y toca la puerta de tu local. Puedes arrastrar el pin para ajustarlo.</Nota>

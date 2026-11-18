@@ -15,7 +15,7 @@ const PASOS_DUENO: Paso[] = [
   {
     icon: Footprints,
     logo: true,
-    t: '¡Bienvenido a Camina!',
+    t: '¡Te damos la bienvenida a Camina!',
     d: 'La gente camina, junta Puntos y los canjea por tus premios. Tú pones el premio; ellos llegan caminando a tu local.',
   },
   {
@@ -23,7 +23,7 @@ const PASOS_DUENO: Paso[] = [
     t: 'Arma tu ficha',
     d: 'Sube tu logo, una foto de portada, tu ubicación y tus horarios. Así te encuentran en el mapa de la app.',
     href: '/perfil',
-    ir: 'Ir a Perfil del local',
+    ir: 'Ir a Mi local',
   },
   {
     icon: Gift,
@@ -50,7 +50,7 @@ const PASOS_CAJERO: Paso[] = [
   {
     icon: Footprints,
     logo: true,
-    t: '¡Bienvenido al equipo!',
+    t: '¡Te damos la bienvenida al equipo!',
     d: 'Aquí atiendes los canjes de Camina: la gente camina, junta Puntos y los cambia por los premios del local.',
   },
   {
