@@ -6,7 +6,7 @@ import { Nav, Footer, HeroGente, ComoFunciona,
 
 export default function GentePage() {
   return (
-    <div className="lp">
+    <div className="lp lp-gente">
       <span className="aurora-3" aria-hidden="true" />
       <GlassFx />
       <Nav activo="gente" />

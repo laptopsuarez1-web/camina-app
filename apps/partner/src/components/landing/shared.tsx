@@ -967,8 +967,8 @@ export function ComoFunciona() {
         id="gal-funciona"
         pant={[
           ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
-          ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: cada 5 canjes, un premio gratis donde quieras.', CAP.puntosNuevo],
-          ['Tu racha', 'Cada día seguido cuenta.', CAP.rachas],
+          ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: con 5 canjes eliges un premio gratis entre los comercios que participan.', CAP.puntosNuevo],
+          ['Tu racha', 'Cada día seguido con 5.000 pasos o más suma a tu racha.', CAP.rachas],
           ['Desafíos Camina', 'Metas extra que suman Puntos.', CAP.retos],
           ['Eventos y desafíos', 'Caminatas y premios de comercios de tu ciudad.', CAP.desafios],
         ]}
@@ -996,7 +996,7 @@ export function CanjesGente() {
         pant={[
           ['El mapa de premios', 'Los comercios cerca tuyo y lo que ofrece cada uno.', CAP.canjes],
           ['La ficha del local', 'Sus descuentos o premios, cuántos Puntos cuestan y dónde queda.', CAP.fichaLocal],
-          ['Tu tarjeta Camina', 'Cada 5 canjes, un premio gratis extra en el comercio que elijas.', CAP.puntosNuevo],
+          ['Tu tarjeta Camina', 'Con 5 canjes en cualquier comercio, eliges un premio gratis entre los comercios que participan. Tienes 30 días para canjearlo.', CAP.puntosNuevo],
         ]}
       />
       <div className="wrap">
@@ -1021,7 +1021,7 @@ export function Gratis() {
           <ul>
             <li>Descargar y usar Camina es gratis</li>
             <li>No te pedimos datos de pago</li>
-            <li>Tus pasos se cuentan solos desde tu teléfono</li>
+            <li>Tus pasos los lee la app desde Salud o Health Connect de tu teléfono</li>
           </ul>
         </InView>
       </div>
@@ -1214,9 +1214,9 @@ export function TarijaCamina() {
 const DUDAS = [
   ['¿Tengo que pagar algo?', 'No. Camina es gratis para todos y no te pedimos datos de pago.'],
   ['¿Necesito ir al gimnasio?', 'No. Cuentan los pasos de tu día: al trabajo, a la tienda, a la plaza.'],
-  ['¿Cómo cuenta mis pasos?', 'Con Salud en iPhone o Health Connect en Android. Solo abre la app una vez al día.'],
-  ['¿Qué es la Ruta del mes?', 'Un evento mensual en Eventos: te tocan 3 locales sorpresa, los visitas y compras lo que quieras (no se usan Puntos). Al completarla ganas un Día doble, la insignia del mes y entras al sorteo exclusivo del mes.'],
-  ['¿Cómo cuenta una visita de la Ruta?', 'Al pagar, le pides al local el código de la Ruta y lo escribes en la app estando ahí. El local confirma tu compra y se suma a tu Ruta.'],
+  ['¿Cómo cuenta mis pasos?', 'Camina lee tus pasos desde Salud en iPhone o Health Connect en Android, y te pide permiso la primera vez. Abre la app cada día: solo los pasos de los días en que la abres suman Puntos (los otros se ven en Actividad, pero no suman). Los pasos escritos a mano no cuentan.'],
+  ['¿Qué es la Ruta del mes?', 'Un evento mensual en la pestaña Eventos: tocas Participar y te asignan 3 locales sorpresa. Los visitas en el orden que quieras y compras lo que quieras (no se usan Puntos ni descuentos). Al completar los 3 ganas un Día doble (eliges un día del mes siguiente en que tus pasos valen el doble), la insignia del mes y un boleto para el sorteo del mes.'],
+  ['¿Cómo cuenta una visita de la Ruta?', 'Al pagar, escribes en la app el código del local (el mismo de los canjes), estando ahí. El local confirma desde su panel que compraste y la visita se suma a tu Ruta.'],
   ['¿Dónde canjeo mis Puntos?', 'En los comercios aliados que ves en el mapa de la app. Pides el código del local y listo.'],
 ];
 export function Dudas() {
