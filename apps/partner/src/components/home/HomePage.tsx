@@ -8,23 +8,30 @@ import HomeMotion from './HomeMotion';
 import Comunidad from './Comunidad';
 import Compare from './Compare';
 import Video from './Video';
-import { Phone, Eyebrow, Title, Foot, Arrow } from './ui';
-import { CAP, CONTACTO, DUDAS, EMAIL_AVISAME, ETAPAS, LOCALES, RUTA_PREMIOS, SALIDA, TIENDAS, TOUR, VID_RUTA } from './data';
+import { Phone, Title, Foot, Icon, CtaAvisame } from './ui';
+import { CAP, CONTACTO, DUDAS, ETAPAS, LOCALES, RUTA_PREMIOS, SALIDA, TIENDAS, TOUR, VID_RUTA } from './data';
 
-// Tipografías de la portada: Inter Tight (titulares y texto) e Instrument Serif itálica (acentos editoriales).
-const sans = localFont({ src: '../../fonts/InterTight-Variable.woff2', weight: '100 900', variable: '--hm-sans', display: 'swap' });
-const serif = localFont({ src: '../../fonts/InstrumentSerif-Italic.woff2', weight: '400', style: 'italic', variable: '--hm-serif', display: 'swap' });
+// Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
+const mona = localFont({
+  src: '../../fonts/MonaSans-Variable.woff2',
+  weight: '200 900',
+  variable: '--hm-sans',
+  display: 'swap',
+  declarations: [{ prop: 'font-stretch', value: '75% 125%' }],
+});
 
-// Marca .hm-js antes de pintar (solo si se permite movimiento): así los elementos que se revelan
-// no parpadean. Si el director no arranca en 4 s, se quita y todo queda visible.
+// Marca .hm-js en <html> antes de pintar (solo si se permite movimiento) para que los titulares que se revelan no
+// parpadeen. Si el director de movimiento no arranca en 4 s, se quita y todo queda visible.
 const BOOT =
   "(function(){var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('hm-js');setTimeout(function(){if(!r.dataset.hmReady)r.classList.remove('hm-js')},4000)}})()";
 
 export default function HomePage() {
   return (
-    <div className={`hm ${sans.variable} ${serif.variable}`}>
+    <div className={`hm ${mona.variable}`}>
       <script dangerouslySetInnerHTML={{ __html: BOOT }} />
-      <a className="hm-skip" href="#contenido">Saltar al contenido</a>
+      <a className="hm-skip" href="#contenido">
+        Saltar al contenido
+      </a>
       <Nav />
       <main id="contenido">
         <Hero />
@@ -38,6 +45,10 @@ export default function HomePage() {
         <Descarga />
       </main>
       <Footer />
+      <div className="hm-dock" data-dock aria-hidden="true" inert>
+        <span>Muy pronto en App Store y Google Play.</span>
+        <CtaAvisame medir="dock_avisame" className="hm-btn-sm" label="Avísame" />
+      </div>
       <HomeMotion />
     </div>
   );
@@ -45,37 +56,27 @@ export default function HomePage() {
 
 function Hero() {
   return (
-    <section className="hm-hero hm-dark" data-theme="dark">
-      <div className="hm-hero-bg" aria-hidden="true" />
+    <section className="hm-hero hm-plum" data-theme="plum" aria-labelledby="hm-h1">
       <div className="hm-wrap hm-hero-grid">
         <div className="hm-hero-copy">
-          <Eyebrow>Hecha en Tarija, Bolivia</Eyebrow>
-          <Title as="h1" text="Tus pasos *valen.*" className="hm-h1" />
+          <Title as="h1" id="hm-h1" text="Tus pasos|valen." className="hm-h1" />
           <p className="hm-lead hm-rise">
-            Camina convierte tus pasos en Puntos que canjeas por premios y descuentos en comercios de tu ciudad. Gratis.
+            Camina convierte tus pasos en Puntos que canjeas por premios y descuentos en comercios de tu ciudad.
           </p>
-          <div className="hm-cta" data-reveal style={{ ['--d' as string]: '380ms' }}>
-            <a className="hm-btn" href="#descargar" data-medir="inicio_quiero_usar">
-              Descargar Camina <Arrow />
-            </a>
+          <div className="hm-cta hm-rise">
+            <CtaAvisame medir="inicio_avisame" />
             <a className="hm-btn hm-btn-ghost" href="#como-funciona">
               Cómo funciona
             </a>
           </div>
-          <p className="hm-meta" data-reveal style={{ ['--d' as string]: '480ms' }}>
-            <span>iPhone y Android</span>
-            <span>{SALIDA}</span>
-          </p>
+          <p className="hm-meta hm-rise">Gratis para iPhone y Android. Hecha en Tarija, Bolivia.</p>
         </div>
         <div className="hm-hero-stage">
           <HeroScene>
-            <Phone src={CAP.inicio} alt="Inicio de Camina: el aro con los pasos de hoy, los Puntos y los locales cercanos" preload sizes="(max-width: 760px) 62vw, 300px" />
+            <Phone src={CAP.inicio} alt="Inicio de Camina: el aro con los pasos de hoy, los Puntos y los locales cercanos" preload sizes="(max-width: 1000px) 34vw, 220px" />
           </HeroScene>
         </div>
       </div>
-      <a className="hm-scroll" href="#como-funciona" aria-label="Bajar a Cómo funciona">
-        <span />
-      </a>
     </section>
   );
 }
@@ -85,8 +86,8 @@ function ComoFunciona() {
     <section className="hm-sec hm-light hm-curtain" id="como-funciona" data-theme="light">
       <div className="hm-wrap">
         <header className="hm-head">
-          <Eyebrow>Cómo funciona</Eyebrow>
-          <Title text="Cuatro pasos. *Ningún* *esfuerzo* *extra.*" />
+          <Title text="Caminar ya|tiene premio." />
+          <p className="hm-lead">Cuatro momentos, todos dentro de la app. No hace falta nada más que tus pasos.</p>
         </header>
         <div className="hm-steps" data-steps data-active="01">
           <div className="hm-steps-sticky" aria-hidden="true">
@@ -98,14 +99,18 @@ function ComoFunciona() {
               </Phone>
               <div className="hm-steps-counter">
                 {ETAPAS.map((e) => (
-                  <span key={e.n} data-shot={e.n}>{e.n}</span>
+                  <span key={e.n} data-shot={e.n}>
+                    {e.n}
+                  </span>
                 ))}
-                <small>/ 04</small>
+                <small>de 04</small>
               </div>
             </div>
           </div>
           <ol className="hm-steps-list">
-            <span className="hm-steps-line" aria-hidden="true"><i /></span>
+            <span className="hm-steps-line" aria-hidden="true">
+              <i />
+            </span>
             {ETAPAS.map((e, i) => (
               <li key={e.n} className={`hm-step${i === 0 ? ' is-active' : ''}`} data-step={e.n}>
                 <span className="hm-step-n">{e.n}</span>
@@ -119,6 +124,12 @@ function ComoFunciona() {
             ))}
           </ol>
         </div>
+        <div className="hm-band">
+          <p>
+            <b>Gratis, sin datos de pago.</b> {SALIDA}.
+          </p>
+          <CtaAvisame medir="funciona_avisame" />
+        </div>
       </div>
     </section>
   );
@@ -129,19 +140,14 @@ function Premios() {
     <section className="hm-sec hm-dark hm-curtain" id="premios" data-theme="dark">
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
-          <div>
-            <Eyebrow>Premios</Eyebrow>
-            <Title text="Premios reales, *en* *tu* *ciudad.*" />
-          </div>
-          <p className="hm-lead" data-reveal>
-            Descuentos y premios gratis en comercios de Tarija. Cada local elige qué ofrece y cuántos Puntos cuesta.
-          </p>
+          <Title text="Premios reales|en tu ciudad." />
+          <p className="hm-lead">Descuentos y premios gratis en comercios de Tarija. Cada local elige qué ofrece y cuántos Puntos cuesta.</p>
         </header>
 
         <div className="hm-prem">
           <ul className="hm-locs">
-            {LOCALES.map((l, k) => (
-              <li className="hm-loc" key={l.id} data-reveal style={{ ['--d' as string]: `${k * 90}ms` }}>
+            {LOCALES.map((l) => (
+              <li className="hm-loc" key={l.id}>
                 <div className="hm-loc-head">
                   <Image className="hm-loc-logo" src={l.logo} alt="" width={56} height={56} />
                   <h3>{l.nombre}</h3>
@@ -156,7 +162,9 @@ function Premios() {
                           {p.nombre}
                           <small>{p.detalle}</small>
                         </span>
-                        <b>{p.puntos} <small>Puntos</small></b>
+                        <b>
+                          {p.puntos} <small>Puntos</small>
+                        </b>
                       </li>
                     ))}
                   </ul>
@@ -168,7 +176,7 @@ function Premios() {
           </ul>
           <div className="hm-prem-visual">
             <div className="hm-prem-sticky">
-              <div className="hm-prem-back" data-parallax="0.06">
+              <div className="hm-prem-back" data-parallax="0.05">
                 <Phone src={CAP.mapa} alt="Mapa de comercios en Camina" sizes="(max-width: 760px) 50vw, 260px" />
               </div>
               <div className="hm-prem-front">
@@ -181,14 +189,13 @@ function Premios() {
 
         <div className="hm-card5" data-stamps>
           <div>
-            <p className="hm-eyebrow hm-eyebrow-lime"><span aria-hidden="true" />Tarjeta Camina</p>
-            <h3>5 canjes, <em>un premio gratis.</em></h3>
+            <h3>Tarjeta Camina: 5 canjes, un premio gratis.</h3>
             <p>
-              Cada canje confirmado, en cualquier comercio, suma un sello. Con 5 eliges un premio gratis entre los comercios que participan. Tienes
-              30 días para canjearlo.
+              Cada canje confirmado, en cualquier comercio, suma un sello. Con 5 eliges un premio gratis entre los comercios que participan. Tienes 30
+              días para canjearlo.
             </p>
           </div>
-          <ol className="hm-stamps" aria-label="Cinco sellos">
+          <ol className="hm-stamps" aria-label="Cinco sellos: el quinto es un premio gratis">
             {[1, 2, 3, 4, 5].map((n) => (
               <li key={n} style={{ ['--i' as string]: n }}>
                 {n < 5 ? <Foot side={n % 2 ? 'L' : 'R'} /> : <span className="hm-gift">Gratis</span>}
@@ -196,9 +203,13 @@ function Premios() {
             ))}
           </ol>
         </div>
-        <p className="hm-foot-note">
-          Comercios y premios cargados en Camina en octubre de 2026. Pueden cambiar: los vigentes están siempre en la app. Puedes volver a canjear en el
-          mismo local pasados 14 días.
+        <p className="hm-note">
+          Comercios y premios cargados en Camina en octubre de 2026; los vigentes están siempre en la app. Puedes volver a canjear en el mismo local
+          pasados 14 días. ¿Tienes un comercio?{' '}
+          <Link href="/comercios" data-medir="premios_comercios">
+            Ofrece tus premios en Camina
+          </Link>
+          .
         </p>
       </div>
     </section>
@@ -211,21 +222,15 @@ function Experiencia() {
       <div className="hm-tour-in">
         <div className="hm-wrap">
           <header className="hm-head hm-head-split">
-            <div>
-              <Eyebrow>La app</Eyebrow>
-              <Title text="Todo tu movimiento, *en* *una* *app.*" />
-            </div>
-            <p className="hm-lead" data-reveal>
-              Pantallas reales de Camina. Desde la ficha de cada local hasta tu perfil.
-            </p>
+            <Title text="Todo tu movimiento|en una app." />
+            <p className="hm-lead">Pantallas reales de Camina, desde la ficha de cada local hasta tu perfil.</p>
           </header>
         </div>
         <div className="hm-tour-track" tabIndex={0} aria-label="Pantallas de la app (desliza para ver más)">
-          {TOUR.map((t, i) => (
+          {TOUR.map((t) => (
             <figure className="hm-tour-item" key={t.t}>
               <Phone src={t.img} alt={`Pantalla de Camina: ${t.t}`} sizes="(max-width: 760px) 64vw, 300px" />
               <figcaption>
-                <span>{String(i + 1).padStart(2, '0')}</span>
                 <b>{t.t}</b>
                 {t.d}
               </figcaption>
@@ -234,13 +239,12 @@ function Experiencia() {
           <figure className="hm-tour-item">
             <Compare dark={CAP.inicio} light={CAP.inicioClaro} />
             <figcaption>
-              <span>{String(TOUR.length + 1).padStart(2, '0')}</span>
               <b>Claro u oscuro</b>
-              Desliza el control para ver los dos modos.
+              Arrastra el control para ver los dos modos.
             </figcaption>
           </figure>
         </div>
-        <p className="hm-wrap hm-foot-note hm-tour-note">Los datos de las personas en las pantallas son de ejemplo.</p>
+        <p className="hm-wrap hm-note hm-tour-note">Los datos de las personas en las pantallas son de ejemplo.</p>
       </div>
     </section>
   );
@@ -251,13 +255,8 @@ function ComunidadSec() {
     <section className="hm-sec hm-dark hm-curtain" id="comunidad" data-theme="dark">
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
-          <div>
-            <Eyebrow>Comunidad y desafíos</Eyebrow>
-            <Title text="Caminar rinde más *con* *otros.*" />
-          </div>
-          <p className="hm-lead" data-reveal>
-            Rankings, rachas, desafíos, grupos, insignias y eventos. Todo para que mañana también salgas a caminar.
-          </p>
+          <Title text="Caminar rinde más|con otros." />
+          <p className="hm-lead">Rankings, rachas, desafíos, grupos, insignias y eventos, para que mañana también salgas a caminar.</p>
         </header>
         <Comunidad />
       </div>
@@ -268,33 +267,33 @@ function ComunidadSec() {
 // Paradas del recorrido (coordenadas del viewBox 600×420) y en qué parte del dibujo se encienden.
 const PARADAS = [
   { x: 40, y: 360, at: 0, k: 'inicio' as const },
-  { x: 170, y: 250, at: 0.24, k: 1 },
-  { x: 330, y: 300, at: 0.5, k: 2 },
+  { x: 170, y: 250, at: 0.26, k: 1 },
+  { x: 330, y: 300, at: 0.49, k: 2 },
   { x: 450, y: 140, at: 0.79, k: 3 },
   { x: 560, y: 60, at: 0.97, k: 'fin' as const },
 ];
 
 function Ruta() {
-  const pasos = ['Tocas Participar y te tocan 3 locales sorpresa.', 'Los visitas en el orden que quieras y compras lo que quieras.', 'Al pagar, escribes el código del local y el local confirma tu visita.'];
+  const pasos = [
+    'Tocas Participar y te tocan 3 locales sorpresa.',
+    'Los visitas en el orden que quieras y compras lo que quieras.',
+    'Al pagar, escribes el código del local y el local confirma tu visita.',
+  ];
   return (
     <section className="hm-sec hm-light hm-curtain" id="ruta" data-theme="light">
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
-          <div>
-            <Eyebrow>Evento del mes</Eyebrow>
-            <Title text="La Ruta *del* *mes.*" />
-          </div>
-          <p className="hm-lead" data-reveal>
-            Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa con tu recorrido y una recompensa al final.
-          </p>
+          <Title text="La Ruta|del mes." />
+          <p className="hm-lead">Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa con tu recorrido y una recompensa al final.</p>
         </header>
 
         <div className="hm-ruta">
           <div className="hm-ruta-board">
             <div className="hm-ruta-map" aria-hidden="true">
+              <Image className="hm-ruta-map-img" src="/web/mapa-tarija.jpg" alt="" width={900} height={730} sizes="(max-width: 1000px) 90vw, 700px" />
               <svg viewBox="0 0 600 420" preserveAspectRatio="none">
-                <path className="hm-ruta-ghost" d="M40 360 C 90 300, 120 260, 170 250 S 280 320, 330 300 S 420 160, 450 140 S 530 80, 560 60" />
-                <path className="hm-ruta-path" d="M40 360 C 90 300, 120 260, 170 250 S 280 320, 330 300 S 420 160, 450 140 S 530 80, 560 60" />
+                <path className="hm-ruta-ghost" d="M40 360 H110 V250 H170 V300 H330 V140 H450 V60 H560" />
+                <path className="hm-ruta-path" d="M40 360 H110 V250 H170 V300 H330 V140 H450 V60 H560" />
               </svg>
               {PARADAS.map((p) => (
                 <span
@@ -303,14 +302,25 @@ function Ruta() {
                   data-at={p.at}
                   style={{ left: `${(p.x / 600) * 100}%`, top: `${(p.y / 420) * 100}%` }}
                 >
-                  {p.k === 'inicio' ? <Foot side="L" /> : p.k === 'fin' ? '★' : <><i>?</i><b>✓</b></>}
+                  {p.k === 'inicio' ? (
+                    <Foot side="L" />
+                  ) : p.k === 'fin' ? (
+                    <Icon name="flag" />
+                  ) : (
+                    <>
+                      <i>?</i>
+                      <b>
+                        <Icon name="check" />
+                      </b>
+                    </>
+                  )}
                   <em>{p.k === 'inicio' ? 'Participar' : p.k === 'fin' ? 'Ruta completa' : `Local ${p.k}`}</em>
                 </span>
               ))}
             </div>
             <ol className="hm-ruta-pasos">
               {pasos.map((t, i) => (
-                <li key={t} data-reveal style={{ ['--d' as string]: `${i * 100}ms` }}>
+                <li key={t}>
                   <span>{i + 1}</span>
                   {t}
                 </li>
@@ -321,20 +331,27 @@ function Ruta() {
             <Phone className="hm-phone-video">
               <Video src={VID_RUTA.src} poster={VID_RUTA.poster} label="Video de la app: al tocar Participar, los 3 locales caen en el mapa" />
             </Phone>
-            <p className="hm-foot-note">Video de la app real. Los locales y las fotos son de ejemplo.</p>
+            <p className="hm-note">Video de la app real. Los locales y las fotos son de ejemplo.</p>
           </div>
         </div>
 
         <ul className="hm-ruta-premios">
-          {RUTA_PREMIOS.map(([s, t, d], i) => (
-            <li key={t} data-reveal style={{ ['--d' as string]: `${i * 110}ms` }}>
-              <span aria-hidden="true">{s}</span>
+          {RUTA_PREMIOS.map(([s, t, d]) => (
+            <li key={t}>
+              <span className="hm-ruta-ico" aria-hidden="true">
+                {s === 'x2' ? <span className="hm-x2">×2</span> : <Icon name={s} />}
+              </span>
               <h3>{t}</h3>
               <p>{d}</p>
             </li>
           ))}
         </ul>
-        <p className="hm-foot-note">En la Ruta no se usan Puntos ni descuentos: pagas tu compra como cualquier cliente.</p>
+        <div className="hm-band">
+          <p>
+            <b>En la Ruta no se usan Puntos ni descuentos:</b> pagas tu compra como cualquier cliente.
+          </p>
+          <CtaAvisame medir="ruta_avisame" label="Quiero hacer la Ruta" />
+        </div>
       </div>
     </section>
   );
@@ -346,15 +363,14 @@ function Origen() {
       <div className="hm-wrap">
         <div className="hm-origen-grid">
           <div>
-            <Eyebrow>Nuestro origen</Eyebrow>
-            <Title text="Nace en Tarija, *paso* *a* *paso.*" />
-            <p className="hm-lead" data-reveal>
+            <Title text="Nace en Tarija,|paso a paso." />
+            <p className="hm-lead">
               Camina es una app boliviana. Conecta a las personas que caminan con los comercios de su ciudad, para que moverse tenga premio y lo local
               gane clientes. Empieza en Tarija; después llega a Santa Cruz, La Paz y Cochabamba.
             </p>
-            <p className="hm-coords" data-reveal>21°32′ S · 64°44′ O · Tarija, Bolivia</p>
+            <p className="hm-coords">21° 32′ S, 64° 44′ O. Tarija, Bolivia.</p>
           </div>
-          <figure className="hm-origen-img" data-reveal>
+          <figure className="hm-origen-img">
             <Image src="/web/tarija.jpg" alt="Letras de Tarija en un parque de la ciudad" width={700} height={467} sizes="(max-width: 760px) 92vw, 460px" />
           </figure>
         </div>
@@ -364,22 +380,22 @@ function Origen() {
             ['Personas', 'que caminan su día a día.'],
             ['Movimiento', 'que se vuelve Puntos.'],
             ['Comercios', 'locales que reciben gente nueva.'],
-          ].map(([t, d], i) => (
-            <li key={t} data-reveal style={{ ['--d' as string]: `${i * 120}ms` }}>
+          ].map(([t, d]) => (
+            <li key={t}>
               <b>{t}</b>
               <span>{d}</span>
             </li>
           ))}
         </ol>
 
-        <div className="hm-biz" data-reveal>
+        <div className="hm-biz">
           <div>
             <h3>¿Tienes un comercio?</h3>
             <p>Suma tu local a Camina y recibe personas que ya caminan por tu zona.</p>
           </div>
           <div className="hm-cta">
-            <Link className="hm-btn hm-btn-light" href="/comercios" data-medir="inicio_ver_comercios">
-              Ver cómo sumarme <Arrow />
+            <Link className="hm-btn" href="/comercios" data-medir="inicio_ver_comercios">
+              Ver cómo sumarme
             </Link>
             <Link className="hm-btn hm-btn-ghost" href="/registro" data-medir="registro_comercio_inicio">
               Registrar mi comercio
@@ -396,9 +412,8 @@ function Dudas() {
     <section className="hm-sec hm-light hm-curtain" id="dudas" data-theme="light">
       <div className="hm-wrap hm-faq">
         <div>
-          <Eyebrow>Preguntas</Eyebrow>
-          <Title text="Lo que todos *preguntan.*" />
-          <p className="hm-faq-contact" data-reveal>
+          <Title text="Lo que todos|preguntan." />
+          <p className="hm-faq-contact">
             ¿Otra duda? Escríbenos por <a href={CONTACTO.whatsapp}>WhatsApp</a> o a <a href={`mailto:${CONTACTO.email}`}>{CONTACTO.email}</a>.
           </p>
         </div>
@@ -420,19 +435,20 @@ function Dudas() {
 
 function Descarga() {
   return (
-    <section className="hm-sec hm-dark hm-curtain hm-final" id="descargar" data-theme="dark">
+    <section className="hm-sec hm-plum hm-curtain hm-final" id="descargar" data-theme="plum">
       <div className="hm-final-trail" aria-hidden="true">
         {Array.from({ length: 16 }, (_, i) => (
           <Foot key={i} side={i % 2 ? 'R' : 'L'} style={{ ['--i' as string]: i }} />
         ))}
       </div>
       <div className="hm-wrap hm-final-in">
-        <Image className="hm-final-icon" src="/web/app-icon.png" alt="" width={120} height={120} data-reveal />
-        <Title text="Cada paso *cuenta.*" className="hm-final-title" />
-        <p className="hm-lead" data-reveal>
-          Camina es gratis para iPhone y Android. {SALIDA}: te avisamos apenas esté en tu tienda.
-        </p>
-        <div className="hm-stores" data-reveal>
+        <Image className="hm-final-icon" src="/marca/logo-solo-transparente.png" alt="" width={112} height={112} />
+        <Title text="Cada paso|cuenta." className="hm-final-title" />
+        <p className="hm-lead">Camina es gratis para iPhone y Android. Déjanos tu correo y te avisamos apenas esté en tu tienda.</p>
+        <div className="hm-cta hm-cta-center">
+          <CtaAvisame medir="descargar_avisame" />
+        </div>
+        <div className="hm-stores">
           {TIENDAS.map((s) =>
             s.url ? (
               <a key={s.nombre} className="hm-store" href={s.url} data-medir={`descargar_${s.nombre}`}>
@@ -446,11 +462,6 @@ function Descarga() {
               </span>
             ),
           )}
-        </div>
-        <div className="hm-cta hm-cta-center" data-reveal>
-          <a className="hm-btn" href={EMAIL_AVISAME} data-medir="descargar_avisame">
-            Avísame cuando salga <Arrow />
-          </a>
         </div>
       </div>
     </section>
@@ -484,13 +495,25 @@ function Footer() {
           <div>
             <h2>Contacto</h2>
             <ul>
-              <li><a href={CONTACTO.whatsapp}>WhatsApp {CONTACTO.whatsappTexto}</a></li>
-              <li><a href={`mailto:${CONTACTO.email}`}>{CONTACTO.email}</a></li>
-              <li><a href={CONTACTO.instagram} target="_blank" rel="noopener noreferrer">Instagram {CONTACTO.instagramTexto}</a></li>
+              <li>
+                <a href={CONTACTO.whatsapp}>WhatsApp {CONTACTO.whatsappTexto}</a>
+              </li>
+              <li>
+                <a href={`mailto:${CONTACTO.email}`}>{CONTACTO.email}</a>
+              </li>
+              <li>
+                <a href={CONTACTO.instagram} target="_blank" rel="noopener noreferrer">
+                  Instagram {CONTACTO.instagramTexto}
+                </a>
+              </li>
             </ul>
           </div>
         </div>
-        <p className="hm-wordmark" aria-hidden="true">CAMINA</p>
+        <svg className="hm-wordmark" viewBox="0 0 1000 170" aria-hidden="true" focusable="false">
+          <text x="500" y="158" fontSize="208" textAnchor="middle">
+            CAMINA
+          </text>
+        </svg>
         <div className="hm-footer-bottom">
           <span>© {new Date().getFullYear()} Camina</span>
           <span>Hecha en Tarija, Bolivia</span>

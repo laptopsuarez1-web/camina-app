@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Arrow } from './ui';
+import { CtaAvisame } from './ui';
 
 const LINKS = [
   ['Cómo funciona', '#como-funciona'],
@@ -52,9 +52,7 @@ export default function Nav() {
         </nav>
         <div className="hm-nav-end">
           <Link href="/login" className="hm-nav-login">Panel de comercios</Link>
-          <a href="#descargar" className="hm-btn hm-btn-sm" data-medir="nav_descargar">
-            Descargar
-          </a>
+          <CtaAvisame medir="nav_avisame" className="hm-btn-sm hm-nav-cta" label="Avísame" />
           <button
             ref={btn}
             type="button"
@@ -81,9 +79,7 @@ export default function Nav() {
           </Link>
         </nav>
         <div className="hm-menu-end">
-          <a href="#descargar" className="hm-btn" onClick={close} data-medir="menu_descargar">
-            Descargar Camina <Arrow />
-          </a>
+          <CtaAvisame medir="menu_avisame" />
           <Link href="/login" className="hm-link" onClick={close}>
             Ingresar al panel de comercios
           </Link>

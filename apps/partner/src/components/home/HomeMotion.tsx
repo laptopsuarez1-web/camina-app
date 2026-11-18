@@ -28,12 +28,17 @@ export default function HomeMotion() {
         }),
       { rootMargin: '0px 0px -12% 0px', threshold: 0.12 },
     );
-    root.querySelectorAll('[data-reveal],[data-split],[data-stamps]').forEach((el) => ioReveal.observe(el));
+    root.querySelectorAll('[data-split],[data-stamps]').forEach((el) => ioReveal.observe(el));
     cleanups.push(() => ioReveal.disconnect());
 
     // 2a) Barra superior: tema según la sección que tiene debajo y versión compacta al bajar.
     const nav = root.querySelector<HTMLElement>('[data-nav]');
+    // Barra fija de "Avísame" en el celular: aparece al dejar el héroe y se esconde al llegar al cierre.
+    const dock = root.querySelector<HTMLElement>('[data-dock]');
+    const hero = root.querySelector<HTMLElement>('.hm-hero');
+    const final = root.querySelector<HTMLElement>('#descargar');
     const secciones = Array.from(root.querySelectorAll<HTMLElement>('[data-theme]'));
+    const pend = Array.from(root.querySelectorAll<HTMLElement>('[data-split],[data-stamps]'));
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -47,6 +52,16 @@ export default function HomeMotion() {
         });
         nav.dataset.theme = s?.dataset.theme ?? 'dark';
         nav.classList.toggle('is-scrolled', window.scrollY > 24);
+        // Salvaguarda: un titular que ya pasó por encima (salto con un enlace del menú) se muestra igual.
+        pend.forEach((el) => {
+          if (!el.classList.contains('is-in') && el.getBoundingClientRect().top < window.innerHeight) el.classList.add('is-in');
+        });
+        if (dock && hero && final) {
+          const on = hero.getBoundingClientRect().bottom < 0 && final.getBoundingClientRect().top > window.innerHeight * 0.85;
+          dock.classList.toggle('is-on', on);
+          dock.setAttribute('aria-hidden', on ? 'false' : 'true');
+          dock.toggleAttribute('inert', !on);
+        }
       });
     };
     onScroll();
@@ -110,17 +125,10 @@ export default function HomeMotion() {
       mm.add('(min-width: 0px)', () => {
         // Héroe: al bajar, la escena se aleja con profundidad.
         gsap.to('.hm-hero-stage', {
-          yPercent: 12,
-          scale: 0.94,
-          opacity: 0.35,
+          yPercent: 8,
+          scale: 0.96,
           ease: 'none',
           scrollTrigger: { trigger: '.hm-hero', start: 'top top', end: 'bottom top', scrub: true },
-        });
-        gsap.to('.hm-hero-copy', {
-          yPercent: -10,
-          opacity: 0,
-          ease: 'none',
-          scrollTrigger: { trigger: '.hm-hero', start: '35% top', end: 'bottom top', scrub: true },
         });
 
         // Línea de progreso que une las 4 etapas.

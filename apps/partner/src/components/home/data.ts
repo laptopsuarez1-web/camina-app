@@ -14,8 +14,8 @@ export const CONTACTO = {
   instagramTexto: '@caminaapp',
 };
 
-// Fecha de salida en las tiendas (docs/marketing/BRIEF-CONTENIDO.md). Si cambia, se cambia solo aquí.
-export const SALIDA = 'Sale el 1 de diciembre en Tarija';
+// Estado de salida en las tiendas. La fecha no está confirmada: no se publica ninguna.
+export const SALIDA = 'Muy pronto en App Store y Google Play';
 
 // Hasta que las tiendas aprueben la app, los botones de descarga se muestran como "Próximamente" (sin link).
 // Cuando haya link público de la tienda, poner la URL aquí y el botón pasa a ser un enlace real.
@@ -68,7 +68,7 @@ export const ETAPAS = [
     n: '02',
     t: 'Sumas Puntos.',
     d: 'Cada 1.000 pasos ganas 1 Punto. Abre la app cada día para que tus pasos sumen.',
-    dato: 'Hasta 20 Puntos por día · cada Punto dura 90 días',
+    dato: 'Hasta 20 Puntos por día; cada uno dura 90 días',
     img: CAP.puntos,
     alt: 'Pantalla Tus Puntos de Camina con el saldo y los movimientos',
   },
@@ -136,9 +136,9 @@ export const COMUNIDAD = [
 ] as const;
 
 export const RUTA_PREMIOS = [
-  ['×2', 'Día doble', 'Eliges un día del mes siguiente en que tus pasos valen el doble.'],
-  ['★', 'Insignia del mes', 'La de esa Ruta, para tu perfil.'],
-  ['◎', 'Boleto al sorteo', 'Entras al sorteo exclusivo del mes.'],
+  ['x2', 'Día doble', 'Eliges un día del mes siguiente en que tus pasos valen el doble.'],
+  ['badge', 'Insignia del mes', 'La de esa Ruta, para tu perfil.'],
+  ['ticket', 'Boleto al sorteo', 'Entras al sorteo exclusivo del mes.'],
 ] as const;
 
 export const DUDAS = [

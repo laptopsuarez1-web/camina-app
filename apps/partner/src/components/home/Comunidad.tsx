@@ -20,7 +20,7 @@ export default function Comunidad() {
 
   return (
     <div className="hm-com">
-      <div className="hm-tabs" role="tablist" aria-label="Comunidad" onKeyDown={onKey} data-reveal>
+      <div className="hm-tabs" role="tablist" aria-label="Comunidad" onKeyDown={onKey}>
         {COMUNIDAD.map((g, i) => (
           <button
             key={g.id}
