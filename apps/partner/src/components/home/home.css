@@ -17,7 +17,7 @@
   --mint-light: #e3f5f0; /* pastilla de Puntos en modo claro (aqua-light de la app) */
   /* Bases */
   --paper: #f7f7f5;
-  --paper-2: #ededE8;
+  --paper-2: #edede8;
   --paper-3: #dcdcd6;
   --ink: #111318;
   --ink-2: #1a1c22;
@@ -26,6 +26,9 @@
   --mut-plum: #b4a9db;
   --mut-ink: #9a9ea8;
   --mut-paper: #5d616b;
+  --text-plum: #ddd6f3; /* texto de lectura sobre morado */
+  --off-paper: #8a8d95; /* etapa inactiva: titular (3,1:1, texto grande) */
+  --off-paper-2: #6b6f78; /* etapa inactiva: texto (4,7:1) */
 
   --f-sans: var(--hm-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --wide: 116%;
@@ -40,7 +43,6 @@
   --r: 16px;
   --r-sheet: 28px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1); /* exponencial de salida */
-  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
 
   background: var(--ink);
   color: var(--paper);
@@ -654,7 +656,7 @@
   font-size: clamp(1.12rem, 1.45vw, 1.35rem);
   max-width: 26em;
   margin-bottom: 36px;
-  color: #d6cff0;
+  color: var(--text-plum);
 }
 .hm-meta {
   margin-top: 24px;
@@ -1178,10 +1180,10 @@
     transition: color 0.4s var(--ease);
   }
   .hm-step:not(.is-active) h3 {
-    color: #8a8d95;
+    color: var(--off-paper);
   }
   .hm-step:not(.is-active) p:not(.hm-step-dato) {
-    color: #6b6f78;
+    color: var(--off-paper-2);
   }
   .hm-step::before {
     left: -56px;
@@ -1845,7 +1847,7 @@
 .hm-ruta-pasos li {
   display: flex;
   gap: 12px;
-  color: #ddd6f3;
+  color: var(--text-plum);
   font-size: 0.95rem;
   line-height: 1.45;
 }
