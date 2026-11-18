@@ -8,7 +8,7 @@ import HomeMotion from './HomeMotion';
 import Comunidad from './Comunidad';
 import Compare from './Compare';
 import Video from './Video';
-import { Phone, Title, Foot, Icon, CtaAvisame } from './ui';
+import { Phone, Title, Foot, Icon, CtaAvisame, Coin, Pts } from './ui';
 import { CAP, CONTACTO, DUDAS, ETAPAS, LOCALES, RUTA_PREMIOS, SALIDA, TIENDAS, TOUR, VID_RUTA } from './data';
 
 // Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
@@ -116,7 +116,10 @@ function ComoFunciona() {
                 <span className="hm-step-n">{e.n}</span>
                 <h3>{e.t}</h3>
                 <p>{e.d}</p>
-                <p className="hm-step-dato">{e.dato}</p>
+                <p className="hm-step-dato">
+                  {e.n === '02' ? <Coin size={20} /> : null}
+                  {e.dato}
+                </p>
                 <div className="hm-step-phone">
                   <Phone src={e.img} alt={e.alt} sizes="62vw" />
                 </div>
@@ -162,9 +165,7 @@ function Premios() {
                           {p.nombre}
                           <small>{p.detalle}</small>
                         </span>
-                        <b>
-                          {p.puntos} <small>Puntos</small>
-                        </b>
+                        <Pts n={p.puntos} />
                       </li>
                     ))}
                   </ul>
@@ -266,11 +267,11 @@ function ComunidadSec() {
 
 // Paradas del recorrido (coordenadas del viewBox 600×420) y en qué parte del dibujo se encienden.
 const PARADAS = [
-  { x: 40, y: 360, at: 0, k: 'inicio' as const },
-  { x: 170, y: 250, at: 0.26, k: 1 },
-  { x: 330, y: 300, at: 0.49, k: 2 },
-  { x: 450, y: 140, at: 0.79, k: 3 },
-  { x: 560, y: 60, at: 0.97, k: 'fin' as const },
+  { x: 63, y: 191.9, at: 0, k: 'inicio' as const, up: false },
+  { x: 187.2, y: 107.7, at: 0.217, k: 1, up: true },
+  { x: 267.8, y: 272.9, at: 0.485, k: 2, up: false },
+  { x: 442.8, y: 164, at: 0.784, k: 3, up: true },
+  { x: 514.2, y: 294.3, at: 0.98, k: 'fin' as const, up: false },
 ];
 
 function Ruta() {
@@ -292,13 +293,13 @@ function Ruta() {
             <div className="hm-ruta-map" aria-hidden="true">
               <Image className="hm-ruta-map-img" src="/web/mapa-tarija.jpg" alt="" width={900} height={730} sizes="(max-width: 1000px) 90vw, 700px" />
               <svg viewBox="0 0 600 420" preserveAspectRatio="none">
-                <path className="hm-ruta-ghost" d="M40 360 H110 V250 H170 V300 H330 V140 H450 V60 H560" />
-                <path className="hm-ruta-path" d="M40 360 H110 V250 H170 V300 H330 V140 H450 V60 H560" />
+                <path className="hm-ruta-ghost" d="M63 191.9 L148.1 221.2 L187.2 107.7 L310.1 150 L267.8 272.9 L390.7 315.3 L442.8 164 L546.8 199.8 L514.2 294.3" />
+                <path className="hm-ruta-path" d="M63 191.9 L148.1 221.2 L187.2 107.7 L310.1 150 L267.8 272.9 L390.7 315.3 L442.8 164 L546.8 199.8 L514.2 294.3" />
               </svg>
               {PARADAS.map((p) => (
                 <span
                   key={String(p.k)}
-                  className={`hm-stop hm-stop-${typeof p.k === 'number' ? 'local' : p.k}`}
+                  className={`hm-stop hm-stop-${typeof p.k === 'number' ? 'local' : p.k}${p.up ? ' hm-stop-up' : ''}`}
                   data-at={p.at}
                   style={{ left: `${(p.x / 600) * 100}%`, top: `${(p.y / 420) * 100}%` }}
                 >

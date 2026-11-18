@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import geo from '@/components/landing/geo.json';
 import { LOCALES } from './data';
+import { Coin } from './ui';
 
 // Escena del héroe: una caminata por calles reales del centro de Tarija (mapa y recorrido de landing/geo.json)
 // hasta un comercio real. Mientras se camina, suben los pasos; al pasar los 1.000 pasos se gana 1 Punto
@@ -167,8 +168,14 @@ export default function HeroScene({ children }: { children: ReactNode }) {
         </div>
         <div className="hm-readout-pts">
           <small>Puntos</small>
-          <b ref={puntosRef}>{META - 1}</b>
-          <span className="hm-plus">+1</span>
+          <span className="hm-readout-val">
+            <Coin size={26} />
+            <b ref={puntosRef}>{META - 1}</b>
+          </span>
+          <span className="hm-plus">
+            <Coin size={16} />
+            +1
+          </span>
         </div>
       </div>
 
@@ -184,7 +191,10 @@ export default function HeroScene({ children }: { children: ReactNode }) {
           </span>
         </span>
         <span className="hm-reward-state">
-          <em>{META} Puntos</em>
+          <em>
+            <Coin size={18} />
+            {META} Puntos
+          </em>
           <strong>Listo para canjear</strong>
         </span>
       </div>

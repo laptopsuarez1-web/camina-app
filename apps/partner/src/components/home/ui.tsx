@@ -53,6 +53,22 @@ export function CtaAvisame({ medir, label = 'Avísame cuando salga', className =
   );
 }
 
+// La moneda de Puntos de Camina: la misma imagen que usa la app (apps/mobile/assets/camina-coin.png).
+export function Coin({ size = 20 }: { size?: number }) {
+  return <Image className="hm-coin" src="/web/camina-coin.png" alt="" width={size} height={size} />;
+}
+
+// Puntos como en la app: moneda + número en una pastilla menta.
+export function Pts({ n, label = true }: { n: number | string; label?: boolean }) {
+  return (
+    <span className="hm-pts">
+      <Coin size={22} />
+      <b>{n}</b>
+      {label ? <small>Puntos</small> : null}
+    </span>
+  );
+}
+
 // Huella del logo de Camina usada como máscara: toma el color del texto (currentColor).
 export function Foot({ side = 'L', className = '', style }: { side?: 'L' | 'R'; className?: string; style?: React.CSSProperties }) {
   return <i className={`hm-foot hm-foot-${side} ${className}`} style={style} aria-hidden="true" />;
