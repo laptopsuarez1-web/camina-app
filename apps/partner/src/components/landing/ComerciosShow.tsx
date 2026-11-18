@@ -44,19 +44,22 @@ function IPhone({ children, className = '' }: { children: ReactNode; className?:
   );
 }
 
-function Cap({ src, alt, sizes, priority }: { src: string; alt: string; sizes: string; priority?: boolean }) {
+export function Cap({ src, alt, sizes, priority }: { src: string; alt: string; sizes: string; priority?: boolean }) {
   return <Image src={src} alt={alt} fill sizes={sizes} priority={priority} />;
 }
 
 /* ---------- 1. Portada: la app real, pantalla por pantalla ---------- */
 
-const HERO_PANTALLAS = [
+const HERO_PANTALLAS: Pantalla[] = [
   { src: '/web/cap/mapa-locales-dark.jpg', t: 'Te ven en el mapa', d: 'Tu local aparece en el mapa y en «Locales cerca tuyo».', alt: 'Pantalla real de Camina: mapa con locales de Tarija' },
   { src: '/web/cap/ficha-bloom-nivel-dark.jpg', t: 'Abren tu ficha', d: 'Tu foto, tu logo, tu horario y tus redes.', alt: 'Pantalla real de Camina: ficha de Bloom' },
   { src: '/web/cap/premios-bloom-dark.jpg', t: 'Canjean tus premios', d: 'Usan sus Puntos en tus premios y descuentos.', alt: 'Pantalla real de Camina: premios de Bloom' },
 ]
 
-export function HeroComercio() {
+type Pantalla = { src: string; t: string; d: string; alt: string };
+
+// Portada con un iPhone que pasa solo entre pantallas reales.
+export function HeroApp({ kick, titulo, sub, cta, pantallas }: { kick: string; titulo: string; sub: string; cta: ReactNode; pantallas: Pantalla[] }) {
   const [i, setI] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const visto = useVisto(ref, 0.25);
@@ -64,25 +67,23 @@ export function HeroComercio() {
   const MS = 4600;
   useEffect(() => {
     if (!visto || reducida) return;
-    const t = setTimeout(() => setI((x) => (x + 1) % HERO_PANTALLAS.length), MS);
+    const t = setTimeout(() => setI((x) => (x + 1) % pantallas.length), MS);
     return () => clearTimeout(t);
-  }, [i, visto, reducida]);
+  }, [i, visto, reducida, pantallas.length]);
   return (
     <section className="lp-hero cx-hero">
       <div className="wrap cx-hero-grid">
         <div className="copy">
-          <p className="kick">Para comercios</p>
-          <Kinetic as="h1" text="Tus próximos clientes ya están *caminando.*" />
-          <p className="sub">En Camina, las personas ganan Puntos por caminar y los canjean en comercios de su zona. Suma el tuyo.</p>
-          <div className="lp-cta">
-            <Link className="lp-btn mint cx-btn" href="/registro" data-medir="comercios_hero_sumar">Sumar mi comercio</Link>
-          </div>
+          <p className="kick">{kick}</p>
+          <Kinetic as="h1" text={titulo} />
+          <p className="sub">{sub}</p>
+          <div className="lp-cta">{cta}</div>
         </div>
 
         <div className="cx-hshow" ref={ref} style={{ ['--ms' as string]: `${MS}ms` }}>
           <div className="cx-hphone">
             <IPhone>
-              {HERO_PANTALLAS.map((p, k) => (
+              {pantallas.map((p, k) => (
                 <div className={`scr${k === i ? ' on' : ''}`} key={p.src} aria-hidden={k !== i}>
                   <Cap src={p.src} alt={p.alt} sizes="(min-width:900px) 280px, 62vw" priority={k === 0} />
                 </div>
@@ -90,7 +91,7 @@ export function HeroComercio() {
             </IPhone>
           </div>
           <ol className="cx-hpasos">
-            {HERO_PANTALLAS.map((p, k) => (
+            {pantallas.map((p, k) => (
               <li key={p.src}>
                 <button type="button" className={k === i ? 'on' : ''} aria-current={k === i} onClick={() => setI(k)}>
                   <b>{p.t}</b>
@@ -100,18 +101,30 @@ export function HeroComercio() {
               </li>
             ))}
           </ol>
-          <p className="cx-hdesc" aria-live="polite">{HERO_PANTALLAS[i].d}</p>
+          <p className="cx-hdesc" aria-live="polite">{pantallas[i].d}</p>
         </div>
       </div>
     </section>
   );
 }
 
+export function HeroComercio() {
+  return (
+    <HeroApp
+      kick="Para comercios"
+      titulo="Tus próximos clientes ya están *caminando.*"
+      sub="En Camina, las personas ganan Puntos por caminar y los canjean en comercios de su zona. Suma el tuyo."
+      cta={<Link className="lp-btn mint cx-btn" href="/registro" data-medir="comercios_hero_sumar">Sumar mi comercio</Link>}
+      pantallas={HERO_PANTALLAS}
+    />
+  );
+}
+
 /* ---------- Escaparate: iPhone que cambia solo entre pasos ---------- */
 
-type Item = { t: string; d: string; vista: (activo: boolean) => ReactNode };
+export type Item = { t: string; d: string; vista: (activo: boolean) => ReactNode };
 
-function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number; nota?: string; id: string }) {
+export function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number; nota?: string; id: string }) {
   const [i, setI] = useState(0);
   const [pausa, setPausa] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -167,7 +180,7 @@ export function Funciones() {
 
 /* ---------- 4. Ruta del mes (videos reales de la app) ---------- */
 
-function VideoRuta({ n, activo }: { n: string; activo: boolean }) {
+export function VideoRuta({ n, activo }: { n: string; activo: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const reducida = useReducida();
   useEffect(() => {
