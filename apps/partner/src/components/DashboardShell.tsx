@@ -26,9 +26,9 @@ type NavItem = {
 // Menú corto: lo de todos los días arriba, el resto en "Más".
 const NAV_PRINCIPAL: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home },
-  { href: '/canjes', label: 'Canjes', icon: Receipt },
+  { href: '/perfil', label: 'Mi local', icon: Store },
   { href: '/beneficio', label: 'Mis premios', icon: Gift },
-  { href: '/perfil', label: 'Perfil del local', icon: Store },
+  { href: '/canjes', label: 'Canjes', icon: Receipt },
   { href: '/ruta', label: 'Ruta del mes', icon: Route },
   { href: '/catalogo', label: 'Catálogo o menú', icon: ShoppingBag },
 ];

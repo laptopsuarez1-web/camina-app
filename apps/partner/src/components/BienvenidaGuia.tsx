@@ -23,7 +23,7 @@ const PASOS_DUENO: Paso[] = [
     t: 'Arma tu ficha',
     d: 'Sube tu logo, una foto de portada, tu ubicación y tus horarios. Así te encuentran en el mapa de la app.',
     href: '/perfil',
-    ir: 'Ir a Perfil del local',
+    ir: 'Ir a Mi local',
   },
   {
     icon: Gift,

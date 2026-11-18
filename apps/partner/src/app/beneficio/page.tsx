@@ -14,6 +14,14 @@ import { FRANJAS_COMUNES, DIAS_ENTRE_SEMANA_MASK, franjaFloja } from '@/lib/hora
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DIAS_LARGO = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+const TITULOS_PASO = ['Qué ofreces', 'La oferta', 'Condiciones', 'Revisar'];
+const AYUDA_PASO = [
+  'Elige cómo es tu premio. Lo demás viene después.',
+  'Ponle foto, nombre y cuántos Puntos cuesta.',
+  'Cuándo vale y quién puede canjearlo. Si no tocas nada, vale todos los días.',
+  'Mira cómo lo ven en la app y publícalo.',
+];
 
 // Cómo empieza la frase del "Regalo con tu compra". Vacío = frase libre.
 const INICIOS = [
@@ -141,7 +149,7 @@ export default function BeneficioPage() {
         className="flex items-center gap-2 rounded-full px-5 py-3 font-bold text-[14px] mb-5 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
       >
-        <Plus size={16} /> Agregar premio
+        <Plus size={16} /> Crear premio
       </button>
 
       {loading && <p className="text-muted text-[13px]">Cargando…</p>}
@@ -149,7 +157,7 @@ export default function BeneficioPage() {
       {!loading && benefits.length === 0 && (
         <div className="bg-card border border-line rounded-2xl p-8 text-center max-w-[480px]">
           <p className="font-semibold text-[15px] mb-1">Todavía no tienes premios</p>
-          <p className="text-[13.5px] text-muted">Toca «Agregar premio» para crear el primero. Así tu local aparece en el mapa de la app.</p>
+          <p className="text-[13.5px] text-muted">Toca «Crear premio» para hacer el primero. Así tu local aparece en el mapa de la app.</p>
         </div>
       )}
 
@@ -244,7 +252,7 @@ function BeneficioForm({
   const gratisLocked = isFree && freeHasGratis;
   const [tipo, setTipo] = useState<'gratis' | 'descuento'>(benefit?.type ?? (isFree && freeHasGratis ? 'descuento' : 'gratis'));
   const [descuentoModo, setDescuentoModo] = useState<'porcentaje' | '2x1' | 'texto'>(
-    benefit?.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
+    benefit == null || benefit.discount_percent != null ? 'porcentaje' : benefit?.discount_detail?.trim().toLowerCase() === '2x1' ? '2x1' : 'texto'
   );
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(
     benefit?.discount_percent != null ? String(benefit.discount_percent) : '20'
@@ -379,6 +387,63 @@ function BeneficioForm({
     setDiasMask((prev) => (prev & (1 << bit) ? prev & ~(1 << bit) : prev | (1 << bit)));
   }
 
+  const [paso, setPaso] = useState(1);
+  const [pasoError, setPasoError] = useState<string | null>(null);
+  function irAPaso(n: number) {
+    setPasoError(null);
+    setPaso(n);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  // Cada paso se revisa antes de seguir, con un mensaje que dice qué corregir.
+  function continuar() {
+    setPasoError(null);
+    if (paso === 1) {
+      if (modo === 'combo') {
+        if (comboItems.trim().length < 3) return setPasoError('Escribe qué trae el combo (por ejemplo: «Salchipapa clásica + gaseosa personal»).');
+        if (!(Number(comboPrecio) > 0) || !(Number(comboNormal) > Number(comboPrecio))) return setPasoError('El precio con Camina tiene que ser menor que el precio normal.');
+      }
+      if (modo === 'regalo' && compra.trim().length < 2) return setPasoError('Completa la frase de tu premio (por ejemplo: «Llevando 2 salchipapas»).');
+      if (modo === 'descuento') {
+        if (descuentoModo === 'porcentaje' && !(Number(descuentoPorcentaje) > 0)) return setPasoError('Escribe el porcentaje de descuento (por ejemplo: 20).');
+        if (descuentoModo === 'texto' && !descuento.trim()) return setPasoError('Escribe el descuento (por ejemplo: «Bs 10 de descuento»).');
+      }
+    }
+    if (paso === 2) {
+      if (!nombre.trim()) return setPasoError('Ponle un nombre a tu premio (por ejemplo: «Salchipapa clásica»).');
+      if (!imageUrl) return setPasoError('Sube una foto del premio: sin foto no se puede guardar.');
+      if (!(Number(costo) > 0)) return setPasoError('Escribe cuántos Puntos cuesta (usa «¿Cuánto vale en Bs?» si no sabes).');
+      if (!online && !(isFree ? Number(cupones) >= 3 : ilimitado || Number(cupones) >= 1)) {
+        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Escribe cuántos cupones das por día, o activa «Cupones ilimitados».');
+      }
+    }
+    if (paso === 3) {
+      if (!canalOk) return setPasoError('Elige por dónde te escriben para cobrar. Si no ves el tuyo, cárgalo primero en Mi local.');
+      if (!cuposOnlineOk) return setPasoError(esWeb ? 'Carga al menos un cupón de tu página.' : 'Escribe cuántos cupos das en total.');
+    }
+    irAPaso(paso + 1);
+  }
+  const ofertaTexto =
+    modo === 'combo'
+      ? `${nombre.trim() || 'Combo Camina'} a ${bs(Number(comboPrecio) || 0)}${Number(comboNormal) > Number(comboPrecio) ? ` (antes ${bs(Number(comboNormal))})` : ''}`
+      : modo === 'regalo'
+        ? `De regalo ${frase}`
+        : modo === 'descuento'
+          ? descuentoModo === 'porcentaje'
+            ? `${Number(descuentoPorcentaje) || 0}% de descuento`
+            : descuentoModo === '2x1'
+              ? '2x1'
+              : descuento.trim() || 'Descuento'
+          : 'Gratis';
+  const diasTxt = diasMask === 127 ? 'todos los días' : DIAS_LARGO.filter((_, i) => diasMask & (1 << i)).join(', ') || 'ningún día';
+  const resumenCuando = online ? 'Online, sin horario' : `${diasTxt}${validFrom && validTo ? `, de ${validFrom} a ${validTo}` : ', a toda hora'}`;
+  const resumenCupos = online
+    ? esWeb
+      ? `${codigosLibres + codigosNuevos.length} cupones de tu página`
+      : `${Number(onlineQuota) || 0} en total`
+    : !isFree && ilimitado
+      ? 'Ilimitados'
+      : `${Number(cupones) || 0} por día`;
+
   async function handleSave() {
     setError(null);
     setSaved(false);
@@ -486,8 +551,8 @@ function BeneficioForm({
         <ChevronLeft size={16} /> Volver a mis premios
       </button>
       <TopBar
-        title={benefitId ? 'Editar premio' : 'Nuevo premio'}
-        subtitle="Los premios que ofreces. Así los ven los clientes en la app."
+        title={benefitId ? 'Editar premio' : 'Crear premio'}
+        subtitle="En 4 pasos cortos. Así lo ven los clientes en la app."
       />
 
       {isFree && (
@@ -502,54 +567,11 @@ function BeneficioForm({
       )}
 
       <div className="max-w-[540px]">
-        <Paso n={1} title="Tu premio" hint="Es lo primero que ven en la app.">
-          {ideas.length > 0 && (
-            <div className="bg-bg rounded-xl p-3 mb-4">
-              <p className="text-[12.5px] font-semibold mb-2">💡 ¿No se te ocurre? Toca una idea para tu rubro</p>
-              <div className="flex flex-wrap gap-1.5">
-                {ideas.map((i) => (
-                  <button
-                    key={i.nombre}
-                    type="button"
-                    onClick={() => usarIdea(i)}
-                    className="rounded-full px-3 py-1.5 text-[12px] font-semibold border text-left"
-                    style={nombre === i.nombre ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-text)' }}
-                  >
-                    {etiquetaIdea(i)}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-muted mt-2">Después cambias lo que quieras: el nombre, los Puntos o la foto.</p>
-            </div>
-          )}
-          <ImageUpload
-            bucket="benefit-images"
-            path={`${businessId}/${benefitId ?? 'new'}-photo`}
-            value={imageUrl}
-            onUploaded={setImageUrl}
-            label="Foto del premio (obligatoria)"
-            shape="wide"
-          />
-          <div className="mt-4">
-            <Field label="Nombre">
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Salchipapa clásica" className={INPUT} />
-            </Field>
-          </div>
-          <div className="mt-4">
-            <Field label="Descripción (opcional)">
-              <textarea
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                rows={3}
-                maxLength={300}
-                placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas."
-                className={INPUT}
-              />
-            </Field>
-          </div>
-        </Paso>
+        <PasoCabecera paso={paso} total={4} titulos={TITULOS_PASO} ayuda={AYUDA_PASO} onIr={irAPaso} />
 
-        <Paso n={2} title="Cómo lo ofreces" hint="Elige una opción.">
+        {paso === 1 && (
+          <>
+        <Paso title="¿Qué le das a la persona?" hint="Elige una opción.">
           <div className={`grid gap-2 ${comboReady ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {(
               [
@@ -661,8 +683,58 @@ function BeneficioForm({
             </div>
           )}
         </Paso>
+          </>
+        )}
 
-        <Paso n={3} title="Cuánto cuesta" hint="En Puntos de Camina. Se gana 1 Punto cada 1.000 pasos (máx. 20 por día).">
+        {paso === 2 && (
+          <>
+        <Paso title="Tu premio" hint="Es lo primero que ven en la app.">
+          {ideas.length > 0 && (
+            <div className="bg-bg rounded-xl p-3 mb-4">
+              <p className="text-[12.5px] font-semibold mb-2">💡 ¿No se te ocurre? Toca una idea para tu rubro</p>
+              <div className="flex flex-wrap gap-1.5">
+                {ideas.map((i) => (
+                  <button
+                    key={i.nombre}
+                    type="button"
+                    onClick={() => usarIdea(i)}
+                    className="rounded-full px-3 py-1.5 text-[12px] font-semibold border text-left"
+                    style={nombre === i.nombre ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-text)' }}
+                  >
+                    {etiquetaIdea(i)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted mt-2">Después cambias lo que quieras: el nombre, los Puntos o la foto.</p>
+            </div>
+          )}
+          <ImageUpload
+            bucket="benefit-images"
+            path={`${businessId}/${benefitId ?? 'new'}-photo`}
+            value={imageUrl}
+            onUploaded={setImageUrl}
+            label="Foto del premio (obligatoria)"
+            shape="wide"
+          />
+          <div className="mt-4">
+            <Field label="Nombre">
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Salchipapa clásica" className={INPUT} />
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Descripción (opcional)">
+              <textarea
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                rows={3}
+                maxLength={300}
+                placeholder="Ej: Papas fritas artesanales con salchicha y tus salsas favoritas."
+                className={INPUT}
+              />
+            </Field>
+          </div>
+        </Paso>
+        <Paso title="Cuánto cuesta" hint="En Puntos de Camina. Se gana 1 Punto cada 1.000 pasos (máx. 20 por día).">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
@@ -704,8 +776,12 @@ function BeneficioForm({
             <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
           )}
         </Paso>
+          </>
+        )}
 
-        <Paso n={4} title="Cuándo vale" hint="Si no tocas nada, vale todos los días a toda hora.">
+        {paso === 3 && (
+          <>
+        <Paso title="Cuándo vale" hint="Si no tocas nada, vale todos los días a toda hora.">
           <span className="block text-[12.5px] font-semibold mb-1.5">Días</span>
           <div className="flex gap-1.5 mb-4">
             {DIAS.map((d, i) => {
@@ -789,8 +865,7 @@ function BeneficioForm({
             ) : null}
           </div>
         </Paso>
-
-        <Paso n={5} title="Más opciones" hint="Opcional.">
+        <Paso title="Más opciones" hint="Opcional.">
           {!online && (
             <Opcion on={dineInOnly} onToggle={() => setDineInOnly((v) => !v)} title="Solo para consumir en el local" hint="No vale para llevar." first />
           )}
@@ -879,8 +954,41 @@ function BeneficioForm({
             <Opcion on={fansOnly} onToggle={() => setFansOnly((v) => !v)} title="Solo para tus Fans" hint="Un premio especial para tus clientes más fieles." />
           )}
         </Paso>
+          </>
+        )}
 
-        <div className="bg-card border border-line rounded-2xl p-5">
+        {paso === 4 && (
+          <>
+            <Paso title="Así lo van a ver" hint="Revisa que todo esté bien antes de guardar.">
+              <div className="rounded-2xl border border-line overflow-hidden bg-bg">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="" className="w-full h-[170px] object-cover" />
+                ) : (
+                  <div className="w-full h-[120px] bg-[#241748]" />
+                )}
+                <div className="p-4">
+                  <p className="text-[16px] font-bold leading-tight">{nombre.trim() || 'Sin nombre'}</p>
+                  <p className="text-[13.5px] font-semibold mt-1" style={{ color: 'var(--c-ok-text)' }}>{ofertaTexto}</p>
+                  {descripcion.trim() && <p className="text-[12.5px] text-muted mt-1.5 leading-5">{descripcion.trim()}</p>}
+                  <p className="text-[12.5px] mt-2.5"><b>{Number(costo) || 0} Puntos</b> para canjearlo</p>
+                </div>
+              </div>
+              <p className="text-[11.5px] text-muted mt-2">Vista aproximada de cómo lo ve una persona en Camina.</p>
+            </Paso>
+            <Paso title="Resumen">
+              <ul className="text-[13px] leading-6 flex flex-col">
+                <li><b>Qué da:</b> {ofertaTexto}</li>
+                <li><b>Cuándo vale:</b> {resumenCuando}</li>
+                <li><b>Cupones:</b> {resumenCupos}</li>
+                {dineInOnly && !online && <li><b>Solo</b> para consumir en el local</li>}
+                {requiresBooking && !online && <li><b>Con reserva</b> por WhatsApp</li>}
+                {soloNuevos && <li><b>Solo</b> para clientes nuevos</li>}
+                {fansOnly && fansReady && <li><b>Solo</b> para tus Fans</li>}
+                {online && <li><b>Online</b> por {CANALES_ONLINE.find((c) => c.id === onlineChannel)?.label ?? 'redes'}</li>}
+              </ul>
+            </Paso>
+        <div className="bg-card border border-line rounded-2xl p-5 mb-3.5">
           <Opcion
             on={active}
             onToggle={() => setActive((v) => !v)}
@@ -898,9 +1006,29 @@ function BeneficioForm({
               className="w-full rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50"
               style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
             >
-              {saving ? 'Guardando…' : 'Guardar premio'}
+              {saving ? 'Guardando…' : active ? 'Publicar premio' : 'Guardar premio (pausado)'}
             </button>
           </div>
+        </div>
+          </>
+        )}
+
+        {pasoError && <p className="text-warn text-[12.5px] mb-3">{pasoError}</p>}
+        <div className="flex gap-2.5 mb-8">
+          {paso > 1 ? (
+            <button type="button" onClick={() => irAPaso(paso - 1)} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line">
+              Atrás
+            </button>
+          ) : (
+            <button type="button" onClick={onCancel} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line">
+              Cancelar
+            </button>
+          )}
+          {paso < 4 && (
+            <button type="button" onClick={continuar} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+              Continuar
+            </button>
+          )}
         </div>
       </div>
     </DashboardShell>
@@ -910,20 +1038,30 @@ function BeneficioForm({
 const INPUT = 'w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]';
 
 // Cada parte del formulario es una tarjeta numerada: se llena de arriba hacia abajo.
-function Paso({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+function Paso({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="bg-card border border-line rounded-2xl p-5 mb-3.5">
-      <div className="flex items-start gap-2.5 mb-4">
-        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-extrabold" style={{ background: '#62F0B6', color: '#241748' }}>
-          {n}
-        </span>
-        <div>
-          <h2 className="text-[15px] font-bold leading-6 m-0">{title}</h2>
-          {hint && <p className="text-[12px] text-muted leading-4">{hint}</p>}
-        </div>
+      <div className="mb-4">
+        <h2 className="text-[15px] font-bold leading-6 m-0">{title}</h2>
+        {hint && <p className="text-[12px] text-muted leading-4">{hint}</p>}
       </div>
       {children}
     </section>
+  );
+}
+
+function PasoCabecera({ paso, total, titulos, ayuda, onIr }: { paso: number; total: number; titulos: string[]; ayuda: string[]; onIr: (n: number) => void }) {
+  return (
+    <div className="mb-4">
+      <div className="flex gap-1.5 mb-2.5" role="list" aria-label="Pasos">
+        {titulos.map((t, i) => (
+          <button key={t} type="button" role="listitem" onClick={() => onIr(i + 1)} aria-label={`Paso ${i + 1}: ${t}`} className="h-1.5 flex-1 rounded-full" style={{ background: i + 1 <= paso ? '#62F0B6' : 'var(--c-line)' }} />
+        ))}
+      </div>
+      <p className="text-[12px] text-muted font-semibold">Paso {paso} de {total}</p>
+      <h2 className="text-[19px] font-bold m-0">{titulos[paso - 1]}</h2>
+      <p className="text-[13px] text-muted mt-0.5">{ayuda[paso - 1]}</p>
+    </div>
   );
 }
 

@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Clock, Phone, Instagram, Facebook, Music2, Globe, Trash2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, type Benefit, type Business } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar, reenviarARevision } from '@/components/DashboardShell';
 import dynamic from 'next/dynamic';
-import { FichaPreviewModal } from '@/components/FichaPreview';
+import Link from 'next/link';
+import { FichaPreview } from '@/components/FichaPreview';
+import { faltantesParaPublicar } from '@/lib/readiness';
 import { mensajeError } from '@/lib/errors';
 
 const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.MapPicker), {
@@ -55,7 +57,9 @@ export default function PerfilPage() {
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [verFicha, setVerFicha] = useState(false);
+  const [paso, setPaso] = useState(1);
+  const [pasoError, setPasoError] = useState<string | null>(null);
+  const [premiosActivos, setPremiosActivos] = useState<Benefit[]>([]);
   const [guardarError, setGuardarError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -228,6 +232,68 @@ export default function PerfilPage() {
     }
   }
 
+  useEffect(() => {
+    if (!business) return;
+    supabase.from('benefits').select('*').eq('business_id', business.id).eq('active', true).then(({ data }) => setPremiosActivos((data as Benefit[]) ?? []));
+  }, [business]);
+
+  // Lo que se verá en la app con lo escrito hasta ahora (aunque todavía no se haya guardado).
+  const punto = esVirtual ? null : parseUbicacion(ubicacion);
+  const borrador: Business = business
+    ? {
+        ...business,
+        name: nombre.trim() || business.name,
+        description: descripcion.trim() || null,
+        category: categoria,
+        address: esVirtual ? null : direccion.trim() || null,
+        lat: punto?.lat ?? null,
+        lng: punto?.lng ?? null,
+        phone: telefono.trim() || null,
+        instagram: instagram.trim() || null,
+        facebook: facebook.trim() || null,
+        tiktok: tiktok.trim() || null,
+        website: website.trim() || null,
+        city: ciudad,
+        is_virtual: esVirtual,
+        opening_hours: semana,
+        hours_text: summarizeWeek(semana),
+      }
+    : (null as unknown as Business);
+  const faltan = business ? faltantesParaPublicar(borrador) : [];
+
+  function irAPaso(n: number) {
+    setPasoError(null);
+    setPaso(n);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Cada paso se revisa antes de seguir, con un mensaje que dice qué corregir.
+  async function continuar() {
+    setPasoError(null);
+    if (paso === 1) {
+      if (!nombre.trim()) return setPasoError('Escribe el nombre de tu comercio.');
+      if (descripcion.trim().length < 15) {
+        setDescripcionError('Cuenta en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
+        return setPasoError('Falta la descripción: cuenta en una o dos frases qué es tu local.');
+      }
+      setDescripcionError(null);
+    }
+    if (paso === 2 && !esVirtual && ubicacion.trim()) {
+      if (esLinkCorto(ubicacion) && !parseUbicacion(ubicacion)) {
+        const p = await resolverLinkCorto(ubicacion);
+        if (!p) return setPasoError('No pudimos leer ese link. Toca el mapa en el lugar de tu local.');
+      } else if (!parseUbicacion(ubicacion)) {
+        return setPasoError('No entendimos esa ubicación. Toca el mapa en el lugar de tu local.');
+      }
+    }
+    if (paso === 3 && resenaUrl.trim() && !resenaValida(resenaUrl)) {
+      setResenaError('Ese link no es de Google. Pega el link de tu local en Google Maps (Compartir > Copiar link).');
+      return setPasoError('Revisa el link de reseñas: tiene que ser de Google Maps.');
+    }
+    setResenaError(null);
+    irAPaso(paso + 1);
+  }
+
   async function handlePhotoUploaded(field: 'logo_url' | 'cover_url', url: string) {
     if (!business || !session) return;
     await supabase.from('businesses').update({ [field]: url }).eq('id', business.id);
@@ -254,11 +320,15 @@ export default function PerfilPage() {
 
   return (
     <DashboardShell>
-      <TopBar title="Perfil del local" subtitle="Esto es lo que ven los usuarios cuando entran a tu ficha." />
+      <TopBar title="Mi local" subtitle="Completa tu ficha en 5 pasos cortos. Es lo que ven los clientes en la app." />
 
-      <div className="flex flex-wrap gap-5 max-w-[620px]">
+      <div className="flex flex-wrap gap-5 max-w-[640px]">
         <div className="flex-1 min-w-0 flex flex-col gap-3.5">
-<SectionTitle n="1" text="Fotos" first />
+<PasoCabecera paso={paso} total={5} titulos={TITULOS} onIr={irAPaso} />
+
+          {paso === 1 && (
+            <div className="flex flex-col gap-3.5">
+
           <div className="flex gap-3.5">
             {business && (
               <>
@@ -286,7 +356,7 @@ export default function PerfilPage() {
 
           {business && <GalleryUpload businessId={business.id} photos={business.photos ?? []} onChange={handlePhotosChange} />}
 
-<SectionTitle n="2" text="Sobre tu local" />
+
           <Field label="Nombre comercial">
             <input
               value={nombre}
@@ -351,7 +421,12 @@ export default function PerfilPage() {
             <p className="text-[11.5px] text-muted mt-1.5">{palabras.length} de {MAX_PALABRAS}</p>
             </div>
           </details>
-          <SectionTitle n="3" text="Dónde estás" />
+                      </div>
+          )}
+
+          {paso === 2 && (
+            <div className="flex flex-col gap-3.5">
+
           <label className="flex items-center gap-2 text-[13px] text-muted">
             <input type="checkbox" checked={esVirtual} onChange={(e) => setEsVirtual(e.target.checked)} className="w-4 h-4" />
             Es un emprendimiento virtual (no tengo local físico)
@@ -370,9 +445,10 @@ export default function PerfilPage() {
           </Field>
 
           {!esVirtual && (
-            <Field label="Dirección" icon={<MapPin size={13} color="#7C6A9C" />}>
+            <Field label="Dirección y referencia" icon={<MapPin size={13} color="#7C6A9C" />}>
               <input
                 value={direccion}
+                placeholder="Ej: Calle Bolívar 345, frente a la plaza"
                 onChange={(e) => setDireccion(e.target.value)}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
@@ -413,7 +489,85 @@ export default function PerfilPage() {
               {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
             </Field>
           )}
-<SectionTitle n="4" text="Horario" />
+            </div>
+          )}
+
+          {paso === 3 && (
+            <div className="flex flex-col gap-3.5">
+
+          <Field label="Contacto (WhatsApp, opcional)" icon={<Phone size={13} color="#7C6A9C" />}>
+            <input
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              placeholder="+591 7XXXXXXX"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <details className="bg-white border border-line rounded-[12px] px-3.5 py-3" open={!!(instagram || facebook || tiktok || website || resenaUrl)}>
+            <summary className="cursor-pointer text-[13px] font-semibold">
+              Redes y reseñas <span className="text-muted font-normal">(opcional)</span>
+            </summary>
+            <div className="flex flex-col gap-3.5 mt-3.5">
+          <Field label="Instagram" icon={<Instagram size={13} color="#7C6A9C" />}>
+            <input
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="@tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Facebook" icon={<Facebook size={13} color="#7C6A9C" />}>
+            <input
+              value={facebook}
+              onChange={(e) => setFacebook(e.target.value)}
+              placeholder="facebook.com/tu_comercio o tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="TikTok" icon={<Music2 size={13} color="#7C6A9C" />}>
+            <input
+              value={tiktok}
+              onChange={(e) => setTiktok(e.target.value)}
+              placeholder="@tu_comercio"
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Sitio web" icon={<Globe size={13} color="#7C6A9C" />}>
+            <input
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://..."
+              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+            />
+          </Field>
+          <Field label="Link de tu local en Google Maps (para reseñas)" icon={<Globe size={13} color="#7C6A9C" />}>
+            <input
+              id="campo-resenas"
+              value={resenaUrl}
+              onChange={(e) => {
+                setResenaUrl(e.target.value);
+                setResenaError(null);
+              }}
+              placeholder="https://maps.app.goo.gl/…"
+              className={`w-full bg-white border rounded-[10px] px-3 py-2.5 text-[13.5px] ${resenaError ? 'border-warn' : 'border-line'}`}
+            />
+            {resenaError && <p className="text-warn text-[12px] mt-1.5">{resenaError}</p>}
+            <p className="text-[11.5px] text-muted mt-1.5 leading-4">
+              Opcional. Si lo pones, después de cada canje confirmado Camina le ofrece al cliente dejar su reseña en tu local. En
+              Google Maps busca tu local, toca &ldquo;Compartir&rdquo;, copia el link y pégalo aquí. También sirve el
+              link de &ldquo;Pedir reseñas&rdquo; de tu perfil de Google Business.
+            </p>
+          </Field>
+
+            </div>
+          </details>
+
+            </div>
+          )}
+
+          {paso === 4 && (
+            <div className="flex flex-col gap-3.5">
+
           <Field label="Horario de atención" icon={<Clock size={13} color="#7C6A9C" />}>
             <div className="bg-white border border-line rounded-[10px] p-3 flex flex-col gap-2">
               {DAY_NAMES.map((name, i) => {
@@ -521,95 +675,53 @@ export default function PerfilPage() {
               </p>
             </div>
           </Field>
-<SectionTitle n="5" text="Contacto y redes" />
-          <Field label="Contacto (WhatsApp, opcional)" icon={<Phone size={13} color="#7C6A9C" />}>
-            <input
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              placeholder="+591 7XXXXXXX"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <details className="bg-white border border-line rounded-[12px] px-3.5 py-3" open={!!(instagram || facebook || tiktok || website || resenaUrl)}>
-            <summary className="cursor-pointer text-[13px] font-semibold">
-              Redes y reseñas <span className="text-muted font-normal">(opcional)</span>
-            </summary>
-            <div className="flex flex-col gap-3.5 mt-3.5">
-          <Field label="Instagram" icon={<Instagram size={13} color="#7C6A9C" />}>
-            <input
-              value={instagram}
-              onChange={(e) => setInstagram(e.target.value)}
-              placeholder="@tu_comercio"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Facebook" icon={<Facebook size={13} color="#7C6A9C" />}>
-            <input
-              value={facebook}
-              onChange={(e) => setFacebook(e.target.value)}
-              placeholder="facebook.com/tu_comercio o tu_comercio"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="TikTok" icon={<Music2 size={13} color="#7C6A9C" />}>
-            <input
-              value={tiktok}
-              onChange={(e) => setTiktok(e.target.value)}
-              placeholder="@tu_comercio"
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Sitio web" icon={<Globe size={13} color="#7C6A9C" />}>
-            <input
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              placeholder="https://..."
-              className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
-            />
-          </Field>
-          <Field label="Link de tu local en Google Maps (para reseñas)" icon={<Globe size={13} color="#7C6A9C" />}>
-            <input
-              id="campo-resenas"
-              value={resenaUrl}
-              onChange={(e) => {
-                setResenaUrl(e.target.value);
-                setResenaError(null);
-              }}
-              placeholder="https://maps.app.goo.gl/…"
-              className={`w-full bg-white border rounded-[10px] px-3 py-2.5 text-[13.5px] ${resenaError ? 'border-warn' : 'border-line'}`}
-            />
-            {resenaError && <p className="text-warn text-[12px] mt-1.5">{resenaError}</p>}
-            <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-              Opcional. Si lo pones, después de cada canje confirmado Camina le ofrece al cliente dejar su reseña en tu local. En
-              Google Maps busca tu local, toca &ldquo;Compartir&rdquo;, copia el link y pégalo aquí. También sirve el
-              link de &ldquo;Pedir reseñas&rdquo; de tu perfil de Google Business.
-            </p>
-          </Field>
-
             </div>
-          </details>
-
-          {saved && <p className="text-aqua text-[12.5px]">Guardado.</p>}
-          {guardarError && <p className="text-warn text-[12.5px]">{guardarError}</p>}
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-[10px] py-3.5 font-semibold text-sm mt-1 disabled:opacity-50"
-            style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
-          >
-            {saving ? 'Guardando…' : 'Guardar cambios'}
-          </button>
-          {business && (
-            <button
-              type="button"
-              onClick={() => setVerFicha(true)}
-              className="rounded-[10px] py-3 font-semibold text-[13px] bg-white border border-line"
-            >
-              Ver cómo te ven en la app
-            </button>
           )}
-          {business && !business.approved && business.rejected_at && (
+
+          {paso === 5 && business && (
+            <div className="flex flex-col gap-3.5">
+              <p className="text-[13px] text-muted leading-5">Así te van a ver en la app. Si algo no está bien, toca el paso en la barra de arriba y corrígelo.</p>
+              <FichaPreview business={borrador} benefits={premiosActivos} oscuro />
+              {faltan.length > 0 && (
+                <div className="rounded-xl px-4 py-3 text-[13px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
+                  <p className="font-bold mb-1">Te recomendamos completar:</p>
+                  <ul className="list-disc pl-5">
+                    {faltan.map((f) => (
+                      <li key={f.id}>{f.texto}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {saved && (
+                <div className="rounded-xl px-4 py-3 text-[13px] bg-aqua-light" style={{ color: 'var(--c-ok-text)' }}>
+                  <p className="font-bold">Listo, guardamos tu local.</p>
+                  <Link href="/beneficio" className="underline font-semibold">Ahora crea tu primer premio ›</Link>
+                </div>
+              )}
+              {guardarError && <p className="text-warn text-[12.5px]">{guardarError}</p>}
+            </div>
+          )}
+
+          {pasoError && <p className="text-warn text-[12.5px]">{pasoError}</p>}
+
+          <div className="flex gap-2.5 mt-2">
+            {paso > 1 && (
+              <button type="button" onClick={() => irAPaso(paso - 1)} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line">
+                Atrás
+              </button>
+            )}
+            {paso < 5 ? (
+              <button type="button" onClick={continuar} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+                Continuar
+              </button>
+            ) : (
+              <button onClick={handleSave} disabled={saving} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+                {saving ? 'Guardando…' : 'Guardar mi local'}
+              </button>
+            )}
+          </div>
+          {paso < 5 && <p className="text-[11.5px] text-muted -mt-1">Se guarda al final, en el paso 5.</p>}
+          {business && !business.approved && business.rejected_at && paso === 5 && (
             <button
               type="button"
               onClick={async () => {
@@ -623,6 +735,7 @@ export default function PerfilPage() {
             </button>
           )}
 
+          {paso === 5 && (
           <div className="border-t border-line mt-4 pt-4">
             {confirmingDelete ? (
               <div className="bg-warn-light rounded-xl p-4" style={{ background: '#FDEEE2' }}>
@@ -657,9 +770,9 @@ export default function PerfilPage() {
               </button>
             )}
           </div>
+          )}
         </div>
       </div>
-      {verFicha && business && <FichaPreviewModal business={business} onClose={() => setVerFicha(false)} />}
     </DashboardShell>
   );
 }
@@ -675,11 +788,38 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
   );
 }
 
-function SectionTitle({ n, text, first }: { n: string; text: string; first?: boolean }) {
+const TITULOS = ['Tu negocio', 'Ubicación', 'Contacto', 'Horarios', 'Revisar'];
+
+function PasoCabecera({ paso, total, titulos, onIr }: { paso: number; total: number; titulos: string[]; onIr: (n: number) => void }) {
   return (
-    <div className={`flex items-center gap-2.5 ${first ? '' : 'mt-5 pt-5 border-t border-line'}`}>
-      <span className="w-6 h-6 rounded-full bg-mint text-auth-bg text-[12px] font-extrabold flex items-center justify-center">{n}</span>
-      <p className="text-[16px] font-bold">{text}</p>
+    <div>
+      <div className="flex gap-1.5 mb-2.5" role="list" aria-label="Pasos">
+        {titulos.map((t, i) => {
+          const n = i + 1;
+          return (
+            <button
+              key={t}
+              type="button"
+              role="listitem"
+              onClick={() => onIr(n)}
+              aria-label={`Paso ${n}: ${t}`}
+              className="h-1.5 flex-1 rounded-full"
+              style={{ background: n <= paso ? '#62F0B6' : 'var(--c-line)' }}
+            />
+          );
+        })}
+      </div>
+      <p className="text-[12px] text-muted font-semibold">Paso {paso} de {total}</p>
+      <h2 className="text-[19px] font-bold m-0">{titulos[paso - 1]}</h2>
+      <p className="text-[13px] text-muted mt-0.5">{AYUDA[paso - 1]}</p>
     </div>
   );
 }
+
+const AYUDA = [
+  'Lo primero que ve un cliente: tu nombre, tu logo y qué ofreces.',
+  'Para que la gente te encuentre en el mapa de Camina.',
+  'Cómo te escriben tus clientes. Todo es opcional.',
+  'Marca los días que atiendes y a qué hora.',
+  'Revisa cómo te ven en la app y guarda.',
+];
