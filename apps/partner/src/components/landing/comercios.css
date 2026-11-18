@@ -17,10 +17,10 @@
 
 /* marco de iPhone con isla dinámica */
 .lp-comercios .ip{position:relative;width:100%;border-radius:17% / 7.8%;padding:2.4%;background:linear-gradient(160deg,#2b2540,#0c0818 40%,#1b1530);box-shadow:0 0 0 1.5px #3b3456,0 0 0 3px #0a0614,0 28px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08)}
-.lp-comercios .ip-screen{position:relative;aspect-ratio:780/1688;border-radius:14.6% / 6.7%;overflow:hidden;background:#0b0716}
+.lp-comercios .ip-screen{position:relative;aspect-ratio:780/1688;border-radius:14.6% / 6.7%;overflow:hidden;background:#000}
 .lp-comercios .ip-screen img{object-fit:cover}
 .lp-comercios .ip-island{position:absolute;z-index:5;top:2.2%;left:50%;transform:translateX(-50%);width:31%;aspect-ratio:3.3/1;border-radius:999px;background:#000}
-.lp-comercios .scr{position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+.lp-comercios .scr{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .6s ease}
 .lp-comercios .scr.on{opacity:1}
 .lp-comercios .scr .vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .lp-comercios .cx-float{animation:cxfloat 6s ease-in-out infinite}

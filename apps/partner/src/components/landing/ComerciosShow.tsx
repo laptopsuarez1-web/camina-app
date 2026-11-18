@@ -195,7 +195,7 @@ export function RutaMes() {
       <div className="wrap">
         <p className="kick">Ruta del mes</p>
         <Kinetic text="Tu local, entre los *3* *sorpresa.*" />
-        <p className="cx-lead"><b>Sin pagar plan.</b> Es una oportunidad de visibilidad, no una garantía de visitas ni de compras.</p>
+        <p className="cx-lead">Tu local puede ser parte de la ruta del mes, <b>sin pagar plan.</b></p>
         <Escaparate id="esc-ruta" items={items} ms={7500} nota="Pantallas y video de la app real." />
       </div>
     </section>
