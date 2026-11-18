@@ -324,7 +324,7 @@ export default function PerfilPage() {
 
       <div className="flex flex-wrap gap-5 max-w-[640px]">
         <div className="flex-1 min-w-0 flex flex-col gap-3.5">
-<PasoCabecera paso={paso} total={5} titulos={TITULOS} onIr={irAPaso} />
+<PasoCabecera paso={paso} total={5} titulos={TITULOS} ayuda={AYUDA} onIr={irAPaso} />
 
           {paso === 1 && (
             <div className="flex flex-col gap-3.5">
@@ -337,7 +337,7 @@ export default function PerfilPage() {
                   path={`${business.id}/logo`}
                   value={business.logo_url}
                   onUploaded={(url) => handlePhotoUploaded('logo_url', url)}
-                  label="Logo (opcional, recomendado)"
+                  label="Logo (opcional)"
                   shape="square"
                 />
                 <div className="flex-1 min-w-0">
@@ -346,7 +346,7 @@ export default function PerfilPage() {
                     path={`${business.id}/cover`}
                     value={business.cover_url}
                     onUploaded={(url) => handlePhotoUploaded('cover_url', url)}
-                    label="Foto de portada (opcional, recomendado)"
+                    label="Foto de portada (opcional)"
                     shape="wide"
                   />
                 </div>
@@ -374,7 +374,7 @@ export default function PerfilPage() {
               }}
               rows={4}
               maxLength={500}
-              placeholder="Ej: Menú a base de papas fritas artesanales, salchipapas y panchos con variedad de salsas. Ambiente tranquilo, a pasos de la plaza."
+              placeholder="Cuenta en una o dos frases qué es tu local"
               className={`w-full bg-white border rounded-[10px] px-3 py-2.5 text-[13.5px] ${descripcionError ? 'border-warn' : 'border-line'}`}
             />
             {descripcionError && <p className="text-warn text-[12px] mt-1.5">{descripcionError}</p>}
@@ -392,7 +392,7 @@ export default function PerfilPage() {
             </summary>
             <div className="mt-2.5">
             <p className="text-[11.5px] text-muted mb-2 leading-4">
-              Elige hasta {MAX_PALABRAS}. Con estas palabras la gente encuentra tu local en el buscador de la app. Escribe y elige, por ejemplo: batidos, salteñas, karaoke.
+              Elige hasta {MAX_PALABRAS}. Con estas palabras la gente encuentra tu local en el buscador de la app. Escribe y elige.
             </p>
             {/* Las elegidas (se sacan tocándolas). */}
             {palabras.length > 0 && (
@@ -403,7 +403,7 @@ export default function PerfilPage() {
                 ))}
               </div>
             )}
-            <input value={buscaPalabra} onChange={(e) => setBuscaPalabra(e.target.value.slice(0, 30))} placeholder="Busca: batidos, jugos, nutricionista, karaoke…" aria-label="Buscar lo que ofreces"
+            <input value={buscaPalabra} onChange={(e) => setBuscaPalabra(e.target.value.slice(0, 30))} placeholder="Busca lo que ofreces" aria-label="Buscar lo que ofreces"
               className="w-full bg-white border border-line rounded-[10px] px-3 py-2 text-[13.5px]" />
             {buscaPalabra.trim() ? (() => {
               const q = sinTildes(buscaPalabra.trim());
@@ -448,7 +448,7 @@ export default function PerfilPage() {
             <Field label="Dirección y referencia" icon={<MapPin size={13} color="#7C6A9C" />}>
               <input
                 value={direccion}
-                placeholder="Ej: Calle Bolívar 345, frente a la plaza"
+                placeholder="Calle, número y una referencia"
                 onChange={(e) => setDireccion(e.target.value)}
                 className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
               />
@@ -684,7 +684,7 @@ export default function PerfilPage() {
               <FichaPreview business={borrador} benefits={premiosActivos} oscuro />
               {faltan.length > 0 && (
                 <div className="rounded-xl px-4 py-3 text-[13px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
-                  <p className="font-bold mb-1">Te recomendamos completar:</p>
+                  <p className="font-bold mb-1">Todavía falta cargar:</p>
                   <ul className="list-disc pl-5">
                     {faltan.map((f) => (
                       <li key={f.id}>{f.texto}</li>
@@ -790,28 +790,20 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
 
 const TITULOS = ['Tu negocio', 'Ubicación', 'Contacto', 'Horarios', 'Revisar'];
 
-function PasoCabecera({ paso, total, titulos, onIr }: { paso: number; total: number; titulos: string[]; onIr: (n: number) => void }) {
+function PasoCabecera({ paso, total, titulos, ayuda, onIr }: { paso: number; total: number; titulos: string[]; ayuda: string[]; onIr: (n: number) => void }) {
   return (
-    <div>
+    <div className="mb-4">
       <div className="flex gap-1.5 mb-2.5" role="list" aria-label="Pasos">
-        {titulos.map((t, i) => {
-          const n = i + 1;
-          return (
-            <button
-              key={t}
-              type="button"
-              role="listitem"
-              onClick={() => onIr(n)}
-              aria-label={`Paso ${n}: ${t}`}
-              className="h-1.5 flex-1 rounded-full"
-              style={{ background: n <= paso ? '#62F0B6' : 'var(--c-line)' }}
-            />
-          );
-        })}
+        {titulos.map((t, i) => (
+          <button key={t} type="button" role="listitem" onClick={() => onIr(i + 1)} aria-label={`Paso ${i + 1}: ${t}`} aria-current={i + 1 === paso ? 'step' : undefined} className="flex-1 text-left">
+            <span className="block h-1.5 rounded-full" style={{ background: i + 1 <= paso ? '#62F0B6' : 'var(--c-line)' }} />
+            <span className={`block text-[11px] mt-1 truncate ${i + 1 === paso ? 'font-bold text-text' : 'text-muted'}`}>{t}</span>
+          </button>
+        ))}
       </div>
       <p className="text-[12px] text-muted font-semibold">Paso {paso} de {total}</p>
       <h2 className="text-[19px] font-bold m-0">{titulos[paso - 1]}</h2>
-      <p className="text-[13px] text-muted mt-0.5">{AYUDA[paso - 1]}</p>
+      <p className="text-[13px] text-muted mt-0.5">{ayuda[paso - 1]}</p>
     </div>
   );
 }

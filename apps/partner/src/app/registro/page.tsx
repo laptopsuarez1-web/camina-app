@@ -265,46 +265,32 @@ export default function RegistroPage() {
           {actual === 'tipo' && (
             <>
               <h1 className="text-[22px] font-bold mb-1">¿Cómo quieres usar Camina?</h1>
-              <p className="text-muted text-[13px] mb-5">Elige el tipo de cuenta. Después te pedimos solo los datos que corresponden.</p>
-              <div className="flex flex-col gap-2.5 mb-5">
+              <p className="text-muted text-[13px] mb-5">Elige qué quieres sumar a Camina.</p>
+              <div className="flex flex-col gap-3 mb-6">
                 {[
-                  { v: 'commerce' as const, t: 'Soy un comercio', d: 'Publico premios y descuentos para canje' },
-                  { v: 'events_only' as const, t: 'Solo quiero publicar un evento o sorteo', d: 'Publicidad dentro de la app, sin estar en el mapa. La primera es gratis; después, Bs 400 por publicación' },
-                ].map((o) => (
-                  <button
-                    type="button"
-                    key={o.v}
-                    onClick={() => setKind(o.v)}
-                    className="text-left rounded-xl p-3.5 border-2 text-text"
-                    style={{ borderColor: kind === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: kind === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
-                  >
-                    <p className="font-bold text-[14px]">{o.t}</p>
-                    <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
-                  </button>
-                ))}
+                  { id: 'fisico', k: 'commerce' as const, virtual: false, t: 'Comercio físico', d: 'Suma tu local y ofrece premios o descuentos.' },
+                  { id: 'online', k: 'commerce' as const, virtual: true, t: 'Tienda online', d: 'Suma tu tienda y ofrece premios o descuentos por internet.' },
+                  { id: 'eventos', k: 'events_only' as const, virtual: false, t: 'Productora de eventos', d: 'Publica tus eventos o sorteos dentro de la app. El primero es gratis; después, Bs 400 por publicación.' },
+                ].map((o) => {
+                  const on = kind === o.k && (o.k === 'events_only' || esVirtual === o.virtual);
+                  return (
+                    <button
+                      type="button"
+                      key={o.id}
+                      onClick={() => {
+                        setKind(o.k);
+                        if (o.k === 'commerce') setEsVirtual(o.virtual);
+                      }}
+                      aria-pressed={on}
+                      className="text-left rounded-2xl p-5 border-2 text-text"
+                      style={{ borderColor: on ? 'var(--color-aqua)' : 'var(--c-line)', background: on ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
+                    >
+                      <p className="font-bold text-[16px]">{o.t}</p>
+                      <p className="text-muted text-[13px] mt-1 leading-5">{o.d}</p>
+                    </button>
+                  );
+                })}
               </div>
-              {kind === 'commerce' && (
-                <>
-                  <p className="text-[13px] font-semibold mb-2">¿Tu comercio es físico u online?</p>
-                  <div className="grid grid-cols-2 gap-2.5 mb-5">
-                    {[
-                      { v: false, t: 'Tienda física', d: 'Atiendo en una dirección' },
-                      { v: true, t: 'Solo online', d: 'Vendo únicamente por internet' },
-                    ].map((o) => (
-                      <button
-                        type="button"
-                        key={o.t}
-                        onClick={() => setEsVirtual(o.v)}
-                        className="text-left rounded-xl p-3.5 border-2 text-text"
-                        style={{ borderColor: esVirtual === o.v ? 'var(--color-aqua)' : 'var(--c-line)', background: esVirtual === o.v ? 'var(--c-aqua-light)' : 'var(--c-card)' }}
-                      >
-                        <p className="font-bold text-[14px]">{o.t}</p>
-                        <p className="text-muted text-[12px] mt-0.5">{o.d}</p>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
               <button
                 type="button"
                 onClick={() => {
