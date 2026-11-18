@@ -3,7 +3,7 @@ import './glass.css';
 import './comercios.css';
 import GlassFx from './GlassFx';
 import { Nav, Footer } from './shared';
-import { HeroComercio, ConectaTres, Funciones, RutaMes, Niveles, Pines, PlanesComercio, DudasComercio, CierreNegocio } from './ComerciosShow';
+import { HeroComercio, Funciones, RutaMes, PlanesComercio, DudasComercio, CierreNegocio } from './ComerciosShow';
 
 export default function ComerciosPage() {
   return (
@@ -13,11 +13,8 @@ export default function ComerciosPage() {
       <Nav activo="comercios" />
       <main>
         <HeroComercio />
-        <ConectaTres />
         <Funciones />
         <RutaMes />
-        <Niveles />
-        <Pines />
         <PlanesComercio />
         <DudasComercio />
         <CierreNegocio />

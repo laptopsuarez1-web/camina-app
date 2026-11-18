@@ -1,21 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import geo from './geo.json';
 import { PLANS, WHATSAPP_NUMBER, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO } from '@/lib/plans';
-import { InView, Kinetic, Parallax } from './Motion';
-import { LOCALES } from './locales';
+import { InView, Kinetic } from './Motion';
 import Trail from './Trail';
 
 const WA_DUDA = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.')}`;
-const W = geo.w;
-const H = geo.h;
-type P = [number, number];
-const ROUTE = geo.route as P[];
-const pct = (v: number, max: number) => `${(v / max) * 100}%`;
-const L = (id: string) => LOCALES.find((l) => l.id === id)!;
 
 /* ---------- utilidades ---------- */
 
@@ -40,34 +32,6 @@ function useReducida() {
   return r;
 }
 
-// Huellas sobre la ruta real (calles de Tarija), alternando pie izquierdo y derecho.
-function huellas(step = 40, lado = 9) {
-  const out: { x: number; y: number; ang: number; der: boolean; t: number }[] = [];
-  const seg: number[] = [];
-  let total = 0;
-  for (let i = 1; i < ROUTE.length; i++) {
-    const d = Math.hypot(ROUTE[i][0] - ROUTE[i - 1][0], ROUTE[i][1] - ROUTE[i - 1][1]);
-    seg.push(d);
-    total += d;
-  }
-  let k = 0;
-  for (let s = step / 2; s < total - 8; s += step, k++) {
-    let acc = 0;
-    let i = 0;
-    while (i < seg.length - 1 && acc + seg[i] < s) acc += seg[i++];
-    const f = (s - acc) / seg[i];
-    const [x0, y0] = ROUTE[i];
-    const [x1, y1] = ROUTE[i + 1];
-    const dx = x1 - x0;
-    const dy = y1 - y0;
-    const len = Math.hypot(dx, dy) || 1;
-    const der = k % 2 === 1;
-    const off = der ? lado : -lado;
-    out.push({ x: x0 + dx * f + (-dy / len) * off, y: y0 + dy * f + (dx / len) * off, ang: (Math.atan2(dy, dx) * 180) / Math.PI + 90, der, t: s / total });
-  }
-  return out;
-}
-
 // Marco de iPhone con isla dinámica. Dentro va una captura real o una representación.
 function IPhone({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -84,96 +48,61 @@ function Cap({ src, alt, sizes, priority }: { src: string; alt: string; sizes: s
   return <Image src={src} alt={alt} fill sizes={sizes} priority={priority} />;
 }
 
-/* ---------- 1. Portada animada ---------- */
+/* ---------- 1. Portada: la app real, pantalla por pantalla ---------- */
+
+const HERO_PANTALLAS = [
+  { src: '/web/cap/inicio-dark.jpg', t: 'Te ven cerca', d: 'Tu local aparece en «Locales cerca tuyo», en el inicio.', alt: 'Pantalla real de Camina: inicio con locales cerca' },
+  { src: '/web/cap/canjes-dark.jpg', t: 'Te encuentran', d: 'Y en Canjes, con tu foto, tu logo y tus premios.', alt: 'Pantalla real de Camina: lista de canjes' },
+  { src: '/web/cap/ficha-local-dark.jpg', t: 'Te visitan', d: 'Abren tu ficha, canjean sus Puntos y van a tu local.', alt: 'Pantalla real de Camina: ficha de un local' },
+];
 
 export function HeroComercio() {
-  const pasos = useMemo(() => huellas(), []);
-  const frip = L('fripaps');
-  const bloom = L('bloom');
-  const coco = L('coco');
-  const T = 11; // segundos por vuelta
+  const [i, setI] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const visto = useVisto(ref, 0.25);
+  const reducida = useReducida();
+  const MS = 4600;
+  useEffect(() => {
+    if (!visto || reducida) return;
+    const t = setTimeout(() => setI((x) => (x + 1) % HERO_PANTALLAS.length), MS);
+    return () => clearTimeout(t);
+  }, [i, visto, reducida]);
   return (
     <section className="lp-hero cx-hero">
       <div className="wrap cx-hero-grid">
         <div className="copy">
+          <p className="kick">Para comercios</p>
           <Kinetic as="h1" text="Tus próximos clientes ya están *caminando.*" />
-          <p className="sub">Camina premia a las personas por caminar y las lleva a los comercios de su zona.</p>
+          <p className="sub">En Camina, las personas ganan Puntos por caminar y los canjean en comercios de su zona. Suma el tuyo.</p>
           <div className="lp-cta">
             <Link className="lp-btn mint cx-btn" href="/registro" data-medir="comercios_hero_sumar">Sumar mi comercio</Link>
             <span className="cx-free">Empieza gratis</span>
           </div>
         </div>
 
-        <div className="cx-scene" role="img" aria-label="Animación: una persona camina por Tarija y llega a un comercio">
-          <div className="cx-map" style={{ aspectRatio: `${W}/${H}`, ['--T' as string]: `${T}s` }}>
-            <Image src="/web/mapa-tarija.jpg" alt="" width={W} height={H} priority sizes="(min-width:900px) 620px, 100vw" />
-            <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-              {pasos.map((h, i) => (
-                <image
-                  key={i}
-                  className="cx-fp"
-                  href={h.der ? '/web/pie-R-mint.png' : '/web/pie-L-mint.png'}
-                  width={h.der ? 14.2 : 12.9}
-                  height={27}
-                  x={h.der ? -7.1 : -6.45}
-                  y={-13.5}
-                  transform={`translate(${h.x} ${h.y}) rotate(${h.ang})`}
-                  style={{ animationDelay: `${(h.t * T * 0.42 + 0.4).toFixed(2)}s` }}
-                />
+        <div className="cx-hshow" ref={ref} style={{ ['--ms' as string]: `${MS}ms` }}>
+          <div className="cx-hphone">
+            <IPhone>
+              {HERO_PANTALLAS.map((p, k) => (
+                <div className={`scr${k === i ? ' on' : ''}`} key={p.src} aria-hidden={k !== i}>
+                  <Cap src={p.src} alt={p.alt} sizes="(min-width:900px) 280px, 62vw" priority={k === 0} />
+                </div>
               ))}
-            </svg>
-            <span className="cx-you" style={{ left: pct(geo.start[0], W), top: pct(geo.start[1], H) }}><i /></span>
-            <span className="cx-pin gold" style={{ left: pct(geo.bloom[0], W), top: pct(geo.bloom[1], H), animationDelay: '.9s' }}><Image src={bloom.logo} alt="" width={64} height={64} /></span>
-            <span className="cx-pin" style={{ left: pct(geo.coco[0] + 46, W), top: pct(geo.coco[1] + 70, H), animationDelay: '1.6s' }}><Image src={coco.logo} alt="" width={64} height={64} /></span>
-            <span className="cx-pin big" style={{ left: pct(geo.frip[0], W), top: pct(geo.frip[1], H), animationDelay: `${(T * 0.5).toFixed(1)}s` }}><Image src={frip.logo} alt="" width={96} height={96} /></span>
-            <span className="cx-pts p1">+1 Punto</span>
-            <span className="cx-pts p2">+2 Puntos</span>
-            <span className="cx-pts p3">+3 Puntos</span>
-            <div className="cx-card" style={{ animationDelay: `${(T * 0.56).toFixed(1)}s` }}>
-              <Image src={frip.logo} alt="" width={44} height={44} />
-              <div><b>{frip.nombre}</b><span>{frip.premios[0].nombre} · {frip.premios[0].puntos} Puntos</span></div>
-            </div>
-          </div>
-          <Parallax speed={0.05} className="cx-ph-wrap">
-            <IPhone className="cx-float">
-              <Cap src="/web/cap/canjes-dark.jpg" alt="Pantalla de la app: lista de canjes con comercios" sizes="(min-width:900px) 190px, 36vw" priority />
             </IPhone>
-          </Parallax>
+          </div>
+          <ol className="cx-hpasos">
+            {HERO_PANTALLAS.map((p, k) => (
+              <li key={p.src}>
+                <button type="button" className={k === i ? 'on' : ''} aria-current={k === i} onClick={() => setI(k)}>
+                  <b>{p.t}</b>
+                  <span>{p.d}</span>
+                  {k === i && !reducida && <i className="bar" key={`${i}-${visto}`} />}
+                </button>
+              </li>
+            ))}
+          </ol>
+          <p className="cx-hdesc" aria-live="polite">{HERO_PANTALLAS[i].d}</p>
         </div>
-      </div>
-      <p className="wrap cx-attr">Mapa © colaboradores de OpenStreetMap · Animación ilustrativa con locales de ejemplo</p>
-    </section>
-  );
-}
-
-/* ---------- 2. Cómo conecta ---------- */
-
-export function ConectaTres() {
-  const pasos = [
-    ['/web/pie-R-mint.png', 'Caminan', 'Cada 1.000 pasos, 1 Punto.'],
-    ['coin', 'Suman Puntos', 'Los canjean en comercios aliados.'],
-    ['', 'Llegan a tu local', 'Con tu descuento o regalo.'],
-  ];
-  return (
-    <section className="cx-sec cx-conecta">
-      <div className="wrap">
-        <Kinetic text="Personas que caminan. Un negocio que *las* *recibe.*" />
-        <InView className="cx-tres">
-          <span className="cx-hilo" aria-hidden="true" />
-          {pasos.map(([img, t, d], i) => (
-            <div className="cx-paso" key={t} style={{ ['--i' as string]: i }}>
-              <span className="cx-ico">
-                {img === 'coin' ? (
-                  <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#FFD166" /><circle cx="12" cy="12" r="7.4" fill="none" stroke="#F2B84B" strokeWidth="1.4" /><text x="12" y="16.4" textAnchor="middle" fontSize="11" fontWeight="800" fill="#7A4B00" fontFamily="sans-serif">1</text></svg>
-                ) : img ? <Image src={img} alt="" width={44} height={44} /> : (
-                  <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5c0 4.9 6.5 12.5 6.5 12.5S18.5 13.9 18.5 9A6.5 6.5 0 0 0 12 2.5Z" fill="#62F0B6" /><circle cx="12" cy="9" r="2.6" fill="#241748" /></svg>
-                )}
-              </span>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </div>
-          ))}
-        </InView>
       </div>
     </section>
   );
@@ -181,7 +110,7 @@ export function ConectaTres() {
 
 /* ---------- Escaparate: iPhone que cambia solo entre pasos ---------- */
 
-type Item = { t: string; d: string; vista: (activo: boolean) => ReactNode; rep?: boolean };
+type Item = { t: string; d: string; vista: (activo: boolean) => ReactNode };
 
 function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number; nota?: string; id: string }) {
   const [i, setI] = useState(0);
@@ -202,7 +131,6 @@ function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number
             <div className={`scr${k === i ? ' on' : ''}`} key={it.t} aria-hidden={k !== i}>{it.vista(k === i && visto)}</div>
           ))}
         </IPhone>
-        <p className="cx-rep">{items[i].rep ? 'Representación del flujo, no es una captura' : 'Pantalla real de la app'}</p>
       </div>
       <ol className="cx-tabs">
         {items.map((it, k) => (
@@ -220,47 +148,11 @@ function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number
   );
 }
 
-// Dos pantallas reales que se alternan solas.
-function Alterna({ a, b, altA, altB, activo }: { a: string; b: string; altA: string; altB: string; activo: boolean }) {
-  return (
-    <>
-      <div className={`alt a${activo ? ' go' : ''}`}><Cap src={a} alt={altA} sizes="260px" /></div>
-      <div className={`alt b${activo ? ' go' : ''}`}><Cap src={b} alt={altB} sizes="260px" /></div>
-    </>
-  );
-}
-
-// Representación: escribir el código del local.
-function PantallaCodigo({ activo }: { activo: boolean }) {
-  return (
-    <div className={`fake code${activo ? ' go' : ''}`}>
-      <p className="ft">Código del local</p>
-      <p className="fs">Pídelo en el local y escríbelo</p>
-      <div className="digits">{['4', '8', '2', '1'].map((d, k) => <i key={k} style={{ animationDelay: `${0.5 + k * 0.5}s` }}>{d}</i>)}</div>
-      <div className="ok"><span>✓</span> Canje confirmado</div>
-    </div>
-  );
-}
-
-// Representación: tarjeta de fidelidad de 5 sellos.
-function PantallaTarjeta({ activo }: { activo: boolean }) {
-  return (
-    <div className={`fake card${activo ? ' go' : ''}`}>
-      <p className="ft">Tarjeta de fidelidad</p>
-      <p className="fs">5 canjes en cualquier comercio</p>
-      <div className="stamps">{[0, 1, 2, 3, 4].map((k) => <i key={k} style={{ animationDelay: `${0.4 + k * 0.45}s` }}><Image src="/web/pie-R-mint.png" alt="" width={20} height={38} /></i>)}</div>
-      <div className="ok gift">Elige tu premio gratis</div>
-    </div>
-  );
-}
-
 export function Funciones() {
   const items: Item[] = [
-    { t: 'Te encuentran', d: 'Tu local aparece en el mapa y en la lista de canjes.', vista: () => <Cap src="/web/cap/canjes-dark.jpg" alt="Pantalla de la app: lista de canjes" sizes="260px" /> },
     { t: 'Tu ficha', d: 'Fotos, horarios, tus descuentos y cómo llegar.', vista: () => <Cap src="/web/cap/ficha-local-dark.jpg" alt="Pantalla de la app: ficha del local" sizes="260px" /> },
-    { t: 'Canje con código', d: 'La persona escribe el código de 4 números de tu local y el canje queda confirmado.', rep: true, vista: (a) => <PantallaCodigo activo={a} /> },
-    { t: 'Reseña e historia', d: 'Si quiere, califica tu local en Google Maps y sube una historia a Instagram.', vista: (a) => <Alterna a="/web/cap/canje-calificar-v3-dark.jpg" b="/web/cap/canje-historia-v3-dark.jpg" altA="Pantalla de la app: invitación a calificar" altB="Pantalla de la app: subir una historia" activo={a} /> },
-    { t: 'Tarjeta de fidelidad', d: 'Con 5 canjes en cualquier comercio, la persona elige un premio gratis y el tuyo puede estar entre las opciones. Planes Paso Firme y Paso Adelante.', rep: true, vista: (a) => <PantallaTarjeta activo={a} /> },
+    { t: 'Te califican', d: 'Después del canje, la app invita a calificar tu local en Google Maps. Es opcional.', vista: () => <Cap src="/web/cap/canje-calificar-v3-dark.jpg" alt="Pantalla de la app: invitación a calificar" sizes="260px" /> },
+    { t: 'Te mencionan', d: 'Si quiere, la persona sube una historia a Instagram con tu local.', vista: () => <Cap src="/web/cap/canje-historia-v3-dark.jpg" alt="Pantalla de la app: subir una historia" sizes="260px" /> },
   ];
   return (
     <section className="cx-sec" id="funciones">
@@ -309,139 +201,6 @@ export function RutaMes() {
   );
 }
 
-/* ---------- 5. Niveles e insignias ---------- */
-
-const NIVEL_LOOK = {
-  visitante: { ring: ['#B98CF0', '#8B4FD1'], pill: ['#9B5FE0', '#7A3FC4'], text: '#fff', nombre: 'Visitante' },
-  habitual: { ring: ['#8DF7CB', '#3FD69B'], pill: ['#7FF2C2', '#3FD69B'], text: '#12281F', nombre: 'Habitual' },
-  fan: { ring: ['#FFE08A', '#62F0B6'], pill: ['#FFE08A', '#F2B84B'], text: '#3B1450', nombre: 'Fan' },
-} as const;
-
-function Insignia({ nivel, encendida, logo }: { nivel: keyof typeof NIVEL_LOOK; encendida: boolean; logo: string }) {
-  const k = NIVEL_LOOK[nivel];
-  return (
-    <div className={`cx-ins ${nivel}${encendida ? ' on' : ''}`}>
-      <span className="ring" style={{ background: `linear-gradient(135deg, ${k.ring[0]}, ${k.ring[1]})` }}>
-        <Image src={logo} alt="" width={72} height={72} />
-      </span>
-      <em style={{ background: `linear-gradient(90deg, ${k.pill[0]}, ${k.pill[1]})`, color: k.text }}>{k.nombre}</em>
-    </div>
-  );
-}
-
-export function Niveles() {
-  const ref = useRef<HTMLDivElement>(null);
-  const visto = useVisto(ref, 0.4);
-  const reducida = useReducida();
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    if (reducida) {
-      setV(20);
-      return;
-    }
-    if (!visto) return;
-    let raf = 0;
-    const DUR = 7000;
-    const PAUSA = 2600;
-    let t0 = performance.now();
-    const tick = (t: number) => {
-      const k = (t - t0) / DUR;
-      if (k >= 1) {
-        setV(20);
-        if (t - t0 > DUR + PAUSA) t0 = t;
-      } else {
-        setV(Math.round(20 * k));
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [visto, reducida]);
-  const nivel = v >= 20 ? 'Fan' : v >= 10 ? 'Habitual' : v >= 1 ? 'Visitante' : '—';
-  const logo = L('bloom').logo;
-  const fuentes = [
-    ['+2', 'Canje confirmado'],
-    ['+2', 'Visita de la Ruta'],
-    ['+1', 'Calificar tu local'],
-    ['+1', 'Historia aprobada'],
-  ];
-  return (
-    <section className="cx-sec cx-niveles" id="niveles">
-      <div className="wrap cx-niv-grid">
-        <div ref={ref}>
-          <p className="kick">Clientes fieles</p>
-          <Kinetic text="Cada visita los acerca a *Fan.*" />
-          <p className="cx-lead">Suben de nivel en tu local con puntos de nivel. No son Puntos de Camina.</p>
-          <div className="cx-track" aria-label={`Ejemplo de progreso: ${v} puntos de nivel, ${nivel}`}>
-            <div className="cx-score"><b>{v}</b><span>puntos de nivel</span><em>{nivel}</em></div>
-            <div className="cx-rail"><i style={{ width: `${(v / 20) * 100}%` }} /></div>
-            <div className="cx-nodos">
-              <div style={{ left: '5%' }}><Insignia nivel="visitante" encendida={v >= 1} logo={logo} /><small>1</small></div>
-              <div style={{ left: '50%' }}><Insignia nivel="habitual" encendida={v >= 10} logo={logo} /><small>10</small></div>
-              <div style={{ left: '100%' }}><Insignia nivel="fan" encendida={v >= 20} logo={logo} /><small>20</small></div>
-            </div>
-          </div>
-          <ul className="cx-fuentes">{fuentes.map(([p, t]) => <li key={t}><b>{p}</b>{t}</li>)}</ul>
-        </div>
-        <Parallax speed={0.05}>
-          <IPhone className="cx-float">
-            <Cap src="/web/cap/perfil-insignias-dark.jpg" alt="Pantalla de la app: perfil con insignias de locales" sizes="(min-width:900px) 260px, 60vw" />
-          </IPhone>
-          <p className="cx-rep">Pantalla real de la app</p>
-        </Parallax>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- 6. Pines: normal vs destacado ---------- */
-
-export function Pines() {
-  const ref = useRef<HTMLDivElement>(null);
-  const visto = useVisto(ref, 0.4);
-  const reducida = useReducida();
-  const [oro, setOro] = useState(false);
-  const [manual, setManual] = useState(false);
-  useEffect(() => {
-    if (!visto || manual || reducida) return;
-    const id = setTimeout(() => setOro((x) => !x), 4200);
-    return () => clearTimeout(id);
-  }, [visto, manual, reducida, oro]);
-  const tu = ROUTE[11];
-  const bloom = L('bloom');
-  const coco = L('coco');
-  const frip = L('fripaps');
-  const otros: { logo: string; x: number; y: number }[] = [
-    { logo: coco.logo, x: ROUTE[4][0] + 70, y: ROUTE[4][1] - 50 },
-    { logo: frip.logo, x: geo.frip[0] - 90, y: geo.frip[1] + 10 },
-  ];
-  return (
-    <section className="cx-sec cx-pines" id="pines">
-      <div className="wrap" ref={ref}>
-        <p className="kick">En el mapa</p>
-        <Kinetic text="Que te vean *primero.*" />
-        <div className="cx-toggle" role="group" aria-label="Tipo de pin">
-          <button type="button" className={!oro ? 'on' : ''} onClick={() => { setManual(true); setOro(false); }}>Plan gratuito</button>
-          <button type="button" className={oro ? 'on gold' : ''} onClick={() => { setManual(true); setOro(true); }}>Paso Adelante</button>
-        </div>
-        <div className={`cx-mapa${oro ? ' oro' : ''}`} style={{ aspectRatio: `${W}/${H}` }}>
-          <Image src="/web/mapa-tarija.jpg" alt="" width={W} height={H} sizes="(min-width:900px) 900px, 100vw" />
-          {otros.map((o, i) => (
-            <span className="cx-pin2 otro" key={i} style={{ left: pct(o.x, W), top: pct(o.y, H) }}><Image src={o.logo} alt="" width={64} height={64} /></span>
-          ))}
-          <span className="cx-pin2 tu" style={{ left: pct(tu[0], W), top: pct(tu[1], H) }}>
-            <i className="onda" /><i className="onda o2" />
-            <Image src={bloom.logo} alt="Tu local" width={96} height={96} />
-            <b className="etq">{oro ? 'Primero en tu categoría' : 'Tu local'}</b>
-          </span>
-        </div>
-        <p className="cx-cap" aria-live="polite">{oro ? 'Pin más grande y dorado, y sales primero en tu categoría.' : 'Apareces en el mapa con tu pin. Incluido en el plan gratuito.'}</p>
-        <p className="cx-rep">Representación sobre el mapa de Tarija · Mapa © colaboradores de OpenStreetMap</p>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- 7. Planes ---------- */
 
 // Textos de esta página para tres puntos de los planes. Precios, planes y reglas no cambian.
@@ -450,31 +209,6 @@ const TEXTO_PLAN: Record<string, [string, string]> = {
   '1 premio gratis y, con él, 1 más': ['1 premio gratis y 1 descuento', 'Primero el gratis, después el descuento. Máximo 2.'],
   'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': ['Tarjeta de fidelidad Camina', 'Tu premio entre las opciones de todos los clientes.'],
 };
-
-function VisualPlan({ id }: { id: string }) {
-  if (id === 'primer_paso') {
-    return (
-      <div className="pv pv1" aria-hidden="true">
-        <span className="pin"><Image src={L('bloom').logo} alt="" width={64} height={64} /></span>
-        <i className="sombra" />
-      </div>
-    );
-  }
-  if (id === 'paso_firme') {
-    return (
-      <div className="pv pv2" aria-hidden="true">
-        <div className="bars">{[38, 62, 46, 84, 58, 72].map((h, k) => <i key={k} style={{ height: `${h}%`, animationDelay: `${k * 0.12}s` }} />)}</div>
-        <div className="sellos">{[0, 1, 2, 3, 4].map((k) => <i key={k} style={{ animationDelay: `${k * 0.35}s` }} />)}</div>
-      </div>
-    );
-  }
-  return (
-    <div className="pv pv3" aria-hidden="true">
-      <span className="pin gold"><i className="onda" /><Image src={L('bloom').logo} alt="" width={64} height={64} /></span>
-      <span className="aviso">🔔 Avisos a quienes caminan cerca</span>
-    </div>
-  );
-}
 
 export function PlanesComercio() {
   return (
@@ -492,7 +226,6 @@ export function PlanesComercio() {
         <div className="cx-planes-grid">
           {PLANS.map((p, i) => (
             <InView as="article" key={p.id} className={`cx-plan${p.featured ? ' feat' : ''}${p.id === 'paso_adelante' ? ' gold' : ''}`} delay={i * 120}>
-              <VisualPlan id={p.id} />
               <h3>{p.name}</h3>
               <p className="price">{p.price}</p>
               {p.id !== 'primer_paso' && <p className="launch">{LANZAMIENTO}</p>}
@@ -509,7 +242,6 @@ export function PlanesComercio() {
             </InView>
           ))}
         </div>
-        <p className="cx-rep">Ilustraciones de cada plan.</p>
       </div>
     </section>
   );
