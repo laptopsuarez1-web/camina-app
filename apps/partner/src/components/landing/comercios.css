@@ -113,5 +113,5 @@
 }
 
 /* Ruta: los videos de la app empiezan debajo de la isla dinámica. */
-.lp-comercios .cx-ruta .scr{top:4.6%;background:#0b0716}
+.lp-comercios .cx-ruta .scr .vid{top:4.6%;height:95.4%}
 .lp-comercios .cx-ruta .scr .vid{object-position:top}

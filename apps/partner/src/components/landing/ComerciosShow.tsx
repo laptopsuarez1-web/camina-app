@@ -51,10 +51,10 @@ function Cap({ src, alt, sizes, priority }: { src: string; alt: string; sizes: s
 /* ---------- 1. Portada: la app real, pantalla por pantalla ---------- */
 
 const HERO_PANTALLAS = [
-  { src: '/web/cap/inicio-dark.jpg', t: 'Te ven cerca', d: 'Tu local aparece en «Locales cerca tuyo», en el inicio.', alt: 'Pantalla real de Camina: inicio con locales cerca' },
-  { src: '/web/cap/canjes-dark.jpg', t: 'Te encuentran', d: 'Y en Canjes, con tu foto, tu logo y tus premios.', alt: 'Pantalla real de Camina: lista de canjes' },
-  { src: '/web/cap/ficha-local-dark.jpg', t: 'Te visitan', d: 'Abren tu ficha, canjean sus Puntos y van a tu local.', alt: 'Pantalla real de Camina: ficha de un local' },
-];
+  { src: '/web/cap/mapa-locales-dark.jpg', t: 'Te ven en el mapa', d: 'Tu local aparece en el mapa y en «Locales cerca tuyo».', alt: 'Pantalla real de Camina: mapa con locales de Tarija' },
+  { src: '/web/cap/ficha-bloom-nivel-dark.jpg', t: 'Abren tu ficha', d: 'Tu foto, tu logo, tu horario y tus redes.', alt: 'Pantalla real de Camina: ficha de Bloom' },
+  { src: '/web/cap/premios-bloom-dark.jpg', t: 'Canjean tus premios', d: 'Usan sus Puntos en tus premios y descuentos.', alt: 'Pantalla real de Camina: premios de Bloom' },
+]
 
 export function HeroComercio() {
   const [i, setI] = useState(0);
@@ -150,7 +150,8 @@ function Escaparate({ items, ms = 6500, nota, id }: { items: Item[]; ms?: number
 
 export function Funciones() {
   const items: Item[] = [
-    { t: 'Tu ficha', d: 'Fotos, horarios, tus descuentos y cómo llegar.', vista: () => <Cap src="/web/cap/ficha-local-dark.jpg" alt="Pantalla de la app: ficha del local" sizes="260px" /> },
+    { t: 'Tu ficha', d: 'Fotos, horario, dirección y tus redes.', vista: () => <Cap src="/web/cap/ficha-fripaps-v2-dark.jpg" alt="Pantalla de la app: ficha de Fripap's" sizes="260px" /> },
+    { t: 'Tus premios', d: 'Tus premios y descuentos, con los Puntos que cuestan.', vista: () => <Cap src="/web/cap/premios-fripaps-dark.jpg" alt="Pantalla de la app: premios de Fripap's" sizes="260px" /> },
     { t: 'Te califican', d: 'Después del canje, la app invita a calificar tu local en Google Maps. Es opcional.', vista: () => <Cap src="/web/cap/canje-calificar-v3-dark.jpg" alt="Pantalla de la app: invitación a calificar" sizes="260px" /> },
     { t: 'Te mencionan', d: 'Si quiere, la persona sube una historia a Instagram con tu local.', vista: () => <Cap src="/web/cap/canje-historia-v3-dark.jpg" alt="Pantalla de la app: subir una historia" sizes="260px" /> },
   ];
@@ -185,8 +186,8 @@ function VideoRuta({ n, activo }: { n: string; activo: boolean }) {
 
 export function RutaMes() {
   const items: Item[] = [
-    { t: 'Ella participa', d: 'Cada mes toca «Participar» y recibe 3 locales sorpresa en su mapa.', vista: (a) => <VideoRuta n="ruta-participar" activo={a} /> },
-    { t: 'Tu local puede ser uno', d: 'Si compra, escribe tu código y tú confirmas con un toque.', vista: (a) => <VideoRuta n="ruta-local-sumado" activo={a} /> },
+    { t: 'Su ruta del mes', d: 'Cada mes la persona recibe 3 locales sorpresa para visitar.', vista: () => <Cap src="/web/cap/eventos-ruta-nov-dark.jpg" alt="Pantalla de la app: Tu ruta de noviembre" sizes="260px" /> },
+    { t: 'Tu local puede ser uno', d: 'Los ve en su mapa y marca la visita cuando llega.', vista: () => <Cap src="/web/cap/ruta-mapa-nov-dark.jpg" alt="Pantalla de la app: mapa de la ruta del mes" sizes="260px" /> },
     { t: 'Queda en su álbum', d: 'Tu local sale en sus fotos e historias del mes.', vista: (a) => <VideoRuta n="ruta-album" activo={a} /> },
   ];
   return (
@@ -195,7 +196,7 @@ export function RutaMes() {
         <p className="kick">Ruta del mes</p>
         <Kinetic text="Tu local, entre los *3* *sorpresa.*" />
         <p className="cx-lead"><b>Sin pagar plan.</b> Es una oportunidad de visibilidad, no una garantía de visitas ni de compras.</p>
-        <Escaparate id="esc-ruta" items={items} ms={7500} nota="Videos de la app real; los locales y las fotos son de ejemplo." />
+        <Escaparate id="esc-ruta" items={items} ms={7500} nota="Pantallas y video de la app real." />
       </div>
     </section>
   );
