@@ -1,27 +1,21 @@
 import './landing.css';
 import './glass.css';
 import GlassFx from './GlassFx';
-import { Nav, Footer, HeroGente, Mensajes, SaludGente, ComoFunciona,
-  CanjesGente, Gratis, GruposGente, Proposito, TarijaCamina, Dudas, SoyComercio, CierreGente, RutaGente, InsigniasGente } from './shared';
+import { Nav, Footer, HeroGente, ComoFunciona,
+  CanjesGente, Gratis, GruposGente, Dudas, SoyComercio, CierreGente} from './shared';
 
 export default function GentePage() {
   return (
-    <div className="lp">
+    <div className="lp lp-gente">
       <span className="aurora-3" aria-hidden="true" />
       <GlassFx />
       <Nav activo="gente" />
       <main>
         <HeroGente />
-        <Mensajes />
-        <Proposito />
-        <SaludGente />
         <ComoFunciona />
         <CanjesGente />
         <Gratis />
         <GruposGente />
-        <RutaGente />
-        <InsigniasGente />
-        <TarijaCamina />
         <Dudas />
         <SoyComercio />
         <CierreGente />
