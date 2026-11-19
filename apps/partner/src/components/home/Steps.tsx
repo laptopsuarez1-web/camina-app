@@ -14,13 +14,50 @@ export default function Steps() {
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    const items = Array.from(el.querySelectorAll<HTMLElement>('[data-step]'));
-    const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && setAct(Number((e.target as HTMLElement).dataset.step))),
-      { rootMargin: '-48% 0px -48% 0px' },
-    );
-    items.forEach((it) => io.observe(it));
-    return () => io.disconnect();
+    const mobile = window.matchMedia('(max-width: 999px)');
+    const m = el.querySelector<HTMLElement>('.hm-steps-m');
+    const stick = el.querySelector<HTMLElement>('.hm-steps-m-stick');
+    const items = Array.from(el.querySelectorAll<HTMLElement>('.hm-steps-list [data-step]'));
+    let io: IntersectionObserver | null = null;
+    let raf = 0;
+
+    // Celular: la etapa sale del avance real del bloque fijo. Mientras el teléfono no quedó fijo arriba,
+    // se ve la etapa 1; luego cada etapa ocupa la misma cantidad de recorrido.
+    const paint = () => {
+      raf = 0;
+      if (!m || !stick) return;
+      const r = m.getBoundingClientRect();
+      const travel = m.offsetHeight - stick.offsetHeight;
+      const top = parseFloat(getComputedStyle(stick).top) || 0;
+      const p = travel > 0 ? (top - r.top) / travel : 0;
+      setAct(Math.max(0, Math.min(ETAPAS.length - 1, Math.floor(p * ETAPAS.length))));
+    };
+    const on = () => !raf && (raf = requestAnimationFrame(paint));
+
+    const setup = () => {
+      io?.disconnect();
+      window.removeEventListener('scroll', on);
+      if (mobile.matches) {
+        paint();
+        window.addEventListener('scroll', on, { passive: true });
+      } else {
+        io = new IntersectionObserver(
+          (es) => es.forEach((e) => e.isIntersecting && setAct(Number((e.target as HTMLElement).dataset.step))),
+          { rootMargin: '-48% 0px -48% 0px' },
+        );
+        items.forEach((it) => io!.observe(it));
+      }
+    };
+    setup();
+    mobile.addEventListener('change', setup);
+    window.addEventListener('resize', on);
+    return () => {
+      io?.disconnect();
+      mobile.removeEventListener('change', setup);
+      window.removeEventListener('scroll', on);
+      window.removeEventListener('resize', on);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   const pantallas = (
@@ -76,8 +113,8 @@ export default function Steps() {
           </div>
         </div>
         <div className="hm-steps-m-room" aria-hidden="true">
-          {ETAPAS.map((e, i) => (
-            <div key={e.n} data-step={i} />
+          {ETAPAS.map((e) => (
+            <div key={e.n} />
           ))}
         </div>
       </div>
