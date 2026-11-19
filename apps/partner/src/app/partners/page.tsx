@@ -17,7 +17,7 @@ export default function PartnersPage() {
     });
   }, [router]);
   return (
-    <div className="min-h-screen bg-auth-bg text-white">
+    <div className="min-h-screen bg-auth-bg biz biz-auth text-white">
       <div className="max-w-[560px] mx-auto px-6 py-10 flex flex-col items-center">
         <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4" />
         <p className="text-mint font-bold tracking-[0.18em] text-[13px] mb-2">CAMINA PARTNERS</p>

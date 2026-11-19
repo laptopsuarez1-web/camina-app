@@ -43,7 +43,7 @@ export default function ElegirPlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex justify-center">
+    <div className="min-h-screen bg-bg flex justify-center biz">
       {paying && payingQr && (
         <PaymentModal
           planName={paying.name}

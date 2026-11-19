@@ -8,6 +8,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ClientesFieles } from '@/components/ClientesFieles';
 import { ResumenMes, type Resumen } from '@/components/ResumenMes';
+import { CanjesInicio } from '@/components/biz/CanjesInicio';
 
 export default function InicioPage() {
   const { business } = useBusinessAuth();
@@ -145,6 +146,8 @@ export default function InicioPage() {
           <StatCard label="Cupones que quedan hoy" value={`${todayQuotaLeft ?? 0} de ${todayQuotaTotal}`} accent="#4FC3A8" />
         )}
       </div>
+
+      {business && business.account_kind !== 'events_only' && <CanjesInicio business={business} />}
 
       {news.length > 0 && (
         <div className="bg-card border border-line rounded-2xl mb-5 overflow-hidden">

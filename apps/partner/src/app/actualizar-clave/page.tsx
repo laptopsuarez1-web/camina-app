@@ -55,7 +55,7 @@ export default function ActualizarClavePage() {
   }
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
       <p className="text-white font-bold text-[22px] mb-1.5">Elige una contraseña nueva</p>
 

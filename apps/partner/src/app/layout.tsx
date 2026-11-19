@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import '@/components/biz/biz.css';
 import { AuthRedirect } from '@/components/AuthRedirect';
 import Medicion from '@/components/landing/Medicion';
 

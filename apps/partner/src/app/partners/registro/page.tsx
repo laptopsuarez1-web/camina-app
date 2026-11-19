@@ -60,7 +60,7 @@ export default function PartnersRegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6 py-10">
       <Image src="/camina-logo.png" alt="Camina" width={72} height={72} className="rounded-full mb-4" />
       <p className="text-white font-bold text-[22px] mb-1.5">Quiero ser partner</p>
       <p className="text-auth-muted text-[13px] mb-6 text-center max-w-[300px]">Son 5 datos y entras directo a tu panel. Es gratis.</p>
