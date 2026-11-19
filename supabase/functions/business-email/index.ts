@@ -3,6 +3,7 @@
 //   - new_business / resubmitted: el dueño se registró o corrigió su local -> aviso a los admins.
 //   - approved / rejected: un admin aprobó o rechazó el local -> aviso al dueño (con el motivo).
 //   - staff_invite: el dueño invitó a un cajero -> mail al cajero con el link para crear su cuenta.
+//   - gestion_invite: el dueño (o quien administra el equipo) invitó a alguien al módulo de Gestión con un rol.
 //
 // Secrets: RESEND_API_KEY (sin ella no se manda nada y responde { sent: false }), EMAIL_FROM
 // (ej. "Camina <comercios@camina.app>", dominio verificado en Resend) y PANEL_URL (ej.
@@ -16,7 +17,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-type Tipo = 'new_business' | 'resubmitted' | 'approved' | 'rejected' | 'staff_invite';
+type Tipo = 'new_business' | 'resubmitted' | 'approved' | 'rejected' | 'staff_invite' | 'gestion_invite';
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
@@ -161,6 +162,35 @@ Deno.serve(async (req) => {
         'Toca el botón, elige una contraseña y listo: entras directo a la pantalla de canjes. No hace falta confirmar nada más.',
       ],
       panelUrl ? { texto: 'Crear mi cuenta de cajero', url: `${panelUrl}/unirme?email=${encodeURIComponent(email)}&t=${staff.id}` } : undefined
+    );
+  } else if (type === 'gestion_invite') {
+    // El dueño o alguien con permiso de administrar el equipo (se comprueba con la sesión de quien llama).
+    const { data: puede } = await caller.rpc('gestion_can', { p_business: businessId, p_perm: 'staff.manage' });
+    if (!esDueno && !puede) return json({ error: 'No autorizado' }, 403);
+    const email = (body.email ?? '').trim().toLowerCase();
+    const { data: staff } = await admin
+      .from('business_staff')
+      .select('id, user_id, gestion_roles(name)')
+      .eq('business_id', businessId)
+      .eq('email', email)
+      .maybeSingle();
+    if (!staff) return json({ error: 'Ese correo no está invitado' }, 400);
+    const rol = esc(((staff as { gestion_roles?: { name?: string } | null }).gestion_roles?.name) ?? 'miembro del equipo');
+    to = [email];
+    subject = `${business.name} te dio acceso a su sistema de gestión`;
+    html = plantilla(
+      'Te sumaron al equipo',
+      [
+        `<strong>${nombre}</strong> te dio acceso a su sistema de gestión con el rol <strong>${rol}</strong>.`,
+        staff.user_id
+          ? 'Ya tienes cuenta: entra con tu correo y contraseña de siempre.'
+          : 'Toca el botón, elige una contraseña y entras directo. No hace falta confirmar nada más.',
+      ],
+      panelUrl
+        ? staff.user_id
+          ? { texto: 'Entrar', url: `${panelUrl}/login` }
+          : { texto: 'Crear mi cuenta', url: `${panelUrl}/unirme?email=${encodeURIComponent(email)}&t=${staff.id}` }
+        : undefined
     );
   } else {
     return json({ error: 'Tipo desconocido' }, 400);

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { destinoEmpleado } from '@/lib/gestion';
 import { supabase } from '@/lib/supabase';
 
 // Quien confirma su correo (comercio nuevo o cajero) cae en la web con la sesión en el link.
@@ -27,8 +28,8 @@ export function AuthRedirect() {
         router.replace('/inicio');
         return;
       }
-      const { data: staffBusiness } = await supabase.rpc('claim_staff_invite');
-      if (staffBusiness) router.replace('/canjes');
+      const destino = await destinoEmpleado();
+      if (destino) router.replace(destino);
     }
 
     void decidir();

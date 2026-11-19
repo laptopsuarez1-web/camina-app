@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-export type AvisoCorreo = 'new_business' | 'resubmitted' | 'approved' | 'rejected' | 'staff_invite';
+export type AvisoCorreo = 'new_business' | 'resubmitted' | 'approved' | 'rejected' | 'staff_invite' | 'gestion_invite';
 
 // Pide a la función business-email que mande el correo. Es "mejor esfuerzo": si el correo no sale
 // (sin clave de Resend, sin conexión), la acción del panel igual queda hecha.

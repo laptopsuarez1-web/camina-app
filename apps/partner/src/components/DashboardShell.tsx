@@ -14,6 +14,7 @@ import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugere
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
 import type { BusinessPlan } from '@/lib/supabase';
+import { GestionNav } from '@/components/gestion/GestionNav';
 
 type NavItem = {
   href: string;
@@ -72,8 +73,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    // Los cajeros solo ven la pantalla de canjes.
-    if (session && business && role === 'cashier' && pathname !== '/canjes') {
+    // Los empleados solo ven la pantalla de canjes y, si tienen un rol de gestión, el módulo de Gestión
+    // (cada pantalla de Gestión vuelve a comprobar el permiso, y el servidor también).
+    if (session && business && role === 'cashier' && pathname !== '/canjes' && !pathname.startsWith('/gestion')) {
       router.replace('/canjes');
       return;
     }
@@ -134,6 +136,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         ).map((item) => (
           <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
         ))}
+        <GestionNav businessId={business.id} />
         {role === 'owner' && (
           <>
             <button

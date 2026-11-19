@@ -153,3 +153,28 @@ select,
 textarea {
   border-radius: 12px;
 }
+
+/* ===== Módulo Gestión ===== */
+.gx-btn-primary { background: var(--c-btn-bg); color: var(--c-btn-text); }
+.gx-btn-primary:hover { opacity: 0.92; }
+.gx-btn-danger { background: var(--c-danger-light); color: var(--c-danger-text); }
+.gx-text-ok { color: var(--c-ok-text); }
+.gx-text-warn { color: var(--c-warn-text); }
+.gx-text-danger { color: var(--c-danger-text); }
+.gx-text-purple { color: var(--c-purple-text); }
+.gx-bg-danger { background: var(--c-danger-light); }
+.gx-chart-a { color: #4fc3a8; }
+.gx-chart-b { color: #8b4fd1; }
+.gx-chart-grid { stroke: var(--c-line); }
+@keyframes gx-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gx-rise-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.gx-fade { animation: gx-fade-in 160ms ease-out; }
+.gx-rise { animation: gx-rise-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.gx-enter { animation: gx-rise-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .gx-fade, .gx-rise, .gx-enter { animation: none; }
+}
+@media print {
+  .gx-no-print, aside, header { display: none !important; }
+  body { background: #fff !important; }
+}

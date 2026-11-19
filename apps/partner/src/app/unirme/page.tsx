@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { destinoEmpleado } from '@/lib/gestion';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
@@ -39,7 +40,7 @@ export default function UnirmePage() {
         setError(alta?.exists ? 'Esta invitación ya se usó. Inicia sesión con tu contraseña.' : mensajeError(loginErr));
         return;
       }
-      window.location.href = '/canjes';
+      window.location.href = (await destinoEmpleado()) ?? '/canjes';
       return;
       }
     }
@@ -50,7 +51,7 @@ export default function UnirmePage() {
       return;
     }
     if (data.session) {
-      window.location.href = '/canjes';
+      window.location.href = (await destinoEmpleado()) ?? '/canjes';
       return;
     }
     setDone(true);

@@ -15,11 +15,14 @@
     "@tanstack/react-query": "^5.104.0",
     "@vercel/analytics": "^2.0.1",
     "gsap": "^3.13.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.469.0",
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "write-excel-file": "^4.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

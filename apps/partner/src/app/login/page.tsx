@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { destinoEmpleado } from '@/lib/gestion';
 import { supabase } from '@/lib/supabase';
 import { mensajeError } from '@/lib/errors';
 import PasswordInput from '@/components/PasswordInput';
@@ -74,9 +75,9 @@ export default function LoginPage() {
     if (!ownBusiness) {
       const { data: userData } = await supabase.auth.getUser();
       const tieneAlta = !!userData.user?.user_metadata?.pending_business || !!localStorage.getItem('camina_pending_business');
-      const { data: staffBusinessId } = await supabase.rpc('claim_staff_invite');
-      if (staffBusinessId) {
-        router.replace('/canjes');
+      const destino = await destinoEmpleado();
+      if (destino) {
+        router.replace(destino);
         return;
       }
       router.replace(tieneAlta ? '/inicio' : '/registro');
