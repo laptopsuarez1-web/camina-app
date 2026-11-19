@@ -167,12 +167,14 @@ export default function PerfilPage() {
     if (!business) return;
     if (resenaUrl.trim() && !resenaValida(resenaUrl)) {
       setResenaError('Ese link no es de Google. Pega el link de tu local en Google Maps (Compartir > Copiar link).');
+      setPaso(3);
       document.getElementById('campo-resenas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     setResenaError(null);
     if (descripcion.trim().length < 15) {
       setDescripcionError('Este dato es obligatorio: cuenta en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
+      setPaso(1);
       document.getElementById('campo-descripcion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -184,6 +186,7 @@ export default function PerfilPage() {
     }
     if (!esVirtual && ubicacion.trim() && !punto) {
       setUbicacionMsg('No entendimos esa ubicación. Pega el link de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
+      setPaso(2);
       return;
     }
     setSaving(true);
@@ -263,6 +266,7 @@ export default function PerfilPage() {
 
   function irAPaso(n: number) {
     setPasoError(null);
+    setSaved(false);
     setPaso(n);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -711,16 +715,23 @@ export default function PerfilPage() {
               </button>
             )}
             {paso < 5 ? (
-              <button type="button" onClick={continuar} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
-                Continuar
-              </button>
+              <>
+                <button type="button" onClick={handleSave} disabled={saving} className="rounded-[10px] px-5 py-3.5 font-semibold text-sm bg-white border border-line disabled:opacity-50">
+                  {saving ? 'Guardando…' : 'Guardar'}
+                </button>
+                <button type="button" onClick={continuar} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+                  Continuar
+                </button>
+              </>
             ) : (
               <button onClick={handleSave} disabled={saving} className="flex-1 rounded-[10px] py-3.5 font-semibold text-sm disabled:opacity-50" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
                 {saving ? 'Guardando…' : 'Guardar mi local'}
               </button>
             )}
           </div>
-          {paso < 5 && <p className="text-[11.5px] text-muted -mt-1">Se guarda al final, en el paso 5.</p>}
+          {paso < 5 && guardarError && <p className="text-warn text-[12.5px]">{guardarError}</p>}
+          {paso < 5 && saved && !saving && <p className="text-[12.5px] font-semibold" style={{ color: "var(--c-ok-text)" }} role="status">✓ Cambios guardados.</p>}
+          {paso < 5 && !saved && <p className="text-[11.5px] text-muted -mt-1">Guarda en cualquier paso, o toca el nombre de un paso arriba para ir directo.</p>}
           {business && !business.approved && business.rejected_at && paso === 5 && (
             <button
               type="button"
@@ -795,7 +806,7 @@ function PasoCabecera({ paso, total, titulos, ayuda, onIr }: { paso: number; tot
     <div className="mb-4">
       <div className="flex gap-1.5 mb-2.5" role="list" aria-label="Pasos">
         {titulos.map((t, i) => (
-          <button key={t} type="button" role="listitem" onClick={() => onIr(i + 1)} aria-label={`Paso ${i + 1}: ${t}`} aria-current={i + 1 === paso ? 'step' : undefined} className="flex-1 text-left">
+          <button key={t} type="button" role="listitem" onClick={() => onIr(i + 1)} aria-label={`Paso ${i + 1}: ${t}`} aria-current={i + 1 === paso ? 'step' : undefined} className="flex-1 text-left rounded-lg px-1 pt-1 pb-1.5 -mx-1 hover:bg-card cursor-pointer biz-paso">
             <span className="block h-1.5 rounded-full" style={{ background: i + 1 <= paso ? '#62F0B6' : 'var(--c-line)' }} />
             <span className={`block text-[11px] mt-1 truncate ${i + 1 === paso ? 'font-bold text-text' : 'text-muted'}`}>{t}</span>
           </button>
