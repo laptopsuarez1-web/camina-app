@@ -11,6 +11,7 @@ import Video from '../Video';
 import { Phone, Title } from '../ui';
 import { CAP, CONTACTO, RUTAS, VID_RUTA } from '../data';
 import PanelLive from './PanelLive';
+import MapaLocal from './MapaLocal';
 import { PLANS, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO, WHATSAPP_NUMBER } from '@/lib/plans';
 
 // /comercios con el mismo sistema visual que la portada. Precios, planes y condiciones salen de lib/plans.ts sin cambios.
@@ -97,6 +98,7 @@ export default function ComerciosHome() {
       <main id="contenido" className="hm-main">
         <Hero />
         <ComoFunciona />
+        <Panel />
         <Ruta />
         <Planes />
         <Dudas />
@@ -107,10 +109,13 @@ export default function ComerciosHome() {
   );
 }
 
-// 1. Héroe: el panel del comercio en vivo.
+// 1. Héroe: el mapa real de la app con gente caminando hacia "Tu local".
 function Hero() {
   return (
     <section className="hm-hero hm-dark cx-hero" data-theme="dark" aria-labelledby="cx-h1">
+      <div className="cx-hero-map">
+        <MapaLocal />
+      </div>
       <div className="hm-wrap cx-hero-grid">
         <div className="hm-hero-copy">
           <p className="cx-kick" data-reveal>
@@ -118,18 +123,34 @@ function Hero() {
           </p>
           <Title as="h1" id="cx-h1" text="Tus próximos clientes|ya están caminando." className="cx-h1" />
           <p className="hm-lead hm-hero-lead" data-reveal>
-            En Camina, la gente gana Puntos por caminar y los canjea en comercios de su ciudad. Suma el tuyo gratis y sigue cada canje desde tu panel.
+            En Camina, la gente gana Puntos por caminar y los canjea en comercios de su ciudad. Pon tu local en su camino: sumarte es gratis.
           </p>
           <div className="hm-cta" data-reveal>
             <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_hero_sumar">
               Sumar mi comercio
             </Link>
-            <a className="hm-btn hm-btn-ghost" href="#planes" data-medir="comercios_hero_planes">
-              Ver planes
+            <a className="hm-btn hm-btn-ghost" href="#como-funciona" data-medir="comercios_hero_como">
+              Cómo funciona
             </a>
           </div>
         </div>
-        <div className="cx-hero-panel">
+      </div>
+    </section>
+  );
+}
+
+// 3. Tu panel: cada canje, en el momento.
+function Panel() {
+  return (
+    <section className="hm-sec hm-soft" id="panel" data-theme="light">
+      <div className="hm-wrap cx-panel-sec">
+        <div className="cx-panel-copy">
+          <Title text="Todo, desde|tu panel." />
+          <p className="hm-lead" data-reveal>
+            Ves cada canje en el momento, tu código del local y cuánta gente te trajo Camina este mes. Sin instalar nada: entras desde el celular o la computadora.
+          </p>
+        </div>
+        <div className="cx-hero-panel" data-reveal>
           <PanelLive />
           <p className="hm-note">Tu panel de comercio, con datos de ejemplo.</p>
         </div>
@@ -200,7 +221,7 @@ function Ruta() {
 // 4. Planes: precios y beneficios tal cual lib/plans.ts.
 function Planes() {
   return (
-    <section className="hm-sec hm-soft" id="planes" data-theme="light">
+    <section className="hm-sec" id="planes" data-theme="light">
       <div className="hm-wrap">
         <header className="hm-head">
           <Title text="Empieza|gratis." />
@@ -250,7 +271,7 @@ function Planes() {
 
 function Dudas() {
   return (
-    <section className="hm-sec" id="dudas" data-theme="light">
+    <section className="hm-sec hm-soft" id="dudas" data-theme="light">
       <div className="hm-wrap hm-faq">
         <div>
           <Title text="Lo que todos|preguntan." />
