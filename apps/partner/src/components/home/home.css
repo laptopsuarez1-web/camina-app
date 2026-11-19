@@ -3069,3 +3069,108 @@ html:not(.hm-js) .hm-pagewalk {
     hm-up 1s var(--ease) 0.15s both,
     hm-float 7s ease-in-out 1.2s infinite;
 }
+
+/* ==========================================================================
+   Inicio en grafito: más sobrio y tecnológico; el menta del logo hace de luz
+   ========================================================================== */
+.hm-hero.hm-dark {
+  background:
+    radial-gradient(42% 46% at 76% 46%, rgba(98, 240, 182, 0.13), transparent 70%),
+    radial-gradient(60% 60% at 10% 100%, rgba(32, 10, 82, 0.55), transparent 70%),
+    var(--ink);
+  --mut: #a3a7b0;
+}
+.hm-hero .hm-hero-lead {
+  color: #b9bcc4;
+}
+/* La luz detrás del teléfono respira lento */
+.hm-js .hm-hero.hm-dark::before {
+  content: '';
+  position: absolute;
+  right: 6%;
+  top: 18%;
+  width: 46vw;
+  max-width: 640px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(98, 240, 182, 0.1), transparent 65%);
+  animation: hm-breathe 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes hm-breathe {
+  50% {
+    transform: scale(1.12);
+    opacity: 0.6;
+  }
+}
+/* Puntos que suben desde el aro */
+.hm-heroph-pts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.hm-heroph-pts span {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  background: #3c7867;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+}
+.hm-heroph-pts span:nth-child(1) {
+  left: -4%;
+  top: 44%;
+}
+.hm-heroph-pts span:nth-child(2) {
+  right: -6%;
+  top: 30%;
+}
+.hm-heroph-pts span:nth-child(3) {
+  left: 2%;
+  top: 66%;
+}
+.hm-js .hm-heroph-pts span {
+  animation: hm-pt 4.5s var(--ease) infinite;
+  animation-delay: calc(2.6s + var(--k) * 1.5s);
+}
+@keyframes hm-pt {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.85);
+  }
+  12% {
+    opacity: 1;
+    transform: none;
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-26px);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: translateY(-46px);
+  }
+}
+html:not(.hm-js) .hm-heroph-pts {
+  display: none;
+}
+@media (max-width: 999px) {
+  .hm-heroph-pts span {
+    font-size: 0.74rem;
+  }
+  .hm-heroph-pts span:nth-child(1) {
+    left: 0;
+  }
+  .hm-heroph-pts span:nth-child(2) {
+    right: 0;
+  }
+}
