@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Check, X } from 'lucide-react';
 import { supabase, type Redemption } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -20,6 +20,11 @@ export default function CanjesPage() {
   const [codeError, setCodeError] = useState<string | null>(null);
   // El bloque de 6 dígitos solo sirve si el local tiene premios online activos.
   const [hasOnline, setHasOnline] = useState(false);
+  // Filtros de la lista (solo cambian lo que se ve; no tocan ningún canje).
+  const [fEstado, setFEstado] = useState<'todos' | Redemption['status']>('todos');
+  const [fPremio, setFPremio] = useState('todos');
+  const [fBuscar, setFBuscar] = useState('');
+  const [mostrar, setMostrar] = useState(30);
 
   const loadRedemptions = useCallback(async () => {
     if (!business) return;
@@ -28,7 +33,7 @@ export default function CanjesPage() {
       .select('id, code, status, created_at, confirmed_at, benefit_id, loyalty_free, confirmed_via, benefit:benefits(name)')
       .eq('business_id', business.id)
       .order('created_at', { ascending: false })
-      .limit(30);
+      .limit(300);
     setRedemptions((data as unknown as Redemption[]) ?? []);
   }, [business]);
 
@@ -107,6 +112,42 @@ export default function CanjesPage() {
     loadRedemptions();
   }
 
+  const premios = useMemo(() => [...new Set(redemptions.map((r) => r.benefit?.name).filter(Boolean) as string[])].sort(), [redemptions]);
+  const filtrados = useMemo(
+    () =>
+      redemptions.filter(
+        (r) =>
+          (fEstado === 'todos' || r.status === fEstado) &&
+          (fPremio === 'todos' || r.benefit?.name === fPremio) &&
+          (!fBuscar.trim() || (r.code ?? '').includes(fBuscar.trim())),
+      ),
+    [redemptions, fEstado, fPremio, fBuscar],
+  );
+  const ESTADO: Record<Redemption['status'], string> = { confirmed: 'Confirmado', pending: 'Pendiente', expired: 'Vencido', cancelled: 'Cancelado' };
+  function descargarCsv() {
+    const filas = [['Fecha', 'Hora', 'Premio', 'Código', 'Estado', 'Cómo se confirmó', 'Premio de tarjeta']].concat(
+      filtrados.map((r) => {
+        const d = new Date(r.created_at);
+        return [
+          d.toLocaleDateString('es-BO'),
+          d.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          r.benefit?.name ?? '',
+          r.confirmed_via === 'local_code' ? '' : (r.code ?? ''),
+          ESTADO[r.status] ?? r.status,
+          r.status === 'confirmed' ? (r.confirmed_via === 'local_code' ? 'Código del local' : 'Código del cliente') : '',
+          r.loyalty_free ? 'Sí' : '',
+        ];
+      }),
+    );
+    const csv = '\ufeff' + filas.map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `canjes-${(business?.name ?? 'camina').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <DashboardShell>
       <TopBar
@@ -174,6 +215,26 @@ export default function CanjesPage() {
         {codeError && <p className="text-warn text-[12.5px] mt-2.5">{codeError}</p>}
       </div>
 
+      <div className="biz-filtros">
+        <div className="biz-seg" role="group" aria-label="Estado">
+          {(['todos', 'confirmed', 'pending', 'expired'] as const).map((e) => (
+            <button key={e} type="button" aria-pressed={fEstado === e} className={fEstado === e ? 'is-on' : ''} onClick={() => setFEstado(e)}>
+              {e === 'todos' ? 'Todos' : e === 'confirmed' ? 'Confirmados' : e === 'pending' ? 'Pendientes' : 'Vencidos'}
+            </button>
+          ))}
+        </div>
+        <select value={fPremio} onChange={(e) => setFPremio(e.target.value)} aria-label="Filtrar por premio" className="bg-card border border-line px-3 py-2 text-[13px]">
+          <option value="todos">Todos los premios</option>
+          {premios.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+        <input value={fBuscar} onChange={(e) => setFBuscar(e.target.value.replace(/\D/g, ''))} inputMode="numeric" placeholder="Buscar código" aria-label="Buscar por código" className="bg-card border border-line px-3 py-2 text-[13px] w-[150px]" />
+        <button type="button" onClick={descargarCsv} disabled={filtrados.length === 0} className="biz-btn-ghost ml-auto disabled:opacity-40">
+          Descargar CSV
+        </button>
+      </div>
+
       <div className="bg-card border border-line rounded-2xl overflow-hidden">
         <div className="grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3 border-b border-line bg-bg">
           <span className="text-[11.5px] font-semibold text-muted">Código</span>
@@ -181,10 +242,10 @@ export default function CanjesPage() {
           <span className="text-[11.5px] font-semibold text-muted">Fecha</span>
           <span className="text-[11.5px] font-semibold text-muted">Estado</span>
         </div>
-        {redemptions.map((r, i) => (
+        {filtrados.slice(0, mostrar).map((r, i, arr) => (
           <div
             key={r.id}
-            className={`grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3.5 items-center ${i < redemptions.length - 1 ? 'border-b border-line' : ''}`}
+            className={`grid grid-cols-[1fr_1.4fr_.9fr_96px] px-3 sm:px-5 py-3.5 items-center biz-row ${i < arr.length - 1 ? 'border-b border-line' : ''}`}
           >
             <span className="text-[13.5px] font-semibold tracking-wide">{r.confirmed_via === 'local_code' ? '—' : r.code}</span>
             <span className="text-[13px] truncate pr-2">
@@ -197,20 +258,26 @@ export default function CanjesPage() {
               {new Date(r.created_at).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
             </span>
             {r.status === 'confirmed' ? (
-              <span className="text-[11.5px] font-semibold text-[#2E9E7C] leading-tight">
-                <span className="inline-flex items-center gap-1"><Check size={13} /> Confirmado</span>
+              <span className="text-[11.5px] font-semibold leading-tight">
+                <span className="biz-pill is-ok"><Check size={12} /> Confirmado</span>
                 {r.confirmed_via === 'local_code' && <span className="block text-[10.5px] font-medium text-muted">código del local</span>}
               </span>
             ) : r.status === 'pending' ? (
-              <span className="text-[11.5px] font-semibold text-muted">Pendiente</span>
+              <span className="biz-pill">Pendiente</span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-warn">
-                <X size={13} /> {r.status === 'expired' ? 'Vencido' : 'Cancelado'}
+              <span className="biz-pill is-off">
+                <X size={12} /> {r.status === 'expired' ? 'Vencido' : 'Cancelado'}
               </span>
             )}
           </div>
         ))}
-        {redemptions.length === 0 && <p className="text-muted text-[13px] p-5">Todavía no hay canjes.</p>}
+        {redemptions.length === 0 && <p className="text-muted text-[13px] p-5">Todavía no hay canjes. Cuando alguien canjee un premio en tu local, aparece aquí al instante.</p>}
+        {redemptions.length > 0 && filtrados.length === 0 && <p className="text-muted text-[13px] p-5">Ningún canje coincide con estos filtros.</p>}
+        {filtrados.length > mostrar && (
+          <button type="button" onClick={() => setMostrar((m) => m + 30)} className="w-full py-3 text-[13px] font-semibold text-purple border-t border-line">
+            Ver más canjes ({filtrados.length - mostrar})
+          </button>
+        )}
       </div>
     </DashboardShell>
   );
