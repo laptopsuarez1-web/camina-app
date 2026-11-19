@@ -10,6 +10,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BienvenidaGuia } from '@/components/BienvenidaGuia';
+import '@/components/biz/biz.css';
 import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
@@ -115,79 +116,81 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const vence = vencimientoPlan(business);
   const faltan = faltantesParaPublicar(business);
 
+  const navPrincipal =
+    role === 'cashier'
+      ? NAV_PRINCIPAL.filter((i) => i.href === '/canjes')
+      : business.account_kind === 'events_only'
+        ? [NAV_MAS.find((i) => i.href === '/eventos')!, NAV_MAS.find((i) => i.href === '/tarjeta')!]
+        : NAV_PRINCIPAL;
+  const navMas = NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia', '/cuenta'].includes(i.href));
+
   const sidebar = (
-    <>
-      <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
-        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-        <div>
-          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-          <p className="text-[#D9D0F2] text-[11px] mt-0.5">Panel de comercios</p>
-        </div>
+    <div className="biz-side">
+      <div className="biz-brand">
+        <Image src="/camina-logo.png" alt="" width={34} height={34} className="rounded-full" />
+        <span className="biz-label">
+          <b>CAMINA</b>
+          <small>BUSINESS</small>
+        </span>
       </div>
 
-      <nav className="flex flex-col gap-1">
-        {(role === 'cashier'
-          ? NAV_PRINCIPAL.filter((i) => i.href === '/canjes')
-          : business.account_kind === 'events_only'
-            ? [NAV_MAS.find((i) => i.href === '/eventos')!, NAV_MAS.find((i) => i.href === '/tarjeta')!]
-            : NAV_PRINCIPAL
-        ).map((item) => (
+      <Link href={role === 'owner' ? '/perfil' : '/canjes'} className="biz-local" title={business.name ?? undefined}>
+        <span className="biz-local-logo">
+          {business.logo_url ? <Image src={business.logo_url} alt="" width={34} height={34} unoptimized /> : (business.name ?? 'C').slice(0, 1).toUpperCase()}
+        </span>
+        <span className="biz-label min-w-0">
+          <b>{business.name}</b>
+          <span>{role === 'cashier' ? 'Cajero' : business.approved ? 'Publicado en Camina' : 'En revisión'}</span>
+        </span>
+      </Link>
+
+      <nav className="biz-nav" aria-label="Panel">
+        {navPrincipal.map((item) => (
           <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
         ))}
         {role === 'owner' && (
           <>
-            <button
-              type="button"
-              onClick={() => setMasAbierto(!masAbierto)}
-              aria-expanded={masAbierto}
-              className="flex items-center justify-between px-3 pt-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#C4B8E8]"
-            >
-              Más
+            <button type="button" onClick={() => setMasAbierto(!masAbierto)} aria-expanded={masAbierto} className="biz-sec flex items-center justify-between w-full text-left">
+              <span className="biz-label">Más herramientas</span>
               <ChevronDown size={14} className={masAbierto ? 'rotate-180 transition-transform' : 'transition-transform'} />
             </button>
-            {masAbierto &&
-              NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia', '/cuenta'].includes(i.href)).map((item) => (
-                <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />
-              ))}
+            {masAbierto && navMas.map((item) => <NavLink key={item.href} item={item} active={pathname === item.href} plan={business.plan} />)}
           </>
         )}
       </nav>
 
-      <div className="mt-auto pt-5">
+      <div className="biz-foot">
         {role === 'owner' && (
-          <Link href="/plan" className="block bg-auth-bg-soft rounded-xl p-3 mb-2.5">
-            <p className="text-[#E4DDF7] text-[12px] mb-1">Plan actual</p>
-            <p className="text-mint text-[15px] font-bold">{PLAN_NOMBRE[business.plan]}</p>
-            {vence && (
-              <p className="text-[#E4DDF7] text-[12px] mt-0.5">
-                {vence.fecha ? `${vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} ${fechaCorta(vence.fecha)}` : 'Gratis: empieza cuando salga la app'}
-              </p>
-            )}
+          <Link href="/plan" className="biz-plan biz-hide-collapsed">
+            <small>Plan actual</small>
+            <b>{PLAN_NOMBRE[business.plan]}</b>
+            {vence && <span>{vence.fecha ? `${vence.gratis ? 'Gratis hasta el' : 'Próximo pago:'} ${fechaCorta(vence.fecha)}` : 'Gratis: empieza cuando salga la app'}</span>}
           </Link>
         )}
-        <ThemeToggle />
+        <div className="biz-hide-collapsed">
+          <ThemeToggle />
+        </div>
         <a
           href={`https://wa.me/59162714286?text=${encodeURIComponent('Hola! Soy de ' + (business.name ?? 'un comercio') + ' y necesito ayuda con el panel de Camina.')}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-mint text-[13px] md:text-[12.5px] font-semibold"
+          className="biz-link"
+          style={{ color: 'var(--biz-mint)' }}
+          title="Ayuda y soporte por WhatsApp"
         >
-          <LifeBuoy size={15} />
-          Soporte por WhatsApp
+          <LifeBuoy size={17} />
+          <span className="biz-label">Ayuda y soporte</span>
         </a>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#D9D0F2] text-[13px] md:text-[12.5px]"
-        >
-          <LogOut size={15} />
-          Cerrar sesión
+        <button onClick={handleLogout} className="biz-link w-full text-left" title="Cerrar sesión">
+          <LogOut size={17} />
+          <span className="biz-label">Cerrar sesión</span>
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
-    <ResponsiveFrame sidebar={sidebar}>
+    <ResponsiveFrame sidebar={sidebar} variant="biz">
       {!business.approved && role === 'owner' && business.rejected_at && (
         <div className="rounded-xl px-4 py-3 mb-6 text-[13px]" style={{ background: 'var(--c-warn-light)', color: 'var(--c-warn-text)' }}>
           <p className="font-bold mb-1">Revisamos tu comercio y todavía no lo podemos publicar.</p>
@@ -275,33 +278,36 @@ function NavLink({ item, active, plan }: { item: NavItem; active: boolean; plan:
   const Icon = item.icon;
   const bloqueado = item.planes && !item.planes.includes(plan);
   return (
-    <Link
-      href={item.href}
-      className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
-        active ? 'bg-mint/10 text-white font-semibold' : 'text-[#D9D0F2]'
-      }`}
-    >
-      <Icon size={16} color={active ? '#62F0B6' : '#C4B8E8'} />
-      <span className="flex-1">{item.label}</span>
-      {bloqueado && <Lock size={12} color="#9385B5" aria-label="No incluido en tu plan" />}
+    <Link href={item.href} className={`biz-link${active ? ' is-on' : ''}`} aria-current={active ? 'page' : undefined} title={item.label}>
+      <Icon size={17} color={active ? '#62F0B6' : undefined} />
+      <span className="biz-label">{item.label}</span>
+      {bloqueado && <Lock size={12} className="biz-label" style={{ flex: 'none', opacity: 0.55 }} aria-label="No incluido en tu plan" />}
     </Link>
   );
 }
 
+// Encabezado de cada sección: fecha de hoy, título, bajada y el comercio (lleva a Mi local).
 export function TopBar({ title, subtitle }: { title: string; subtitle?: string }) {
-  const { business } = useBusinessAuth();
+  const { business, role } = useBusinessAuth();
+  const [hoy] = useState(() => {
+    const t = new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' });
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  });
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6 md:mb-7">
-      <div>
-        <h1 className="text-[22px] font-bold text-text m-0">{title}</h1>
-        {subtitle && <p className="text-muted text-[13.5px] mt-1">{subtitle}</p>}
+    <div className="biz-top">
+      <div className="min-w-0">
+        <p className="biz-top-date" suppressHydrationWarning>{hoy || ' '}</p>
+        <h1>{title}</h1>
+        {subtitle && <p className="biz-top-sub">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2.5 bg-card border border-line rounded-full pl-1.5 pr-3.5 py-1.5 self-start max-w-full">
-        <div className="w-[30px] h-[30px] rounded-full bg-aqua-light flex items-center justify-center">
-          <Store size={14} color="#4FC3A8" />
-        </div>
-        <span className="text-[13px] font-semibold text-text truncate">{business?.name}</span>
-      </div>
+      {business && (
+        <Link href={role === 'owner' ? '/perfil' : '/canjes'} className="biz-chip" title="Ver mi local">
+          <span className="biz-local-logo">
+            {business.logo_url ? <Image src={business.logo_url} alt="" width={30} height={30} unoptimized /> : (business.name ?? 'C').slice(0, 1).toUpperCase()}
+          </span>
+          <span className="truncate">{business.name}</span>
+        </Link>
+      )}
     </div>
   );
 }
