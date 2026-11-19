@@ -22,7 +22,7 @@ const NAV = [
 ];
 
 // Si alguien con cuenta (por ejemplo, de la app o de un comercio) entra al panel de partners sin ficha, la crea acá.
-function CompletarPerfil({ onListo }: { onListo: () => void }) {
+function CompletarPerfil({ onListo, onYaSoy }: { onListo: () => void; onYaSoy: () => void }) {
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
   const [zona, setZona] = useState('');
@@ -56,6 +56,13 @@ function CompletarPerfil({ onListo }: { onListo: () => void }) {
           {busy ? 'Guardando…' : 'Empezar como partner'}
         </button>
       </form>
+      {/* Quien ya es partner pero entró con otra cuenta (de la app o de un comercio): sale y entra con su correo de partner. */}
+      <div className="w-full max-w-[320px] mt-6 pt-5 border-t border-white/10 text-center">
+        <p className="text-auth-muted text-[13px] mb-2.5">¿Ya eres partner con otro correo?</p>
+        <button type="button" onClick={onYaSoy} className="w-full rounded-xl py-3 border border-white/25 text-white font-semibold text-sm">
+          Ya soy partner: entrar con mi correo
+        </button>
+      </div>
     </div>
   );
 }
@@ -77,7 +84,7 @@ export function PartnerShell({ children }: { children: (p: Partner) => React.Rea
   if (loading || !session) {
     return <div className="min-h-screen flex items-center justify-center text-muted">Cargando…</div>;
   }
-  if (!partner) return <CompletarPerfil onListo={() => void refresh()} />;
+  if (!partner) return <CompletarPerfil onListo={() => void refresh()} onYaSoy={() => void salir()} />;
 
   const sidebar = (
     <div className="biz-side">
