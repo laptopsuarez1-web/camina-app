@@ -11,6 +11,7 @@ import Video from '../Video';
 import { Phone, Title } from '../ui';
 import { CAP, CONTACTO, RUTAS, VID_RUTA } from '../data';
 import PanelLive from './PanelLive';
+import MapaLocal from './MapaLocal';
 import { PLANS, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO, WHATSAPP_NUMBER } from '@/lib/plans';
 
 // /comercios con el mismo sistema visual que la portada. Precios, planes y condiciones salen de lib/plans.ts sin cambios.
@@ -96,6 +97,7 @@ export default function ComerciosHome() {
       />
       <main id="contenido" className="hm-main">
         <Hero />
+        <Beneficios />
         <ComoFunciona />
         <Ruta />
         <Panel />
@@ -134,32 +136,47 @@ function BIcon({ name }: { name: (typeof BENEFICIOS)[number][0] }) {
   );
 }
 
-// 1. Héroe: el titular y, enseguida, lo que gana el comercio.
+// 1. Héroe: el mapa de la app con huellas que llegan a "Tu local".
 function Hero() {
   return (
     <section className="hm-hero hm-dark cx-hero" data-theme="dark" aria-labelledby="cx-h1">
-      <div className="hm-wrap">
-        <div className="cx-hero-top">
-          <div>
-            <p className="cx-kick" data-reveal>
-              Para comercios
-            </p>
-            <Title as="h1" id="cx-h1" text="Tus próximos clientes|ya están caminando." className="cx-h1" />
-          </div>
-          <div className="cx-hero-side">
-            <p className="hm-lead hm-hero-lead" data-reveal>
-              En Camina, la gente gana Puntos por caminar y los canjea en comercios de su ciudad. Sumarte es gratis.
-            </p>
-            <div className="hm-cta" data-reveal>
-              <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_hero_sumar">
-                Sumar mi comercio
-              </Link>
-              <a className="hm-btn hm-btn-ghost" href="#planes" data-medir="comercios_hero_planes">
-                Ver planes
-              </a>
-            </div>
+      <div className="cx-hero-map">
+        <MapaLocal />
+      </div>
+      <div className="hm-wrap cx-hero-grid">
+        <div className="hm-hero-copy">
+          <p className="cx-kick" data-reveal>
+            Para comercios
+          </p>
+          <Title as="h1" id="cx-h1" text="Tus próximos clientes|ya están caminando." className="cx-h1" />
+          <p className="hm-lead hm-hero-lead" data-reveal>
+            En Camina, la gente gana Puntos por caminar y los canjea en comercios de su ciudad. Pon tu local en su camino: sumarte es gratis.
+          </p>
+          <div className="hm-cta" data-reveal>
+            <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_hero_sumar">
+              Sumar mi comercio
+            </Link>
+            <a className="hm-btn hm-btn-ghost" href="#beneficios" data-medir="comercios_hero_beneficios">
+              Qué gana mi local
+            </a>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// 2. Lo que gana tu local.
+function Beneficios() {
+  return (
+    <section className="hm-sec" id="beneficios" data-theme="light">
+      <div className="hm-wrap">
+        <header className="hm-head">
+          <Title text="Lo que gana|tu local." />
+          <p className="hm-lead" data-reveal>
+            Lo que Camina le suma a tu negocio.
+          </p>
+        </header>
         <ul className="cx-bens" data-stagger aria-label="Lo que gana tu comercio con Camina">
           {BENEFICIOS.map(([ic, t, d]) => (
             <li key={t}>

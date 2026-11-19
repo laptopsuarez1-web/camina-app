@@ -624,3 +624,179 @@
     margin-top: 40px;
   }
 }
+
+/* ---------- Héroe: mapa real con huellas que llegan a "Tu local" ---------- */
+.cx-map {
+  position: relative;
+  container-type: inline-size;
+}
+.cx-map > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.cx-map-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cx-map-pin {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+  translate: -50% -100%;
+  pointer-events: none;
+}
+.cx-map-pin-box {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 15cqw;
+  aspect-ratio: 1;
+  border-radius: 3.4cqw;
+  background: #1a1033;
+  border: 0.7cqw solid #62f0b6;
+  color: #62f0b6;
+  box-shadow:
+    0 0 0 1.4cqw rgba(98, 240, 182, 0.16),
+    0 0 7cqw rgba(98, 240, 182, 0.45);
+}
+.cx-map-pin-box::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -2.3cqw;
+  width: 3cqw;
+  height: 3cqw;
+  translate: -50% 0;
+  rotate: 45deg;
+  background: #62f0b6;
+  border-radius: 0 0 0.6cqw 0;
+  z-index: -1;
+}
+.cx-map-pin-box svg {
+  width: 7.5cqw;
+  height: 7.5cqw;
+}
+.cx-map-pin-label {
+  position: absolute;
+  z-index: 2;
+  top: -1.6cqw;
+  right: -5.4cqw;
+  padding: 0.7cqw 2cqw;
+  border-radius: 99px;
+  background: #62f0b6;
+  color: #12281f;
+  font-size: clamp(0.7rem, 1.9cqw, 1rem);
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
+}
+.hm-js .cx-map-pin-box.is-hit {
+  animation: cx-pin 0.7s var(--ease);
+}
+@keyframes cx-pin {
+  30% {
+    scale: 1.12;
+    box-shadow:
+      0 0 0 2.4cqw rgba(98, 240, 182, 0.3),
+      0 0 10cqw rgba(98, 240, 182, 0.8);
+  }
+}
+.cx-map-ring {
+  position: absolute;
+  left: 50%;
+  bottom: -2.5cqw;
+  width: 8cqw;
+  aspect-ratio: 1;
+  translate: -50% 50%;
+  border-radius: 50%;
+  border: 0.5cqw solid #62f0b6;
+  animation: cx-ring 1.4s var(--ease) both;
+}
+@keyframes cx-ring {
+  from {
+    opacity: 0.9;
+    scale: 0.3;
+  }
+  to {
+    opacity: 0;
+    scale: 3.2;
+  }
+}
+
+/* Héroe con el mapa a sangre a la derecha; el texto queda sobre el grafito */
+.cx-hero {
+  isolation: isolate;
+}
+.cx-hero-map {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: -13%;
+  width: min(1120px, 70vw);
+  translate: 0 -46%;
+  -webkit-mask-image: radial-gradient(70% 68% at 58% 52%, #000 50%, transparent 100%);
+  mask-image: radial-gradient(70% 68% at 58% 52%, #000 50%, transparent 100%);
+}
+.cx-hero .hm-hero-copy {
+  max-width: 600px;
+}
+@media (min-width: 1100px) {
+  .cx-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1099px) {
+  .cx-hero-map {
+    position: relative;
+    z-index: 0;
+    top: auto;
+    right: auto;
+    width: 118%;
+    margin: 0 -9% -6%;
+    translate: none;
+    order: 2;
+    -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, #000 60%, transparent 100%);
+    mask-image: radial-gradient(70% 70% at 50% 50%, #000 60%, transparent 100%);
+  }
+  .cx-hero {
+    display: flex;
+    flex-direction: column;
+  }
+  .cx-hero > .hm-wrap {
+    order: 1;
+  }
+}
+.cx-map-pie {
+  transition: opacity 0.3s ease;
+  filter: drop-shadow(0 0 4px rgba(98, 240, 182, 0.55));
+}
+
+/* Beneficios en su propia sección (fondo claro) */
+#beneficios .cx-bens {
+  margin-top: 0;
+}
+#beneficios .cx-bens li {
+  background: var(--soft);
+  box-shadow: none;
+}
+#beneficios .cx-bens li:hover {
+  background: var(--mint-soft);
+  box-shadow: inset 0 0 0 1px rgba(21, 102, 80, 0.25);
+}
+#beneficios .cx-ben-ico {
+  background: var(--ink);
+  color: var(--mint);
+}
+#beneficios .cx-bens p {
+  color: var(--mut);
+}
+@media (max-width: 699px) {
+  .cx-hero .hm-btn-ghost {
+    display: inline-flex;
+  }
+}
