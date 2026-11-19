@@ -135,27 +135,18 @@
   gap: 6px;
   padding: 3px 12px 3px 3px;
   border-radius: 999px;
-  background: var(--mint-soft);
-  color: var(--mint);
+  background: #3c7867; /* pastilla de Puntos de la app */
+  color: #fff;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .hm-pts b {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
 }
 .hm-pts small {
   font-size: 0.8rem;
   font-weight: 560;
-  color: var(--paper);
-  opacity: 0.85;
-}
-.hm-light .hm-pts {
-  background: var(--mint-light);
-  color: var(--mint-ink);
-}
-.hm-light .hm-pts small {
-  color: var(--mint-ink);
 }
 .hm-icon {
   width: 1.2em;
@@ -666,284 +657,228 @@
 .hm-hero-stage {
   position: relative;
 }
+/* La escena usa las piezas de la app: mapa de la Ruta, aro de pasos, moneda de Puntos y tarjeta de premio. */
 .hm-scene {
   position: relative;
   width: 100%;
-  max-width: 680px;
+  max-width: 660px;
   margin: 0 auto;
-  padding: 0 0 48px 16%;
-  --k: 0;
+  --app-card: #342f3d;
+  --app-green: #3c7867;
+  --app-mut: #b7aed6;
 }
 .hm-map {
   position: relative;
-  aspect-ratio: 900 / 730;
-  border-radius: 20px;
+  aspect-ratio: 1180 / 860;
+  border-radius: 24px;
   overflow: hidden;
-  background: var(--plum-2);
-  box-shadow: inset 0 0 0 1px rgba(180, 169, 219, 0.16);
+  background: #1c1230;
+  box-shadow:
+    inset 0 0 0 1px rgba(180, 169, 219, 0.16),
+    0 30px 60px -30px rgba(5, 3, 15, 0.7);
 }
-.hm-map-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) invert(1) contrast(1.35) brightness(0.95);
-  mix-blend-mode: screen;
-  opacity: 0.3;
-}
+.hm-map-img,
 .hm-map-svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.hm-map-route {
-  fill: none;
-  stroke: rgba(180, 169, 219, 0.55);
-  stroke-width: 3;
-  stroke-dasharray: 2 10;
-  stroke-linecap: round;
-}
-.hm-map-prog {
-  fill: none;
-  stroke: var(--mint);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.35;
-}
-.hm-map-step {
-  opacity: clamp(0, calc(var(--k) - var(--i)), 1);
-}
-.hm-scene[data-fase='fin'] .hm-map-step,
-.hm-scene[data-fase='fin'] .hm-map-prog {
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-.hm-pin {
-  position: absolute;
-  translate: -50% -50%;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 3px var(--plum-2),
-    0 0 0 4.5px rgba(180, 169, 219, 0.5);
-}
-.hm-pin img {
-  width: 100%;
-  height: 100%;
+.hm-map-img {
   object-fit: cover;
-}
-.hm-pin-dest {
-  width: 56px;
-  height: 56px;
-  translate: -50% -62%;
-  transition: box-shadow 0.4s var(--ease);
-}
-.hm-scene[data-fase='listo'] .hm-pin-dest {
-  box-shadow:
-    0 0 0 3px var(--plum-2),
-    0 0 0 6px var(--mint);
-}
-.hm-walker {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
-  border-radius: 50%;
-  background: var(--mint);
-  border: 3px solid var(--plum);
-}
-.hm-scene[data-fase='fin'] .hm-walker {
-  opacity: 0;
 }
 .hm-map-cap {
   position: absolute;
-  right: 16px;
-  top: 96px;
-  text-align: right;
-  max-width: 12em;
-  line-height: 1.3;
-  font-size: 0.74rem;
+  left: 14px;
+  bottom: 12px;
+  font-size: 0.72rem;
   color: var(--mut-plum);
+  background: rgba(20, 15, 29, 0.7);
+  padding: 3px 10px;
+  border-radius: 999px;
 }
-.hm-scene-phone {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 28%;
-  perspective: 1400px;
-}
-.hm-scene-phone .hm-phone {
-  --w: 220px;
-  width: 100%;
-  transform: rotateY(var(--ry, 6deg)) rotateX(var(--rx, 2deg));
-  transition: transform 0.9s var(--ease);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-    18px 30px 50px -18px rgba(5, 3, 15, 0.75);
-}
-.hm-readout {
+/* Aro de pasos y Puntos, como en Inicio de la app */
+.hm-today {
   position: absolute;
   right: 14px;
   top: 14px;
   display: flex;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 14px;
-  background: var(--plum);
-  box-shadow: 0 10px 24px -12px rgba(5, 3, 15, 0.6);
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px 10px 10px;
+  border-radius: 22px;
+  background: var(--app-card);
+  box-shadow: 0 14px 30px -14px rgba(5, 3, 15, 0.7);
   font-variant-numeric: tabular-nums;
 }
-.hm-readout > div {
+.hm-aro {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+}
+.hm-aro svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.hm-aro circle {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.hm-aro-bg {
+  stroke: rgba(98, 240, 182, 0.16);
+}
+.hm-aro-fg {
+  stroke: var(--mint);
+}
+.hm-aro > span {
   position: relative;
   display: grid;
-  padding: 8px 14px;
-  border-radius: 10px;
-  min-width: 6.2em;
+  text-align: center;
+  line-height: 1.05;
 }
-.hm-readout-pts {
-  background: var(--plum-2);
+.hm-aro b {
+  font-size: 1.02rem;
+  font-weight: 750;
 }
-.hm-readout small {
-  font-size: 0.74rem;
-  font-weight: 560;
-  color: var(--mut-plum);
+.hm-aro small {
+  font-size: 0.64rem;
+  color: var(--app-mut);
 }
-.hm-readout b {
-  font-size: clamp(1.25rem, 2.1vw, 1.75rem);
-  font-weight: 700;
-  font-stretch: 110%;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+.hm-today-pts {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
 }
-.hm-readout-val {
+.hm-today-total {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
-.hm-readout-pts b {
-  color: var(--mint);
+.hm-today-total b {
+  font-size: 1.9rem;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
-.hm-plus {
+.hm-today-pts em {
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 620;
+  color: var(--mint);
+  background: rgba(98, 240, 182, 0.15);
+  padding: 4px 10px;
+  border-radius: 999px;
+  transition: opacity 0.3s;
+}
+.hm-scene[data-ganados='0'] .hm-today-pts em {
+  opacity: 0;
+}
+.hm-scene-phone {
   position: absolute;
-  right: -10px;
-  top: -16px;
+  right: 3%;
+  top: 54%;
+  width: 26%;
+  perspective: 1400px;
+}
+.hm-scene-phone .hm-phone {
+  --w: 200px;
+  width: 100%;
+  transform: rotateY(var(--ry, -6deg)) rotateX(var(--rx, 2deg));
+  transition: transform 0.9s var(--ease);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    -18px 30px 50px -18px rgba(5, 3, 15, 0.75);
+}
+/* Tarjeta de premio de la app (ficha del local > Premios disponibles) */
+.hm-prize {
+  position: relative;
+  width: 66%;
+  margin-top: 18px;
+}
+.hm-prize-local {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.82rem;
-  font-weight: 750;
-  color: #fff;
-  background: #3c7867;
-  border-radius: 999px;
-  padding: 3px 10px 3px 3px;
-  opacity: 0;
-  transform: translateY(8px) scale(0.7);
-  transition:
-    opacity 0.3s,
-    transform 0.6s var(--ease);
-}
-.hm-scene[data-punto='si'] .hm-plus {
-  opacity: 1;
-  transform: none;
-}
-.hm-reward {
-  position: absolute;
-  left: 36%;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: var(--r);
-  background: var(--plum);
-  border: 1.5px solid rgba(180, 169, 219, 0.28);
-  transition: border-color 0.4s var(--ease);
-}
-.hm-reward-logo {
-  width: 44px;
-  height: 44px;
-  flex: none;
-  border-radius: 12px;
-}
-.hm-reward-txt {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-.hm-reward-txt small {
-  font-size: 0.78rem;
-  color: var(--mut-plum);
-}
-.hm-reward-txt b {
-  font-size: 0.98rem;
-  font-weight: 620;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.hm-reward-bar {
-  display: block;
-  height: 4px;
-  border-radius: 4px;
-  background: rgba(180, 169, 219, 0.22);
-  overflow: hidden;
-  margin-top: 6px;
-}
-.hm-reward-bar i {
-  display: block;
-  height: 100%;
-  background: var(--mint);
-  transform-origin: left;
-  transform: scaleX(0.97);
-  transition: transform 0.6s var(--ease);
-}
-.hm-reward-state {
-  display: grid;
-  text-align: right;
+  gap: 8px;
   font-size: 0.86rem;
   font-weight: 620;
-  white-space: nowrap;
+  margin-bottom: 8px;
+  color: var(--paper);
 }
-.hm-reward-state > * {
-  grid-area: 1 / 1;
-  transition:
-    opacity 0.35s,
-    transform 0.5s var(--ease);
+.hm-prize-local img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
 }
-.hm-reward-state em {
-  font-style: normal;
-  color: var(--mint);
+.hm-prize-card {
+  padding: 14px;
+  border-radius: 26px;
+  background: var(--app-card);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: opacity 0.4s var(--ease);
+}
+.hm-prize-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.hm-prize-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: cover;
+  flex: none;
+}
+.hm-prize-txt {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+}
+.hm-prize-txt b {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #efebf9;
+}
+.hm-prize-txt small {
+  font-size: 0.86rem;
+  color: var(--app-mut);
+}
+.hm-prize-pts {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 6px;
-}
-.hm-reward-state strong {
-  color: var(--plum);
-  background: var(--mint);
-  padding: 6px 12px;
+  margin-top: 4px;
+  padding: 3px 12px 3px 3px;
   border-radius: 999px;
-  font-size: 0.8rem;
-  opacity: 0;
-  transform: translateY(8px);
+  background: var(--app-green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: background-color 0.4s;
 }
-.hm-scene[data-fase='listo'] .hm-reward {
-  border-color: var(--mint);
+.hm-prize-btn {
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  border-radius: 999px;
+  background: var(--app-green);
+  color: #fff;
+  font-weight: 700;
+  transition:
+    background-color 0.4s,
+    color 0.4s;
 }
-.hm-scene[data-fase='listo'] .hm-reward-state em {
-  opacity: 0;
-  transform: translateY(-8px);
+.hm-scene[data-listo='no'] .hm-prize-btn {
+  background: #2d2441;
+  color: #8f86a8;
 }
-.hm-scene[data-fase='listo'] .hm-reward-state strong {
-  opacity: 1;
-  transform: none;
+.hm-scene[data-listo='no'] .hm-prize-pts {
+  background: #a299b3;
+  color: #2d2441;
 }
 @media (max-width: 999px) {
   .hm-hero {
@@ -952,39 +887,56 @@
   }
 }
 @media (max-width: 600px) {
-  .hm-scene {
-    padding: 0 0 132px;
-  }
-  .hm-scene-phone {
-    width: 27%;
-    left: 0;
-    bottom: 92px;
-  }
-  .hm-reward {
-    left: 0;
-    right: 0;
-  }
-  .hm-reward-txt b {
-    white-space: normal;
-  }
-  .hm-readout {
+  .hm-today {
     right: 8px;
     top: 8px;
+    gap: 8px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 16px;
   }
-  .hm-readout > div {
-    padding: 6px 10px;
-    min-width: 5em;
+  .hm-aro {
+    width: 52px;
+    height: 52px;
   }
-  .hm-pin {
-    width: 28px;
-    height: 28px;
+  .hm-aro b {
+    font-size: 0.74rem;
   }
-  .hm-pin-dest {
-    width: 40px;
-    height: 40px;
+  .hm-aro small {
+    display: none;
+  }
+  .hm-today-total b {
+    font-size: 1.3rem;
+  }
+  .hm-today-total .hm-coin {
+    width: 22px;
+    height: 22px;
+  }
+  .hm-today-pts em {
+    font-size: 0.66rem;
+    padding: 2px 8px;
   }
   .hm-map-cap {
-    display: none;
+    font-size: 0.62rem;
+    left: 8px;
+    bottom: 8px;
+  }
+  .hm-scene-phone {
+    width: 28%;
+    right: 0;
+  }
+  .hm-prize {
+    width: 68%;
+  }
+  .hm-prize-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+  }
+  .hm-prize-txt b {
+    font-size: 1rem;
+  }
+  .hm-prize-btn {
+    min-height: 40px;
   }
 }
 
@@ -1286,14 +1238,44 @@
 .hm-loc-prem li {
   align-items: center;
 }
-.hm-loc-dir {
-  padding-left: 66px;
+.hm-locs-more {
+  margin-top: 36px;
+}
+.hm-locs-more p {
   color: var(--mut);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  margin-bottom: 16px;
+}
+.hm-locs-more ul {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 560px) {
+  .hm-locs-more ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.hm-locs-more li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 560;
+  line-height: 1.25;
+}
+.hm-locs-more img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex: none;
+}
+.hm-locs-more small {
+  display: block;
+  color: var(--mut);
+  font-weight: 420;
+  font-size: 0.82rem;
 }
 @media (max-width: 560px) {
-  .hm-loc-prem,
-  .hm-loc-dir {
+  .hm-loc-prem {
     padding-left: 0;
   }
 }
@@ -1695,190 +1677,77 @@
 .hm-ruta {
   display: grid;
   gap: 56px;
-  align-items: start;
+  align-items: center;
 }
-@media (min-width: 1000px) {
+@media (min-width: 900px) {
   .hm-ruta {
-    grid-template-columns: 1.6fr 1fr;
-    gap: 64px;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 80px;
   }
 }
-.hm-ruta-board {
-  border-radius: var(--r);
-  background: var(--plum);
-  color: var(--paper);
-  padding: clamp(18px, 3vw, 36px);
-  overflow: hidden;
+.hm-ruta-copy .hm-title {
+  margin-bottom: 24px;
 }
-.hm-ruta-map {
-  position: relative;
-  aspect-ratio: 600 / 420;
-  border-radius: 12px;
-  background: var(--plum-2);
-  margin-bottom: 28px;
-}
-/* Mismo mapa real de Tarija que el héroe, con el mismo tratamiento. */
-.hm-ruta-map-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: inherit;
-  filter: grayscale(1) invert(1) contrast(1.35) brightness(0.95);
-  mix-blend-mode: screen;
-  opacity: 0.3;
-}
-.hm-ruta-map svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.hm-ruta-map path {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-.hm-ruta-ghost {
-  stroke: rgba(180, 169, 219, 0.4);
-  stroke-width: 2;
-  stroke-dasharray: 3 9;
-}
-.hm-ruta-path {
-  stroke: var(--mint);
-  stroke-width: 4;
-}
-.hm-stop {
-  position: absolute;
-  translate: -50% -50%;
-  width: clamp(36px, 5vw, 52px);
-  height: clamp(36px, 5vw, 52px);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--plum);
-  border: 2px solid rgba(180, 169, 219, 0.45);
-  color: var(--paper);
-  font-weight: 750;
-  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
-  transition:
-    background-color 0.4s var(--ease),
-    border-color 0.4s,
-    color 0.4s,
-    transform 0.6s var(--ease);
-}
-.hm-stop > i,
-.hm-stop > b {
-  grid-area: 1 / 1;
-  font-style: normal;
-  display: grid;
-  place-items: center;
-  transition:
-    opacity 0.3s,
-    transform 0.5s var(--ease);
-}
-.hm-stop > b {
-  opacity: 0;
-  transform: scale(0.4) rotate(-30deg);
-}
-.hm-stop em {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  translate: -50% 0;
-  white-space: nowrap;
-  font-style: normal;
-  font-size: clamp(0.7rem, 1vw, 0.82rem);
-  font-weight: 620;
-  color: var(--mut-plum);
-  transition: color 0.4s;
-}
-.hm-stop .hm-foot {
-  width: 10px;
-  height: 20px;
-}
-.hm-stop.is-on {
-  background: var(--mint);
-  border-color: var(--mint);
-  color: var(--plum);
-  transform: scale(1.08);
-}
-.hm-stop.is-on em {
-  color: var(--paper);
-}
-.hm-stop-local.is-on > i {
-  opacity: 0;
-  transform: scale(0.4) rotate(30deg);
-}
-.hm-stop-local.is-on > b {
-  opacity: 1;
-  transform: none;
-}
-.hm-stop-fin {
-  width: clamp(44px, 6vw, 64px);
-  height: clamp(44px, 6vw, 64px);
-}
-.hm-stop-fin.is-on {
-  background: var(--paper);
-  border-color: var(--paper);
-}
-.hm-stop-up em {
-  top: auto;
-  bottom: calc(100% + 8px);
-}
-.hm-stop-fin em {
-  left: auto;
-  right: 0;
-  translate: 0 0;
+.hm-ruta-copy .hm-title .hm-line:last-child > span {
+  color: var(--mint);
 }
 .hm-ruta-pasos {
   display: grid;
-  gap: 14px;
-}
-@media (min-width: 760px) {
-  .hm-ruta-pasos {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
+  gap: 22px;
+  margin-top: 40px;
 }
 .hm-ruta-pasos li {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   color: var(--text-plum);
-  font-size: 0.95rem;
-  line-height: 1.45;
+  line-height: 1.5;
 }
-.hm-ruta-pasos span {
+.hm-ruta-pasos b {
+  display: block;
+  color: var(--paper);
+  font-weight: 680;
+  font-size: 1.12rem;
+  margin-bottom: 2px;
+}
+.hm-ruta-pasos li > span {
   flex: none;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--plum-3);
+  background: var(--mint);
+  color: var(--plum);
   display: grid;
   place-items: center;
-  font-size: 0.8rem;
   font-weight: 750;
+}
+.hm-ruta-sorteo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 36px;
+  padding: 10px 18px 10px 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(180, 169, 219, 0.35);
+  color: var(--text-plum);
+  font-size: 0.95rem;
+}
+.hm-ruta-sorteo .hm-icon {
   color: var(--mint);
+}
+.hm-ruta-sorteo b {
+  color: var(--paper);
+  font-weight: 650;
 }
 .hm-ruta-phone {
   display: grid;
   justify-items: center;
 }
 .hm-ruta-phone .hm-phone {
-  --w: min(300px, 70vw);
+  --w: min(320px, 72vw);
 }
 .hm-ruta-phone .hm-note {
   text-align: center;
-  margin-top: 20px;
-}
-@media (min-width: 1000px) {
-  .hm-ruta-phone {
-    position: sticky;
-    top: 14vh;
-  }
+  margin-top: 18px;
 }
 .hm-ruta-premios {
   display: grid;
@@ -1904,44 +1773,11 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--plum);
+  background: var(--plum-3);
   color: var(--mint);
   margin-bottom: 22px;
 }
-.hm-ruta-ico .hm-coin {
-  border-radius: 50%;
-  flex: none;
-}
-/* Puntos como en la app: moneda + número en pastilla menta. */
-.hm-pts {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 12px 3px 3px;
-  border-radius: 999px;
-  background: var(--mint-soft);
-  color: var(--mint);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.hm-pts b {
-  font-weight: 700;
-  font-size: 1.05rem;
-}
-.hm-pts small {
-  font-size: 0.8rem;
-  font-weight: 560;
-  color: var(--paper);
-  opacity: 0.85;
-}
-.hm-light .hm-pts {
-  background: var(--mint-light);
-  color: var(--mint-ink);
-}
-.hm-light .hm-pts small {
-  color: var(--mint-ink);
-}
-.hm-icon {
+.hm-ruta-ico .hm-icon {
   width: 28px;
   height: 28px;
 }
@@ -1958,7 +1794,7 @@
   margin-bottom: 8px;
 }
 .hm-ruta-premios p {
-  color: var(--mut-paper);
+  color: var(--mut-plum);
   max-width: 22em;
 }
 
@@ -2372,26 +2208,6 @@ a.hm-store:hover {
   from {
     transform: translateY(32px) scale(0.98);
   }
-}
-/* Con "reducir movimiento" la Ruta queda completa. */
-html:not(.hm-js) .hm .hm-stop {
-  background: var(--mint);
-  border-color: var(--mint);
-  color: var(--plum);
-}
-html:not(.hm-js) .hm .hm-stop-local > i {
-  opacity: 0;
-}
-html:not(.hm-js) .hm .hm-stop-local > b {
-  opacity: 1;
-  transform: none;
-}
-html:not(.hm-js) .hm .hm-stop-fin {
-  background: var(--paper);
-  border-color: var(--paper);
-}
-html:not(.hm-js) .hm .hm-stop em {
-  color: var(--paper);
 }
 html:has(.hm) {
   scroll-behavior: smooth;

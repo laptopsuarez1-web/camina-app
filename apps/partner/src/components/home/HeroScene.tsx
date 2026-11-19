@@ -1,95 +1,58 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, type ReactNode } from 'react';
-import geo from '@/components/landing/geo.json';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { LOCALES } from './data';
 import { Coin } from './ui';
 
-// Escena del héroe: una caminata por calles reales del centro de Tarija (mapa y recorrido de landing/geo.json)
-// hasta un comercio real. Mientras se camina, suben los pasos; al pasar los 1.000 pasos se gana 1 Punto
-// (regla real) y con ese Punto se desbloquea un premio real de ese comercio: Panchito gratis en Fripap's, 38 Puntos.
-// Los números de la caminata son un ejemplo y así se rotula.
-type P = [number, number];
-const W = geo.w;
-const H = geo.h;
-// El recorrido de geo.json (compartido con /comercios) se pasa del borde del mapa y vuelve; aquí termina en la puerta
-// de Fripap's bajando por la calle, sin salir del cuadro.
-const ROUTE: P[] = [...(geo.route as P[]).slice(0, 18), [766.3, 548]];
+// Escena del héroe, hecha con la app real: el mapa de la Ruta del mes tal como se ve en Camina (captura de la
+// grabación de la app) y el recorrido a pie que traza la app entre los locales, dibujándose como en el celular.
+// Mientras se camina suben los pasos; cada 1.000 pasos se gana 1 Punto (regla real) y al llegar a 38 Puntos se
+// habilita un premio real: Panchito gratis en Fripap's. Los números son un ejemplo y así se rotula.
 const FRIP = LOCALES.find((l) => l.id === 'fripaps')!;
-const COCO = LOCALES.find((l) => l.id === 'coco')!;
-const BLOOM = LOCALES.find((l) => l.id === 'bloom')!;
 const PREMIO = FRIP.premios.find((p) => p.nombre === 'Panchito')!;
 const META = PREMIO.puntos; // 38
-const PASOS = 1240; // pasos de ejemplo de esta caminata
-const N = 18; // huellas a lo largo del recorrido
-const CAMINAR = 6200;
-const CICLO = 9400;
+const INICIO_PTS = META - 2;
+const PASOS = 2480; // pasos de ejemplo de este recorrido
+const CAMINAR = 6400;
+const CICLO = 10000;
+// Recorrido que dibuja la app (medido sobre la grabación; sistema de coordenadas del mapa, 1180 × 860).
+const RUTA = 'M180 362 L324 416 L396 488 L420 496 L492 565 L588 604 L636 614 L660 630 L732 651 L744 649 L768 622 L804 561 L816 552 L984 603 L1008 603';
+const ARO = 2 * Math.PI * 30;
 
 const fmt = (n: number) => n.toLocaleString('es-BO');
 const easeInOut = (k: number) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
 
-// Largo acumulado del recorrido para ubicar puntos y huellas.
-function medir() {
-  const acc = [0];
-  for (let i = 1; i < ROUTE.length; i++) acc.push(acc[i - 1] + Math.hypot(ROUTE[i][0] - ROUTE[i - 1][0], ROUTE[i][1] - ROUTE[i - 1][1]));
-  return acc;
-}
-function punto(acc: number[], s: number) {
-  let i = 1;
-  while (i < acc.length - 1 && acc[i] < s) i++;
-  const f = (s - acc[i - 1]) / (acc[i] - acc[i - 1] || 1);
-  const [x0, y0] = ROUTE[i - 1];
-  const [x1, y1] = ROUTE[i];
-  return { x: x0 + (x1 - x0) * f, y: y0 + (y1 - y0) * f, a: Math.atan2(y1 - y0, x1 - x0) };
-}
-const pct = (v: number, t: number) => `${((v / t) * 100).toFixed(2)}%`;
-
 export default function HeroScene({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
-  const progRef = useRef<SVGPathElement>(null);
-  const walkerRef = useRef<HTMLSpanElement>(null);
+  const trazo = useRef<SVGPathElement>(null);
+  const aro = useRef<SVGCircleElement>(null);
   const pasosRef = useRef<HTMLElement>(null);
   const puntosRef = useRef<HTMLElement>(null);
-  const barRef = useRef<HTMLElement>(null);
-
-  const { d, huellas, total } = useMemo(() => {
-    const acc = medir();
-    const L = acc[acc.length - 1];
-    const hs = Array.from({ length: N }, (_, i) => {
-      const p = punto(acc, (L * (i + 0.6)) / N);
-      const off = i % 2 ? 10 : -10;
-      return { x: p.x - Math.sin(p.a) * off, y: p.y + Math.cos(p.a) * off, r: (p.a * 180) / Math.PI + 90, der: i % 2 === 1 };
-    });
-    return { d: 'M' + ROUTE.map(([x, y]) => `${x} ${y}`).join(' L'), huellas: hs, total: L };
-  }, []);
+  const ganadosRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const el = root.current;
-    const prog = progRef.current;
-    if (!el || !prog) return;
-    const acc = medir();
-    prog.style.strokeDasharray = `${total}`;
+    const p = trazo.current;
+    if (!el || !p) return;
+    const L = p.getTotalLength();
+    p.style.strokeDasharray = `${L}`;
 
     const pintar = (k: number) => {
       const pasos = Math.round(k * PASOS);
-      const pts = META - 1 + (pasos >= 1000 ? 1 : 0);
-      prog.style.strokeDashoffset = `${total * (1 - k)}`;
-      el.style.setProperty('--k', (k * N).toFixed(2));
-      const p = punto(acc, k * total);
-      if (walkerRef.current) {
-        walkerRef.current.style.left = pct(p.x, W);
-        walkerRef.current.style.top = pct(p.y, H);
-      }
+      const ganados = Math.floor(pasos / 1000);
+      const pts = INICIO_PTS + ganados;
+      p.style.strokeDashoffset = `${L * (1 - k)}`;
+      if (aro.current) aro.current.style.strokeDashoffset = `${ARO * (1 - Math.min(1, k))}`;
       if (pasosRef.current) pasosRef.current.textContent = fmt(pasos);
       if (puntosRef.current) puntosRef.current.textContent = String(pts);
-      if (barRef.current) barRef.current.style.transform = `scaleX(${(pts / META).toFixed(3)})`;
-      el.dataset.punto = pasos >= 1000 ? 'si' : 'no';
+      if (ganadosRef.current) ganadosRef.current.textContent = ganados === 1 ? 'Ganaste 1 Punto' : `Ganaste ${ganados} Puntos`;
+      el.dataset.ganados = String(ganados);
+      el.dataset.listo = pts >= META ? 'si' : 'no';
     };
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       pintar(1);
-      el.dataset.fase = 'listo';
       return;
     }
     let raf = 0;
@@ -98,8 +61,7 @@ export default function HeroScene({ children }: { children: ReactNode }) {
     const tick = (now: number) => {
       raf = 0;
       const t = (now - t0) % CICLO;
-      pintar(easeInOut(Math.min(1, t / CAMINAR)));
-      el.dataset.fase = t < CAMINAR ? 'camina' : t < CICLO - 600 ? 'listo' : 'fin';
+      pintar(t < CICLO - 500 ? easeInOut(Math.min(1, t / CAMINAR)) : 0);
       if (visible && !document.hidden) raf = requestAnimationFrame(tick);
     };
     const start = () => {
@@ -123,85 +85,73 @@ export default function HeroScene({ children }: { children: ReactNode }) {
       document.removeEventListener('visibilitychange', onVis);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [total]);
+  }, []);
 
   return (
-    <div className="hm-scene" ref={root} data-fase="camina" data-punto="no">
+    <div className="hm-scene" ref={root} data-ganados="0" data-listo="no">
       <figure className="hm-map">
-        <Image className="hm-map-img" src="/web/mapa-tarija.jpg" alt="" width={900} height={730} sizes="(max-width: 1000px) 92vw, 640px" />
-        <svg className="hm-map-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <path className="hm-map-route" d={d} />
-          <path className="hm-map-prog" d={d} ref={progRef} />
-          {huellas.map((h, i) => (
-            <image
-              key={i}
-              href={h.der ? '/web/pie-R-mint.png' : '/web/pie-L-mint.png'}
-              width={18}
-              height={36}
-              className="hm-map-step"
-              transform={`translate(${h.x.toFixed(1)} ${h.y.toFixed(1)}) rotate(${h.r.toFixed(1)}) translate(-9 -18)`}
-              style={{ ['--i' as string]: i }}
-            />
-          ))}
+        <Image className="hm-map-img" src="/web/app/hero-mapa.webp" alt="" width={1180} height={860} sizes="(max-width: 1000px) 92vw, 640px" preload />
+        <svg className="hm-map-svg" viewBox="0 0 1180 860" aria-hidden="true">
+          <defs>
+            <mask id="hm-trazo" maskUnits="userSpaceOnUse" x="0" y="0" width="1180" height="860">
+              <path ref={trazo} d={RUTA} fill="none" stroke="#fff" strokeWidth="96" strokeLinecap="round" strokeLinejoin="round" />
+            </mask>
+          </defs>
+          <image href="/web/app/hero-ruta.webp" width="1180" height="860" mask="url(#hm-trazo)" />
         </svg>
-        <span className="hm-pin" style={{ left: pct(geo.coco[0], W), top: pct(geo.coco[1], H) }}>
-          <Image src={COCO.logo} alt="" width={40} height={40} />
-        </span>
-        <span className="hm-pin" style={{ left: pct(geo.bloom[0] + 76, W), top: pct(geo.bloom[1] + 48, H) }}>
-          <Image src={BLOOM.logo} alt="" width={40} height={40} />
-        </span>
-        <span className="hm-pin hm-pin-dest" style={{ left: pct(geo.frip[0], W), top: pct(geo.frip[1], H) }}>
-          <Image src={FRIP.logo} alt="" width={56} height={56} />
-        </span>
-        <span className="hm-walker" ref={walkerRef} aria-hidden="true" />
-        <figcaption className="hm-map-cap">Ejemplo de caminata por el centro de Tarija</figcaption>
+        <figcaption className="hm-map-cap">Mapa de la Ruta en la app. Recorrido de ejemplo.</figcaption>
       </figure>
+
+      {/* Tarjeta de pasos y Puntos con las piezas de la app: el aro de pasos, la moneda y el aviso de Puntos ganados. */}
+      <div className="hm-today" aria-hidden="true">
+        <span className="hm-aro">
+          <svg viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" className="hm-aro-bg" />
+            <circle cx="36" cy="36" r="30" className="hm-aro-fg" ref={aro} style={{ strokeDasharray: ARO, strokeDashoffset: ARO }} />
+          </svg>
+          <span>
+            <b ref={pasosRef}>0</b>
+            <small>pasos</small>
+          </span>
+        </span>
+        <span className="hm-today-pts">
+          <span className="hm-today-total">
+            <Coin size={30} />
+            <b ref={puntosRef}>{INICIO_PTS}</b>
+          </span>
+          <em ref={ganadosRef}>Ganaste 0 Puntos</em>
+        </span>
+      </div>
 
       <div className="hm-scene-phone" data-tilt>
         {children}
       </div>
 
-      <div className="hm-readout" aria-hidden="true">
-        <div>
-          <small>Pasos</small>
-          <b ref={pasosRef}>0</b>
-        </div>
-        <div className="hm-readout-pts">
-          <small>Puntos</small>
-          <span className="hm-readout-val">
-            <Coin size={26} />
-            <b ref={puntosRef}>{META - 1}</b>
-          </span>
-          <span className="hm-plus">
-            <Coin size={16} />
-            +1
-          </span>
-        </div>
-      </div>
-
-      <div className="hm-reward" aria-hidden="true">
-        <Image className="hm-reward-logo" src={FRIP.logo} alt="" width={44} height={44} />
-        <span className="hm-reward-txt">
-          <small>{FRIP.nombre}</small>
-          <b>
-            {PREMIO.nombre} {PREMIO.detalle.toLowerCase()}
-          </b>
-          <span className="hm-reward-bar">
-            <i ref={barRef} />
-          </span>
+      {/* Tarjeta de premio igual a la de la app (ficha de Fripap's > Premios disponibles). */}
+      <div className="hm-prize" aria-hidden="true">
+        <span className="hm-prize-local">
+          <Image src={FRIP.logo} alt="" width={28} height={28} />
+          {FRIP.nombre}
         </span>
-        <span className="hm-reward-state">
-          <em>
-            <Coin size={18} />
-            {META} Puntos
-          </em>
-          <strong>Listo para canjear</strong>
-        </span>
+        <div className="hm-prize-card">
+          <div className="hm-prize-row">
+            <Image className="hm-prize-img" src="/web/locales/fripaps-panchito.jpg" alt="" width={80} height={80} />
+            <span className="hm-prize-txt">
+              <b>{PREMIO.nombre}</b>
+              <small>{PREMIO.detalle}</small>
+              <span className="hm-prize-pts">
+                <Coin size={22} />
+                {META}
+              </span>
+            </span>
+          </div>
+          <span className="hm-prize-btn">Canjear</span>
+        </div>
       </div>
 
       <p className="hm-sr">
-        Ejemplo: una caminata de {fmt(PASOS)} pasos por el centro de Tarija suma 1 Punto. Con {META} Puntos se canjea {PREMIO.nombre.toLowerCase()}{' '}
-        {PREMIO.detalle.toLowerCase()} en {FRIP.nombre}.
+        Ejemplo: caminando {fmt(PASOS)} pasos por Tarija se ganan 2 Puntos y se llega a {META}, lo que cuesta {PREMIO.nombre.toLowerCase()}{' '}
+        {PREMIO.detalle?.toLowerCase()} en {FRIP.nombre}.
       </p>
     </div>
   );

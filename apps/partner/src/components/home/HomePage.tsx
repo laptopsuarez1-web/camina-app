@@ -148,33 +148,45 @@ function Premios() {
         </header>
 
         <div className="hm-prem">
-          <ul className="hm-locs">
-            {LOCALES.map((l) => (
-              <li className="hm-loc" key={l.id}>
-                <div className="hm-loc-head">
-                  <Image className="hm-loc-logo" src={l.logo} alt="" width={56} height={56} />
-                  <h3>{l.nombre}</h3>
-                  <span className="hm-loc-cat">{l.categoria}</span>
-                  <Image className="hm-loc-cover" src={l.portada} alt="" width={320} height={200} sizes="200px" />
-                </div>
-                {l.premios.length > 0 ? (
+          <div>
+            <ul className="hm-locs">
+              {LOCALES.filter((l) => l.premios.length > 0).map((l) => (
+                <li className="hm-loc" key={l.id}>
+                  <div className="hm-loc-head">
+                    <Image className="hm-loc-logo" src={l.logo} alt="" width={56} height={56} />
+                    <h3>{l.nombre}</h3>
+                    <span className="hm-loc-cat">{l.categoria}</span>
+                    {l.portada ? <Image className="hm-loc-cover" src={l.portada} alt="" width={320} height={200} sizes="200px" /> : null}
+                  </div>
                   <ul className="hm-loc-prem">
                     {l.premios.map((p) => (
                       <li key={p.nombre}>
                         <span>
                           {p.nombre}
-                          <small>{p.detalle}</small>
+                          {p.detalle ? <small>{p.detalle}</small> : null}
                         </span>
-                        <Pts n={p.puntos} />
+                        <Pts n={p.puntos} label={false} />
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="hm-loc-dir">{l.direccion}</p>
-                )}
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+            <div className="hm-locs-more">
+              <p>También en Camina, todavía sin premios:</p>
+              <ul>
+                {LOCALES.filter((l) => l.premios.length === 0).map((l) => (
+                  <li key={l.id}>
+                    <Image src={l.logo} alt="" width={40} height={40} />
+                    <span>
+                      {l.nombre}
+                      <small>{l.categoria}</small>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
           <div className="hm-prem-visual">
             <div className="hm-prem-sticky">
               <div className="hm-prem-back" data-parallax="0.05">
@@ -205,7 +217,7 @@ function Premios() {
           </ol>
         </div>
         <p className="hm-note">
-          Comercios y premios cargados en Camina en octubre de 2026; los vigentes están siempre en la app. Puedes volver a canjear en el mismo local
+          Comercios y premios tal como están en la app en noviembre de 2026; los vigentes están siempre en la app. Puedes volver a canjear en el mismo local
           pasados 14 días. ¿Tienes un comercio?{' '}
           <Link href="/comercios" data-medir="premios_comercios">
             Ofrece tus premios en Camina
@@ -265,74 +277,42 @@ function ComunidadSec() {
   );
 }
 
-// Paradas del recorrido (coordenadas del viewBox 600×420) y en qué parte del dibujo se encienden.
-const PARADAS = [
-  { x: 63, y: 191.9, at: 0, k: 'inicio' as const, up: false },
-  { x: 187.2, y: 107.7, at: 0.217, k: 1, up: true },
-  { x: 267.8, y: 272.9, at: 0.485, k: 2, up: false },
-  { x: 442.8, y: 164, at: 0.784, k: 3, up: true },
-  { x: 514.2, y: 294.3, at: 0.98, k: 'fin' as const, up: false },
-];
-
 function Ruta() {
   const pasos = [
-    'Tocas Participar y te tocan 3 locales sorpresa.',
-    'Los visitas en el orden que quieras y compras lo que quieras.',
-    'Al pagar, escribes el código del local y el local confirma tu visita.',
-  ];
+    ['Tocas Participar', 'Te tocan 3 locales sorpresa y la app dibuja el camino a pie entre ellos.'],
+    ['Los visitas', 'En el orden que quieras. Compras lo que quieras: no se usan Puntos ni descuentos.'],
+    ['Marcas tu visita', 'Al pagar, escribes el código del local y el local confirma que estuviste ahí.'],
+  ] as const;
   return (
-    <section className="hm-sec hm-light hm-curtain" id="ruta" data-theme="light">
+    <section className="hm-sec hm-plum hm-curtain hm-ruta-sec" id="ruta" data-theme="plum">
       <div className="hm-wrap">
-        <header className="hm-head hm-head-split">
-          <Title text="La Ruta|del mes." />
-          <p className="hm-lead">Una excusa para salir a caminar y conocer tu ciudad: 3 locales sorpresa, un mapa con tu recorrido y una recompensa al final.</p>
-        </header>
-
         <div className="hm-ruta">
-          <div className="hm-ruta-board">
-            <div className="hm-ruta-map" aria-hidden="true">
-              <Image className="hm-ruta-map-img" src="/web/mapa-tarija.jpg" alt="" width={900} height={730} sizes="(max-width: 1000px) 90vw, 700px" />
-              <svg viewBox="0 0 600 420" preserveAspectRatio="none">
-                <path className="hm-ruta-ghost" d="M63 191.9 L148.1 221.2 L187.2 107.7 L310.1 150 L267.8 272.9 L390.7 315.3 L442.8 164 L546.8 199.8 L514.2 294.3" />
-                <path className="hm-ruta-path" d="M63 191.9 L148.1 221.2 L187.2 107.7 L310.1 150 L267.8 272.9 L390.7 315.3 L442.8 164 L546.8 199.8 L514.2 294.3" />
-              </svg>
-              {PARADAS.map((p) => (
-                <span
-                  key={String(p.k)}
-                  className={`hm-stop hm-stop-${typeof p.k === 'number' ? 'local' : p.k}${p.up ? ' hm-stop-up' : ''}`}
-                  data-at={p.at}
-                  style={{ left: `${(p.x / 600) * 100}%`, top: `${(p.y / 420) * 100}%` }}
-                >
-                  {p.k === 'inicio' ? (
-                    <Foot side="L" />
-                  ) : p.k === 'fin' ? (
-                    <Icon name="flag" />
-                  ) : (
-                    <>
-                      <i>?</i>
-                      <b>
-                        <Icon name="check" />
-                      </b>
-                    </>
-                  )}
-                  <em>{p.k === 'inicio' ? 'Participar' : p.k === 'fin' ? 'Ruta completa' : `Local ${p.k}`}</em>
-                </span>
-              ))}
-            </div>
+          <div className="hm-ruta-copy">
+            <Title text="La Ruta|del mes." />
+            <p className="hm-lead">Cada mes, 3 locales sorpresa de tu ciudad y el camino a pie para visitarlos. Una excusa para salir a caminar.</p>
             <ol className="hm-ruta-pasos">
-              {pasos.map((t, i) => (
+              {pasos.map(([t, d], i) => (
                 <li key={t}>
                   <span>{i + 1}</span>
-                  {t}
+                  <div>
+                    <b>{t}</b>
+                    {d}
+                  </div>
                 </li>
               ))}
             </ol>
+            <div className="hm-ruta-sorteo">
+              <Icon name="ticket" />
+              <span>
+                <b>Sorteo del mes:</b> premio por anunciar.
+              </span>
+            </div>
           </div>
           <div className="hm-ruta-phone">
             <Phone className="hm-phone-video">
-              <Video src={VID_RUTA.src} poster={VID_RUTA.poster} label="Video de la app: al tocar Participar, los 3 locales caen en el mapa" />
+              <Video src={VID_RUTA.src} poster={VID_RUTA.poster} label="Video de la app: la Ruta de noviembre con sus 3 locales, el camino a pie y la ficha de Fripap's" />
             </Phone>
-            <p className="hm-note">Video de la app real. Los locales y las fotos son de ejemplo.</p>
+            <p className="hm-note">Grabación de la app real.</p>
           </div>
         </div>
 
@@ -349,7 +329,7 @@ function Ruta() {
         </ul>
         <div className="hm-band">
           <p>
-            <b>En la Ruta no se usan Puntos ni descuentos:</b> pagas tu compra como cualquier cliente.
+            <b>Al completar tus 3 locales</b> ganas las tres cosas.
           </p>
           <CtaAvisame medir="ruta_avisame" label="Quiero hacer la Ruta" />
         </div>

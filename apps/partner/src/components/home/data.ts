@@ -2,9 +2,71 @@
 // README del monorepo, términos (LegalContent), docs/marketing/BRIEF-CONTENIDO.md y la portada anterior.
 // No agregar cifras, comercios, premios ni testimonios que no estén confirmados.
 import { WHATSAPP_NUMBER } from '@/lib/plans';
-import { LOCALES } from '@/components/landing/locales';
 
-export { LOCALES };
+// Comercios y premios tal como se ven en la app oficial (pantalla Canjes y fichas, 18 de noviembre de 2026).
+// Si un dato no se ve en la app (por ejemplo, el detalle de un premio), no se pone.
+export type Premio = { nombre: string; detalle?: string; puntos: number };
+export type Local = { id: string; nombre: string; categoria: string; direccion: string; logo: string; portada?: string; premios: Premio[] };
+const L = (n: string) => `/web/locales/${n}.jpg`;
+export const LOCALES: Local[] = [
+  {
+    id: 'bloom',
+    nombre: 'Bloom',
+    categoria: 'Belleza',
+    direccion: 'Ramón Rojas entre Madrid e Ingavi',
+    logo: L('bloom-logo'),
+    portada: L('bloom-cover'),
+    premios: [
+      { nombre: 'Retirado de gel / acrílico', detalle: 'Gratis', puntos: 35 },
+      { nombre: 'Manicura o pedicura tradicional', detalle: '20 Bs de descuento', puntos: 50 },
+      { nombre: 'Diseño y perfilado de cejas', detalle: '25% de descuento', puntos: 25 },
+    ],
+  },
+  {
+    id: 'fripaps',
+    nombre: "Fripap's",
+    categoria: 'Gastronomía',
+    direccion: 'Calle Virginio Lema casi Suipacha',
+    logo: L('fripaps-logo'),
+    portada: L('fripaps-cover'),
+    premios: [
+      { nombre: 'Panchito', detalle: 'Gratis', puntos: 38 },
+      { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 25 },
+    ],
+  },
+  {
+    id: 'coco',
+    nombre: 'Coco Barber',
+    categoria: 'Barbería',
+    direccion: 'Ramón Rojas esquina La Madrid',
+    logo: L('coco-logo'),
+    portada: L('coco-cover'),
+    premios: [
+      { nombre: 'Lavado de cabello', puntos: 30 },
+      { nombre: 'Corte de cabello', puntos: 25 },
+    ],
+  },
+  {
+    id: 'cancheritos',
+    nombre: 'Cancheritos F.C',
+    categoria: 'Gimnasio y deporte',
+    direccion: 'Cancha García Agreda',
+    logo: L('cancheritos-logo'),
+    portada: L('cancheritos-cover'),
+    premios: [{ nombre: 'Clase', detalle: 'Gratis', puntos: 10 }],
+  },
+  {
+    id: 'viviana',
+    nombre: 'Viviana',
+    categoria: 'Estética y belleza',
+    direccion: 'Federico Ávila 644',
+    logo: L('viviana-logo'),
+    premios: [{ nombre: 'Lavado y planchado', puntos: 150 }],
+  },
+  { id: 'galera', nombre: 'Salteñería La Galera', categoria: 'Salteñas y empanadas', direccion: 'Avenida La Paz', logo: L('galera-logo'), premios: [] },
+  { id: 'sabor', nombre: 'Sabor y Vida', categoria: 'Restaurante', direccion: 'Calle Suipacha', logo: L('sabor-logo'), premios: [] },
+  { id: 'luzdevida', nombre: 'Fisioterapia Luz de Vida', categoria: 'Fisioterapia', direccion: 'Calle San Roque', logo: L('luzdevida-logo'), premios: [] },
+];
 
 export const CONTACTO = {
   whatsapp: `https://wa.me/${WHATSAPP_NUMBER}`,
@@ -33,10 +95,11 @@ export const CAP = {
   inicioClaro: C('inicio'),
   actividad: C('actividad-dark'),
   puntos: C('puntos-nuevo-dark'),
-  mapa: C('mapa-locales-dark'),
-  premiosBloom: C('premios-bloom-dark'),
-  canjes: C('canjes-dark'),
-  fichaLocal: C('ficha-local-dark'),
+  // Capturas nuevas de la app oficial (noviembre 2026), con la barra de estado limpia.
+  mapa: '/web/app/mapa-comercios.jpg',
+  premiosFripaps: '/web/app/premios-fripaps.jpg',
+  canjes: '/web/app/canjes.jpg',
+  fichaLocal: '/web/app/ficha-fripaps.jpg',
   calificar: C('canje-calificar-v3-dark'),
   compartir: C('canje-historia-v3-dark'),
   perfil: C('perfil-insignias-dark'),
@@ -51,8 +114,8 @@ export const CAP = {
 };
 
 // Videos grabados de la app real (Ruta del mes), con su imagen fija.
-export const VID_RUTA = { poster: '/web/vid/ruta-participar.jpg', src: '/web/vid/ruta-participar.mp4' };
-export const VID_ALBUM = { poster: '/web/vid/ruta-album.jpg', src: '/web/vid/ruta-album.mp4' };
+// Grabación de la app oficial: Ruta de noviembre, los 3 locales, el recorrido a pie y la ficha del local.
+export const VID_RUTA = { poster: '/web/app/ruta-app.jpg', src: '/web/app/ruta-app.mp4' };
 
 // Cómo funciona: 4 etapas, cada una con su pantalla real.
 export const ETAPAS = [
@@ -85,7 +148,7 @@ export const ETAPAS = [
     t: 'Canjeas.',
     d: 'Eliges el premio, vas al local y escribes su código en la app. El canje se confirma al instante.',
     dato: 'Vuelves a canjear en el mismo local cada 14 días',
-    img: CAP.premiosBloom,
+    img: CAP.premiosFripaps,
     alt: 'Ficha de un comercio en Camina con sus premios y el botón Canjear',
   },
 ] as const;

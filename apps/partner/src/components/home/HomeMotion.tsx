@@ -148,25 +148,6 @@ export default function HomeMotion() {
           );
         });
 
-        // Ruta del mes: el recorrido se dibuja con el scroll y cada parada se enciende al pasar.
-        const ruta = document.querySelector<SVGPathElement>('.hm-ruta-path');
-        const rutaBox = document.querySelector<HTMLElement>('.hm-ruta-map');
-        if (ruta && rutaBox) {
-          const L = ruta.getTotalLength();
-          gsap.set(ruta, { strokeDasharray: L, strokeDashoffset: L });
-          const stops = Array.from(rutaBox.querySelectorAll<HTMLElement>('[data-at]'));
-          gsap.to(ruta, {
-            strokeDashoffset: 0,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: rutaBox,
-              start: 'top 75%',
-              end: 'bottom 45%',
-              scrub: 0.6,
-              onUpdate: (st) => stops.forEach((s) => s.classList.toggle('is-on', st.progress >= parseFloat(s.dataset.at!))),
-            },
-          });
-        }
       });
 
       // Carrete horizontal fijo (solo escritorio). En el celular se desliza con el dedo.
