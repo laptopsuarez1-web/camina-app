@@ -18,7 +18,7 @@ export default function VerificarPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6 text-center">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4.5" />
       {estado === 'cargando' && <p className="text-white text-[15px]">Verificando tu correo…</p>}
       {estado === 'ok' && (
