@@ -9,7 +9,6 @@ import { DashboardShell, TopBar, reenviarARevision } from '@/components/Dashboar
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { FichaPreview } from '@/components/FichaPreview';
-import { VistaPrevia } from '@/components/biz/VistaPrevia';
 import { faltantesParaPublicar } from '@/lib/readiness';
 import { mensajeError } from '@/lib/errors';
 
@@ -327,8 +326,7 @@ export default function PerfilPage() {
     <DashboardShell>
       <TopBar title="Mi local" subtitle="Completa tu ficha en 5 pasos cortos. Es lo que ven los clientes en la app." />
 
-      <div className="biz-con-preview">
-      <div className="flex flex-wrap gap-5 max-w-[640px] w-full">
+      <div className="flex flex-wrap gap-5 max-w-[640px]">
         <div className="flex-1 min-w-0 flex flex-col gap-3.5">
 <PasoCabecera paso={paso} total={5} titulos={TITULOS} ayuda={AYUDA} onIr={irAPaso} />
 
@@ -785,12 +783,6 @@ export default function PerfilPage() {
           </div>
           )}
         </div>
-      </div>
-      {paso !== 5 && business && (
-        <VistaPrevia titulo="Así te ve la gente en la app">
-          <FichaPreview business={borrador} benefits={premiosActivos} oscuro />
-        </VistaPrevia>
-      )}
       </div>
     </DashboardShell>
   );
