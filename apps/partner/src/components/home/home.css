@@ -3545,3 +3545,123 @@ html:not(.hm-js) .hm-pagewalk {
     transform: translateY(-5px) scale(1.015);
   }
 }
+
+/* Inicio de la versión actual de la app, en vivo (posiciones medidas sobre la captura de 1179 × 2556) */
+.hm-live {
+  aspect-ratio: 1179 / 2556;
+}
+.hm-live > .hm-live-svg {
+  inset: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  translate: none;
+  overflow: visible;
+}
+.hm-live-svg circle {
+  fill: none;
+}
+.hm-live-trk {
+  stroke: #312943;
+}
+.hm-live-meta {
+  stroke: #8aedba;
+  stroke-linecap: round;
+}
+.hm-live-trk2 {
+  stroke: #352d46;
+}
+.hm-live-next {
+  stroke: #7bfbb4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 14px rgba(123, 251, 180, 0.55));
+}
+.hm-live-svg .hm-live-halo {
+  fill: rgba(123, 251, 180, 0.32);
+}
+.hm-live-saldo {
+  left: 4.33%;
+  top: 10.49%;
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.4cqw;
+  height: 8cqw;
+  padding: 0 3.4cqw 0 1.4cqw;
+  border-radius: 99px;
+  background: #40335e;
+  font-size: 3.5cqw;
+  font-weight: 500;
+}
+.hm-live-saldo .hm-coin {
+  width: 4.6cqw;
+  height: 4.6cqw;
+}
+.hm-live-av {
+  left: 92.1%;
+  top: 10.52%;
+  display: grid;
+  place-items: center;
+  width: 7.6cqw;
+  height: 7.6cqw;
+  border-radius: 50%;
+  background: var(--mint);
+  color: #12281f;
+  font-size: 3.6cqw;
+  font-weight: 800;
+}
+.hm-live-hola {
+  left: 4.4%;
+  top: 15.14%;
+  translate: 0 -50%;
+  font-size: 4.2cqw;
+  font-weight: 700;
+  color: #c2b8e4;
+}
+.hm-live > .hm-live-n {
+  top: 29.5%;
+  font-size: 11.9cqw;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.hm-live > .hm-live-l {
+  top: 34.23%;
+  font-size: 3.4cqw;
+  font-weight: 500;
+  color: #c2b8e4;
+}
+.hm-live > .hm-live-chip {
+  top: 37.44%;
+  height: 6.1cqw;
+  padding: 0 2.8cqw 0 1cqw;
+  background: #20313c;
+  color: #7bf5bf;
+  font-size: 3.15cqw;
+}
+.hm-live-chip .hm-coin {
+  width: 3.9cqw;
+  height: 3.9cqw;
+}
+.hm-live-racha {
+  left: 28.6%;
+  top: 52.1%;
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  font-size: 3.2cqw;
+  color: #c8bdec;
+}
+.hm-live-racha i {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.6cqw;
+  font-style: normal;
+  font-size: 4.8cqw;
+  font-weight: 800;
+  color: #fff;
+}
+.hm-live-racha svg {
+  width: 3.8cqw;
+  height: 3.8cqw;
+}
