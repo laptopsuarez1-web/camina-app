@@ -2821,3 +2821,113 @@ html:not(.hm-js) .hm-pagewalk {
   margin-top: 10px;
   width: 100%;
 }
+
+/* ==========================================================================
+   Iteración 7: menos elementos, mejor presentados
+   ========================================================================== */
+.hm-hero-sub {
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  font-weight: 680;
+  font-stretch: var(--wide);
+  letter-spacing: -0.02em;
+  color: var(--plum);
+  margin-bottom: 14px;
+}
+.hm-hero-lead {
+  margin-bottom: 32px;
+}
+/* Teléfono del héroe: una pantalla real por vez */
+.hm-heroph {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+}
+.hm-heroph .hm-phone {
+  --w: clamp(240px, 24vw, 320px);
+}
+@media (max-width: 999px) {
+  .hm-heroph .hm-phone {
+    --w: min(62vw, 260px);
+  }
+}
+.hm-heroph-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  transform: translateY(8%) scale(0.98);
+  transition:
+    opacity 0.6s var(--ease),
+    transform 0.9s var(--ease);
+}
+.hm-heroph-shot.is-past {
+  transform: translateY(-6%) scale(0.98);
+}
+.hm-heroph-shot.is-on {
+  opacity: 1;
+  transform: none;
+}
+.hm-heroph-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.hm-heroph-tabs span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--mut);
+  background: var(--soft);
+  transition:
+    background-color 0.4s var(--ease),
+    color 0.4s;
+}
+.hm-heroph-tabs span.is-on {
+  background: var(--mint);
+  color: var(--plum);
+}
+/* Reglas de los Puntos: cuatro líneas cortas */
+.hm-rules4 {
+  display: grid;
+  gap: 2px;
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.hm-rules4 li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--mut);
+}
+.hm-rules4 b {
+  color: var(--mint);
+  font-weight: 680;
+  margin-right: 4px;
+}
+.hm-act-phone {
+  display: grid;
+  justify-items: center;
+}
+.hm-act-phone .hm-phone {
+  --w: clamp(220px, 23vw, 300px);
+}
+@media (max-width: 999px) {
+  .hm-act-phone .hm-phone {
+    --w: min(58vw, 240px);
+  }
+}
+@media (max-width: 420px) {
+  .hm-heroph-tabs {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .hm-heroph-tabs span {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+}

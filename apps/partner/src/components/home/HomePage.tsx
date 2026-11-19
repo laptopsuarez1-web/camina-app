@@ -11,8 +11,9 @@ import Video from './Video';
 import Comercios from './Comercios';
 import Avisame from './Avisame';
 import Carrusel from './Carrusel';
+import HeroPhone from './HeroPhone';
 import { Phone, Title, Icon, CtaAvisame, Coin } from './ui';
-import { CAP, CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA, VID_TARJETA } from './data';
+import { CAP, CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA } from './data';
 
 // Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
 const mona = localFont({
@@ -76,34 +77,29 @@ function Tiendas() {
   );
 }
 
-// 1. Héroe: el mensaje y el producto. Nada más.
+// 1. Héroe: titular, una frase, dos acciones y un teléfono que recorre la app real.
 function Hero() {
   return (
     <section className="hm-hero" data-theme="light" aria-labelledby="hm-h1">
       <div className="hm-wrap hm-hero-grid">
         <div className="hm-hero-copy">
           <Title as="h1" id="hm-h1" text="Cada paso|cuenta." className="hm-h1" />
+          <p className="hm-hero-sub" data-reveal>
+            Caminá, sumá puntos y disfrutá beneficios.
+          </p>
           <p className="hm-lead hm-hero-lead" data-reveal>
-            Camina convierte los pasos de tu día en Puntos, y tus Puntos en premios y descuentos en comercios de tu ciudad. Gratis.
+            Convertí tus pasos diarios en puntos que podés canjear por descuentos y premios en comercios de tu ciudad.
           </p>
           <div className="hm-cta" data-reveal>
-            <CtaAvisame medir="inicio_avisame" />
+            <a className="hm-btn" href="#premios" data-medir="inicio_conoce">
+              Conocé CAMINA
+            </a>
             <a className="hm-btn hm-btn-ghost" href="#como-funciona" data-medir="inicio_como_funciona">
               Cómo funciona
             </a>
           </div>
-          <div data-reveal>
-            <Tiendas />
-          </div>
         </div>
-        <div className="hm-hero-visual" aria-hidden="true">
-          <div className="hm-hero-back">
-            <Phone src={CAP.puntos} sizes="(max-width: 1000px) 44vw, 270px" />
-          </div>
-          <div className="hm-hero-front">
-            <Phone src={CAP.inicio} preload sizes="(max-width: 1000px) 60vw, 330px" />
-          </div>
-        </div>
+        <HeroPhone />
       </div>
     </section>
   );
@@ -132,8 +128,7 @@ function Actividad() {
         <div className="hm-act-copy">
           <Title text="Tus pasos|valen." />
           <p className="hm-lead" data-reveal>
-            Camina lee tus pasos desde Salud o Health Connect y te los muestra en Actividad: tu semana, tu mes y tu racha. Cada día que abres la app,
-            tus pasos suman Puntos.
+            Camina lee tus pasos desde Salud o Health Connect y te los muestra en Actividad: tu semana, tu mes y tu racha.
           </p>
           <div className="hm-conv" data-conv aria-label="10.000 pasos son 10 Puntos">
             <div>
@@ -151,14 +146,23 @@ function Actividad() {
               <small>Puntos</small>
             </div>
           </div>
-          <p className="hm-rules-line" data-reveal>
-            <b>1.000 pasos = 1 Punto.</b> Hasta 20 Puntos por día, y cada uno dura 90 días.
-          </p>
-          <p className="hm-note">Los pasos escritos a mano no cuentan. Los de los días en que no abres la app se ven en Actividad, pero no suman.</p>
+          <ul className="hm-rules4" data-reveal>
+            <li>
+              <b>1.000 pasos</b> = 1 Punto
+            </li>
+            <li>
+              <b>20 Puntos</b> como máximo por día
+            </li>
+            <li>
+              <b>90 días</b> dura cada Punto
+            </li>
+            <li>
+              <b>Abrí la app</b> cada día para que tus pasos sumen
+            </li>
+          </ul>
         </div>
-        <div className="hm-duo" aria-hidden="true">
-          <Phone src={CAP.actividad} sizes="(max-width: 1000px) 42vw, 300px" />
-          <Phone src={CAP.rachas} sizes="(max-width: 1000px) 42vw, 300px" />
+        <div className="hm-act-phone" data-reveal>
+          <Phone src={CAP.rachas} alt="Pantalla de Actividad con la racha y la meta diaria" sizes="(max-width: 1000px) 60vw, 300px" />
         </div>
       </div>
     </section>
@@ -184,8 +188,8 @@ function Premios() {
         <Carrusel />
 
         <div className="hm-shops-head" data-reveal>
-          <h3>Comercios que ya están en Camina</h3>
-          <p>Toca uno para ver sus premios.</p>
+          <h3>Comercios en Camina</h3>
+          <p>Tocá uno para ver sus premios.</p>
         </div>
         <Comercios />
 
@@ -203,24 +207,11 @@ function Premios() {
               </li>
             ))}
           </ol>
-          <p className="hm-note">Puedes volver a canjear en el mismo local cada 14 días.</p>
+          <p className="hm-note">
+            Volvés a canjear en el mismo local cada 14 días. Y cada 5 canjes, tu Tarjeta de fidelidad te da un premio gratis.
+          </p>
         </div>
 
-        <div className="hm-loyal">
-          <div className="hm-loyal-phone" data-reveal>
-            <Phone className="hm-phone-video">
-              <Video src={VID_TARJETA.src} poster={VID_TARJETA.poster} label="Video de la app: la Tarjeta de fidelidad llenando sus sellos" />
-            </Phone>
-          </div>
-          <div className="hm-loyal-copy">
-            <h3>Tarjeta de fidelidad: 5 canjes, un premio gratis.</h3>
-            <p>
-              Cada canje confirmado, en cualquier comercio, suma un sello. Con 5 sellos eliges un premio gratis entre los comercios que participan, y
-              tienes 30 días para canjearlo en el local.
-            </p>
-            <p className="hm-note">Grabación de la app real.</p>
-          </div>
-        </div>
       </div>
     </section>
   );
