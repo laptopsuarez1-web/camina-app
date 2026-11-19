@@ -11,6 +11,7 @@ import Comercios from './Comercios';
 import Avisame from './Avisame';
 import Carrusel from './Carrusel';
 import HeroPhone from './HeroPhone';
+import LogoScene from './LogoScene';
 import ActividadCard from './ActividadCard';
 import { Phone, Title, Icon, CtaAvisame, Coin } from './ui';
 import { CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA } from './data';
@@ -21,6 +22,7 @@ export default function HomePage() {
       <Nav />
       <main id="contenido" className="hm-main">
         <Hero />
+        <LogoScene />
         <ComoFunciona />
         <Actividad />
         <Premios />

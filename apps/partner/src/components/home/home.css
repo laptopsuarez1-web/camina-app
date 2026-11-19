@@ -3665,3 +3665,107 @@ html:not(.hm-js) .hm-pagewalk {
   width: 3.8cqw;
   height: 3.8cqw;
 }
+
+/* ==========================================================================
+   Escena del logo: las huellas son una ventana al video y crecen al bajar
+   ========================================================================== */
+.hm-logoscene {
+  --p: 0;
+  position: relative;
+  height: 280vh;
+  background: var(--ink);
+  color: #fff;
+}
+.hm-logoscene-stick {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+.hm-logoscene-vid {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.hm-logoscene-vid video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Al terminar de crecer, el video se oscurece un poco para que se lea la frase */
+.hm-logoscene-vid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(17, 19, 24, 0.15), rgba(17, 19, 24, 0.75));
+  opacity: clamp(0, calc((var(--p) - 0.72) * 5), 1);
+}
+.hm-logoscene-a {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9vh;
+  text-align: center;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 760;
+  font-stretch: var(--wide);
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  opacity: clamp(0, calc(1 - var(--p) * 4), 1);
+  transform: translateY(calc(var(--p) * -60px));
+}
+.hm-logoscene-a span {
+  display: block;
+  color: var(--mint);
+}
+.hm-logoscene-b {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 0 var(--gut) 12vh;
+  opacity: clamp(0, calc((var(--p) - 0.8) * 6), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--p) - 0.8) * 6), 1)) * 30px));
+}
+.hm-logoscene-b p {
+  max-width: var(--max);
+  margin: 0 auto;
+  font-size: clamp(1.9rem, 4.6vw, 4rem);
+  font-weight: 740;
+  font-stretch: var(--wide);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.hm-logoscene-b span {
+  display: block;
+  color: var(--mint);
+}
+/* Sin movimiento (o sin JavaScript): video entero y la frase final, en una pantalla */
+.hm-logoscene:not([data-vivo]) {
+  height: auto;
+}
+.hm-logoscene:not([data-vivo]) .hm-logoscene-stick {
+  position: relative;
+  height: 80vh;
+}
+.hm-logoscene:not([data-vivo]) .hm-logoscene-a {
+  display: none;
+}
+.hm-logoscene:not([data-vivo]) .hm-logoscene-b,
+.hm-logoscene:not([data-vivo]) .hm-logoscene-vid::after {
+  opacity: 1;
+  transform: none;
+}
+/* Logo completo alrededor de las huellas (versión morada) */
+.hm-logoscene-marca {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: none;
+  border-radius: 50%;
+  background: #200a52 url(/marca/logo-solo-transparente.png) center / 100% 100% no-repeat;
+  will-change: transform, width, height;
+}
+.hm-logoscene[data-vivo][data-logo='morado'] .hm-logoscene-marca {
+  display: block;
+}
