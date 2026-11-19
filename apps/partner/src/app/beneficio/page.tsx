@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { VistaPrevia } from '@/components/biz/VistaPrevia';
 import { Gift, Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -535,8 +534,7 @@ function BeneficioForm({
         </div>
       )}
 
-      <div className="biz-con-preview">
-      <div className="max-w-[540px] w-full">
+      <div className="max-w-[540px]">
         <PasoCabecera paso={paso} total={4} titulos={TITULOS_PASO} ayuda={AYUDA_PASO} onIr={irAPaso} />
 
         {paso === 1 && (
@@ -892,12 +890,6 @@ function BeneficioForm({
             </button>
           )}
         </div>
-      </div>
-      {paso !== 4 && (
-        <VistaPrevia titulo="Así lo ve la gente en la app">
-          <div className="bg-card rounded-[22px] overflow-hidden">{tarjetaPremio}</div>
-        </VistaPrevia>
-      )}
       </div>
     </DashboardShell>
   );
