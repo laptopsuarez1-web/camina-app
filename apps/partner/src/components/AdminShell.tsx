@@ -64,47 +64,44 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   const sidebar = (
-    <>
-      <div className="flex items-center gap-2.5 px-2.5 mb-7.5">
-        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-        <div>
-          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-          <p className="text-auth-muted text-[10.5px] mt-0.5">Administrador</p>
-        </div>
+    <div className="biz-side">
+      <div className="biz-brand">
+        <Image src="/camina-logo.png" alt="" width={34} height={34} className="rounded-full" />
+        <span className="biz-label">
+          <b>CAMINA</b>
+          <small>ADMIN</small>
+        </span>
       </div>
-      <nav className="flex flex-col gap-1">
+      <nav className="biz-nav" aria-label="Administrador">
         {NAV.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${
-                active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'
-              }`}
-            >
-              <Icon size={16} color={active ? '#62F0B6' : '#9385B5'} />
-              {item.label}
+            <Link key={item.href} href={item.href} className={`biz-link${active ? ' is-on' : ''}`} aria-current={active ? 'page' : undefined} title={item.label}>
+              <Icon size={17} color={active ? '#62F0B6' : undefined} />
+              <span className="biz-label">{item.label}</span>
               {item.href === '/admin/historias' && pendingStories > 0 && (
-                <span className="ml-auto rounded-full bg-warn text-white text-[11px] font-bold px-1.5 min-w-5 text-center">{pendingStories}</span>
+                <span className="rounded-full bg-warn text-white text-[11px] font-bold px-1.5 min-w-5 text-center">{pendingStories}</span>
               )}
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto pt-5">
-        <ThemeToggle />
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]"
-        >
-          <LogOut size={15} />
-          Cerrar sesión
+      <div className="biz-foot">
+        <div className="biz-hide-collapsed">
+          <ThemeToggle />
+        </div>
+        <button onClick={handleLogout} className="biz-link w-full text-left" title="Cerrar sesión">
+          <LogOut size={17} />
+          <span className="biz-label">Cerrar sesión</span>
         </button>
       </div>
-    </>
+    </div>
   );
 
-  return <ResponsiveFrame sidebar={sidebar}>{children}</ResponsiveFrame>;
+  return (
+    <ResponsiveFrame sidebar={sidebar} variant="biz" etiqueta="ADMIN">
+      {children}
+    </ResponsiveFrame>
+  );
 }
