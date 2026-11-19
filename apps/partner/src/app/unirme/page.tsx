@@ -59,7 +59,7 @@ export default function UnirmePage() {
   const input = 'w-full bg-[#FBF9FE] !text-[#291C47] placeholder:!text-[#7C6A9C] rounded-xl p-3.5';
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6 text-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/camina-logo.png" alt="Camina" width={72} height={72} className="rounded-full mb-4" />
       <p className="text-white font-bold text-[22px] mb-1.5">Soy cajero</p>

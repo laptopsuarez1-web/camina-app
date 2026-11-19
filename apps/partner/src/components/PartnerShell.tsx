@@ -43,7 +43,7 @@ function CompletarPerfil({ onListo }: { onListo: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={72} height={72} className="rounded-full mb-4" />
       <p className="text-white font-bold text-[20px] mb-1">Completa tu perfil de partner</p>
       <p className="text-auth-muted text-[13px] mb-6 text-center max-w-[300px]">Ya tienes cuenta en Camina. Solo faltan estos datos para empezar.</p>

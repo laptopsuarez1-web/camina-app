@@ -25,7 +25,7 @@ export default function DescargarPage() {
   const btn = 'rounded-xl py-3.5 px-8 font-bold text-[15px] block w-full max-w-[300px] mx-auto';
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6 text-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-5" />
       <p className="text-white font-bold text-[22px] mb-2">Descarga Camina</p>
