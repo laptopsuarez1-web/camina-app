@@ -1,0 +1,386 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import '../home.css';
+import './comercios.css';
+import Shell from '../Shell';
+import Nav from '../Nav';
+import Footer from '../Footer';
+import Steps from '../Steps';
+import RouteMap from '../RouteMap';
+import Video from '../Video';
+import { Phone, Title } from '../ui';
+import { CAP, CONTACTO, RUTAS, VID_RUTA } from '../data';
+import PanelLive from './PanelLive';
+import MapaLocal from './MapaLocal';
+import { PLANS, LANZAMIENTO, CUPO_FUNDADOR_ABIERTO, WHATSAPP_NUMBER } from '@/lib/plans';
+
+// /comercios con el mismo sistema visual que la portada. Precios, planes y condiciones salen de lib/plans.ts sin cambios.
+// Usa "tú", como el panel de comercios.
+
+const WA_DUDA = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola! Tengo una duda sobre cómo sumar mi comercio a Camina.')}`;
+
+const LINKS = [
+  ['Cómo funciona', '#como-funciona'],
+  ['Ruta del mes', '#ruta'],
+  ['Planes', '#planes'],
+  ['Preguntas', '#dudas'],
+] as const;
+
+// Cómo llega una persona a tu local, con pantallas reales de la app.
+const ETAPAS_LOCAL = [
+  {
+    n: '01',
+    t: 'Te encuentran.',
+    d: 'Tu local aparece en el mapa de la app y en «Locales cerca tuyo», con tu logo.',
+    dato: 'Desde el plan gratis',
+    img: CAP.mapa,
+    alt: 'Mapa de Camina con los comercios de Tarija',
+  },
+  {
+    n: '02',
+    t: 'Eligen tu premio.',
+    d: 'Abren tu ficha: fotos, horario, dirección, redes y tus premios con los Puntos que cuestan.',
+    dato: 'Tú decides el premio, los días y los horarios',
+    img: CAP.premiosFripaps,
+    alt: "Ficha de Fripap's en Camina con su premio",
+  },
+  {
+    n: '03',
+    t: 'Canjean en tu local.',
+    d: 'Le dices el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado.',
+    dato: 'Lo ves al instante en tu panel',
+    img: CAP.canjes,
+    alt: 'Pantalla Canjes de Camina con los comercios y sus premios',
+  },
+  {
+    n: '04',
+    t: 'Vuelven.',
+    d: 'Cada canje los sube de nivel en tu local: Visitante, Habitual y Fan. Pueden volver a canjear cada 14 días.',
+    dato: 'En tu panel ves a tus clientes más fieles',
+    img: '/web/app/insignias-app.jpg',
+    alt: 'Pantalla Mis insignias de Camina con los niveles por local',
+  },
+] as const;
+
+// Textos de esta página para tres puntos de los planes (los mismos de antes). Precios, planes y reglas no cambian.
+const TEXTO_PLAN: Record<string, [string, string]> = {
+  'Mínimo 3 cupones por día': ['Mínimo 3 cupos por día', 'Cupos disponibles, no clientes garantizados.'],
+  '1 premio gratis y, con él, 1 más': ['1 premio gratis y 1 descuento', 'Primero el gratis, después el descuento. Máximo 2.'],
+  'Tarjeta de fidelidad Camina: tu premio entre las opciones de todos los clientes': ['Tarjeta de fidelidad Camina', 'Tu premio entre las opciones de todos los clientes.'],
+};
+
+const DUDAS_COM = [
+  ['¿Qué es Camina?', 'Una app gratis que cuenta los pasos de las personas y los convierte en Puntos. Esos Puntos se canjean por descuentos o regalos en los comercios aliados de su ciudad.'],
+  ['¿Cómo se incorpora mi negocio?', 'Te registras, cargas tu local, tu logo, tus fotos y tu primer descuento o regalo. El equipo de Camina lo revisa y, al aprobarlo, apareces en la app.'],
+  ['¿Cuánto cuesta?', 'Primer Paso es gratis. Paso Firme cuesta Bs 99/mes y Paso Adelante Bs 299/mes (precio de lanzamiento). Se paga con QR y mandas el comprobante por WhatsApp. Los primeros 20 comercios tienen 3 meses gratis de Paso Firme.'],
+  ['¿Quién define los descuentos?', 'Tú. Eliges si das un descuento o un regalo, cuántos cupones por día y en qué días y horarios vale.'],
+  ['¿Cómo se usan los beneficios?', 'La persona canjea en la app y llega a tu local. Tú le dices el código de 4 números de tu local, lo escribe y el canje queda confirmado. Nadie puede volver a canjear en el mismo local hasta pasados 14 días.'],
+  ['¿Qué necesito para participar?', 'Los datos de tu local, tu logo, algunas fotos y tu primer descuento o regalo. Todo se hace desde el panel web, sin instalar nada.'],
+] as const;
+
+export default function ComerciosHome() {
+  return (
+    <Shell className="cx">
+      <Nav
+        links={[...LINKS]}
+        otra={['Para personas', '/']}
+        cta={
+          <Link className="hm-btn hm-btn-sm hm-nav-cta" href={RUTAS.registro} data-medir="comercios_nav_sumar">
+            Sumar mi comercio
+          </Link>
+        }
+        ctaMenu={
+          <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_menu_sumar">
+            Sumar mi comercio
+          </Link>
+        }
+      />
+      <main id="contenido" className="hm-main">
+        <Hero />
+        <Beneficios />
+        <ComoFunciona />
+        <Ruta />
+        <Panel />
+        <Planes />
+        <Dudas />
+        <Cierre />
+      </main>
+      <Footer base="/" />
+    </Shell>
+  );
+}
+
+// Lo que gana un comercio con Camina. Todo sale de cómo funciona la app y el panel hoy.
+const BENEFICIOS = [
+  ['walk', 'Clientes nuevos, caminando', 'Gente de tu zona que junta Puntos caminando y busca dónde canjearlos.'],
+  ['pin', 'Apareces en el mapa, gratis', 'Tu local con tu logo en el mapa de la app y en «Locales cerca tuyo».'],
+  ['sliders', 'Tú pones las reglas', 'Eliges el premio o el descuento, los días, los horarios y los cupos.'],
+  ['repeat', 'Vuelven a tu local', 'Pueden canjear otra vez cada 14 días y suben de nivel: Visitante, Habitual y Fan.'],
+  ['route', 'Visitas sin dar descuento', 'Con la Ruta del mes, Camina te manda gente que compra como cualquier cliente.'],
+  ['star', 'Más reseñas y menciones', 'Después del canje, la app invita a calificarte en Google y a subir una historia con tu local.'],
+] as const;
+
+function BIcon({ name }: { name: (typeof BENEFICIOS)[number][0] }) {
+  const d: Record<string, string> = {
+    walk: 'M13 4a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM10 8l-3 3v4M10 8l3 2 3 1M10 8l-1 6 3 3 1 4M9 14l-3 7',
+    pin: 'M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z',
+    sliders: 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4',
+    repeat: 'M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4',
+    route: 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 17h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7',
+    star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+  };
+  return (
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <path d={d[name]} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// 1. Héroe: el mapa de la app con huellas que llegan a "Tu local".
+function Hero() {
+  return (
+    <section className="hm-hero hm-dark cx-hero" data-theme="dark" aria-labelledby="cx-h1">
+      <div className="cx-hero-map">
+        <MapaLocal />
+      </div>
+      <div className="hm-wrap cx-hero-grid">
+        <div className="hm-hero-copy">
+          <p className="cx-kick" data-reveal>
+            Para comercios
+          </p>
+          <Title as="h1" id="cx-h1" text="Tus próximos clientes|ya están caminando." className="cx-h1" />
+          <p className="hm-lead hm-hero-lead" data-reveal>
+            En Camina, la gente gana Puntos por caminar y los canjea en comercios de su ciudad. Pon tu local en su camino: sumarte es gratis.
+          </p>
+          <div className="hm-cta" data-reveal>
+            <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_hero_sumar">
+              Sumar mi comercio
+            </Link>
+            <a className="hm-btn hm-btn-ghost" href="#beneficios" data-medir="comercios_hero_beneficios">
+              Qué gana mi local
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// 2. Lo que gana tu local.
+function Beneficios() {
+  return (
+    <section className="hm-sec cx-bens-sec" id="beneficios" data-theme="light">
+      <div className="hm-wrap cx-bens-wrap">
+        <header>
+          <Title text="Lo que gana|tu local." />
+          <p className="hm-lead" data-reveal>
+            Lo que Camina le suma a tu negocio.
+          </p>
+        </header>
+        <ul className="cx-bens" data-stagger aria-label="Lo que gana tu comercio con Camina">
+          {BENEFICIOS.map(([ic, t, d]) => (
+            <li key={t}>
+              <span className="cx-ben-ico">
+                <BIcon name={ic} />
+              </span>
+              <b>{t}</b>
+              <p>{d}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+// 3. Tu panel: cada canje, en el momento.
+function Panel() {
+  return (
+    <section className="hm-sec hm-soft" id="panel" data-theme="light">
+      <div className="hm-wrap cx-panel-sec">
+        <div className="cx-panel-copy">
+          <Title text="Todo, desde|tu panel." />
+          <p className="hm-lead" data-reveal>
+            Ves cada canje en el momento, tu código del local y cuánta gente te trajo Camina este mes. Sin instalar nada: entras desde el celular o la computadora.
+          </p>
+        </div>
+        <div className="cx-hero-panel" data-reveal>
+          <PanelLive />
+          <p className="hm-note">Tu panel de comercio, con datos de ejemplo.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// 2. Cómo llega un cliente a tu local.
+function ComoFunciona() {
+  return (
+    <section className="hm-sec" id="como-funciona" data-theme="light">
+      <div className="hm-wrap">
+        <header className="hm-head">
+          <Title text="Así llegan|a tu local." />
+          <p className="hm-lead" data-reveal>
+            Cuatro momentos, todos dentro de la app. Tú solo atiendes y das tu código.
+          </p>
+        </header>
+        <Steps etapas={ETAPAS_LOCAL} />
+      </div>
+    </section>
+  );
+}
+
+// 3. Ruta del mes, vista desde el local.
+function Ruta() {
+  return (
+    <section className="hm-sec hm-dark" id="ruta" data-theme="dark">
+      <div className="hm-wrap">
+        <header className="hm-head hm-head-split">
+          <Title text="Tu local, entre|los 3 sorpresa." />
+          <p className="hm-lead" data-reveal>
+            Cada mes, Camina le da a cada persona 3 locales sorpresa y el camino a pie para visitarlos. Tu local puede ser uno, <b>sin pagar plan y sin dar descuento.</b>
+          </p>
+        </header>
+        <div className="hm-ruta">
+          <div className="hm-ruta-main" data-reveal>
+            <RouteMap />
+            <ol className="hm-ruta-pasos hm-seq" data-seq>
+              {[
+                ['Te toca en su Ruta', 'La persona ve tu local en su mapa del mes, con el camino a pie.'],
+                ['Viene y compra', 'Compra lo que quiera, como cualquier cliente. En la Ruta no se usan Puntos.'],
+                ['Le das tu código de la Ruta', 'Lo escribe al pagar y tú confirmas la visita desde tu panel.'],
+              ].map(([t, d], i) => (
+                <li key={t}>
+                  <span>{i + 1}</span>
+                  <div>
+                    <b>{t}</b>
+                    {d}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="hm-ruta-phone" data-reveal>
+            <Phone className="hm-phone-video">
+              <Video src={VID_RUTA.src} poster={VID_RUTA.poster} label="Video de la app: la Ruta de noviembre con sus 3 locales y el camino a pie" />
+            </Phone>
+            <p className="hm-note">Grabación de la app real.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// 4. Planes: precios y beneficios tal cual lib/plans.ts.
+function Planes() {
+  return (
+    <section className="hm-sec" id="planes" data-theme="light">
+      <div className="hm-wrap">
+        <header className="hm-head">
+          <Title text="Empieza|gratis." />
+          <p className="hm-lead" data-reveal>
+            Aparecer en Camina no cuesta. Los planes de pago suman herramientas y beneficios extra.
+          </p>
+        </header>
+        {CUPO_FUNDADOR_ABIERTO && (
+          <div className="cx-fund" data-reveal>
+            <div>
+              <b>Los primeros 20 comercios tienen 3 meses gratis de Paso Firme.</b>
+              <span>Desde que salga la app. Te lo confirmamos cuando aprobamos tu local.</span>
+            </div>
+            <Link className="hm-btn" href="/registro?fundador=1" data-medir="comercios_fundador">
+              Pedir mi cupo fundador
+            </Link>
+          </div>
+        )}
+        <div className="cx-plans" data-stagger>
+          {PLANS.map((p) => (
+            <article key={p.id} className={`cx-plan${p.featured ? ' is-feat' : ''}${p.id === 'paso_adelante' ? ' is-gold' : ''}`}>
+              <h3>{p.name}</h3>
+              <p className="cx-price">{p.price}</p>
+              {p.id !== 'primer_paso' ? <p className="cx-launch">{LANZAMIENTO}</p> : <p className="cx-launch">Sin costo fijo</p>}
+              <p className="cx-blurb">{p.blurb}</p>
+              <ul>
+                {p.features.map((f) => {
+                  const [t, e] = TEXTO_PLAN[f] ?? [f, ''];
+                  return (
+                    <li key={f}>
+                      {t}
+                      {e ? <small>{e}</small> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+              <Link className={`hm-btn${p.id === 'primer_paso' ? ' hm-btn-ghost' : ''}`} href={`/registro?plan=${p.id}`} data-medir={`comercios_plan_${p.id}`}>
+                {p.id === 'primer_paso' ? 'Registrarme gratis' : 'Registrarme con este plan'}
+              </Link>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Dudas() {
+  return (
+    <section className="hm-sec hm-soft" id="dudas" data-theme="light">
+      <div className="hm-wrap hm-faq">
+        <div>
+          <Title text="Lo que todos|preguntan." />
+          <p className="hm-faq-contact">
+            ¿Otra duda? Escríbenos por <a href={WA_DUDA}>WhatsApp</a> o a <a href={`mailto:${CONTACTO.email}`}>{CONTACTO.email}</a>.
+          </p>
+        </div>
+        <div className="hm-faq-list">
+          {DUDAS_COM.map(([q, a]) => (
+            <details key={q}>
+              <summary>
+                {q}
+                <i aria-hidden="true" />
+              </summary>
+              <p>{a}</p>
+            </details>
+          ))}
+          <details>
+            <summary>
+              ¿Cómo puedo registrarme?
+              <i aria-hidden="true" />
+            </summary>
+            <p>
+              Toca «Sumar mi comercio», crea tu cuenta y arma tu ficha. Si te queda una duda, <a href={WA_DUDA}>escríbenos por WhatsApp</a>.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Cierre() {
+  return (
+    <section className="hm-sec hm-dark hm-final" id="sumar" data-theme="dark">
+      <div className="hm-wrap hm-final-in">
+        <div className="hm-final-baifo" data-reveal>
+          <Image src="/web/baifo/camina.webp" alt="Baifo, la cabrita de Camina, caminando" width={284} height={420} sizes="150px" />
+        </div>
+        <Title text="Suma tu local a la|comunidad que camina." className="hm-final-title" />
+        <p className="hm-lead" data-reveal>
+          Empieza gratis y elige tu plan cuando quieras. Todo se hace desde el panel web, sin instalar nada.
+        </p>
+        <div className="hm-cta hm-cta-center" data-reveal>
+          <Link className="hm-btn" href={RUTAS.registro} data-medir="comercios_cierre_sumar">
+            Sumar mi comercio
+          </Link>
+          <a className="hm-btn hm-btn-ghost" href={WA_DUDA} data-medir="comercios_cierre_whatsapp">
+            Escribir por WhatsApp
+          </a>
+        </div>
+        <p className="hm-final-mail">
+          ¿Ya tienes cuenta? <Link href={RUTAS.login}>Ingresa a tu panel</Link>
+        </p>
+      </div>
+    </section>
+  );
+}

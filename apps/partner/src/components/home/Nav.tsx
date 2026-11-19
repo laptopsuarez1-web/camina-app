@@ -2,19 +2,27 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CtaAvisame } from './ui';
 
-const LINKS = [
+type Enlace = readonly [string, string];
+const LINKS: Enlace[] = [
   ['Cómo funciona', '#como-funciona'],
   ['Premios', '#premios'],
   ['Comunidad', '#comunidad'],
   ['Ruta del mes', '#ruta'],
-] as const;
+];
+const OTRA: Enlace = ['Para comercios', '/comercios'];
 
 // Barra superior: se adapta al color de la sección que tiene debajo (clara u oscura) y se compacta al bajar.
 // En el celular, un botón abre el menú a pantalla completa.
-export default function Nav() {
+// En /comercios se pasan sus secciones, el enlace a la portada y el botón de registro.
+export default function Nav({
+  links = LINKS,
+  otra = OTRA,
+  cta = <CtaAvisame medir="nav_avisame" className="hm-btn-sm hm-nav-cta" label="Avísame" />,
+  ctaMenu = <CtaAvisame medir="menu_avisame" />,
+}: { links?: Enlace[]; otra?: Enlace; cta?: ReactNode; ctaMenu?: ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
@@ -45,14 +53,14 @@ export default function Nav() {
           <span>CAMINA</span>
         </Link>
         <nav className="hm-nav-links" aria-label="Principal">
-          {LINKS.map(([t, h]) => (
+          {links.map(([t, h]) => (
             <a key={h} href={h}>{t}</a>
           ))}
-          <Link href="/comercios">Para comercios</Link>
+          <Link href={otra[1]}>{otra[0]}</Link>
         </nav>
         <div className="hm-nav-end">
           <Link href="/login" className="hm-nav-login">Panel de comercios</Link>
-          <CtaAvisame medir="nav_avisame" className="hm-btn-sm hm-nav-cta" label="Avísame" />
+          {cta}
           <button
             ref={btn}
             type="button"
@@ -70,17 +78,17 @@ export default function Nav() {
       </div>
       <div id="hm-menu" className="hm-menu" ref={panel} hidden={!open}>
         <nav aria-label="Menú">
-          {LINKS.map(([t, h], i) => (
+          {links.map(([t, h], i) => (
             <a key={h} href={h} onClick={close} style={{ ['--i' as string]: i }}>
               {t}
             </a>
           ))}
-          <Link href="/comercios" onClick={close} style={{ ['--i' as string]: LINKS.length }}>
-            Para comercios
+          <Link href={otra[1]} onClick={close} style={{ ['--i' as string]: links.length }}>
+            {otra[0]}
           </Link>
         </nav>
         <div className="hm-menu-end">
-          <CtaAvisame medir="menu_avisame" />
+          {ctaMenu}
           <Link href="/login" className="hm-link" onClick={close}>
             Ingresar al panel de comercios
           </Link>
