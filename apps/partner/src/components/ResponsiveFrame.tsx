@@ -71,7 +71,7 @@ export function ResponsiveFrame({
           <div className="flex items-center gap-2.5">
             <Image src="/camina-logo.png" alt="Camina" width={30} height={30} className="rounded-full" />
             <span className="text-white font-bold text-[15px] tracking-wide">CAMINA</span>
-            {biz && <span className="text-mint text-[10.5px] font-bold tracking-[0.16em]">BUSINESS</span>}
+            {biz && <span className="text-mint text-[10.5px] font-bold tracking-[0.16em]">COMERCIOS</span>}
           </div>
           <button
             type="button"

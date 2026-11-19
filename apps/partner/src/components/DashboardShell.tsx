@@ -130,7 +130,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <Image src="/camina-logo.png" alt="" width={34} height={34} className="rounded-full" />
         <span className="biz-label">
           <b>CAMINA</b>
-          <small>BUSINESS</small>
+          <small>COMERCIOS</small>
         </span>
       </div>
 
