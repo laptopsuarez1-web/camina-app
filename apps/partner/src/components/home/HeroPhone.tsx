@@ -29,6 +29,11 @@ export default function HeroPhone() {
 
   return (
     <div className="hm-heroph" aria-hidden="true">
+      {/* El aro de pasos de la app, gigante detrás del teléfono: se llena con cada pantalla. */}
+      <svg className="hm-heroph-ring" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="92" className="hm-heroph-ring-bg" />
+        <circle key={i} cx="100" cy="100" r="92" className="hm-heroph-ring-fg" pathLength={100} />
+      </svg>
       <div className="hm-phone">
         <div className="hm-phone-screen">
           {PANTALLAS.map((p, k) => (

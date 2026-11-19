@@ -206,11 +206,6 @@ export const DUDAS = [
     '¿Cómo cuenta mis pasos?',
     'Camina lee tus pasos desde Salud en iPhone o Health Connect en Android, y te pide permiso la primera vez. Abre la app cada día: solo los pasos de los días en que la abres suman Puntos (los demás se ven en Actividad, pero no suman). Los pasos escritos a mano no cuentan.',
   ],
-  ['¿Dónde canjeo mis Puntos?', 'En los comercios que ves en el mapa de la app. Eliges el premio, vas al local y escribes su código.'],
-  [
-    '¿Qué es la Ruta del mes?',
-    'Un evento mensual en la pestaña Eventos: tocas Participar y te tocan 3 locales sorpresa. Los visitas en el orden que quieras y compras lo que quieras (no se usan Puntos ni descuentos). Al completar los 3 ganas un Día doble, la insignia del mes y un boleto para el sorteo del mes.',
-  ],
   [
     '¿Cómo cuenta una visita de la Ruta?',
     'Al pagar, escribes en la app el código del local (el mismo de los canjes), estando ahí. El local confirma desde su panel que compraste y la visita se suma a tu Ruta.',

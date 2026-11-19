@@ -7,7 +7,18 @@ import { Coin } from './ui';
 
 // Carrusel de premios en 3D: la tarjeta del centro queda de frente y las de los costados giran hacia atrás.
 // Se desliza con el dedo, con la rueda o con las flechas del teclado. Datos reales de la app (locales.ts / data.ts).
-const PREMIOS = LOCALES.flatMap((l) => l.premios.map((p) => ({ ...p, local: l })));
+// Pocos y destacados: un premio por comercio con foto de portada.
+const DESTACADOS: [string, string][] = [
+  ['bloom', 'Retirado de gel / acrílico'],
+  ['cancheritos', 'Clase'],
+  ['fripaps', 'Salchipapa'],
+  ['coco', 'Lavado de cabello'],
+];
+const PREMIOS = DESTACADOS.flatMap(([id, nombre]) => {
+  const local = LOCALES.find((l) => l.id === id);
+  const p = local?.premios.find((x) => x.nombre === nombre);
+  return local && p ? [{ ...p, local }] : [];
+});
 
 export default function Carrusel() {
   const track = useRef<HTMLUListElement>(null);

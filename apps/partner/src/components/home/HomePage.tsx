@@ -80,7 +80,7 @@ function Tiendas() {
 // 1. Héroe: titular, una frase, dos acciones y un teléfono que recorre la app real.
 function Hero() {
   return (
-    <section className="hm-hero" data-theme="light" aria-labelledby="hm-h1">
+    <section className="hm-hero hm-dark" data-theme="dark" aria-labelledby="hm-h1">
       <div className="hm-wrap hm-hero-grid">
         <div className="hm-hero-copy">
           <Title as="h1" id="hm-h1" text="Cada paso|cuenta." className="hm-h1" />
@@ -171,12 +171,6 @@ function Actividad() {
 
 // 4. Premios y comercios: los comercios son protagonistas; Fripap's muestra cómo se ve un premio.
 function Premios() {
-  const canje = [
-    ['Elige el premio', 'En Canjes o en el mapa, según lo que te alcanza.'],
-    ['Ve al local', 'La app te muestra cómo llegar caminando.'],
-    ['Escribe su código', 'El código del local, estando ahí.'],
-    ['Listo', 'Se confirma al instante y se descuentan tus Puntos.'],
-  ];
   return (
     <section className="hm-sec" id="premios" data-theme="light">
       <div className="hm-wrap">
@@ -194,23 +188,9 @@ function Premios() {
         <Comercios />
 
 
-        <div className="hm-canje">
-          <h3>Así se canjea</h3>
-          <ol className="hm-seq" data-seq>
-            {canje.map(([t, d], i) => (
-              <li key={t}>
-                <span>{i + 1}</span>
-                <div>
-                  <b>{t}</b>
-                  {d}
-                </div>
-              </li>
-            ))}
-          </ol>
-          <p className="hm-note">
-            Volvés a canjear en el mismo local cada 14 días. Y cada 5 canjes, tu Tarjeta de fidelidad te da un premio gratis.
-          </p>
-        </div>
+        <p className="hm-note hm-prem-note">
+          Volvés a canjear en el mismo local cada 14 días. Y cada 5 canjes, tu Tarjeta de fidelidad te da un premio gratis.
+        </p>
 
       </div>
     </section>
@@ -304,11 +284,7 @@ function Origen() {
           <div className="hm-origen-copy">
             <Title text="Hecha en Tarija,|para caminarla." />
             <p className="hm-lead" data-reveal>
-              Camina nace en Tarija con una idea simple: que moverte por tu ciudad tenga premio, y que ese premio esté en los comercios de tu zona.
-            </p>
-            <p className="hm-origen-p">
-              Cada canje lleva a alguien a un local de acá. Tú caminas más, el comercio gana clientes y la ciudad se mueve. Empezamos en Tarija; después
-              vienen Santa Cruz, La Paz y Cochabamba.
+              Camina nace en Tarija con una idea simple: que moverte por tu ciudad tenga premio, y que ese premio esté en los comercios de tu zona. Empezamos en Tarija; después vienen Santa Cruz, La Paz y Cochabamba.
             </p>
           </div>
         </div>

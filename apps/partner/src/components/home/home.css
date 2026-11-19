@@ -2931,3 +2931,120 @@ html:not(.hm-js) .hm-pagewalk {
     white-space: nowrap;
   }
 }
+
+/* ==========================================================================
+   Iteración 8: inicio con impacto (morado del logo, titular gigante, aro de pasos)
+   ========================================================================== */
+.hm-hero.hm-dark {
+  background:
+    radial-gradient(70% 60% at 78% 45%, rgba(98, 240, 182, 0.14), transparent 70%),
+    var(--plum);
+  --mut: #c9bfe8;
+}
+.hm-hero .hm-h1 {
+  font-size: clamp(4rem, 11vw, 10rem);
+  line-height: 0.86;
+  font-weight: 780;
+  letter-spacing: -0.04em;
+  margin-bottom: 28px;
+}
+.hm-hero .hm-hero-sub {
+  color: var(--mint);
+}
+.hm-hero .hm-hero-lead {
+  color: #d9d1f2;
+}
+.hm-hero-grid {
+  min-height: min(760px, calc(100svh - 160px));
+}
+.hm-heroph {
+  position: relative;
+}
+.hm-heroph .hm-phone {
+  --w: clamp(260px, 26vw, 340px);
+  z-index: 1;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 50px 90px -40px rgba(0, 0, 0, 0.7);
+}
+.hm-heroph-ring {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 26px);
+  width: clamp(380px, 40vw, 560px);
+  max-width: 128vw;
+  translate: -50% -50%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.hm-heroph-ring circle {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.hm-heroph-ring-bg {
+  stroke: rgba(98, 240, 182, 0.14);
+}
+.hm-heroph-ring-fg {
+  stroke: var(--mint);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 10px rgba(98, 240, 182, 0.35));
+}
+.hm-js .hm-heroph-ring-fg {
+  animation: hm-ring 3.2s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+@keyframes hm-ring {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.hm-heroph-tabs span {
+  background: rgba(255, 255, 255, 0.08);
+  color: #c9bfe8;
+}
+.hm-heroph-tabs span.is-on {
+  background: var(--mint);
+  color: var(--plum);
+}
+@media (max-width: 999px) {
+  .hm-hero .hm-h1 {
+    font-size: clamp(3.6rem, 19vw, 6rem);
+  }
+  .hm-heroph {
+    padding: 36px 0 8px;
+  }
+  .hm-heroph .hm-phone {
+    --w: min(64vw, 270px);
+  }
+  .hm-heroph-ring {
+    width: min(108vw, 440px);
+    top: calc(50% - 10px);
+  }
+}
+/* Barra superior en el celular sobre el inicio morado */
+@media (max-width: 1199px) {
+  .hm-nav {
+    color: #fff;
+  }
+}
+/* Premios: nota final tras la cuadrícula */
+.hm-prem-note {
+  margin-top: 28px;
+}
+/* Comunidad: pestañas sin cortes en el celular */
+@media (max-width: 420px) {
+  .hm-tabs button {
+    font-size: 0.8rem;
+    padding: 0 2px;
+  }
+}
+.hm-heroph-ring-bg {
+  stroke: rgba(98, 240, 182, 0.2);
+}
+.hm-hero {
+  padding-bottom: clamp(56px, 7vw, 96px);
+}
