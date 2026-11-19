@@ -79,6 +79,9 @@ export const CONTACTO = {
 // Estado de salida en las tiendas. La fecha no está confirmada: no se publica ninguna.
 export const SALIDA = 'Muy pronto en App Store y Google Play';
 
+// Enlaces externos de la portada: siempre a destinos que existen.
+export const RUTAS = { comercios: '/comercios', registro: '/registro', login: '/login', guia: '/guia', terminos: '/terminos', privacidad: '/privacidad', eliminar: '/eliminar-cuenta' };
+
 // Hasta que las tiendas aprueben la app, los botones de descarga se muestran como "Próximamente" (sin link).
 // Cuando haya link público de la tienda, poner la URL aquí y el botón pasa a ser un enlace real.
 export const TIENDAS: { nombre: 'App Store' | 'Google Play'; url: string | null }[] = [
@@ -105,6 +108,7 @@ export const CAP = {
   perfil: C('perfil-insignias-dark'),
   ranking: C('ranking-nuevo-dark'),
   retos: C('retos-dark'),
+  desafios: C('desafios-dark'),
   rachas: C('rachas-dark'),
   insignias: C('insignias-dark'),
   grupo: C('grupo-v4-dark'),
@@ -113,88 +117,80 @@ export const CAP = {
   rutaMapa: C('ruta-mapa-nov-dark'),
 };
 
-// Videos grabados de la app real (Ruta del mes), con su imagen fija.
 // Grabación de la app oficial: Ruta de noviembre, los 3 locales, el recorrido a pie y la ficha del local.
 export const VID_RUTA = { poster: '/web/app/ruta-app.jpg', src: '/web/app/ruta-app.mp4' };
+// Grabación de la app oficial: la Tarjeta de fidelidad llenando sus sellos.
+export const VID_TARJETA = { poster: '/web/app/tarjeta-app.jpg', src: '/web/app/tarjeta-app.mp4' };
 
-// Cómo funciona: 4 etapas, cada una con su pantalla real.
+// Cómo funciona: 4 momentos, cada uno con su pantalla real.
 export const ETAPAS = [
   {
     n: '01',
-    t: 'Caminas.',
-    d: 'Al trabajo, a la plaza, a la tienda. Camina lee tus pasos desde Salud en iPhone o Health Connect en Android.',
-    dato: 'Sin gimnasio y sin equipo',
+    t: 'Camina como siempre.',
+    d: 'Al trabajo, a clases, a la plaza. La app cuenta tus pasos sola, desde Salud en iPhone o Health Connect en Android.',
+    dato: 'Sin gimnasio, sin equipo y sin pagar nada',
     img: CAP.actividad,
     alt: 'Pantalla Actividad de Camina con los pasos de la semana',
   },
   {
     n: '02',
-    t: 'Sumas Puntos.',
-    d: 'Cada 1.000 pasos ganas 1 Punto. Abre la app cada día para que tus pasos sumen.',
-    dato: 'Hasta 20 Puntos por día; cada uno dura 90 días',
+    t: 'Tus pasos se vuelven Puntos.',
+    d: 'Cada 1.000 pasos ganas 1 Punto. Abre la app cada día y los pasos de ese día suman.',
+    dato: 'Hasta 20 Puntos por día; duran 90 días',
     img: CAP.puntos,
     alt: 'Pantalla Tus Puntos de Camina con el saldo y los movimientos',
   },
   {
     n: '03',
-    t: 'Descubres premios.',
-    d: 'En el mapa ves los comercios cerca de ti y lo que ofrece cada uno: descuentos o premios gratis.',
-    dato: 'Cafés, comida, belleza, deporte y más',
+    t: 'Encuentra tu premio.',
+    d: 'En el mapa ves los comercios cerca de ti y lo que ofrece cada uno: descuentos y premios gratis.',
+    dato: 'Comida, belleza, deporte y más',
     img: CAP.mapa,
     alt: 'Mapa de Camina con los comercios cercanos',
   },
   {
     n: '04',
-    t: 'Canjeas.',
+    t: 'Canjéalo en el local.',
     d: 'Eliges el premio, vas al local y escribes su código en la app. El canje se confirma al instante.',
-    dato: 'Vuelves a canjear en el mismo local cada 14 días',
+    dato: 'Puedes volver al mismo local cada 14 días',
     img: CAP.premiosFripaps,
-    alt: 'Ficha de un comercio en Camina con sus premios y el botón Canjear',
+    alt: 'Premios de Fripap\'s en Camina con el botón Canjear',
   },
 ] as const;
 
-// Recorrido por la app (pantallas reales).
-export const TOUR = [
-  { t: 'La ficha de cada local', d: 'Fotos, horario, dirección, sus premios y cómo llegar a pie.', img: CAP.fichaLocal },
-  { t: 'Califica tu visita', d: 'Después del canje, la app te invita a calificar el local.', img: CAP.calificar },
-  { t: 'Comparte y gana', d: 'Sube tu canje a una historia de Instagram con @caminaapp y suma 5 Puntos.', img: CAP.compartir },
-  { t: 'Tu perfil', d: 'Tus Puntos, tus amigos, tu meta diaria y tus insignias.', img: CAP.perfil },
-] as const;
-
-// Comunidad: tres grupos de funciones, cada uno con dos pantallas reales.
+// Comunidad: cuatro funciones, cada una con su pantalla real.
 export const COMUNIDAD = [
   {
-    id: 'compite',
-    tab: 'Compite',
-    t: 'Ranking y desafíos',
-    d: 'Mira tu puesto en todo Camina y entre amigos, y súmate a metas que dan Puntos extra.',
-    items: [
-      ['Ranking semanal', 'Global o entre amigos. Se reinicia cada lunes.'],
-      ['Desafíos Camina', 'Metas extra, como invitar amigos o cumplir tu meta varios días seguidos.'],
-    ],
-    imgs: [CAP.ranking, CAP.retos],
+    id: 'ranking',
+    tab: 'Ranking',
+    t: 'Mira dónde estás.',
+    d: 'Tu puesto en todo Camina y entre tus amigos. El ranking se reinicia cada lunes: siempre hay revancha.',
+    img: CAP.ranking,
+    alt: 'Ranking semanal de Camina',
   },
   {
-    id: 'constancia',
-    tab: 'No aflojes',
-    t: 'Rachas e insignias',
-    d: 'Cada día cuenta. Tu racha crece y tus locales favoritos quedan en tu perfil.',
-    items: [
-      ['Racha', 'Cada día seguido con 5.000 pasos o más suma a tu racha.'],
-      ['Insignias', 'Visitante, Habitual y Fan en cada local. Eliges hasta 5 para tu perfil.'],
-    ],
-    imgs: [CAP.rachas, CAP.insignias],
+    id: 'grupos',
+    tab: 'Grupos',
+    t: 'Camina con tu gente.',
+    d: 'Arma un grupo con amigos, familia o compañeros. Tienen meta de la semana, podio y chat.',
+    img: CAP.grupo,
+    alt: 'Grupo de Camina con podio y meta de la semana',
   },
   {
-    id: 'juntos',
-    tab: 'Juntos',
-    t: 'Grupos y eventos',
-    d: 'Cuando tu grupo te espera, es más fácil salir a caminar.',
-    items: [
-      ['Grupos', 'Con amigos, familia o compañeros: meta de la semana, ranking y chat.'],
-      ['Eventos', 'Caminatas y experiencias con marcas y comercios de tu ciudad.'],
-    ],
-    imgs: [CAP.grupo, CAP.eventos],
+    id: 'rachas',
+    tab: 'Rachas',
+    t: 'No cortes la racha.',
+    d: 'Cada día seguido con 5.000 pasos o más suma a tu racha, y tus Retos Camina te dan Puntos extra.',
+    img: CAP.rachas,
+    alt: 'Pantalla de rachas en Camina',
+  },
+  {
+    id: 'insignias',
+    tab: 'Insignias',
+    t: 'Tus locales favoritos, en tu perfil.',
+    d: 'Cada canje te sube de nivel en ese local: Visitante, Habitual y Fan. Eliges hasta 5 insignias para mostrar.',
+    img: '/web/app/insignias-app.jpg',
+    alt: 'Pantalla Mis insignias de Camina',
   },
 ] as const;
 

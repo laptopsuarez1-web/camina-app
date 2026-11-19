@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { COMUNIDAD } from './data';
 
-// Comunidad agrupada en tres pestañas (no un catálogo): cada una con dos pantallas reales en profundidad.
+// Comunidad: cuatro funciones en pestañas, cada una con su pantalla real a buen tamaño.
 export default function Comunidad() {
   const [act, setAct] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -19,7 +19,7 @@ export default function Comunidad() {
   };
 
   return (
-    <div className="hm-com">
+    <div className="hm-com" style={{ ['--k' as string]: act }}>
       <div className="hm-tabs" role="tablist" aria-label="Comunidad" onKeyDown={onKey}>
         {COMUNIDAD.map((g, i) => (
           <button
@@ -38,39 +38,20 @@ export default function Comunidad() {
             {g.tab}
           </button>
         ))}
-        <span className="hm-tabs-pill" style={{ ['--k' as string]: act }} aria-hidden="true" />
+        <span className="hm-tabs-pill" aria-hidden="true" />
       </div>
 
       <div className="hm-com-stage">
         {COMUNIDAD.map((g, i) => (
-          <div
-            key={g.id}
-            role="tabpanel"
-            id={`panel-${g.id}`}
-            aria-labelledby={`tab-${g.id}`}
-            className={`hm-com-panel${act === i ? ' is-on' : ''}`}
-            hidden={act !== i}
-          >
+          <div key={g.id} role="tabpanel" id={`panel-${g.id}`} aria-labelledby={`tab-${g.id}`} className={`hm-com-panel${act === i ? ' is-on' : ''}`} hidden={act !== i}>
             <div className="hm-com-copy">
               <h3>{g.t}</h3>
               <p>{g.d}</p>
-              <dl>
-                {g.items.map(([t, d]) => (
-                  <div key={t}>
-                    <dt>{t}</dt>
-                    <dd>{d}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
-            <div className="hm-com-phones">
-              {g.imgs.map((src, k) => (
-                <div className={`hm-phone hm-com-ph hm-com-ph-${k}`} key={src}>
-                  <div className="hm-phone-screen">
-                    <Image src={src} alt={`Pantalla de Camina: ${g.items[k][0]}`} width={780} height={1688} sizes="(max-width: 760px) 46vw, 300px" />
-                  </div>
-                </div>
-              ))}
+            <div className="hm-phone hm-com-phone">
+              <div className="hm-phone-screen">
+                <Image src={g.img} alt={g.alt} width={780} height={1688} sizes="(max-width: 760px) 72vw, 340px" />
+              </div>
             </div>
           </div>
         ))}
