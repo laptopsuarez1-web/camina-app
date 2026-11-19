@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { CONTACTO } from './data';
 
-// Formulario "Avísame cuando salga": solo el correo y, si quiere, la ciudad.
+// Formulario "Avísame cuando salga": la persona elige WhatsApp o correo, deja ese dato y, si quiere, su ciudad.
 // Lo abre cualquier botón con data-avisame. Sin JavaScript, esos botones llevan a la sección de cierre.
 const CIUDADES = ['Tarija', 'Santa Cruz', 'La Paz', 'Cochabamba', 'Otra'];
 type Estado = 'form' | 'enviando' | 'listo' | 'error';
@@ -11,7 +11,8 @@ type Estado = 'form' | 'enviando' | 'listo' | 'error';
 export default function Avisame() {
   const dlg = useRef<HTMLDialogElement>(null);
   const [estado, setEstado] = useState<Estado>('form');
-  const [email, setEmail] = useState('');
+  const [canal, setCanal] = useState<'whatsapp' | 'email'>('whatsapp');
+  const [contacto, setContacto] = useState('');
   const [ciudad, setCiudad] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -32,9 +33,10 @@ export default function Avisame() {
   async function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const correo = String(fd.get('email') || '').trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) {
-      setMsg('Revisa tu correo: parece que le falta algo.');
+    const valor = String(fd.get('contacto') || '').trim();
+    const ok = canal === 'email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(valor) : /^\+?[\d\s\-()]{8,18}$/.test(valor);
+    if (!ok) {
+      setMsg(canal === 'email' ? 'Revisa tu correo: parece que le falta algo.' : 'Revisa tu número: escribe tus 8 cifras, por ejemplo 71234567.');
       return;
     }
     setMsg('');
@@ -43,10 +45,10 @@ export default function Avisame() {
       const r = await fetch('/api/avisame', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: correo, ciudad: ciudad || null, web: fd.get('web') }),
+        body: JSON.stringify({ canal, contacto: valor, ciudad: ciudad || null, web: fd.get('web') }),
       });
       if (!r.ok) throw new Error(String(r.status));
-      setEmail(correo);
+      setContacto(valor);
       setEstado('listo');
     } catch {
       setEstado('error');
@@ -70,7 +72,7 @@ export default function Avisame() {
             </span>
             <h2 id="hm-avisame-t">Listo, quedaste anotado.</h2>
             <p>
-              Te escribimos a <b>{email}</b> apenas Camina esté en App Store y Google Play.
+              Te avisamos {canal === 'whatsapp' ? 'por WhatsApp al' : 'a'} <b>{contacto}</b> apenas Camina esté en App Store y Google Play.
             </p>
             <button type="button" className="hm-btn" onClick={cerrar}>
               Cerrar
@@ -79,10 +81,35 @@ export default function Avisame() {
         ) : (
           <form onSubmit={enviar} noValidate>
             <h2 id="hm-avisame-t">Te avisamos cuando salga.</h2>
-            <p className="hm-dlg-sub">Un solo correo, el día que Camina esté en tu tienda. Nada más.</p>
-            <label className="hm-field" htmlFor="hm-avisame-email">
-              <span>Tu correo</span>
-              <input id="hm-avisame-email" name="email" type="email" inputMode="email" autoComplete="email" placeholder="nombre@correo.com" required />
+            <p className="hm-dlg-sub">Un solo mensaje, el día que Camina esté en tu tienda. Nada más.</p>
+            <div className="hm-seg" role="radiogroup" aria-label="¿Cómo te avisamos?">
+              {(['whatsapp', 'email'] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={canal === c}
+                  className={canal === c ? 'is-on' : ''}
+                  onClick={() => {
+                    setCanal(c);
+                    setMsg('');
+                  }}
+                >
+                  {c === 'whatsapp' ? 'WhatsApp' : 'Correo'}
+                </button>
+              ))}
+              <span className="hm-seg-pill" style={{ ['--k' as string]: canal === 'whatsapp' ? 0 : 1 }} aria-hidden="true" />
+            </div>
+            <label className="hm-field" htmlFor="hm-avisame-contacto">
+              <span>{canal === 'whatsapp' ? 'Tu número de WhatsApp' : 'Tu correo'}</span>
+              {canal === 'whatsapp' ? (
+                <span className="hm-tel">
+                  <i>+591</i>
+                  <input key="tel" id="hm-avisame-contacto" name="contacto" type="tel" inputMode="tel" autoComplete="tel-national" placeholder="71234567" required />
+                </span>
+              ) : (
+                <input key="mail" id="hm-avisame-contacto" name="contacto" type="email" inputMode="email" autoComplete="email" placeholder="nombre@correo.com" required />
+              )}
             </label>
             <fieldset className="hm-chips">
               <legend>¿Dónde vives? (opcional)</legend>
@@ -97,7 +124,7 @@ export default function Avisame() {
             {msg ? <p className="hm-dlg-err">{msg}</p> : null}
             {estado === 'error' ? (
               <p className="hm-dlg-err" role="alert">
-                No pudimos guardar tu correo. Prueba de nuevo o escríbenos a <b>{CONTACTO.email}</b>.
+                No pudimos guardar tus datos. Prueba de nuevo o escríbenos por WhatsApp al <b>{CONTACTO.whatsappTexto}</b>.
               </p>
             ) : null}
             <button type="submit" className="hm-btn hm-dlg-send" disabled={estado === 'enviando'} data-medir="avisame_enviar">

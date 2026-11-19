@@ -30,7 +30,6 @@ export const LOCALES: Local[] = [
     logo: L('fripaps-logo'),
     portada: L('fripaps-cover'),
     premios: [
-      { nombre: 'Panchito', detalle: 'Gratis', puntos: 38 },
       { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 25 },
     ],
   },
@@ -153,8 +152,8 @@ export const ETAPAS = [
     t: 'Canjéalo en el local.',
     d: 'Eliges el premio, vas al local y escribes su código en la app. El canje se confirma al instante.',
     dato: 'Puedes volver al mismo local cada 14 días',
-    img: CAP.premiosFripaps,
-    alt: 'Premios de Fripap\'s en Camina con el botón Canjear',
+    img: CAP.canjes,
+    alt: 'Pantalla Canjes de Camina con los comercios y sus premios',
   },
 ] as const;
 

@@ -204,9 +204,9 @@
   justify-content: center;
 }
 .hm-btn {
-  --bg: var(--plum);
-  --fg: #fff;
-  --bg-h: var(--plum-hover);
+  --bg: var(--mint);
+  --fg: var(--plum);
+  --bg-h: var(--mint-hover);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -249,7 +249,9 @@
 @media (hover: hover) {
   .hm-btn:hover {
     background: var(--bg-h);
-    box-shadow: 0 10px 24px -12px rgba(32, 10, 82, 0.55);
+    box-shadow:
+      0 0 0 4px rgba(98, 240, 182, 0.25),
+      0 12px 26px -12px rgba(21, 102, 80, 0.6);
   }
   .hm-btn:hover::after {
     opacity: 1;
@@ -274,9 +276,9 @@
 }
 .hm-btn-ghost {
   --bg: transparent;
-  --fg: var(--text);
-  --bg-h: rgba(17, 19, 24, 0.05);
-  border-color: rgba(17, 19, 24, 0.2);
+  --fg: var(--plum);
+  --bg-h: rgba(32, 10, 82, 0.06);
+  border-color: rgba(32, 10, 82, 0.35);
 }
 .hm-dark .hm-btn-ghost {
   --bg: transparent;
@@ -534,10 +536,7 @@
 .hm-nav.is-open::before {
   opacity: 0;
 }
-.hm-nav.is-open .hm-btn {
-  --bg: var(--plum);
-  --fg: #fff;
-}
+
 .hm-menu {
   position: fixed;
   inset: 0;
@@ -718,79 +717,111 @@
 .hm-steps-dots {
   display: none;
 }
-/* Celular: carrusel de tarjetas */
+/* Celular: teléfono y texto fijos que cambian juntos al bajar */
+.hm-steps-m {
+  position: relative;
+}
+.hm-steps-m-stick {
+  position: sticky;
+  top: 64px;
+  height: calc(100svh - 64px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 18px;
+  padding: 8px 0 20px;
+}
+.hm-steps-m-phone {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.hm-steps-m-phone .hm-phone {
+  --w: min(54vw, calc((100svh - 330px) * 780 / 1688));
+}
+.hm-steps-m-txt {
+  position: relative;
+  display: grid;
+  min-height: 168px;
+}
+.hm-steps-m-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.hm-steps-m-bar i {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--soft-2);
+  transition: background-color 0.4s var(--ease);
+}
+.hm-steps-m-bar i.is-on {
+  background: var(--plum);
+}
+.hm-steps-m-item {
+  grid-area: 2 / 1;
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.6s var(--ease);
+  pointer-events: none;
+}
+.hm-steps-m-item.is-on {
+  opacity: 1;
+  transform: none;
+}
+.hm-steps-m-item h3 {
+  font-size: clamp(1.6rem, 7vw, 2.1rem);
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+.hm-steps-m-item p {
+  font-size: 1rem;
+  color: var(--mut);
+}
+.hm-steps-m-item .hm-step-n {
+  margin-bottom: 4px;
+}
+.hm-steps-m-room {
+  margin-top: calc(-100svh + 64px);
+}
+.hm-steps-m-room > div {
+  height: 62svh;
+}
 @media (max-width: 999px) {
+  .hm-steps-device,
   .hm-steps-list {
-    display: flex;
-    gap: 14px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    margin: 0 calc(var(--gut) * -1);
-    padding: 4px var(--gut) 8px;
-    scroll-padding: 0 var(--gut);
-  }
-  .hm-steps-list::-webkit-scrollbar {
     display: none;
   }
-  .hm-step {
-    flex: none;
-    width: min(84vw, 420px);
-    scroll-snap-align: center;
-    background: var(--soft);
-    border-radius: 24px;
-    padding: 28px 24px 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+}
+@media (min-width: 1000px) {
+  .hm-steps-m {
+    display: none;
   }
-  .hm-step h3 {
-    font-size: clamp(1.7rem, 7.4vw, 2.2rem);
-  }
-  .hm-step p {
-    font-size: 1.02rem;
-  }
-  .hm-step-phone {
-    margin-top: 28px;
-    display: flex;
-    justify-content: center;
-    flex: 1;
-    align-items: flex-end;
-  }
-  .hm-step-phone .hm-phone {
-    --w: min(62vw, 250px);
-    margin-bottom: -18%;
-  }
-  .hm-steps-dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 22px;
-  }
-  .hm-steps-dots button {
-    width: 28px;
-    height: 28px;
-    border: 0;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-  }
-  .hm-steps-dots button::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--soft-2);
-    transition:
-      width 0.35s var(--ease),
-      background-color 0.3s;
-  }
-  .hm-steps-dots button[aria-selected='true']::after {
-    width: 24px;
-    background: var(--plum);
-  }
+}
+/* Cambio de pantalla: la nueva sube y la anterior se va hacia arriba */
+.hm-steps-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  transform: translateY(14%) scale(0.96);
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.8s var(--ease);
+}
+.hm-steps-shot.is-past {
+  transform: translateY(-10%) scale(0.96);
+}
+.hm-steps-shot.is-on {
+  opacity: 1;
+  transform: none;
 }
 /* Escritorio: teléfono fijo y etapas que pasan */
 @media (min-width: 1000px) {
@@ -808,26 +839,6 @@
     position: sticky;
     top: calc(50vh - min(368px, 38vh));
     margin: 0 auto;
-  }
-  .hm-steps-shot {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
-    opacity: 0;
-    transform: scale(1.03);
-    filter: blur(4px);
-    transition:
-      opacity 0.5s var(--ease),
-      transform 0.8s var(--ease),
-      filter 0.5s var(--ease);
-  }
-  .hm-steps-shot.is-on {
-    opacity: 1;
-    transform: none;
-    filter: none;
   }
   .hm-steps-list {
     position: relative;
@@ -1777,20 +1788,6 @@ html:has(.hm) {
     transform 0.5s var(--ease),
     box-shadow 0.35s var(--ease);
 }
-/* el piquito del pin del mapa */
-.hm-shop-logo::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 14px;
-  height: 14px;
-  margin-left: -7px;
-  background: #fff;
-  border-radius: 3px;
-  transform: rotate(45deg);
-  z-index: -1;
-}
 .hm-shop-logo img {
   width: 100%;
   height: 100%;
@@ -1844,9 +1841,6 @@ html:not(.hm-js) .hm-shops li {
   width: 64px;
   margin: 0;
   flex: none;
-}
-.hm-shop-head .hm-shop-logo::after {
-  display: none;
 }
 .hm-shop-head h2 {
   font-size: 1.5rem;
@@ -2241,4 +2235,324 @@ html:not(.hm-js) .hm-walk {
 }
 .hm-js .hm-lead[data-reveal].is-in {
   filter: none;
+}
+
+/* --- Franja de acción ---------------------------------------------------- */
+.hm-band {
+  margin-top: clamp(56px, 7vw, 96px);
+  padding: clamp(20px, 3vw, 32px) clamp(20px, 3vw, 36px);
+  border: 0;
+  border-radius: 24px;
+  background: linear-gradient(100deg, var(--mint-soft), #f3f0fb);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+}
+.hm-band p {
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  font-weight: 680;
+  font-stretch: var(--wide);
+  letter-spacing: -0.02em;
+  color: var(--plum);
+  max-width: 26em;
+}
+.hm-dark .hm-band {
+  background: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--line-d);
+}
+.hm-dark .hm-band p {
+  color: #fff;
+}
+.hm-soft .hm-band {
+  background: linear-gradient(100deg, #e1f7ec, #ebe6f7);
+}
+.hm-loyal-cta {
+  margin-top: 24px;
+}
+
+/* --- Listas numeradas que se encienden en orden ---------------------------- */
+.hm-seq {
+  position: relative;
+}
+.hm-seq > li > span {
+  transition:
+    background-color 0.4s var(--ease),
+    color 0.4s,
+    transform 0.5s var(--ease),
+    box-shadow 0.4s;
+}
+.hm-js .hm-seq > li > span {
+  background: var(--soft-2);
+  color: var(--mut);
+  transform: scale(0.85);
+}
+.hm-js .hm-dark .hm-seq > li > span,
+.hm-js .hm-seq.hm-ruta-pasos > li > span {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+.hm-js .hm-seq > li.is-lit > span {
+  background: var(--mint);
+  color: var(--plum);
+  transform: none;
+  box-shadow: 0 0 0 6px rgba(98, 240, 182, 0.2);
+}
+.hm-js .hm-seq > li {
+  opacity: 0.4;
+  transition: opacity 0.5s var(--ease);
+}
+.hm-js .hm-seq > li.is-lit {
+  opacity: 1;
+}
+.hm-canje li > span {
+  background: var(--mint);
+  color: var(--plum);
+}
+
+/* --- Comercios: título de la cuadrícula ------------------------------------- */
+.hm-shops-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 24px;
+  margin: clamp(64px, 8vw, 104px) 0 20px;
+}
+.hm-shops-head h3 {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.hm-shops-head p {
+  color: var(--mut);
+}
+
+/* --- Carrusel de premios en 3D --------------------------------------------- */
+.hm-carr {
+  position: relative;
+  margin: 0 calc(var(--gut) * -1);
+}
+.hm-carr-track {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 24px calc(50% - min(150px, 36vw)) 40px;
+  perspective: 1200px;
+}
+.hm-carr-track::-webkit-scrollbar {
+  display: none;
+}
+.hm-carr-card {
+  --d: 0;
+  --ad: 0;
+  flex: none;
+  width: min(300px, 72vw);
+  scroll-snap-align: center;
+  border-radius: 26px;
+  background: #342f3d; /* tarjeta de premio de la app */
+  color: #fff;
+  overflow: hidden;
+  transform: translateX(calc(var(--d) * -14%)) rotateY(calc(var(--d) * -34deg)) scale(calc(1 - var(--ad) * 0.12));
+  opacity: calc(1 - var(--ad) * 0.35);
+  z-index: calc(10 - round(var(--ad) * 4));
+  box-shadow: 0 30px 50px -28px rgba(17, 19, 24, 0.6);
+  transition: box-shadow 0.3s;
+  will-change: transform;
+}
+.hm-carr-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #1c1230;
+}
+.hm-carr-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hm-carr-cover-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--plum), #3c2a6e);
+}
+.hm-carr-logo {
+  position: absolute;
+  left: 16px;
+  bottom: -26px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px #342f3d;
+}
+.hm-carr-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hm-carr-body {
+  display: grid;
+  gap: 4px;
+  padding: 36px 18px 20px;
+}
+.hm-carr-body small {
+  color: #b7aed6;
+  font-size: 0.86rem;
+}
+.hm-carr-body > b {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  min-height: 2.5em;
+}
+.hm-carr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.hm-carr-row em {
+  font-style: normal;
+  color: #b7aed6;
+  font-size: 0.9rem;
+}
+.hm-carr-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.hm-carr-nav button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  color: var(--plum);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.3s var(--ease);
+}
+.hm-carr-nav button:hover {
+  background: var(--mint-soft);
+}
+.hm-carr-nav button:active {
+  transform: scale(0.92);
+}
+
+/* --- La página es una caminata ---------------------------------------------- */
+.hm-main {
+  position: relative;
+}
+.hm-pagewalk {
+  --y: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: max(18px, calc((100vw - var(--max)) / 2 - 64px));
+  width: 0;
+  z-index: 3;
+  pointer-events: none;
+  color: #3c7867;
+}
+.hm-pagewalk .hm-foot {
+  position: absolute;
+  left: var(--x);
+  width: 12px;
+  height: 24px;
+  margin-left: -6px;
+  opacity: calc(clamp(0, var(--y) - var(--i), 1) * 0.55);
+  transform: scale(calc(0.6 + clamp(0, var(--y) - var(--i), 1) * 0.4));
+  transition:
+    opacity 0.35s,
+    transform 0.45s var(--ease);
+}
+.hm-dark .hm-pagewalk .hm-foot {
+  color: var(--mint);
+}
+@media (max-width: 1399px) {
+  .hm-pagewalk {
+    left: auto;
+    right: 5px;
+  }
+  .hm-pagewalk .hm-foot {
+    width: 8px;
+    height: 16px;
+  }
+}
+html:not(.hm-js) .hm-pagewalk {
+  display: none;
+}
+
+/* --- Formulario: elegir WhatsApp o correo ---------------------------------- */
+.hm-seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--soft);
+  margin-bottom: 18px;
+}
+.hm-seg button {
+  position: relative;
+  z-index: 1;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 640;
+  color: var(--mut);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.25s;
+}
+.hm-seg button.is-on {
+  color: var(--plum);
+}
+.hm-seg-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: var(--mint);
+  transform: translateX(calc(var(--k) * 100%));
+  transition: transform 0.45s var(--ease);
+}
+.hm-tel {
+  display: flex;
+  align-items: stretch;
+  border-radius: 14px;
+  border: 1.5px solid rgba(17, 19, 24, 0.18);
+  overflow: hidden;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.hm-tel:focus-within {
+  border-color: var(--plum);
+  box-shadow: 0 0 0 4px rgba(32, 10, 82, 0.12);
+}
+.hm-tel i {
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  font-style: normal;
+  font-weight: 600;
+  background: var(--soft);
+  color: var(--mut);
+}
+.hm-tel input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0;
 }

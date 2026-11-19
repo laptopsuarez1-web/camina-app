@@ -32,6 +32,20 @@ export default function HomeMotion() {
     reveal.forEach((el) => ioReveal.observe(el));
     cleanups.push(() => ioReveal.disconnect());
 
+    // Listas numeradas: cada paso se enciende en orden al aparecer.
+    const ioSeq = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => {
+          if (!e.isIntersecting) return;
+          ioSeq.unobserve(e.target);
+          Array.from(e.target.children).forEach((li, i) => setTimeout(() => li.classList.add('is-lit'), reduce ? 0 : i * 260));
+          e.target.classList.add('is-lit');
+        }),
+      { threshold: 0.35 },
+    );
+    root.querySelectorAll('[data-seq]').forEach((el) => ioSeq.observe(el));
+    cleanups.push(() => ioSeq.disconnect());
+
     // 2) Números que cuentan hasta su valor.
     const fmt = (n: number) => n.toLocaleString('es-BO');
     const ioCount = new IntersectionObserver(

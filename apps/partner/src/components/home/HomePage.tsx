@@ -10,8 +10,10 @@ import RouteMap from './RouteMap';
 import Video from './Video';
 import Comercios from './Comercios';
 import Avisame from './Avisame';
+import Carrusel from './Carrusel';
+import PageWalk from './PageWalk';
 import { Phone, Title, Foot, Icon, CtaAvisame, Coin, Walk } from './ui';
-import { CAP, CONTACTO, DUDAS, LOCALES, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA, VID_TARJETA } from './data';
+import { CAP, CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA, VID_TARJETA } from './data';
 
 // Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
 const mona = localFont({
@@ -27,8 +29,16 @@ const mona = localFont({
 const BOOT =
   "(function(){var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('hm-js');setTimeout(function(){if(!r.dataset.hmReady)r.classList.remove('hm-js')},4000)}})()";
 
-const FRIP = LOCALES.find((l) => l.id === 'fripaps')!;
-const PANCHITO = FRIP.premios.find((p) => p.nombre === 'Panchito')!;
+
+// Franja de acción al final de un tramo: una frase y el botón principal.
+function Band({ t, cta, medir }: { t: string; cta: string; medir: string }) {
+  return (
+    <div className="hm-band" data-reveal>
+      <p>{t}</p>
+      <CtaAvisame medir={medir} label={cta} />
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -38,7 +48,8 @@ export default function HomePage() {
         Saltar al contenido
       </a>
       <Nav />
-      <main id="contenido">
+      <main id="contenido" className="hm-main">
+        <PageWalk />
         <Hero />
         <ComoFunciona />
         <Actividad />
@@ -121,6 +132,7 @@ function ComoFunciona() {
           <p className="hm-lead" data-reveal>Cuatro momentos, todos dentro de la app. Lo único que pones tú son los pasos.</p>
         </header>
         <Steps />
+        <Band t="Tus pasos de hoy ya podrían estar sumando." cta="Quiero empezar" medir="funciona_avisame" />
       </div>
     </section>
   );
@@ -204,31 +216,22 @@ function Premios() {
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
           <Title text="Premios reales,|en tu ciudad." />
-          <p className="hm-lead" data-reveal>Los comercios de Tarija ya están en Camina. Toca uno para ver qué premios ofrece y cuántos Puntos cuestan.</p>
+          <p className="hm-lead" data-reveal>Descuentos y premios gratis en comercios de Tarija. Cada local elige qué ofrece y cuántos Puntos cuesta.</p>
         </header>
 
+        <Carrusel />
+
+        <div className="hm-shops-head" data-reveal>
+          <h3>Comercios que ya están en Camina</h3>
+          <p>Toca uno para ver sus premios.</p>
+        </div>
         <Comercios />
 
-        <article className="hm-spot">
-          <div className="hm-spot-copy" data-reveal>
-            <span className="hm-spot-local">
-              <Image src={FRIP.logo} alt="" width={40} height={40} />
-              {FRIP.nombre}
-            </span>
-            <h3>
-              {PANCHITO.nombre} {PANCHITO.detalle?.toLowerCase()} por <span className="hm-spot-pts"><Coin size={30} /> {PANCHITO.puntos}</span> Puntos.
-            </h3>
-            <p>Así se ve un local en la app: sus fotos, su horario, cómo llegar a pie y los premios que puedes canjear hoy.</p>
-          </div>
-          <div className="hm-spot-phone" data-reveal>
-            <Phone src={CAP.fichaLocal} alt="Ficha de Fripap's en Camina" sizes="(max-width: 760px) 66vw, 300px" />
-          </div>
-        </article>
 
         <div className="hm-canje">
           <div className="hm-canje-copy">
             <h3>Así se canjea</h3>
-            <ol>
+            <ol className="hm-seq" data-seq>
               {canje.map(([t, d], i) => (
                 <li key={t} data-reveal>
                   <span>{i + 1}</span>
@@ -242,7 +245,7 @@ function Premios() {
             <p className="hm-note">Puedes volver a canjear en el mismo local cada 14 días.</p>
           </div>
           <div className="hm-canje-phone" data-reveal>
-            <Phone src={CAP.canjes} alt="Pantalla Canjes de Camina con los comercios y sus premios" sizes="(max-width: 760px) 66vw, 300px" />
+            <Phone src={CAP.calificar} alt="Pantalla de Camina después de un canje, que invita a calificar el local" sizes="(max-width: 760px) 66vw, 300px" />
           </div>
         </div>
 
@@ -259,6 +262,7 @@ function Premios() {
               tienes 30 días para canjearlo en el local.
             </p>
             <p className="hm-note">Grabación de la app real.</p>
+            <CtaAvisame medir="premios_avisame" label="Quiero mis premios" className="hm-loyal-cta" />
           </div>
         </div>
       </div>
@@ -277,6 +281,7 @@ function ComunidadSec() {
           <p className="hm-lead" data-reveal>Rankings, grupos, rachas e insignias: razones para salir a caminar también mañana.</p>
         </header>
         <Comunidad />
+        <Band t="Arma tu grupo el día que salga la app." cta="Avísame cuando salga" medir="comunidad_avisame" />
         <p className="hm-note">Pantallas de la app con personas de ejemplo.</p>
       </div>
     </section>
@@ -300,7 +305,7 @@ function Ruta() {
         <div className="hm-ruta">
           <div className="hm-ruta-main" data-reveal>
             <RouteMap />
-            <ol className="hm-ruta-pasos">
+            <ol className="hm-ruta-pasos hm-seq" data-seq>
               {pasos.map(([t, d], i) => (
                 <li key={t}>
                   <span>{i + 1}</span>
@@ -336,6 +341,7 @@ function Ruta() {
           </ul>
           <p className="hm-note">Sorteo del mes: premio por anunciar.</p>
         </div>
+        <Band t="La próxima Ruta puede ser la tuya." cta="Quiero hacer la Ruta" medir="ruta_avisame" />
       </div>
     </section>
   );
