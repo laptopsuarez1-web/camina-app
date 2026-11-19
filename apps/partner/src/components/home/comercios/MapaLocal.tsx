@@ -4,16 +4,19 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { CAMINOS } from './caminos';
 
-// Héroe de /comercios: el mapa real de la app y huellas de Camina que caminan por las calles hasta "Tu local".
-// Cada vez que unas huellas llegan, el pin se ilumina. Es una ilustración del uso (no son datos reales).
+// Héroe de /comercios: el mapa de Canjes de la app (con los locales que ya están en Camina) y huellas de Camina que
+// caminan por las calles hasta esos locales y hasta "Tu local". Cuando unas huellas llegan a "Tu local", el pin se
+// ilumina. Es una ilustración del uso (no son datos reales).
 // Con "reducir movimiento" se ven unas huellas quietas en cada camino.
 
-// Punta del pin de "Tu local" (va donde estaba un pin de la captura, que queda tapado).
-const PIN = [496, 548] as const;
-const PASO = 34; // distancia entre huellas, en unidades del mapa (1180 × 860)
-const LADO = 9; // separación entre pie izquierdo y derecho
-const CADENCIA = 340; // ms entre un paso y el siguiente
-const COLA = 6; // huellas visibles detrás de la última
+// Punta del pin de "Tu local", en una calle libre del mapa.
+const PIN = [505, 338] as const;
+const W = 780;
+const H = 775;
+const PASO = 22; // distancia entre huellas, en unidades del mapa (780 × 775)
+const LADO = 5.5; // separación entre pie izquierdo y derecho
+const CADENCIA = 300; // ms entre un paso y el siguiente
+const COLA = 7; // huellas visibles detrás de la última
 
 type Huella = { x: number; y: number; ang: number; der: boolean };
 
@@ -60,7 +63,8 @@ export default function MapaLocal() {
       pies.current[r].forEach((img, i) => {
         if (!img) return;
         const edad = cab - i;
-        img.style.opacity = edad < 0 || edad > COLA ? '0' : String(1 - edad / (COLA + 1));
+        img.style.opacity = edad < 0 || edad > COLA ? '0' : String(Math.pow(1 - edad / (COLA + 1), 1.4));
+        img.classList.toggle('is-new', edad === 0);
       });
     };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -81,7 +85,7 @@ export default function MapaLocal() {
         if (t < 0) return;
         const cab = t % largo[r];
         pinta(r, cab);
-        if (cab === h.length - 1) setLlegada((x) => x + 1);
+        if (cab === h.length - 1 && CAMINOS[r].to === 'tulocal') setLlegada((x) => x + 1);
       });
     }, CADENCIA);
     const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
@@ -94,18 +98,18 @@ export default function MapaLocal() {
 
   return (
     <div className="cx-map" ref={root} aria-hidden="true">
-      <Image src="/web/app/hero-mapa.webp" alt="" width={1180} height={860} sizes="(max-width: 1100px) 100vw, 64vw" preload />
-      <svg viewBox="0 0 1180 860" className="cx-map-svg">
+      <Image src="/web/app/mapa-canjes.webp" alt="" width={1170} height={1163} sizes="(max-width: 1100px) 100vw, 52vw" preload />
+      <svg viewBox={`0 0 ${W} ${H}`} className="cx-map-svg">
         {RUTAS.map((h, r) =>
           h.map((p, i) => (
             <image
               key={`${r}-${i}`}
               ref={(e) => void (pies.current[r][i] = e)}
               href={p.der ? '/web/pie-R-mint.png' : '/web/pie-L-mint.png'}
-              x={-8}
-              y={-16}
-              width={16}
-              height={32}
+              x={-5.5}
+              y={-11}
+              width={11}
+              height={22}
               transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.ang.toFixed(0)})`}
               className="cx-map-pie"
               style={{ opacity: 0 }}
@@ -113,7 +117,7 @@ export default function MapaLocal() {
           )),
         )}
       </svg>
-      <div className="cx-map-pin" style={{ left: `${(PIN[0] / 1180) * 100}%`, top: `${(PIN[1] / 860) * 100}%` }}>
+      <div className="cx-map-pin" style={{ left: `${(PIN[0] / W) * 100}%`, top: `${(PIN[1] / H) * 100}%` }}>
         <b className="cx-map-pin-label">Tu local</b>
         {llegada > 0 ? <i key={llegada} className="cx-map-ring" /> : null}
         <span className={`cx-map-pin-box${llegada > 0 ? ' is-hit' : ''}`} key={`b${llegada}`}>

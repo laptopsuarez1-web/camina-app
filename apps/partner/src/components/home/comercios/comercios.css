@@ -800,3 +800,116 @@
     display: inline-flex;
   }
 }
+
+/* Mapa de Canjes (casi cuadrado): pin de "Tu local" del tamaño de los pines de la app */
+.cx-hero-map {
+  right: max(-2vw, calc((100vw - 1440px) / 2));
+  width: min(780px, 54vw);
+  translate: 0 -48%;
+  -webkit-mask-image: radial-gradient(64% 62% at 52% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(64% 62% at 52% 50%, #000 62%, transparent 100%);
+}
+.cx-map-pin-box {
+  width: 10.8cqw;
+  border-radius: 2.4cqw;
+  border-width: 0.55cqw;
+  box-shadow:
+    0 0 0 1cqw rgba(98, 240, 182, 0.16),
+    0 0 5cqw rgba(98, 240, 182, 0.5);
+}
+.cx-map-pin-box svg {
+  width: 5.4cqw;
+  height: 5.4cqw;
+}
+.cx-map-pin-box::after {
+  bottom: -1.6cqw;
+  width: 2.2cqw;
+  height: 2.2cqw;
+}
+.cx-map-pin-label {
+  top: -1.4cqw;
+  right: -5.6cqw;
+  font-size: clamp(0.66rem, 1.7cqw, 0.9rem);
+}
+.cx-map-ring {
+  bottom: -1.8cqw;
+  width: 6cqw;
+}
+/* Huellas: sin filtro (son muchas), con un pequeño “pisotón” al aparecer */
+.cx-map-pie {
+  filter: none;
+  transition: opacity 0.45s ease;
+}
+.cx-map-pie.is-new {
+  transition: opacity 0.12s ease;
+}
+@media (max-width: 1099px) {
+  .cx-hero-map {
+    right: auto;
+    width: 112%;
+    margin: 0 -6% -4%;
+    translate: none;
+  }
+}
+
+/* Beneficios compactos: los 6 a la vista sin ocupar una pantalla entera */
+.cx-bens-sec {
+  padding-block: clamp(64px, 8vw, 112px);
+}
+.cx-bens-wrap {
+  display: grid;
+  gap: 32px;
+}
+@media (min-width: 1100px) {
+  .cx-bens-wrap {
+    grid-template-columns: 0.62fr 1.38fr;
+    gap: 64px;
+    align-items: start;
+  }
+}
+.cx-bens-wrap header .hm-lead {
+  margin-top: 16px;
+}
+#beneficios .cx-bens {
+  gap: 0 32px;
+}
+@media (min-width: 700px) {
+  #beneficios .cx-bens {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+#beneficios .cx-bens li,
+#beneficios .cx-bens li:hover {
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 2px;
+  padding: 18px 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: inset 0 -1px 0 var(--line);
+  transform: none;
+}
+#beneficios .cx-ben-ico {
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  margin: 2px 0 0;
+  border-radius: 12px;
+}
+#beneficios .cx-ben-ico svg {
+  width: 21px;
+  height: 21px;
+}
+#beneficios .cx-bens b {
+  font-size: 1.04rem;
+}
+#beneficios .cx-bens p {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+@media (min-width: 1100px) {
+  .cx-hero-map {
+    -webkit-mask-image: radial-gradient(54% 58% at 55% 50%, #000 56%, transparent 100%);
+    mask-image: radial-gradient(54% 58% at 55% 50%, #000 56%, transparent 100%);
+  }
+}

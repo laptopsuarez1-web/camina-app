@@ -169,9 +169,9 @@ function Hero() {
 // 2. Lo que gana tu local.
 function Beneficios() {
   return (
-    <section className="hm-sec" id="beneficios" data-theme="light">
-      <div className="hm-wrap">
-        <header className="hm-head">
+    <section className="hm-sec cx-bens-sec" id="beneficios" data-theme="light">
+      <div className="hm-wrap cx-bens-wrap">
+        <header>
           <Title text="Lo que gana|tu local." />
           <p className="hm-lead" data-reveal>
             Lo que Camina le suma a tu negocio.
