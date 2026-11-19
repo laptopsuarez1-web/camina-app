@@ -12,8 +12,9 @@ import Comercios from './Comercios';
 import Avisame from './Avisame';
 import Carrusel from './Carrusel';
 import HeroPhone from './HeroPhone';
+import ActividadCard from './ActividadCard';
 import { Phone, Title, Icon, CtaAvisame, Coin } from './ui';
-import { CAP, CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA } from './data';
+import { CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA } from './data';
 
 // Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
 const mona = localFont({
@@ -161,8 +162,8 @@ function Actividad() {
             </li>
           </ul>
         </div>
-        <div className="hm-act-phone" data-reveal>
-          <Phone src={CAP.rachas} alt="Pantalla de Actividad con la racha y la meta diaria" sizes="(max-width: 1000px) 60vw, 300px" />
+        <div className="hm-act-card" data-reveal>
+          <ActividadCard />
         </div>
       </div>
     </section>
@@ -338,7 +339,9 @@ function Cierre() {
   return (
     <section className="hm-sec hm-dark hm-final" id="descargar" data-theme="dark">
       <div className="hm-wrap hm-final-in">
-        <Image className="hm-final-icon" src="/marca/logo-solo-transparente.png" alt="" width={88} height={88} />
+        <div className="hm-final-baifo" data-reveal>
+          <Image src="/web/baifo/camina.webp" alt="Baifo, la cabrita de Camina, caminando" width={284} height={420} sizes="150px" />
+        </div>
         <Title text="Tu próximo paso|ya puede sumar." className="hm-final-title" />
         <p className="hm-lead" data-reveal>Camina es gratis para iPhone y Android. Déjanos tu WhatsApp o tu correo y te avisamos apenas esté en tu tienda.</p>
         <div className="hm-cta hm-cta-center">

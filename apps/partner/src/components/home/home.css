@@ -3051,18 +3051,18 @@ html:not(.hm-js) .hm-pagewalk {
 /* Héroe con una sola pantalla: el aro se llena una vez y el teléfono flota suave */
 .hm-js .hm-heroph-ring-fg {
   animation: hm-ring-once 2.4s cubic-bezier(0.3, 0, 0.1, 1) 0.4s both;
-  stroke-dashoffset: 18;
+  stroke-dashoffset: 9;
 }
 @keyframes hm-ring-once {
   from {
     stroke-dashoffset: 100;
   }
   to {
-    stroke-dashoffset: 18;
+    stroke-dashoffset: 9;
   }
 }
 .hm-heroph-ring-fg {
-  stroke-dashoffset: 18;
+  stroke-dashoffset: 9;
 }
 .hm-js .hm-heroph .hm-phone {
   animation:
@@ -3103,78 +3103,6 @@ html:not(.hm-js) .hm-pagewalk {
     opacity: 0.6;
   }
 }
-/* Puntos que suben desde el aro */
-.hm-heroph-pts {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-.hm-heroph-pts span {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px 4px 4px;
-  border-radius: 999px;
-  background: #3c7867;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.7);
-  opacity: 0;
-}
-.hm-heroph-pts span:nth-child(1) {
-  left: -4%;
-  top: 44%;
-}
-.hm-heroph-pts span:nth-child(2) {
-  right: -6%;
-  top: 30%;
-}
-.hm-heroph-pts span:nth-child(3) {
-  left: 2%;
-  top: 66%;
-}
-.hm-js .hm-heroph-pts span {
-  animation: hm-pt 4.5s var(--ease) infinite;
-  animation-delay: calc(2.6s + var(--k) * 1.5s);
-}
-@keyframes hm-pt {
-  0% {
-    opacity: 0;
-    transform: translateY(16px) scale(0.85);
-  }
-  12% {
-    opacity: 1;
-    transform: none;
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(-26px);
-  }
-  80%,
-  100% {
-    opacity: 0;
-    transform: translateY(-46px);
-  }
-}
-html:not(.hm-js) .hm-heroph-pts {
-  display: none;
-}
-@media (max-width: 999px) {
-  .hm-heroph-pts span {
-    font-size: 0.74rem;
-  }
-  .hm-heroph-pts span:nth-child(1) {
-    left: 0;
-  }
-  .hm-heroph-pts span:nth-child(2) {
-    right: 0;
-  }
-}
-
 /* El conversor no cambia de alto mientras cuenta: siempre en una sola fila (antes saltaba ~80px en el celular) */
 .hm-conv {
   flex-wrap: nowrap;
@@ -3194,5 +3122,426 @@ html:not(.hm-js) .hm-heroph-pts {
   }
   .hm-conv-arrow {
     min-width: 24px;
+  }
+}
+
+/* ==========================================================================
+   Inicio en vivo: los pasos suben y cada 1.000 se suma 1 Punto
+   ========================================================================== */
+.hm-js .hm-heroph-ring-fg.is-live {
+  animation: none;
+  transition: stroke-dashoffset 0.12s linear;
+}
+.hm-live {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  aspect-ratio: 780 / 1688;
+  translate: -50% 0;
+  container-type: inline-size;
+  pointer-events: none;
+  color: #fff;
+  text-align: center;
+}
+.hm-live > * {
+  position: absolute;
+  left: 50%;
+  translate: -50% -50%;
+  white-space: nowrap;
+}
+.hm-live-n {
+  top: 23.3%;
+  font-size: 11.4cqw;
+  font-weight: 720;
+  font-stretch: 100%;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hm-live-l {
+  top: 27.75%;
+  font-size: 3.1cqw;
+  color: #cdbfe6;
+}
+.hm-live-chip {
+  top: 30.75%;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2cqw;
+  height: 6.4cqw;
+  padding: 0 2.8cqw 0 1cqw;
+  border-radius: 99px;
+  background: rgba(98, 240, 182, 0.14);
+  color: #5ce6be;
+  font-size: 3.3cqw;
+  font-weight: 700;
+}
+.hm-live-chip .hm-coin {
+  width: 4.4cqw;
+  height: 4.4cqw;
+}
+.hm-live-chip.is-pop {
+  animation: hm-chip-pop 0.6s var(--ease);
+}
+@keyframes hm-chip-pop {
+  0% {
+    scale: 1;
+  }
+  35% {
+    scale: 1.22;
+    background: rgba(98, 240, 182, 0.4);
+    color: #fff;
+  }
+  100% {
+    scale: 1;
+  }
+}
+/* "+1 Punto" que sale del teléfono al cruzar cada 1.000 pasos */
+.hm-heroph-pt {
+  position: absolute;
+  z-index: 3;
+  right: 4%;
+  top: 22%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px 5px 5px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: #12281f;
+  font-weight: 760;
+  font-size: 1rem;
+  white-space: nowrap;
+  box-shadow: 0 0 0 8px rgba(98, 240, 182, 0.14), 0 18px 40px -14px rgba(98, 240, 182, 0.7);
+  animation: hm-pt-out 2.4s var(--ease) both;
+  pointer-events: none;
+}
+@keyframes hm-pt-out {
+  0% {
+    opacity: 0;
+    transform: translate(-60px, 40px) scale(0.6);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.08);
+  }
+  24% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-34px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+}
+@media (max-width: 999px) {
+  .hm-heroph-pt {
+    right: 0;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==========================================================================
+   Actividad de la app, en vivo: barras de 7 días y curva de 30 días
+   ========================================================================== */
+.hm-act-card {
+  display: flex;
+  justify-content: center;
+}
+.hm-ac {
+  --gut: 30px;
+  width: 100%;
+  max-width: 460px;
+  padding: 22px 22px 18px;
+  border-radius: 26px;
+  background: linear-gradient(150deg, #2f1e5c 10%, #241748 90%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 50px 100px -40px rgba(32, 10, 82, 0.9),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  color: #fff;
+}
+.hm-ac-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 92px;
+}
+.hm-ac-total {
+  display: grid;
+  min-width: 0;
+}
+.hm-ac-total small {
+  font-size: 0.78rem;
+  color: #c4b8e8;
+}
+.hm-ac-total b {
+  font-size: clamp(2.1rem, 3.6vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.hm-ac-trend {
+  white-space: nowrap;
+}
+.hm-ac-seg {
+  display: flex;
+  flex: none;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.hm-ac-seg button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 700 0.76rem/1.2 var(--font-jakarta), sans-serif;
+  color: #c4b8e8;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.hm-ac-seg button.is-on {
+  background: var(--mint);
+  color: #12281f;
+}
+.hm-ac-chart {
+  position: relative;
+  margin-top: 26px;
+  padding-left: var(--gut);
+  height: calc(var(--H) + 28px);
+}
+/* Línea punteada de la meta con la llama de la racha */
+.hm-ac-goal {
+  position: absolute;
+  z-index: 2;
+  left: 22px;
+  right: 0;
+  height: 0;
+  border-top: 1.5px dashed var(--mint);
+  pointer-events: none;
+  transition: top 0.5s var(--ease);
+}
+.hm-ac-flame {
+  position: absolute;
+  left: -22px;
+  top: -13px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #12281f;
+}
+.hm-ac-bars {
+  display: flex;
+  gap: 8px;
+  height: calc(var(--H) + 28px);
+}
+.hm-ac-bar {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  padding-bottom: 28px;
+  cursor: pointer;
+}
+.hm-ac-bar i {
+  display: block;
+  width: 100%;
+  height: max(4px, var(--h));
+  border-radius: 11px 11px 3px 3px;
+  background: linear-gradient(rgba(79, 195, 168, 0.5), rgba(79, 195, 168, 0.22));
+  transform-origin: bottom;
+  transition: box-shadow 0.25s;
+}
+.hm-ac-bar.is-hit i {
+  background: linear-gradient(#6fe0bf, #3fae95);
+}
+.hm-ac-bar.is-today i {
+  background: linear-gradient(#a4f7db, var(--mint));
+  box-shadow: 0 0 16px rgba(98, 240, 182, 0.55);
+}
+.hm-ac-bar.is-sel i {
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.hm-ac-bar.is-today.is-sel i {
+  box-shadow:
+    inset 0 0 0 2px #fff,
+    0 0 16px rgba(98, 240, 182, 0.55);
+}
+.hm-ac-bar em {
+  margin-bottom: 4px;
+  font-style: normal;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hm-ac-bar span {
+  position: absolute;
+  bottom: 4px;
+  font-size: 0.74rem;
+  color: #c4b8e8;
+}
+.hm-ac-bar.is-today span,
+.hm-ac-bar.is-sel span {
+  color: #fff;
+  font-weight: 800;
+}
+.hm-js .hm-ac:not(.is-seen) .hm-ac-bar i {
+  transform: scaleY(0);
+}
+.hm-js .hm-ac.is-seen .hm-ac-bar i {
+  animation: hm-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1.15) both;
+  animation-delay: calc(0.15s + var(--i) * 0.07s);
+}
+@keyframes hm-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+/* Curva de 30 días */
+.hm-ac-curve {
+  position: relative;
+  height: var(--H);
+}
+.hm-ac-curve svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.hm-js .hm-ac-reveal {
+  animation: hm-reveal-x 1.1s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes hm-reveal-x {
+  from {
+    width: 0;
+  }
+}
+.hm-ac-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 0 3px #2a1a55;
+  pointer-events: none;
+}
+.hm-ac-dot.is-big {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+}
+.hm-js .hm-ac-curve .hm-ac-dot:not(.is-big) {
+  animation: hm-fade 0.3s 1s both;
+}
+@keyframes hm-fade {
+  from {
+    opacity: 0;
+    scale: 0;
+  }
+}
+.hm-ac-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: #c4b8e8;
+}
+.hm-ac-axis b {
+  color: #fff;
+}
+/* Franja del día */
+.hm-ac-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.hm-ac-strip > div {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.hm-ac-strip small {
+  font-size: 0.74rem;
+  color: #c4b8e8;
+}
+.hm-ac-strip b {
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.hm-ac-strip > span {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(242, 152, 92, 0.16);
+  color: #ffb27a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hm-ac-strip > span.is-met {
+  background: rgba(98, 240, 182, 0.15);
+  color: var(--mint);
+}
+@media (max-width: 420px) {
+  .hm-ac {
+    padding: 18px 16px 14px;
+  }
+  .hm-ac-seg button {
+    padding: 6px 9px;
+  }
+}
+/* La app usa Plus Jakarta Sans: el número del Inicio en vivo también */
+.hm-live {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+.hm-live-n {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hm-ac-trend {
+  display: block;
+}
+/* Baifo, la cabrita de Camina, camina en el cierre (como en la app: flota despacio, sin giros) */
+.hm-final-baifo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.hm-final-baifo img {
+  width: auto;
+  height: clamp(130px, 16vw, 180px);
+  transform-origin: bottom;
+  filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.45));
+}
+.hm-js .hm-final-baifo img {
+  animation: hm-baifo 1.8s ease-in-out infinite alternate;
+}
+@keyframes hm-baifo {
+  to {
+    transform: translateY(-5px) scale(1.015);
   }
 }
