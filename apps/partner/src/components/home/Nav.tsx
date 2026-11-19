@@ -64,6 +64,7 @@ export default function Nav() {
           >
             <i aria-hidden="true" />
             <i aria-hidden="true" />
+            <i aria-hidden="true" />
           </button>
         </div>
       </div>

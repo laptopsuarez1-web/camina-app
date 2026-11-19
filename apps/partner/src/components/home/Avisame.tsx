@@ -123,9 +123,18 @@ export default function Avisame() {
             <input className="hm-hp" name="web" tabIndex={-1} autoComplete="off" aria-hidden="true" />
             {msg ? <p className="hm-dlg-err">{msg}</p> : null}
             {estado === 'error' ? (
-              <p className="hm-dlg-err" role="alert">
-                No pudimos guardar tus datos. Prueba de nuevo o escríbenos por WhatsApp al <b>{CONTACTO.whatsappTexto}</b>.
-              </p>
+              <div className="hm-dlg-err" role="alert">
+                <p>No pudimos guardar tus datos. Escríbenos por WhatsApp y te anotamos a mano.</p>
+                <a
+                  className="hm-btn hm-btn-ghost hm-dlg-wa"
+                  href={`${CONTACTO.whatsapp}?text=${encodeURIComponent('Hola! Quiero que me avisen cuando Camina esté disponible.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-medir="avisame_whatsapp"
+                >
+                  Escribir por WhatsApp
+                </a>
+              </div>
             ) : null}
             <button type="submit" className="hm-btn hm-dlg-send" disabled={estado === 'enviando'} data-medir="avisame_enviar">
               {estado === 'enviando' ? 'Guardando…' : 'Avísame'}
