@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ComerciosPage from '@/components/landing/ComerciosPage';
+import ComerciosHome from '@/components/home/comercios/ComerciosHome';
 
 export const metadata: Metadata = {
   title: 'Camina para comercios — Tus próximos clientes ya están caminando',
@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <ComerciosPage />;
+  return <ComerciosHome />;
 }

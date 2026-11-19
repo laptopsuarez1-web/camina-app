@@ -1,9 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import localFont from 'next/font/local';
-import './home.css';
 import Nav from './Nav';
-import HomeMotion from './HomeMotion';
+import Shell from './Shell';
+import Footer from './Footer';
 import Steps from './Steps';
 import Comunidad from './Comunidad';
 import RouteMap from './RouteMap';
@@ -16,29 +15,9 @@ import ActividadCard from './ActividadCard';
 import { Phone, Title, Icon, CtaAvisame, Coin } from './ui';
 import { CONTACTO, DUDAS, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA } from './data';
 
-// Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
-const mona = localFont({
-  src: '../../fonts/MonaSans-Variable.woff2',
-  weight: '200 900',
-  variable: '--hm-sans',
-  display: 'swap',
-  declarations: [{ prop: 'font-stretch', value: '75% 125%' }],
-});
-
-// Marca .hm-js en <html> antes de pintar (solo si se permite movimiento), para que lo que se revela no parpadee.
-// Si el director de movimiento no arranca en 4 s, se quita y todo queda visible.
-const BOOT =
-  "(function(){var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('hm-js');setTimeout(function(){if(!r.dataset.hmReady)r.classList.remove('hm-js')},4000)}})()";
-
-
-
 export default function HomePage() {
   return (
-    <div className={`hm ${mona.variable}`}>
-      <script dangerouslySetInnerHTML={{ __html: BOOT }} />
-      <a className="hm-skip" href="#contenido">
-        Saltar al contenido
-      </a>
+    <Shell>
       <Nav />
       <main id="contenido" className="hm-main">
         <Hero />
@@ -53,8 +32,7 @@ export default function HomePage() {
       </main>
       <Footer />
       <Avisame />
-      <HomeMotion />
-    </div>
+    </Shell>
   );
 }
 
@@ -351,58 +329,5 @@ function Cierre() {
         <Tiendas />
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  const cols: [string, [string, string][]][] = [
-    ['Camina', [['Cómo funciona', '#como-funciona'], ['Premios', '#premios'], ['Comunidad', '#comunidad'], ['Ruta del mes', '#ruta'], ['Preguntas', '#dudas']]],
-    ['Comercios', [['Para comercios', RUTAS.comercios], ['Registrar mi comercio', RUTAS.registro], ['Ingresar al panel', RUTAS.login], ['Guía para comercios', RUTAS.guia]]],
-    ['Legal', [['Términos', RUTAS.terminos], ['Privacidad', RUTAS.privacidad], ['Eliminar mi cuenta', RUTAS.eliminar]]],
-  ];
-  return (
-    <footer className="hm-footer" data-theme="dark">
-      <div className="hm-wrap">
-        <div className="hm-footer-top">
-          <div className="hm-footer-brand">
-            <span className="hm-brand">
-              <Image src="/marca/logo-solo-transparente.png" alt="" width={32} height={32} />
-              <span>CAMINA</span>
-            </span>
-            <p>Caminas, sumas Puntos y canjeas premios en comercios de tu ciudad.</p>
-          </div>
-          {cols.map(([t, links]) => (
-            <nav key={t} aria-label={t}>
-              <h2>{t}</h2>
-              <ul>
-                {links.map(([l, h]) => (
-                  <li key={h}>{h.startsWith('#') ? <a href={h}>{l}</a> : <Link href={h}>{l}</Link>}</li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-          <div>
-            <h2>Contacto</h2>
-            <ul>
-              <li>
-                <a href={CONTACTO.whatsapp}>WhatsApp {CONTACTO.whatsappTexto}</a>
-              </li>
-              <li>
-                <a href={`mailto:${CONTACTO.email}`}>{CONTACTO.email}</a>
-              </li>
-              <li>
-                <a href={CONTACTO.instagram} target="_blank" rel="noopener noreferrer">
-                  Instagram {CONTACTO.instagramTexto}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="hm-footer-bottom">
-          <span>© {new Date().getFullYear()} Camina. Hecha en Tarija, Bolivia.</span>
-          <span>Pronto en App Store y Google Play</span>
-        </div>
-      </div>
-    </footer>
   );
 }

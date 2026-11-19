@@ -2,12 +2,15 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { ETAPAS } from './data';
+import { ETAPAS as ETAPAS_GENTE } from './data';
+
+type Etapa = { n: string; t: string; d: string; dato: string; img: string; alt: string };
 
 // Cómo funciona: un teléfono que te acompaña y cambia de pantalla según la etapa.
 // Escritorio: el teléfono queda fijo a un lado y las etapas pasan al otro.
 // Celular: el teléfono y el texto quedan fijos en pantalla; al bajar cambian juntos (sin carrusel).
-export default function Steps() {
+export default function Steps({ etapas = ETAPAS_GENTE }: { etapas?: readonly Etapa[] }) {
+  const ETAPAS = etapas;
   const [act, setAct] = useState(0);
   const box = useRef<HTMLDivElement>(null);
 
@@ -58,7 +61,7 @@ export default function Steps() {
       window.removeEventListener('resize', on);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [ETAPAS.length]);
 
   const pantallas = (
     <div className="hm-phone">
