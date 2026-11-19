@@ -3174,3 +3174,25 @@ html:not(.hm-js) .hm-heroph-pts {
     right: 0;
   }
 }
+
+/* El conversor no cambia de alto mientras cuenta: siempre en una sola fila (antes saltaba ~80px en el celular) */
+.hm-conv {
+  flex-wrap: nowrap;
+}
+@media (max-width: 599px) {
+  .hm-conv {
+    gap: 14px;
+    padding: 20px;
+  }
+  .hm-conv b {
+    font-size: 1.9rem;
+    gap: 8px;
+  }
+  .hm-conv b .hm-coin {
+    width: 30px;
+    height: 30px;
+  }
+  .hm-conv-arrow {
+    min-width: 24px;
+  }
+}
