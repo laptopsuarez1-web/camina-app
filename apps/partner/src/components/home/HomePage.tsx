@@ -29,15 +29,6 @@ const BOOT =
   "(function(){var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('hm-js');setTimeout(function(){if(!r.dataset.hmReady)r.classList.remove('hm-js')},4000)}})()";
 
 
-// Franja de acción al final de un tramo: una frase y el botón principal.
-function Band({ t, cta, medir }: { t: string; cta: string; medir: string }) {
-  return (
-    <div className="hm-band" data-reveal>
-      <p>{t}</p>
-      <CtaAvisame medir={medir} label={cta} />
-    </div>
-  );
-}
 
 export default function HomePage() {
   return (
@@ -105,9 +96,13 @@ function Hero() {
             <Tiendas />
           </div>
         </div>
-        <div className="hm-duo hm-hero-visual" aria-hidden="true">
-          <Phone src={CAP.inicio} preload sizes="(max-width: 1000px) 42vw, 300px" />
-          <Phone src={CAP.puntos} sizes="(max-width: 1000px) 42vw, 300px" />
+        <div className="hm-hero-visual" aria-hidden="true">
+          <div className="hm-hero-back">
+            <Phone src={CAP.puntos} sizes="(max-width: 1000px) 44vw, 270px" />
+          </div>
+          <div className="hm-hero-front">
+            <Phone src={CAP.inicio} preload sizes="(max-width: 1000px) 60vw, 330px" />
+          </div>
         </div>
       </div>
     </section>
@@ -124,7 +119,6 @@ function ComoFunciona() {
           <p className="hm-lead" data-reveal>Cuatro momentos, todos dentro de la app. Lo único que pones tú son los pasos.</p>
         </header>
         <Steps />
-        <Band t="Tus pasos de hoy ya podrían estar sumando." cta="Quiero empezar" medir="funciona_avisame" />
       </div>
     </section>
   );
@@ -225,7 +219,6 @@ function Premios() {
               tienes 30 días para canjearlo en el local.
             </p>
             <p className="hm-note">Grabación de la app real.</p>
-            <CtaAvisame medir="premios_avisame" label="Quiero mis premios" className="hm-loyal-cta" />
           </div>
         </div>
       </div>
@@ -302,7 +295,6 @@ function Ruta() {
           </ul>
           <p className="hm-note">Sorteo del mes: premio por anunciar.</p>
         </div>
-        <Band t="La próxima Ruta puede ser la tuya." cta="Quiero hacer la Ruta" medir="ruta_avisame" />
       </div>
     </section>
   );

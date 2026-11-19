@@ -2725,3 +2725,86 @@ html:not(.hm-js) .hm-pagewalk {
     --w: min(58vw, 250px);
   }
 }
+
+/* ==========================================================================
+   Iteración 6
+   ========================================================================== */
+/* Héroe: los dos teléfonos superpuestos (como antes), quietos, completos en el celular. */
+.hm-hero-visual {
+  perspective: 1600px;
+}
+@media (max-width: 999px) {
+  .hm-hero-visual {
+    padding-bottom: 24px;
+  }
+  .hm-hero-front .hm-phone {
+    --w: min(56vw, 250px);
+  }
+  .hm-hero-back .hm-phone {
+    --w: min(44vw, 200px);
+  }
+}
+
+/* Cómo funciona en el celular: el bloque fijo mide lo que su contenido (nunca más que la pantalla)
+   y comparte celda con el recorrido, así no se corta al bajar. */
+@media (max-width: 999px) {
+  .hm-steps-m {
+    display: grid;
+  }
+  .hm-steps-m-stick,
+  .hm-steps-m-room {
+    grid-area: 1 / 1;
+  }
+  .hm-steps-m-stick {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    height: auto;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    padding: 0;
+    z-index: 1;
+  }
+  .hm-steps-m-phone .hm-phone {
+    --w: min(44vw, 190px, calc((100vh - 300px) * 780 / 1688));
+  }
+  .hm-steps-m-room {
+    margin-top: 0;
+  }
+  .hm-steps-m-room > div {
+    height: 60vh;
+  }
+}
+
+/* Barra superior en el celular: el logo y Avísame se quedan arriba; solo el menú baja contigo. */
+@media (max-width: 1199px) {
+  .hm-nav {
+    position: absolute;
+    color: var(--ink);
+  }
+  .hm-nav::before {
+    display: none;
+  }
+  .hm-nav.is-scrolled .hm-nav-in {
+    height: 72px;
+  }
+  .hm-burger {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: max(16px, env(safe-area-inset-right, 0px));
+    z-index: 60;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    border-color: rgba(17, 19, 24, 0.14);
+    box-shadow: 0 6px 18px -8px rgba(17, 19, 24, 0.35);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .hm-nav-end {
+    padding-right: 52px;
+  }
+  .hm-nav.is-open {
+    position: fixed;
+  }
+}
