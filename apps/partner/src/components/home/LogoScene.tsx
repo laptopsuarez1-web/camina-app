@@ -94,8 +94,8 @@ export default function LogoScene({ logo = 'morado' }: { logo?: 'morado' | 'tran
         </p>
         <div className="hm-logoscene-b">
           <p>
-            Tarija se camina.
-            <span>Y cada paso ya puede sumar.</span>
+            Tarija camina.
+            <span>Y ahora, cada paso suma.</span>
           </p>
         </div>
       </div>
