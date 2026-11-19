@@ -10,3 +10,8 @@ create policy "avisame: admin marca avisado" on avisame for update to authentica
 
 drop policy if exists "avisame: admin borra" on avisame;
 create policy "avisame: admin borra" on avisame for delete to authenticated using (is_admin());
+
+-- Permisos de tabla (el proyecto no los da solos a las tablas nuevas). RLS sigue limitando: el público solo inserta,
+-- y leer / marcar / borrar queda solo para admins por las policies de arriba.
+grant insert on public.avisame to anon, authenticated;
+grant select, update, delete on public.avisame to authenticated;
