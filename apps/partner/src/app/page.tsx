@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import GentePage from '@/components/landing/GentePage';
+import HomePage from '@/components/home/HomePage';
 
 const TITULO = 'Camina — Camina, suma puntos y gana premios';
 const DESC = 'Camina cuenta tus pasos y los convierte en Puntos para canjear descuentos y premios en comercios de Bolivia. Gratis para todos.';
@@ -25,7 +25,7 @@ export default function RootPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <GentePage />
+      <HomePage />
     </>
   );
 }

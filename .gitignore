@@ -24,3 +24,6 @@ apps/partner/CLAUDE.md
 # Los módulos nativos propios (apps/mobile/modules) sí van al repositorio: no se generan solos.
 !apps/mobile/modules/**/android/
 apps/mobile/modules/**/android/build/
+
+# Caché de Python de las skills
+__pycache__/

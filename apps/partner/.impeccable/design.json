@@ -1,0 +1,654 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T23:46:08Z",
+  "title": "Design System: Camina, portada caminaapp.com",
+  "extensions": {
+    "scope": "Solo la portada pública (/), src/components/home; tokens declarados en home.css bajo .hm. El panel, /comercios y el resto de la app usan otros estilos y quedan fuera.",
+    "colorMeta": {
+      "plum": {
+        "role": "primary",
+        "displayName": "Morado Huella",
+        "canonical": "oklch(23.9% 0.118 287.5)",
+        "tonalRamp": [
+          "#0b0621",
+          "#231d44",
+          "#3e376a",
+          "#5b5393",
+          "#7a71bf",
+          "#9b94dc",
+          "#c0bcfb",
+          "#edecfe"
+        ]
+      },
+      "plum-2": {
+        "role": "primary",
+        "displayName": "Morado Calle",
+        "canonical": "oklch(28.8% 0.135 287.8)",
+        "tonalRamp": [
+          "#0b0424",
+          "#231b48",
+          "#3e3570",
+          "#5b519b",
+          "#7a6ec7",
+          "#9b92e4",
+          "#c0bbfe",
+          "#edecfe"
+        ]
+      },
+      "plum-3": {
+        "role": "primary",
+        "displayName": "Morado Esquina",
+        "canonical": "oklch(35.6% 0.154 287.9)",
+        "tonalRamp": [
+          "#0c0327",
+          "#24184d",
+          "#3f3277",
+          "#5c4ea3",
+          "#7b6bd2",
+          "#9b8fee",
+          "#c0bbff",
+          "#edecfe"
+        ]
+      },
+      "mint": {
+        "role": "secondary",
+        "displayName": "Menta Premio",
+        "canonical": "oklch(86.2% 0.149 163.3)",
+        "tonalRamp": [
+          "#000f07",
+          "#002c1c",
+          "#024c34",
+          "#056f4d",
+          "#009467",
+          "#3ab887",
+          "#7bdbb0",
+          "#c1ffe1"
+        ]
+      },
+      "mint-2": {
+        "role": "secondary",
+        "displayName": "Menta Claro",
+        "canonical": "oklch(89.4% 0.118 165.3)",
+        "tonalRamp": [
+          "#000f08",
+          "#012c1e",
+          "#024c36",
+          "#036f50",
+          "#1b936c",
+          "#57b38f",
+          "#8cd7b6",
+          "#c3fee3"
+        ]
+      },
+      "mint-ink": {
+        "role": "secondary",
+        "displayName": "Menta Tinta",
+        "canonical": "oklch(45.7% 0.083 169.9)",
+        "tonalRamp": [
+          "#000f09",
+          "#012c20",
+          "#164a3b",
+          "#2d6b57",
+          "#448d76",
+          "#6eae97",
+          "#9cd2be",
+          "#cffae9"
+        ]
+      },
+      "mint-light": {
+        "role": "secondary",
+        "displayName": "Menta Agua",
+        "canonical": "oklch(95.5% 0.020 177.5)",
+        "tonalRamp": [
+          "#070d0b",
+          "#1e2624",
+          "#384240",
+          "#54615d",
+          "#71817d",
+          "#93a29e",
+          "#bbc7c4",
+          "#e7f1ee"
+        ]
+      },
+      "text-plum": {
+        "role": "neutral",
+        "displayName": "Lavanda Lectura",
+        "canonical": "oklch(89.1% 0.040 296.6)",
+        "tonalRamp": [
+          "#0c0912",
+          "#25222f",
+          "#413d4e",
+          "#5f5a6f",
+          "#7f7993",
+          "#a09ab2",
+          "#c6c1d6",
+          "#f0ecfd"
+        ]
+      },
+      "off-paper": {
+        "role": "neutral",
+        "displayName": "Gris Apagado",
+        "canonical": "oklch(64.3% 0.012 269.5)",
+        "tonalRamp": [
+          "#090b10",
+          "#22242a",
+          "#3d4047",
+          "#5b5d65",
+          "#7a7d85",
+          "#9b9ea6",
+          "#c1c4cc",
+          "#ebeef7"
+        ]
+      },
+      "off-paper-2": {
+        "role": "neutral",
+        "displayName": "Gris Apagado Texto",
+        "canonical": "oklch(54.1% 0.015 266.6)",
+        "tonalRamp": [
+          "#080b12",
+          "#21242b",
+          "#3c4048",
+          "#5a5e66",
+          "#797d86",
+          "#9a9ea8",
+          "#c0c4ce",
+          "#eaeef9"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Blanco Cálido",
+        "canonical": "oklch(97.6% 0.003 106.4)",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#242423",
+          "#40403e",
+          "#5e5e5c",
+          "#7d7d7b",
+          "#9e9e9d",
+          "#c4c4c2",
+          "#eeeeec"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Blanco Piedra",
+        "canonical": "oklch(94.5% 0.007 106.5)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242421",
+          "#40403c",
+          "#5e5e5a",
+          "#7d7d79",
+          "#9f9f9a",
+          "#c4c4c0",
+          "#efefea"
+        ]
+      },
+      "paper-3": {
+        "role": "neutral",
+        "displayName": "Blanco Acera",
+        "canonical": "oklch(89.3% 0.008 106.6)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242420",
+          "#40403b",
+          "#5e5e59",
+          "#7e7e78",
+          "#9f9f99",
+          "#c4c4bf",
+          "#efefe9"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Grafito",
+        "canonical": "oklch(18.7% 0.011 268.1)",
+        "tonalRamp": [
+          "#090b10",
+          "#222429",
+          "#3d4046",
+          "#5b5d64",
+          "#7a7d84",
+          "#9b9ea5",
+          "#c1c4cb",
+          "#ebeef6"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Grafito Alto",
+        "canonical": "oklch(22.7% 0.012 270.8)",
+        "tonalRamp": [
+          "#090b10",
+          "#22242a",
+          "#3d4046",
+          "#5b5d65",
+          "#7a7d85",
+          "#9b9ea6",
+          "#c1c4cc",
+          "#ebeef7"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Grafito Tercero",
+        "canonical": "oklch(27.7% 0.015 269.1)",
+        "tonalRamp": [
+          "#090b12",
+          "#21242c",
+          "#3c4048",
+          "#5a5d67",
+          "#797d87",
+          "#9a9ea8",
+          "#c0c4ce",
+          "#eaeef9"
+        ]
+      },
+      "mut-plum": {
+        "role": "neutral",
+        "displayName": "Lavanda Tenue",
+        "canonical": "oklch(76.1% 0.072 294.7)",
+        "tonalRamp": [
+          "#0c0818",
+          "#252037",
+          "#413a59",
+          "#60577d",
+          "#8075a3",
+          "#a197c2",
+          "#c6bee4",
+          "#efebff"
+        ]
+      },
+      "mut-ink": {
+        "role": "neutral",
+        "displayName": "Gris Grafito",
+        "canonical": "oklch(69.9% 0.015 268.4)",
+        "tonalRamp": [
+          "#080b12",
+          "#21242c",
+          "#3c4048",
+          "#5a5d67",
+          "#797d87",
+          "#9a9ea8",
+          "#c0c4ce",
+          "#eaeef9"
+        ]
+      },
+      "mut-paper": {
+        "role": "neutral",
+        "displayName": "Gris Papel",
+        "canonical": "oklch(49.3% 0.017 268.3)",
+        "tonalRamp": [
+          "#080b12",
+          "#21242c",
+          "#3c4049",
+          "#595d67",
+          "#797d88",
+          "#9a9ea9",
+          "#bfc4cf",
+          "#eaeefa"
+        ]
+      },
+      "mint-soft": {
+        "role": "secondary",
+        "displayName": "Menta Velo",
+        "canonical": "rgba(98, 240, 182, 0.15)",
+        "tonalRamp": [
+          "#000f07",
+          "#002c1c",
+          "#024c34",
+          "#056f4d",
+          "#009467",
+          "#3ab887",
+          "#7bdbb0",
+          "#c1ffe1"
+        ],
+        "note": "Menta al 15% sobre el campo; sobre morado compone ~#2a2c61, sobre grafito ~#1d3430."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Titulares del héroe y del cierre; última línea en menta."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titular de cada sección, en dos líneas reveladas desde su máscara."
+      },
+      "headline-sm": {
+        "displayName": "Headline pequeño",
+        "purpose": "Titulares dentro de tableros y paneles (Tarjeta Camina, Comunidad)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de columna (premios de la Ruta, tarjeta de comercios)."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Frase bajo cada titular, en el color secundario del campo."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Botones."
+      },
+      "note": {
+        "displayName": "Note",
+        "purpose": "Notas de procedencia y aclaraciones."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Pasos y Puntos del contador; cifras tabulares."
+      }
+    },
+    "shadows": [
+      {
+        "name": "phone",
+        "value": "inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 30px 60px -24px rgba(5, 3, 15, 0.6)",
+        "purpose": "Todo teléfono sobre campos oscuros."
+      },
+      {
+        "name": "phone-on-paper",
+        "value": "inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 40px 70px -36px rgba(17, 19, 24, 0.5)",
+        "purpose": "Teléfono sobre blanco cálido."
+      },
+      {
+        "name": "phone-tilted",
+        "value": "inset 0 0 0 1px rgba(255, 255, 255, 0.12), 18px 30px 50px -18px rgba(5, 3, 15, 0.75)",
+        "purpose": "Teléfono del héroe con perspectiva."
+      },
+      {
+        "name": "dock",
+        "value": "0 14px 30px -12px rgba(5, 3, 15, 0.55)",
+        "purpose": "Barra fija móvil."
+      },
+      {
+        "name": "readout",
+        "value": "0 10px 24px -12px rgba(5, 3, 15, 0.6)",
+        "purpose": "Contador del héroe."
+      },
+      {
+        "name": "handle",
+        "value": "0 6px 16px -6px rgba(5, 3, 15, 0.6)",
+        "purpose": "Control del comparador claro/oscuro."
+      },
+      {
+        "name": "pin-ring",
+        "value": "0 0 0 3px #2c1468, 0 0 0 4.5px rgba(180, 169, 219, 0.5)",
+        "purpose": "Anillo sólido de los pines del mapa (no es sombra de elevación)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Curva exponencial de salida para revelados, hovers y cambios de estado."
+      },
+      {
+        "name": "headline-reveal",
+        "value": "translateY(104%) → 0, 1.1s, +90ms por línea",
+        "purpose": "Titulares que suben desde su máscara al entrar en pantalla."
+      },
+      {
+        "name": "button-state",
+        "value": "background-color 0.25s; transform scale(0.97) al presionar",
+        "purpose": "Hover y presión de botones."
+      },
+      {
+        "name": "hero-walk",
+        "value": "ciclo 9.4s: 6.2s de caminata (ease-in-out), fase listo, fundido final",
+        "purpose": "Caminata del héroe: huellas, pasos, +1 Punto y premio desbloqueado."
+      },
+      {
+        "name": "stamps-fill",
+        "value": "0.5s por sello, +160ms escalonado",
+        "purpose": "Sellos de la Tarjeta Camina que se llenan al entrar."
+      },
+      {
+        "name": "tabs-pill",
+        "value": "transform 0.55s",
+        "purpose": "Pastilla menta de las pestañas."
+      },
+      {
+        "name": "menu-cascade",
+        "value": "hm-up 0.7s, +45ms por enlace",
+        "purpose": "Enlaces del menú móvil."
+      },
+      {
+        "name": "scroll-scrub",
+        "value": "GSAP ScrollTrigger (scrub)",
+        "purpose": "Línea de progreso de etapas, recorrido de la Ruta, carrete horizontal fijado (≥1024px) y parallax moderado."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "sin .hm-js: todo visible en su estado final",
+        "purpose": "Con \"reducir movimiento\" no se oculta ni se anima nada."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "xs",
+        "value": "420px"
+      },
+      {
+        "name": "sm",
+        "value": "560px"
+      },
+      {
+        "name": "sm-hero",
+        "value": "600px"
+      },
+      {
+        "name": "md",
+        "value": "760px"
+      },
+      {
+        "name": "lg",
+        "value": "900px"
+      },
+      {
+        "name": "xl",
+        "value": "1000px"
+      },
+      {
+        "name": "pin",
+        "value": "1024px"
+      },
+      {
+        "name": "nav",
+        "value": "1200px"
+      },
+      {
+        "name": "track",
+        "value": "1360px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal (campo oscuro)",
+      "kind": "button",
+      "refersTo": "button-primary-dark-field",
+      "description": "Acción principal sobre morado o grafito: píldora menta con texto morado (\"Avísame cuando salga\").",
+      "html": "<div class=\"ds-field-plum\"><a class=\"ds-btn ds-btn-mint\" href=\"#\">Avísame cuando salga</a></div>",
+      "css": ".ds-field-plum{background:#200a52;padding:32px;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;border-radius:999px;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-weight:650;font-size:1rem;letter-spacing:-0.005em;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:background-color .25s cubic-bezier(0.16, 1, 0.3, 1),border-color .25s,transform .4s cubic-bezier(0.16, 1, 0.3, 1);} .ds-btn-mint{background:#62f0b6;color:#200a52;} .ds-btn-mint:hover{background:#8af5c9;} .ds-btn:active{transform:scale(.97);} .ds-btn-mint:focus-visible{outline:2px solid #62f0b6;outline-offset:3px;}"
+    },
+    {
+      "name": "Botón principal (campo claro)",
+      "kind": "button",
+      "refersTo": "button-primary-light-field",
+      "description": "Acción principal sobre blanco cálido: la píldora se invierte a morado con texto menta.",
+      "html": "<div class=\"ds-field-paper\"><a class=\"ds-btn ds-btn-plum\" href=\"#\">Quiero hacer la Ruta</a></div>",
+      "css": ".ds-field-paper{background:#f7f7f5;padding:32px;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;border-radius:999px;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-weight:650;font-size:1rem;letter-spacing:-0.005em;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:background-color .25s cubic-bezier(0.16, 1, 0.3, 1),transform .4s cubic-bezier(0.16, 1, 0.3, 1);} .ds-btn-plum{background:#200a52;color:#62f0b6;} .ds-btn-plum:hover{background:#3d2386;} .ds-btn:active{transform:scale(.97);} .ds-btn-plum:focus-visible{outline:2px solid #200a52;outline-offset:3px;}"
+    },
+    {
+      "name": "Botón fantasma",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción secundaria (\"Cómo funciona\"): píldora transparente con borde al 30% que pasa al color del texto en hover.",
+      "html": "<div class=\"ds-field-plum\"><a class=\"ds-btn-ghost\" href=\"#\">Cómo funciona</a></div>",
+      "css": ".ds-field-plum{background:#200a52;color:#f7f7f5;padding:32px;} .ds-btn-ghost{display:inline-flex;align-items:center;min-height:52px;padding:0 28px;border-radius:999px;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-weight:650;font-size:1rem;color:inherit;text-decoration:none;background:transparent;border:1.5px solid rgba(247,247,245,.3);transition:border-color .25s;} .ds-btn-ghost:hover{border-color:currentColor;} .ds-btn-ghost:focus-visible{outline:2px solid #62f0b6;outline-offset:3px;}"
+    },
+    {
+      "name": "Barra superior",
+      "kind": "nav",
+      "refersTo": "nav-scrolled",
+      "description": "Barra fija que toma el color de la sección de abajo y se compacta a 60px; marca ancha, enlaces con hover en píldora (desde 1200px) y botón \"Avísame\" pequeño. (En la portada la marca lleva el logo de 30px a la izquierda; aquí se omite la imagen.)",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-brand\">CAMINA</span><nav class=\"ds-nav-links\"><a href=\"#\">Cómo funciona</a><a href=\"#\">Premios</a><a href=\"#\">Comunidad</a><a href=\"#\">Ruta del mes</a></nav><a class=\"ds-nav-cta\" href=\"#\">Avísame</a></header>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:24px;height:60px;padding:0 24px;background:#200a52;color:#f7f7f5;border-bottom:1px solid rgba(180,169,219,.18);font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;} .ds-brand{display:inline-flex;align-items:center;gap:10px;font-weight:760;font-stretch:120%;letter-spacing:.06em;} .ds-nav-links{display:flex;gap:4px;margin:0 auto;} .ds-nav-links a{color:inherit;text-decoration:none;font-size:.94rem;font-weight:520;padding:10px 12px;border-radius:999px;transition:background-color .2s;} .ds-nav-links a:hover{background:rgba(247,247,245,.1);} .ds-nav-links a:focus-visible,.ds-nav-cta:focus-visible{outline:2px solid #62f0b6;outline-offset:3px;} .ds-nav-cta{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;background:#62f0b6;color:#200a52;font-weight:650;font-size:.95rem;text-decoration:none;transition:background-color .25s cubic-bezier(0.16, 1, 0.3, 1);} .ds-nav-cta:hover{background:#8af5c9;}"
+    },
+    {
+      "name": "Barra fija móvil",
+      "kind": "custom",
+      "refersTo": "dock",
+      "description": "Píldora morada flotante bajo 900px con el estado de lanzamiento y el botón \"Avísame\".",
+      "html": "<div class=\"ds-dock\"><span>Muy pronto en App Store y Google Play.</span><a href=\"#\">Avísame</a></div>",
+      "css": ".ds-dock{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:380px;padding:8px 8px 8px 18px;border-radius:999px;background:#200a52;color:#f7f7f5;box-shadow:0 14px 30px -12px rgba(5,3,15,.55);font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:.86rem;font-weight:520;} .ds-dock span{color:#b4a9db;line-height:1.3;} .ds-dock a{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;background:#62f0b6;color:#200a52;font-weight:650;font-size:.95rem;text-decoration:none;} .ds-dock a:hover{background:#8af5c9;} .ds-dock a:focus-visible{outline:2px solid #62f0b6;outline-offset:3px;}"
+    },
+    {
+      "name": "Pestañas de Comunidad",
+      "kind": "chip",
+      "refersTo": "tab-active",
+      "description": "Carril en píldora grafito con una pastilla menta que se desliza bajo la pestaña activa.",
+      "html": "<div class=\"ds-field-ink\"><div class=\"ds-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">Compite</button><button role=\"tab\" aria-selected=\"false\">No aflojes</button><button role=\"tab\" aria-selected=\"false\">Juntos</button></div></div>",
+      "css": ".ds-field-ink{background:#111318;padding:32px;} .ds-tabs{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:5px;border-radius:999px;background:#252830;} .ds-tabs button{min-height:44px;border:0;background:none;color:#9a9ea8;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-weight:620;font-size:.98rem;padding:0 24px;border-radius:999px;cursor:pointer;transition:color .3s,background-color .55s cubic-bezier(0.16, 1, 0.3, 1);} .ds-tabs button:hover{color:#f7f7f5;} .ds-tabs button[aria-selected=true]{background:#62f0b6;color:#200a52;} .ds-tabs button:focus-visible{outline:2px solid #62f0b6;outline-offset:3px;}"
+    },
+    {
+      "name": "Chip de dato",
+      "kind": "chip",
+      "refersTo": "chip-dato",
+      "description": "Regla real de cada etapa de \"Cómo funciona\": píldora blanco piedra con punto menta y texto morado; en \"Sumas Puntos\" pasa a menta agua con la moneda. (.ds-coin es un marcador del lugar de la moneda real, /web/camina-coin.png, que el panel no puede cargar.)",
+      "html": "<div class=\"ds-field-paper\"><p class=\"ds-dato\">Sin gimnasio y sin equipo</p><p class=\"ds-dato ds-dato-pts\"><span class=\"ds-coin\" aria-hidden=\"true\"></span>Hasta 20 Puntos por día; cada uno dura 90 días</p></div>",
+      "css": ".ds-field-paper{background:#f7f7f5;padding:32px;} .ds-dato{display:inline-flex;align-items:center;gap:10px;margin:0;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:.95rem;font-weight:600;color:#200a52;padding:8px 16px 8px 12px;border-radius:999px;background:#edede8;} .ds-dato::before{content:'';width:8px;height:8px;border-radius:50%;background:#62f0b6;box-shadow:inset 0 0 0 1.5px #156650;} .ds-dato-pts{background:#e3f5f0;color:#156650;padding-left:6px;margin-left:12px;} .ds-dato-pts::before{display:none;} .ds-coin{width:20px;height:20px;border-radius:50%;flex:none;background:#62f0b6;box-shadow:inset 0 0 0 2px #156650;}"
+    },
+    {
+      "name": "Pastilla de Puntos",
+      "kind": "chip",
+      "refersTo": "pts-dark-field",
+      "description": "Costo en Puntos como en la app: moneda real + número en pastilla menta (mint-soft sobre oscuro, mint-light sobre claro). .ds-coin marca el lugar de /web/camina-coin.png.",
+      "html": "<div class=\"ds-field-ink\"><span class=\"ds-pts\"><span class=\"ds-coin\" aria-hidden=\"true\"></span><b>38</b><small>Puntos</small></span></div><div class=\"ds-field-paper\"><span class=\"ds-pts ds-pts-light\"><span class=\"ds-coin\" aria-hidden=\"true\"></span><b>38</b><small>Puntos</small></span></div>",
+      "css": ".ds-field-ink{background:#111318;padding:24px;} .ds-field-paper{background:#f7f7f5;padding:24px;} .ds-pts{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 3px;border-radius:999px;background:rgba(98,240,182,.15);color:#62f0b6;white-space:nowrap;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-variant-numeric:tabular-nums;} .ds-pts b{font-weight:700;font-size:1.05rem;} .ds-pts small{font-size:.8rem;font-weight:560;color:#f7f7f5;opacity:.85;} .ds-pts-light{background:#e3f5f0;color:#156650;} .ds-pts-light small{color:#156650;} .ds-coin{width:22px;height:22px;border-radius:50%;flex:none;background:#62f0b6;box-shadow:inset 0 0 0 2px #156650;}"
+    },
+    {
+      "name": "Contador de la caminata",
+      "kind": "custom",
+      "refersTo": "readout",
+      "description": "Tablero del héroe: pasos y Puntos (con la moneda) en cifras tabulares anchas; el chip \"+1\" (copia del \"+5\" de la app) salta al pasar los 1.000 pasos. .ds-coin marca el lugar de la moneda real.",
+      "html": "<div class=\"ds-readout\"><div><small>Pasos</small><b>1.240</b></div><div class=\"ds-rpts\"><small>Puntos</small><span class=\"ds-val\"><span class=\"ds-coin\" aria-hidden=\"true\"></span><b>38</b></span><span class=\"ds-plus\"><span class=\"ds-coin ds-coin-sm\" aria-hidden=\"true\"></span>+1</span></div></div>",
+      "css": ".ds-readout{display:inline-flex;gap:4px;padding:6px;border-radius:14px;background:#200a52;color:#f7f7f5;box-shadow:0 10px 24px -12px rgba(5,3,15,.6);font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;font-variant-numeric:tabular-nums;} .ds-readout>div{position:relative;display:grid;padding:8px 14px;border-radius:10px;min-width:6.2em;} .ds-rpts{background:#2c1468;} .ds-val{display:inline-flex;align-items:center;gap:8px;} .ds-coin{width:26px;height:26px;border-radius:50%;flex:none;background:#62f0b6;box-shadow:inset 0 0 0 2px #156650;} .ds-coin-sm{width:16px;height:16px;} .ds-readout small{font-size:.74rem;font-weight:560;color:#b4a9db;} .ds-readout b{font-size:1.75rem;font-weight:700;font-stretch:110%;letter-spacing:-.02em;line-height:1.15;} .ds-rpts b{color:#62f0b6;} .ds-plus{position:absolute;right:-10px;top:-12px;display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:750;color:#fff;background:#3c7867;border-radius:999px;padding:3px 10px 3px 3px;}"
+    },
+    {
+      "name": "Tarjeta Camina (sellos)",
+      "kind": "card",
+      "refersTo": "card-plum",
+      "description": "Tablero morado plano con cinco sellos circulares; el quinto, en blanco, es el premio gratis. En la portada los sellos llevan la huella del logo como máscara.",
+      "html": "<div class=\"ds-card5\"><h3>Tarjeta Camina: 5 canjes, un premio gratis.</h3><ol class=\"ds-stamps\"><li></li><li></li><li></li><li class=\"ds-empty\"></li><li class=\"ds-gift\">Gratis</li></ol></div>",
+      "css": ".ds-card5{display:grid;gap:28px;max-width:560px;padding:40px;border-radius:16px;background:#200a52;color:#f7f7f5;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;} .ds-card5 h3{margin:0;font-size:2rem;font-weight:680;font-stretch:116%;letter-spacing:-.03em;line-height:1.02;} .ds-stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0;padding:0;list-style:none;} .ds-stamps li{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:#62f0b6;border:2px solid #62f0b6;color:#200a52;transition:background-color .5s cubic-bezier(0.16, 1, 0.3, 1);} .ds-stamps li.ds-empty{background:transparent;border:2px dashed rgba(180,169,219,.4);} .ds-stamps li.ds-gift{background:#f7f7f5;border-color:#f7f7f5;font-size:.8rem;font-weight:750;}"
+    },
+    {
+      "name": "Parada de la Ruta",
+      "kind": "custom",
+      "refersTo": "route-stop-on",
+      "description": "Círculo morado con borde lavanda que se enciende en menta cuando el recorrido (zigzag en un marco girado 19° al rumbo de las calles) lo alcanza; la etiqueta sube sobre la parada cuando el tramo de llegada viene desde abajo.",
+      "html": "<div class=\"ds-board\"><span class=\"ds-stop\">1<em>Local 1</em></span><span class=\"ds-stop is-on\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12.5 10 17.5 19 7\"/></svg><em>Local 2</em></span></div>",
+      "css": ".ds-board{display:flex;gap:56px;padding:32px 32px 48px;border-radius:12px;background:#2c1468;font-family:'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;} .ds-stop{position:relative;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#200a52;border:2px solid rgba(180,169,219,.45);color:#f7f7f5;font-weight:750;font-size:1.1rem;transition:background-color .4s cubic-bezier(0.16, 1, 0.3, 1),border-color .4s,color .4s,transform .6s cubic-bezier(0.16, 1, 0.3, 1);} .ds-stop em{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-size:.8rem;font-weight:620;color:#b4a9db;} .ds-stop.is-on{background:#62f0b6;border-color:#62f0b6;color:#200a52;transform:scale(1.08);} .ds-stop.is-on em{color:#f7f7f5;}"
+    },
+    {
+      "name": "Teléfono",
+      "kind": "custom",
+      "description": "Marco de teléfono para capturas reales (780×1688, modo oscuro); radio proporcional al ancho y sombra física teñida de morado.",
+      "html": "<div class=\"ds-phone\"><div class=\"ds-screen\"></div></div>",
+      "css": ".ds-phone{--w:200px;width:var(--w);aspect-ratio:780/1688;border-radius:calc(var(--w)*.15);padding:calc(var(--w)*.028);background:#0c0d11;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 30px 60px -24px rgba(5,3,15,.6);} .ds-screen{width:100%;height:100%;border-radius:calc(var(--w)*.125);background:#16101f;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Calles reales, premio real",
+    "overview": "La portada se lee como una caminata: arranca en un campo morado profundo (el morado del logo) donde un mapa real del centro de Tarija se recorre con huellas menta hasta la puerta de un comercio real, y termina en otro campo morado con una fila de huellas que cruza la pantalla. Entre esos dos campos, las secciones alternan blanco cálido y grafito, y cada una sube sobre la anterior como una hoja con las esquinas superiores redondeadas. La composición es editorial y tecnológica a la vez: titulares enormes y anchos, mucho aire, listas separadas por filetes finos en vez de tarjetas, y teléfonos con capturas reales como única ilustración.\n\nEl menta funciona como acción y como recompensa: es el botón sobre los campos oscuros, el color de los Puntos (que siempre llevan la moneda real de la app), de las huellas, de los sellos completos y del estado \"Listo para canjear\". Sobre el blanco cálido el menta no se usa como texto; allí la acción se invierte a una píldora morada con texto menta. Una sola familia tipográfica, Mona Sans variable, hace todo el trabajo: el eje de ancho expandido (116%) da la voz a los titulares y el ancho normal sostiene la lectura.\n\nEl movimiento es contenido y narrativo: los titulares se revelan línea a línea desde una máscara, un teléfono fijo cambia de pantalla según la etapa en \"Cómo funciona\", y el recorrido de la Ruta del mes se dibuja con el scroll. No hay brillos, vidrio, degradados ni desenfoques decorativos. Con \"reducir movimiento\" todo queda visible y quieto en su estado final.",
+    "keyCharacteristics": [
+      "Campos de marca morados en apertura y cierre; base alternada blanco cálido / grafito entre ellos.",
+      "Menta = acción y recompensa; nunca texto sobre blanco.",
+      "Una sola familia (Mona Sans), titulares anchos (wdth 116) con tracking negativo, texto en ancho normal.",
+      "Secciones como hojas superpuestas (esquinas superiores de 28px), profundidad por tono y superposición.",
+      "Huellas del logo como única grafía decorativa; iconos de trazo 1.75 redondeado solo donde algo no es texto.",
+      "Los Puntos se muestran como en la app: la moneda real de Camina junto al número, en una pastilla menta.",
+      "Teléfonos con capturas reales en modo oscuro como única imagen de producto."
+    ],
+    "rules": [
+      {
+        "name": "The Two Fields Rule",
+        "body": "El morado como campo de sección completa aparece solo en la apertura (héroe) y el cierre (descarga). Entre ellos, las secciones alternan estrictamente blanco cálido y grafito; el morado vuelve dentro de ellas solo como tablero contenido (Tarjeta, Ruta, contador), nunca como sección.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mint Is Earned Rule",
+        "body": "El menta marca lo que se gana o lo que se hace: botones, Puntos, huellas, sellos, rutas recorridas. No se usa para decorar, ni como texto sobre blanco (1,3:1). Sobre blanco el menta pasa a `mint-ink`, o la acción se invierte a píldora morada con texto menta.",
+        "section": "colors"
+      },
+      {
+        "name": "The Real Coin Rule",
+        "body": "Los Puntos siempre aparecen con la moneda real de la app (`/web/camina-coin.png`, el mismo archivo que usa la app móvil) junto al número, nunca con un icono dibujado, un punto o un símbolo. En lista o en línea van en la pastilla de Puntos (`mint-soft` con texto menta sobre campos oscuros, `mint-light` con texto `mint-ink` sobre claros).",
+        "section": "colors"
+      },
+      {
+        "name": "The Field Inherits Rule",
+        "body": "Los componentes no eligen su color: cada campo (`morado`, `grafito`, `blanco`) declara el relleno, texto y hover del botón, el texto secundario y el color de filete, y todo lo que vive dentro los hereda. Un botón nuevo en una sección nueva toma el color correcto sin variante.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Mona Sans es la única familia. La jerarquía se construye con el eje de ancho (116% titulares, 120% marca, 125% palabra del pie, 100% texto) y con el peso, nunca con una segunda tipografía.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two-Line Headline Rule",
+        "body": "Los titulares de sección se escriben en dos líneas cortas y deliberadas; cada línea vive en su propia máscara y sube desde abajo al entrar en pantalla.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Ledger Rule",
+        "body": "Las colecciones de contenido se ordenan como un registro: filas separadas por filetes de 1px del color de línea del campo. Las tarjetas con relleno se reservan para uno o dos bloques de marca por sección.",
+        "section": "layout"
+      },
+      {
+        "name": "The Sheet Rule",
+        "body": "La transición entre secciones es una hoja que sube sobre la anterior (esquinas superiores de 28px, margen negativo igual), no una línea, una ola ni un degradado.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Physical Shadow Rule",
+        "body": "Solo los objetos físicos (teléfonos y piezas que flotan sobre la página) llevan sombra, y la sombra cae hacia abajo teñida de morado oscuro. Tarjetas y tableros son planos.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Pill-or-Circle Rule",
+        "body": "Si se toca, es píldora; si marca un lugar o un logro, es círculo. Los contenedores no toman ninguna de las dos formas.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do dejar que el campo decida el color: dentro de morado o grafito el botón principal es menta con texto morado; dentro de blanco es morado con texto menta.",
+      "Do escribir cada titular de sección en dos líneas, en Mona Sans 680 a 116% de ancho y tracking -0.03em, y revelarlo línea a línea desde su máscara.",
+      "Do usar `mint-ink` cuando el menta tenga que ser texto o filete sobre blanco cálido.",
+      "Do mostrar el producto solo con capturas o videos reales dentro del marco de teléfono (780×1688, modo oscuro).",
+      "Do ordenar colecciones con filetes de 1px del color de línea del campo, y reservar el relleno para uno o dos tableros de marca por sección.",
+      "Do dar a cada sección nueva la entrada de hoja: esquinas superiores de 28px y margen superior de -28px sobre la anterior.",
+      "Do usar la curva exponencial de salida (`cubic-bezier(0.16, 1, 0.3, 1)`) en revelados y cambios de estado, y dejar todo visible y quieto con \"reducir movimiento\".",
+      "Do poner cifras tabulares en todo número que cambie o se compare (pasos, Puntos, contador de etapas, coordenadas).",
+      "Do mostrar cada cantidad de Puntos con la moneda real de la app junto al número, en la pastilla de Puntos del campo."
+    ],
+    "donts": [
+      "Don't usar degradados, vidrio (`backdrop-filter`), brillos ni halos; la portada no tiene ninguno.",
+      "Don't usar el menta como texto sobre blanco cálido (1,3:1).",
+      "Don't añadir una segunda familia tipográfica; el ancho y el peso de Mona Sans hacen toda la jerarquía.",
+      "Don't convertir el morado en fondo de una sección intermedia; entre héroe y cierre las secciones alternan blanco cálido y grafito.",
+      "Don't poner sombra a tarjetas o tableros; la sombra es solo de objetos físicos y cae hacia abajo teñida de morado oscuro.",
+      "Don't usar otra grafía decorativa que las huellas del logo, ni iconos de librería: los iconos funcionales se dibujan con trazo 1.75 redondeado.",
+      "Don't representar los Puntos con un icono dibujado, un punto de color o un símbolo; siempre la moneda de la app.",
+      "Don't dibujar interfaces de la app ni mostrar mockups en modo claro, salvo el comparador claro/oscuro, que existe para mostrar ambos modos."
+    ]
+  }
+}
