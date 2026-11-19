@@ -19,7 +19,7 @@ export default function HomeMotion() {
     const cleanups: (() => void)[] = [];
 
     // 1) Revelado progresivo.
-    const reveal = Array.from(root.querySelectorAll<HTMLElement>('[data-split],[data-reveal]'));
+    const reveal = Array.from(root.querySelectorAll<HTMLElement>('[data-split],[data-reveal],[data-stagger]'));
     const ioReveal = new IntersectionObserver(
       (es) =>
         es.forEach((e) => {
@@ -27,7 +27,7 @@ export default function HomeMotion() {
           e.target.classList.add('is-in');
           ioReveal.unobserve(e.target);
         }),
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.1 },
+      { rootMargin: '0px 0px 6% 0px', threshold: 0 },
     );
     reveal.forEach((el) => ioReveal.observe(el));
     cleanups.push(() => ioReveal.disconnect());
@@ -85,6 +85,43 @@ export default function HomeMotion() {
       if (raf) cancelAnimationFrame(raf);
     });
 
+    // Microinteracciones con mouse: botones magnéticos y logos de comercios que se inclinan hacia el puntero.
+    if (!reduce && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      const move = (e: PointerEvent) => {
+        const t = e.target as HTMLElement | null;
+        const btn = t?.closest<HTMLElement>('.hm-btn');
+        if (btn) {
+          const r = btn.getBoundingClientRect();
+          btn.style.setProperty('--mx', `${((e.clientX - r.left) / r.width - 0.5) * 8}px`);
+          btn.style.setProperty('--my', `${((e.clientY - r.top) / r.height - 0.5) * 6}px`);
+          btn.style.setProperty('--sx', `${e.clientX - r.left}px`);
+        }
+        const shop = t?.closest<HTMLElement>('.hm-shop');
+        if (shop) {
+          const r = shop.getBoundingClientRect();
+          shop.style.setProperty('--rx', `${(-((e.clientY - r.top) / r.height - 0.5) * 14).toFixed(2)}deg`);
+          shop.style.setProperty('--ry', `${(((e.clientX - r.left) / r.width - 0.5) * 14).toFixed(2)}deg`);
+        }
+      };
+      const leave = (e: PointerEvent) => {
+        const t = e.target as HTMLElement | null;
+        if (t?.classList.contains('hm-btn')) {
+          t.style.setProperty('--mx', '0px');
+          t.style.setProperty('--my', '0px');
+        }
+        if (t?.classList.contains('hm-shop')) {
+          t.style.setProperty('--rx', '0deg');
+          t.style.setProperty('--ry', '0deg');
+        }
+      };
+      root.addEventListener('pointermove', move, { passive: true });
+      root.addEventListener('pointerout', leave, { passive: true });
+      cleanups.push(() => {
+        root.removeEventListener('pointermove', move);
+        root.removeEventListener('pointerout', leave);
+      });
+    }
+
     // 4) Parallax moderado de los teléfonos (GSAP, cargado aparte).
     let killed = false;
     let ctx: { revert: () => void } | null = null;
@@ -95,6 +132,7 @@ export default function HomeMotion() {
         const mm = gsap.matchMedia();
         ctx = mm;
         mm.add('(min-width: 0px)', () => {
+          // Parallax moderado de los teléfonos.
           gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((el) => {
             const v = parseFloat(el.dataset.parallax || '0.05');
             gsap.fromTo(
@@ -102,6 +140,62 @@ export default function HomeMotion() {
               { y: () => window.innerHeight * v },
               { y: () => -window.innerHeight * v, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } },
             );
+          });
+
+          // Héroe: el teléfono principal se endereza y se acerca al bajar; el de atrás se abre hacia un costado.
+          const hero = document.querySelector('.hm-hero');
+          if (hero) {
+            const st = { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.6 };
+            gsap.fromTo('.hm-hero-front', { rotateX: 0, rotateY: -14, scale: 1 }, { rotateX: 8, rotateY: 0, scale: 0.92, y: 60, ease: 'none', scrollTrigger: st });
+            gsap.fromTo('.hm-hero-back', { x: 0, rotateY: -20 }, { x: -60, y: 120, rotateY: 0, opacity: 0.6, ease: 'none', scrollTrigger: st });
+            gsap.to('.hm-hero-copy', { y: -40, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: hero, start: '40% top', end: 'bottom top', scrub: true } });
+          }
+
+          // Secciones oscuras: entran como una pantalla que se abre (de tarjeta redondeada a pantalla completa).
+          gsap.utils.toArray<HTMLElement>('.hm-sec.hm-dark').forEach((sec) => {
+            gsap.fromTo(
+              sec,
+              { clipPath: 'inset(0% 3% 0% 3% round 44px)' },
+              { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'top 25%', scrub: true } },
+            );
+          });
+
+          // Pasos que se vuelven Puntos: el contador avanza con el scroll (1.000 pasos = 1 Punto).
+          const conv = document.querySelector<HTMLElement>('[data-conv]');
+          if (conv) {
+            const pasos = conv.querySelector<HTMLElement>('[data-conv-pasos]');
+            const pts = conv.querySelector<HTMLElement>('[data-conv-pts]');
+            let last = -1;
+            ScrollTrigger.create({
+              trigger: conv,
+              start: 'top 85%',
+              end: 'top 30%',
+              scrub: true,
+              onUpdate: (st) => {
+                const n = Math.round(st.progress * 10000);
+                if (pasos) pasos.textContent = n.toLocaleString('es-BO');
+                const p = Math.floor(n / 1000);
+                if (pts && p !== last) {
+                  pts.textContent = String(p);
+                  conv.classList.remove('is-pop');
+                  void conv.offsetWidth;
+                  if (p > 0) conv.classList.add('is-pop');
+                  last = p;
+                }
+                conv.style.setProperty('--p', st.progress.toFixed(3));
+              },
+            });
+          }
+
+          // Huellas que caminan: cada fila avanza pie por pie mientras su sección entra en pantalla.
+          gsap.utils.toArray<HTMLElement>('[data-walk]').forEach((w) => {
+            ScrollTrigger.create({
+              trigger: w,
+              start: 'top 95%',
+              end: 'top 35%',
+              scrub: true,
+              onUpdate: (st) => w.style.setProperty('--p', st.progress.toFixed(3)),
+            });
           });
         });
         let t: ReturnType<typeof setTimeout>;

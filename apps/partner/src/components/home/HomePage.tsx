@@ -8,7 +8,9 @@ import Steps from './Steps';
 import Comunidad from './Comunidad';
 import RouteMap from './RouteMap';
 import Video from './Video';
-import { Phone, Title, Foot, Icon, CtaAvisame, Coin, Pts } from './ui';
+import Comercios from './Comercios';
+import Avisame from './Avisame';
+import { Phone, Title, Foot, Icon, CtaAvisame, Coin, Walk } from './ui';
 import { CAP, CONTACTO, DUDAS, LOCALES, RUTA_PREMIOS, RUTAS, TIENDAS, VID_RUTA, VID_TARJETA } from './data';
 
 // Una sola familia: Mona Sans (variable en peso y ancho). Titulares anchos, texto en ancho normal.
@@ -49,6 +51,7 @@ export default function HomePage() {
         <Cierre />
       </main>
       <Footer />
+      <Avisame />
       <HomeMotion />
     </div>
   );
@@ -95,10 +98,10 @@ function Hero() {
           </div>
         </div>
         <div className="hm-hero-visual" aria-hidden="true">
-          <div className="hm-hero-back" data-parallax="0.05">
+          <div className="hm-hero-back">
             <Phone src={CAP.puntos} sizes="(max-width: 1000px) 44vw, 270px" />
           </div>
-          <div className="hm-hero-front" data-parallax="-0.03">
+          <div className="hm-hero-front">
             <Phone src={CAP.inicio} preload sizes="(max-width: 1000px) 60vw, 330px" />
           </div>
         </div>
@@ -111,10 +114,11 @@ function Hero() {
 function ComoFunciona() {
   return (
     <section className="hm-sec" id="como-funciona" data-theme="light">
+      <Walk className="hm-walk-top" />
       <div className="hm-wrap">
         <header className="hm-head">
           <Title text="Así de simple." />
-          <p className="hm-lead">Cuatro momentos, todos dentro de la app. Lo único que pones tú son los pasos.</p>
+          <p className="hm-lead" data-reveal>Cuatro momentos, todos dentro de la app. Lo único que pones tú son los pasos.</p>
         </header>
         <Steps />
       </div>
@@ -129,10 +133,26 @@ function Actividad() {
       <div className="hm-wrap hm-act">
         <div className="hm-act-copy">
           <Title text="Tus pasos|valen." />
-          <p className="hm-lead">
+          <p className="hm-lead" data-reveal>
             Camina lee tus pasos desde Salud o Health Connect y te los muestra en Actividad: tu semana, tu mes y tu racha. Cada día que abres la app,
             tus pasos suman Puntos.
           </p>
+          <div className="hm-conv" data-conv aria-label="10.000 pasos son 10 Puntos">
+            <div>
+              <b data-conv-pasos>10.000</b>
+              <small>pasos</small>
+            </div>
+            <span className="hm-conv-arrow" aria-hidden="true">
+              <i />
+            </span>
+            <div className="hm-conv-pts">
+              <b>
+                <Coin size={40} />
+                <span data-conv-pts>10</span>
+              </b>
+              <small>Puntos</small>
+            </div>
+          </div>
           <dl className="hm-rules" data-reveal>
             <div>
               <dt>
@@ -170,7 +190,7 @@ function Actividad() {
   );
 }
 
-// 4. Premios y comercios: Fripap's como ejemplo real, todos los locales y cómo se canjea.
+// 4. Premios y comercios: los comercios son protagonistas; Fripap's muestra cómo se ve un premio.
 function Premios() {
   const canje = [
     ['Elige el premio', 'En Canjes o en el mapa, según lo que te alcanza.'],
@@ -180,59 +200,30 @@ function Premios() {
   ];
   return (
     <section className="hm-sec" id="premios" data-theme="light">
+      <Walk className="hm-walk-top" />
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
           <Title text="Premios reales,|en tu ciudad." />
-          <p className="hm-lead">Cada comercio elige qué ofrece y cuántos Puntos cuesta. Así se ve uno de verdad.</p>
+          <p className="hm-lead" data-reveal>Los comercios de Tarija ya están en Camina. Toca uno para ver qué premios ofrece y cuántos Puntos cuestan.</p>
         </header>
 
-        <article className="hm-spot" data-reveal>
-          <div className="hm-spot-media">
-            <Image className="hm-spot-cover" src="/web/locales/fripaps-letrero.jpg" alt="Letrero de Fripap's en Tarija, como aparece en la app" width={1040} height={388} sizes="(max-width: 1000px) 94vw, 640px" />
-            <div className="hm-spot-card">
-              <Image src="/web/locales/fripaps-panchito.jpg" alt="" width={235} height={232} className="hm-spot-img" />
-              <div>
-                <span className="hm-spot-local">
-                  <Image src={FRIP.logo} alt="" width={24} height={24} />
-                  {FRIP.nombre}
-                </span>
-                <b>
-                  {PANCHITO.nombre} {PANCHITO.detalle?.toLowerCase()}
-                </b>
-                <Pts n={PANCHITO.puntos} />
-              </div>
-            </div>
+        <Comercios />
+
+        <article className="hm-spot">
+          <div className="hm-spot-copy" data-reveal>
+            <span className="hm-spot-local">
+              <Image src={FRIP.logo} alt="" width={40} height={40} />
+              {FRIP.nombre}
+            </span>
+            <h3>
+              {PANCHITO.nombre} {PANCHITO.detalle?.toLowerCase()} por <span className="hm-spot-pts"><Coin size={30} /> {PANCHITO.puntos}</span> Puntos.
+            </h3>
+            <p>Así se ve un local en la app: sus fotos, su horario, cómo llegar a pie y los premios que puedes canjear hoy.</p>
           </div>
-          <div className="hm-spot-phones">
-            <Phone src={CAP.fichaLocal} alt="Ficha de Fripap's en Camina" sizes="(max-width: 760px) 44vw, 250px" />
-            <Phone src={CAP.premiosFripaps} alt="Premios disponibles en Fripap's: Panchito gratis por 38 Puntos" sizes="(max-width: 760px) 44vw, 250px" />
+          <div className="hm-spot-phone" data-reveal>
+            <Phone src={CAP.fichaLocal} alt="Ficha de Fripap's en Camina" sizes="(max-width: 760px) 66vw, 300px" />
           </div>
         </article>
-
-        <div className="hm-locs-head">
-          <h3>Ya están en Camina</h3>
-          <p>{LOCALES.length} comercios de Tarija, y vienen más.</p>
-        </div>
-        <ul className="hm-locs">
-          {LOCALES.map((l) => (
-            <li key={l.id} className="hm-loc" data-reveal>
-              <Image className="hm-loc-logo" src={l.logo} alt="" width={64} height={64} />
-              <div className="hm-loc-txt">
-                <b>{l.nombre}</b>
-                <small>{l.categoria}</small>
-              </div>
-              {l.premios.length ? (
-                <div className="hm-loc-prem">
-                  <span>{l.premios[0].nombre}</span>
-                  <Pts n={l.premios[0].puntos} label={false} />
-                  {l.premios.length > 1 ? <small>+{l.premios.length - 1} más</small> : null}
-                </div>
-              ) : (
-                <div className="hm-loc-prem is-soon">Premios muy pronto</div>
-              )}
-            </li>
-          ))}
-        </ul>
 
         <div className="hm-canje">
           <div className="hm-canje-copy">
@@ -248,7 +239,7 @@ function Premios() {
                 </li>
               ))}
             </ol>
-            <p className="hm-note">Puedes volver a canjear en el mismo local cada 14 días. Los premios vigentes están siempre en la app.</p>
+            <p className="hm-note">Puedes volver a canjear en el mismo local cada 14 días.</p>
           </div>
           <div className="hm-canje-phone" data-reveal>
             <Phone src={CAP.canjes} alt="Pantalla Canjes de Camina con los comercios y sus premios" sizes="(max-width: 760px) 66vw, 300px" />
@@ -279,10 +270,11 @@ function Premios() {
 function ComunidadSec() {
   return (
     <section className="hm-sec hm-soft" id="comunidad" data-theme="light">
+      <Walk className="hm-walk-top" />
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
           <Title text="Caminar rinde más|con otros." />
-          <p className="hm-lead">Rankings, grupos, rachas e insignias: razones para salir a caminar también mañana.</p>
+          <p className="hm-lead" data-reveal>Rankings, grupos, rachas e insignias: razones para salir a caminar también mañana.</p>
         </header>
         <Comunidad />
         <p className="hm-note">Pantallas de la app con personas de ejemplo.</p>
@@ -303,7 +295,7 @@ function Ruta() {
       <div className="hm-wrap">
         <header className="hm-head hm-head-split">
           <Title text="La Ruta|del mes." />
-          <p className="hm-lead">Cada mes, 3 locales sorpresa de tu ciudad y el camino a pie para visitarlos. Una excusa perfecta para salir a caminar.</p>
+          <p className="hm-lead" data-reveal>Cada mes, 3 locales sorpresa de tu ciudad y el camino a pie para visitarlos. Una excusa perfecta para salir a caminar.</p>
         </header>
         <div className="hm-ruta">
           <div className="hm-ruta-main" data-reveal>
@@ -356,7 +348,7 @@ function Eventos() {
       <div className="hm-wrap hm-evt">
         <div className="hm-evt-copy">
           <Title text="Más que|caminar." />
-          <p className="hm-lead">
+          <p className="hm-lead" data-reveal>
             En la pestaña Eventos aparecen caminatas, desafíos y sorteos con marcas y comercios de tu ciudad. Te sumas desde la app y ganas premios o
             Puntos extra.
           </p>
@@ -397,7 +389,7 @@ function Origen() {
           </figure>
           <div className="hm-origen-copy">
             <Title text="Hecha en Tarija,|para caminarla." />
-            <p className="hm-lead">
+            <p className="hm-lead" data-reveal>
               Camina nace en Tarija con una idea simple: que moverte por tu ciudad tenga premio, y que ese premio esté en los comercios de tu zona.
             </p>
             <p className="hm-origen-p">
@@ -463,13 +455,11 @@ function Cierre() {
       <div className="hm-wrap hm-final-in">
         <Image className="hm-final-icon" src="/marca/logo-solo-transparente.png" alt="" width={88} height={88} />
         <Title text="Tu próximo paso|ya puede sumar." className="hm-final-title" />
-        <p className="hm-lead">Camina es gratis para iPhone y Android. Déjanos tu correo y te avisamos apenas esté en tu tienda.</p>
+        <p className="hm-lead" data-reveal>Camina es gratis para iPhone y Android. Déjanos tu correo y te avisamos apenas esté en tu tienda.</p>
         <div className="hm-cta hm-cta-center">
           <CtaAvisame medir="descargar_avisame" />
         </div>
-        <p className="hm-final-mail">
-          Se abre tu correo con el mensaje listo. Si no se abre, escríbenos a <b>{CONTACTO.email}</b>.
-        </p>
+        <p className="hm-final-mail">Solo te pedimos tu correo. ¿Prefieres escribirnos? {CONTACTO.email}</p>
         <Tiendas />
       </div>
     </section>

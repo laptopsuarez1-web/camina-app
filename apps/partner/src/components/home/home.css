@@ -207,6 +207,10 @@
   --bg: var(--plum);
   --fg: #fff;
   --bg-h: var(--plum-hover);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  translate: var(--mx, 0px) var(--my, 0px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -232,12 +236,32 @@
   --fg: var(--plum);
   --bg-h: var(--mint-hover);
 }
+/* Brillo que sigue al puntero y respuesta al tocar */
+.hm-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(90px circle at var(--sx, 50%) 50%, rgba(255, 255, 255, 0.28), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
 @media (hover: hover) {
   .hm-btn:hover {
     background: var(--bg-h);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px -10px rgba(32, 10, 82, 0.5);
+    box-shadow: 0 10px 24px -12px rgba(32, 10, 82, 0.55);
   }
+  .hm-btn:hover::after {
+    opacity: 1;
+  }
+}
+.hm-btn {
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s,
+    translate 0.4s var(--ease),
+    transform 0.35s var(--ease),
+    box-shadow 0.3s var(--ease);
 }
 .hm-btn:active {
   transform: scale(0.96);
@@ -602,6 +626,7 @@
 }
 .hm-hero-visual {
   position: relative;
+  perspective: 1600px;
   display: grid;
   justify-items: center;
   align-items: center;
@@ -609,6 +634,14 @@
 .hm-hero-back,
 .hm-hero-front {
   grid-area: 1 / 1;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.hm-hero-front {
+  transform: rotateY(-14deg);
+}
+.hm-hero-back {
+  transform: rotateY(-20deg);
 }
 .hm-hero-front .hm-phone {
   --w: clamp(240px, 26vw, 330px);
@@ -940,172 +973,6 @@
 /* ==========================================================================
    4. Premios y comercios
    ========================================================================== */
-.hm-spot {
-  display: grid;
-  gap: 40px;
-  align-items: center;
-  padding: clamp(20px, 3vw, 36px);
-  border-radius: 28px;
-  background: var(--soft);
-}
-@media (min-width: 1000px) {
-  .hm-spot {
-    grid-template-columns: 1.15fr 1fr;
-    gap: 48px;
-  }
-}
-.hm-spot-media {
-  position: relative;
-}
-.hm-spot-cover {
-  width: 100%;
-  aspect-ratio: 1040 / 388;
-  object-fit: cover;
-  border-radius: 18px;
-}
-.hm-spot-card {
-  position: relative;
-  margin: -48px 20px 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px;
-  border-radius: 22px;
-  background: #342f3d; /* tarjeta de premio de la app */
-  color: #fff;
-  box-shadow: 0 20px 40px -20px rgba(17, 19, 24, 0.5);
-}
-.hm-spot-img {
-  width: 76px;
-  height: 76px;
-  border-radius: 16px;
-  object-fit: cover;
-  flex: none;
-}
-.hm-spot-card > div {
-  display: grid;
-  justify-items: start;
-  gap: 4px;
-}
-.hm-spot-local {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: #b7aed6;
-}
-.hm-spot-local img {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-}
-.hm-spot-card b {
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-.hm-spot-phones {
-  display: flex;
-  justify-content: center;
-  gap: clamp(12px, 2vw, 24px);
-}
-.hm-spot-phones .hm-phone {
-  --w: min(42vw, 250px);
-}
-.hm-spot-phones .hm-phone:nth-child(2) {
-  margin-top: 36px;
-}
-.hm-locs-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 24px;
-  margin: clamp(64px, 8vw, 104px) 0 24px;
-}
-.hm-locs-head h3 {
-  font-size: var(--fs-h3);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
-.hm-locs-head p {
-  color: var(--mut);
-}
-.hm-locs {
-  display: grid;
-  gap: 12px;
-}
-@media (min-width: 640px) {
-  .hm-locs {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (min-width: 1100px) {
-  .hm-locs {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-.hm-loc {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  transition:
-    border-color 0.25s,
-    transform 0.35s var(--ease),
-    box-shadow 0.35s var(--ease);
-}
-@media (hover: hover) {
-  .hm-loc:hover {
-    border-color: rgba(17, 19, 24, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 16px 30px -22px rgba(17, 19, 24, 0.5);
-  }
-}
-.hm-loc-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px; /* cuadrados, como en el mapa de la app */
-  object-fit: cover;
-}
-.hm-loc-txt {
-  display: grid;
-  min-width: 0;
-}
-.hm-loc-txt b {
-  font-weight: 680;
-  line-height: 1.25;
-}
-.hm-loc-txt small {
-  color: var(--mut);
-  font-size: 0.86rem;
-}
-.hm-loc-prem {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 10px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font-size: 0.92rem;
-}
-.hm-loc-prem > span:first-child {
-  flex: 1 1 60%;
-  min-width: 0;
-}
-.hm-loc-prem small {
-  width: 100%;
-  color: var(--mut);
-  font-size: 0.8rem;
-}
-.hm-loc-prem.is-soon {
-  color: var(--mut);
-}
 .hm-canje,
 .hm-loyal {
   display: grid;
@@ -1860,4 +1727,518 @@ html:has(.hm) {
 }
 .hm [id] {
   scroll-margin-top: 72px;
+}
+
+/* ==========================================================================
+   Comercios participantes: logos cuadrados como los del mapa de la app
+   ========================================================================== */
+.hm-shops {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: clamp(12px, 2vw, 24px);
+}
+@media (max-width: 520px) {
+  .hm-shops {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+.hm-shop {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 18px 8px 16px;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  perspective: 600px;
+  transition: background-color 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+.hm-shop-logo {
+  position: relative;
+  display: block;
+  width: clamp(72px, 9vw, 96px);
+  aspect-ratio: 1;
+  padding: 5px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(17, 19, 24, 0.08),
+    0 10px 22px -12px rgba(17, 19, 24, 0.45);
+  margin-bottom: 10px;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 0.5s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+/* el piquito del pin del mapa */
+.hm-shop-logo::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: #fff;
+  border-radius: 3px;
+  transform: rotate(45deg);
+  z-index: -1;
+}
+.hm-shop-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 17px;
+}
+.hm-shop b {
+  font-weight: 660;
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+.hm-shop small {
+  color: var(--mut);
+  font-size: 0.82rem;
+}
+@media (hover: hover) {
+  .hm-shop:hover {
+    background: var(--soft);
+  }
+  .hm-shop:hover .hm-shop-logo {
+    box-shadow:
+      0 0 0 3px var(--mint),
+      0 18px 30px -14px rgba(32, 10, 82, 0.5);
+  }
+}
+.hm-shop:active .hm-shop-logo {
+  transform: scale(0.94);
+  transition-duration: 0.1s;
+}
+.hm-js .hm-shops li {
+  opacity: 0;
+  transform: translateY(26px) scale(0.92);
+  transition:
+    opacity 0.6s var(--ease),
+    transform 0.8s var(--ease);
+  transition-delay: calc(var(--i) * 55ms);
+}
+.hm-js .hm-shops.is-in li,
+html:not(.hm-js) .hm-shops li {
+  opacity: 1;
+  transform: none;
+}
+.hm-shop-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-right: 40px;
+}
+.hm-shop-head .hm-shop-logo {
+  width: 64px;
+  margin: 0;
+  flex: none;
+}
+.hm-shop-head .hm-shop-logo::after {
+  display: none;
+}
+.hm-shop-head h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hm-shop-head p {
+  color: var(--mut);
+  font-size: 0.9rem;
+}
+.hm-shop-prem {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+.hm-shop-prem li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.hm-shop-prem b {
+  display: block;
+  font-weight: 620;
+}
+.hm-shop-prem small {
+  color: var(--mut);
+  font-size: 0.86rem;
+}
+.hm-shop-empty {
+  color: var(--mut);
+  padding: 8px 0;
+}
+.hm-shop-note {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--mut);
+}
+
+/* Fripap's: cómo se ve un local en la app */
+.hm-spot {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+  margin-top: clamp(64px, 8vw, 112px);
+}
+@media (min-width: 900px) {
+  .hm-spot {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 64px;
+  }
+}
+.hm-spot-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+  margin-bottom: 16px;
+}
+.hm-spot-local img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.hm-spot h3 {
+  font-size: clamp(1.9rem, 3.6vw, 3.1rem);
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 18px;
+}
+.hm-spot-pts {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 16px 2px 4px;
+  border-radius: 999px;
+  background: var(--app-green);
+  color: #fff;
+  vertical-align: 0.06em;
+  font-size: 0.82em;
+}
+.hm-spot p {
+  color: var(--mut);
+  font-size: var(--fs-lead);
+  max-width: 30em;
+}
+.hm-spot-phone {
+  display: grid;
+  justify-items: center;
+}
+.hm-spot-phone .hm-phone {
+  --w: min(66vw, 300px);
+}
+
+/* ==========================================================================
+   Pasos que se vuelven Puntos (contador ligado al scroll)
+   ========================================================================== */
+.hm-conv {
+  --p: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-top: 40px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  background: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--line-d);
+  font-variant-numeric: tabular-nums;
+}
+.hm-conv > div {
+  display: grid;
+}
+.hm-conv b {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  font-weight: 760;
+  font-stretch: var(--wide);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.hm-conv small {
+  color: var(--mut);
+  margin-top: 6px;
+}
+.hm-conv-pts b {
+  color: var(--mint);
+}
+.hm-conv-arrow {
+  position: relative;
+  flex: 1 1 60px;
+  min-width: 60px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+.hm-conv-arrow i {
+  position: absolute;
+  inset: 0;
+  background: var(--mint);
+  transform-origin: left;
+  transform: scaleX(var(--p));
+}
+.hm-conv.is-pop .hm-coin {
+  animation: hm-pop 0.45s var(--ease);
+}
+@keyframes hm-pop {
+  40% {
+    transform: scale(1.25) rotate(-10deg);
+  }
+}
+
+/* ==========================================================================
+   Huellas que caminan (separadores con movimiento)
+   ========================================================================== */
+.hm-walk {
+  --p: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4vw;
+  color: var(--mint-ink);
+  pointer-events: none;
+  translate: 0 -50%;
+}
+.hm-walk .hm-foot {
+  width: 12px;
+  height: 24px;
+  rotate: 90deg;
+  opacity: clamp(0, calc(var(--p) * var(--n) - var(--i)), 0.55);
+  transform: translateY(calc((1 - clamp(0, calc(var(--p) * var(--n) - var(--i)), 1)) * 10px));
+}
+.hm-walk .hm-foot:nth-child(odd) {
+  translate: 0 -8px;
+}
+.hm-walk .hm-foot:nth-child(even) {
+  translate: 0 8px;
+}
+html:not(.hm-js) .hm-walk {
+  display: none;
+}
+@media (max-width: 760px) {
+  .hm-walk .hm-foot:nth-child(n + 11) {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Diálogos (Avísame y premios de un comercio): hoja desde abajo en el celular, tarjeta en escritorio
+   ========================================================================== */
+.hm-dlg {
+  border: 0;
+  padding: 0;
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 520px;
+  max-height: 88svh;
+  border-radius: 28px 28px 0 0;
+  background: var(--paper);
+  color: var(--text);
+  box-shadow: 0 -20px 60px -20px rgba(17, 19, 24, 0.45);
+  overflow: auto;
+}
+@media (min-width: 640px) {
+  .hm-dlg {
+    margin: auto;
+    border-radius: 28px;
+  }
+}
+.hm-dlg::backdrop {
+  background: rgba(17, 19, 24, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.hm-dlg[open] {
+  animation: hm-sheet 0.5s var(--ease);
+}
+.hm-dlg[open]::backdrop {
+  animation: hm-fade 0.4s ease;
+}
+@keyframes hm-sheet {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+@keyframes hm-fade {
+  from {
+    opacity: 0;
+  }
+}
+.hm-dlg-in {
+  position: relative;
+  padding: 28px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 640px) {
+  .hm-dlg-in {
+    padding: 36px;
+  }
+}
+.hm-dlg-x {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--soft);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.hm-dlg h2 {
+  font-size: 1.6rem;
+  font-weight: 720;
+  font-stretch: var(--wide);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  padding-right: 44px;
+}
+.hm-dlg-sub {
+  color: var(--mut);
+  margin: 8px 0 24px;
+}
+.hm-field {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.hm-field input {
+  font: inherit;
+  font-weight: 450;
+  font-size: 1.05rem;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(17, 19, 24, 0.18);
+  background: var(--paper);
+  color: var(--text);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.hm-field input:focus {
+  outline: none;
+  border-color: var(--plum);
+  box-shadow: 0 0 0 4px rgba(32, 10, 82, 0.12);
+}
+.hm-chips {
+  border: 0;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hm-chips legend {
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+  padding: 0;
+}
+.hm-chips label {
+  position: relative;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.hm-chips label.is-on {
+  background: var(--plum);
+  border-color: var(--plum);
+  color: #fff;
+}
+.hm-chips input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.hm-chips label:has(input:focus-visible) {
+  outline: 2px solid var(--plum);
+  outline-offset: 2px;
+}
+.hm-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+.hm-dlg-err {
+  margin-top: 16px;
+  color: #b42318;
+  font-size: 0.92rem;
+}
+.hm-dlg-send {
+  width: 100%;
+  margin-top: 24px;
+}
+.hm-dlg-send:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+.hm-dlg-ok {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+.hm-dlg-ok p {
+  color: var(--mut);
+}
+.hm-dlg-ok b {
+  color: var(--text);
+}
+.hm-dlg-ok .hm-btn {
+  margin-top: 8px;
+}
+.hm-dlg-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--plum);
+  display: grid;
+  place-items: center;
+  animation: hm-pop 0.5s var(--ease);
+}
+
+/* Texto de apoyo: entra con un desenfoque suave */
+.hm-js .hm-lead[data-reveal] {
+  filter: blur(6px);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.8s var(--ease),
+    filter 0.7s var(--ease);
+}
+.hm-js .hm-lead[data-reveal].is-in {
+  filter: none;
 }

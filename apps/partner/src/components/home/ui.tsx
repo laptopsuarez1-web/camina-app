@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { EMAIL_AVISAME } from './data';
 
 // Piezas visuales compartidas de la portada. Server components: el movimiento lo pone HomeMotion.
 
@@ -47,7 +46,7 @@ export function Title({ text, as: Tag = 'h2', className = '', id }: { text: stri
 // Llamado a la acción principal: hasta que la app esté en las tiendas, pedir que te avisen.
 export function CtaAvisame({ medir, label = 'Avísame cuando salga', className = '' }: { medir: string; label?: string; className?: string }) {
   return (
-    <a className={`hm-btn ${className}`} href={EMAIL_AVISAME} data-medir={medir}>
+    <a className={`hm-btn ${className}`} href="#descargar" data-avisame data-medir={medir}>
       {label}
     </a>
   );
@@ -66,6 +65,17 @@ export function Pts({ n, label = true }: { n: number | string; label?: boolean }
       <b>{n}</b>
       {label ? <small>Puntos</small> : null}
     </span>
+  );
+}
+
+// Fila de huellas que "camina" cuando la sección pasa por la pantalla (la anima HomeMotion).
+export function Walk({ n = 18, className = '' }: { n?: number; className?: string }) {
+  return (
+    <div className={`hm-walk ${className}`} data-walk aria-hidden="true">
+      {Array.from({ length: n }, (_, i) => (
+        <i key={i} className={`hm-foot hm-foot-${i % 2 ? 'R' : 'L'}`} style={{ ['--i' as string]: i, ['--n' as string]: n }} />
+      ))}
+    </div>
   );
 }
 
