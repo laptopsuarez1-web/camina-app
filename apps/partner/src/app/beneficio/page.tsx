@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { VistaPrevia } from '@/components/biz/VistaPrevia';
 import { Gift, Star, Plus, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { supabase, type Benefit, type Business, type OnlineChannel } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
@@ -492,6 +493,24 @@ function BeneficioForm({
     }
   }
 
+  // Tarjeta del premio como la ve una persona en la app (en vivo mientras se carga).
+  const tarjetaPremio = (
+              <div className="rounded-2xl border border-line overflow-hidden bg-bg">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="" className="w-full h-[170px] object-cover" />
+                ) : (
+                  <div className="w-full h-[120px] bg-purple-light flex items-center justify-center"><Gift size={38} color="#8B4FD1" /></div>
+                )}
+                <div className="p-4">
+                  <p className="text-[16px] font-bold leading-tight">{nombre.trim() || 'Sin nombre'}</p>
+                  <p className="text-[13.5px] font-semibold mt-1" style={{ color: 'var(--c-ok-text)' }}>{ofertaTexto}</p>
+                  {descripcion.trim() && <p className="text-[12.5px] text-muted mt-1.5 leading-5">{descripcion.trim()}</p>}
+                  <p className="text-[12.5px] mt-2.5"><b>{Number(costo) || 0} Puntos</b> para canjearlo</p>
+                </div>
+              </div>
+  );
+
   return (
     <DashboardShell>
       <button
@@ -516,7 +535,8 @@ function BeneficioForm({
         </div>
       )}
 
-      <div className="max-w-[540px]">
+      <div className="biz-con-preview">
+      <div className="max-w-[540px] w-full">
         <PasoCabecera paso={paso} total={4} titulos={TITULOS_PASO} ayuda={AYUDA_PASO} onIr={irAPaso} />
 
         {paso === 1 && (
@@ -816,20 +836,7 @@ function BeneficioForm({
         {paso === 4 && (
           <>
             <Paso title="Así lo van a ver" hint="Revisa que todo esté bien antes de guardar.">
-              <div className="rounded-2xl border border-line overflow-hidden bg-bg">
-                {imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imageUrl} alt="" className="w-full h-[170px] object-cover" />
-                ) : (
-                  <div className="w-full h-[120px] bg-purple-light flex items-center justify-center"><Gift size={38} color="#8B4FD1" /></div>
-                )}
-                <div className="p-4">
-                  <p className="text-[16px] font-bold leading-tight">{nombre.trim() || 'Sin nombre'}</p>
-                  <p className="text-[13.5px] font-semibold mt-1" style={{ color: 'var(--c-ok-text)' }}>{ofertaTexto}</p>
-                  {descripcion.trim() && <p className="text-[12.5px] text-muted mt-1.5 leading-5">{descripcion.trim()}</p>}
-                  <p className="text-[12.5px] mt-2.5"><b>{Number(costo) || 0} Puntos</b> para canjearlo</p>
-                </div>
-              </div>
+              {tarjetaPremio}
               <p className="text-[11.5px] text-muted mt-2">Vista aproximada de cómo lo ve una persona en Camina.</p>
             </Paso>
             <Paso title="Resumen">
@@ -885,6 +892,12 @@ function BeneficioForm({
             </button>
           )}
         </div>
+      </div>
+      {paso !== 4 && (
+        <VistaPrevia titulo="Así lo ve la gente en la app">
+          <div className="bg-card rounded-[22px] overflow-hidden">{tarjetaPremio}</div>
+        </VistaPrevia>
+      )}
       </div>
     </DashboardShell>
   );

@@ -55,10 +55,10 @@ export default function PartnersLoginPage() {
     router.replace(destino());
   }
 
-  if (!listo) return <div className="min-h-screen bg-auth-bg" />;
+  if (!listo) return <div className="min-h-screen bg-auth-bg biz biz-auth" />;
 
   return (
-    <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6">
       <Image src="/camina-logo.png" alt="Camina" width={84} height={84} className="rounded-full mb-4" />
       <p className="text-white font-bold text-[22px] mb-1.5">Camina Partners</p>
       <p className="text-auth-muted text-[13px] mb-7 text-center max-w-[290px]">Entra una vez y el panel queda abierto en este celular.</p>

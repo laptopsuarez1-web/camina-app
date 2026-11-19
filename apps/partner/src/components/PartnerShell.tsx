@@ -10,6 +10,7 @@ import { mensajeError } from '@/lib/errors';
 import { usePartnerAuth, partnersWa, type Partner } from '@/lib/partners';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import '@/components/biz/biz.css';
 
 const NAV = [
   { href: '/partners/panel', label: 'Inicio', icon: Home },
@@ -79,53 +80,59 @@ export function PartnerShell({ children }: { children: (p: Partner) => React.Rea
   if (!partner) return <CompletarPerfil onListo={() => void refresh()} />;
 
   const sidebar = (
-    <>
-      <div className="flex items-center gap-2.5 px-2.5 mb-6">
-        <Image src="/camina-logo.png" alt="Camina" width={34} height={34} className="rounded-full" />
-        <div>
-          <p className="text-white font-bold text-[15px] leading-tight tracking-wide">CAMINA</p>
-          <p className="text-auth-muted text-[10.5px] mt-0.5">Partners</p>
-        </div>
+    <div className="biz-side">
+      <div className="biz-brand">
+        <Image src="/camina-logo.png" alt="" width={34} height={34} className="rounded-full" />
+        <span className="biz-label">
+          <b>CAMINA</b>
+          <small>PARTNERS</small>
+        </span>
       </div>
-      <div className="mx-1 mb-5 rounded-xl bg-auth-bg-soft px-3 py-2.5">
-        <p className="text-auth-muted text-[10.5px] uppercase tracking-wider">Tu código</p>
-        <p className="text-mint font-bold text-[18px] tracking-wide">{partner.code}</p>
-        <p className="text-auth-muted text-[11.5px] truncate">{partner.full_name}</p>
+      <div className="biz-local" title={partner.full_name ?? undefined}>
+        <span className="biz-local-logo">{(partner.full_name ?? 'P').slice(0, 1).toUpperCase()}</span>
+        <span className="biz-label min-w-0">
+          <b>{partner.full_name}</b>
+          <span>Tu código: {partner.code}</span>
+        </span>
       </div>
-      <nav className="flex flex-col gap-1">
+      <nav className="biz-nav" aria-label="Panel de partners">
         {NAV.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2.5 px-3 py-3 md:py-2.5 rounded-[10px] text-[14px] md:text-[13.5px] ${active ? 'bg-mint/10 text-white font-semibold' : 'text-[#B3A6D6]'}`}
-            >
-              <Icon size={16} color={active ? '#62F0B6' : '#9385B5'} />
-              {item.label}
+            <Link key={item.href} href={item.href} className={`biz-link${active ? ' is-on' : ''}`} aria-current={active ? 'page' : undefined} title={item.label}>
+              <Icon size={17} color={active ? '#62F0B6' : undefined} />
+              <span className="biz-label">{item.label}</span>
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto pt-5">
+      <div className="biz-foot">
+        <div className="biz-hide-collapsed">
+          <ThemeToggle />
+        </div>
         <a
           href={partnersWa(`Hola! Soy ${partner.full_name}, partner ${partner.code}. Necesito ayuda con Camina Partners.`)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 mb-3 bg-mint text-mint-dark rounded-xl py-2.5 text-[13px] font-semibold"
+          className="biz-link"
+          style={{ color: 'var(--biz-mint)' }}
+          title="Escribir a Camina"
         >
-          <MessageCircle size={16} />
-          Escribir a Camina
+          <MessageCircle size={17} />
+          <span className="biz-label">Escribir a Camina</span>
         </a>
-        <ThemeToggle />
-        <button onClick={salir} className="flex items-center gap-2.5 px-3 py-3 md:py-2.5 w-full text-left text-[#8C7DB8] text-[13px] md:text-[12.5px]">
-          <LogOut size={15} />
-          Cerrar sesión
+        <button onClick={salir} className="biz-link w-full text-left" title="Cerrar sesión">
+          <LogOut size={17} />
+          <span className="biz-label">Cerrar sesión</span>
         </button>
       </div>
-    </>
+    </div>
   );
 
-  return <ResponsiveFrame sidebar={sidebar}>{children(partner)}</ResponsiveFrame>;
+  return (
+    <ResponsiveFrame sidebar={sidebar} variant="biz" etiqueta="PARTNERS">
+      {children(partner)}
+    </ResponsiveFrame>
+  );
 }

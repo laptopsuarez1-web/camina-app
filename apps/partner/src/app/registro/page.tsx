@@ -222,7 +222,7 @@ export default function RegistroPage() {
 
   if (awaitingConfirmation) {
     return (
-      <div className="min-h-screen bg-auth-bg flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-screen bg-auth-bg biz biz-auth flex flex-col items-center justify-center px-6 text-center">
         <p className="text-white font-bold text-[22px] mb-2">Confirma tu correo</p>
         <p className="text-auth-muted text-[13px] mb-7 max-w-[300px]">
           Te mandamos un link a {email}. Ábrelo para activar la cuenta: apenas lo confirmes entras solo al
@@ -246,7 +246,7 @@ export default function RegistroPage() {
   const input = 'w-full bg-card border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]';
 
   return (
-    <div className="min-h-screen bg-bg flex justify-center">
+    <div className="min-h-screen bg-bg flex justify-center biz">
       <div className="w-full max-w-[460px] px-5 py-8">
         <div className="flex items-center gap-2.5 mb-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
