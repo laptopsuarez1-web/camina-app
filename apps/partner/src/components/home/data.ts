@@ -14,7 +14,7 @@ export const LOCALES: Local[] = [
     nombre: 'Bloom',
     categoria: 'Belleza',
     direccion: 'Ramón Rojas entre Madrid e Ingavi',
-    logo: L('bloom-logo'),
+    logo: L('bloom-app'),
     portada: L('bloom-cover'),
     premios: [
       { nombre: 'Retirado de gel / acrílico', detalle: 'Gratis', puntos: 35 },
@@ -27,7 +27,7 @@ export const LOCALES: Local[] = [
     nombre: "Fripap's",
     categoria: 'Gastronomía',
     direccion: 'Calle Virginio Lema casi Suipacha',
-    logo: L('fripaps-logo'),
+    logo: L('fripaps-app'),
     portada: L('fripaps-cover'),
     premios: [
       { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 25 },
@@ -38,7 +38,7 @@ export const LOCALES: Local[] = [
     nombre: 'Coco Barber',
     categoria: 'Barbería',
     direccion: 'Ramón Rojas esquina La Madrid',
-    logo: L('coco-logo'),
+    logo: L('coco-app'),
     portada: L('coco-cover'),
     premios: [
       { nombre: 'Lavado de cabello', puntos: 30 },
@@ -50,7 +50,7 @@ export const LOCALES: Local[] = [
     nombre: 'Cancheritos F.C',
     categoria: 'Gimnasio y deporte',
     direccion: 'Cancha García Agreda',
-    logo: L('cancheritos-logo'),
+    logo: L('cancheritos-app'),
     portada: L('cancheritos-cover'),
     premios: [{ nombre: 'Clase', detalle: 'Gratis', puntos: 10 }],
   },
@@ -59,12 +59,12 @@ export const LOCALES: Local[] = [
     nombre: 'Viviana',
     categoria: 'Estética y belleza',
     direccion: 'Federico Ávila 644',
-    logo: L('viviana-logo'),
+    logo: L('viviana-app'),
     premios: [{ nombre: 'Lavado y planchado', puntos: 150 }],
   },
-  { id: 'galera', nombre: 'Salteñería La Galera', categoria: 'Salteñas y empanadas', direccion: 'Avenida La Paz', logo: L('galera-logo'), premios: [] },
-  { id: 'sabor', nombre: 'Sabor y Vida', categoria: 'Restaurante', direccion: 'Calle Suipacha', logo: L('sabor-logo'), premios: [] },
-  { id: 'luzdevida', nombre: 'Fisioterapia Luz de Vida', categoria: 'Fisioterapia', direccion: 'Calle San Roque', logo: L('luzdevida-logo'), premios: [] },
+  { id: 'galera', nombre: 'Salteñería La Galera', categoria: 'Salteñas y empanadas', direccion: 'Avenida La Paz', logo: L('galera-app'), premios: [] },
+  { id: 'sabor', nombre: 'Sabor y Vida', categoria: 'Restaurante', direccion: 'Calle Suipacha', logo: L('sabor-app'), premios: [] },
+  { id: 'luzdevida', nombre: 'Fisioterapia Luz de Vida', categoria: 'Fisioterapia', direccion: 'Calle San Roque', logo: L('luzdevida-app'), premios: [] },
 ];
 
 export const CONTACTO = {
@@ -176,20 +176,20 @@ export const COMUNIDAD = [
     alt: 'Grupo de Camina con podio y meta de la semana',
   },
   {
-    id: 'rachas',
-    tab: 'Rachas',
-    t: 'No cortes la racha.',
-    d: 'Cada día seguido con 5.000 pasos o más suma a tu racha, y tus Retos Camina te dan Puntos extra.',
-    img: CAP.rachas,
-    alt: 'Pantalla de rachas en Camina',
-  },
-  {
     id: 'insignias',
     tab: 'Insignias',
     t: 'Tus locales favoritos, en tu perfil.',
     d: 'Cada canje te sube de nivel en ese local: Visitante, Habitual y Fan. Eliges hasta 5 insignias para mostrar.',
     img: '/web/app/insignias-app.jpg',
     alt: 'Pantalla Mis insignias de Camina',
+  },
+  {
+    id: 'eventos',
+    tab: 'Eventos',
+    t: 'Más que caminar.',
+    d: 'Caminatas, desafíos y sorteos con marcas y comercios de tu ciudad. Te sumas desde la app y ganas premios o Puntos extra.',
+    img: CAP.eventos,
+    alt: 'Pantalla Eventos de Camina con eventos de ejemplo',
   },
 ] as const;
 

@@ -156,15 +156,6 @@ export default function HomeMotion() {
             );
           });
 
-          // Héroe: el teléfono principal se endereza y se acerca al bajar; el de atrás se abre hacia un costado.
-          const hero = document.querySelector('.hm-hero');
-          if (hero) {
-            const st = { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.6 };
-            gsap.fromTo('.hm-hero-front', { rotateX: 0, rotateY: -14, scale: 1 }, { rotateX: 8, rotateY: 0, scale: 0.92, y: 60, ease: 'none', scrollTrigger: st });
-            gsap.fromTo('.hm-hero-back', { x: 0, rotateY: -20 }, { x: -60, y: 120, rotateY: 0, opacity: 0.6, ease: 'none', scrollTrigger: st });
-            gsap.to('.hm-hero-copy', { y: -40, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: hero, start: '40% top', end: 'bottom top', scrub: true } });
-          }
-
           // Secciones oscuras: entran como una pantalla que se abre (de tarjeta redondeada a pantalla completa).
           gsap.utils.toArray<HTMLElement>('.hm-sec.hm-dark').forEach((sec) => {
             gsap.fromTo(
@@ -200,17 +191,6 @@ export default function HomeMotion() {
               },
             });
           }
-
-          // Huellas que caminan: cada fila avanza pie por pie mientras su sección entra en pantalla.
-          gsap.utils.toArray<HTMLElement>('[data-walk]').forEach((w) => {
-            ScrollTrigger.create({
-              trigger: w,
-              start: 'top 95%',
-              end: 'top 35%',
-              scrub: true,
-              onUpdate: (st) => w.style.setProperty('--p', st.progress.toFixed(3)),
-            });
-          });
         });
         let t: ReturnType<typeof setTimeout>;
         let lastH = document.body.scrollHeight;
