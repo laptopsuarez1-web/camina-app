@@ -3048,3 +3048,24 @@ html:not(.hm-js) .hm-pagewalk {
 .hm-hero {
   padding-bottom: clamp(56px, 7vw, 96px);
 }
+/* Héroe con una sola pantalla: el aro se llena una vez y el teléfono flota suave */
+.hm-js .hm-heroph-ring-fg {
+  animation: hm-ring-once 2.4s cubic-bezier(0.3, 0, 0.1, 1) 0.4s both;
+  stroke-dashoffset: 18;
+}
+@keyframes hm-ring-once {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 18;
+  }
+}
+.hm-heroph-ring-fg {
+  stroke-dashoffset: 18;
+}
+.hm-js .hm-heroph .hm-phone {
+  animation:
+    hm-up 1s var(--ease) 0.15s both,
+    hm-float 7s ease-in-out 1.2s infinite;
+}
