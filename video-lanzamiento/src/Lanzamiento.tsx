@@ -262,7 +262,7 @@ const Escena04 = () => {
   const cruce = 2000;
   const fCruce = Math.ceil(((cruce - 1912) / (2040 - 1912)) * 90);
   const pop = interpolate(f, [fCruce, fCruce + 6, fCruce + 18], [0, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const act = interpolate(f, [100, 112], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const act = interpolate(f, [100, 114], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
   return (
     <AbsoluteFill>
       <FondoMarca />
@@ -276,9 +276,11 @@ const Escena04 = () => {
       </Textos>
       <Escenario entra={-20}>
         <InicioVivo pasos={pasos} saldo={247 + (pasos >= cruce ? 1 : 0)} pop={pop} />
-        <div style={{ position: 'absolute', inset: 0, opacity: act }}>
-          <Pantalla src="app/actividad-dark.jpg" />
-        </div>
+        {act > 0 && (
+          <div style={{ position: 'absolute', inset: 0, transform: `translateX(${(1 - act) * 100}%)`, boxShadow: '-20px 0 40px rgba(0,0,0,0.5)' }}>
+            <Pantalla src="app/actividad-dark.jpg" />
+          </div>
+        )}
       </Escenario>
       <MasUno en={fCruce} x={v ? 640 : 1520} y={v ? 1060 : 330} />
     </AbsoluteFill>
@@ -370,16 +372,18 @@ const Escena06 = () => {
             <Pantalla src="app/canjes.jpg" style={{ transform: `translateY(${baja}%)`, height: '118%' }} />
           </div>
         )}
-        {hoja > 0 && (
-          <AbsoluteFill style={{ justifyContent: 'flex-end' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', opacity: hoja }} />
-            <div style={{ position: 'relative', transform: `translateY(${(1 - hoja) * 100}%)`, borderRadius: '7% 7% 0 0', overflow: 'hidden' }}>
-              <Img src={staticFile('app/hoja-codigo.jpg')} style={{ display: 'block', width: '100%', opacity: 1 - confirmado }} />
-              {confirmado > 0 && (
-                <Img src={staticFile('app/hoja-confirmado.jpg')} style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', opacity: confirmado }} />
-              )}
-            </div>
-          </AbsoluteFill>
+        {hoja > 0 && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', opacity: hoja }} />}
+        {hoja > 0 && confirmado < 1 && (
+          <Img
+            src={staticFile('app/hoja-codigo.jpg')}
+            style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - hoja) * 100}%)`, opacity: 1 - confirmado }}
+          />
+        )}
+        {confirmado > 0 && (
+          <Img
+            src={staticFile('app/hoja-confirmado.jpg')}
+            style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - confirmado) * 8}%)`, opacity: confirmado }}
+          />
         )}
       </Escenario>
     </AbsoluteFill>
@@ -425,7 +429,7 @@ const EscenaMas = () => {
       </Textos>
       <Escenario entra={-20}>
         {MAS.map(([src], k) => (
-          <div key={src} style={{ position: 'absolute', inset: 0, opacity: interpolate(f, [k * 30, k * 30 + 6], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
+          <div key={src} style={{ position: 'absolute', inset: 0, opacity: k === 0 ? 1 : interpolate(f, [k * 30, k * 30 + 6], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
             <Pantalla src={src} style={{ transform: `scale(${interpolate(f, [k * 30, k * 30 + 40], [1.06, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })})` }} />
           </div>
         ))}

@@ -125,6 +125,6 @@ export const Pantalla = ({ src, style }: { src: string; style?: CSSProperties })
   <Img src={staticFile(src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', ...style }} />
 );
 
-export const Moneda = ({ size }: { size: number }) => <Img src={staticFile('app/camina-coin.png')} style={{ width: size, height: size }} />;
+export const Moneda = ({ size }: { size: number }) => <Img src={staticFile('app/moneda.png')} style={{ width: size, height: size }} />;
 
 export const fmt = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');

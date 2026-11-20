@@ -31,7 +31,7 @@ export const InicioVivo = ({ pasos, saldo, pop = 0 }: { pasos: number; saldo: nu
       <circle cx={punto.x} cy={punto.y} r={14} fill="#fff" />
       {/* Saldo de Puntos */}
       <rect x={51} y={221} width={230} height={94} rx={47} fill="#40335e" />
-      <image href={staticFile('app/camina-coin.png')} x={68} y={241} width={54} height={54} />
+      <image href={staticFile('app/moneda.png')} x={68} y={241} width={54} height={54} />
       <text x={138} y={286} fontFamily="Jakarta" fontWeight={500} fontSize={41} fill="#fff">
         {fmt(saldo)}
       </text>
@@ -52,7 +52,7 @@ export const InicioVivo = ({ pasos, saldo, pop = 0 }: { pasos: number; saldo: nu
       </text>
       <g transform={`translate(${CX} 957) scale(${escalaChip}) translate(${-CX} -957)`}>
         <rect x={CX - 118} y={921} width={236} height={72} rx={36} fill={pop > 0 ? `rgba(98,240,182,${0.14 + 0.3 * pop})` : '#20313c'} />
-        <image href={staticFile('app/camina-coin.png')} x={CX - 104} y={934} width={46} height={46} />
+        <image href={staticFile('app/moneda.png')} x={CX - 104} y={934} width={46} height={46} />
         <text x={CX - 48} y={970} fontFamily="Jakarta" fontWeight={700} fontSize={37} fill="#7bf5bf">
           +{puntos} {puntos === 1 ? 'Punto' : 'Puntos'}
         </text>
