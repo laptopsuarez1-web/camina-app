@@ -5,8 +5,8 @@ import { C, fmt, Linea, Moneda, Pantalla, Telefono, titular, Toma, suave, useVer
 import { InicioVivo } from './InicioVivo';
 
 // CAMINA · Video oficial de lanzamiento (35 s, 30 fps). Funciona en vertical 1080×1920 y en horizontal 1920×1080.
-// Guion: 01 Tarija (0–4) · 02 El movimiento (4–8) · 03 Te presentamos Camina (8–11) · 04 Caminá (11–16)
-// 05 Sumá puntos (16–21) · 06 Disfrutá beneficios (21–27) · 07 Cierre de marca (27–35).
+// Guion: 01 Tarija (0–3,5) · 02 El movimiento (3,5–7) · 03 Te presentamos Camina (7–10) · 04 Caminá (10–14,5)
+// 05 Sumá puntos (14,5–18,5) · 06 Disfrutá beneficios (18,5–24) · 06b Y mucho más (24–27) · 07 Cierre de marca (27–35).
 // Todas las pantallas son capturas reales de la app con datos de ejemplo. Música y efectos: originales (scripts/musica.py).
 
 const S = (s: number) => Math.round(s * 30);
@@ -14,29 +14,32 @@ const S = (s: number) => Math.round(s * 30);
 export const Lanzamiento = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: C.negro }}>
-      <Sequence name="01 Tarija" from={0} durationInFrames={S(4)}>
+      <Sequence name="01 Tarija" from={0} durationInFrames={S(3.5)}>
         <Escena01 />
       </Sequence>
-      <Sequence name="02 El movimiento" from={S(4)} durationInFrames={S(4)}>
+      <Sequence name="02 El movimiento" from={S(3.5)} durationInFrames={S(3.5)}>
         <Escena02 />
       </Sequence>
-      <Sequence name="03 Te presentamos Camina" from={S(8)} durationInFrames={S(3)}>
+      <Sequence name="03 Te presentamos Camina" from={S(7)} durationInFrames={S(3)}>
         <Escena03 />
       </Sequence>
-      <Sequence name="04 Caminá" from={S(11)} durationInFrames={S(5)}>
+      <Sequence name="04 Caminá" from={S(10)} durationInFrames={S(4.5)}>
         <Escena04 />
       </Sequence>
-      <Sequence name="05 Sumá puntos" from={S(16)} durationInFrames={S(5)}>
+      <Sequence name="05 Sumá puntos" from={S(14.5)} durationInFrames={S(4)}>
         <Escena05 />
       </Sequence>
-      <Sequence name="06 Disfrutá beneficios" from={S(21)} durationInFrames={S(6.05)}>
+      <Sequence name="06 Disfrutá beneficios" from={S(18.5)} durationInFrames={S(5.5)}>
         <Escena06 />
+      </Sequence>
+      <Sequence name="06b Y mucho más" from={S(24)} durationInFrames={S(27.05) - S(24)}>
+        <EscenaMas />
       </Sequence>
       <Sequence name="07 Cierre" from={S(27.05)} durationInFrames={S(35) - S(27.05)}>
         <Escena07 />
       </Sequence>
-      <Destello en={S(4)} />
-      <Destello en={S(8)} />
+      <Destello en={S(3.5)} />
+      <Destello en={S(7)} />
       <Destello en={S(27.05)} />
       <Audio name="Música" src={staticFile('audio/musica.wav')} />
       <Audio name="Efectos" src={staticFile('audio/sfx.wav')} />
@@ -91,14 +94,14 @@ const Escena01 = () => {
   const f = useCurrentFrame();
   const v = useVertical();
   const negro = interpolate(f, [0, 20], [1, 0], { extrapolateRight: 'clamp' });
-  const esp = interpolate(f, [20, 110], [0.5, 0.18], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
-  const o = interpolate(f, [22, 40, 108, 120], [0, 1, 1, 0.9], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const esp = interpolate(f, [20, 98], [0.5, 0.18], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const o = interpolate(f, [22, 40, 96, 105], [0, 1, 1, 0.9], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
       <Toma src="tarija/aerea.mp4" zoom={[1.0, 1.12]} posicion={v ? '62% center' : 'center'} oscurecer={0.2} />
       <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ ...titular, fontSize: v ? 190 : 210, letterSpacing: `${esp}em`, opacity: o, textShadow: '0 10px 60px rgba(0,0,0,0.45)', paddingLeft: `${esp}em` }}>
-          Tarija.
+          Tarija
         </div>
       </AbsoluteFill>
       <AbsoluteFill style={{ backgroundColor: C.negro, opacity: negro }} />
@@ -111,13 +114,13 @@ const Escena02 = () => {
   const v = useVertical();
   return (
     <AbsoluteFill>
-      <Sequence name="Pies en la calle" durationInFrames={40}>
+      <Sequence name="Pies en la calle" durationInFrames={35}>
         <Toma src="tarija/pies-gente.mp4" desde={60} zoom={[1.1, 1.18]} oscurecer={0.3} />
       </Sequence>
-      <Sequence name="Pies (primera persona)" from={40} durationInFrames={40}>
+      <Sequence name="Pies (primera persona)" from={35} durationInFrames={35}>
         <Toma src="tarija/pies-pov.mp4" desde={10} zoom={[1.05, 1.12]} oscurecer={0.3} />
       </Sequence>
-      <Sequence name="Plaza" from={80} durationInFrames={40}>
+      <Sequence name="Plaza" from={70} durationInFrames={35}>
         <Toma src="tarija/plaza.mp4" desde={20} zoom={[1.12, 1.2]} posicion={v ? '45% center' : 'center'} oscurecer={0.35} />
       </Sequence>
       <AbsoluteFill style={{ background: v ? 'linear-gradient(180deg, rgba(11,11,13,0.78) 0%, rgba(11,11,13,0.35) 38%, transparent 55%)' : 'linear-gradient(90deg, rgba(11,11,13,0.75) 0%, transparent 55%)' }} />
@@ -154,7 +157,7 @@ const Escenario = ({ children, entra = 0, escala = 1, foco = [50, 50] }: { child
   const { fps } = useVideoConfig();
   const v = useVertical();
   const sp = spring({ frame: f - entra, fps, config: { damping: 200 } });
-  const ancho = v ? 500 : 400;
+  const ancho = v ? 500 : 360;
   const y = (1 - sp) * 260;
   return (
     <AbsoluteFill style={{ justifyContent: v ? 'flex-end' : 'center', alignItems: v ? 'center' : 'flex-end', padding: v ? '0 0 110px' : '0 210px 0 0' }}>
@@ -170,8 +173,8 @@ const Escena03 = () => {
   const f = useCurrentFrame();
   const v = useVertical();
   // En el teléfono: primero el logo (como al abrir la app) y después el Inicio.
-  const logo = interpolate(f, [8, 22, 52, 62], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const logoEsc = interpolate(f, [8, 30], [0.7, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const logo = interpolate(f, [38, 50], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const logoEsc = interpolate(f, [0, 30], [0.75, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
   return (
     <AbsoluteFill>
       <FondoMarca />
@@ -255,11 +258,11 @@ const Escena04 = () => {
   const f = useCurrentFrame();
   const v = useVertical();
   // Los pasos suben de 1.912 a 2.040: al cruzar 2.000 se suma 1 Punto (regla real: 1.000 pasos = 1 Punto).
-  const pasos = Math.round(interpolate(f, [0, 100], [1912, 2040], { extrapolateRight: 'clamp' }));
+  const pasos = Math.round(interpolate(f, [0, 90], [1912, 2040], { extrapolateRight: 'clamp' }));
   const cruce = 2000;
-  const fCruce = Math.ceil(((cruce - 1912) / (2040 - 1912)) * 100);
+  const fCruce = Math.ceil(((cruce - 1912) / (2040 - 1912)) * 90);
   const pop = interpolate(f, [fCruce, fCruce + 6, fCruce + 18], [0, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const act = interpolate(f, [104, 116], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const act = interpolate(f, [100, 112], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
       <FondoMarca />
@@ -286,7 +289,7 @@ const Escena04 = () => {
 const Escena05 = () => {
   const f = useCurrentFrame();
   const v = useVertical();
-  const zoom = interpolate(f, [10, 70], [1, v ? 1.18 : 1.28], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const zoom = interpolate(f, [10, 70], [1, 1.22], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
   return (
     <AbsoluteFill>
       <FondoMarca />
@@ -298,12 +301,12 @@ const Escena05 = () => {
         <Sub entra={16}>Convertí tu actividad en recompensas.</Sub>
         <Regla entra={40} />
       </Textos>
-      <Escenario entra={-20} escala={zoom} foco={[30, 8]}>
-        <Pantalla src="app/puntos-nuevo-dark.jpg" />
+      <Escenario entra={-20}>
+        <Pantalla src="app/puntos-nuevo-dark.jpg" style={{ transform: `scale(${zoom})`, transformOrigin: '18% 10%' }} />
       </Escenario>
-      <MasUno en={S(1.2)} x={v ? 640 : 1500} y={v ? 900 : 250} />
-      <MasUno en={S(2.0)} x={v ? 700 : 1580} y={v ? 990 : 320} />
-      <MasUno en={S(2.8)} x={v ? 620 : 1490} y={v ? 1080 : 390} />
+      <MasUno en={S(1.0)} x={v ? 730 : 1560} y={v ? 1150 : 300} />
+      <MasUno en={S(1.7)} x={v ? 760 : 1600} y={v ? 1250 : 380} />
+      <MasUno en={S(2.4)} x={v ? 730 : 1560} y={v ? 1350 : 460} />
     </AbsoluteFill>
   );
 };
@@ -341,49 +344,95 @@ const Regla = ({ entra }: { entra: number }) => {
 // ---------- 06 · Disfrutá beneficios ----------
 const Escena06 = () => {
   const f = useCurrentFrame();
-  const v = useVertical();
   const a = (x: number, y: number) => interpolate(f, [x, y], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  // Mapa (0–1,8 s) → lista de Canjes que baja (1,8–3,3 s) → código del local (3,3–5,1 s) → canje confirmado.
-  const lista = a(48, 56);
-  const baja = interpolate(f, [60, 96], [0, -18], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
-  const codigo = a(96, 104);
-  const confirmado = a(150, 156);
+  // Mapa → lista de Canjes (baja) → hoja «Pídele al local su código» → «¡Canje confirmado!».
+  const lista = a(36, 44);
+  const baja = interpolate(f, [46, 74], [0, -16], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const hoja = interpolate(f, [92, 106], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const confirmado = a(128, 134);
   return (
     <AbsoluteFill>
       <FondoMarca />
       <Textos>
         <Numero n="3" entra={0} />
-        <Linea entra={4} style={{ ...titular, fontSize: v ? 96 : 96 }}>
+        <Linea entra={4} style={{ ...titular, fontSize: 96 }}>
           Disfrutá
         </Linea>
-        <Linea entra={9} style={{ ...titular, fontSize: v ? 96 : 96, color: C.verde }}>
+        <Linea entra={9} style={{ ...titular, fontSize: 96, color: C.verde }}>
           beneficios.
         </Linea>
         <Sub entra={16}>Tus puntos te acercan a nuevos beneficios.</Sub>
       </Textos>
       <Escenario entra={-20}>
         <Pantalla src="app/mapa-comercios.jpg" />
-        <div style={{ position: 'absolute', inset: 0, opacity: lista, overflow: 'hidden' }}>
-          <Pantalla src="app/canjes.jpg" style={{ objectPosition: 'top', transform: `translateY(${baja}%)`, height: '118%' }} />
-        </div>
-        <div style={{ position: 'absolute', inset: 0, opacity: codigo, background: '#1a1033' }}>
-          <PantallaParcial src="app/old-codigo.jpg" />
-        </div>
-        <div style={{ position: 'absolute', inset: 0, opacity: confirmado, background: '#1a1033' }}>
-          <PantallaParcial src="app/old-confirmado.jpg" />
-        </div>
+        {lista > 0 && (
+          <div style={{ position: 'absolute', inset: 0, opacity: lista, overflow: 'hidden', background: '#1a1033' }}>
+            <Pantalla src="app/canjes.jpg" style={{ transform: `translateY(${baja}%)`, height: '118%' }} />
+          </div>
+        )}
+        {hoja > 0 && (
+          <AbsoluteFill style={{ justifyContent: 'flex-end' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', opacity: hoja }} />
+            <div style={{ position: 'relative', transform: `translateY(${(1 - hoja) * 100}%)`, borderRadius: '7% 7% 0 0', overflow: 'hidden' }}>
+              <Img src={staticFile('app/hoja-codigo.jpg')} style={{ display: 'block', width: '100%', opacity: 1 - confirmado }} />
+              {confirmado > 0 && (
+                <Img src={staticFile('app/hoja-confirmado.jpg')} style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', opacity: confirmado }} />
+              )}
+            </div>
+          </AbsoluteFill>
+        )}
       </Escenario>
     </AbsoluteFill>
   );
 };
 
-// Hojas de la app (código y confirmación) que suben desde abajo, como en la app.
-const PantallaParcial = ({ src }: { src: string }) => (
-  <AbsoluteFill style={{ justifyContent: 'flex-end' }}>
-    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)' }} />
-    <Img src={staticFile(src)} style={{ position: 'relative', width: '100%', borderRadius: '6% 6% 0 0' }} />
-  </AbsoluteFill>
-);
+// ---------- 06b · Y mucho más: Ruta del mes, Ranking y Perfil ----------
+const MAS = [
+  ['app/ruta.jpg', 'Ruta del mes'],
+  ['app/ranking.jpg', 'Ranking semanal'],
+  ['app/perfil.jpg', 'Tu perfil e insignias'],
+] as const;
+
+const EscenaMas = () => {
+  const f = useCurrentFrame();
+  const v = useVertical();
+  const i = Math.min(2, Math.floor(f / 30));
+  return (
+    <AbsoluteFill>
+      <FondoMarca />
+      <Textos>
+        <Linea entra={0} style={{ ...titular, fontSize: v ? 96 : 84 }}>
+          Y mucho <span style={{ color: C.verde }}>más.</span>
+        </Linea>
+        <div style={{ marginTop: 26, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {MAS.map(([, t], k) => (
+            <div
+              key={t}
+              style={{
+                fontFamily: 'Mona',
+                fontWeight: 600,
+                fontSize: v ? 44 : 38,
+                color: k === i ? C.verde : 'rgba(255,255,255,0.4)',
+                opacity: interpolate(f, [k * 30, k * 30 + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+                transform: `translateX(${k === i ? 0 : -6}px)`,
+              }}
+            >
+              {k === i ? '● ' : '○ '}
+              {t}
+            </div>
+          ))}
+        </div>
+      </Textos>
+      <Escenario entra={-20}>
+        {MAS.map(([src], k) => (
+          <div key={src} style={{ position: 'absolute', inset: 0, opacity: interpolate(f, [k * 30, k * 30 + 6], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
+            <Pantalla src={src} style={{ transform: `scale(${interpolate(f, [k * 30, k * 30 + 40], [1.06, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })})` }} />
+          </div>
+        ))}
+      </Escenario>
+    </AbsoluteFill>
+  );
+};
 
 // ---------- 07 · Cierre de marca ----------
 const Escena07 = () => {
@@ -433,7 +482,7 @@ const Escena07 = () => {
                 Ahora, cada paso
               </Linea>
               <Linea entra={corte + 16} style={{ ...titular, fontSize: v ? 72 : 60, color: C.verde }}>
-                suma.
+                cuenta.
               </Linea>
             </div>
           </div>

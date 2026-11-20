@@ -1,6 +1,6 @@
 # CAMINA · Video oficial de lanzamiento
 
-**Concepto:** TARIJA YA CAMINA. → AHORA, CADA PASO SUMA. → CAMINA · CAMINÁ Y GANÁ.
+**Concepto:** TARIJA YA CAMINA. → AHORA, CADA PASO CUENTA. → CAMINA · CAMINÁ Y GANÁ.
 **Formatos:** vertical 1080 × 1920 (Reels, TikTok, Facebook) y horizontal 1920 × 1080 (YouTube, pantallas). 35 s, 30 fps.
 **Cómo está hecho:** con código ([Remotion](https://www.remotion.dev), React). Cada escena es un componente en `src/Lanzamiento.tsx`; cambiar un texto o un tiempo y volver a exportar lleva minutos.
 
@@ -10,14 +10,15 @@
 
 | Seg. | Escena | Imagen | Texto en pantalla | Sonido |
 |---|---|---|---|---|
-| 0–4 | 01 Tarija | Toma aérea real de la Loma de San Juan y la ciudad (con permiso del autor). Abre desde negro, acercamiento lento, color cálido. | **TARIJA.** (las letras se juntan) | Colchón de acordes y ambiente de ciudad, muy suave. |
-| 4–8 | 02 El movimiento | Pies de gente caminando (Pexels) → caminata en primera persona (Pexels) → Plaza Luis de Fuentes (con permiso). Cortes cada 1,3 s. | **UNA NUEVA FORMA / DE VIVIR / TU CIUDAD.** | Pasos al ritmo, pulso de bombo suave. Destello en el corte. |
-| 8–11 | 03 Te presentamos Camina | Fondo negro con brillo morado y verde. Sube un iPhone: primero el logo (como al abrir la app) y después la pantalla Inicio real. | **TE PRESENTAMOS / CAMINA.** | Barrido de transición. |
-| 11–16 | 04 Caminá | Inicio real en vivo: los pasos suben de 1.912 a 2.040; al cruzar 2.000 se suma 1 Punto (pastilla y saldo). Huellas de Camina caminan al costado. Pasa a la pantalla Actividad real. | **PASO 1 · CAMINÁ.** / Tus pasos diarios cuentan. | Entra el ritmo completo. Sonido de moneda en el +1 Punto. |
-| 16–21 | 05 Sumá puntos | Pantalla «Tus Puntos» real; la cámara se acerca al saldo. Salen tres «+1 Punto». | **PASO 2 · SUMÁ PUNTOS.** / Convertí tu actividad en recompensas. / **1.000 pasos = 1 Punto** (regla real). | Arpegio brillante; tres monedas. |
-| 21–27 | 06 Disfrutá beneficios | Mapa real de Canjes con los comercios → lista real de Canjes (baja) → «Pídele al local su código» → «¡Canje confirmado!». | **PASO 3 · DISFRUTÁ BENEFICIOS.** / Tus puntos te acercan a nuevos beneficios. | Toques al tocar; doble campana al confirmar. Subida hacia el cierre. |
+| 0–3,5 | 01 Tarija | Toma aérea real de la Loma de San Juan y la ciudad (con permiso del autor). Abre desde negro, acercamiento lento, color cálido. | **TARIJA** (las letras se juntan) | Colchón de acordes y ambiente de ciudad, muy suave. |
+| 3,5–7 | 02 El movimiento | Pies de gente caminando (Pexels) → caminata en primera persona (Pexels) → Plaza Luis de Fuentes (con permiso). Cortes cada 1,3 s. | **UNA NUEVA FORMA / DE VIVIR / TU CIUDAD.** | Pasos al ritmo, pulso de bombo suave. Destello en el corte. |
+| 7–10 | 03 Te presentamos Camina | Fondo negro con brillo morado y verde. Sube un iPhone con el logo (como al abrir la app) y pasa a la pantalla Inicio real (la tarjeta de la Ruta muestra el mapa de Tarija). | **TE PRESENTAMOS / CAMINA.** | Barrido de transición. |
+| 10–14,5 | 04 Caminá | Inicio real en vivo: los pasos suben de 1.912 a 2.040; al cruzar 2.000 se suma 1 Punto (pastilla y saldo). Huellas de Camina caminan al costado. Pasa a la pantalla Actividad real. | **PASO 1 · CAMINÁ.** / Tus pasos diarios cuentan. | Entra el ritmo completo. Sonido de moneda en el +1 Punto. |
+| 14,5–18,5 | 05 Sumá puntos | Pantalla «Tus Puntos» real; la cámara se acerca al saldo. Salen tres «+1 Punto». | **PASO 2 · SUMÁ PUNTOS.** / Convertí tu actividad en recompensas. / **1.000 pasos = 1 Punto** (regla real). | Arpegio brillante; tres monedas. |
+| 18,5–24 | 06 Disfrutá beneficios | Mapa real de Canjes con los comercios → lista real de Canjes (baja) → sube la hoja «Pídele al local su código» → «¡Canje confirmado!». | **PASO 3 · DISFRUTÁ BENEFICIOS.** / Tus puntos te acercan a nuevos beneficios. | Toques suaves al escribir el código; campanita al confirmar. |
+| 24–27 | 06b Y mucho más | Ruta del mes (mapa con el recorrido y los 3 locales) → Ranking semanal → Perfil con insignias. Datos de ejemplo (Valentina R., nombres inventados), sin fotos de personas. | **Y MUCHO MÁS.** · Ruta del mes · Ranking semanal · Tu perfil e insignias | Subida hacia el cierre. |
 | 27–30 | 07 Tarija ya camina | La fuente de la Plaza Luis de Fuentes. | **TARIJA / YA CAMINA.** | Golpe grave + acorde abierto. |
-| 30–35 | 07 Cierre | Negro con brillo morado. El logo original entra con rebote y un aro verde que se abre. Después la tarjeta final. | **AHORA, CADA PASO / SUMA.** → **CAMINA** · **CAMINÁ Y GANÁ.** · Muy pronto en App Store y Google Play · caminaapp.com | Segundo golpe (el más fuerte) y el acorde se apaga. |
+| 30–35 | 07 Cierre | Negro con brillo morado. El logo original entra con rebote y un aro verde que se abre. Después la tarjeta final. | **AHORA, CADA PASO / CUENTA.** → **CAMINA** · **CAMINÁ Y GANÁ.** · Muy pronto en App Store y Google Play · caminaapp.com | Segundo golpe (el más fuerte) y el acorde se apaga. |
 
 **Reglas que respeta:** todas las pantallas son capturas reales de la app con datos de ejemplo (Valentina, 247 Puntos); ningún premio inventado (se sacaron las pantallas con el Panchito); la app todavía no está en las tiendas, así que dice «Muy pronto», sin distintivos de descarga.
 
@@ -27,7 +28,7 @@
 |---|---|---|
 | Aérea, parque, plaza, fuente de Tarija | `public/tarija/aerea|parque|plaza|fuente.mp4` | Video «Tarija Bolivia 4K» de YouTube, **con permiso del autor** (confirmado por Camina). |
 | Pies caminando | `public/tarija/pies-gente.mp4`, `pies-pov.mp4` | Pexels (licencia libre, uso comercial). |
-| Pantallas de la app | `public/app/*` | Capturas reales de la app oficial, datos de ejemplo. |
+| Pantallas de la app | `public/app/*` | Capturas reales de la app oficial. Ruta, Ranking y Perfil se limpian con `scripts/pantallas.py` (nombres, fotos y números de ejemplo). |
 | Logo, huellas, moneda | `public/marca/*`, `public/app/camina-coin.png` | Archivos oficiales de Camina. |
 | Música y efectos | `public/audio/musica.wav`, `sfx.wav` | **Originales, generados por código** (`scripts/musica.py`). Sin derechos de terceros. Es una pista provisional: para el lanzamiento conviene una pista con licencia (ver punto 6). |
 | Tipografías | `public/fonts/*` | Mona Sans (OFL) y Plus Jakarta Sans (OFL), las de la web y la app. |
@@ -81,7 +82,7 @@ La pista incluida es original y libre de derechos, pero sencilla. Para la versi�
 ## 7. Texto para publicar
 
 **Instagram / Facebook**
-> Tarija ya camina. Ahora, cada paso suma. 👟
+> Tarija ya camina. Ahora, cada paso cuenta. 👟
 > Camina cuenta tus pasos y los convierte en Puntos para canjear por beneficios en comercios de tu ciudad.
 > Muy pronto en App Store y Google Play. Avisame en caminaapp.com
 > #Tarija #TarijaBolivia #CaminaApp #Caminar

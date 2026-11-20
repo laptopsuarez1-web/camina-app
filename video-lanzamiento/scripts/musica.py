@@ -4,7 +4,7 @@
 # Uso: python3 scripts/musica.py  -> public/audio/musica.wav y public/audio/sfx.wav
 import numpy as np
 from scipy.io import wavfile
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, fftconvolve
 
 SR = 48000
 DUR = 35.0
@@ -63,12 +63,12 @@ for k in range(int(DUR / bar) + 1):
     s *= env(n, 0.6, 0.2, 0.9, 0.5)
     place(pad, s / 12, k * bar)
 pad = lp(pad, 1800)
-pad_gain = ramp(0.0, 0.55, 0, 2.5) * (1 + 0.4 * ramp(0, 1, 11, 27)) * (1 - ramp(0, 0.6, 27.0, 27.6) * 0) 
+pad_gain = ramp(0.0, 0.55, 0, 2.5) * (1 + 0.4 * ramp(0, 1, 10, 27)) * (1 - ramp(0, 0.6, 27.0, 27.6) * 0) 
 mus[:, 0] += pad * pad_gain
 mus[:, 1] += np.roll(pad, 240) * pad_gain
 
 # --- Ciudad: ambiente suave (ruido filtrado) solo al comienzo
-amb = bp(rng.normal(0, 1, N), 200, 2500) * 0.05 * (1 - ramp(0, 1, 6, 9))
+amb = bp(rng.normal(0, 1, N), 200, 1500) * 0.025 * (1 - ramp(0, 1, 5, 8))
 mus[:, 0] += amb
 mus[:, 1] += np.roll(amb, 900)
 
@@ -81,25 +81,27 @@ def bombo():
 
 def hat(open_=False):
     n = int((0.25 if open_ else 0.06) * SR)
-    x = hp(rng.normal(0, 1, n), 7000) * np.exp(-np.arange(n) / SR * (12 if open_ else 60))
-    return x * 0.5
+    x = bp(rng.normal(0, 1, n), 6000, 10000) * np.exp(-np.arange(n) / SR * (14 if open_ else 70))
+    return x * 0.22
 
 def clap():
-    n = int(0.25 * SR)
-    x = bp(rng.normal(0, 1, n), 900, 4000) * np.exp(-np.arange(n) / SR * 18)
-    return x * 0.6
+    # golpe suave tipo "snap" grave, sin ruido áspero
+    n = int(0.2 * SR)
+    tt = np.arange(n) / SR
+    x = np.sin(2 * np.pi * 190 * tt) * np.exp(-tt * 30) * 0.5 + bp(rng.normal(0, 1, n), 1200, 2600) * np.exp(-tt * 40) * 0.12
+    return x
 
 drum = np.zeros(N)
-tb = 4.0
+tb = 3.5
 while tb < 27.0:
-    i = round((tb - 4.0) / BEAT)
-    if tb < 8:  # pulso suave, como latido
+    i = round((tb - 3.5) / BEAT)
+    if tb < 7:  # pulso suave, como latido
         if i % 2 == 0:
             place(drum, bombo(), tb, 0.45)
-    elif tb >= 11:
-        place(drum, bombo(), tb, 0.75)
+    elif tb >= 10:
+        place(drum, bombo(), tb, 0.7)
         if i % 2 == 1:
-            place(drum, clap(), tb, 0.55)
+            place(drum, clap(), tb, 0.45)
         place(drum, hat(), tb + BEAT / 2, 0.35)
         if i % 4 == 3:
             place(drum, hat(True), tb + BEAT / 2, 0.25)
@@ -109,7 +111,7 @@ mus[:, 1] += drum
 
 # --- Bajo con arpegio en corcheas (11-27 s)
 bajo = np.zeros(N)
-tb = 11.0
+tb = 10.0
 k = 0
 while tb < 27.0:
     ch = acordes[int((tb) / bar) % 4]
@@ -126,7 +128,7 @@ mus[:, 1] += bajo
 
 # --- Arpegio brillante (16-27 s), "tecnológico"
 arp = np.zeros(N)
-tb = 16.0
+tb = 14.5
 k = 0
 while tb < 27.0:
     ch = acordes[int(tb / bar) % 4]
@@ -144,7 +146,7 @@ mus[:, 1] += np.roll(arp, int(SR * BEAT / 8)) * 0.9
 r0, r1 = 24.0, 27.15
 n = int((r1 - r0) * SR)
 tt = np.arange(n) / SR
-riser = hp(rng.normal(0, 1, n), 800) * (tt / tt[-1]) ** 2 * 0.25
+riser = bp(rng.normal(0, 1, n), 600, 5000) * (tt / tt[-1]) ** 2 * 0.12
 sweep = np.sin(2 * np.pi * np.cumsum(200 + 1600 * (tt / tt[-1]) ** 2) / SR) * (tt / tt[-1]) ** 2 * 0.08
 place(mus[:, 0], riser + sweep, r0)
 place(mus[:, 1], np.roll(riser, 300) + sweep, r0)
@@ -175,6 +177,16 @@ place(mus[:, 0], fin, 30.0, 1.4)
 place(mus[:, 1], np.roll(fin, 300), 30.0, 1.4)
 
 # Fundido de salida y normalizado
+def reverb(x, seg=1.4, wet=0.2):
+    n = int(seg * SR)
+    ir = rng.normal(0, 1, (n, 2)) * np.exp(-np.arange(n) / SR * 4.5)[:, None]
+    ir = np.stack([lp(ir[:, 0], 6000), lp(ir[:, 1], 6000)], 1)
+    ir /= np.sqrt((ir ** 2).sum(0))
+    w = np.stack([fftconvolve(x[:, c], ir[:, c])[: len(x)] for c in range(2)], 1)
+    return x * (1 - wet) + w * wet * 3
+
+mus = reverb(mus, 1.6, 0.18)
+mus = np.stack([lp(mus[:, 0], 11000), lp(mus[:, 1], 11000)], 1)
 mus *= np.clip((DUR - t) / 1.2, 0, 1)[:, None]
 mus /= np.max(np.abs(mus)) * 1.12
 wavfile.write('public/audio/musica.wav', SR, (mus * 32767).astype(np.int16))
@@ -183,48 +195,55 @@ wavfile.write('public/audio/musica.wav', SR, (mus * 32767).astype(np.int16))
 sfx = np.zeros((N, 2))
 
 def paso(at, lado):
-    n = int(0.12 * SR)
-    x = bp(rng.normal(0, 1, n), 120, 1800) * np.exp(-np.arange(n) / SR * 45) * 0.5
+    # pisada suave: golpe grave filtrado, sin ruido agudo
+    n = int(0.16 * SR)
+    tt = np.arange(n) / SR
+    x = (np.sin(2 * np.pi * 95 * tt) * np.exp(-tt * 38) + lp(rng.normal(0, 1, n), 700) * np.exp(-tt * 55) * 0.35) * 0.45
     i = 0 if lado else 1
     place(sfx[:, i], x, at, 1.0)
-    place(sfx[:, 1 - i], x, at, 0.55)
+    place(sfx[:, 1 - i], x, at, 0.6)
 
 for k in range(8):
-    paso(4.0 + k * 0.5, k % 2 == 0)
+    paso(3.5 + k * 0.44, k % 2 == 0)
 
-def whoosh(at, d=0.5, g=0.35):
+def whoosh(at, d=0.8, g=0.12):
     n = int(d * SR)
     tt = np.arange(n) / SR
-    x = rng.normal(0, 1, n)
-    x = bp(x, 300, 6000) * np.sin(np.pi * tt / d) ** 2 * g
+    x = lp(bp(rng.normal(0, 1, n), 250, 3000), 2500) * np.sin(np.pi * tt / d) ** 3 * g
     place(sfx[:, 0], x, at - d / 2)
-    place(sfx[:, 1], np.roll(x, 400), at - d / 2)
+    place(sfx[:, 1], np.roll(x, 600), at - d / 2)
 
-for at in [4.0, 8.0, 11.0, 16.0, 21.0, 27.0]:
+for at in [3.5, 7.0, 10.0, 14.5, 18.5, 24.0, 27.05]:
     whoosh(at)
+for at in [25.0, 26.0]:
+    whoosh(at, 0.5, 0.06)
 
-def moneda(at, g=0.35):
-    n = int(0.6 * SR)
+def moneda(at, g=0.18):
+    # campanita suave (dos notas), como la moneda de la app
+    n = int(0.9 * SR)
     tt = np.arange(n) / SR
-    x = (np.sin(2 * np.pi * 1568 * tt) * np.exp(-tt * 9) + 0.8 * np.sin(2 * np.pi * 2093 * tt) * np.exp(-tt * 7) * (tt > 0.07))
+    x = np.sin(2 * np.pi * 1318 * tt) * np.exp(-tt * 7) + 0.7 * np.sin(2 * np.pi * 1976 * tt) * np.exp(-tt * 6) * (tt > 0.06)
+    x = lp(x, 6000)
     place(sfx[:, 0], x * g, at)
-    place(sfx[:, 1], x * g, at)
+    place(sfx[:, 1], np.roll(x, 300) * g, at)
 
-for at in [13.9, 17.2, 18.0, 18.8]:
+for at in [12.07, 15.5, 16.2, 16.9]:
     moneda(at)
 
-def clic(at, g=0.25):
-    n = int(0.03 * SR)
-    x = hp(rng.normal(0, 1, n), 3000) * np.exp(-np.arange(n) / SR * 200) * g
+def toque(at, g=0.12):
+    n = int(0.05 * SR)
+    tt = np.arange(n) / SR
+    x = np.sin(2 * np.pi * 900 * tt) * np.exp(-tt * 120) * g
     place(sfx[:, 0], x, at)
     place(sfx[:, 1], x, at)
 
-for at in [22.6, 23.9, 24.6, 25.0, 25.4, 25.8]:
-    clic(at)
-# confirmación del canje
-moneda(26.2, 0.45)
-moneda(26.35, 0.35)
+for at in [21.6, 21.8, 22.0, 22.2]:
+    toque(at)
+# confirmación del canje: acorde ascendente suave
+moneda(22.77, 0.22)
+moneda(22.92, 0.18)
 
-sfx /= max(1e-9, np.max(np.abs(sfx))) * 1.25
+sfx = reverb(sfx, 1.0, 0.22)
+sfx /= max(1e-9, np.max(np.abs(sfx))) * 1.6
 wavfile.write('public/audio/sfx.wav', SR, (sfx * 32767).astype(np.int16))
 print('ok')
