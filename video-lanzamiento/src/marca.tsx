@@ -52,7 +52,7 @@ export const Toma = ({
           trimBefore={desde}
           muted
           objectFit="cover"
-          style={{ width: '100%', height: '100%', objectPosition: posicion, filter: 'contrast(1.06) saturate(1.08) sepia(0.06)' }}
+          style={{ width: '100%', height: '100%', objectPosition: posicion, filter: 'contrast(1.05) saturate(1.1)' }}
         />
       </AbsoluteFill>
       <AbsoluteFill
@@ -64,7 +64,8 @@ export const Toma = ({
   );
 };
 
-// Línea de texto que sube desde una máscara (entrada) y se desvanece (salida).
+// Línea de texto que sube desde una máscara (entrada) y se desvanece (salida). Invisible antes de entrar:
+// así las tildes (Á) no asoman por arriba de la máscara.
 export const Linea = ({
   children,
   entra,
@@ -81,7 +82,7 @@ export const Linea = ({
   const o = sale === undefined ? 1 : interpolate(f, [sale, sale + 8], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
     <div style={{ overflow: 'hidden', paddingBottom: '0.08em' }}>
-      <div style={{ transform: `translateY(${(1 - p) * 105}%)`, opacity: o, ...style }}>{children}</div>
+      <div style={{ transform: `translateY(${(1 - p) * 130}%)`, opacity: o * Math.min(1, p * 4), ...style }}>{children}</div>
     </div>
   );
 };

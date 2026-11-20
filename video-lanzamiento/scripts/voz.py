@@ -1,29 +1,22 @@
 # Locución del video con Kokoro (modelo abierto, licencia Apache 2.0: uso comercial permitido).
-# Uso: python3 scripts/voz.py <carpeta-del-modelo>  -> public/voz/{hombre,mujer}-NN.wav
+# Español latinoamericano neutro (fonética es-419: seseo, sin voseo ni «sh» rioplatense), con tuteo.
+# Uso: python3 scripts/voz.py <carpeta-del-modelo> [voz]  -> public/voz/NN.wav
 import sys, numpy as np, soundfile as sf
 from kokoro_onnx import Kokoro
 M = sys.argv[1]
+VOZ = sys.argv[2] if len(sys.argv) > 2 else 'ef_dora'
 k = Kokoro(f'{M}/model.onnx', f'{M}/voices.npz')
 FRASES = [
-    'Tarija se mueve.',
-    'Ahora, cada paso cuenta.',
-    'Caminás... y tus pasos se convierten en puntos.',
-    'Puntos que canjeás por beneficios, en los comercios de tu ciudad.',
-    'Y hay mucho más.',
-    # fonemas a mano para marcar bien el acento de «Caminá y ganá» (pausa entre la marca y el eslogan)
-    'Camina.',
-    ('ph', 'kaminˈa i ɣanˈa.'),
+    ('Hay una nueva forma de moverte.', 0.94),
+    ('Cada paso cuenta.', 0.9),
+    ('Camina, acumula puntos, y disfruta beneficios.', 0.95),
+    ('Tus pasos pueden llevarte más lejos.', 0.93),
+    ('Camina.', 0.85),
 ]
-VOCES = {'hombre': 'em_alex', 'mujer': 'ef_dora'}
-for nombre, voz in VOCES.items():
-    for i, t in enumerate(FRASES, 1):
-        if isinstance(t, tuple):
-            a, sr = k.create(t[1], voice=voz, speed=0.86, lang='es', is_phonemes=True)
-        else:
-            a, sr = k.create(t, voice=voz, speed=0.92, lang='es')
-        a = np.asarray(a, dtype=np.float32)
-        # recorte de silencios de los extremos
-        idx = np.where(np.abs(a) > 0.01)[0]
-        a = a[max(0, idx[0] - int(0.03 * sr)): idx[-1] + int(0.12 * sr)]
-        sf.write(f'public/voz/{nombre}-{i:02d}.wav', a, sr)
-        print(nombre, i, round(len(a) / sr, 2), 's')
+for i, (t, vel) in enumerate(FRASES, 1):
+    a, sr = k.create(t, voice=VOZ, speed=vel, lang='es-419')
+    a = np.asarray(a, dtype=np.float32)
+    idx = np.where(np.abs(a) > 0.01)[0]
+    a = a[max(0, idx[0] - int(0.03 * sr)): idx[-1] + int(0.15 * sr)]
+    sf.write(f'public/voz/{i:02d}.wav', a, sr)
+    print(i, round(len(a) / sr, 2), 's')

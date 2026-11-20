@@ -1,137 +1,119 @@
 import type { ReactNode } from 'react';
-import { AbsoluteFill, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Audio } from '@remotion/media';
-import { C, Linea, Moneda, Pantalla, Telefono, titular, Toma, suave, useVertical } from './marca';
+import { C, Linea, Moneda, Pantalla, Telefono, titular, Toma, suave } from './marca';
 import { InicioVivo } from './InicioVivo';
 
-// CAMINA · Video oficial de lanzamiento (35 s, 30 fps, 120 BPM). Vertical 1080×1920 y horizontal 1920×1080.
-// 01 Tarija se mueve (0–5) · 02 Logo y «Cada paso cuenta» (5–10) · 03 Sumá puntos (10–16)
-// 04 Disfrutá beneficios (16–23) · 05 Hay mucho más (23–29) · 06 Cierre de marca (29–35).
-// Pantallas: capturas reales de la app con datos de ejemplo. Audio: scripts/sonido.py (música, efectos y voz Kokoro).
+// CAMINA · Video oficial de lanzamiento. Vertical 1080 × 1920, 35 s, 30 fps, música a 120 BPM.
+// 01 Tarija se mueve (0–5) · 02 Logo → teléfono, «Cada paso cuenta» (5–10) · 03 Sumá puntos (10–16)
+// 04 Disfrutá beneficios (16–23) · 05 Hay mucho más (23–29) · 06 Cierre: Camina, Caminá y ganá, Muy pronto (29–35).
+// De 5 a 23 s el teléfono es uno solo (sin cortes): cambian las pantallas y la cámara acompaña cada escena.
+// Pantallas: capturas reales de la app con datos de ejemplo. Audio: scripts/sonido.py y scripts/voz.py.
 
 const S = (s: number) => Math.round(s * 30);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
-export type Props = { voz: 'hombre' | 'mujer' };
+export type Props = { voz: boolean };
 
 export const Lanzamiento = ({ voz }: Props) => {
   return (
     <AbsoluteFill style={{ backgroundColor: C.negro }}>
       <Sequence name="01 Tarija se mueve" durationInFrames={S(5)}>
-        <Escena1 />
+        <Apertura />
+      </Sequence>
+      <Sequence name="Fondo de marca" from={S(5)} durationInFrames={S(18)}>
+        <Fondo />
+      </Sequence>
+      <Sequence name="Teléfono (5–23 s)" from={S(5)} durationInFrames={S(18)}>
+        <TelefonoCentral />
       </Sequence>
       <Sequence name="02 Cada paso cuenta" from={S(5)} durationInFrames={S(5)}>
-        <Escena2 />
+        <LogoATelefono />
+        <Titulos>
+          <T entra={60} sale={142}>
+            Cada paso
+          </T>
+          <T entra={66} sale={142} verde>
+            cuenta
+          </T>
+        </Titulos>
       </Sequence>
       <Sequence name="03 Sumá puntos" from={S(10)} durationInFrames={S(6)}>
-        <Escena3 />
+        <SumaPuntos />
       </Sequence>
       <Sequence name="04 Disfrutá beneficios" from={S(16)} durationInFrames={S(7)}>
-        <Escena4 />
+        <Beneficios />
       </Sequence>
       <Sequence name="05 Hay mucho más" from={S(23)} durationInFrames={S(6)}>
-        <Escena5 />
+        <MuchoMas />
       </Sequence>
       <Sequence name="06 Cierre" from={S(29)} durationInFrames={S(6)}>
-        <Escena6 />
+        <Cierre />
       </Sequence>
       <Destello en={S(5)} />
       <Destello en={S(29)} fuerte />
-      <Audio name="Mezcla" src={staticFile(`audio/mezcla-${voz}.wav`)} />
+      <Audio name="Mezcla" src={staticFile(`audio/mezcla-${voz ? 'con-voz' : 'sin-voz'}.wav`)} />
     </AbsoluteFill>
   );
 };
 
 const Destello = ({ en, fuerte = false }: { en: number; fuerte?: boolean }) => {
   const f = useCurrentFrame();
-  const o = interpolate(f, [en - 1, en, en + (fuerte ? 10 : 6)], [0, fuerte ? 0.55 : 0.35, 0], clamp);
-  return <AbsoluteFill style={{ backgroundColor: '#eafff6', opacity: o, pointerEvents: 'none' }} />;
+  const o = interpolate(f, [en - 1, en, en + (fuerte ? 10 : 6)], [0, fuerte ? 0.5 : 0.3, 0], clamp);
+  return <AbsoluteFill style={{ backgroundColor: '#ffffff', opacity: o, pointerEvents: 'none' }} />;
 };
 
-// ---------- Geometría del teléfono (grande, protagonista) ----------
-const useTel = () => {
-  const v = useVertical();
-  const ancho = v ? 600 : 410;
-  const borde = ancho * 0.028;
-  const alto = (ancho * 1691) / 780 + borde * 2;
-  const left = v ? (1080 - ancho) / 2 - borde : 1920 - 190 - ancho - borde * 2;
-  const top = v ? 545 : (1080 - alto) / 2;
-  // de coordenadas de la captura (780 de ancho) a coordenadas del video
-  const a = (x: number, y: number) => ({ x: left + borde + (x * ancho) / 780, y: top + borde + (y * ancho) / 780 });
-  return { v, ancho, borde, alto, left, top, a };
-};
+// ---------- Geometría del teléfono ----------
+const ANCHO = 600;
+const BORDE = ANCHO * 0.028;
+const LEFT = (1080 - ANCHO) / 2 - BORDE;
+const TOP = 545;
+// de coordenadas de la captura (780 de ancho) a coordenadas del video
+const a = (x: number, y: number) => ({ x: LEFT + BORDE + (x * ANCHO) / 780, y: TOP + BORDE + (y * ANCHO) / 780 });
 
-// Teléfono con entrada en 3D (gira levemente y sube) y flotación suave.
-const Escenario = ({ children, entra = 0, giro = -14 }: { children: ReactNode; entra?: number; giro?: number }) => {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const { ancho, left, top } = useTel();
-  const sp = spring({ frame: f - entra, fps, config: { damping: 18, mass: 0.9 } });
-  const ry = giro * (1 - sp) + Math.sin(f / 28) * 2.2;
-  const rx = 6 * (1 - sp) + Math.cos(f / 33) * 1.2;
-  return (
-    <div style={{ position: 'absolute', left, top, perspective: 2200 }}>
-      <div style={{ transform: `translateY(${(1 - sp) * 380}px) rotateY(${ry}deg) rotateX(${rx}deg)`, opacity: Math.min(1, sp * 1.6) }}>
-        <Telefono ancho={ancho}>{children}</Telefono>
-      </div>
-    </div>
-  );
-};
-
-// Fondo de marca: negro, brillo verde que respira y morado abajo (parallax suave).
+// Fondo de marca: negro, brillo verde que respira y morado abajo.
 const Fondo = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill
       style={{
-        background: `radial-gradient(55% 40% at ${50 + Math.sin(f / 45) * 8}% ${62 + Math.cos(f / 50) * 4}%, rgba(98,240,182,0.18), transparent 70%), radial-gradient(80% 55% at 15% 105%, rgba(32,10,82,0.95), transparent 70%), radial-gradient(60% 40% at 100% 0%, rgba(32,10,82,0.6), transparent 70%), ${C.negro}`,
+        background: `radial-gradient(55% 40% at ${50 + Math.sin(f / 45) * 8}% ${62 + Math.cos(f / 50) * 4}%, rgba(98,240,182,0.12), transparent 70%), radial-gradient(80% 55% at 15% 105%, rgba(32,10,82,0.95), transparent 70%), radial-gradient(60% 40% at 100% 0%, rgba(32,10,82,0.6), transparent 70%), ${C.negro}`,
       }}
     />
   );
 };
 
-// Bloque de títulos: arriba en vertical, a la izquierda en horizontal.
-const Titulos = ({ children }: { children: ReactNode }) => {
-  const v = useVertical();
-  return (
-    <div style={v ? { position: 'absolute', left: 80, right: 80, top: 150 } : { position: 'absolute', left: 130, width: 900, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-      {children}
-    </div>
-  );
-};
+const Titulos = ({ children }: { children: ReactNode }) => <div style={{ position: 'absolute', left: 80, right: 80, top: 150 }}>{children}</div>;
 
-const T = ({ children, entra, verde = false, size }: { children: ReactNode; entra: number; verde?: boolean; size?: number }) => {
-  const v = useVertical();
-  return (
-    <Linea entra={entra} style={{ ...titular, fontSize: size ?? (v ? 132 : 120), color: verde ? C.verde : C.blanco }}>
-      {children}
-    </Linea>
-  );
-};
+const T = ({ children, entra, sale, verde = false, size = 132 }: { children: ReactNode; entra: number; sale?: number; verde?: boolean; size?: number }) => (
+  <Linea entra={entra} sale={sale} style={{ ...titular, fontSize: size, color: verde ? C.verde : C.blanco }}>
+    {children}
+  </Linea>
+);
 
 // ---------- 01 · Tarija se mueve ----------
-const Escena1 = () => {
+// Tomas reales de Tarija (con permiso del autor), cortadas en vertical a más resolución que el cuadro: nítidas.
+const Apertura = () => {
   const f = useCurrentFrame();
-  const v = useVertical();
-  const negro = interpolate(f, [0, 14], [1, 0], clamp);
+  const negro = interpolate(f, [0, 6], [1, 0], clamp);
   return (
     <AbsoluteFill>
-      <Sequence name="Aérea" durationInFrames={S(2)}>
-        <Toma src="tarija/aerea.mp4" zoom={[1.0, 1.1]} posicion={v ? '62% center' : 'center'} oscurecer={0.25} />
+      <Sequence name="Loma de San Juan" durationInFrames={S(2)}>
+        <Toma src="tarija/v/aerea.mp4" zoom={[1.0, 1.07]} oscurecer={0.1} />
       </Sequence>
-      <Sequence name="Pies" from={S(2)} durationInFrames={S(1.5)}>
-        <Toma src="tarija/pies-gente.mp4" desde={60} zoom={[1.12, 1.2]} oscurecer={0.3} />
+      <Sequence name="Plaza con gente" from={S(2)} durationInFrames={S(1)}>
+        <Toma src="tarija/v/gente-plaza.mp4" zoom={[1.03, 1.08]} oscurecer={0.1} />
       </Sequence>
-      <Sequence name="Plaza" from={S(3.5)} durationInFrames={S(1.5)}>
-        <Toma src="tarija/plaza.mp4" desde={20} zoom={[1.1, 1.18]} posicion={v ? '45% center' : 'center'} oscurecer={0.3} />
+      <Sequence name="Fuente de la plaza" from={S(3)} durationInFrames={S(2)}>
+        <Toma src="tarija/v/fuente.mp4" zoom={[1.0, 1.08]} oscurecer={0.1} />
       </Sequence>
-      <AbsoluteFill style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(11,11,13,0.75) 100%)' }} />
-      <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: v ? 420 : 170, textAlign: 'center' }}>
-        <Linea entra={8} style={{ ...titular, fontSize: v ? 230 : 210, letterSpacing: `${interpolate(f, [8, 140], [0.12, 0.02], clamp)}em` }}>
+      <AbsoluteFill style={{ background: 'linear-gradient(180deg, transparent 45%, rgba(11,11,13,0.7) 100%)' }} />
+      <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 430, textAlign: 'center' }}>
+        <Linea entra={6} style={{ ...titular, fontSize: 230, letterSpacing: `${interpolate(f, [6, 150], [0.12, 0.02], clamp)}em`, textShadow: '0 8px 40px rgba(0,0,0,0.35)' }}>
           Tarija
         </Linea>
-        <Linea entra={22} style={{ ...titular, fontSize: v ? 120 : 110, color: C.verde }}>
-          se mueve.
+        <Linea entra={16} style={{ ...titular, fontSize: 124, color: C.verde, textShadow: '0 8px 40px rgba(0,0,0,0.35)' }}>
+          se mueve
         </Linea>
       </AbsoluteFill>
       <AbsoluteFill style={{ backgroundColor: C.negro, opacity: negro }} />
@@ -139,44 +121,139 @@ const Escena1 = () => {
   );
 };
 
-// ---------- 02 · Logo → teléfono · Cada paso cuenta ----------
-const Escena2 = () => {
+// ---------- 02 · Logo que entra en el teléfono ----------
+// El logo aparece al centro y vuela hasta la pantalla del teléfono, que lo recibe como pantalla de bienvenida.
+const LOGO = 420;
+const LOGO_TEL = 230;
+const centroTel = a(390, 845);
+const LogoATelefono = () => {
   const f = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
-  const v = useVertical();
-  const pop = spring({ frame: f, fps, config: { damping: 11, mass: 0.7 } });
-  const sale = interpolate(f, [40, 62], [0, 1], { ...clamp, easing: suave });
-  const aro = interpolate(f, [0, 30], [0, 1], { ...clamp, easing: suave });
-  const tam = v ? 420 : 380;
+  const { fps } = useVideoConfig();
+  if (f > 60) return null;
+  const pop = spring({ frame: f, fps, config: { damping: 12, mass: 0.7 } });
+  const vuela = interpolate(f, [30, 56], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const aro = interpolate(f, [0, 26], [0, 1], { ...clamp, easing: suave });
+  const x = 540 + (centroTel.x - 540) * vuela;
+  const y = 960 + (centroTel.y - 960) * vuela;
+  const tam = LOGO + (LOGO_TEL - LOGO) * vuela;
+  const o = interpolate(f, [52, 58], [1, 0], clamp);
   return (
-    <AbsoluteFill>
-      <Fondo />
-      {f < 66 && (
-        <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <div
-            style={{
-              position: 'relative',
-              width: tam,
-              height: tam,
-              transform: `translate(${sale * (v ? 0 : width * 0.18)}px, ${sale * (v ? height * 0.12 : 0)}px) scale(${(0.55 + 0.45 * pop) * (1 - 0.6 * sale)})`,
-              opacity: 1 - sale,
-            }}
-          >
-            <div style={{ position: 'absolute', inset: -tam * 0.25, borderRadius: '50%', border: `${3 + 12 * (1 - aro)}px solid rgba(98,240,182,${0.6 * (1 - aro)})`, transform: `scale(${0.7 + 0.6 * aro})` }} />
-            <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: '0 0 160px rgba(98,240,182,0.35)' }} />
-          </div>
-        </AbsoluteFill>
-      )}
-      <Titulos>
-        <T entra={50}>Cada paso</T>
-        <T entra={56} verde>
-          cuenta.
-        </T>
-      </Titulos>
-      <Escenario entra={44}>
-        <InicioVivo pasos={1912} saldo={247} />
-      </Escenario>
+    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', left: x - tam / 2, top: y - tam / 2, width: tam, height: tam, opacity: o, transform: `scale(${0.6 + 0.4 * pop}) rotate(${(1 - pop) * -10}deg)` }}>
+        {aro < 1 && <div style={{ position: 'absolute', inset: -tam * 0.22, borderRadius: '50%', border: `${2 + 8 * (1 - aro)}px solid rgba(255,255,255,${0.5 * (1 - aro)})`, transform: `scale(${0.75 + 0.55 * aro})` }} />}
+        <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: '0 30px 120px rgba(0,0,0,0.6), 0 0 120px rgba(110,70,230,0.45)' }} />
+        <Brillo f={f} desde={12} />
+      </div>
     </AbsoluteFill>
+  );
+};
+
+// Reflejo de luz que cruza el logo una vez.
+const Brillo = ({ f, desde }: { f: number; desde: number }) => {
+  const p = interpolate(f, [desde, desde + 18], [-60, 160], clamp);
+  if (p <= -60 || p >= 160) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-20%', bottom: '-20%', left: `${p}%`, width: '30%', transform: 'translateX(-50%) rotate(20deg)', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)' }} />
+    </div>
+  );
+};
+
+// ---------- Teléfono de 5 a 23 s ----------
+// g: cuadro local (0 = 5 s). La escena 3 empieza en g=150 (10 s) y la 4 en g=330 (16 s).
+const E3 = 150;
+const E4 = 330;
+const LISTA_H = 2361; // canjes-lista.jpg: 780 × 2361, Fripap's (premio en y≈1021) y debajo Bloom
+
+// Pasos del Inicio: suben con suavidad hasta completar el aro (2.000 pasos); recién ahí se suma el Punto.
+const pasosEn = (g: number) => {
+  const l = g - E3;
+  if (l < 0) return interpolate(g, [60, E3], [1584, 1620], clamp);
+  if (l < 60) return interpolate(l, [6, 54], [1620, 2000], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  return interpolate(l, [64, 140], [2000, 2036], { ...clamp, easing: Easing.out(Easing.quad) });
+};
+const COMPLETO = E3 + 54; // el aro se completa
+const SALDO = E3 + 80; // la moneda llega al saldo
+
+const TelefonoCentral = () => {
+  const g = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const entra = spring({ frame: g - 30, fps, config: { damping: 18, mass: 0.9 } });
+  // golpe de cámara en cada cambio de escena (va y vuelve, sin saltos)
+  const golpe = (en: number) => (g < en ? 0 : Math.sin(Math.PI * interpolate(g, [en, en + 24], [0, 1], { ...clamp, easing: Easing.inOut(Easing.sin) })));
+  const k3 = golpe(E3);
+  const k4 = golpe(E4);
+  const ry = -16 * (1 - entra) + Math.sin(g / 28) * 2.2 + 7 * k3 - 7 * k4;
+  const rx = 7 * (1 - entra) + Math.cos(g / 33) * 1.2;
+  const sc = 1 + 0.03 * k3 + 0.03 * k4;
+
+  // Inicio en vivo
+  const pasos = pasosEn(g);
+  const l = g - E3;
+  const lleno = g >= COMPLETO ? interpolate(l, [62, 74], [1, 0], clamp) : 0;
+  const brillo = interpolate(l, [54, 58, 74], [0, 1, 0], clamp);
+  const pop = interpolate(l, [56, 62, 78], [0, 1, 0], clamp);
+  const bump = interpolate(g, [SALDO, SALDO + 4, SALDO + 16], [0, 1, 0], clamp);
+  const saldo = g >= SALDO ? 248 : 247;
+  const bienvenida = interpolate(g, [60, 72], [1, 0], clamp);
+  const act = interpolate(l, [100, 114], [0, 1], { ...clamp, easing: suave });
+  const pts = interpolate(l, [140, 154], [0, 1], { ...clamp, easing: suave });
+  const zoomPts = interpolate(l, [154, 180], [1, 1.28], { ...clamp, easing: suave });
+
+  // Beneficios
+  const m = g - E4;
+  const mapa = interpolate(m, [0, 14], [0, 1], { ...clamp, easing: suave });
+  const lista = interpolate(m, [30, 44], [0, 1], { ...clamp, easing: suave });
+  const zoomIn = interpolate(m, [54, 78], [0, 1], { ...clamp, easing: suave });
+  const zoomOut = interpolate(m, [100, 114], [0, 1], { ...clamp, easing: suave });
+  const z = 1 + 0.55 * zoomIn * (1 - zoomOut);
+  const scroll = interpolate(m, [100, 126], [0, 560], { ...clamp, easing: suave });
+  const hoja = interpolate(m, [130, 142], [0, 1], { ...clamp, easing: suave });
+  const conf = interpolate(m, [168, 174], [0, 1], { ...clamp, easing: suave });
+
+  const capa = (children: ReactNode, x: number, y = 0, sombra = true) => (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', transform: `translate(${x * 100}%, ${y * 100}%)`, boxShadow: sombra ? '-24px 0 50px rgba(0,0,0,0.55)' : undefined }}>{children}</div>
+  );
+
+  return (
+    <div style={{ position: 'absolute', left: LEFT, top: TOP, perspective: 2200 }}>
+      <div style={{ transform: `translateY(${(1 - entra) * 420}px) rotateY(${ry}deg) rotateX(${rx}deg) scale(${sc})`, opacity: Math.min(1, entra * 1.8) }}>
+        <Telefono ancho={ANCHO}>
+          {/* Escenas 2 y 3: bienvenida → Inicio → Actividad → Tus Puntos */}
+          {mapa < 1 && (
+            <>
+              {capa(<InicioVivo pasos={pasos} saldo={saldo} pop={pop} lleno={lleno} brillo={brillo} bump={bump} />, -0.3 * act, 0, false)}
+              {bienvenida > 0 && (
+                <AbsoluteFill style={{ background: '#200a52', opacity: bienvenida, justifyContent: 'center', alignItems: 'center' }}>
+                  <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: LOGO_TEL, height: LOGO_TEL, borderRadius: '50%', opacity: interpolate(g, [50, 57], [0, 1], clamp), transform: `scale(${1 + 0.08 * (1 - bienvenida)})` }} />
+                </AbsoluteFill>
+              )}
+              {act > 0 && capa(<Pantalla src="app/actividad-248.jpg" />, 1 - act - 0.3 * pts)}
+              {pts > 0 && capa(<Pantalla src="app/puntos-248.jpg" style={{ transform: `scale(${zoomPts})`, transformOrigin: '22% 12%' }} />, 1 - pts)}
+            </>
+          )}
+          {/* Escena 4: mapa de comercios → lista de canjes (Fripap's, Bloom) → código → canje confirmado */}
+          {mapa > 0 && lista < 1 && capa(<Pantalla src="app/mapa-comercios.jpg" />, 1 - mapa)}
+          {lista > 0 &&
+            capa(
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#16131f' }}>
+                <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '42% 60%' }}>
+                  <Img src={staticFile('app/canjes-lista.jpg')} style={{ position: 'absolute', left: 0, top: 0, width: '100%', transform: `translateY(-${(scroll / LISTA_H) * 100}%)` }} />
+                </div>
+              </div>,
+              0,
+              1 - lista,
+            )}
+          {hoja > 0 && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', opacity: hoja }} />}
+          {hoja > 0 && conf === 0 && (
+            <Img src={staticFile('app/hoja-codigo.jpg')} style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - hoja) * 100}%)` }} />
+          )}
+          {conf > 0 && (
+            <Img src={staticFile('app/hoja-confirmado.jpg')} style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - conf) * 40}%)` }} />
+          )}
+        </Telefono>
+      </div>
+    </div>
   );
 };
 
@@ -196,21 +273,22 @@ const Vuela = ({ desde, hasta, en, dur = 22, size = 64 }: { desde: { x: number; 
   );
 };
 
-// Pastilla "+1 Punto" que sale del aro.
+// Pastilla "+1 Punto" que sale del aro cuando se completa.
 const MasUno = ({ en, x, y }: { en: number; x: number; y: number }) => {
   const f = useCurrentFrame();
-  const v = useVertical();
-  if (f < en || f > en + 40) return null;
-  const p = interpolate(f, [en, en + 8, en + 30, en + 40], [0, 1, 1, 0], clamp);
-  const dy = interpolate(f, [en, en + 40], [30, -90], { ...clamp, easing: suave });
+  const { fps } = useVideoConfig();
+  if (f < en || f > en + 44) return null;
+  const sp = spring({ frame: f - en, fps, config: { damping: 11, mass: 0.6 } });
+  const o = interpolate(f, [en + 34, en + 44], [1, 0], clamp);
+  const dy = interpolate(f, [en, en + 44], [20, -80], { ...clamp, easing: suave });
   return (
     <div
       style={{
         position: 'absolute',
         left: x,
         top: y + dy,
-        transform: `translateX(-50%) scale(${0.7 + 0.3 * p})`,
-        opacity: p,
+        transform: `translateX(-50%) scale(${0.5 + 0.5 * sp})`,
+        opacity: o * Math.min(1, sp * 2),
         display: 'flex',
         alignItems: 'center',
         gap: 14,
@@ -220,25 +298,25 @@ const MasUno = ({ en, x, y }: { en: number; x: number; y: number }) => {
         color: '#12281f',
         fontFamily: 'Jakarta',
         fontWeight: 800,
-        fontSize: v ? 48 : 40,
+        fontSize: 48,
         whiteSpace: 'nowrap',
         boxShadow: '0 0 0 14px rgba(98,240,182,0.18), 0 24px 60px -18px rgba(98,240,182,0.9)',
       }}
     >
-      <Moneda size={v ? 62 : 54} />+1 Punto
+      <Moneda size={62} />
+      +1 Punto
     </div>
   );
 };
 
-const Pildora = ({ entra, children }: { entra: number; children: ReactNode }) => {
+const Pildora = ({ entra, sale, children }: { entra: number; sale?: number; children: ReactNode }) => {
   const f = useCurrentFrame();
-  const v = useVertical();
   const p = interpolate(f, [entra, entra + 14], [0, 1], { ...clamp, easing: suave });
+  const o = sale === undefined ? 1 : interpolate(f, [sale, sale + 8], [1, 0], clamp);
   return (
     <div
       style={{
         display: 'inline-flex',
-        alignSelf: 'flex-start',
         alignItems: 'center',
         gap: 16,
         marginTop: 28,
@@ -249,8 +327,8 @@ const Pildora = ({ entra, children }: { entra: number; children: ReactNode }) =>
         color: '#fff',
         fontFamily: 'Jakarta',
         fontWeight: 800,
-        fontSize: v ? 44 : 38,
-        opacity: p,
+        fontSize: 44,
+        opacity: p * o,
         transform: `translateY(${(1 - p) * 24}px)`,
       }}
     >
@@ -260,203 +338,185 @@ const Pildora = ({ entra, children }: { entra: number; children: ReactNode }) =>
 };
 
 // ---------- 03 · Sumá puntos ----------
-const Escena3 = () => {
-  const f = useCurrentFrame();
-  const { a, ancho } = useTel();
-  const v = useVertical();
-  // Los pasos suben de 1.945 a 2.030: al cruzar 2.000 se suma 1 Punto (regla real: 1.000 pasos = 1 Punto).
-  const pasos = Math.round(interpolate(f, [6, 70], [1945, 2030], clamp));
-  const fCruce = 6 + Math.ceil(((2000 - 1945) / 85) * 64);
-  const pop = interpolate(f, [fCruce, fCruce + 6, fCruce + 18], [0, 1, 0], clamp);
-  const act = interpolate(f, [96, 110], [0, 1], { ...clamp, easing: suave });
-  const pts = interpolate(f, [138, 152], [0, 1], { ...clamp, easing: suave });
-  const zoom = interpolate(f, [150, 180], [1, 1.28], { ...clamp, easing: suave });
+const SumaPuntos = () => {
   const aro = a(390, 556);
   const saldo = a(110, 178);
+  const l = COMPLETO - E3;
   return (
     <AbsoluteFill>
-      <Fondo />
       <Titulos>
-        <T entra={0}>Sumá</T>
-        <T entra={6} verde>
-          puntos.
+        <T entra={0} sale={172}>
+          Sumá
         </T>
-        <Pildora entra={16}>
-          <Moneda size={v ? 58 : 50} />
+        <T entra={6} sale={172} verde>
+          puntos
+        </T>
+        <Pildora entra={16} sale={172}>
+          <Moneda size={58} />
           1.000 pasos = 1 Punto
         </Pildora>
       </Titulos>
-      <Escenario entra={-18}>
-        <InicioVivo pasos={pasos} saldo={247 + (pasos >= 2000 ? 1 : 0)} pop={pop} />
-        {act > 0 && (
-          <div style={{ position: 'absolute', inset: 0, transform: `translateX(${(1 - act) * 100}%)`, boxShadow: '-24px 0 50px rgba(0,0,0,0.55)' }}>
-            <Pantalla src="app/actividad-dark.jpg" />
-          </div>
-        )}
-        {pts > 0 && (
-          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', transform: `translateX(${(1 - pts) * 100}%)`, boxShadow: '-24px 0 50px rgba(0,0,0,0.55)' }}>
-            <Pantalla src="app/puntos-nuevo-dark.jpg" style={{ transform: `scale(${zoom})`, transformOrigin: '22% 12%' }} />
-          </div>
-        )}
-      </Escenario>
-      <MasUno en={fCruce} x={aro.x + ancho * (v ? 0.36 : 0.5)} y={aro.y - 150} />
-      <Vuela desde={aro} hasta={saldo} en={fCruce + 6} dur={20} />
+      <MasUno en={l + 2} x={aro.x + ANCHO * 0.36} y={aro.y - 150} />
+      <Vuela desde={aro} hasta={saldo} en={l + 6} dur={20} />
     </AbsoluteFill>
   );
 };
 
 // ---------- 04 · Disfrutá beneficios ----------
-// canjes-lista.jpg: 780 × 2361. Fripap's (premio en y≈1021) y debajo Bloom (desde y≈1093).
-const LISTA_H = 2361;
-const Escena4 = () => {
-  const f = useCurrentFrame();
-  const { a } = useTel();
-  const v = useVertical();
-  const zoomIn = interpolate(f, [36, 60], [0, 1], { ...clamp, easing: suave });
-  const zoomOut = interpolate(f, [78, 96], [0, 1], { ...clamp, easing: suave });
-  const z = 1 + 0.55 * zoomIn * (1 - zoomOut);
-  const scroll = interpolate(f, [80, 108], [0, 560], { ...clamp, easing: suave });
-  const hoja = interpolate(f, [112, 126], [0, 1], { ...clamp, easing: suave });
-  const conf = interpolate(f, [156, 162], [0, 1], { ...clamp, easing: suave });
+const Beneficios = () => {
   const premio = a(330, 1021);
   return (
     <AbsoluteFill>
-      <Fondo />
       <Titulos>
-        <T entra={0} size={v ? 120 : 108}>
+        <T entra={0} sale={202} size={120}>
           Disfrutá
         </T>
-        <T entra={6} verde size={v ? 120 : 108}>
-          beneficios.
+        <T entra={6} sale={202} verde size={120}>
+          beneficios
         </T>
       </Titulos>
-      <Escenario entra={-18}>
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#16131f' }}>
-          <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '42% 60%' }}>
-            <Img
-              src={staticFile('app/canjes-lista.jpg')}
-              style={{ position: 'absolute', left: 0, top: 0, width: '100%', transform: `translateY(-${(scroll / LISTA_H) * 100}%)` }}
-            />
-          </div>
-        </div>
-        {hoja > 0 && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', opacity: hoja }} />}
-        {hoja > 0 && conf === 0 && (
-          <Img
-            src={staticFile('app/hoja-codigo.jpg')}
-            style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - hoja) * 100}%)` }}
-          />
-        )}
-        {conf > 0 && (
-          <Img
-            src={staticFile('app/hoja-confirmado.jpg')}
-            style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', borderRadius: '7% 7% 0 0 / 5% 5% 0 0', transform: `translateY(${(1 - conf) * 40}%)` }}
-          />
-        )}
-      </Escenario>
       {/* Los Puntos se usan en el premio */}
-      <Vuela desde={{ x: v ? 140 : 300, y: v ? 470 : 760 }} hasta={premio} en={48} />
-      <Vuela desde={{ x: v ? 240 : 420, y: v ? 470 : 800 }} hasta={premio} en={55} />
-      <Vuela desde={{ x: v ? 340 : 540, y: v ? 470 : 840 }} hasta={premio} en={62} />
+      <Vuela desde={{ x: 140, y: 470 }} hasta={premio} en={62} />
+      <Vuela desde={{ x: 240, y: 470 }} hasta={premio} en={69} />
+      <Vuela desde={{ x: 340, y: 470 }} hasta={premio} en={76} />
     </AbsoluteFill>
   );
 };
 
-// ---------- 05 · Hay mucho más (carrusel) ----------
+// ---------- 05 · Hay mucho más ----------
+// Pasos en primera persona (1 s) → una pantalla protagonista por vez (1 s cada una, al ritmo) → la ciudad (1 s).
 const MAS = [
   ['app/ruta.jpg', 'Ruta del mes'],
-  ['app/mapa-comercios.jpg', 'Mapa de comercios'],
-  ['app/grupo.jpg', 'Grupos'],
-  ['app/grupo-chat.jpg', 'Chat del grupo'],
+  ['app/grupo-chat.jpg', 'Grupos y chat'],
   ['app/ranking.jpg', 'Ranking semanal'],
-  ['app/perfil.jpg', 'Tu perfil'],
+  ['app/perfil.jpg', 'Tu perfil e insignias'],
 ] as const;
-
-const Escena5 = () => {
-  const f = useCurrentFrame();
+const MuchoMas = () => {
+  const h = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const v = useVertical();
-  const { ancho, top, left } = useTel();
-  const i = Math.min(MAS.length - 1, Math.floor(f / 30));
-  // posición continua del carrusel con un resorte por cada paso
-  let pos = 0;
-  for (let k = 1; k < MAS.length; k++) pos += spring({ frame: f - k * 30 + 6, fps, config: { damping: 20, mass: 0.7 } });
-  const paso = v ? 640 : 520;
+  const s = h - 30;
+  const i = Math.max(0, Math.min(MAS.length - 1, Math.floor(s / 30)));
+  const t = i === 0 ? 1 : interpolate(s - i * 30, [0, 12], [0, 1], { ...clamp, easing: suave });
+  const entra = spring({ frame: s + 2, fps, config: { damping: 16, mass: 0.7 } });
+  const giro = i === 0 ? 0 : Math.sin(Math.PI * interpolate(s - i * 30, [0, 20], [0, 1], { ...clamp, easing: Easing.inOut(Easing.sin) }));
+  const ry = -14 * (1 - entra) + (i % 2 ? 1 : -1) * 6 * giro + Math.sin(h / 28) * 2;
   return (
     <AbsoluteFill>
-      <Fondo />
-      <Titulos>
-        <T entra={0} size={v ? 112 : 100}>
-          Hay mucho
-        </T>
-        <T entra={5} verde size={v ? 112 : 100}>
-          más.
-        </T>
-        <div style={{ marginTop: 22, height: v ? 70 : 60, overflow: 'hidden' }}>
-          <div key={i} style={{ fontFamily: 'Mona', fontWeight: 700, fontStretch: '110%', fontSize: v ? 58 : 50, color: '#fff', transform: `translateY(${interpolate(f - i * 30, [0, 10], [60, 0], { ...clamp, easing: suave })}px)` }}>
-            {MAS[i][1]}
-          </div>
-        </div>
-      </Titulos>
-      {MAS.map(([src], k) => {
-        const d = k - pos;
-        if (Math.abs(d) > 1.6) return null;
-        const sc = 1 - Math.min(1, Math.abs(d)) * 0.28;
-        return (
-          <div
-            key={src}
-            style={{
-              position: 'absolute',
-              left: left + d * paso,
-              top: top + (v ? 40 : 0),
-              perspective: 2000,
-              zIndex: 10 - Math.round(Math.abs(d) * 4),
-              opacity: 1 - Math.min(1, Math.abs(d)) * 0.45,
-            }}
-          >
-            <div style={{ transform: `scale(${sc}) rotateY(${-d * 22}deg)` }}>
-              <Telefono ancho={ancho}>
-                <Pantalla src={src} />
+      {h < 30 && <Toma src="tarija/v/pov.mp4" zoom={[1.0, 1.05]} oscurecer={0.15} />}
+      {h < 30 && <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.6) 0%, transparent 45%)' }} />}
+      {h >= 30 && h < 150 && (
+        <>
+          <Fondo />
+          <div style={{ position: 'absolute', left: LEFT, top: TOP + 60, perspective: 2200 }}>
+            <div style={{ transform: `translateY(${(1 - entra) * 500}px) rotateY(${ry}deg)` }}>
+              <Telefono ancho={ANCHO}>
+                {i > 0 && (
+                  <div style={{ position: 'absolute', inset: 0, transform: `translateX(${-30 * t}%)`, filter: `brightness(${1 - 0.4 * t})` }}>
+                    <Pantalla src={MAS[i - 1][0]} />
+                  </div>
+                )}
+                <div style={{ position: 'absolute', inset: 0, transform: `translateX(${(1 - t) * 100}%)`, boxShadow: '-24px 0 50px rgba(0,0,0,0.55)' }}>
+                  <Pantalla src={MAS[i][0]} />
+                </div>
               </Telefono>
             </div>
           </div>
-        );
-      })}
+        </>
+      )}
+      {h >= 150 && <Toma src="tarija/v/ciudad.mp4" zoom={[1.0, 1.06]} oscurecer={0.12} />}
+      {h < 150 && (
+        <Titulos>
+          <T entra={0} sale={142} size={112}>
+            Hay mucho
+          </T>
+          <T entra={5} sale={142} verde size={112}>
+            más
+          </T>
+          {h >= 30 && (
+            <div style={{ marginTop: 22, height: 70, overflow: 'hidden', opacity: interpolate(h, [142, 150], [1, 0], clamp) }}>
+              <div key={i} style={{ fontFamily: 'Mona', fontWeight: 700, fontStretch: '110%', fontSize: 58, color: '#fff', transform: `translateY(${interpolate(s - i * 30, [0, 10], [60, 0], { ...clamp, easing: suave })}px)` }}>
+                {MAS[i][1]}
+              </div>
+            </div>
+          )}
+        </Titulos>
+      )}
     </AbsoluteFill>
   );
 };
 
 // ---------- 06 · Cierre de marca ----------
-const Escena6 = () => {
+// Íconos de Apple y Google Play (Simple Icons, CC0), en blanco. La app todavía no está publicada: «Muy pronto en».
+const IconoApple = () => (
+  <svg viewBox="0 0 24 24" width={50} height={50} fill="#fff" aria-hidden="true">
+    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.090-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+  </svg>
+);
+const IconoPlay = () => (
+  <svg viewBox="0 0 24 24" width={46} height={46} fill="#fff" aria-hidden="true">
+    <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
+  </svg>
+);
+
+const Tienda = ({ en, icono, nombre }: { en: number; icono: ReactNode; nombre: string }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const v = useVertical();
-  const logo = spring({ frame: f, fps, config: { damping: 12, mass: 0.8 } });
-  const aro = interpolate(f, [0, 34], [0, 1], { ...clamp, easing: suave });
-  const tam = v ? 330 : 240;
-  const brillo = 0.5 + 0.5 * Math.sin(f / 12);
+  const sp = spring({ frame: f - en, fps, config: { damping: 14, mass: 0.6 } });
   return (
-    <AbsoluteFill style={{ background: `radial-gradient(60% 40% at 50% ${v ? 36 : 40}%, rgba(32,10,82,0.95), ${C.negro} 75%)`, alignItems: 'center' }}>
-      <div style={{ position: 'absolute', top: v ? 330 : 120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ position: 'relative', width: tam, height: tam, transform: `scale(${0.5 + 0.5 * logo})`, opacity: Math.min(1, logo * 1.5) }}>
-          {[0, 1].map((r) => {
-            const k = Math.max(0, aro - r * 0.25);
-            return (
-              <div key={r} style={{ position: 'absolute', inset: -tam * 0.2, borderRadius: '50%', border: `${2 + 10 * (1 - k)}px solid rgba(98,240,182,${0.55 * (1 - k)})`, transform: `scale(${0.75 + 0.8 * k})` }} />
-            );
-          })}
-          <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: `0 0 ${120 + 60 * brillo}px rgba(98,240,182,${0.25 + 0.1 * brillo})` }} />
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 18,
+        padding: '18px 34px 18px 26px',
+        borderRadius: 26,
+        background: 'rgba(255,255,255,0.06)',
+        boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.32)',
+        opacity: Math.min(1, sp * 1.5),
+        transform: `translateY(${(1 - sp) * 40}px) scale(${0.85 + 0.15 * sp})`,
+      }}
+    >
+      {icono}
+      <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', color: '#fff' }}>
+        <span style={{ fontFamily: 'Jakarta', fontWeight: 500, fontSize: 22, color: 'rgba(255,255,255,0.75)', lineHeight: 1.2 }}>Muy pronto en</span>
+        <span style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: 40, lineHeight: 1.1 }}>{nombre}</span>
+      </div>
+    </div>
+  );
+};
+
+const Cierre = () => {
+  const f = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const logo = spring({ frame: f, fps, config: { damping: 13, mass: 0.8 } });
+  const aro = interpolate(f, [0, 26], [0, 1], { ...clamp, easing: suave });
+  const tam = 300;
+  const respira = 1 + 0.015 * Math.sin(f / 20);
+  return (
+    <AbsoluteFill style={{ background: `radial-gradient(70% 45% at 50% 34%, rgba(32,10,82,1), ${C.negro} 78%)`, alignItems: 'center' }}>
+      <div style={{ position: 'absolute', top: 400, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'relative', width: tam, height: tam, transform: `scale(${(0.45 + 0.55 * logo) * respira}) rotate(${(1 - logo) * -12}deg)`, opacity: Math.min(1, logo * 1.6) }}>
+          {aro < 1 && (
+            <div style={{ position: 'absolute', inset: -tam * 0.2, borderRadius: '50%', border: `${2 + 8 * (1 - aro)}px solid rgba(255,255,255,${0.45 * (1 - aro)})`, transform: `scale(${0.75 + 0.7 * aro})` }} />
+          )}
+          <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: '0 30px 100px rgba(0,0,0,0.55), 0 0 140px rgba(110,70,230,0.5)' }} />
+          <Brillo f={f} desde={14} />
         </div>
-        <div style={{ marginTop: v ? 70 : 40, textAlign: 'center' }}>
-          <Linea entra={24} style={{ ...titular, fontSize: v ? 150 : 120, letterSpacing: '0.06em' }}>
-            Camina.
+        <div style={{ marginTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <Linea entra={22} style={{ ...titular, fontSize: 156, letterSpacing: `${interpolate(f, [22, 180], [0.14, 0.07], clamp)}em`, marginRight: '-0.07em' }}>
+            Camina
           </Linea>
-          <Linea entra={54} style={{ ...titular, fontSize: v ? 84 : 66, color: C.verde, marginTop: 10 }}>
-            Caminá y ganá.
+          <Linea entra={44} style={{ ...titular, fontSize: 88, color: C.verde, marginTop: 10 }}>
+            Caminá y ganá
           </Linea>
-          <Linea entra={90} style={{ fontFamily: 'Mona', fontWeight: 700, fontStretch: '115%', fontSize: v ? 56 : 44, color: '#fff', letterSpacing: '0.16em', marginTop: v ? 70 : 36 }}>
+          <Linea entra={78} style={{ fontFamily: 'Mona', fontWeight: 760, fontStretch: '115%', fontSize: 56, color: '#fff', letterSpacing: '0.2em', marginTop: 74, marginRight: '-0.2em' }}>
             MUY PRONTO
           </Linea>
-          <Linea entra={102} style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: v ? 44 : 36, color: C.gris, marginTop: 14 }}>
+          <div style={{ display: 'flex', gap: 24, marginTop: 30 }}>
+            <Tienda en={90} icono={<IconoApple />} nombre="App Store" />
+            <Tienda en={96} icono={<IconoPlay />} nombre="Google Play" />
+          </div>
+          <Linea entra={110} style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: 46, color: C.gris, marginTop: 40 }}>
             caminaapp.com
           </Linea>
         </div>

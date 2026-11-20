@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# Cortes de las tomas de Tarija y de pasos usados en el video. Uso:
-#   scripts/cortes.sh <video-tarija-1.mp4 (plaza)> <video-tarija-2.mp4 (loma)> <pexels-3999620.mov> <pexels-12510397.mov>
+# Tomas verticales (1188×2112, un poco más grandes que el cuadro para el movimiento de cámara sin perder nitidez).
+# Uso: scripts/cortes.sh <Tarija-Bolivia-4K loma (YouTube, con permiso)> <Tarija-Bolivia-4K plaza> <pexels-3999620.mov>
 set -euo pipefail
-mkdir -p public/tarija
-enc(){ ffmpeg -v error -y -ss "$2" -t "$3" -i "$1" -an -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -r 30 -movflags +faststart "public/tarija/$4"; }
-enc "$2" 6.5 5.5 aerea.mp4
-enc "$2" 0 4 parque.mp4
-enc "$1" 0 6 plaza.mp4
-enc "$1" 6.2 4.5 fuente.mp4
-ffmpeg -v error -y -i "$3" -an -vf scale=1920:-2 -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -r 30 -movflags +faststart public/tarija/pies-pov.mp4
-ffmpeg -v error -y -i "$4" -an -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -r 30 -movflags +faststart public/tarija/pies-gente.mp4
+mkdir -p public/tarija/v
+cut(){ ffmpeg -v error -y -ss $3 -t $4 -i "$2" -an -vf "crop=ih*9/16:ih:(iw-ih*9/16)*$5:0,scale=1188:2112:flags=lanczos,unsharp=5:5:0.7:5:5:0,fps=30,format=yuv420p" -c:v libx264 -preset slow -crf 14 -movflags +faststart public/tarija/v/$1.mp4; }
+cut aerea "$1" 8.0 2.4 0.5        # Loma de San Juan desde el aire
+cut ciudad "$1" 11.0 1.15 0.5     # vista amplia antes del cierre
+cut gente-plaza "$2" 2.55 1.5 0.5  # Plaza Luis de Fuentes con gente
+cut fuente "$2" 9.0 2.3 0.5       # fuente de la plaza
+cut pov "$3" 0.5 1.6 0.5          # pasos (Pexels, licencia libre)

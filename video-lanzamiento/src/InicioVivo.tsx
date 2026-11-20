@@ -13,11 +13,14 @@ const arco = (r: number, k: number) => {
   return { x: CX + r * Math.sin(a), y: CY - r * Math.cos(a) };
 };
 
-export const InicioVivo = ({ pasos, saldo, pop = 0 }: { pasos: number; saldo: number; pop?: number }) => {
-  const puntos = Math.floor(pasos / 1000);
+// pasos: valor continuo (el aro avanza sin saltos). lleno: opacidad del aro completo que se apaga después de sumar
+// el Punto, mientras el aro nuevo arranca desde cero. brillo: destello del aro al completarse. bump: rebote del saldo.
+export const InicioVivo = ({ pasos, saldo, pop = 0, lleno = 0, brillo = 0, bump = 0 }: { pasos: number; saldo: number; pop?: number; lleno?: number; brillo?: number; bump?: number }) => {
+  const enteros = Math.floor(pasos);
+  const puntos = Math.floor(enteros / 1000);
   const prog = (pasos % 1000) / 1000;
   const punto = arco(240, prog);
-  const escalaChip = 1 + 0.25 * pop;
+  const escalaChip = 1 + 0.22 * pop;
   return (
     <svg viewBox="0 0 1179 2556" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
       <image href={staticFile('app/inicio-app.jpg')} x={0} y={0} width={1179} height={2556} preserveAspectRatio="xMidYMin slice" />
@@ -25,16 +28,20 @@ export const InicioVivo = ({ pasos, saldo, pop = 0 }: { pasos: number; saldo: nu
         <circle cx={CX} cy={CY} r={324} stroke="#312943" strokeWidth={78} />
         <circle cx={CX} cy={CY} r={324} stroke="#8aedba" strokeWidth={78} pathLength={100} strokeDasharray={`${Math.min(100, (pasos / META) * 100)} 100`} transform={`rotate(-90 ${CX} ${CY})`} />
         <circle cx={CX} cy={CY} r={240} stroke="#352d46" strokeWidth={20} />
+        {lleno > 0 && <circle cx={CX} cy={CY} r={240} stroke="#7bfbb4" strokeWidth={20 + 10 * brillo} opacity={lleno} style={{ filter: `drop-shadow(0 0 ${14 + 40 * brillo}px rgba(123,251,180,${0.55 + 0.4 * brillo}))` }} />}
         <circle cx={CX} cy={CY} r={240} stroke="#7bfbb4" strokeWidth={20} pathLength={100} strokeDasharray={`${prog * 100} 100`} transform={`rotate(-90 ${CX} ${CY})`} style={{ filter: 'drop-shadow(0 0 14px rgba(123,251,180,0.55))' }} />
       </g>
       <circle cx={punto.x} cy={punto.y} r={34} fill="rgba(123,251,180,0.32)" />
       <circle cx={punto.x} cy={punto.y} r={14} fill="#fff" />
       {/* Saldo de Puntos */}
-      <rect x={51} y={221} width={230} height={94} rx={47} fill="#40335e" />
-      <image href={staticFile('app/moneda.png')} x={68} y={241} width={54} height={54} />
-      <text x={138} y={286} fontFamily="Jakarta" fontWeight={500} fontSize={41} fill="#fff">
-        {fmt(saldo)}
-      </text>
+      <g transform={`translate(166 268) scale(${1 + 0.14 * bump}) translate(-166 -268)`}>
+        <rect x={51} y={221} width={230} height={94} rx={47} fill={bump > 0 ? `rgba(98,240,182,${0.1 + 0.35 * bump})` : '#40335e'} />
+        <rect x={51} y={221} width={230} height={94} rx={47} fill="#40335e" opacity={1 - bump} />
+        <image href={staticFile('app/moneda.png')} x={68} y={241} width={54} height={54} />
+        <text x={138} y={286} fontFamily="Jakarta" fontWeight={500} fontSize={41} fill="#fff">
+          {fmt(saldo)}
+        </text>
+      </g>
       {/* Foto de perfil (inicial de ejemplo) */}
       <circle cx={1086} cy={269} r={45} fill="#62f0b6" />
       <text x={1086} y={284} textAnchor="middle" fontFamily="Jakarta" fontWeight={800} fontSize={42} fill="#12281f">
@@ -45,7 +52,7 @@ export const InicioVivo = ({ pasos, saldo, pop = 0 }: { pasos: number; saldo: nu
       </text>
       {/* Pasos de hoy */}
       <text x={CX} y={805} textAnchor="middle" fontFamily="Jakarta" fontWeight={700} fontSize={142} letterSpacing={-4} fill="#fff">
-        {fmt(pasos)}
+        {fmt(enteros)}
       </text>
       <text x={CX} y={888} textAnchor="middle" fontFamily="Jakarta" fontWeight={500} fontSize={40} fill="#c2b8e4">
         pasos hoy

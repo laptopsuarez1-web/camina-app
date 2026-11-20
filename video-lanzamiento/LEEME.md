@@ -1,47 +1,52 @@
 # CAMINA · Video oficial de lanzamiento
 
-**Concepto:** TARIJA YA CAMINA. → AHORA, CADA PASO CUENTA. → CAMINA · CAMINÁ Y GANÁ.
-**Formatos:** vertical 1080 × 1920 (Reels, TikTok, Facebook) y horizontal 1920 × 1080 (YouTube, pantallas). 35 s, 30 fps.
+**Concepto:** TARIJA SE MUEVE → CADA PASO CUENTA → CAMINA · CAMINÁ Y GANÁ · MUY PRONTO
+**Formato:** vertical 1080 × 1920 (Reels, TikTok, Facebook), 35 s, 30 fps. Dos versiones de audio:
+- **A · sin voz** (`out/Camina-lanzamiento-sin-voz.mp4`): música y efectos.
+- **B · con voz** (`out/Camina-lanzamiento-con-voz.mp4`): música, efectos y locución en español latino neutro.
+
 **Cómo está hecho:** con código ([Remotion](https://www.remotion.dev), React). Cada escena es un componente en `src/Lanzamiento.tsx`; cambiar un texto o un tiempo y volver a exportar lleva minutos.
 
-![Storyboard](docs/storyboard.png)
+## 1. Guion (tal como está armado)
 
-## 1. Guion definitivo (tal como está armado)
-
-| Seg. | Escena | Imagen | Texto en pantalla | Sonido |
+| Seg. | Escena | Imagen | Texto en pantalla | Locución (versión B) |
 |---|---|---|---|---|
-| 0–3,5 | 01 Tarija | Toma aérea real de la Loma de San Juan y la ciudad (con permiso del autor). Abre desde negro, acercamiento lento, color cálido. | **TARIJA** (las letras se juntan) | Colchón de acordes y ambiente de ciudad, muy suave. |
-| 3,5–7 | 02 El movimiento | Pies de gente caminando (Pexels) → caminata en primera persona (Pexels) → Plaza Luis de Fuentes (con permiso). Cortes cada 1,3 s. | **UNA NUEVA FORMA / DE VIVIR / TU CIUDAD.** | Pasos al ritmo, pulso de bombo suave. Destello en el corte. |
-| 7–10 | 03 Te presentamos Camina | Fondo negro con brillo morado y verde. Sube un iPhone con el logo (como al abrir la app) y pasa a la pantalla Inicio real (la tarjeta de la Ruta muestra el mapa de Tarija). | **TE PRESENTAMOS / CAMINA.** | Barrido de transición. |
-| 10–14,5 | 04 Caminá | Inicio real en vivo: los pasos suben de 1.912 a 2.040; al cruzar 2.000 se suma 1 Punto (pastilla y saldo). Huellas de Camina caminan al costado. Pasa a la pantalla Actividad real. | **PASO 1 · CAMINÁ.** / Tus pasos diarios cuentan. | Entra el ritmo completo. Sonido de moneda en el +1 Punto. |
-| 14,5–18,5 | 05 Sumá puntos | Pantalla «Tus Puntos» real; la cámara se acerca al saldo. Salen tres «+1 Punto». | **PASO 2 · SUMÁ PUNTOS.** / Convertí tu actividad en recompensas. / **1.000 pasos = 1 Punto** (regla real). | Arpegio brillante; tres monedas. |
-| 18,5–24 | 06 Disfrutá beneficios | Mapa real de Canjes con los comercios → lista real de Canjes (baja) → sube la hoja «Pídele al local su código» → «¡Canje confirmado!». | **PASO 3 · DISFRUTÁ BENEFICIOS.** / Tus puntos te acercan a nuevos beneficios. | Toques suaves al escribir el código; campanita al confirmar. |
-| 24–27 | 06b Y mucho más | Ruta del mes (mapa con el recorrido y los 3 locales) → Ranking semanal → Perfil con insignias. Datos de ejemplo (Valentina R., nombres inventados), sin fotos de personas. | **Y MUCHO MÁS.** · Ruta del mes · Ranking semanal · Tu perfil e insignias | Subida hacia el cierre. |
-| 27–30 | 07 Tarija ya camina | La fuente de la Plaza Luis de Fuentes. | **TARIJA / YA CAMINA.** | Golpe grave + acorde abierto. |
-| 30–35 | 07 Cierre | Negro con brillo morado. El logo original entra con rebote y un aro verde que se abre. Después la tarjeta final. | **AHORA, CADA PASO / CUENTA.** → **CAMINA** · **CAMINÁ Y GANÁ.** · Muy pronto en App Store y Google Play · caminaapp.com | Segundo golpe (el más fuerte) y el acorde se apaga. |
+| 0–5 | 01 Tarija se mueve | Tomas reales de Tarija (con permiso del autor): Loma de San Juan desde el aire → Plaza Luis de Fuentes con gente → la fuente. Cortes en el ritmo. | **TARIJA / SE MUEVE** | «Hay una nueva forma de moverte» |
+| 5–10 | 02 Cada paso cuenta | El logo aparece con un reflejo de luz y vuela hasta el teléfono, que lo recibe como pantalla de bienvenida y pasa al Inicio real. | **CADA PASO / CUENTA** | «Cada paso cuenta» |
+| 10–16 | 03 Sumá puntos | Inicio en vivo: los pasos suben con suavidad de 1.620 a 2.000 y el aro se completa; recién entonces sale «+1 Punto», la moneda vuela al saldo (247 → 248) y el aro vuelve a empezar. Después, Actividad y Tus Puntos (saldo 248). | **SUMÁ / PUNTOS** · 1.000 pasos = 1 Punto (regla real) | «Camina, acumula puntos y disfruta beneficios» |
+| 16–23 | 04 Disfrutá beneficios | Mapa de comercios → lista de canjes: Fripap's primero (las monedas van a su premio), baja a Bloom → «Pídele al local su código» → «¡Canje confirmado!». | **DISFRUTÁ / BENEFICIOS** | — |
+| 23–29 | 05 Hay mucho más | Pasos en primera persona (1 s) → una pantalla por vez, al ritmo: Ruta del mes, Grupos y chat, Ranking semanal, Tu perfil e insignias → vista amplia de Tarija (1 s). | **HAY MUCHO / MÁS** + nombre de cada función | «Tus pasos pueden llevarte más lejos» |
+| 29–35 | 06 Cierre | Logo con reflejo y aro blanco que se abre (sin brillos verdes). | **CAMINA** · **CAMINÁ Y GANÁ** · **MUY PRONTO** · Muy pronto en App Store / Google Play · caminaapp.com | «Camina» |
 
-**Reglas que respeta:** todas las pantallas son capturas reales de la app con datos de ejemplo (Valentina, 247 Puntos); ningún premio inventado (se sacaron las pantallas con el Panchito); la app todavía no está en las tiendas, así que dice «Muy pronto», sin distintivos de descarga.
+Del segundo 5 al 23 el teléfono es uno solo: no hay cortes ni saltos, cambian las pantallas y la cámara acompaña cada escena.
+
+**Reglas que respeta:** pantallas reales de la app con datos de ejemplo (Valentina, nombres inventados, sin fotos de personas); ningún premio, comercio ni descuento inventado; textos sin puntos finales; la app todavía no está publicada, así que App Store y Google Play aparecen como «Muy pronto en», sin los distintivos oficiales de descarga.
 
 ## 2. Recursos usados y su origen
 
 | Recurso | Archivo | Origen / licencia |
 |---|---|---|
-| Aérea, parque, plaza, fuente de Tarija | `public/tarija/aerea|parque|plaza|fuente.mp4` | Video «Tarija Bolivia 4K» de YouTube, **con permiso del autor** (confirmado por Camina). |
-| Pies caminando | `public/tarija/pies-gente.mp4`, `pies-pov.mp4` | Pexels (licencia libre, uso comercial). |
-| Pantallas de la app | `public/app/*` | Capturas reales de la app oficial. Ruta, Ranking y Perfil se limpian con `scripts/pantallas.py` (nombres, fotos y números de ejemplo). |
+| Loma de San Juan, plaza, fuente, vista amplia | `public/tarija/v/{aerea,gente-plaza,fuente,ciudad}.mp4` | Video «Tarija Bolivia 4K» de YouTube, **con permiso del autor** (confirmado por Camina). Cortadas en vertical con `scripts/cortes.sh`, a más resolución que el cuadro para que se vean nítidas. |
+| Pasos en primera persona | `public/tarija/v/pov.mp4` | Pexels 3999620 (licencia libre, uso comercial). |
+| Pantallas de la app | `public/app/*` | Capturas reales de la app oficial. Ruta, Ranking y Perfil se limpian con `scripts/pantallas.py`; el saldo de Actividad y Tus Puntos (248) con `scripts/pantallas3.py`. |
 | Logo, huellas, moneda | `public/marca/*`, `public/app/camina-coin.png` | Archivos oficiales de Camina. |
-| Música y efectos | `public/audio/musica.wav`, `sfx.wav` | **Originales, generados por código** (`scripts/musica.py`). Sin derechos de terceros. Es una pista provisional: para el lanzamiento conviene una pista con licencia (ver punto 6). |
+| Música y efectos | `public/audio/musica.wav`, `sfx.wav` | **Originales, generados por código** (`scripts/sonido.py`): electrónica cinematográfica a 120 BPM que crece en 5 partes. Sin muestras ni derechos de terceros: uso comercial libre. |
+| Locución | `public/voz/01–05.wav` | Kokoro (modelo abierto, licencia Apache 2.0, uso comercial permitido), voz `ef_dora` con fonética latinoamericana (`es-419`): `scripts/voz.py`. |
+| Íconos de Apple y Google Play | en `src/Lanzamiento.tsx` | Simple Icons (CC0). |
 | Tipografías | `public/fonts/*` | Mona Sans (OFL) y Plus Jakarta Sans (OFL), las de la web y la app. |
 
-Los videos y el audio no se suben a GitHub (pesan mucho). Para regenerarlos: los cortes de Tarija salen de los archivos originales con los comandos de `scripts/cortes.sh`; el audio, con `python3 scripts/musica.py`.
+Los videos y el audio no se suben a GitHub (pesan mucho). Para regenerarlos: los cortes de Tarija con `scripts/cortes.sh`; la voz con `python3 scripts/voz.py <carpeta-de-kokoro>`; la música, los efectos y las mezclas con `python3 scripts/sonido.py`.
 
 ## 3. Exportar
 
 ```bash
 npm i
-npx remotion render LanzamientoVertical out/Camina-lanzamiento-vertical.mp4 --crf=18
-npx remotion render LanzamientoHorizontal out/Camina-lanzamiento-horizontal.mp4 --crf=18
-npx remotion still LanzamientoVertical out/Camina-portada-reel.png --frame=1030
+npx remotion render Lanzamiento out/video.mp4 --crf=16 --audio-codec=aac --audio-bitrate=320k
+# audio final a −14 LUFS (Instagram, TikTok, Facebook): se reemplaza la pista por cada mezcla normalizada
+for v in sin-voz con-voz; do
+  ffmpeg -i out/video.mp4 -i public/audio/mezcla-$v.wav -map 0:v -map 1:a -c:v copy \
+    -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:a 320k -shortest -movflags +faststart out/Camina-lanzamiento-$v.mp4
+done
 ```
 Para ver y retocar en el navegador: `npx remotion studio`.
 
@@ -53,7 +58,7 @@ Para ver y retocar en el navegador: `npx remotion studio`.
    - Grabar cada recorrido por separado, despacio, 6–8 s cada uno: (A) abrir la app → Inicio; (B) Inicio → Actividad (tocar 7 días / 30 días); (C) Inicio → saldo de Puntos → Tus Puntos; (D) Canjes → mapa → tocar un comercio → su premio; (E) Canjear → escribir el código del local → «¡Canje confirmado!».
    - Mandar los archivos tal cual (.mov). La barra de estado (hora, batería) se tapa en edición, dejando la isla dinámica.
 2. **Tomas propias de Tarija**: atardecer en la Plaza, calle La Madrid, San Jacinto, Miraflores, de noche. Celular en horizontal, 4K o 1080p, 5–10 s, cámara quieta o caminando lento.
-3. **Música con licencia** para la versión final (punto 6).
+3. **Tomas de personas**: amigos caminando juntos, gente corriendo, alguien mirando el celular en la calle (en Tarija, con permiso de quienes aparecen). Hoy solo hay gente en la plaza (de lejos) y pasos en primera persona.
 
 ### Prompts para Kling AI (tomas de apoyo de 3–5 s)
 
@@ -67,17 +72,17 @@ Usar solo como **apoyo** (texturas, detalles), nunca para «inventar» Tarija: l
 
 ## 5. Guía de edición en CapCut (si se quiere retocar a mano)
 
-Partir del video exportado (`Camina-lanzamiento-vertical.mp4`) y trabajar encima; ya trae cortes, textos y animaciones.
-- **0:00–0:04** Si hay una toma propia de Tarija mejor que la aérea, ponerla en una pista superior con la misma duración. Mantener «TARIJA.» encima (copiar desde el video).
+Partir del video exportado (`Camina-lanzamiento-sin-voz.mp4` o `-con-voz.mp4`) y trabajar encima; ya trae cortes, textos y animaciones.
+- **0:00–0:04** Si hay una toma propia de Tarija mejor que la aérea, ponerla en una pista superior con la misma duración. Mantener «TARIJA SE MUEVE» encima (copiar desde el video).
 - **0:04–0:08** Reemplazar una de las tres tomas por «Cordones» o «Pisada» de Kling si quedan bien. Cortes en cada golpe de la música (0:04, 0:05.3, 0:06.6).
 - **0:08–0:27** No tocar las pantallas: son la parte que explica la app. Si se agregan grabaciones nuevas, recortarlas al tamaño exacto de la pantalla del teléfono (usar «Máscara → Rectángulo» con esquinas redondeadas) y respetar los tiempos de cada paso.
 - **0:27–0:35** Dejar el cierre tal cual (logo original, sin efectos de CapCut).
 - **Música:** silenciar la pista original y poner la pista con licencia; hacer coincidir su golpe fuerte con **0:30** (aparición del logo) y su subida con **0:24–0:27**. Mantener los efectos (pasos, monedas, confirmación) en una pista aparte al 70 %.
 - **Exportar:** 1080p, 30 fps, «Tasa de bits: Recomendada» o más alta.
 
-## 6. Música con licencia (recomendado para el lanzamiento)
+## 6. Música: alternativa con licencia
 
-La pista incluida es original y libre de derechos, pero sencilla. Para la versión final: buscar en la biblioteca de música de CapCut (sección comercial), Epidemic Sound, Artlist o Pixabay Music una pista **electrónica cinematográfica inspiradora de 112–124 BPM** con subida y golpe. Guardar el comprobante de licencia.
+La pista incluida es original y libre de derechos (uso comercial sin restricciones). Si se quiere una producción de estudio, buscar en Epidemic Sound, Artlist o Musicbed una pista **electrónica cinematográfica optimista de 118–122 BPM** con entrada de ritmo cerca de 0:08, subida a 0:27 y golpe a 0:29; guardar el comprobante de licencia y conservar los efectos (`sfx.wav`) en una pista aparte.
 
 ## 7. Texto para publicar
 
@@ -99,5 +104,7 @@ La pista incluida es original y libre de derechos, pero sencilla. Para la versi�
 - [x] Sin promociones ni premios inventados; sin distintivos de tiendas (todavía no está publicada).
 - [x] Textos dentro de la zona segura (márgenes de 90 px a los lados; nada importante abajo del todo, donde van los botones de Reels/TikTok).
 - [x] Sin marcas de agua.
-- [ ] Música con licencia comercial para la versión final (hoy: pista original provisional).
+- [x] Textos sin puntos finales; voseo escrito de la marca (Sumá, Disfrutá, Caminá y ganá) y locución neutra con tuteo.
+- [x] Música original con evolución en 5 partes y efectos sincronizados; audio a −14 LUFS.
+- [x] Cierre sin elementos verdes sueltos; App Store y Google Play como «Muy pronto en».
 - [ ] Grabaciones de pantalla nuevas (opcional, mejora la demo).
