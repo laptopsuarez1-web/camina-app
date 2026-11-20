@@ -444,7 +444,7 @@ const Escena07 = () => {
   const lf = f - corte;
   const logo = spring({ frame: lf, fps, config: { damping: 14, mass: 0.8 } });
   const aro = interpolate(lf, [0, 26], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
-  const final = interpolate(lf, [S(3.3), S(3.3) + 14], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
+  const final = interpolate(lf, [S(3.4), S(3.4) + 14], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: suave });
   const tam = v ? 300 : 230;
   return (
     <AbsoluteFill>
@@ -478,11 +478,11 @@ const Escena07 = () => {
               <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: '0 0 120px rgba(98,240,182,0.25)' }} />
             </div>
             <div style={{ textAlign: 'center', opacity: 1 - final }}>
-              <Linea entra={corte + 10} style={{ ...titular, fontSize: v ? 72 : 60, color: '#fff' }}>
-                Ahora, cada paso
+              <Linea entra={corte + 8} style={{ ...titular, fontSize: v ? 104 : 84, color: '#fff' }}>
+                Ahora, cada
               </Linea>
-              <Linea entra={corte + 16} style={{ ...titular, fontSize: v ? 72 : 60, color: C.verde }}>
-                cuenta.
+              <Linea entra={corte + 13} style={{ ...titular, fontSize: v ? 104 : 84, color: '#fff' }}>
+                paso <span style={{ color: C.verde }}>cuenta.</span>
               </Linea>
             </div>
           </div>
