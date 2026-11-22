@@ -1,11 +1,10 @@
 import { loadFont } from '@remotion/fonts';
 import type { CSSProperties, ReactNode } from 'react';
-import { AbsoluteFill, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Easing, Img, interpolate, random, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Audio, Video } from '@remotion/media';
 import { C } from './marca';
 import { InicioVivo } from './InicioVivo';
-import { IconoApple, IconoPlay, Tienda } from './Lanzamiento';
-import { Linea, titular } from './marca';
+import { Cierre } from './Lanzamiento';
 
 // CAMINA · «¿Y si cada paso…?» — pieza de marca sin voz. Vertical 1080 × 1920, 35 s, 30 fps.
 // Montaje con una o varias palabras por toma (90 BPM: 1 tiempo = 20 cuadros), todo a pantalla completa, con ráfagas
@@ -112,7 +111,7 @@ export const YSi = () => {
         <Tarjeta />
       </Sequence>
       <Sequence name="Cierre" from={INTRO + MONTAJE + TARJETA}>
-        <CierreYSi />
+        <Cierre ritmo={0.55} />
       </Sequence>
       <Pelicula />
       <Audio name="Música" src={staticFile('audio/ysi-mezcla.wav')} />
@@ -170,46 +169,21 @@ const PalabraArmada = ({ fr, dur = 26, size = 120, barra = 0 }: { fr: number; du
   );
 };
 
-// ---------- Intro: CAMINA se arma, la «I» se vuelve una barra que se estira y llena la pantalla ----------
+// ---------- Intro: huellas que suben, aparece el logo y CAMINA se arma con fallas ----------
 const Intro = () => {
   const fr = useCurrentFrame();
-  const estira = interpolate(fr, [50, 62], [0, 380], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const llena = interpolate(fr, [62, 78], [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) });
-  const palabraO = interpolate(fr, [62, 68], [1, 0], clamp);
-  // la barra final sale desde donde está la «I» (un poco a la derecha del centro) y crece hasta cubrir todo
-  const w = 0.3 * 120 + 380 + (1500 - 416) * llena;
-  const h = 0.72 * 120 + (2200 - 86) * llena;
-  const cx = 540 + 52 * (1 - llena);
+  const { fps } = useVideoConfig();
+  const logo = spring({ frame: fr - 40, fps, config: { damping: 13, mass: 0.7 } });
   return (
     <AbsoluteFill style={{ backgroundColor: C.morado, alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ opacity: palabraO }}>
-        <PalabraArmada fr={fr - 2} dur={26} size={120} barra={estira} />
-      </div>
-      {fr >= 62 && <div style={{ position: 'absolute', left: cx - w / 2, top: 960 - h / 2, width: w, height: h, background: C.verde, clipPath: `polygon(${6 * (1 - llena)}% 0, 100% 0, ${100 - 6 * (1 - llena)}% 100%, 0 100%)` }} />}
-    </AbsoluteFill>
-  );
-};
-
-// ---------- Cierre: CAMINA se arma igual que al principio, y debajo la información ----------
-const CierreYSi = () => {
-  const fr = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ backgroundColor: C.morado, alignItems: 'center' }}>
-      <div style={{ position: 'absolute', top: 640, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-        <PalabraArmada fr={fr} dur={22} size={130} />
-        <Linea entra={30} style={{ ...titular, fontSize: 84, color: C.verde, marginTop: 34 }}>
-          Caminá y ganá
-        </Linea>
-        <Linea entra={44} style={{ fontFamily: 'Mona', fontWeight: 760, fontStretch: '115%', fontSize: 52, color: '#fff', letterSpacing: '0.2em', marginTop: 80, marginRight: '-0.2em' }}>
-          MUY PRONTO
-        </Linea>
-        <div style={{ display: 'flex', gap: 24, marginTop: 30 }}>
-          <Tienda en={52} icono={<IconoApple />} nombre="App Store" />
-          <Tienda en={56} icono={<IconoPlay />} nombre="Google Play" />
-        </div>
-        <Linea entra={64} style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: 46, color: 'rgba(255,255,255,0.75)', marginTop: 40 }}>
-          caminaapp.com
-        </Linea>
+      {[0, 1, 2, 3].map((k) => {
+        const en = k * 9;
+        const o = interpolate(fr, [en, en + 3, 40, 46], [0, 1, 1, 0], clamp);
+        return <Img key={k} src={staticFile(k % 2 ? 'marca/pie-R-mint.png' : 'marca/pie-L-mint.png')} style={{ position: 'absolute', left: 540 + (k % 2 ? 46 : -46) - 40, top: 1500 - k * 170 - 70, width: 80, opacity: o }} />;
+      })}
+      <div style={{ position: 'absolute', top: 640, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: 300, height: 300, borderRadius: '50%', transform: `scale(${logo})`, opacity: Math.min(1, logo * 2), boxShadow: '0 0 120px rgba(110,70,230,0.5)' }} />
+        <div style={{ marginTop: 60, height: 170 }}>{fr >= 44 && <PalabraArmada fr={fr - 44} dur={16} size={150} />}</div>
       </div>
     </AbsoluteFill>
   );
