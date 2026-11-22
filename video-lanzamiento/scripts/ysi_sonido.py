@@ -19,7 +19,7 @@ INTRO, BOL, TAR, BAR_, APP, CARD, CIERRE = 80 / 30, 8.0, 12.667, 18.0, 20.667, 2
 
 # cortes y ráfagas (igual que src/YSi.tsx)
 DUR_TOMAS = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1]
-RAFAGAS = {7: (4, 5), 13: (4, 5), 19: (8, 5), 28: (5, 4)}  # índice de toma: (imágenes, cuadros por imagen)
+RAFAGAS = {7: (4, 5), 13: (2, 10), 19: (8, 5), 28: (5, 4)}  # índice de toma: (imágenes, cuadros por imagen)
 cortes, rafaga_clics = [], []
 at = INTRO
 for i, d in enumerate(DUR_TOMAS):

@@ -35,7 +35,7 @@ type Toma = {
 const vid = (src: string, desde = 0): Medio => ({ tipo: 'video', src: `yasi/v/${src}.mp4`, desde });
 const foto = (src: string, origen = 'center'): Medio => ({ tipo: 'foto', src: `yasi/f/${src}`, origen });
 const app = (src: string): Medio => ({ tipo: 'app', src: src.includes('/') ? src : `yasi/app/${src}.jpg` });
-const P = (t: string, x: number, y: number, size = 118, en = 0, verde = false): Palabra => ({ t, x, y, size, en, verde });
+const P = (t: string, x: number, y: number, size = 118, en = 0, verde = false): Palabra => ({ t, x, y, size: Math.round(size * 1.18), en, verde });
 
 const TOMAS: Toma[] = [
   // ¿Cuántos pasos das por día?
@@ -49,12 +49,12 @@ const TOMAS: Toma[] = [
   { medio: vid('m609'), palabras: [P('contara?', 0.5, 0.45, 250, 0, true)], dur: 1 },
   { rafaga: [app('inicio-dark'), app('actividad-dark'), app('rachas-dark'), app('ranking-nuevo-dark')], cada: 5, dur: 1 },
   // ¿Y si caminar te llevara más lejos? — Bolivia: La Paz y Santa Cruz
-  { medio: foto('lp-teleferico-illimani.jpg'), palabras: [P('¿Y si', 0.28, 0.24, 130)], leyenda: 'Mi-Teleférico · La-Paz', dur: 1 },
+  { medio: foto('lp-illimani.jpg'), palabras: [P('¿Y si', 0.28, 0.24, 130)], leyenda: 'Illimani · La-Paz', dur: 1 },
   { medio: foto('isla-del-sol-camino.jpg'), palabras: [P('caminar', 0.55, 0.36, 150)], leyenda: 'Isla-del-Sol · Lago-Titicaca', dur: 1 },
   { medio: foto('sc-catedral.jpg', '50% center'), palabras: [P('te', 0.22, 0.3, 124), P('llevara', 0.6, 0.38, 124, 8)], leyenda: 'Santa-Cruz-de-la-Sierra', dur: 1 },
-  { medio: foto('lp-illimani.jpg'), palabras: [P('más', 0.7, 0.3, 150)], leyenda: 'Illimani · La-Paz', dur: 1 },
+  { medio: foto('tiwanaku-puerta-del-sol.jpg'), palabras: [P('más', 0.7, 0.3, 150)], leyenda: 'Tiwanaku · La-Paz', dur: 1 },
   { medio: foto('titicaca-terrazas.jpg'), palabras: [P('lejos?', 0.5, 0.42, 250, 0, true)], dur: 1 },
-  { rafaga: [foto('lp-noche.jpg'), foto('sc-plaza-24.jpg'), foto('tiwanaku-puerta-del-sol.jpg'), foto('sc-skyline.jpg')], cada: 5, dur: 1, leyenda: 'Bolivia' },
+  { rafaga: [foto('lp-noche.jpg'), foto('sc-plaza-24.jpg')], cada: 10, dur: 1, leyenda: 'La-Paz · Santa-Cruz' },
   { medio: foto('banderas-bolivia.jpg'), leyenda: 'Bolivia', dur: 1 },
   // ¿Y si tu ciudad te lo devolviera? — Tarija
   { medio: vid('aerea'), palabras: [P('¿Y si', 0.3, 0.26, 130)], leyenda: 'Tarija', dur: 1 },
@@ -62,7 +62,7 @@ const TOMAS: Toma[] = [
   { medio: foto('chunchos-san-roque.jpg', '58% center'), palabras: [P('te lo', 0.66, 0.28, 140)], leyenda: 'Chunchos-de-San-Roque', dur: 1 },
   { medio: foto('san-roque-iglesia.jpg', 'center 30%'), palabras: [P('devolviera?', 0.5, 0.82, 170, 0, true)], dur: 1 },
   {
-    rafaga: [foto('t-castillo-azul.jpg'), foto('t-casa-dorada.jpg'), foto('t-glorieta.jpg'), foto('t-mirador-copa.jpg'), foto('t-rueda-chapaca.jpg'), foto('puente-aereo.jpg'), foto('vinedos.jpg'), foto('t-loma-san-juan.jpg')],
+    rafaga: [foto('t-glorieta.jpg'), foto('t-monumento-luis-de-fuentes.jpg'), foto('puente-aereo.jpg'), foto('vinedos.jpg'), foto('t-casa-dorada.jpg', 'center 40%'), foto('t-mirador-copa.jpg'), foto('t-rueda-chapaca.jpg'), foto('t-plaza-luis-de-fuentes.jpg')],
     cada: 5,
     dur: 2,
     leyenda: 'Tarija',
@@ -71,16 +71,16 @@ const TOMAS: Toma[] = [
   { medio: vid('monumento-suelo'), leyenda: 'Loma-de-San-Juan', dur: 1 },
   // En los locales de tu barrio
   { medio: foto('tarija-calle-plaza.jpg'), palabras: [P('En', 0.3, 0.3, 150)], leyenda: 'Centro · Tarija', dur: 1 },
-  { medio: foto('t-mercado-central.jpg'), palabras: [P('los', 0.25, 0.25, 124), P('locales', 0.6, 0.33, 150, 7)], leyenda: 'Mercado-Central · Tarija', dur: 1 },
+  { medio: foto('mercado-central-tarija.jpg'), palabras: [P('los', 0.25, 0.25, 124), P('locales', 0.6, 0.33, 150, 7)], leyenda: 'Mercado-Central · Tarija', dur: 1 },
   { medio: foto('parque-bolivar-tarija.jpg'), palabras: [P('de tu', 0.5, 0.4, 140)], leyenda: 'Parque-Bolívar · Tarija', dur: 1 },
   { medio: vid('gente-plaza'), palabras: [P('barrio', 0.5, 0.36, 250, 0, true)], dur: 1 },
   // Cada paso cuenta — la app
   { inicio: true, palabras: [P('Cada', 0.5, 0.1, 160)], leyenda: '1.000-pasos = 1-Punto', dur: 1 },
   { medio: vid('app-ficha-mapa', 66), palabras: [P('paso', 0.72, 0.16, 150)], leyenda: 'Locales-en-el-mapa', dur: 2 },
   { rafaga: [app('ranking-nuevo-dark'), app('grupo-v4-dark'), app('ficha-galera-dark'), app('insignias-dark'), app('perfil-insignias-dark')], cada: 4, dur: 1 },
-  { medio: vid('app-ruta-participar', 20), palabras: [P('cuenta', 0.5, 0.12, 230, 0, true)], leyenda: 'Ruta-del-mes · Tarija', dur: 2 },
+  { medio: vid('app-ruta-participar', 45), palabras: [P('cuenta', 0.5, 0.55, 230, 0, true)], leyenda: 'Ruta-del-mes · Tarija', dur: 2 },
   { medio: vid('app-actividad'), leyenda: 'Tu-actividad', dur: 1 },
-  { medio: vid('app-visita', 6), leyenda: 'Visita-confirmada', dur: 1 },
+  { medio: vid('app-visita', 40), leyenda: 'Visita-confirmada', dur: 1 },
 ];
 
 const INTRO = 4 * T; // 0–80
@@ -221,20 +221,24 @@ const TomaVista = ({ toma }: { toma: Toma }) => {
 const PalabraVista = ({ p }: { p: Palabra }) => {
   const fr = useCurrentFrame() - (p.en ?? 0);
   if (fr < 0) return null;
+  // que nunca se salga de la pantalla: ancho aproximado de la serif ≈ 0,5 em por letra
+  const size = Math.min(p.size ?? 118, Math.floor(940 / (p.t.length * 0.56)));
+  const ancho = p.t.length * 0.56 * size;
+  const cx = Math.min(1080 - 50 - ancho / 2, Math.max(50 + ancho / 2, p.x * 1080));
   const o = interpolate(fr, [0, 2], [0, 1], clamp);
   const blur = interpolate(fr, [0, 4], [6, 0], clamp);
   return (
     <div
       style={{
         position: 'absolute',
-        left: `${p.x * 100}%`,
+        left: cx,
         top: `${p.y * 100}%`,
         transform: 'translate(-50%, -50%)',
         opacity: o,
         filter: `blur(${blur}px)`,
         fontFamily: 'Serif',
-        fontWeight: (p.size ?? 118) > 200 ? 500 : 400,
-        fontSize: p.size ?? 118,
+        fontWeight: 500,
+        fontSize: size,
         letterSpacing: '-0.015em',
         lineHeight: 1,
         whiteSpace: 'nowrap',
