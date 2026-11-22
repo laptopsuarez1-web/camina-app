@@ -129,11 +129,15 @@ mus /= np.abs(mus).max()
 
 # ---------- Efectos ----------
 sfx = np.zeros((N, 2))
-for i, at in enumerate([0.0, 0.3, 0.6, 0.9]):  # huellas de la intro
-    place(sfx, paso(0.35, i % 2 == 0), at)
-for i in range(8):  # letras que se arman
-    place(sfx, blip(1800 + 140 * i, 0.025, 0.025), 44 / 30 + i * 0.05)
-place(sfx, brillo_logo(0.045), 40 / 30)
+# intro: CAMINA se arma (un tic por letra y chispazos), la barra se estira y llena la pantalla
+for i in range(6):
+    place(sfx, blip(1500 + 180 * i, 0.04, 0.03), (2 + 4 + i * 26 / 5) / 30)
+    place(sfx, clic_pelicula(0.035), (2 + i * 26 / 5 + 2) / 30)
+place(sfx, subida(12 / 30, 0.08, 400, 5000), 50 / 30)
+place(sfx, whoosh(0.6, 0.18, 300, 6000), 62 / 30)
+# cierre: CAMINA se arma de nuevo
+for i in range(6):
+    place(sfx, blip(1500 + 180 * i, 0.035, 0.03), CIERRE + (4 + i * 22 / 5) / 30)
 for c in cortes:  # clic de proyector en cada corte
     place(sfx, clic_pelicula(0.05), c)
 for c in rafaga_clics:  # ráfagas: clics más suaves
@@ -142,7 +146,7 @@ for k in range(16):  # logos que pasan en la tarjeta
     place(sfx, blip(2200, 0.02, 0.02), CARD + (14 + 7 * k) / 30)
 place(sfx, campana(1318.5, 0.11, 1.4), CARD + 126 / 30)
 place(sfx, campana(1975.5, 0.09, 1.4), CARD + 129 / 30)
-place(sfx, brillo_logo(0.07), CIERRE)
+place(sfx, brillo_logo(0.05), CIERRE + 26 / 30)
 sfx = reverb(sfx, 1.0, 0.18, 7000, seed=21)
 sfx /= np.abs(sfx).max()
 
