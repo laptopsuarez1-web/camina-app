@@ -485,11 +485,12 @@ const Tienda = ({ en, icono, nombre }: { en: number; icono: ReactNode; nombre: s
   );
 };
 
-const Cierre = () => {
+// ritmo < 1 acelera las entradas (para cierres más cortos).
+export const Cierre = ({ ritmo = 1 }: { ritmo?: number }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const logo = spring({ frame: f, fps, config: { damping: 13, mass: 0.8 } });
-  const aro = interpolate(f, [0, 26], [0, 1], { ...clamp, easing: suave });
+  const aro = interpolate(f, [0, 26 * ritmo], [0, 1], { ...clamp, easing: suave });
   const tam = 300;
   const respira = 1 + 0.015 * Math.sin(f / 20);
   return (
@@ -500,23 +501,23 @@ const Cierre = () => {
             <div style={{ position: 'absolute', inset: -tam * 0.2, borderRadius: '50%', border: `${2 + 8 * (1 - aro)}px solid rgba(255,255,255,${0.45 * (1 - aro)})`, transform: `scale(${0.75 + 0.7 * aro})` }} />
           )}
           <Img src={staticFile('marca/logo-solo-morado.png')} style={{ width: '100%', height: '100%', borderRadius: '50%', boxShadow: '0 30px 100px rgba(0,0,0,0.55), 0 0 140px rgba(110,70,230,0.5)' }} />
-          <Brillo f={f} desde={14} />
+          <Brillo f={f} desde={14 * ritmo} />
         </div>
         <div style={{ marginTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <Linea entra={22} style={{ ...titular, fontSize: 156, letterSpacing: `${interpolate(f, [22, 180], [0.14, 0.07], clamp)}em`, marginRight: '-0.07em' }}>
+          <Linea entra={22 * ritmo} style={{ ...titular, fontSize: 156, letterSpacing: `${interpolate(f, [22, 180], [0.14, 0.07], clamp)}em`, marginRight: '-0.07em' }}>
             Camina
           </Linea>
-          <Linea entra={44} style={{ ...titular, fontSize: 88, color: C.verde, marginTop: 10 }}>
+          <Linea entra={44 * ritmo} style={{ ...titular, fontSize: 88, color: C.verde, marginTop: 10 }}>
             Caminá y ganá
           </Linea>
-          <Linea entra={78} style={{ fontFamily: 'Mona', fontWeight: 760, fontStretch: '115%', fontSize: 56, color: '#fff', letterSpacing: '0.2em', marginTop: 74, marginRight: '-0.2em' }}>
+          <Linea entra={78 * ritmo} style={{ fontFamily: 'Mona', fontWeight: 760, fontStretch: '115%', fontSize: 56, color: '#fff', letterSpacing: '0.2em', marginTop: 74, marginRight: '-0.2em' }}>
             MUY PRONTO
           </Linea>
           <div style={{ display: 'flex', gap: 24, marginTop: 30 }}>
-            <Tienda en={90} icono={<IconoApple />} nombre="App Store" />
-            <Tienda en={96} icono={<IconoPlay />} nombre="Google Play" />
+            <Tienda en={90 * ritmo} icono={<IconoApple />} nombre="App Store" />
+            <Tienda en={96 * ritmo} icono={<IconoPlay />} nombre="Google Play" />
           </div>
-          <Linea entra={110} style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: 46, color: C.gris, marginTop: 40 }}>
+          <Linea entra={110 * ritmo} style={{ fontFamily: 'Jakarta', fontWeight: 800, fontSize: 46, color: C.gris, marginTop: 40 }}>
             caminaapp.com
           </Linea>
         </div>
