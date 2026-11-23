@@ -21,7 +21,7 @@ import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
-import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
+import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useBenefitsRemainingPeriod, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
 import { askForReviewOnce } from '@/lib/review';
 import { rewardReview } from '@/hooks/useBadges';
@@ -91,6 +91,7 @@ export default function CanjesScreen() {
     return (approvedBusinesses ?? []).filter((b) => !conPremios.has(b.id)) as BusinessT[];
   }, [benefits, approvedBusinesses]);
   const { data: remainingToday } = useBenefitsRemainingToday();
+  const { data: remainingPeriod } = useBenefitsRemainingPeriod();
   const { data: onlineRedeemed } = useOnlineRedeemed();
   const { data: myRedemptions } = useMyRedemptions();
   const [copiedKey, setCopiedKey] = useState<'code' | 'msg' | null>(null);
@@ -973,104 +974,113 @@ export default function CanjesScreen() {
             />
           )}
 
-          {groups.slice(0, shownGroups).map((g) => (
-            <Press
+          {groups.slice(0, shownGroups).map((g) => {
+            const featured = isFeatured(g.business);
+            const hasBenefits = g.benefits.length > 0;
+            return (
+            // Capa de afuera: solo la sombra (en iPhone `overflow: hidden` la tapa). Capa de adentro: borde y recorte parejos,
+            // así la portada queda cortada por el mismo borde redondeado y el aro dorado se ve entero y prolijo.
+            <View
               key={g.business.id}
-              // En web el corazón de adentro ya es un botón y un <button> no puede ir dentro de otro <button>.
-              accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
-              accessibilityActions={[{ name: 'favorite', label: favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' }]}
-              onAccessibilityAction={(e) => {
-                if (e.nativeEvent.actionName === 'favorite') favorites.toggle(g.business.id);
-              }}
-              onPress={() => setProfileBusinessId(g.business.id)}
-              className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark rounded-3xl p-4"
-              style={{
-                shadowColor: colors.light.text, shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1,
-                ...(isFeatured(g.business) ? { borderWidth: 2, borderColor: GOLD, shadowColor: GOLD, shadowOpacity: 0.25 } : {}),
-              }}
+              style={{ borderRadius: 24, shadowColor: featured ? GOLD : colors.light.text, shadowOpacity: featured ? 0.25 : 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 1 }}
             >
-              {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. */}
-              {g.business.cover_url ? (
-                <CachedImage
-                  source={{ uri: g.business.cover_url }}
-                  cachePolicy="memory-disk"
-                  // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
-                  transition={180}
-                  accessibilityIgnoresInvertColors
-                  contentFit="cover"
-                  style={{ height: 132 + cardBorder(g.business), marginTop: -16 - cardBorder(g.business), marginHorizontal: -16 - cardBorder(g.business), marginBottom: 14, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
-                />
-              ) : null}
-              {/* En iPhone la portada se dibuja encima del borde de la tarjeta y el dorado solo se veía de la foto para abajo:
-                  el borde se repite por encima de todo, del mismo ancho y color. */}
-              {g.business.cover_url && isFeatured(g.business) ? (
-                <View
-                  pointerEvents="none"
-                  className={isFeatured(g.business) ? undefined : 'border-line-light dark:border-line-dark'}
-                  style={{
-                    position: 'absolute', zIndex: 1, top: -cardBorder(g.business), left: -cardBorder(g.business), right: -cardBorder(g.business), bottom: -cardBorder(g.business),
-                    borderRadius: 24, borderWidth: cardBorder(g.business), ...(isFeatured(g.business) ? { borderColor: GOLD } : {}),
+              <View
+                className="bg-card-light dark:bg-card-dark border border-line-light dark:border-line-dark"
+                style={{ borderRadius: 24, overflow: 'hidden', borderWidth: cardBorder(g.business), ...(featured ? { borderColor: GOLD } : {}) }}
+              >
+                <Press
+                  // En web el corazón de adentro ya es un botón y un <button> no puede ir dentro de otro <button>.
+                  accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
+                  accessibilityActions={[{ name: 'favorite', label: favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' }]}
+                  onAccessibilityAction={(e) => {
+                    if (e.nativeEvent.actionName === 'favorite') favorites.toggle(g.business.id);
                   }}
-                />
-              ) : null}
-              <View className="flex-row items-start" style={{ gap: 14 }}>
-                {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, isFeatured(g.business))}
-                <View className="flex-1">
-                  <View className="flex-row items-center" style={{ gap: 6 }}>
-                    <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
-                    {isFeatured(g.business) && <GoldBadge size={18} />}
-                  </View>
-                  <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
-                  {g.business.address ? (
-                    <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
-                      <MapPin size={12} color={isDark ? colors.aqua : colors.aquaDeep} />
-                      <Text className="flex-1 text-[12px] text-aqua-ink dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
-                    </View>
+                  onPress={() => setProfileBusinessId(g.business.id)}
+                  style={{ padding: 16, paddingBottom: hasBenefits ? 0 : 16 }}
+                >
+                  {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. Misma proporción 16:9 que el recorte del panel,
+                      así se ve completa y igual que en la vista del comercio. */}
+                  {g.business.cover_url ? (
+                    <CachedImage
+                      source={{ uri: g.business.cover_url }}
+                      cachePolicy="memory-disk"
+                      // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
+                      transition={180}
+                      accessibilityIgnoresInvertColors
+                      contentFit="cover"
+                      style={{ aspectRatio: 16 / 9, width: 'auto', marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
+                    />
                   ) : null}
-                  <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-ink dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
-                    {g.benefits.length === 0 ? 'Todavía sin premios' : g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
-                    {g.distance != null && g.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(g.distance)}` : ''}
-                  </Text>
-                </View>
-                <View className="items-center" style={{ gap: 10 }}>
-                  <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
-                    <Heart size={20} color={favorites.isFavorite(g.business.id) ? favorite : muted} fill={favorites.isFavorite(g.business.id) ? favorite : 'none'} />
-                  </Press>
-                  <ChevronRight size={18} color={muted} />
-                </View>
-              </View>
-
-              {/* Cada premio en una pastilla con su precio adentro: el canje se hace en la ficha. */}
-              {g.benefits.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3" contentContainerStyle={{ gap: 8 }}>
-                {g.benefits.map((b) => (
-                  <View
-                    key={b.id}
-                    accessible
-                    accessibilityLabel={`${b.name}${b.with_purchase ? `, ${b.with_purchase}` : ''}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
-                    className="flex-row items-center bg-aqua-deep rounded-full"
-                    style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: discountTag(b) || b.with_purchase ? 5 : 12 }}
-                  >
-                    <Coin size={20} />
-                    <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
-                    <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
-                    {/* Si es un descuento, se dice cuánto: así nadie cree que el premio es gratis. */}
-                    {b.with_purchase ? (
-                      <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2, marginRight: discountTag(b) ? 0 : -7 }}>
-                        <Text className="text-[12px] font-extrabold text-white">con tu compra</Text>
+                  <View className="flex-row items-start" style={{ gap: 14 }}>
+                    {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, featured)}
+                    <View className="flex-1">
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
+                        <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
+                        {featured && <GoldBadge size={18} />}
                       </View>
-                    ) : null}
-                    {discountTag(b) ? (
-                      <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2 }}>
-                        <Text className="text-[12px] font-extrabold text-white">{discountTag(b)}</Text>
-                      </View>
-                    ) : null}
+                      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
+                      {g.business.address ? (
+                        <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
+                          <MapPin size={12} color={isDark ? colors.aqua : colors.aquaDeep} />
+                          <Text className="flex-1 text-[12px] text-aqua-ink dark:text-aqua" numberOfLines={1}>{g.business.address}</Text>
+                        </View>
+                      ) : null}
+                      <Text className={`text-[12px] font-semibold mt-1 ${g.openNow ? 'text-aqua-ink dark:text-aqua' : 'text-muted-light dark:text-muted-dark'}`}>
+                        {g.benefits.length === 0 ? 'Todavía sin premios' : g.openNow ? 'Disponible ahora' : 'Fuera de horario'}
+                        {g.distance != null && g.distance < MAX_SHOWN_DISTANCE_M ? ` · ${formatDistance(g.distance)}` : ''}
+                      </Text>
+                    </View>
+                    <View className="items-center" style={{ gap: 10 }}>
+                      <Press accessibilityRole="button" accessibilityLabel={favorites.isFavorite(g.business.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'} onPress={() => favorites.toggle(g.business.id)} hitSlop={10}>
+                        <Heart size={20} color={favorites.isFavorite(g.business.id) ? favorite : muted} fill={favorites.isFavorite(g.business.id) ? favorite : 'none'} />
+                      </Press>
+                      <ChevronRight size={18} color={muted} />
+                    </View>
                   </View>
-                ))}
-              </ScrollView>
-              )}
-            </Press>
-          ))}
+                </Press>
+
+                {/* Cada premio en una pastilla con su precio adentro: el canje se hace en la ficha.
+                    Va FUERA del toque de la tarjeta para que se pueda deslizar de lado, y llega hasta los bordes de la tarjeta. */}
+                {hasBenefits && (
+                  <ScrollView
+                    horizontal
+                    nestedScrollEnabled
+                    showsHorizontalScrollIndicator={false}
+                    style={{ marginTop: 12 }}
+                    contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 16 }}
+                  >
+                    {g.benefits.map((b) => (
+                      <Press
+                        key={b.id}
+                        feedback="none"
+                        onPress={() => setProfileBusinessId(g.business.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${b.name}${b.with_purchase ? `, ${b.with_purchase}` : ''}${discountTag(b) ? `, ${discountTag(b)} de descuento` : ''}, ${b.cost_points} ${plural(b.cost_points, 'Punto', 'Puntos')}`}
+                        className="flex-row items-center bg-aqua-deep rounded-full"
+                        style={{ gap: 6, paddingVertical: 5, paddingLeft: 5, paddingRight: discountTag(b) || b.with_purchase ? 5 : 12 }}
+                      >
+                        <Coin size={20} />
+                        <Text className="text-[13px] font-extrabold text-white">{b.cost_points}</Text>
+                        <Text className="text-[13px] font-semibold text-white">{b.name}</Text>
+                        {/* Si es un descuento, se dice cuánto: así nadie cree que el premio es gratis. */}
+                        {b.with_purchase ? (
+                          <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2, marginRight: discountTag(b) ? 0 : -7 }}>
+                            <Text className="text-[12px] font-extrabold text-white">con tu compra</Text>
+                          </View>
+                        ) : null}
+                        {discountTag(b) ? (
+                          <View className="rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2 }}>
+                            <Text className="text-[12px] font-extrabold text-white">{discountTag(b)}</Text>
+                          </View>
+                        ) : null}
+                      </Press>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            </View>
+            );
+          })}
 
           {groups.length > shownGroups ? (
             <Press accessibilityRole="button" onPress={() => setShownGroups((n) => n + PAGE)} className="rounded-2xl items-center border border-line-light dark:border-line-dark" style={{ paddingVertical: 13, marginTop: 4 }}>
@@ -1497,12 +1507,17 @@ export default function CanjesScreen() {
                           // Online: los cupos son totales (no por día). Sin dato todavía, se deja canjear y el servidor valida.
                           const isWeb = !!b.online && b.online_channel === 'web';
                           const onlineInfo = onlineRedeemed?.get(b.id);
-                          const unlimited = isWeb ? onlineInfo?.codesLeft == null : b.online ? b.online_quota == null : b.daily_quota == null;
+                          const unlimited = isWeb ? onlineInfo?.codesLeft == null : b.online ? b.online_quota == null : b.daily_quota == null && b.weekly_quota == null && b.monthly_quota == null;
                           const remaining = isWeb
                             ? (onlineInfo?.codesLeft ?? Infinity)
                             : b.online
                               ? (b.online_quota == null ? Infinity : Math.max(0, b.online_quota - (onlineInfo?.redeemed ?? 0)))
-                              : (b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)));
+                              // Sin local: el tope más chico entre día, semana y mes es el que manda.
+              : Math.min(
+                  b.daily_quota == null ? Infinity : Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)),
+                  b.weekly_quota == null ? Infinity : Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)),
+                  b.monthly_quota == null ? Infinity : Math.max(0, b.monthly_quota - (remainingPeriod?.get(b.id)?.month ?? 0)),
+                );
                           // Si ya canjeó este premio online y el código sigue vigente, el botón vuelve a mostrar el código.
                           // Con cupón propio de la tienda el canje sale confirmado y el cupón se puede volver a ver durante la espera de 14 días.
                           const myPending = b.online
@@ -1566,7 +1581,7 @@ export default function CanjesScreen() {
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : 'hoy'}</Text>
+                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text>
                                     ) : null}
                                   </View>
                                 </View>

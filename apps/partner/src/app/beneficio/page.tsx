@@ -187,7 +187,7 @@ export default function BeneficioPage() {
               <p className="text-xs text-muted mt-0.5">
                 {b.online
                   ? `Online por ${CANALES_ONLINE.find((c) => c.id === b.online_channel)?.label ?? 'redes'} · ${b.online_channel === 'web' ? 'con tus cupones' : b.online_quota == null ? 'cupos ilimitados' : `${b.online_quota} cupos en total`}`
-                  : b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}
+                  : b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}{b.weekly_quota != null ? ` · ${b.weekly_quota} por semana` : ''}{b.monthly_quota != null ? ` · ${b.monthly_quota} por mes` : ''}
               </p>
               <div className="flex gap-2 mt-3">
                 <button
@@ -259,6 +259,9 @@ function BeneficioForm({
   const [costo, setCosto] = useState(benefit ? String(benefit.cost_points) : '10');
   const [ilimitado, setIlimitado] = useState(!isFree && benefit != null && benefit.daily_quota == null);
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
+  // Topes opcionales por semana y por mes (vacío = sin tope).
+  const [cuposSemana, setCuposSemana] = useState(benefit?.weekly_quota != null ? String(benefit.weekly_quota) : '');
+  const [cuposMes, setCuposMes] = useState(benefit?.monthly_quota != null ? String(benefit.monthly_quota) : '');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
   // Con tu compra: la persona compra algo y se lleva el premio. El local
@@ -436,6 +439,8 @@ function BeneficioForm({
       cost_points: Number(costo) || 0,
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
+      weekly_quota: online ? null : Number(cuposSemana) > 0 ? Number(cuposSemana) : null,
+      monthly_quota: online ? null : Number(cuposMes) > 0 ? Number(cuposMes) : null,
       active,
       ...(fansReady ? { fans_only: fansOnly } : {}),
       new_customers_only: soloNuevos,
@@ -683,7 +688,7 @@ function BeneficioForm({
             </Field>
           </div>
         </Paso>
-        <Paso title="Cuánto cuesta" hint="En Puntos de Camina.">
+        <Paso title="Cuánto cuesta" hint="En Puntos de Camina. Como guía: 2 Puntos equivalen a Bs 1 (algo de Bs 10 son unos 20 Puntos).">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
@@ -701,6 +706,16 @@ function BeneficioForm({
           </div>
           {!isFree && !online && (
             <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
+          )}
+          {!online && (
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <Field label="Tope por semana (opcional)">
+                <input value={cuposSemana} onChange={(e) => setCuposSemana(e.target.value.replace(/\D/g, ''))} placeholder="Sin tope" className={INPUT} />
+              </Field>
+              <Field label="Tope por mes (opcional)">
+                <input value={cuposMes} onChange={(e) => setCuposMes(e.target.value.replace(/\D/g, ''))} placeholder="Sin tope" className={INPUT} />
+              </Field>
+            </div>
           )}
         </Paso>
           </>
