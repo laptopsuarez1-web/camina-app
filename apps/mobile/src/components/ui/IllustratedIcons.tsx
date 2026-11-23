@@ -3,7 +3,7 @@ import { Image, View } from 'react-native';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Circle, Stop } from 'react-native-svg';
 
 // Íconos ilustrados con degradé, en la línea del trofeo (dibujo en una grilla de 48). Los usan la barra de abajo (TabGlyph, por partes
-// para que cada uno haga su gesto) y las fichas de Inicio (IconBubble). Calendario y bolsa llevan las huellas de Camina, como el trofeo.
+// para que cada uno haga su gesto) y las fichas de Inicio (IconBubble). El calendario lleva las huellas de Camina, como el trofeo.
 export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'target' | 'friend' | 'gift' | 'bell' | 'flame' | 'store';
 
 export type Fills = { f: string; g: string };
@@ -17,8 +17,8 @@ const GRAD = {
 } as const;
 
 // Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
-// La llama de la racha es verde, del color de Camina, con el centro en verde claro.
-const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf' };
+// La llama de la racha es verde, del color de Camina, con el centro en verde claro. Inicio, Eventos y Canjes: verde con detalles en morado.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf', home: 'purple', events: 'purple', canjes: 'purple' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];
@@ -78,11 +78,20 @@ export const PARTS: Record<IllKind, IllPart[]> = {
     { origin: '50% 50%', foot: { x: 14.500, y: 23, w: 8, h: 16, side: 0 } },
     { origin: '50% 50%', foot: { x: 25.500, y: 25, w: 8, h: 16, side: 1 } },
   ],
+  // Canjes: un regalo. La tapa con el moño (segundo color) se levanta al tocarlo; la caja lleva la cinta.
   canjes: [
-    { origin: '50% 0%', node: ({ g }) => <Path d="M16 17v-3a8 8 0 0 1 16 0v3" fill="none" stroke={g} strokeWidth={4} strokeLinecap="round" /> },
-    { origin: '50% 0%', node: ({ f }) => <Path d="M8 17h32l2.500 21a5 5 0 0 1-5 5.500h-27a5 5 0 0 1-5-5.500z" fill={f} /> },
-    { origin: '50% 0%', foot: { x: 14, y: 22, w: 8, h: 16, side: 0 } },
-    { origin: '50% 0%', foot: { x: 25, y: 24, w: 8, h: 16, side: 1 } },
+    { origin: '50% 100%', node: ({ g }) => (
+      <>
+        <Rect x={5} y={16} width={38} height={10} rx={3.500} fill={g} />
+        <Path d="M24 16c-3-8.500-13-9.500-13-4 0 3.200 5.500 4 13 4zm0 0c3-8.500 13-9.500 13-4 0 3.200-5.500 4-13 4z" fill="none" stroke={g} strokeWidth={3.400} strokeLinejoin="round" />
+      </>
+    ) },
+    { origin: '50% 100%', node: ({ f, g }) => (
+      <>
+        <Path d="M8 27.500h32V39a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z" fill={f} />
+        <Rect x={21} y={27.500} width={6} height={15.500} fill={g} />
+      </>
+    ) },
   ],
   target: [
     { origin: '50% 50%', node: ({ f, g }) => (
