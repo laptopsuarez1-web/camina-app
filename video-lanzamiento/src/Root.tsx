@@ -3,11 +3,13 @@ import { Lanzamiento } from './Lanzamiento';
 import { DUR_YSI, YSi } from './YSi';
 import { DUR_HORIZONTE, Horizonte } from './Horizonte';
 import { Carrusel, LAMINAS } from './Carrusel';
+import { Carrusel2, LAMINAS2 } from './Carrusel2';
 
 // Videos de Camina, vertical 1080 × 1920 a 30 fps (Reels, TikTok, Facebook).
 // Lanzamiento: 35 s; `voz`: false = versión A (música y efectos), true = versión B (con locución).
 // YSiCadaPaso: pieza de marca «¿Y si cada paso…?», sin voz, 35 s.
-// Carrusel-1 … Carrusel-9: carrusel de Instagram (imágenes fijas 1080 × 1350).
+// Carrusel-1 … Carrusel-9: carrusel de Instagram con el horizonte curvo (imágenes fijas 1080 × 1350).
+// Carrusel2-1 … Carrusel2-9: carrusel de Instagram, identidad «Paso a paso» (menta y morado, huellas que cruzan las láminas).
 // HorizonteCamina: teaser «Siempre hay más por caminar», sin voz, ≈ 20 s.
 export const RemotionRoot = () => {
   return (
@@ -17,6 +19,9 @@ export const RemotionRoot = () => {
       <Composition id="HorizonteCamina" component={Horizonte} durationInFrames={DUR_HORIZONTE} fps={30} width={1080} height={1920} />
       {Array.from({ length: LAMINAS }, (_, i) => (
         <Composition key={i} id={`Carrusel-${i + 1}`} component={Carrusel} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{ n: i + 1 }} />
+      ))}
+      {Array.from({ length: LAMINAS2 }, (_, i) => (
+        <Composition key={`b${i}`} id={`Carrusel2-${i + 1}`} component={Carrusel2} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{ n: i + 1 }} />
       ))}
     </>
   );
