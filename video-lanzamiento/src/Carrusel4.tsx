@@ -232,7 +232,7 @@ const Texto = ({ tema, children }: { tema: Tema; children: ReactNode }) => (
 );
 
 // ---------- teléfono realista (derecho, sin deformar) ----------
-const Telefono = ({ src, cx, y, alto, ry = 0, rz = 0, brillo, atras }: { src: string; cx: number; y: number; alto: number; ry?: number; rx?: number; rz?: number; brillo: string; atras?: boolean }) => {
+export const Telefono = ({ src, cx, y, alto, ry = 0, rz = 0, brillo, atras }: { src: string; cx: number; y: number; alto: number; ry?: number; rx?: number; rz?: number; brillo: string; atras?: boolean }) => {
   const pantalla = alto * (780 / 1688);
   const b = pantalla * 0.04; // bisel
   const ancho = pantalla + b * 2;
@@ -293,7 +293,7 @@ const Burbuja = ({ x, y, quien, yo, children }: { x: number; y: number; quien: s
   </div>
 );
 
-const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
+export const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 32px 18px 26px', borderRadius: 26, background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.35)' }}>
     {icono}
     <div style={{ display: 'flex', flexDirection: 'column', color: '#fff' }}>
