@@ -25,10 +25,11 @@ const arco = (r: number, x1: number, x2: number) => {
   return { d: `M${P(a1)} A${r} ${r} 0 0 1 ${P(a2)}`, largo: r * (a2 - a1), punto, a1, a2 };
 };
 
-export const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: { etiqueta?: string; linea: string; titulo: string; acento: string; tam?: number; children: ReactNode }) => {
+export const Base = ({ etiqueta, linea, titulo, acento, tam = 104, llenado = 0.82, children }: { llenado?: number; etiqueta?: string; linea: string; titulo: string; acento: string; tam?: number; children: ReactNode }) => {
   const ext = arco(R - 20, -40, 1120);
   const int = arco(R - 92, -40, 1120);
-  const cab = int.punto(int.a1 + (int.a2 - int.a1) * 0.68);
+  const q2 = Math.min(1, llenado * 0.83 + (llenado >= 1 ? 0.17 : 0));
+  const cab = int.punto(int.a1 + (int.a2 - int.a1) * q2);
   const dash = (a: { largo: number }, q: number) => `${a.largo * q} ${a.largo * 2}`;
   const rt = R + 46;
   const at = 0.62;
@@ -49,13 +50,13 @@ export const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: {
         <defs>
           <path id="titular" d={`M${PT(-at)} A${rt} ${rt} 0 0 1 ${PT(at)}`} />
         </defs>
-        <path d={ext.d} stroke={MENTA} strokeOpacity={0.3} strokeWidth={60} fill="none" style={{ filter: 'blur(24px)' }} />
+        <path d={ext.d} stroke={MENTA} strokeOpacity={llenado >= 1 ? 0.55 : 0.3} strokeWidth={60} fill="none" style={{ filter: 'blur(24px)' }} />
         <path d={ext.d} stroke="rgba(255,255,255,0.09)" strokeWidth={36} fill="none" />
-        <path d={ext.d} stroke="#86ecc6" strokeWidth={36} strokeLinecap="round" fill="none" strokeDasharray={dash(ext, 0.82)} />
+        <path d={ext.d} stroke="#86ecc6" strokeWidth={36} strokeLinecap="round" fill="none" strokeDasharray={dash(ext, llenado)} />
         <path d={int.d} stroke="rgba(255,255,255,0.07)" strokeWidth={14} fill="none" />
-        <path d={int.d} stroke="#2ff0a0" strokeOpacity={0.45} strokeWidth={22} fill="none" strokeDasharray={dash(int, 0.68)} style={{ filter: 'blur(9px)' }} />
-        <path d={int.d} stroke="#2ff0a0" strokeWidth={14} strokeLinecap="round" fill="none" strokeDasharray={dash(int, 0.68)} />
-        <circle cx={cab.x} cy={cab.y} r={7} fill="#ffffff" />
+        <path d={int.d} stroke="#2ff0a0" strokeOpacity={0.45} strokeWidth={22} fill="none" strokeDasharray={dash(int, q2)} style={{ filter: 'blur(9px)' }} />
+        <path d={int.d} stroke="#2ff0a0" strokeWidth={14} strokeLinecap="round" fill="none" strokeDasharray={dash(int, q2)} />
+        {q2 < 1 && <circle cx={cab.x} cy={cab.y} r={7} fill="#ffffff" />}
         <text fontFamily="Caslon" fontSize={tam} letterSpacing={-1} fill="#ffffff" style={{ filter: 'drop-shadow(0 4px 24px rgba(10,2,30,0.6))' }}>
           <textPath href="#titular" startOffset="50%" textAnchor="middle">
             {titulo} <tspan fill={MENTA}>{acento}</tspan>
