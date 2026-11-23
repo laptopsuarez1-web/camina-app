@@ -48,10 +48,10 @@ eb = np.ones(len(b)); eb[:nx] = np.sin(np.linspace(0, np.pi / 2, nx))
 place(mus, a * ea[:, None], 0)
 place(mus, b * eb[:, None], EMPALME - xf / 2)
 RESPIROS = [(10.3, 11.9), (15.9, 17.0)]  # paisajes de Bolivia y las tomas de la plaza y la Loma (sin palabras)
-pts = [(0, 0.0), (0.02, 1.7), (2.45, 1.7), (2.6, 1.0)]  # la parte calma del inicio sube para que la entrada sea fuerte
+pts = [(0, 0.0), (1.2, 0.0), (1.9, 0.35), (2.45, 1.0)]  # como la referencia: silencio, el logo solo, y la música entra con el montaje
 for r0, r1 in RESPIROS:
-    pts += [(r0 - 0.5, 1.0), (r0 + 0.3, 0.6), (r1 - 0.3, 0.6), (r1 + 0.4, 1.0)]
-pts += [(CARD - 0.1, 1.0), (CARD + 0.4, 0.75), (CIERRE - 0.5, 0.75), (CIERRE, 1.0), (DUR, 1.0)]
+    pts += [(r0 - 0.5, 1.0), (r0 + 0.3, 0.8), (r1 - 0.3, 0.8), (r1 + 0.4, 1.0)]  # respiros suaves (la referencia es muy pareja)
+pts += [(CARD - 0.1, 1.0), (CARD + 0.4, 0.82), (CIERRE - 0.5, 0.82), (CIERRE, 1.0), (DUR, 1.0)]
 mus *= curva(t, pts)[:, None]
 mus /= np.abs(mus).max()
 
@@ -72,5 +72,7 @@ place(sfx, brillo_logo(0.06), CIERRE)
 sfx = reverb(sfx, 0.8, 0.12, 8000, seed=21)
 sfx /= np.abs(sfx).max()
 
-sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.62 + sfx * 0.32, umbral=0.35).astype(np.float32), SR)
+mezcla = mus * 0.62 + sfx * 0.32
+mezcla = mezcla / np.abs(mezcla).max() * 0.89  # sin compresión: dinámica natural, como la referencia
+sf.write('public/audio/ysi-mezcla.wav', mezcla.astype(np.float32), SR)
 print('ok; tarjeta', round(CARD, 2), 's; cierre', round(CIERRE, 2), 's; empalme', round(EMPALME, 2), 's; golpe final', round(FINAL, 2), 's')
