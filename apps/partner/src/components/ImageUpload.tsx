@@ -5,9 +5,8 @@ import { ImagePlus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { CropDialog } from '@/components/CropDialog';
 
-// Proporciones reales de la app: la ficha del local muestra la portada a 390×232 y la tarjeta de la lista, una franja más baja.
-const COVER_ASPECT = 390 / 232;
-const COVER_LISTA = 2.5;
+// Proporción real de la app: la portada se ve 16:9 en la tarjeta de la lista y casi igual en la ficha del local.
+const COVER_ASPECT = 16 / 9;
 
 export function ImageUpload({
   bucket,
@@ -58,7 +57,7 @@ export function ImageUpload({
   }
 
   const dims =
-    shape === 'circle' ? 'w-20 h-20 rounded-full' : shape === 'wide' ? 'w-full h-28 rounded-xl' : shape === 'cover' ? 'w-full aspect-[390/232] rounded-xl' : 'w-28 h-28 rounded-xl';
+    shape === 'circle' ? 'w-20 h-20 rounded-full' : shape === 'wide' ? 'w-full h-28 rounded-xl' : shape === 'cover' ? 'w-full aspect-video rounded-xl' : 'w-28 h-28 rounded-xl';
 
   return (
     <div>
@@ -99,7 +98,6 @@ export function ImageUpload({
         <CropDialog
           file={toCrop}
           aspect={shape === 'wide' ? 16 / 9 : shape === 'cover' ? COVER_ASPECT : 1}
-          guide={shape === 'cover' ? COVER_LISTA : undefined}
           round={shape === 'circle'}
           max={shape === 'circle' ? 600 : shape === 'wide' || shape === 'cover' ? 1600 : 1200}
           title={`Acomoda: ${label}`}

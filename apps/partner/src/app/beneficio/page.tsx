@@ -686,7 +686,7 @@ function BeneficioForm({
             </Field>
           </div>
         </Paso>
-        <Paso title="Cuánto cuesta" hint="En Puntos de Camina. 2 Puntos equivalen a Bs 1.">
+        <Paso title="Cuánto cuesta" hint="En Puntos de Camina.">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
