@@ -13,8 +13,8 @@ import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
 import { BurstFx, ConfettiCannons } from '@/components/celebrations/Effects';
 import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScene';
-import { EventJoinedScene, FriendMadeScene, StreakScene, StreakWeekScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
-import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene } from '@/components/celebrations/RingScenes';
+import { EventJoinedScene, FriendMadeScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
+import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene } from '@/components/celebrations/RingScenes';
 
 const GOLD = '#E2B33C';
 const GOLD_SPARKS = ['#E2B33C', '#FFD97A', '#FFF1B8'];

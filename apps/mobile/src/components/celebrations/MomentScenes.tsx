@@ -1,15 +1,14 @@
 import { useEffect } from 'react';
-import { Linking, Share, View } from 'react-native';
+import { Linking, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Coin } from '@/components/ui/Coin';
-import { IllArt } from '@/components/ui/IllustratedIcons';
 import { colors } from '@/theme/tokens';
 import { buzz } from '@/lib/haptics';
 import { participantsLabel } from '@/lib/promo';
 import {
-  Burst, CAMINA_SPARKS, display, Eyebrow, FlyingCoin, GOLD_SPARKS, LinkButton, MainButton, Avatar, Reveal, Stage, Stamp,
+  Burst, CAMINA_SPARKS, display, Eyebrow, FlyingCoin, LinkButton, MainButton, Avatar, Reveal, Stage, Stamp,
   useBeat, useCount, usePalette, useTimeline, EASE, type CinePerson,
 } from '@/components/challenge/ChallengeCinematics';
 
@@ -257,111 +256,6 @@ export function FriendMadeScene({ c, onDone }: { c: FriendMadeCinematic; onDone:
   );
 }
 
-// =====================================================================
-// 6) Racha de 30 y 100 días
-// =====================================================================
-
-export function StreakScene({ c, onDone }: { c: StreakCinematic; onDone: () => void }) {
-  const p = usePalette();
-  const big = c.days >= 100;
-  const tl = useTimeline(3200);
-  const days = useCount(tl, 1, c.days, 500, 1500);
-  const grow = useBeat(tl, 300, { duration: 1700 });
-  const flame = big ? '#FFB92E' : colors.mint;
-  const flameStyle = useAnimatedStyle(() => ({ transform: [{ scale: 0.35 + 0.65 * grow.value }, { translateY: (1 - grow.value) * 20 }] }));
-  const glow = useAnimatedStyle(() => ({ opacity: grow.value, transform: [{ scale: 0.6 + 0.4 * grow.value }] }));
-  useEffect(() => {
-    if (tl.reduced) { buzz.success(); return; }
-    buzz.light();
-    [0, 1, 2, 3, 4, 5].forEach((i) => tl.at(500 + i * 280, buzz.selection));
-    tl.at(2100, buzz.success);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const share = () => { Share.share({ message: `Llevo ${c.days} días seguidos cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
-  return (
-    <Stage tl={tl} announce={`${c.days} días seguidos de racha.`}>
-      <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha</Eyebrow></Reveal>
-      <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
-        <Animated.View pointerEvents="none" style={[{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }, glow]}>
-          {[210, 165, 120].map((d) => <View key={d} style={{ position: 'absolute', width: d, height: d, borderRadius: d / 2, backgroundColor: flame, opacity: 0.1 }} />)}
-        </Animated.View>
-        <Animated.View style={[{ alignItems: 'center', justifyContent: 'center' }, flameStyle]}>
-          <IllArt kind="flame" size={150} />
-        </Animated.View>
-        <Burst tl={tl} delay={2000} palette={big ? GOLD_SPARKS : [colors.mint, '#FFD97A', '#B7A6F0']} count={20} radius={130} style={{ left: '50%', top: '50%' }} />
-      </View>
-      {/* El número va debajo de la llama, bien grande, para que no se pierda contra el dibujo. */}
-      <View accessible accessibilityLabel={`${c.days} días seguidos`} style={{ alignItems: 'center', marginTop: 6 }}>
-        <Text allowFontScaling={false} style={{ ...display(76), color: flame, fontVariant: ['tabular-nums'], textAlign: 'center', lineHeight: 84, minWidth: 160 }}>{days}</Text>
-        <Reveal tl={tl} delay={2050} pop from={0.6}>
-          <Text style={{ ...display(24), color: p.text, textAlign: 'center' }}>días seguidos</Text>
-        </Reveal>
-      </View>
-      <Reveal tl={tl} delay={2250}>
-        <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 6, lineHeight: 20, maxWidth: 280 }}>
-          {big ? 'Cien días cumpliendo tu meta. Eres imparable.' : 'Un mes entero cumpliendo tu meta.'}
-        </Text>
-      </Reveal>
-      <Reveal tl={tl} delay={2450} dy={20} style={{ alignSelf: 'stretch', marginTop: 30 }}>
-        <MainButton gold={big} label="Compartir mi racha" onPress={share} />
-        <LinkButton label="Seguir caminando" onPress={onDone} color={p.accent} />
-      </Reveal>
-    </Stage>
-  );
-}
-
-// =====================================================================
-// 7) Racha semanal completa: las 7 casillas se llenan y llegan los Puntos
-// =====================================================================
-
-export function StreakWeekScene({ c, onDone }: { c: StreakWeekCinematic; onDone: () => void }) {
-  const p = usePalette();
-  const tl = useTimeline(3600);
-  useEffect(() => {
-    if (tl.reduced) { buzz.success(); return; }
-    [0, 1, 2, 3, 4, 5, 6].forEach((i) => tl.at(500 + i * 190, buzz.selection));
-    tl.at(2000, buzz.success);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const share = () => { Share.share({ message: `Completé ${c.weeks === 1 ? 'una semana' : `${c.weeks} semanas`} seguidas cumpliendo mi meta en Camina. ¿Te animas?` }).catch(() => {}); };
-  return (
-    <Stage tl={tl} announce={`Semana completa. Ganaste ${c.points} Puntos de racha.`}>
-      <Reveal tl={tl} delay={200}><Eyebrow color={p.muted}>Racha semanal</Eyebrow></Reveal>
-      <View style={{ marginTop: 18, alignItems: 'center', justifyContent: 'center' }}>
-        <Reveal tl={tl} delay={300} pop from={0.4}>
-          <IllArt kind="flame" size={104} />
-        </Reveal>
-        <Burst tl={tl} delay={2000} palette={[colors.mint, '#FFD97A', '#B7A6F0']} count={18} radius={120} style={{ left: '50%', top: '50%' }} />
-      </View>
-      <View accessible accessibilityLabel="7 de 7 días" style={{ flexDirection: 'row', gap: 6, alignSelf: 'stretch', marginTop: 26 }}>
-        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-          <Reveal key={i} tl={tl} delay={500 + i * 190} pop from={0.3} style={{ flex: 1 }}>
-            <View style={{ height: 44, borderRadius: 12, backgroundColor: 'rgba(98,240,182,0.16)', borderWidth: 1.5, borderColor: 'rgba(98,240,182,0.55)', alignItems: 'center', justifyContent: 'center' }}>
-              {i === 6 ? <Text style={{ fontWeight: '900', fontSize: 14, color: colors.mint }}>+{c.points}</Text> : <IllArt kind="flame" size={24} />}
-            </View>
-          </Reveal>
-        ))}
-      </View>
-      <Reveal tl={tl} delay={2000} pop from={0.6} style={{ marginTop: 34 }}>
-        <Text style={{ ...display(30), color: p.text, textAlign: 'center' }}>¡Semana completa!</Text>
-      </Reveal>
-      <Reveal tl={tl} delay={2250} pop from={0.7} style={{ marginTop: 14 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(226,179,60,0.16)', borderWidth: 1, borderColor: 'rgba(226,179,60,0.5)' }}>
-          <Coin size={24} />
-          <Text style={{ fontWeight: '900', fontSize: 24, color: '#FFD97A', fontVariant: ['tabular-nums'] }}>+{c.points} Puntos</Text>
-        </View>
-      </Reveal>
-      <Reveal tl={tl} delay={2450}>
-        <Text style={{ fontSize: 14, color: p.muted, textAlign: 'center', marginTop: 12, lineHeight: 20, maxWidth: 280 }}>
-          {c.weeks > 1 ? `Ya son ${c.weeks} semanas seguidas cumpliendo tu meta.` : '7 días seguidos cumpliendo tu meta.'}
-        </Text>
-      </Reveal>
-      <Reveal tl={tl} delay={2650} dy={20} style={{ alignSelf: 'stretch', marginTop: 28 }}>
-        <MainButton label="Compartir mi racha" onPress={share} />
-        <LinkButton label="Seguir caminando" onPress={onDone} color={p.accent} />
-      </Reveal>
-    </Stage>
-  );
-}
+// 6) y 7) Rachas de 30 y 100 días y racha semanal: ver RingScenes.
 
 // 8), 9) y 10) Meta del grupo, ranking semanal y cierre de la semana del grupo: ver RingScenes.

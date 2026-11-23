@@ -6,7 +6,7 @@ import { Press } from '@/components/ui/Press';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { TabGlyph, type TabKind } from '@/components/ui/TabGlyph';
 import { Bell, Calendar, Flame, Gift, IconBubble, MapPin, Search, Share2, Target, Trophy, Users } from '@/components/icons';
-import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene } from '@/components/celebrations/RingScenes';
+import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene } from '@/components/celebrations/RingScenes';
 
 // Solo en desarrollo: muestra cada festejo con datos de ejemplo para revisarlo (y grabarlo) sin tener que provocarlo de verdad.
 // /dev-festejos?e=ranking-podio | ranking-top10 | grupo-semana | grupo-meta | grupo-unirse | grupo-crear | iconos
@@ -21,6 +21,8 @@ const ESCENAS: Record<string, (onDone: () => void) => React.ReactNode> = {
   'grupo-semana': (d) => <GroupWeekScene onDone={d} c={{ kind: 'group-week', name: 'Caminantes del centro', weekLabel: '17 al 23 de nov', podium: [{ ...gente[4], steps: 66160 }, { ...yo, steps: 63530 }, { ...gente[3], steps: 54870 }], meId: 'yo', myRank: 2, mySteps: 63530, members: 7, total: 426850, onOpen: () => {} }} />,
   'grupo-meta': (d) => <GroupGoalScene onDone={d} c={{ kind: 'group-goal', name: 'Los del Molino', total: 152400, target: 150000, people: [{ ...gente[0], steps: 48120 }, { ...yo, steps: 41200 }, { ...gente[1], steps: 36900 }, { ...gente[2], steps: 26180 }] }} />,
   'grupo-unirse': (d) => <GroupJoinedScene onDone={d} c={{ kind: 'group-joined', name: 'Caminantes del centro', me: yo, others: gente, total: 7, goalText: 'Meta de la semana: 300.000 pasos entre todos.' }} />,
+  'racha-30': (d) => <StreakScene onDone={d} c={{ kind: 'streak-milestone', days: 30 }} />,
+  'racha-semana': (d) => <StreakWeekScene onDone={d} c={{ kind: 'streak-week', weeks: 3, points: 5 }} />,
   'grupo-crear': (d) => <GroupCreatedScene onDone={d} c={{ kind: 'group-created', name: 'Los del Molino', me: yo, code: 'K7Q2M', target: 150000, onInvite: () => {} }} />,
 };
 
