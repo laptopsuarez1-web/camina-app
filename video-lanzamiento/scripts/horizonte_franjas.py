@@ -34,13 +34,13 @@ def foto(nombre, src, z=1.0, cx=0.5, cy=0.5):
     fondo(nombre, im)
 
 
-def video(nombre, src, ini=0.0, z=1.0, cx=0.5, cy=0.5):
-    vf = (f"scale=w='max({W}/iw,{H}/ih)*{z}*iw':h=-2:flags=lanczos,"
+def video(nombre, src, ini=0.0, z=1.0, cx=0.5, cy=0.5, pre=''):
+    vf = (pre + f"scale=w='max({W}/iw,{H}/ih)*{z}*iw':h=-2:flags=lanczos,"
           f"crop={W}:{H}:'min(max((iw*{cx})-{W}/2,0),iw-{W})':'min(max((ih*{cy})-{H}/2,0),ih-{H})',fps=30,format=yuv420p")
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(ini), '-t', '1.2', '-i', src, '-an', '-vf', vf,
                     '-c:v', 'libx264', '-preset', 'medium', '-crf', '16', f'public/hz/{nombre}.mp4'], check=True)
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(ini + 0.4), '-i', src, '-frames:v', '1', '-f', 'image2pipe',
-                          '-vcodec', 'png', '-'], capture_output=True).stdout
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(ini + 0.4), '-i', src, '-frames:v', '1'] + (['-vf', pre.rstrip(',')] if pre else []) +
+                         ['-f', 'image2pipe', '-vcodec', 'png', '-'], capture_output=True).stdout
     fondo(nombre, Image.open(io.BytesIO(raw)).convert('RGB'))
 
 
@@ -78,6 +78,19 @@ video('sendero', V + 'm722.mp4', 0.2, 1.0, 0.5, 0.7)
 foto('illimani', F + 'lp-illimani.jpg', 1.0, 0.5, 0.55)
 video('maraton', V + 'maraton.mp4', 0.2, 1.0, 0.5, 0.55)
 foto('casa-dorada', F + 't-casa-dorada.jpg', 1.0, 0.5, 0.35)
+# grabaciones de Tarija enviadas por Camina (video horizontal dentro de la pantalla del teléfono)
+REC = 'crop=2096:1180:230:0,'
+video('calle-tarija', 'public/tarija/rec-calles.mov', 0.5, pre=REC)
+video('plaza-arboles', 'public/tarija/rec-calles.mov', 5.2, pre=REC)
+video('plaza-palmeras', 'public/tarija/rec-calles.mov', 8.0, pre=REC)
+video('calle-iglesia', 'public/tarija/rec-catedral.mov', 0.2, pre=REC)
+video('catedral', 'public/tarija/rec-catedral.mov', 1.55, pre=REC)
+video('sendero-baranda', 'public/tarija/rec-sendero.mov', 0.3, pre=REC)
+video('canon', 'public/tarija/rec-sendero.mov', 3.2, pre=REC)
+video('sendero2', 'public/tarija/rec-sendero.mov', 5.7, pre=REC)
+# más gente caminando y corriendo (Mixkit, licencia libre)
+video('pies-calle', V + 'm23410.mp4', 0.2, 1.0, 0.5, 0.78)
+video('trail', V + 'm44358.mp4', 0.2, 1.0, 0.5, 0.6)
 with open('src/horizonteFranjas.ts', 'w') as fh:
     fh.write('// Generado por scripts/horizonte_franjas.py: luminosidad (0-1) del fondo difuminado detrás de la frase.\n')
     fh.write(f'export const LUZ: Record<string, number> = {json.dumps(LUZ)};\n')

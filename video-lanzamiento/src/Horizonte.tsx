@@ -38,32 +38,39 @@ const t = (src: string, d = 1, acabado: Acabado = 'nitida'): Toma => ({ src, d, 
 
 // d = duración en pulsos. 'anillo' es la apertura dibujada; lo demás, franjas en public/hz.
 const TOMAS: Toma[] = [
-  t('anillo', 6),
-  t('vinedos', 1, 'nitida'),
-  t('laguna', 1, 'relieve'),
-  t('cartel', 1, 'calida'),
-  t('chunchos', 1, 'tenue'),
-  t('isla-sendero', 1, 'halo'),
-  t('mirador', 1, 'desvanece'),
-  t('puente', 1, 'tela'),
-  t('titicaca', 1, 'desenfoque'),
+  t('anillo', 4),
+  // «Hay»
+  t('calle-tarija.mp4', 1, 'nitida'),
   t('pies-pov.mp4', 1, 'relieve'),
-  t('plaza-lf', 1, 'calida'),
-  t('mercado', 1, 'tela'),
-  t('lp-noche', 1, 'halo'),
-  t('flamencos', 1, 'tenue'),
-  t('rueda', 1, 'crema'),
-  t('parque.mp4', 1, 'relieve'),
+  t('vinedos', 1, 'calida'),
+  t('plaza-palmeras.mp4', 1, 'tenue'),
+  t('chunchos', 1, 'halo'),
+  t('sendero-baranda.mp4', 1, 'tela'),
+  // «más»
+  t('calle-iglesia.mp4', 1, 'relieve'),
+  t('laguna', 1, 'desvanece'),
+  t('palomas.mp4', 1, 'nitida'),
+  t('cartel', 1, 'calida'),
+  t('canon.mp4', 1, 'desenfoque'),
+  t('mirador', 1, 'tinta'),
+  // «por»
+  t('parque.mp4', 1, 'halo'),
+  t('isla-sendero', 1, 'relieve'),
+  t('plaza-arboles.mp4', 1, 'tela'),
+  t('mercado', 1, 'calida'),
+  t('ladrillo.mp4', 1, 'fuerte'),
   t('mapa', 1, 'nitida'),
-  t('sc-plaza', 1, 'desvanece'),
-  t('san-roque', 1, 'tela'),
-  t('ladrillo.mp4', 0.5, 'fuerte'),
-  t('tiwanaku', 0.5, 'desenfoque'),
-  t('palomas.mp4', 0.5, 'relieve'),
-  t('glorieta', 0.5, 'calida'),
-  t('sendero.mp4', 0.5, 'tela'),
-  t('illimani', 0.5, 'halo'),
-  t('san-jacinto', 0.5, 'nitida'),
+  // «caminar»
+  t('catedral.mp4', 1, 'relieve'),
+  t('sendero.mp4', 1, 'desvanece'),
+  t('trail.mp4', 1, 'tenue'),
+  t('lp-noche', 0.5, 'halo'),
+  t('titicaca', 0.5, 'nitida'),
+  t('sendero2.mp4', 0.5, 'tela'),
+  t('rueda', 0.5, 'calida'),
+  t('plaza-lf', 0.5, 'relieve'),
+  t('illimani', 0.5, 'desenfoque'),
+  t('san-jacinto', 0.5, 'fuerte'),
   t('uyuni', 0.5, 'tinta'),
 ];
 const bordes: number[] = [];
@@ -71,12 +78,17 @@ TOMAS.reduce((u, x) => {
   bordes.push(p(u));
   return u + x.d;
 }, 0);
-const FIN_MONTAJE = TOMAS.reduce((u, x) => u + x.d, 0); // pulso 28
+const FIN_MONTAJE = TOMAS.reduce((u, x) => u + x.d, 0); // pulso 29
 const CIERRE = p(FIN_MONTAJE);
-export const DUR_HORIZONTE = CIERRE + 175;
+export const DUR_HORIZONTE = p(30) + 125; // el golpe final de Rubric cae en el pulso 30
 
-// La frase, siempre completa, quieta sobre la curva: [texto, desde (pulso), hasta (pulso), tamaño inicial]
-const FRASES: [string, number, number, number][] = [['Hay más por caminar', 6, FIN_MONTAJE, 58]];
+// Las palabras, una tras otra y siempre en pantalla, quietas sobre la curva: [texto, desde, hasta (pulsos), tamaño inicial]
+const FRASES: [string, number, number, number][] = [
+  ['Hay', 4, 10, 66],
+  ['más', 10, 16, 68],
+  ['por', 16, 22, 68],
+  ['caminar', 22, FIN_MONTAJE, 66],
+];
 
 export const Horizonte = () => {
   return (
@@ -143,7 +155,7 @@ const Caminante = ({ x0, v, alto = 54, color = '#efe8ff' }: { x0: number; v: num
   const x = x0 + v * fr;
   const y = sobreCurva(x);
   const giro = (Math.asin((x - 540) / R) * 180) / Math.PI;
-  const fase = (2 * Math.PI * fr) / 31.3;
+  const fase = (2 * Math.PI * fr) / (2 * PULSOS[1]); // un paso por pulso
   const L = 19;
   const cadera = { x: 0, y: -38 };
   const pierna = (ph: number) => {
@@ -320,7 +332,7 @@ const Frase = ({ texto, desde, tam }: { texto: string; desde: number; tam: numbe
   const k0 = tomaEn(desde);
   const toma = TOMAS[k];
   const oscuro = (LUZ[nombre(toma.src)] ?? 0.4) > 0.55;
-  const tamano = tam * Math.pow(1.017, k - k0); // en cada corte la frase crece un poco
+  const tamano = tam * Math.pow(1.045, k - k0); // en cada corte la frase crece un poco
   const e = estiloLetra(toma.acabado ?? 'nitida', oscuro);
   const id = `hz-arco-${k}`;
   return (
@@ -351,7 +363,7 @@ const Frase = ({ texto, desde, tam }: { texto: string; desde: number; tam: numbe
 const Cierre = () => {
   const fr = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const GOLPE = p(29) - CIERRE; // el golpe de la música: el anillo llega al 100 % y entra el logo
+  const GOLPE = p(30) - CIERRE; // el golpe final de Rubric: el anillo llega al 100 % y entra el logo
   const q = interpolate(fr, [0, GOLPE], [0.82, 1], { ...clamp, easing: Easing.in(Easing.quad) });
   const q2 = interpolate(fr, [0, GOLPE], [0.68, 1], { ...clamp, easing: Easing.in(Easing.quad) });
   const brillo = interpolate(fr, [GOLPE - 2, GOLPE + 4, GOLPE + 40], [0, 1.6, 0.9], { ...clamp, easing: suaveP });

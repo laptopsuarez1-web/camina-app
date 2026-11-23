@@ -1,2 +1,2 @@
-// Generado por scripts/horizonte_sonido.py: cuadro (30 fps) de cada pulso de la música del teaser.
-export const PULSOS = [0, 16, 32, 47, 63, 79, 94, 110, 126, 141, 157, 172, 188, 204, 219, 235, 251, 267, 282, 298, 314, 329, 344, 360, 376, 391, 407, 423, 439, 454, 470, 485, 501, 517, 532, 548, 564, 579, 595, 611, 626];
+// Generado por scripts/horizonte_sonido.py: cuadro (30 fps) de cada pulso de la música del teaser (Rubric).
+export const PULSOS = [0, 19, 38, 57, 76, 95, 114, 133, 152, 171, 190, 209, 228, 247, 266, 285, 304, 323, 342, 361, 380, 399, 418, 437, 456, 475, 494, 513, 533, 552, 571, 590, 609, 628, 647, 666, 685, 704, 723, 742, 761];
