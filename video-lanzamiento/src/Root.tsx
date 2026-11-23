@@ -5,6 +5,7 @@ import { DUR_HORIZONTE, Horizonte } from './Horizonte';
 import { Carrusel, LAMINAS } from './Carrusel';
 import { Carrusel2, LAMINAS2 } from './Carrusel2';
 import { Carrusel3, LAMINAS3 } from './Carrusel3';
+import { Carrusel4, LAMINAS4 } from './Carrusel4';
 import { PORTADAS, PortadaCampana, type Portada } from './PortadaCampana';
 import { BienvenidaA, BienvenidaB, DUR_BIENVENIDA } from './Bienvenida';
 
@@ -13,6 +14,7 @@ import { BienvenidaA, BienvenidaB, DUR_BIENVENIDA } from './Bienvenida';
 // YSiCadaPaso: pieza de marca «¿Y si cada paso…?», sin voz, 35 s.
 // Carrusel-1 … Carrusel-9: carrusel de Instagram con el horizonte curvo (imágenes fijas 1080 × 1350).
 // Carrusel3-1 … Carrusel3-10: carrusel de Instagram v3 (sobrio: un color, un titular, un teléfono; sin nombrar locales).
+// Carrusel4-1 … Carrusel4-11: carrusel de Instagram v4 (teléfonos 3D, lupas y camino de luz).
 // BienvenidaA / BienvenidaB: pantalla de bienvenida de la app (9:16, 3 s, 100 % gráfica).
 // PortadaCampana-*: portada de campaña «Cada paso cuenta.» (imagen fija 1080 × 1350).
 // Carrusel2-1 … Carrusel2-11: carrusel de Instagram, identidad «Paso a paso» (negro, blanco, morado y menta; huellas que cruzan las láminas).
@@ -36,6 +38,9 @@ export const RemotionRoot = () => {
       ))}
       {Array.from({ length: LAMINAS3 }, (_, i) => (
         <Composition key={`c${i}`} id={`Carrusel3-${i + 1}`} component={Carrusel3} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{ n: i + 1 }} />
+      ))}
+      {Array.from({ length: LAMINAS4 }, (_, i) => (
+        <Composition key={`d${i}`} id={`Carrusel4-${i + 1}`} component={Carrusel4} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{ n: i + 1 }} />
       ))}
     </>
   );
