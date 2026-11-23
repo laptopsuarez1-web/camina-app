@@ -43,6 +43,13 @@
       "skillPath": "skills/launch/SKILL.md",
       "computedHash": "fc875c4c34f25a1a3be3ccfd9d1011cb103691172b9feb6d39578f2f4b8e594d"
     },
+    "motion-design": {
+      "source": "LottieFiles/motion-design-skill",
+      "commit": "d77a9fc8cb371cab1ba5420df5bfd232cd14c9bb",
+      "sourceType": "github",
+      "skillPath": "skills/motion-design/SKILL.md",
+      "computedHash": "be5bc38a720ec04b0c78ebf33b30e2bc8fde2d0cb3c5d4f37d383059d341802f"
+    },
     "remotion-best-practices": {
       "source": "remotion-dev/skills",
       "commit": "6f55706d1069e512430582ad86e4e57dc07afe1b",
