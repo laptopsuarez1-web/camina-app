@@ -6,8 +6,8 @@ import './marca';
 // CAMINA · Carrusel de Instagram, identidad «Paso a paso» (11 láminas de 1080 × 1350).
 // Láminas planas en negro, blanco, morado y menta; titulares grandes en Mona Sans ancha (la letra de la marca); la app
 // dentro de teléfonos (capturas con datos de ejemplo, sin personas reales) y un camino de huellas que sigue de una lámina
-// a la siguiente al deslizar. Lo principal: pasos, la ruta del mes, grupos, ranking y chat; la tarjeta de fidelidad va
-// como detalle secundario. Sin premios ni precios inventados; la app todavía no está publicada.
+// a la siguiente al deslizar. Lo principal: pasos, la ruta del mes, grupos, ranking y chat; no nombra comercios (muestra
+// el mapa y una ficha). Sin premios ni precios inventados; la app todavía no está publicada.
 // Exportar: npx remotion still Carrusel2-1 out/carrusel-2/01.png (… hasta Carrusel2-11).
 
 export const LAMINAS2 = 11;
@@ -126,27 +126,7 @@ export const Carrusel2 = ({ n }: { n: number }) => {
       );
     case 8:
       return (
-        <Lamina n={8} tema="morado">
-          <Etiqueta tema="morado">Canjes</Etiqueta>
-          <Titular tema="morado" top={250} tam={96}>
-            Canjea en tu <Ac tema="morado">ciudad</Ac>
-          </Titular>
-          <Texto tema="morado" top={480} ancho={460}>
-            Usa tus Puntos en comercios de Tarija
-          </Texto>
-          <Logos x={80} y={650} />
-          <Telefono src={A('mapa-locales-dark')} x={590} y={540} alto={640} rot={4} />
-          <div style={{ position: 'absolute', left: 80, top: 1035, width: 470, display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderRadius: 24, background: 'rgba(255,255,255,0.08)' }}>
-            {[0, 1, 2].map((i) => (
-              <Img key={i} src={staticFile('marca/sello-oro.png')} style={{ width: 46, height: 46, marginLeft: i ? -22 : 0 }} />
-            ))}
-            <div style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 24, color: 'rgba(255,255,255,0.85)', lineHeight: 1.25 }}>Y cada canje suma un sello en tu tarjeta de fidelidad</div>
-          </div>
-        </Lamina>
-      );
-    case 9:
-      return (
-        <Lamina n={9} tema="blanco">
+        <Lamina n={8} tema="blanco">
           <Etiqueta tema="blanco">Insignias y niveles</Etiqueta>
           <Titular tema="blanco" top={250} tam={92}>
             Hazte <Ac tema="blanco">fan</Ac> de tus lugares
@@ -154,6 +134,20 @@ export const Carrusel2 = ({ n }: { n: number }) => {
           <Fichas tema="blanco" top={480} items={['Visitante', 'Habitual', 'Fan', 'Leyenda del mes']} />
           <Telefono src={A('ficha-bloom-nivel-dark')} x={110} y={600} alto={600} rot={-5} />
           <Telefono src={A('perfil-insignias-dark')} x={520} y={570} alto={640} rot={4} />
+        </Lamina>
+      );
+    case 9:
+      return (
+        <Lamina n={9} tema="morado">
+          <Etiqueta tema="morado">Canjes</Etiqueta>
+          <Titular tema="morado" top={250} tam={96}>
+            Canjea en tu <Ac tema="morado">ciudad</Ac>
+          </Titular>
+          <Texto tema="morado" top={480} ancho={900}>
+            Usa tus Puntos en los comercios que se suman a Camina
+          </Texto>
+          <Telefono src={A('mapa-locales-dark')} x={110} y={600} alto={560} rot={-5} />
+          <Telefono src={A('ficha-galera-dark')} x={540} y={580} alto={600} rot={4} />
         </Lamina>
       );
     case 10:
@@ -190,34 +184,24 @@ export const Carrusel2 = ({ n }: { n: number }) => {
 };
 
 // ---------- portada: sobria y llamativa (una idea, un teléfono) ----------
-const Portada = () => {
-  const alto = 1180;
-  const ancho = alto * (780 / 1688);
-  return (
-    <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: 'radial-gradient(45% 30% at 50% 88%, rgba(98,240,182,0.4), rgba(98,240,182,0.06) 60%, transparent 80%)' }} />
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 96, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-        <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 62, height: 62 }} />
-        <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 40 }} />
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 200, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 168, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' }}>
-        Cada
-        <br />
-        paso
-        <br />
-        <span style={{ color: MENTA }}>cuenta</span>
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 680, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
-      {/* el teléfono asoma desde abajo: solo el inicio con el anillo */}
-      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top: 780, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: '0 -20px 120px rgba(98,240,182,0.25), inset 0 0 0 2px rgba(255,255,255,0.16)' }}>
-        <div style={{ width: ancho, height: alto, borderRadius: 62, overflow: 'hidden' }}>
-          <Img src={staticFile(A('inicio-dark'))} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 330, background: `linear-gradient(180deg, rgba(11,11,13,0), ${NEGRO} 85%)` }} />
-    </AbsoluteFill>
-  );
-};
+const Portada = () => (
+  <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
+    <AbsoluteFill style={{ background: 'radial-gradient(45% 32% at 50% 72%, rgba(98,240,182,0.34), rgba(98,240,182,0.05) 60%, transparent 80%)' }} />
+    <div style={{ position: 'absolute', left: 0, right: 0, top: 92, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+      <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 60, height: 60 }} />
+      <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 38 }} />
+    </div>
+    <div style={{ position: 'absolute', left: 0, right: 0, top: 178, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 110, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' }}>
+      Cada
+      <br />
+      paso
+      <br />
+      <span style={{ color: MENTA }}>cuenta</span>
+    </div>
+    <div style={{ position: 'absolute', left: 0, right: 0, top: 506, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 33, color: 'rgba(255,255,255,0.75)' }}>La app que convierte tus pasos en premios y descuentos</div>
+    <Telefono src={A('inicio-dark')} x={540 - (685 * (780 / 1688) + 28) / 2} y={590} alto={685} />
+  </AbsoluteFill>
+);
 
 // ---------- base de cada lámina ----------
 const Lamina = ({ n, tema, children, sinEncabezado }: { n: number; tema: Tema; children: ReactNode; sinEncabezado?: boolean }) => (
@@ -227,9 +211,6 @@ const Lamina = ({ n, tema, children, sinEncabezado }: { n: number; tema: Tema; c
     {!sinEncabezado && (
       <>
         <Marca tema={tema} chica />
-        <div style={{ position: 'absolute', right: 80, top: 100, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, color: tinta(tema), opacity: 0.55 }}>
-          {String(n).padStart(2, '0')} / {LAMINAS2}
-        </div>
       </>
     )}
   </AbsoluteFill>
@@ -276,18 +257,6 @@ const Telefono = ({ src, x, y, alto, rot = 0 }: { src: string; x: number; y: num
     </div>
   );
 };
-// los 8 comercios
-const LOGOS = ['fripaps-logo', 'bloom-logo', 'coco-logo', 'cancheritos-logo', 'galera-logo', 'viviana-logo', 'sabor-logo', 'luzdevida-app'];
-const Logos = ({ x, y }: { x: number; y: number }) => (
-  <div style={{ position: 'absolute', left: x, top: y, width: 470, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-    {LOGOS.map((l, i) => (
-      <div key={l} style={{ height: 106, borderRadius: 24, overflow: 'hidden', background: '#fff', boxShadow: '0 10px 26px rgba(0,0,0,0.35)', transform: `rotate(${[-3, 2, -1, 3, 2, -2, 3, -1][i]}deg)` }}>
-        <Img src={staticFile(`yasi/locales/${l}.jpg`)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
-    ))}
-  </div>
-);
-
 const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 32px 18px 26px', borderRadius: 26, background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.35)' }}>
     {icono}
