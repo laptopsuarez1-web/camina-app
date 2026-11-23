@@ -195,19 +195,21 @@ const Portada = () => {
   const ancho = alto * (780 / 1688);
   return (
     <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: 'radial-gradient(45% 32% at 50% 82%, rgba(98,240,182,0.38), rgba(98,240,182,0.06) 60%, transparent 80%)' }} />
+      <AbsoluteFill style={{ background: 'radial-gradient(45% 30% at 50% 88%, rgba(98,240,182,0.4), rgba(98,240,182,0.06) 60%, transparent 80%)' }} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: 96, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
         <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 62, height: 62 }} />
         <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 40 }} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 236, textAlign: 'center', fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 132, lineHeight: 0.92, letterSpacing: '-0.015em', textTransform: 'uppercase', color: '#fff' }}>
-        Tus pasos
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 200, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 168, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' }}>
+        Cada
         <br />
-        <span style={{ color: MENTA }}>valen.</span>
+        paso
+        <br />
+        <span style={{ color: MENTA }}>cuenta.</span>
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 510, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 36, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 680, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
       {/* el teléfono asoma desde abajo: solo el inicio con el anillo */}
-      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top: 640, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: '0 -20px 120px rgba(98,240,182,0.25), inset 0 0 0 2px rgba(255,255,255,0.16)' }}>
+      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top: 780, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: '0 -20px 120px rgba(98,240,182,0.25), inset 0 0 0 2px rgba(255,255,255,0.16)' }}>
         <div style={{ width: ancho, height: alto, borderRadius: 62, overflow: 'hidden' }}>
           <Img src={staticFile(A('inicio-dark'))} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
