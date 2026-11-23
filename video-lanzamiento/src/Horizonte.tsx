@@ -41,30 +41,30 @@ const TOMAS: Toma[] = [
   t('anillo', 4),
   t('calle-tarija.mp4', 1, 'nitida'),
   t('pies-pov.mp4', 1, 'relieve'),
-  t('app-actividad-7', 1, 'calida'),
+  t('app:semana', 1, 'nitida'),
   t('plaza-palmeras.mp4', 1, 'tenue'),
   t('laguna', 1, 'halo'),
   t('sendero-baranda.mp4', 1, 'tela'),
   t('calle-iglesia.mp4', 1, 'relieve'),
-  t('app-fidelidad', 1, 'desvanece'),
+  t('app:sellos', 1, 'nitida'),
   t('palomas.mp4', 1, 'nitida'),
   t('cartel', 1, 'calida'),
   t('canon.mp4', 1, 'desenfoque'),
-  t('app-puntos', 1, 'halo'),
+  t('isla-sendero', 1, 'halo'),
   t('parque.mp4', 1, 'relieve'),
-  t('app-ruta', 1, 'nitida'),
+  t('app:mes', 1, 'nitida'),
   t('plaza-arboles.mp4', 1, 'tela'),
   t('chunchos', 1, 'calida'),
   t('ladrillo.mp4', 1, 'fuerte'),
-  t('app-mapa', 1, 'halo'),
+  t('mercado', 1, 'halo'),
   t('catedral.mp4', 1, 'relieve'),
-  t('app-actividad-30', 1, 'desvanece'),
+  t('app:puntos', 1, 'nitida'),
   t('trail.mp4', 1, 'tenue'),
   t('lp-noche', 0.5, 'halo'),
-  t('app-fripaps', 0.5, 'nitida'),
   t('sendero2.mp4', 0.5, 'tela'),
-  t('rueda', 0.5, 'calida'),
+  t('vinedos', 0.5, 'calida'),
   t('titicaca', 0.5, 'relieve'),
+  t('plaza-lf', 0.5, 'nitida'),
   t('mirador', 0.5, 'desenfoque'),
   t('san-jacinto', 0.5, 'fuerte'),
   t('uyuni', 0.5, 'tinta'),
@@ -93,7 +93,7 @@ export const Horizonte = () => {
       <Filtros />
       {TOMAS.map((x, i) => (
         <Sequence key={i} name={`${i + 1} ${x.src}`} from={bordes[i]} durationInFrames={(bordes[i + 1] ?? CIERRE) - bordes[i]}>
-          {x.src === 'anillo' ? <Anillo /> : <Franja t={x} />}
+          {x.src === 'anillo' ? <Anillo /> : x.src.startsWith('app:') ? <AppMomento k={i} /> : <Franja t={x} k={i} />}
         </Sequence>
       ))}
       <Sequence name="Cierre: anillo completo y logo" from={CIERRE}>
@@ -110,31 +110,179 @@ export const Horizonte = () => {
   );
 };
 
-// ---------- Tomas: la foto nítida bajo la curva, la misma difuminada arriba ----------
-const recorte = `circle(${R}px at 50% ${ARCO_Y - BANDA_Y + R}px)`;
+// ---------- El círculo de cada toma: su tamaño y su lugar cambian en cada corte, y dentro de la toma se mueve ----------
+// (como en la referencia: cada toma es otro objeto redondo; gira despacio y la cámara se acerca)
+type Geo = { R: number; top: number; cx: number; rot: number; cy: number };
+const RADIOS = [1500, 1150, 1900, 1300, 2200, 1250, 1700, 1400, 2000, 1200];
+const ALTOS = [0, 22, -14, 12, -6, 26, -10, 16];
+const geo = (k: number, f: number, dur: number): Geo => {
+  const q = Math.min(1, f / Math.max(1, dur));
+  const dir = k % 2 === 0 ? 1 : -1;
+  const R = RADIOS[k % RADIOS.length] * (1 + 0.05 * q); // la cámara se acerca
+  const top = ARCO_Y + ALTOS[k % ALTOS.length] - 10 * q;
+  const cx = 540 + dir * 14 * (q - 0.5);
+  return { R, top, cx, rot: dir * 2.4 * q, cy: top + R };
+};
+const geoEn = (cuadro: number): Geo => {
+  const k = tomaEn(cuadro);
+  if (TOMAS[k].src === 'anillo') return { R, top: ARCO_Y, cx: 540, rot: 0, cy: CY };
+  return geo(k, cuadro - bordes[k], (bordes[k + 1] ?? CIERRE) - bordes[k]);
+};
 const nombre = (src: string) => src.replace('.mp4', '');
 
-const Franja = ({ t }: { t: Toma }) => {
+const Franja = ({ t, k }: { t: Toma; k: number }) => {
   const fr = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
+  const g = geo(k, fr, durationInFrames);
   const q = Math.min(1, fr / Math.max(1, durationInFrames));
-  const estilo: CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.0 + 0.03 * q})` };
   const n = nombre(t.src);
+  const oy = g.cy - BANDA_Y; // centro del círculo, relativo a la franja
+  const estilo: CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.14)' };
   return (
     <AbsoluteFill>
       <Img src={staticFile(`hz/${n}-fondo.jpg`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', transform: `scale(${1.04 + 0.03 * q})` }} />
-      <div style={{ position: 'absolute', left: 0, top: BANDA_Y, width: 1080, height: 820, overflow: 'hidden', clipPath: recorte }}>
-        {t.src.endsWith('.mp4') ? <Video src={staticFile(`hz/${t.src}`)} muted objectFit="cover" style={estilo} /> : <Img src={staticFile(`hz/${n}.jpg`)} style={estilo} />}
+      <div style={{ position: 'absolute', left: 0, top: BANDA_Y, width: 1080, height: 820, overflow: 'hidden', clipPath: `circle(${g.R}px at ${g.cx}px ${oy}px)` }}>
+        <div style={{ position: 'absolute', inset: 0, transformOrigin: `${g.cx}px ${oy}px`, transform: `rotate(${g.rot}deg)` }}>
+          {t.src.endsWith('.mp4') ? <Video src={staticFile(`hz/${t.src}`)} muted objectFit="cover" style={estilo} /> : <Img src={staticFile(`hz/${n}.jpg`)} style={estilo} />}
+        </div>
       </div>
-      <Borde />
+      <Borde g={g} />
     </AbsoluteFill>
   );
 };
 
 // filo de luz sobre la curva (como la atmósfera de un planeta)
-const Borde = ({ sombra = '0 -2px 14px rgba(255,255,255,0.22), 0 -1px 2px rgba(255,255,255,0.35)' }: { sombra?: string }) => (
-  <div style={{ position: 'absolute', left: 540 - R, top: ARCO_Y, width: R * 2, height: R * 2, borderRadius: '50%', boxShadow: sombra }} />
+const Borde = ({ g, sombra = '0 -2px 14px rgba(255,255,255,0.22), 0 -1px 2px rgba(255,255,255,0.35)' }: { g: Geo; sombra?: string }) => (
+  <div style={{ position: 'absolute', left: g.cx - g.R, top: g.top, width: g.R * 2, height: g.R * 2, borderRadius: '50%', boxShadow: sombra }} />
 );
+
+// ---------- Momentos de la app, dibujados sobre la cúpula (como en la app, pero acompañando el círculo) ----------
+const AppMomento = ({ k }: { k: number }) => {
+  const fr = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const g = geo(k, fr, durationInFrames);
+  const cual = TOMAS[k].src.slice(4);
+  return (
+    <AbsoluteFill style={{ background: CIELO_APP, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', left: g.cx - g.R, top: g.top, width: g.R * 2, height: g.R * 2, borderRadius: '50%', background: 'radial-gradient(50% 12% at 50% 0%, #2c1170, #160638 75%)' }} />
+      <Borde g={g} sombra="0 -2px 18px rgba(98,240,182,0.35), 0 -1px 2px rgba(160,255,215,0.6)" />
+      <div style={{ position: 'absolute', inset: 0, transformOrigin: `${g.cx}px ${g.cy}px`, transform: `rotate(${g.rot * 0.5}deg)` }}>
+        {cual === 'semana' && <Semana fr={fr} g={g} />}
+        {cual === 'sellos' && <Sellos fr={fr} g={g} />}
+        {cual === 'mes' && <Mes fr={fr} g={g} />}
+        {cual === 'puntos' && <Puntos fr={fr} g={g} />}
+      </div>
+    </AbsoluteFill>
+  );
+};
+const Cifra = ({ y, n, sub }: { y: number; n: string; sub: string }) => (
+  <>
+    <div style={{ position: 'absolute', left: 0, right: 0, top: y, textAlign: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 112, lineHeight: 1, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{n}</div>
+    <div style={{ position: 'absolute', left: 0, right: 0, top: y + 124, textAlign: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34 }}>{sub}</div>
+  </>
+);
+const cuenta = (fr: number, hasta: number) => Math.round(hasta * interpolate(fr, [0, 14], [0, 1], { ...clamp, easing: salida }));
+
+// la semana: las barras de Actividad crecen desde la cúpula
+const Semana = ({ fr, g }: { fr: number; g: Geo }) => {
+  const alto = [0.26, 0.6, 0.94, 0.55, 0.52, 0.96, 1];
+  const meta = [false, false, true, false, false, true, true];
+  const dias = ['L', 'M', 'X', 'J', 'V', 'S', 'Hoy'];
+  const base = g.top + 420;
+  return (
+    <>
+      {alto.map((h, i) => {
+        const q = interpolate(fr, [i * 1.2, i * 1.2 + 10], [0, 1], { ...clamp, easing: salida });
+        const x = 540 + (i - 3) * 104 - 38;
+        const H = 250 * h * q;
+        return (
+          <div key={i}>
+            <div style={{ position: 'absolute', left: x, top: base - H, width: 76, height: H, borderRadius: 22, background: meta[i] ? 'linear-gradient(180deg, #a8f5d4, #5fe0a8)' : 'linear-gradient(180deg, #3d4c70, #2a3656)', boxShadow: i === 6 ? '0 0 0 4px #e9fff5' : 'none' }} />
+            <div style={{ position: 'absolute', left: x - 12, width: 100, top: base + 16, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: i === 6 ? 800 : 500, fontSize: 30, color: i === 6 ? '#fff' : '#b9a8e0' }}>{dias[i]}</div>
+          </div>
+        );
+      })}
+      <Cifra y={base + 90} n={fmt(cuenta(fr, 32917))} sub="pasos esta semana" />
+    </>
+  );
+};
+
+// la tarjeta de fidelidad: los sellos se ponen uno por uno, sobre un arco concéntrico con la cúpula
+const Sellos = ({ fr, g }: { fr: number; g: Geo }) => {
+  const r = g.R - 170;
+  return (
+    <>
+      {[0, 1, 2, 3, 4].map((i) => {
+        const a = ((i - 2) * 172) / r;
+        const x = g.cx + r * Math.sin(a);
+        const y = g.cy - r * Math.cos(a);
+        const q = interpolate(fr, [i * 2.2, i * 2.2 + 7], [0, 1], { ...clamp, easing: Easing.bezier(0.34, 1.56, 0.64, 1) });
+        return i < 4 ? (
+          <Img key={i} src={staticFile('marca/sello-oro.png')} style={{ position: 'absolute', left: x - 70, top: y - 70, width: 140, height: 140, transform: `scale(${q}) rotate(${(a * 180) / Math.PI}deg)`, opacity: Math.min(1, q * 2) }} />
+        ) : (
+          <div key={i} style={{ position: 'absolute', left: x - 62, top: y - 62, width: 124, height: 124, borderRadius: '50%', border: '5px dashed rgba(185,168,224,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 44, opacity: interpolate(fr, [8, 12], [0, 1], clamp) }}>
+            5
+          </div>
+        );
+      })}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 330, textAlign: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 52 }}>Tarjeta de fidelidad</div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 400, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '8px 26px', borderRadius: 30, background: 'rgba(160,130,255,0.2)', color: '#c9b8ff', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 34 }}>4 de 5</div>
+      </div>
+    </>
+  );
+};
+
+// el mes: la línea de 30 días se dibuja a lo largo del círculo
+const Mes = ({ fr, g }: { fr: number; g: Geo }) => {
+  const r0 = g.R - 230;
+  const n = 90;
+  const pts = Array.from({ length: n + 1 }, (_, i) => {
+    const u = i / n;
+    const a = (u - 0.5) * (980 / r0);
+    const ola = Math.sin(u * 23) * 28 + Math.sin(u * 9.5 + 1) * 22 + (u > 0.47 && u < 0.6 ? 70 : 0) * Math.sin(((u - 0.47) / 0.13) * Math.PI);
+    const r = r0 + ola;
+    return [g.cx + r * Math.sin(a), g.cy - r * Math.cos(a)];
+  });
+  const d = 'M' + pts.map((q) => q.join(' ')).join(' L');
+  const q = interpolate(fr, [0, 14], [0, 1], { ...clamp, easing: salida });
+  const fin = pts[Math.round(q * n)];
+  return (
+    <>
+      <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0 }}>
+        <path d={arco2(g, r0, -460, 460)} stroke="rgba(98,240,182,0.45)" strokeWidth={3} strokeDasharray="10 12" fill="none" />
+        <path d={d} stroke="#62f0b6" strokeOpacity={0.4} strokeWidth={16} fill="none" pathLength={1} strokeDasharray={`${q} 2`} style={{ filter: 'blur(8px)' }} />
+        <path d={d} stroke="#7df5c4" strokeWidth={6} strokeLinejoin="round" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={`${q} 2`} />
+        <circle cx={fin[0]} cy={fin[1]} r={11} fill="#7df5c4" />
+      </svg>
+      <Cifra y={g.top + 360} n={fmt(cuenta(fr, 191757))} sub="pasos en 30 días" />
+    </>
+  );
+};
+const arco2 = (g: Geo, r: number, x1: number, x2: number) => {
+  const P = (x: number) => {
+    const a = Math.asin(x / r);
+    return `${g.cx + r * Math.sin(a)} ${g.cy - r * Math.cos(a)}`;
+  };
+  return `M${P(x1)} A${r} ${r} 0 0 1 ${P(x2)}`;
+};
+
+// tus Puntos
+const Puntos = ({ fr, g }: { fr: number; g: Geo }) => {
+  const pill = interpolate(fr, [6, 12], [0, 1], { ...clamp, easing: suaveP });
+  return (
+    <>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 150, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22 }}>
+        <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 130, height: 130 }} />
+        <div style={{ color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 140, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{fmt(cuenta(fr, 1139))}</div>
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 320, display: 'flex', justifyContent: 'center', opacity: pill, transform: `translateY(${(1 - pill) * 8}px)` }}>
+        <div style={{ padding: '10px 28px', borderRadius: 40, background: 'rgba(98,240,182,0.14)', color: '#62f0b6', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 38 }}>Ganaste 7 Puntos hoy</div>
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 400, textAlign: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34 }}>Puntos para canjear en tu ciudad</div>
+    </>
+  );
+};
 
 // ---------- Anillo de pasos de la app, arqueado sobre el horizonte ----------
 const arco = (r: number, x1: number, x2: number) => {
@@ -318,9 +466,9 @@ const estiloLetra = (a: Acabado, oscuro: boolean): Estilo => {
 };
 
 // La frase se escribe sobre un arco concéntrico con el horizonte: se curva acompañando el círculo.
-const arcoTexto = (r: number) => {
+const arcoTexto = (g: Geo, r: number) => {
   const a = 0.9;
-  const P = (x: number) => `${540 + r * Math.sin(x)} ${CY - r * Math.cos(x)}`;
+  const P = (x: number) => `${g.cx + r * Math.sin(x + (g.rot * Math.PI) / 360)} ${g.cy - r * Math.cos(x + (g.rot * Math.PI) / 360)}`;
   return `M${P(-a)} A${r} ${r} 0 0 1 ${P(a)}`;
 };
 const Frase = ({ texto, desde, tam }: { texto: string; desde: number; tam: number }) => {
@@ -328,15 +476,16 @@ const Frase = ({ texto, desde, tam }: { texto: string; desde: number; tam: numbe
   const k = tomaEn(desde + fr);
   const k0 = tomaEn(desde);
   const toma = TOMAS[k];
-  const oscuro = (LUZ[nombre(toma.src)] ?? 0.4) > 0.55;
+  const oscuro = !toma.src.startsWith('app:') && (LUZ[nombre(toma.src)] ?? 0.4) > 0.55;
   const tamano = tam * Math.pow(1.045, k - k0); // en cada corte la frase crece un poco
   const e = estiloLetra(toma.acabado ?? 'nitida', oscuro);
+  const g = geoEn(desde + fr); // la palabra se curva y se mueve con el círculo de la toma
   const id = `hz-arco-${k}`;
   return (
     <AbsoluteFill style={{ filter: e.css || undefined, opacity: e.opacidad ?? 1 }}>
       <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
         <defs>
-          <path id={id} d={arcoTexto(R + 30 + tamano * 0.06)} />
+          <path id={id} d={arcoTexto(g, g.R + 30 + tamano * 0.06)} />
           <linearGradient id="hz-calida" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0.3" stopColor="#ffffff" />
             <stop offset="1" stopColor="#f2b896" />

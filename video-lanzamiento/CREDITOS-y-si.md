@@ -42,6 +42,6 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 
 - Fotos de Bolivia y Tarija: las mismas de arriba (Wikimedia Commons y Camina), recortadas a la franja bajo el horizonte con `scripts/horizonte_franjas.py`.
 - Videos de caminar: tomas propias de Tarija y videos de Mixkit (licencia libre de Mixkit).
-- Pantallas de la app (actividad, Puntos, tarjeta de fidelidad, ruta del mes, ficha de un comercio, mapa y anillo de pasos), sin datos de personas.
+- Momentos de la app dibujados sobre la cúpula (anillo de pasos, semana, tarjeta de fidelidad con el sello de la app, 30 días y Puntos), con datos de ejemplo.
 - Música: la misma de «¿Y si cada paso…?»: «Glassworks: IV. Rubric» — Philip Glass, interpretada por Signal (usada con permiso), con un empalme hacia el final de la obra; el golpe final cae con el logo (`scripts/horizonte_sonido.py`).
 - Videos de Tarija enviados por Camina (calles, plazas, catedral y sendero con baranda).
