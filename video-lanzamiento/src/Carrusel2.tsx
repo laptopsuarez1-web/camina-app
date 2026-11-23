@@ -3,121 +3,177 @@ import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { IconoApple, IconoPlay } from './Lanzamiento';
 import './marca';
 
-// CAMINA · Carrusel de Instagram, identidad «Paso a paso» (9 láminas de 1080 × 1350).
-// Sin el horizonte curvo: láminas planas que alternan verde menta y morado, titulares grandes en Mona Sans ancha (la
-// letra de la marca), la app dentro de un teléfono y un camino de huellas que sigue de una lámina a la siguiente al
-// deslizar. Capturas de la app con datos de ejemplo; sin premios ni precios inventados; la app todavía no está publicada.
-// Exportar: npx remotion still Carrusel2-1 out/carrusel-2/01.png (… hasta Carrusel2-9).
+// CAMINA · Carrusel de Instagram, identidad «Paso a paso» (11 láminas de 1080 × 1350).
+// Láminas planas en negro, blanco, morado y menta; titulares grandes en Mona Sans ancha (la letra de la marca); la app
+// dentro de teléfonos (capturas con datos de ejemplo, sin personas reales) y un camino de huellas que sigue de una lámina
+// a la siguiente al deslizar. Lo principal: pasos, la ruta del mes, grupos, ranking y chat; la tarjeta de fidelidad va
+// como detalle secundario. Sin premios ni precios inventados; la app todavía no está publicada.
+// Exportar: npx remotion still Carrusel2-1 out/carrusel-2/01.png (… hasta Carrusel2-11).
 
-export const LAMINAS2 = 9;
+export const LAMINAS2 = 11;
 const W = 1080;
 const MENTA = '#62f0b6';
 const MORADO = '#200a52';
+const NEGRO = '#0b0b0d';
+const BLANCO = '#f5f4f0';
 
-type Tema = 'menta' | 'morado' | 'foto';
-const tinta = (t: Tema) => (t === 'menta' ? MORADO : '#ffffff');
-const acento = (t: Tema) => (t === 'menta' ? '#ffffff' : MENTA);
+type Tema = 'negro' | 'blanco' | 'morado' | 'menta' | 'foto';
+const tinta = (t: Tema) => (t === 'blanco' ? NEGRO : t === 'menta' ? MORADO : '#ffffff');
+const acento = (t: Tema) => (t === 'blanco' ? '#5b2bd6' : t === 'menta' ? '#ffffff' : MENTA);
+const FONDO: Record<Tema, string> = {
+  negro: `radial-gradient(80% 60% at 80% 10%, #1b1430, ${NEGRO} 70%)`,
+  blanco: BLANCO,
+  morado: `radial-gradient(90% 70% at 70% 20%, #3a1690, ${MORADO} 70%)`,
+  menta: `radial-gradient(90% 70% at 30% 20%, #8af7cd, ${MENTA} 70%)`,
+  foto: MORADO,
+};
+
+const A = (s: string) => `yasi/app/${s}.jpg`;
 
 export const Carrusel2 = ({ n }: { n: number }) => {
   switch (n) {
     case 1:
       return (
-        <Lamina n={1} tema="morado">
-          <Marca tema="morado" />
+        <Lamina n={1} tema="negro" sinEncabezado>
+          <Marca tema="negro" />
           <div style={{ position: 'absolute', right: 80, top: 92, padding: '12px 26px', borderRadius: 40, background: 'rgba(98,240,182,0.14)', color: MENTA, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 28 }}>Desliza →</div>
-          <Titular tema="morado" top={210} tam={118}>
-            Tus pasos <Ac tema="morado">valen.</Ac>
+          <Titular tema="negro" top={220} tam={124}>
+            Tus pasos <Ac tema="negro">valen.</Ac>
           </Titular>
-          <Texto tema="morado" top={480} ancho={470}>
+          <Texto tema="negro" top={490} ancho={460}>
             Camina es la app de Tarija que convierte tus pasos en Puntos.
           </Texto>
-          <Foto src="hz/catedral-cuadro.jpg" x={70} y={720} w={520} h={380} rot={-4} />
-          <Telefono src="yasi/app/rachas-dark.jpg" x={610} y={470} alto={700} rot={6} />
+          <Foto src="hz/catedral-cuadro.jpg" x={70} y={720} w={500} h={370} rot={-4} />
+          <Telefono src={A('rachas-dark')} x={620} y={450} alto={700} rot={6} />
         </Lamina>
       );
     case 2:
       return (
-        <Lamina n={2} tema="menta">
-          <Etiqueta tema="menta">Hola, somos Camina</Etiqueta>
-          <Titular tema="menta" top={200} tam={96}>
-            Una app que convierte tus pasos en <Ac tema="menta">Puntos</Ac>
+        <Lamina n={2} tema="blanco">
+          <Etiqueta tema="blanco">Cómo funciona</Etiqueta>
+          <Titular tema="blanco" top={250} tam={92}>
+            Caminas. Sumas. <Ac tema="blanco">Canjeas.</Ac>
           </Titular>
-          <Texto tema="menta" top={640} ancho={470}>
-            Caminas como siempre. La app cuenta tus pasos y te da Puntos para usar en tu ciudad.
-          </Texto>
-          <Telefono src="yasi/app/rachas-dark.jpg" x={610} y={560} alto={600} rot={4} />
+          {[
+            ['01', 'Caminas', 'La app cuenta tus pasos sola, todos los días.'],
+            ['02', 'Sumas Puntos', 'Cada día que caminas, ganas Puntos.'],
+            ['03', 'Canjeas', 'Usas tus Puntos en comercios de tu ciudad.'],
+          ].map(([num, t, d], i) => (
+            <div key={num} style={{ position: 'absolute', left: 80, right: 80, top: 570 + i * 196, height: 172, borderRadius: 40, background: NEGRO, display: 'flex', alignItems: 'center', gap: 34, padding: '0 44px' }}>
+              <div style={{ fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 84, color: 'transparent', WebkitTextStroke: `3px ${MENTA}`, width: 150 } as CSSProperties}>{num}</div>
+              <div>
+                <div style={{ fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 44, color: '#fff', textTransform: 'uppercase' }}>{t}</div>
+                <div style={{ fontFamily: 'Jakarta', fontWeight: 500, fontSize: 30, color: 'rgba(255,255,255,0.7)', marginTop: 6 }}>{d}</div>
+              </div>
+            </div>
+          ))}
         </Lamina>
       );
     case 3:
       return (
         <Lamina n={3} tema="morado">
-          <Numero tema="morado">01</Numero>
-          <Titular tema="morado" top={340} tam={110}>
-            Camina
+          <Etiqueta tema="morado">Tus pasos</Etiqueta>
+          <Titular tema="morado" top={250} tam={92}>
+            Se cuentan <Ac tema="morado">solos</Ac>
           </Titular>
-          <Texto tema="morado" top={500} ancho={460}>
-            Tus pasos se cuentan solos, todos los días.
-          </Texto>
-          <Telefono src="yasi/app/actividad-dark.jpg" x={600} y={520} alto={640} rot={-4} />
+          <Fichas tema="morado" top={480} items={['Meta diaria', 'Rachas', 'Actividad de la semana']} />
+          <Telefono src={A('actividad-dark')} x={110} y={600} alto={600} rot={-6} />
+          <Telefono src={A('rachas-dark')} x={520} y={560} alto={640} rot={5} />
         </Lamina>
       );
     case 4:
       return (
-        <Lamina n={4} tema="menta">
-          <Numero tema="menta">02</Numero>
-          <Titular tema="menta" top={340} tam={96}>
-            Suma Puntos
+        <Lamina n={4} tema="negro">
+          <Etiqueta tema="negro">Evento del mes</Etiqueta>
+          <Titular tema="negro" top={250} tam={96}>
+            Cada mes, una <Ac tema="negro">ruta nueva</Ac>
           </Titular>
-          <Texto tema="menta" top={500} ancho={460}>
-            Cada día que caminas, ganas Puntos.
+          <Texto tema="negro" top={480} ancho={900}>
+            Te tocan 3 locales de tu ciudad. Complétala y gana Día doble, insignia y boleto del sorteo.
           </Texto>
-          <Telefono src="app/puntos-248.jpg" x={600} y={520} alto={640} rot={4} />
+          <Telefono src={A('eventos-ruta-v2-dark')} x={110} y={680} alto={560} rot={-5} />
+          <Telefono src={A('ruta-mapa-nov-dark')} x={540} y={650} alto={600} rot={4} />
         </Lamina>
       );
     case 5:
       return (
-        <Lamina n={5} tema="morado">
-          <Numero tema="morado">03</Numero>
-          <Titular tema="morado" top={330} tam={104}>
-            Canjea en tu <Ac tema="morado">ciudad</Ac>
+        <Lamina n={5} tema="menta">
+          <Etiqueta tema="menta">Grupos y ranking</Etiqueta>
+          <Titular tema="menta" top={250} tam={96}>
+            Camina con tus <Ac tema="menta">amigos</Ac>
           </Titular>
-          <Texto tema="morado" top={590} ancho={860}>
-            Usa tus Puntos en comercios de Tarija.
-          </Texto>
-          <Logos y={700} />
+          <Fichas tema="menta" top={480} items={['Meta semanal del grupo', 'Ranking semanal', 'Podio']} />
+          <Telefono src={A('ranking-nuevo-dark')} x={110} y={600} alto={600} rot={-5} />
+          <Telefono src={A('grupo-v4-dark')} x={520} y={570} alto={640} rot={4} />
         </Lamina>
       );
     case 6:
       return (
-        <Lamina n={6} tema="menta">
-          <Etiqueta tema="menta">Tarjeta de fidelidad</Etiqueta>
-          <Titular tema="menta" top={200} tam={104}>
-            Cada canje suma un <Ac tema="menta">sello</Ac>
+        <Lamina n={6} tema="blanco">
+          <Etiqueta tema="blanco">Chat del grupo</Etiqueta>
+          <Titular tema="blanco" top={250} tam={80}>
+            Y se organizan en el <Ac tema="blanco">chat</Ac>
           </Titular>
-          <Tarjeta y={620} />
-          <Texto tema="menta" top={1010} ancho={900}>
-            Con 5 sellos eliges un premio gratis.
-          </Texto>
+          <Telefono src={A('grupo-chat-dark')} x={590} y={480} alto={740} rot={4} />
+          <Burbuja top={520} quien="Camila">¿Quién se anota a la caminata del sábado por la plaza?</Burbuja>
+          <Burbuja top={730} quien="Lucía" yo>Yo voy, salgo a las 7</Burbuja>
+          <Burbuja top={890} quien="Joaquín">Vamos 1.° en la meta del grupo</Burbuja>
         </Lamina>
       );
     case 7:
       return (
-        <Lamina n={7} tema="morado">
-          <Etiqueta tema="morado">Con tus amigos</Etiqueta>
-          <Titular tema="morado" top={200} tam={104}>
-            Caminar es mejor en <Ac tema="morado">grupo</Ac>
+        <Lamina n={7} tema="negro">
+          <Etiqueta tema="negro">Desafíos</Etiqueta>
+          <Titular tema="negro" top={250} tam={96}>
+            Reta a tu <Ac tema="negro">grupo</Ac>
           </Titular>
-          <Texto tema="morado" top={640} ancho={440}>
-            Grupos, rankings y rachas para caminar juntos.
+          <Texto tema="negro" top={480} ancho={900}>
+            Elijan la regla, la meta y los Puntos en juego.
           </Texto>
-          <Telefono src="yasi/app/grupo-v4-dark.jpg" x={580} y={560} alto={600} rot={-4} />
+          <Telefono src={A('grupos-v2-dark')} x={110} y={640} alto={580} rot={-5} />
+          <div style={{ position: 'absolute', left: 560, top: 700, width: 440, padding: '34px 36px', borderRadius: 40, background: MENTA, color: MORADO, transform: 'rotate(3deg)', boxShadow: '0 30px 70px rgba(0,0,0,0.45)' }}>
+            <div style={{ fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 50, lineHeight: 1, textTransform: 'uppercase' }}>+5 Puntos</div>
+            <div style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 30, marginTop: 14, lineHeight: 1.3 }}>por cada amigo que invitas y se suma</div>
+          </div>
         </Lamina>
       );
     case 8:
       return (
-        <Lamina n={8} tema="foto">
-          <Img src={staticFile('yasi/f/t-plaza-luis-de-fuentes.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 50%' }} />
-          <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(32,10,82,0.15) 30%, rgba(32,10,82,0.92) 82%)' }} />
+        <Lamina n={8} tema="morado">
+          <Etiqueta tema="morado">Canjes</Etiqueta>
+          <Titular tema="morado" top={250} tam={96}>
+            Canjea en tu <Ac tema="morado">ciudad</Ac>
+          </Titular>
+          <Texto tema="morado" top={480} ancho={460}>
+            Usa tus Puntos en comercios de Tarija.
+          </Texto>
+          <Logos x={80} y={650} />
+          <Telefono src={A('mapa-locales-dark')} x={590} y={540} alto={640} rot={4} />
+          <div style={{ position: 'absolute', left: 80, top: 1035, width: 470, display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderRadius: 24, background: 'rgba(255,255,255,0.08)' }}>
+            {[0, 1, 2].map((i) => (
+              <Img key={i} src={staticFile('marca/sello-oro.png')} style={{ width: 46, height: 46, marginLeft: i ? -22 : 0 }} />
+            ))}
+            <div style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 24, color: 'rgba(255,255,255,0.85)', lineHeight: 1.25 }}>Y cada canje suma un sello en tu tarjeta de fidelidad</div>
+          </div>
+        </Lamina>
+      );
+    case 9:
+      return (
+        <Lamina n={9} tema="blanco">
+          <Etiqueta tema="blanco">Insignias y niveles</Etiqueta>
+          <Titular tema="blanco" top={250} tam={92}>
+            Hazte <Ac tema="blanco">fan</Ac> de tus lugares
+          </Titular>
+          <Fichas tema="blanco" top={480} items={['Visitante', 'Habitual', 'Fan', 'Leyenda del mes']} />
+          <Telefono src={A('ficha-bloom-nivel-dark')} x={110} y={600} alto={600} rot={-5} />
+          <Telefono src={A('perfil-insignias-dark')} x={520} y={570} alto={640} rot={4} />
+        </Lamina>
+      );
+    case 10:
+      return (
+        <Lamina n={10} tema="foto">
+          <Img src={staticFile('yasi/f/t-plaza-luis-de-fuentes.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.1) 30%, rgba(11,11,13,0.9) 82%)' }} />
           <Etiqueta tema="foto" top={660}>Tarija, Bolivia</Etiqueta>
           <Titular tema="foto" top={730} tam={110}>
             Hecho en <Ac tema="foto">Tarija</Ac>
@@ -129,98 +185,95 @@ export const Carrusel2 = ({ n }: { n: number }) => {
       );
     default:
       return (
-        <Lamina n={9} tema="morado">
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 230, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+        <Lamina n={11} tema="negro" sinEncabezado>
+          <AbsoluteFill style={{ background: 'radial-gradient(60% 40% at 50% 38%, rgba(98,240,182,0.18), transparent 70%)' }} />
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 240, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
             <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 170, height: 170 }} />
             <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 116 }} />
           </div>
           <div style={{ position: 'absolute', left: 80, right: 80, top: 520, textAlign: 'center', fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 96, lineHeight: 0.95, textTransform: 'uppercase', color: '#fff' }}>Muy pronto</div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 700, display: 'flex', justifyContent: 'center', gap: 22 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 690, display: 'flex', justifyContent: 'center', gap: 22 }}>
             <Tienda icono={<IconoApple />} nombre="App Store" />
             <Tienda icono={<IconoPlay />} nombre="Google Play" />
           </div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 880, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 600, fontSize: 38, color: '#c9b8ff' }}>Síguenos para enterarte primero</div>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 870, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 600, fontSize: 38, color: 'rgba(255,255,255,0.75)' }}>Síguenos para enterarte primero</div>
         </Lamina>
       );
   }
 };
 
 // ---------- base de cada lámina ----------
-const FONDO: Record<Tema, string> = {
-  menta: `radial-gradient(90% 70% at 30% 20%, #8af7cd, ${MENTA} 70%)`,
-  morado: `radial-gradient(90% 70% at 70% 20%, #3a1690, ${MORADO} 70%)`,
-  foto: MORADO,
-};
-const Lamina = ({ n, tema, children }: { n: number; tema: Tema; children: ReactNode }) => (
+const Lamina = ({ n, tema, children, sinEncabezado }: { n: number; tema: Tema; children: ReactNode; sinEncabezado?: boolean }) => (
   <AbsoluteFill style={{ background: FONDO[tema], overflow: 'hidden' }}>
     {children}
     <Camino n={n} tema={tema} />
-    {n > 1 && n < LAMINAS2 && <div style={{ position: 'absolute', right: 80, top: 96, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, color: tinta(tema), opacity: 0.55 }}>{n} / {LAMINAS2}</div>}
+    {!sinEncabezado && (
+      <>
+        <Marca tema={tema} chica />
+        <div style={{ position: 'absolute', right: 80, top: 100, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, color: tinta(tema), opacity: 0.55 }}>
+          {String(n).padStart(2, '0')} / {LAMINAS2}
+        </div>
+      </>
+    )}
   </AbsoluteFill>
 );
 
-const Marca = ({ tema }: { tema: Tema }) => (
-  <div style={{ position: 'absolute', left: 80, top: 86, display: 'flex', alignItems: 'center', gap: 4 }}>
-    <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 70, height: 70 }} />
-    <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 46, filter: tema === 'menta' ? 'brightness(0)' : 'none' }} />
+const Marca = ({ tema, chica }: { tema: Tema; chica?: boolean }) => (
+  <div style={{ position: 'absolute', left: 80, top: chica ? 92 : 86, display: 'flex', alignItems: 'center', gap: 4, opacity: chica ? 0.9 : 1 }}>
+    <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: chica ? 48 : 70, height: chica ? 48 : 70, filter: tema === 'menta' ? 'brightness(0.25) saturate(2) hue-rotate(200deg)' : 'none' }} />
+    <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: chica ? 30 : 46, filter: tema === 'blanco' || tema === 'menta' ? 'brightness(0)' : tema === 'foto' ? 'brightness(0) invert(1)' : 'none' }} />
   </div>
 );
-const Etiqueta = ({ tema, children, top = 100 }: { tema: Tema; children: ReactNode; top?: number }) => (
-  <div style={{ position: 'absolute', left: 80, top, display: 'inline-flex', padding: '10px 24px', borderRadius: 40, background: tema === 'menta' ? MORADO : 'rgba(98,240,182,0.16)', color: MENTA, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{children}</div>
-);
-const Numero = ({ tema, children }: { tema: Tema; children: ReactNode }) => (
-  <div style={{ position: 'absolute', left: 74, top: 70, fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 250, lineHeight: 1, color: 'transparent', WebkitTextStroke: `4px ${tema === 'menta' ? MORADO : MENTA}` } as CSSProperties}>{children}</div>
+const Etiqueta = ({ tema, children, top = 170 }: { tema: Tema; children: ReactNode; top?: number }) => (
+  <div style={{ position: 'absolute', left: 80, top, display: 'inline-flex', padding: '10px 24px', borderRadius: 40, background: tema === 'blanco' ? NEGRO : tema === 'menta' ? MORADO : 'rgba(98,240,182,0.16)', color: MENTA, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 24, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{children}</div>
 );
 const Titular = ({ tema, top, tam, children }: { tema: Tema; top: number; tam: number; children: ReactNode }) => (
   <div style={{ position: 'absolute', left: 80, right: 80, top, fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: tam, lineHeight: 0.95, letterSpacing: '-0.01em', textTransform: 'uppercase', color: tinta(tema) }}>{children}</div>
 );
 const Ac = ({ tema, children }: { tema: Tema; children: ReactNode }) => <span style={{ color: acento(tema) }}>{children}</span>;
 const Texto = ({ tema, top, ancho, children }: { tema: Tema; top: number; ancho: number; children: ReactNode }) => (
-  <div style={{ position: 'absolute', left: 80, top, width: ancho, fontFamily: 'Jakarta', fontWeight: 500, fontSize: 40, lineHeight: 1.3, color: tinta(tema), opacity: 0.92 }}>{children}</div>
+  <div style={{ position: 'absolute', left: 80, top, width: ancho, fontFamily: 'Jakarta', fontWeight: 500, fontSize: 38, lineHeight: 1.3, color: tinta(tema), opacity: 0.9 }}>{children}</div>
+);
+const Fichas = ({ tema, top, items }: { tema: Tema; top: number; items: string[] }) => (
+  <div style={{ position: 'absolute', left: 80, right: 80, top, display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+    {items.map((i) => (
+      <div key={i} style={{ padding: '12px 26px', borderRadius: 40, border: `2px solid ${tinta(tema)}`, color: tinta(tema), fontFamily: 'Jakarta', fontWeight: 700, fontSize: 28, opacity: 0.9 }}>{i}</div>
+    ))}
+  </div>
+);
+const Burbuja = ({ top, quien, yo, children }: { top: number; quien: string; yo?: boolean; children: ReactNode }) => (
+  <div style={{ position: 'absolute', left: 80, top, width: 500, padding: '22px 28px', borderRadius: yo ? '30px 30px 8px 30px' : '30px 30px 30px 8px', background: yo ? MENTA : NEGRO, color: yo ? MORADO : '#fff', boxShadow: '0 20px 50px rgba(0,0,0,0.18)' }}>
+    <div style={{ fontFamily: 'Jakarta', fontWeight: 700, fontSize: 22, opacity: 0.6, marginBottom: 6 }}>{quien}</div>
+    <div style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 32, lineHeight: 1.25 }}>{children}</div>
+  </div>
 );
 
 // teléfono con una captura de la app
 const Telefono = ({ src, x, y, alto, rot = 0 }: { src: string; x: number; y: number; alto: number; rot?: number }) => {
   const ancho = alto * (780 / 1688);
   return (
-    <div style={{ position: 'absolute', left: x, top: y, width: ancho + 28, height: alto + 28, borderRadius: 64, background: '#0d0a18', padding: 14, boxShadow: '0 40px 80px rgba(10,2,30,0.45), inset 0 0 0 2px rgba(255,255,255,0.12)', transform: `rotate(${rot}deg)` }}>
-      <div style={{ width: ancho, height: alto, borderRadius: 52, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', left: x, top: y, width: ancho + 28, height: alto + 28, borderRadius: 60, background: '#0d0a18', padding: 14, boxShadow: '0 40px 80px rgba(10,2,30,0.5), inset 0 0 0 2px rgba(255,255,255,0.14)', transform: `rotate(${rot}deg)` }}>
+      <div style={{ width: ancho, height: alto, borderRadius: 48, overflow: 'hidden' }}>
         <Img src={staticFile(src)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
     </div>
   );
 };
 const Foto = ({ src, x, y, w, h, rot = 0 }: { src: string; x: number; y: number; w: number; h: number; rot?: number }) => (
-  <div style={{ position: 'absolute', left: x, top: y, width: w, height: h, borderRadius: 40, overflow: 'hidden', boxShadow: '0 30px 70px rgba(10,2,30,0.45), 0 0 0 6px #fff', transform: `rotate(${rot}deg)` }}>
+  <div style={{ position: 'absolute', left: x, top: y, width: w, height: h, borderRadius: 40, overflow: 'hidden', boxShadow: '0 30px 70px rgba(0,0,0,0.5), 0 0 0 6px #fff', transform: `rotate(${rot}deg)` }}>
     <Img src={staticFile(src)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
   </div>
 );
 
 // los 8 comercios
 const LOGOS = ['fripaps-logo', 'bloom-logo', 'coco-logo', 'cancheritos-logo', 'galera-logo', 'viviana-logo', 'sabor-logo', 'luzdevida-app'];
-const Logos = ({ y }: { y: number }) => (
-  <div style={{ position: 'absolute', left: 80, top: y, width: 920, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 28 }}>
+const Logos = ({ x, y }: { x: number; y: number }) => (
+  <div style={{ position: 'absolute', left: x, top: y, width: 470, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
     {LOGOS.map((l, i) => (
-      <div key={l} style={{ height: 206, borderRadius: 40, overflow: 'hidden', background: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.35)', transform: `rotate(${[-3, 2, -1, 3, 2, -2, 3, -1][i]}deg)` }}>
+      <div key={l} style={{ height: 106, borderRadius: 24, overflow: 'hidden', background: '#fff', boxShadow: '0 10px 26px rgba(0,0,0,0.35)', transform: `rotate(${[-3, 2, -1, 3, 2, -2, 3, -1][i]}deg)` }}>
         <Img src={staticFile(`yasi/locales/${l}.jpg`)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
     ))}
-  </div>
-);
-
-// la tarjeta de fidelidad, como en la app
-const Tarjeta = ({ y }: { y: number }) => (
-  <div style={{ position: 'absolute', left: 80, top: y, width: 920, padding: '40px 44px', borderRadius: 48, background: MORADO, boxShadow: '0 30px 70px rgba(32,10,82,0.35)' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 42 }}>
-      Tarjeta de fidelidad
-      <span style={{ padding: '8px 22px', borderRadius: 30, background: 'rgba(160,130,255,0.25)', color: '#c9b8ff', fontSize: 32 }}>4 de 5</span>
-    </div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 36 }}>
-      {[0, 1, 2, 3].map((i) => (
-        <Img key={i} src={staticFile('marca/sello-oro.png')} style={{ width: 150, height: 150 }} />
-      ))}
-      <div style={{ width: 142, height: 142, margin: 4, borderRadius: '50%', border: '5px dashed rgba(185,168,224,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 48 }}>5</div>
-    </div>
   </div>
 );
 
@@ -234,9 +287,9 @@ const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
   </div>
 );
 
-// ---------- el camino de huellas: un solo recorrido a lo largo de las 9 láminas ----------
+// ---------- el camino de huellas: un solo recorrido a lo largo de todas las láminas ----------
 const PASO = 128;
-const yCamino = (x: number) => 1262 + 34 * Math.sin(x / 380) + 18 * Math.sin(x / 150 + 1);
+const yCamino = (x: number) => 1272 + 30 * Math.sin(x / 380) + 14 * Math.sin(x / 150 + 1);
 const HUELLAS = (() => {
   const out: { x: number; y: number; giro: number; izq: boolean }[] = [];
   const fin = (LAMINAS2 - 1) * W + 470; // termina en la última lámina, bajo el logo
@@ -249,9 +302,9 @@ const HUELLAS = (() => {
   }
   return out;
 })();
+const COLOR_HUELLA: Record<Tema, string> = { negro: MENTA, blanco: MORADO, morado: MENTA, menta: MORADO, foto: '#ffffff' };
 const Camino = ({ n, tema }: { n: number; tema: Tema }) => {
   const x0 = (n - 1) * W;
-  const color = tema === 'menta' ? MORADO : tema === 'foto' ? '#ffffff' : MENTA;
   return (
     <>
       {HUELLAS.filter((h) => h.x > x0 - 80 && h.x < x0 + W + 80).map((h, i) => (
@@ -259,11 +312,11 @@ const Camino = ({ n, tema }: { n: number; tema: Tema }) => {
           key={i}
           style={{
             position: 'absolute',
-            left: h.x - x0 - 21,
-            top: h.y - 44,
-            width: 42,
-            height: 88,
-            background: color,
+            left: h.x - x0 - 20,
+            top: h.y - 42,
+            width: 40,
+            height: 84,
+            background: COLOR_HUELLA[tema],
             opacity: 0.85,
             WebkitMaskImage: `url(${staticFile(h.izq ? 'marca/pie-L.png' : 'marca/pie-R.png')})`,
             WebkitMaskSize: 'contain',

@@ -9,7 +9,7 @@ import { Carrusel2, LAMINAS2 } from './Carrusel2';
 // Lanzamiento: 35 s; `voz`: false = versión A (música y efectos), true = versión B (con locución).
 // YSiCadaPaso: pieza de marca «¿Y si cada paso…?», sin voz, 35 s.
 // Carrusel-1 … Carrusel-9: carrusel de Instagram con el horizonte curvo (imágenes fijas 1080 × 1350).
-// Carrusel2-1 … Carrusel2-9: carrusel de Instagram, identidad «Paso a paso» (menta y morado, huellas que cruzan las láminas).
+// Carrusel2-1 … Carrusel2-11: carrusel de Instagram, identidad «Paso a paso» (negro, blanco, morado y menta; huellas que cruzan las láminas).
 // HorizonteCamina: teaser «Siempre hay más por caminar», sin voz, ≈ 20 s.
 export const RemotionRoot = () => {
   return (
