@@ -10,12 +10,12 @@ import './marca';
 
 loadFont({ family: 'Caslon', url: staticFile('fonts/libre-caslon-text-latin-400-normal.woff2'), weight: '400' });
 
-const MENTA = '#62f0b6';
-const MORADO = '#200a52';
-const ARCO = 800;
-const R = 1500;
-const CY = ARCO + R;
-const LILA = '#b9a8e0';
+export const MENTA = '#62f0b6';
+export const MORADO = '#200a52';
+export const ARCO = 800;
+export const R = 1500;
+export const CY = ARCO + R;
+export const LILA = '#b9a8e0';
 
 const arco = (r: number, x1: number, x2: number) => {
   const a1 = Math.asin((x1 - 540) / r);
@@ -25,7 +25,7 @@ const arco = (r: number, x1: number, x2: number) => {
   return { d: `M${P(a1)} A${r} ${r} 0 0 1 ${P(a2)}`, largo: r * (a2 - a1), punto, a1, a2 };
 };
 
-const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: { etiqueta: string; linea: string; titulo: string; acento: string; tam?: number; children: ReactNode }) => {
+export const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: { etiqueta?: string; linea: string; titulo: string; acento: string; tam?: number; children: ReactNode }) => {
   const ext = arco(R - 20, -40, 1120);
   const int = arco(R - 92, -40, 1120);
   const cab = int.punto(int.a1 + (int.a2 - int.a1) * 0.68);
@@ -40,9 +40,9 @@ const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: { etique
         <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 60, height: 60 }} />
         <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 40, filter: 'brightness(0) invert(1)' }} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 300, display: 'flex', justifyContent: 'center' }}>
+      {etiqueta && <div style={{ position: 'absolute', left: 0, right: 0, top: 300, display: 'flex', justifyContent: 'center' }}>
         <div style={{ padding: '10px 26px', borderRadius: 40, background: 'rgba(98,240,182,0.14)', color: MENTA, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, letterSpacing: '0.16em', textTransform: 'uppercase' }}>{etiqueta}</div>
-      </div>
+      </div>}
       <div style={{ position: 'absolute', left: 90, right: 90, top: 384, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 36, lineHeight: 1.3, color: 'rgba(239,232,255,0.82)' }}>{linea}</div>
       <div style={{ position: 'absolute', left: 540 - R, top: ARCO, width: R * 2, height: R * 2, borderRadius: '50%', background: 'radial-gradient(50% 9% at 50% 0%, #2c1170, #140534 75%)', boxShadow: '0 -2px 18px rgba(98,240,182,0.4), 0 -1px 2px rgba(160,255,215,0.6)' }} />
       <svg width={1080} height={1350} style={{ position: 'absolute', inset: 0 }}>
@@ -67,13 +67,13 @@ const Base = ({ etiqueta, linea, titulo, acento, tam = 104, children }: { etique
   );
 };
 
-const Fila = ({ children }: { children: ReactNode }) => (
+export const Fila = ({ children }: { children: ReactNode }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontFamily: 'Jakarta', fontWeight: 600, fontSize: 36, color: '#fff' }}>
     <span style={{ width: 40, height: 40, borderRadius: '50%', background: MENTA, color: MORADO, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, flexShrink: 0 }}>✓</span>
     {children}
   </div>
 );
-const Chip = ({ children }: { children: ReactNode }) => (
+export const Chip = ({ children }: { children: ReactNode }) => (
   <div style={{ padding: '12px 26px', borderRadius: 40, background: 'rgba(98,240,182,0.14)', boxShadow: 'inset 0 0 0 2px rgba(98,240,182,0.5)', color: MENTA, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 30, whiteSpace: 'nowrap' }}>{children}</div>
 );
 

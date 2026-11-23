@@ -8,6 +8,7 @@ import { Carrusel3, LAMINAS3 } from './Carrusel3';
 import { Carrusel4, LAMINAS4 } from './Carrusel4';
 import { Publicacion1 } from './Publicacion';
 import { PiezaComercios, PiezaGrupos, PiezaRachas, PiezaRuta } from './Piezas';
+import { LAMINAS_PRES, Presentacion } from './Presentacion';
 import { PORTADAS, PortadaCampana, type Portada } from './PortadaCampana';
 import { BienvenidaA, BienvenidaB, DUR_BIENVENIDA } from './Bienvenida';
 
@@ -17,6 +18,7 @@ import { BienvenidaA, BienvenidaB, DUR_BIENVENIDA } from './Bienvenida';
 // Carrusel-1 … Carrusel-9: carrusel de Instagram con el horizonte curvo (imágenes fijas 1080 × 1350).
 // Carrusel3-1 … Carrusel3-10: carrusel de Instagram v3 (sobrio: un color, un titular, un teléfono; sin nombrar locales).
 // Carrusel4-1 … Carrusel4-11: carrusel de Instagram v4 (teléfonos 3D, lupas y camino de luz).
+// Presentacion-1 … Presentacion-9: carrusel de presentación de la app con el estilo del círculo.
 // PiezaComercios, PiezaRuta, PiezaGrupos, PiezaRachas: publicaciones sueltas con el estilo del círculo.
 // Publicacion1: primera publicación de Instagram (una sola imagen 1080 × 1350).
 // BienvenidaA / BienvenidaB: pantalla de bienvenida de la app (9:16, 3 s, 100 % gráfica).
@@ -37,6 +39,9 @@ export const RemotionRoot = () => {
       <Composition id="PiezaRuta" component={PiezaRuta} durationInFrames={1} fps={30} width={1080} height={1350} />
       <Composition id="PiezaGrupos" component={PiezaGrupos} durationInFrames={1} fps={30} width={1080} height={1350} />
       <Composition id="PiezaRachas" component={PiezaRachas} durationInFrames={1} fps={30} width={1080} height={1350} />
+      {Array.from({ length: LAMINAS_PRES }, (_, i) => (
+        <Composition key={`p${i}`} id={`Presentacion-${i + 1}`} component={Presentacion} durationInFrames={1} fps={30} width={1080} height={1350} defaultProps={{ n: i + 1 }} />
+      ))}
       <Composition id="BienvenidaA" component={BienvenidaA} durationInFrames={DUR_BIENVENIDA} fps={30} width={1080} height={1920} />
       <Composition id="BienvenidaB" component={BienvenidaB} durationInFrames={DUR_BIENVENIDA} fps={30} width={1080} height={1920} />
       {(Object.keys(PORTADAS) as Portada[]).map((v) => (
