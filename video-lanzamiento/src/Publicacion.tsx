@@ -5,8 +5,8 @@ import { IconoApple, IconoPlay } from './Lanzamiento';
 import './marca';
 
 // CAMINA · Primera publicación de Instagram (una sola imagen, 1080 × 1350), con el lenguaje del teaser
-// «Siempre hay más por caminar»: el horizonte curvo con el anillo de pasos de la app convertido en arco, la personita
-// caminando sobre él y «Cada paso cuenta» curvado sobre el círculo. Sin teléfonos.
+// «Siempre hay más por caminar»: el horizonte curvo con el anillo de pasos de la app convertido en arco y «Cada paso
+// cuenta» curvado sobre el círculo. Sin teléfonos.
 // Exportar: npx remotion still Publicacion1 out/publicacion-1.png
 
 loadFont({ family: 'Caslon', url: staticFile('fonts/libre-caslon-text-latin-400-normal.woff2'), weight: '400' });
@@ -22,29 +22,6 @@ const arco = (r: number, x1: number, x2: number) => {
   const punto = (a: number) => ({ x: 540 + r * Math.sin(a), y: CY - r * Math.cos(a) });
   const P = (a: number) => `${punto(a).x} ${punto(a).y}`;
   return { d: `M${P(a1)} A${r} ${r} 0 0 1 ${P(a2)}`, largo: r * (a2 - a1), punto, a1, a2 };
-};
-const sobreCurva = (x: number) => CY - Math.sqrt(R * R - (x - 540) ** 2);
-
-// la personita, en pleno paso, parada sobre la curva
-const Caminante = ({ x, alto = 64 }: { x: number; alto?: number }) => {
-  const y = sobreCurva(x);
-  const giro = (Math.asin((x - 540) / R) * 180) / Math.PI;
-  const s = alto / 74;
-  const c = '#efe8ff';
-  const linea = (d: string, w: number, o = 1) => <path d={d} stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={o} />;
-  return (
-    <svg width={240} height={240} viewBox="-120 -200 240 240" style={{ position: 'absolute', left: x - 120, top: y - 200, overflow: 'visible', filter: 'drop-shadow(0 0 8px rgba(190,170,255,0.5))' }}>
-      <g transform={`rotate(${giro}) scale(${s})`}>
-        {linea('M0 -38 L-7 -20 L-11 -1 l5.5 0.5', 6.6, 0.55)}
-        {linea('M3.5 -62 L-2 -49 L4 -38', 4.8, 0.55)}
-        <path d="M0 -38 L3.5 -62" stroke={c} strokeWidth={11.5} strokeLinecap="round" />
-        <rect x={-9} y={-63} width={9} height={17} rx={3} fill={c} />
-        <circle cx={5.7} cy={-71.5} r={6.2} fill={c} />
-        {linea('M0 -38 L8 -21 L12 -2 l5.5 0.5', 6.6)}
-        {linea('M3.5 -62 L11 -51 L19 -45', 4.8)}
-      </g>
-    </svg>
-  );
 };
 
 const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
@@ -97,7 +74,6 @@ export const Publicacion1 = () => {
           </textPath>
         </text>
       </svg>
-      <Caminante x={1012} />
       {/* dentro de la cúpula */}
       <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO + 175, textAlign: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 112, lineHeight: 1, letterSpacing: '-0.01em' }}>6.840</div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO + 297, textAlign: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34 }}>pasos hoy</div>
