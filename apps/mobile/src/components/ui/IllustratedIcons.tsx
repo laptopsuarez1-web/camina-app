@@ -9,7 +9,7 @@ export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'ta
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'mint', canjes: 'mint', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
 const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
@@ -174,7 +174,7 @@ export function IllArt({ kind, size = 48, muted }: { kind: IllKind; size?: numbe
         {muted ? null : gradientDefs(uid, kind)}
         {PARTS[kind].map((p, i) => (p.node ? <G key={i}>{p.node(c)}</G> : null))}
       </Svg>
-      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#FFF6D2'} /> : null))}
+      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#F2FFF9'} /> : null))}
     </View>
   );
 }

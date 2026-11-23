@@ -51,6 +51,9 @@ function Iconos() {
         <Press onPress={() => setTick((t) => t + 1)} style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 14, borderRadius: 24, backgroundColor: 'rgba(139,79,209,0.08)' }}>
           {TABS.map((k, i) => <TabGlyph key={k} kind={k} focused={i === 2} tick={tick} color={i === 2 ? '#8B4FD1' : '#9A8FB3'} />)}
         </Press>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 14, borderRadius: 24, backgroundColor: 'rgba(139,79,209,0.08)' }}>
+          {TABS.map((k) => <TabGlyph key={k} kind={k} focused color="#62F0B6" />)}
+        </View>
       </ScrollView>
     </View>
   );
