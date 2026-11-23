@@ -27,7 +27,7 @@ const p = (k: number) => {
 
 // Horizonte: borde de un círculo enorme; su punto más alto está en ARCO_Y.
 const ARCO_Y = 1150;
-const R = 2100;
+const R = 1600;
 const CY = ARCO_Y + R;
 const BANDA_Y = 1100; // franja nítida: de 1100 a 1920 (recortes de 1080 × 820, scripts/horizonte_franjas.py)
 
@@ -39,24 +39,20 @@ const t = (src: string, d = 1, acabado: Acabado = 'nitida'): Toma => ({ src, d, 
 // d = duración en pulsos. 'anillo' es la apertura dibujada; lo demás, franjas en public/hz.
 const TOMAS: Toma[] = [
   t('anillo', 6),
-  // sin palabras
-  t('vinedos'),
-  t('laguna'),
-  t('cartel'),
-  t('chunchos'),
-  t('isla-sendero'),
-  t('mirador'),
-  t('puente'),
-  t('titicaca'),
-  // «Hay»
+  t('vinedos', 1, 'nitida'),
+  t('laguna', 1, 'relieve'),
+  t('cartel', 1, 'calida'),
+  t('chunchos', 1, 'tenue'),
+  t('isla-sendero', 1, 'halo'),
+  t('mirador', 1, 'desvanece'),
+  t('puente', 1, 'tela'),
+  t('titicaca', 1, 'desenfoque'),
   t('pies-pov.mp4', 1, 'relieve'),
   t('plaza-lf', 1, 'calida'),
   t('mercado', 1, 'tela'),
-  // «más»
   t('lp-noche', 1, 'halo'),
   t('flamencos', 1, 'tenue'),
   t('rueda', 1, 'crema'),
-  // «por caminar»
   t('parque.mp4', 1, 'relieve'),
   t('mapa', 1, 'nitida'),
   t('sc-plaza', 1, 'desvanece'),
@@ -79,12 +75,8 @@ const FIN_MONTAJE = TOMAS.reduce((u, x) => u + x.d, 0); // pulso 28
 const CIERRE = p(FIN_MONTAJE);
 export const DUR_HORIZONTE = CIERRE + 175;
 
-// Frases quietas sobre la curva: [texto, desde (pulso), hasta (pulso), tamaño inicial]
-const FRASES: [string, number, number, number][] = [
-  ['Hay', 14, 17, 64],
-  ['más', 17, 20, 70],
-  ['por caminar', 20, FIN_MONTAJE, 62],
-];
+// La frase, siempre completa, quieta sobre la curva: [texto, desde (pulso), hasta (pulso), tamaño inicial]
+const FRASES: [string, number, number, number][] = [['Hay más por caminar', 6, FIN_MONTAJE, 58]];
 
 export const Horizonte = () => {
   return (
@@ -284,73 +276,102 @@ const tomaEn = (cuadro: number) => {
   return k;
 };
 
-const estiloLetra = (a: Acabado, oscuro: boolean): CSSProperties => {
+// Cada acabado: relleno de la letra, filtro SVG (borde de impresión, tela, tinta) y filtro CSS (sombra, halo, desenfoque).
+type Estilo = { relleno: string; svg: string; css: string; opacidad?: number; peso?: number };
+const estiloLetra = (a: Acabado, oscuro: boolean): Estilo => {
   const c = oscuro ? '#17130f' : '#ffffff';
-  const sombra = oscuro ? 'none' : '0 2px 14px rgba(0,0,0,0.28)';
-  const impresa = 'url(#hz-impresa)';
+  const sombra = oscuro ? '' : 'drop-shadow(0 2px 10px rgba(0,0,0,0.3))';
+  const imp = 'url(#hz-impresa)';
   switch (a) {
     case 'relieve':
-      return { color: c, filter: impresa, textShadow: oscuro ? '0 2px 0 rgba(255,255,255,0.45)' : '0 3px 0 rgba(0,0,0,0.6), 0 7px 16px rgba(0,0,0,0.45)' };
+      return { relleno: c, svg: imp, css: oscuro ? 'drop-shadow(0 2px 0 rgba(255,255,255,0.5))' : 'drop-shadow(0 3px 0 rgba(0,0,0,0.6)) drop-shadow(0 7px 10px rgba(0,0,0,0.4))' };
     case 'calida':
-      return { color: 'transparent', backgroundImage: 'linear-gradient(180deg, #ffffff 30%, #f2b896 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', filter: `${impresa} drop-shadow(0 2px 8px rgba(0,0,0,0.3))` };
+      return { relleno: 'url(#hz-calida)', svg: imp, css: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' };
     case 'tenue':
-      return { color: c, opacity: 0.6, filter: `${impresa} blur(1.1px)` };
+      return { relleno: c, svg: imp, css: 'blur(1.1px)', opacidad: 0.6 };
     case 'tela':
-      return { color: c, filter: `url(#hz-tela) drop-shadow(0 2px 6px rgba(0,0,0,0.35))` };
+      return { relleno: c, svg: 'url(#hz-tela)', css: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))' };
     case 'halo':
-      return { color: c, filter: `${impresa} blur(0.7px)`, textShadow: '0 0 10px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.35)' };
+      return { relleno: c, svg: imp, css: 'blur(0.6px) drop-shadow(0 0 8px rgba(255,255,255,0.7)) drop-shadow(0 0 22px rgba(255,255,255,0.35))' };
     case 'crema':
-      return { color: '#f6e6cf', filter: impresa, textShadow: sombra };
+      return { relleno: '#f6e6cf', svg: imp, css: sombra };
     case 'desenfoque':
-      return { color: c, filter: `${impresa} blur(2.4px)`, textShadow: sombra };
+      return { relleno: c, svg: imp, css: `blur(2.4px) ${sombra}` };
     case 'desvanece':
-      return { color: 'transparent', backgroundImage: 'linear-gradient(90deg, #ffffff 35%, rgba(255,255,255,0.35) 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', filter: `${impresa} drop-shadow(0 2px 8px rgba(0,0,0,0.3))` };
+      return { relleno: 'url(#hz-desvanece)', svg: imp, css: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' };
     case 'fuerte':
-      return { color: c, fontWeight: 700, filter: impresa, textShadow: sombra };
+      return { relleno: c, svg: imp, css: sombra, peso: 700 };
     case 'tinta':
-      return { color: '#14110d', filter: 'url(#hz-tinta)' };
+      return { relleno: '#14110d', svg: 'url(#hz-tinta)', css: '' };
     default:
-      return { color: c, filter: impresa, textShadow: sombra };
+      return { relleno: c, svg: imp, css: sombra };
   }
 };
 
+// La frase se escribe sobre un arco concéntrico con el horizonte: se curva acompañando el círculo.
+const arcoTexto = (r: number) => {
+  const a = 0.9;
+  const P = (x: number) => `${540 + r * Math.sin(x)} ${CY - r * Math.cos(x)}`;
+  return `M${P(-a)} A${r} ${r} 0 0 1 ${P(a)}`;
+};
 const Frase = ({ texto, desde, tam }: { texto: string; desde: number; tam: number }) => {
   const fr = useCurrentFrame();
   const k = tomaEn(desde + fr);
   const k0 = tomaEn(desde);
   const toma = TOMAS[k];
   const oscuro = (LUZ[nombre(toma.src)] ?? 0.4) > 0.55;
-  // en cada corte la palabra crece un poco (como en la referencia)
-  const tamano = tam * Math.pow(1.045, k - k0);
+  const tamano = tam * Math.pow(1.017, k - k0); // en cada corte la frase crece un poco
+  const e = estiloLetra(toma.acabado ?? 'nitida', oscuro);
+  const id = `hz-arco-${k}`;
   return (
-    <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y - 34 - 160, height: 160, display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
-      <div style={{ fontFamily: 'Caslon', fontWeight: 400, fontSize: tamano, lineHeight: 1, letterSpacing: '-0.012em', whiteSpace: 'nowrap', paddingBottom: 4, ...estiloLetra(toma.acabado ?? 'nitida', oscuro) }}>{texto}</div>
-    </div>
+    <AbsoluteFill style={{ filter: e.css || undefined, opacity: e.opacidad ?? 1 }}>
+      <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
+        <defs>
+          <path id={id} d={arcoTexto(R + 30 + tamano * 0.06)} />
+          <linearGradient id="hz-calida" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0.3" stopColor="#ffffff" />
+            <stop offset="1" stopColor="#f2b896" />
+          </linearGradient>
+          <linearGradient id="hz-desvanece" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0.35" stopColor="#ffffff" />
+            <stop offset="1" stopColor="#ffffff" stopOpacity={0.3} />
+          </linearGradient>
+        </defs>
+        <text fontFamily="Caslon" fontSize={tamano} fontWeight={e.peso ?? 400} letterSpacing={-0.012 * tamano} fill={e.relleno} filter={e.svg}>
+          <textPath href={`#${id}`} startOffset="50%" textAnchor="middle">
+            {texto}
+          </textPath>
+        </text>
+      </svg>
+    </AbsoluteFill>
   );
 };
 
-// ---------- Cierre: el anillo se completa sobre el horizonte, «Muy pronto» y el logo ----------
+// ---------- Cierre: el anillo se completa con un golpe de luz, entra el logo grande y «Muy pronto» ----------
 const Cierre = () => {
   const fr = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const q = interpolate(fr, [0, 30], [0.82, 1], { ...clamp, easing: salida });
-  const q2 = interpolate(fr, [0, 34], [0.68, 1], { ...clamp, easing: salida });
-  const brillo = interpolate(fr, [18, 40], [0, 1], { ...clamp, easing: suaveP });
-  const t1 = interpolate(fr, [8, 20, 62, 72], [0, 1, 1, 0], { ...clamp, easing: suaveP });
-  const t2 = interpolate(fr, [74, 92], [0, 1], { ...clamp, easing: suaveP });
+  const GOLPE = p(29) - CIERRE; // el golpe de la música: el anillo llega al 100 % y entra el logo
+  const q = interpolate(fr, [0, GOLPE], [0.82, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+  const q2 = interpolate(fr, [0, GOLPE], [0.68, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+  const brillo = interpolate(fr, [GOLPE - 2, GOLPE + 4, GOLPE + 40], [0, 1.6, 0.9], { ...clamp, easing: suaveP });
+  const flash = interpolate(fr, [GOLPE - 1, GOLPE + 1, GOLPE + 9], [0, 0.55, 0], clamp);
+  const logo = interpolate(fr, [GOLPE, GOLPE + 22], [0, 1], { ...clamp, easing: salida });
+  const pronto = interpolate(fr, [GOLPE + 34, GOLPE + 50], [0, 1], { ...clamp, easing: suaveP });
   const negro = interpolate(fr, [durationInFrames - 18, durationInFrames], [0, 1], clamp);
   return (
     <AbsoluteFill style={{ background: CIELO_APP }}>
       <div style={{ position: 'absolute', left: 540 - R, top: ARCO_Y, width: R * 2, height: R * 2, borderRadius: '50%', background: SUELO_APP }} />
+      {/* resplandor verde que sube desde el horizonte con el golpe */}
+      <AbsoluteFill style={{ background: `radial-gradient(90% 30% at 50% ${(ARCO_Y / 1920) * 100}%, rgba(98,240,182,${0.32 * Math.min(1, brillo)}), transparent 70%)` }} />
       <Anillos q1={q} q2={q2} brillo={brillo} />
-      <Caminante x0={780} v={1.3} />
-      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y - 34 - 160, height: 160, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', opacity: t1, filter: `blur(${(1 - t1) * 6}px)` }}>
-        <div style={{ fontFamily: 'Caslon', fontSize: 72, lineHeight: 1, color: '#fff', paddingBottom: 4 }}>Muy pronto</div>
+      <Caminante x0={800} v={1.3} />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y - 250, height: 170, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, opacity: logo, transform: `scale(${1.22 - 0.22 * logo})`, filter: `blur(${(1 - logo) * 10}px) drop-shadow(0 0 ${30 * logo}px rgba(98,240,182,0.45))` }}>
+        <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 150, height: 150 }} />
+        <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 104, filter: 'brightness(0) invert(1)' }} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y - 165, height: 110, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, opacity: t2, filter: `blur(${(1 - t2) * 6}px)` }}>
-        <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 100, height: 100 }} />
-        <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 70, filter: 'brightness(0) invert(1)' }} />
-      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y + 190, textAlign: 'center', fontFamily: 'Caslon', fontSize: 64, color: '#efe8ff', opacity: pronto, transform: `translateY(${(1 - pronto) * 12}px)` }}>Muy pronto</div>
+      <AbsoluteFill style={{ backgroundColor: '#e9fff5', opacity: flash, mixBlendMode: 'screen' }} />
       <AbsoluteFill style={{ backgroundColor: '#000', opacity: negro }} />
     </AbsoluteFill>
   );

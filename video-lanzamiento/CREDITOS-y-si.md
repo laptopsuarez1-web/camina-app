@@ -43,4 +43,4 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 - Fotos de Bolivia y Tarija: las mismas de arriba (Wikimedia Commons y Camina), recortadas a la franja bajo el horizonte con `scripts/horizonte_franjas.py`.
 - Videos de caminar: tomas propias de Tarija y videos de Mixkit (licencia libre de Mixkit).
 - Pantallas de la app (mapa de la ruta y anillo de pasos) con datos de ejemplo.
-- Música: «Discover» — Mixkit (licencia libre de Mixkit, uso comercial sin atribución), con un único empalme hacia el final de la obra (`scripts/horizonte_sonido.py`).
+- Música: «Zanarkand Forest» — Mixkit (licencia libre de Mixkit, uso comercial sin atribución), con un salto al último golpe de la obra y un golpe propio con el logo (`scripts/horizonte_sonido.py`).
