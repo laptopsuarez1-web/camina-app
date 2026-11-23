@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { View, Platform, type ColorValue, type ViewStyle } from 'react-native';
+import { View, type ColorValue } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { ReactiveIcon, usePressTick } from '@/components/ui/ReactiveIcon';
 import type { IconMotion } from '@/lib/motion';
@@ -43,7 +43,7 @@ import { Trash as Trash } from 'phosphor-react-native/src/icons/Trash';
 import { Key as Key } from 'phosphor-react-native/src/icons/Key';
 import { PencilSimple as PencilSimple } from 'phosphor-react-native/src/icons/PencilSimple';
 import { PaperPlaneTilt as PaperPlaneTilt } from 'phosphor-react-native/src/icons/PaperPlaneTilt';
-import { TrophyArt } from '@/components/share/art';
+import { Trophy as Trophy_ } from 'phosphor-react-native/src/icons/Trophy';
 import { Plus as Plus_ } from 'phosphor-react-native/src/icons/Plus';
 import { Star as Star_ } from 'phosphor-react-native/src/icons/Star';
 import { Coffee as Coffee_ } from 'phosphor-react-native/src/icons/Coffee';
@@ -114,7 +114,6 @@ import { Stethoscope as Stethoscope_ } from 'phosphor-react-native/src/icons/Ste
 import { Bicycle as Bicycle_ } from 'phosphor-react-native/src/icons/Bicycle';
 import { CookingPot as CookingPot_ } from 'phosphor-react-native/src/icons/CookingPot';
 
-import { IllArt, type IllKind } from '@/components/ui/IllustratedIcons';
 
 export type IconProps = {
   size?: number;
@@ -128,13 +127,14 @@ export type IconProps = {
 // Trazo parejo: el grosor real del trazo sale del peso y del tamaño. De 18 px para abajo el peso regular queda a menos de 1 px, así que
 // esos íconos van en negrita; de 20 para arriba va regular. Debajo de 14 px el dibujo no se lee: se sube a 14.
 const MIN_ICON = 14;
-const BOLD_UP_TO = 18;
+const BOLD_UP_TO = 15;
 
-function make(Comp: ComponentType<PhosphorProps>, base: IconWeight = 'regular') {
+// Línea fina de un solo color en todos los tamaños; solo los muy chicos van un poco más gruesos para que se lean.
+// El segundo argumento queda por compatibilidad: ya no cambia el trazo.
+function make(Comp: ComponentType<PhosphorProps>, _base: IconWeight = 'regular') {
   return function Icon({ size = 24, color = '#000', fill, weight }: IconProps) {
     const px = Math.max(size, MIN_ICON);
-    const auto: IconWeight = base === 'regular' && px <= BOLD_UP_TO ? 'bold' : base;
-    const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : auto);
+    const w: IconWeight = weight ?? (fill && fill !== 'none' ? 'fill' : px <= BOLD_UP_TO ? 'bold' : 'regular');
     return <Comp size={px} color={color as string} weight={w} />;
   };
 }
@@ -176,11 +176,7 @@ export const Trash2 = make(Trash);
 export const KeyRound = make(Key);
 export const Pencil = make(PencilSimple);
 export const Send = make(PaperPlaneTilt);
-// Trofeo propio de Camina (dorado, con las huellas del logo). Es un dibujo de colores fijos: ignora `color`. Va un poco más grande que
-// el tamaño pedido porque el dibujo ocupa menos del cuadro que un ícono de línea.
-export function Trophy({ size = 24 }: IconProps) {
-  return <TrophyArt size={Math.max(size * 1.25, 18)} />;
-}
+export const Trophy = make(Trophy_);
 export const Plus = make(Plus_, 'bold');
 export const Star = make(Star_);
 export const Coffee = make(Coffee_);
@@ -273,11 +269,6 @@ const MOTIONS = new Map<unknown, IconMotion>([
   [Flame, 'flick'], [Trophy, 'wobble'], [Gift, 'wobble'], [Crown, 'wobble'], [Bell, 'ring'], [Target, 'thud'],
 ]);
 
-// Fichas con ilustración (en vez del glifo de línea): mismo estilo que el trofeo.
-const ILLUSTRATED = new Map<unknown, IllKind>([
-  [Users, 'groups'], [UserPlus, 'friend'], [Gift, 'gift'], [Bell, 'bell'], [Flame, 'flame'], [Target, 'target'], [Activity, 'activity'], [ShoppingBag, 'canjes'], [Storefront, 'store'],
-]);
-
 export function IconBubble({
   icon: Icon,
   tone = 'aqua',
@@ -293,30 +284,11 @@ export function IconBubble({
   const [lightColor, darkColor] = GLYPH[tone];
   const color = dark ? darkColor : lightColor;
   const radius = size * 0.32;
+  // Ficha limpia: fondo apenas teñido y el ícono de línea en el color de la categoría.
   return (
-    <View
-      style={[
-        {
-          width: size,
-          height: size,
-          borderRadius: radius,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: 1.5,
-          borderColor: `${color}${dark ? '88' : '70'}`,
-          backgroundColor: dark ? 'rgba(255,255,255,0.1)' : `${color}26`,
-          shadowColor: color,
-          shadowOpacity: dark ? 0 : 0.18,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-          // Sin elevation: en Android dibuja una sombra gris que no es la del color.
-          elevation: 0,
-        },
-        Platform.OS === 'web' && ({ backdropFilter: 'blur(14px) saturate(170%)', WebkitBackdropFilter: 'blur(14px) saturate(170%)' } as ViewStyle),
-      ]}
-    >
-      <ReactiveIcon motion={motion} tick={tick} idle={Icon === Flame}>
-        {ILLUSTRATED.has(Icon) ? <IllArt kind={ILLUSTRATED.get(Icon)!} size={size * 0.7} /> : <Icon size={size * 0.54} color={color} weight="fill" />}
+    <View style={{ width: size, height: size, borderRadius: radius, alignItems: 'center', justifyContent: 'center', backgroundColor: `${color}${dark ? '24' : '1A'}` }}>
+      <ReactiveIcon motion={motion} tick={tick} idle={false}>
+        <Icon size={size * 0.5} color={color} />
       </ReactiveIcon>
     </View>
   );
