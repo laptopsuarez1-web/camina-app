@@ -143,6 +143,59 @@ const arco = (r: number, x1: number, x2: number) => {
   const P = (a: number) => `${punto(a).x} ${punto(a).y}`;
   return { d: `M${P(a1)} A${r} ${r} 0 0 1 ${P(a2)}`, largo: r * (a2 - a1), punto, a1, a2 };
 };
+// La personita: una silueta que camina sobre el horizonte (un paso por pulso), siempre parada sobre la curva.
+type Pt = { x: number; y: number };
+const sobreCurva = (x: number) => CY - Math.sqrt(R * R - (x - 540) ** 2);
+const Caminante = ({ x0, v, alto = 54, color = '#efe8ff' }: { x0: number; v: number; alto?: number; color?: string }) => {
+  const fr = useCurrentFrame();
+  const x = x0 + v * fr;
+  const y = sobreCurva(x);
+  const giro = (Math.asin((x - 540) / R) * 180) / Math.PI;
+  const fase = (2 * Math.PI * fr) / 31.3;
+  const L = 19;
+  const cadera = { x: 0, y: -38 };
+  const pierna = (ph: number) => {
+    const a = 0.42 * Math.sin(ph);
+    const k = 0.12 + 0.6 * Math.max(0, Math.cos(ph));
+    const rod = { x: cadera.x + L * Math.sin(a), y: cadera.y + L * Math.cos(a) };
+    const pie = { x: rod.x + L * Math.sin(a - k), y: rod.y + L * Math.cos(a - k) };
+    return { rod, pie };
+  };
+  const pa = pierna(fase);
+  const pb = pierna(fase + Math.PI);
+  const dy = -Math.max(pa.pie.y, pb.pie.y); // apoya siempre el pie más bajo en la curva
+  const hombro = { x: 3.5, y: -62 };
+  const brazo = (ph: number) => {
+    const b = 0.38 * Math.sin(ph);
+    const codo = { x: hombro.x + 14 * Math.sin(b), y: hombro.y + 14 * Math.cos(b) };
+    const c = b + 0.35 + 0.25 * Math.max(0, Math.sin(ph));
+    const mano = { x: codo.x + 13 * Math.sin(c), y: codo.y + 13 * Math.cos(c) };
+    return { codo, mano };
+  };
+  const ba = brazo(fase + Math.PI);
+  const bb = brazo(fase);
+  const pl = (q: { rod: Pt; pie: Pt }, o: number) => (
+    <path opacity={o} d={`M${cadera.x} ${cadera.y} L${q.rod.x} ${q.rod.y} L${q.pie.x} ${q.pie.y} l5.5 0.5`} stroke={color} strokeWidth={6.6} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  );
+  const bl = (q: { codo: Pt; mano: Pt }, o: number) => (
+    <path opacity={o} d={`M${hombro.x} ${hombro.y} L${q.codo.x} ${q.codo.y} L${q.mano.x} ${q.mano.y}`} stroke={color} strokeWidth={4.8} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  );
+  const s = alto / 74;
+  return (
+    <svg width={240} height={240} viewBox="-120 -200 240 240" style={{ position: 'absolute', left: x - 120, top: y - 200, overflow: 'visible', filter: 'drop-shadow(0 0 6px rgba(190,170,255,0.45))' }}>
+      <g transform={`rotate(${giro}) scale(${s}) translate(0 ${dy})`}>
+        {pl(pb, 0.55)}
+        {bl(bb, 0.55)}
+        <path d={`M${cadera.x} ${cadera.y} L${hombro.x} ${hombro.y}`} stroke={color} strokeWidth={11.5} strokeLinecap="round" />
+        <rect x={hombro.x - 12.5} y={hombro.y - 1} width={9} height={17} rx={3} fill={color} />
+        <circle cx={hombro.x + 2.2} cy={hombro.y - 9.5} r={6.2} fill={color} />
+        {pl(pa, 1)}
+        {bl(ba, 1)}
+      </g>
+    </svg>
+  );
+};
+
 const fmt = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const CIELO_APP = 'linear-gradient(180deg, #07021a 0%, #12063a 45%, #2a0f6e 100%)';
 const SUELO_APP = 'radial-gradient(60% 8% at 50% 0%, #2a0f63, #120530 70%)';
@@ -179,6 +232,7 @@ const Anillo = () => {
     <AbsoluteFill style={{ background: CIELO_APP }}>
       <div style={{ position: 'absolute', left: 540 - R, top: ARCO_Y, width: R * 2, height: R * 2, borderRadius: '50%', background: SUELO_APP }} />
       <Anillos q1={q1} q2={q2} />
+      <Caminante x0={110} v={1.3} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y + 175, textAlign: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 132, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
         {fmt(pasos)}
       </div>
@@ -289,6 +343,7 @@ const Cierre = () => {
     <AbsoluteFill style={{ background: CIELO_APP }}>
       <div style={{ position: 'absolute', left: 540 - R, top: ARCO_Y, width: R * 2, height: R * 2, borderRadius: '50%', background: SUELO_APP }} />
       <Anillos q1={q} q2={q2} brillo={brillo} />
+      <Caminante x0={780} v={1.3} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y - 34 - 160, height: 160, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', opacity: t1, filter: `blur(${(1 - t1) * 6}px)` }}>
         <div style={{ fontFamily: 'Caslon', fontSize: 72, lineHeight: 1, color: '#fff', paddingBottom: 4 }}>Muy pronto</div>
       </div>
