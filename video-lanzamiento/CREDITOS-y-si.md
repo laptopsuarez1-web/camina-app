@@ -38,7 +38,7 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 - Grabaciones y capturas de la app con datos de ejemplo; logos de los 8 comercios de Camina.
 - Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson Rouge; Orange Mountain Music). Usada con permiso (Camina). Desde el mismo punto que el video de referencia (227,5 s) y, con un único empalme, hasta el final de la obra; con efectos propios encima (`scripts/ysi_sonido.py`).
 
-## Teaser «Hay más por caminar» (`src/Horizonte.tsx`)
+## Teaser «Siempre hay más por caminar» (`src/Horizonte.tsx`)
 
 - Fotos de Bolivia y Tarija: las mismas de arriba (Wikimedia Commons y Camina), recortadas a la franja bajo el horizonte con `scripts/horizonte_franjas.py`.
 - Videos de caminar: tomas propias de Tarija y videos de Mixkit (licencia libre de Mixkit).

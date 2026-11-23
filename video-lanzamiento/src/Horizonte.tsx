@@ -5,7 +5,7 @@ import { Audio, Video } from '@remotion/media';
 import { PULSOS } from './horizontePulsos';
 import { LUZ } from './horizonteFranjas';
 
-// CAMINA · «Hay más por caminar» — teaser vertical (1080 × 1920, 30 fps), sin voz.
+// CAMINA · «Siempre hay más por caminar» — teaser vertical (1080 × 1920, 30 fps), sin voz.
 // Recurso: un horizonte curvo siempre en el mismo lugar. Abre con el anillo de pasos de la app, arqueado sobre el
 // horizonte, que suma pasos. Después, en cada pulso de la música, cambia lo que hay bajo la curva (Tarija, Bolivia, gente
 // caminando, la app): la foto nítida y entera abajo, la misma foto difuminada arriba. La frase queda quieta sobre la curva
@@ -39,28 +39,24 @@ const t = (src: string, d = 1, acabado: Acabado = 'nitida'): Toma => ({ src, d, 
 // d = duración en pulsos. 'anillo' es la apertura dibujada; lo demás, franjas en public/hz.
 const TOMAS: Toma[] = [
   t('anillo', 4),
-  // «Hay»
   t('calle-tarija.mp4', 1, 'nitida'),
   t('pies-pov.mp4', 1, 'relieve'),
   t('app-actividad-7', 1, 'calida'),
   t('plaza-palmeras.mp4', 1, 'tenue'),
   t('laguna', 1, 'halo'),
   t('sendero-baranda.mp4', 1, 'tela'),
-  // «más»
   t('calle-iglesia.mp4', 1, 'relieve'),
   t('app-fidelidad', 1, 'desvanece'),
   t('palomas.mp4', 1, 'nitida'),
   t('cartel', 1, 'calida'),
   t('canon.mp4', 1, 'desenfoque'),
   t('app-puntos', 1, 'halo'),
-  // «por»
   t('parque.mp4', 1, 'relieve'),
   t('app-ruta', 1, 'nitida'),
   t('plaza-arboles.mp4', 1, 'tela'),
   t('chunchos', 1, 'calida'),
   t('ladrillo.mp4', 1, 'fuerte'),
   t('app-mapa', 1, 'halo'),
-  // «caminar»
   t('catedral.mp4', 1, 'relieve'),
   t('app-actividad-30', 1, 'desvanece'),
   t('trail.mp4', 1, 'tenue'),
@@ -84,10 +80,11 @@ export const DUR_HORIZONTE = p(30) + 125; // el golpe final de Rubric cae en el 
 
 // Las palabras, una tras otra y siempre en pantalla, quietas sobre la curva: [texto, desde, hasta (pulsos), tamaño inicial]
 const FRASES: [string, number, number, number][] = [
-  ['Hay', 4, 10, 66],
-  ['más', 10, 16, 68],
-  ['por', 16, 22, 68],
-  ['caminar', 22, FIN_MONTAJE, 66],
+  ['Siempre', 4, 9, 64],
+  ['hay', 9, 14, 66],
+  ['más', 14, 19, 68],
+  ['por', 19, 24, 68],
+  ['caminar', 24, FIN_MONTAJE, 66],
 ];
 
 export const Horizonte = () => {
