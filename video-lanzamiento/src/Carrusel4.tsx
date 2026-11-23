@@ -54,24 +54,14 @@ export const Carrusel4 = ({ n }: { n: number }) => {
             <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 38 }} />
           </div>
           <div style={{ position: 'absolute', left: 0, right: 0, top: 178, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 110, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' }}>
-            Camina
+            Cada
             <br />
-            y gana
+            paso
             <br />
-            <span style={{ color: MENTA }}>premios</span>
+            <span style={{ color: MENTA }}>cuenta</span>
           </div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 486, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.75)' }}>La app que convierte tus pasos en premios y descuentos</div>
-          <Telefono src={S.inicio} cx={540} y={572} alto={700} brillo={MENTA} />
-          <Lupa src={S.inicio} zona={[90, 180, 600, 600]} x={748} y={650} ancho={270} redonda etiqueta="6.840 pasos" />
-          <div style={{ position: 'absolute', left: 46, top: 950, width: 290, padding: '26px 26px 24px', borderRadius: 34, background: '#17121f', boxShadow: `0 0 0 4px ${MENTA}, 0 0 50px rgba(98,240,182,0.35), 0 30px 60px rgba(0,0,0,0.5)` }}>
-            <div style={{ display: 'flex' }}>
-              {[0, 1, 2, 3].map((k) => (
-                <Img key={k} src={staticFile('marca/sello-oro.png')} style={{ width: 66, height: 66, marginLeft: k ? -14 : 0 }} />
-              ))}
-            </div>
-            <div style={{ marginTop: 14, fontFamily: 'Jakarta', fontWeight: 800, fontSize: 30, color: '#fff', lineHeight: 1.15 }}>Premio gratis</div>
-            <div style={{ fontFamily: 'Jakarta', fontWeight: 500, fontSize: 22, color: 'rgba(255,255,255,0.65)', marginTop: 4 }}>con tu tarjeta de sellos</div>
-          </div>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: 506, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 33, color: 'rgba(255,255,255,0.75)' }}>La app que convierte tus pasos en premios y descuentos</div>
+          <Telefono src={S.inicio} cx={540} y={590} alto={685} brillo={MENTA} />
         </Lamina>
       );
     case 2:
@@ -161,25 +151,25 @@ export const Carrusel4 = ({ n }: { n: number }) => {
       );
     case 8:
       return (
-        <Lamina n={8} tema="morado" palabra="CANJE">
-          <Titulo tema="morado" etiqueta="Canjes">
-            Canjea en tu <Ac tema="morado">ciudad</Ac>
-          </Titulo>
-          <Texto tema="morado">Usa tus Puntos en los comercios que se suman a Camina</Texto>
-          <Telefono src={S.ficha} cx={780} y={520} alto={740} rz={3} brillo={MENTA} />
-          <Telefono src={S.mapa} cx={300} y={520} alto={740} rz={-3} brillo={MENTA} />
-          
-        </Lamina>
-      );
-    case 9:
-      return (
-        <Lamina n={9} tema="blanco" palabra="FAN">
+        <Lamina n={8} tema="blanco" palabra="FAN">
           <Titulo tema="blanco" etiqueta="Insignias y niveles">
             Hazte fan de tus <Ac tema="blanco">lugares</Ac>
           </Titulo>
           <Texto tema="blanco">Visitante, Habitual, Fan y Leyenda del mes. Y cada canje suma un sello</Texto>
           <Telefono src={S.insignias} cx={780} y={520} alto={740} rz={3} brillo={MORADO} />
           <Telefono src={S.nivel} cx={300} y={520} alto={740} rz={-3} brillo={MORADO} />
+          
+        </Lamina>
+      );
+    case 9:
+      return (
+        <Lamina n={9} tema="morado" palabra="CANJE">
+          <Titulo tema="morado" etiqueta="Canjes">
+            Canjea en tu <Ac tema="morado">ciudad</Ac>
+          </Titulo>
+          <Texto tema="morado">Usa tus Puntos en los comercios que se suman a Camina</Texto>
+          <Telefono src={S.ficha} cx={780} y={520} alto={740} rz={3} brillo={MENTA} />
+          <Telefono src={S.mapa} cx={300} y={520} alto={740} rz={-3} brillo={MENTA} />
           
         </Lamina>
       );
@@ -215,7 +205,7 @@ export const Carrusel4 = ({ n }: { n: number }) => {
 };
 
 // ---------- base ----------
-const Lamina = ({ n, tema, palabra, children, sinEncabezado, sinNumero, sinPalabra, sinCamino }: { n: number; tema: Tema; palabra?: string; children: ReactNode; sinEncabezado?: boolean; sinNumero?: boolean; sinPalabra?: boolean; sinCamino?: boolean }) => (
+const Lamina = ({ n, tema, palabra, children, sinEncabezado, sinPalabra, sinCamino }: { n: number; tema: Tema; palabra?: string; children: ReactNode; sinEncabezado?: boolean; sinNumero?: boolean; sinPalabra?: boolean; sinCamino?: boolean }) => (
   <AbsoluteFill style={{ background: FONDO[tema], overflow: 'hidden' }}>
     {!sinPalabra && palabra && (
       <div style={{ position: 'absolute', left: -40, right: -40, top: 640, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 330, lineHeight: 1, color: 'transparent', WebkitTextStroke: `2px ${claro(tema) ? 'rgba(32,10,82,0.10)' : 'rgba(255,255,255,0.07)'}`, whiteSpace: 'nowrap' } as CSSProperties}>{palabra}</div>
@@ -228,7 +218,6 @@ const Lamina = ({ n, tema, palabra, children, sinEncabezado, sinNumero, sinPalab
         <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 30, filter: claro(tema) ? 'brightness(0)' : 'brightness(0) invert(1)' }} />
       </div>
     )}
-    {!sinNumero && <div style={{ position: 'absolute', right: 80, top: 100, fontFamily: 'Jakarta', fontWeight: 700, fontSize: 26, color: tinta(tema), opacity: 0.5 }}>{String(n).padStart(2, '0')} / {LAMINAS4}</div>}
   </AbsoluteFill>
 );
 const Titulo = ({ tema, etiqueta, children }: { tema: Tema; etiqueta: string; children: ReactNode }) => (
