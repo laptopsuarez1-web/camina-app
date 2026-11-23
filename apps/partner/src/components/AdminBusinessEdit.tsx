@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { supabase, type Business } from '@/lib/supabase';
 import { opcionesCategoria } from '@/lib/categories';
+import { resolverLinkMapa } from '@/lib/maps';
 
 type Campos = {
   name: string; category: string; description: string; address: string; city: string; phone: string;
@@ -36,7 +37,21 @@ export function AdminBusinessEditModal({ business, onClose, onSaved }: { busines
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapaLink, setMapaLink] = useState('');
+  const [mapaMsg, setMapaMsg] = useState<string | null>(null);
+  const [buscando, setBuscando] = useState(false);
   const set = (k: keyof Campos, v: string) => setF((p) => ({ ...p, [k]: v }));
+
+  // Pega el link de Google Maps del local (largo o corto de "Compartir") o las coordenadas, y llena latitud y longitud.
+  async function ponerDesdeLink() {
+    setMapaMsg(null);
+    setBuscando(true);
+    const p = await resolverLinkMapa(mapaLink);
+    setBuscando(false);
+    if (!p) return setMapaMsg('No pudimos leer ese link. Prueba con el link de "Compartir" de Google Maps o con "lat, lng".');
+    setF((x) => ({ ...x, lat: p.lat.toFixed(6), lng: p.lng.toFixed(6), google_review_url: x.google_review_url || (/^https?:/i.test(mapaLink.trim()) ? mapaLink.trim() : '') }));
+    setMapaMsg('Listo: se llenaron latitud y longitud. Revisa el punto abajo y guarda.');
+  }
 
   async function save() {
     setError(null);
@@ -88,6 +103,22 @@ export function AdminBusinessEditModal({ business, onClose, onSaved }: { busines
               )}
             </label>
           ))}
+          <div className="rounded-[12px] border border-line p-3">
+            <span className="block text-[12px] font-semibold text-text mb-1">Ubicación desde Google Maps</span>
+            <p className="text-muted text-[11.5px] mb-2 leading-4">En Google Maps abre el local, toca Compartir, copia el link y pégalo aquí. Se llena solo la latitud y la longitud.</p>
+            <div className="flex gap-2">
+              <input value={mapaLink} onChange={(e) => setMapaLink(e.target.value)} placeholder="https://maps.app.goo.gl/…" className={input} />
+              <button type="button" onClick={ponerDesdeLink} disabled={buscando || !mapaLink.trim()} className="rounded-[10px] px-3 text-[12.5px] font-bold disabled:opacity-50 shrink-0" style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}>
+                {buscando ? 'Buscando…' : 'Poner'}
+              </button>
+            </div>
+            {mapaMsg && <p className="text-[11.5px] mt-1.5 text-muted">{mapaMsg}</p>}
+            {f.lat && f.lng && (
+              <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${f.lat},${f.lng}`)}`} target="_blank" rel="noreferrer" className="inline-block mt-1.5 text-[12px] font-semibold text-purple underline">
+                Ver ese punto en Google Maps
+              </a>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className="block text-[12px] font-semibold text-text mb-1">Latitud</span>

@@ -257,6 +257,9 @@ function BeneficioForm({
   );
   const [descuento, setDescuento] = useState(benefit?.discount_percent == null ? (benefit?.discount_detail ?? '') : '');
   const [costo, setCosto] = useState(benefit ? String(benefit.cost_points) : '10');
+  // Guía, no regla: 2 Puntos = Bs 1.
+  const [valorBs, setValorBs] = useState('');
+  const puntosSugeridos = valorBs.trim() && Number(valorBs) > 0 ? Math.ceil(Number(valorBs) * 2) : null;
   const [ilimitado, setIlimitado] = useState(!isFree && benefit != null && benefit.daily_quota == null);
   const [cupones, setCupones] = useState(benefit?.daily_quota != null ? String(benefit.daily_quota) : '3');
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
@@ -683,7 +686,7 @@ function BeneficioForm({
             </Field>
           </div>
         </Paso>
-        <Paso title="Cuánto cuesta" hint="En Puntos de Camina.">
+        <Paso title="Cuánto cuesta" hint="En Puntos de Camina. 2 Puntos equivalen a Bs 1.">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
@@ -697,6 +700,24 @@ function BeneficioForm({
                   className={`${INPUT} disabled:opacity-50`}
                 />
               </Field>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="text-[12.5px] text-muted">¿Cuánto vale en Bs?</span>
+            <input
+              value={valorBs}
+              onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
+              placeholder="Bs"
+              aria-label="Valor en Bs"
+              inputMode="decimal"
+              className="w-20 bg-white border border-line rounded-[10px] px-3 py-2 text-[13.5px]"
+            />
+            {puntosSugeridos !== null ? (
+              <button type="button" onClick={() => setCosto(String(puntosSugeridos))} className="text-[12.5px] font-semibold text-purple">
+                Usar {puntosSugeridos} Puntos
+              </button>
+            ) : (
+              <span className="text-[11.5px] text-muted">y te sugerimos los Puntos (2 Puntos = Bs 1)</span>
             )}
           </div>
           {!isFree && !online && (

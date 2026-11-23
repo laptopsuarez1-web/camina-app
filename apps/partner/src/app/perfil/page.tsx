@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { FichaPreview } from '@/components/FichaPreview';
 import { faltantesParaPublicar } from '@/lib/readiness';
 import { mensajeError } from '@/lib/errors';
+import { parseUbicacion, esLinkCorto } from '@/lib/maps';
 
 const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.MapPicker), {
   ssr: false,
@@ -61,6 +62,9 @@ export default function PerfilPage() {
   const [pasoError, setPasoError] = useState<string | null>(null);
   const [premiosActivos, setPremiosActivos] = useState<Benefit[]>([]);
   const [guardarError, setGuardarError] = useState<string | null>(null);
+  const [cargado, setCargado] = useState(false);
+  const [base, setBase] = useState<string | null>(null);
+  const [saliendoA, setSaliendoA] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -73,6 +77,7 @@ export default function PerfilPage() {
       });
   }, []);
 
+  // El formulario se llena una sola vez por local: subir una foto o guardar no debe borrar lo que se está escribiendo.
   useEffect(() => {
     if (!business) return;
     setNombre(business.name);
@@ -90,26 +95,16 @@ export default function PerfilPage() {
     setEsVirtual(business.is_virtual);
     setCiudad(business.city ?? 'Tarija');
     setUbicacion(business.lat != null && business.lng != null ? `${business.lat}, ${business.lng}` : '');
-  }, [business]);
+    setCargado(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business?.id]);
 
-  // Acepta "-21.53, -64.73" o un link largo de Google Maps (…!3d-21.53!4d-64.73… o …@-21.53,-64.73…).
-  // !3d/!4d va primero: es el pin exacto del lugar; @ es solo el centro de la vista del mapa.
-  function parseUbicacion(text: string): { lat: number; lng: number } | null {
-    const t = text.trim();
-    const m =
-      t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) ||
-      t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/) ||
-      t.match(/[?&](?:q|ll|query)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/) ||
-      t.match(/^(-?\d+\.\d+)\s*[,; ]\s*(-?\d+\.\d+)$/);
-    if (!m) return null;
-    const lat = parseFloat(m[1]);
-    const lng = parseFloat(m[2]);
-    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
-    return { lat, lng };
-  }
-
-  // El link corto de "Compartir" (maps.app.goo.gl/…) no trae coordenadas: lo resuelve /api/mapa.
-  const esLinkCorto = (text: string) => /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(text.trim());
+  const actuales = JSON.stringify({ nombre: nombre.trim(), categoria, palabras, direccion: direccion.trim(), semana, telefono: telefono.trim(), instagram: instagram.trim(), facebook: facebook.trim(), tiktok: tiktok.trim(), descripcion: descripcion.trim(), website: website.trim(), resenaUrl: resenaUrl.trim(), esVirtual, ciudad, ubicacion: ubicacion.trim() });
+  // Lo último guardado (o recién cargado): si lo escrito es distinto, hay cambios sin guardar.
+  useEffect(() => {
+    if (cargado && base === null) setBase(actuales);
+  }, [cargado, base, actuales]);
+  const sinGuardar = base !== null && base !== actuales;
 
   async function resolverLinkCorto(text: string): Promise<{ lat: number; lng: number } | null> {
     setUbicacionMsg('Buscando el punto de ese link…');
@@ -163,31 +158,31 @@ export default function PerfilPage() {
     }
   }
 
-  async function handleSave() {
-    if (!business) return;
+  async function handleSave(): Promise<boolean> {
+    if (!business) return false;
     if (resenaUrl.trim() && !resenaValida(resenaUrl)) {
       setResenaError('Ese link no es de Google. Pega el link de tu local en Google Maps (Compartir > Copiar link).');
       setPaso(3);
       document.getElementById('campo-resenas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+      return false;
     }
     setResenaError(null);
     if (descripcion.trim().length < 15) {
       setDescripcionError('Este dato es obligatorio: cuenta en una o dos frases qué es tu local y qué ofrece (mínimo 15 letras).');
       setPaso(1);
       document.getElementById('campo-descripcion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+      return false;
     }
     setDescripcionError(null);
     let punto = esVirtual || !ubicacion.trim() ? null : parseUbicacion(ubicacion);
     if (!esVirtual && !punto && esLinkCorto(ubicacion)) {
       punto = await resolverLinkCorto(ubicacion);
-      if (!punto) return;
+      if (!punto) return false;
     }
     if (!esVirtual && ubicacion.trim() && !punto) {
       setUbicacionMsg('No entendimos esa ubicación. Pega el link de Google Maps o las coordenadas, por ejemplo: -21.5355, -64.7296');
       setPaso(2);
-      return;
+      return false;
     }
     setSaving(true);
     setSaved(false);
@@ -226,13 +221,15 @@ export default function PerfilPage() {
     setSaving(false);
     if (error) {
       setGuardarError(mensajeError(error));
-      return;
+      return false;
     }
     setGuardarError(null);
     if (session) {
       await refreshBusiness(session.user.id, session.user.email);
       setSaved(true);
     }
+    setBase(null);
+    return true;
   }
 
   useEffect(() => {
@@ -264,9 +261,32 @@ export default function PerfilPage() {
     : (null as unknown as Business);
   const faltan = business ? faltantesParaPublicar(borrador) : [];
 
+  // Si hay cambios sin guardar y tocan un enlace del menú, se pregunta antes de salir.
+  useEffect(() => {
+    if (!sinGuardar) return;
+    const alSalir = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    const alTocar = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+      if (!a || a.target === '_blank' || e.metaKey || e.ctrlKey) return;
+      const u = new URL(a.href, window.location.href);
+      if (u.origin !== window.location.origin || u.pathname === window.location.pathname) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setSaliendoA(u.pathname + u.search);
+    };
+    window.addEventListener('beforeunload', alSalir);
+    document.addEventListener('click', alTocar, true);
+    return () => {
+      window.removeEventListener('beforeunload', alSalir);
+      document.removeEventListener('click', alTocar, true);
+    };
+  }, [sinGuardar]);
+
   function irAPaso(n: number) {
     setPasoError(null);
-    setSaved(false);
     setPaso(n);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -295,6 +315,8 @@ export default function PerfilPage() {
       return setPasoError('Revisa el link de reseñas: tiene que ser de Google Maps.');
     }
     setResenaError(null);
+    // Al continuar también se guarda: así nada se pierde si se cierra la pantalla a medias.
+    if (!(await handleSave())) return;
     irAPaso(paso + 1);
   }
 
@@ -351,7 +373,7 @@ export default function PerfilPage() {
                     value={business.cover_url}
                     onUploaded={(url) => handlePhotoUploaded('cover_url', url)}
                     label="Foto de portada (opcional)"
-                    shape="wide"
+                    shape="cover"
                   />
                 </div>
               </>
@@ -472,8 +494,13 @@ export default function PerfilPage() {
                   Usar mi ubicación actual (estando en el local)
                 </button>
               </div>
-              <details className="mt-2 text-[12px]">
-                <summary className="text-muted cursor-pointer">Prefiero pegar un link de Google Maps</summary>
+              <div className="mt-3 bg-white border border-line rounded-[12px] px-3.5 py-3 text-[12px]">
+                <p className="font-semibold text-[12.5px] mb-1">¿Tu local ya está en Google Maps? Pega su link</p>
+                <ol className="list-decimal pl-4 text-muted leading-5 mb-2">
+                  <li>Abre Google Maps y busca tu local.</li>
+                  <li>Toca &ldquo;Compartir&rdquo; y luego &ldquo;Copiar link&rdquo;.</li>
+                  <li>Pégalo aquí abajo: el pin se pone solo.</li>
+                </ol>
                 <input
                   value={ubicacion}
                   onChange={(e) => {
@@ -482,9 +509,9 @@ export default function PerfilPage() {
                     if (esLinkCorto(e.target.value)) resolverLinkCorto(e.target.value);
                   }}
                   placeholder="Pega el link de Google Maps o las coordenadas"
-                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px] mt-1.5"
+                  className="w-full bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
                 />
-              </details>
+              </div>
               <p className="text-[11.5px] text-muted mt-1.5 leading-4">
                 {ubicacion.trim()
                   ? 'Este punto es donde aparece tu local en el mapa de Camina y a donde lleva el botón de dirección. Puedes arrastrar el pin para ajustarlo.'
@@ -576,69 +603,57 @@ export default function PerfilPage() {
             <div className="bg-white border border-line rounded-[10px] p-3 flex flex-col gap-2">
               {DAY_NAMES.map((name, i) => {
                 const d = semana[String(i)];
+                const set = (cambio: { from?: string; to?: string; from2?: string; to2?: string }) =>
+                  setSemana((w) => ({ ...w, [String(i)]: { ...(w[String(i)] as NonNullable<DayHours>), ...cambio } }));
+                const sel = 'border border-line rounded-[8px] px-2 py-1.5';
                 return (
-                  <div key={name} className="flex flex-wrap items-center gap-2.5 text-[13px]">
-                    <label className="flex items-center gap-2 w-[120px]">
-                      <input
-                        type="checkbox"
-                        checked={!!d}
-                        onChange={(e) =>
-                          setSemana((w) => ({ ...w, [String(i)]: e.target.checked ? { from: '09:00', to: '19:00' } : null }))
-                        }
-                      />
-                      <span className={d ? 'font-semibold' : 'text-muted'}>{name}</span>
-                    </label>
-                    {d ? (
-                      <>
-                        <TimeSelect
-                          value={d.from}
-                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, from: v } }))}
-                          className="border border-line rounded-[8px] px-2 py-1.5"
+                  <div key={name} className="flex flex-col gap-1.5 py-1.5 border-b border-line last:border-b-0">
+                    <div className="flex items-center gap-2 text-[13px]">
+                      <label className="flex items-center gap-2 w-[112px] shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={!!d}
+                          onChange={(e) =>
+                            setSemana((w) => ({ ...w, [String(i)]: e.target.checked ? { from: '09:00', to: '19:00' } : null }))
+                          }
                         />
-                        <span className="text-muted">a</span>
-                        <TimeSelect
-                          value={d.to}
-                          onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, to: v } }))}
-                          className="border border-line rounded-[8px] px-2 py-1.5"
-                        />
+                        <span className={d ? 'font-semibold' : 'text-muted'}>{name}</span>
+                      </label>
+                      {d ? (
+                        <>
+                          <TimeSelect value={d.from} onChange={(v) => set({ from: v })} className={sel} />
+                          <span className="text-muted">a</span>
+                          <TimeSelect value={d.to} onChange={(v) => set({ to: v })} className={sel} />
+                        </>
+                      ) : (
+                        <span className="text-muted text-[12.5px]">Cerrado</span>
+                      )}
+                    </div>
+                    {d && (
+                      <div className="flex flex-wrap items-center gap-2 text-[13px] pl-[120px]">
                         {d.from2 && d.to2 ? (
                           <>
-                            <span className="text-muted">y</span>
-                            <TimeSelect
-                              value={d.from2}
-                              onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, from2: v } }))}
-                              className="border border-line rounded-[8px] px-2 py-1.5"
-                            />
+                            <TimeSelect value={d.from2} onChange={(v) => set({ from2: v })} className={sel} />
                             <span className="text-muted">a</span>
-                            <TimeSelect
-                              value={d.to2}
-                              onChange={(v) => setSemana((w) => ({ ...w, [String(i)]: { ...d, to2: v } }))}
-                              className="border border-line rounded-[8px] px-2 py-1.5"
-                            />
+                            <TimeSelect value={d.to2} onChange={(v) => set({ to2: v })} className={sel} />
                             <button
                               type="button"
-                              className="text-[12px] text-muted underline"
-                              onClick={() =>
-                                setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: d.to } }))
-                              }
+                              className="text-[12px] text-muted underline whitespace-nowrap"
+                              onClick={() => setSemana((w) => ({ ...w, [String(i)]: { from: d.from, to: d.to } }))}
                             >
-                              Quitar tramo
+                              Quitar
                             </button>
                           </>
                         ) : (
                           <button
                             type="button"
                             className="text-[12px] text-purple font-semibold"
-                            onClick={() =>
-                              setSemana((w) => ({ ...w, [String(i)]: { ...d, from2: '14:00', to2: '19:00' } }))
-                            }
+                            onClick={() => set({ from2: '14:00', to2: '19:00' })}
                           >
-                            + Horario partido
+                            + Agregar segundo horario
                           </button>
                         )}
-                      </>
-                    ) : (
-                      <span className="text-muted text-[12.5px]">Cerrado</span>
+                      </div>
                     )}
                   </div>
                 );
@@ -784,6 +799,44 @@ export default function PerfilPage() {
           )}
         </div>
       </div>
+      {saliendoA && (
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Cambios sin guardar">
+          <div className="bg-card rounded-2xl p-5 w-full max-w-[380px] shadow-xl">
+            <h3 className="text-[16px] font-bold">Tienes cambios sin guardar</h3>
+            <p className="text-[13px] text-muted mt-1 mb-4 leading-5">¿Quieres guardarlos antes de salir?</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  const destino = saliendoA;
+                  if (await handleSave()) router.push(destino);
+                  else setSaliendoA(null);
+                }}
+                className="rounded-[10px] py-3 font-semibold text-sm disabled:opacity-50"
+                style={{ background: 'var(--c-btn-bg)', color: 'var(--c-btn-text)' }}
+              >
+                {saving ? 'Guardando…' : 'Guardar y salir'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const destino = saliendoA;
+                  setBase(actuales);
+                  setSaliendoA(null);
+                  setTimeout(() => router.push(destino), 0);
+                }}
+                className="rounded-[10px] py-3 font-semibold text-sm bg-white border border-line"
+              >
+                Descartar cambios
+              </button>
+              <button type="button" onClick={() => setSaliendoA(null)} className="py-2 text-[13px] text-muted font-semibold">
+                Seguir editando
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardShell>
   );
 }
