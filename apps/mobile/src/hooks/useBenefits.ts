@@ -63,6 +63,21 @@ export function useBenefitsRemainingToday() {
   });
 }
 
+// Canjes de la semana y del mes por beneficio (para los topes semanal y mensual del comercio).
+export function useBenefitsRemainingPeriod() {
+  return useQuery({
+    queryKey: ['benefits-remaining-period'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('benefits_remaining_period');
+      if (error) throw error;
+      const map = new Map<string, { week: number; month: number }>();
+      for (const row of data ?? []) map.set(row.benefit_id, { week: row.redeemed_week, month: row.redeemed_month });
+      return map;
+    },
+    staleTime: 60_000,
+  });
+}
+
 // Cupos de los premios online: canjes ya usados y, si la tienda carga sus propios cupones (canal web), cuántos le quedan.
 export type OnlineCupos = { redeemed: number; codesLeft: number | null };
 export function useOnlineRedeemed() {

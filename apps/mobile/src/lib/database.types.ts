@@ -99,6 +99,8 @@ export interface Benefit {
   combo_regular_bs?: number | string | null;
   cost_points: number;
   daily_quota: number | null;
+  weekly_quota?: number | null;
+  monthly_quota?: number | null;
   active: boolean;
   image_url: string | null;
   dine_in_only: boolean;
@@ -345,6 +347,10 @@ export type Database = {
       benefits_remaining_today: {
         Args: Record<string, never>;
         Returns: { benefit_id: string; redeemed_today: number }[];
+      };
+      benefits_remaining_period: {
+        Args: Record<string, never>;
+        Returns: { benefit_id: string; redeemed_week: number; redeemed_month: number }[];
       };
       reto_progress: {
         Args: Record<string, never>;

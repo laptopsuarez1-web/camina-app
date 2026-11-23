@@ -78,6 +78,8 @@ export interface Benefit {
   discount_percent: number | null;
   cost_points: number;
   daily_quota: number | null;
+  weekly_quota?: number | null;
+  monthly_quota?: number | null;
   active: boolean;
   image_url: string | null;
   dine_in_only: boolean;
