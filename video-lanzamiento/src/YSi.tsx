@@ -89,7 +89,8 @@ const TOMAS: Toma[] = [
 const INTRO = Math.round(6 * TIEMPO); // ≈ 80 cuadros
 const UNIDADES = TOMAS.reduce((s, x) => s + (x.dur ?? 1), 0);
 const MONTAJE = Math.round(INTRO + UNIDADES * T) - INTRO;
-const TARJETA = Math.round(INTRO + (UNIDADES + 8) * T) - INTRO - MONTAJE;
+// la tarjeta dura 12,5 tiempos: así el cierre (logo) cae en un tiempo justo cuando sube la música
+const TARJETA = Math.round(INTRO + UNIDADES * T + 12.5 * TIEMPO) - INTRO - MONTAJE;
 const bordes: number[] = [];
 TOMAS.reduce((u, x) => {
   bordes.push(Math.round(INTRO + u * T));
@@ -312,7 +313,8 @@ const Tarjeta = () => {
   const ciclo = fr < 14 ? -1 : Math.floor((fr - 14) / 7);
   const enCamina = ciclo >= LOGOS.length * 2;
   const idx = ciclo < 0 ? 0 : ciclo % LOGOS.length;
-  const salida = interpolate(fr, [150, 160], [1, 0], clamp);
+  const { durationInFrames } = useVideoConfig();
+  const salida = interpolate(fr, [durationInFrames - 10, durationInFrames], [1, 0], clamp);
   const linea: CSSProperties = { fontFamily: 'Serif', fontWeight: 400, fontSize: 92, letterSpacing: '-0.015em', color: '#fff', textAlign: 'center', lineHeight: 1.1 };
   return (
     <AbsoluteFill style={{ backgroundColor: C.morado, alignItems: 'center', justifyContent: 'center', opacity: salida }}>

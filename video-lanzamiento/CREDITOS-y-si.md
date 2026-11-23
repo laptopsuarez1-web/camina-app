@@ -33,4 +33,4 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 - Tomas de Tarija del video «Tarija Bolivia 4K» (YouTube, con permiso del autor): plaza Luis de Fuentes, fuente, parque y monumento de la Loma, vista aérea.
 - Fotos de Tarija enviadas por Camina (iglesia de San Roque, puente, viñedos).
 - Grabaciones y capturas de la app con datos de ejemplo; logos de los 8 comercios de Camina.
-- Música: «Dreaming Big» de Ahjay Stelino (Mixkit, licencia gratuita de Mixkit para música: uso en videos comerciales permitido, sin atribución obligatoria), editada (parte con pulso repetida y final del tema) con capas y efectos propios (`scripts/ysi_sonido.py`). Fuente: https://mixkit.co/free-stock-music/ — archivo https://assets.mixkit.co/music/31/31.mp3
+- Música: «Dreaming Big» de Ahjay Stelino (Mixkit, licencia gratuita de Mixkit para música: uso en videos comerciales permitido, sin atribución obligatoria), un solo tramo continuo (41,8 s a 76,8 s del tema) con efectos propios (`scripts/ysi_sonido.py`). Fuente: https://mixkit.co/free-stock-music/ — archivo https://assets.mixkit.co/music/31/31.mp3
