@@ -304,7 +304,7 @@ const Tarija = () => {
 };
 
 // ---------- 9 · cierre ----------
-const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
+export const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 30px 16px 24px', borderRadius: 24, background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.32)' }}>
     {icono}
     <div style={{ display: 'flex', flexDirection: 'column', color: '#fff' }}>

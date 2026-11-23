@@ -4,6 +4,8 @@ import { AbsoluteFill, Easing, Img, interpolate, Sequence, staticFile, useCurren
 import { Audio, Video } from '@remotion/media';
 import { PULSOS } from './horizontePulsos';
 import { LUZ } from './horizonteFranjas';
+import { Tienda } from './Carrusel';
+import { IconoApple, IconoPlay } from './Lanzamiento';
 
 // CAMINA · «Siempre hay más por caminar» — teaser vertical (1080 × 1920, 30 fps), sin voz.
 // Recurso: un horizonte curvo siempre en el mismo lugar. Abre con el anillo de pasos de la app, arqueado sobre el
@@ -50,13 +52,13 @@ const TOMAS: Toma[] = [
   t('palomas.mp4', 1, 'nitida'),
   t('cartel', 1, 'calida'),
   t('canon.mp4', 1, 'desenfoque'),
-  t('isla-sendero', 1, 'halo'),
+  t('app:ranking', 1, 'nitida'),
   t('parque.mp4', 1, 'relieve'),
   t('app:mes', 1, 'nitida'),
   t('plaza-arboles.mp4', 1, 'tela'),
   t('chunchos', 1, 'calida'),
   t('ladrillo.mp4', 1, 'fuerte'),
-  t('mercado', 1, 'halo'),
+  t('app:comercios', 1, 'nitida'),
   t('catedral.mp4', 1, 'relieve'),
   t('app:puntos', 1, 'nitida'),
   t('trail.mp4', 1, 'tenue'),
@@ -171,6 +173,8 @@ const AppMomento = ({ k }: { k: number }) => {
         {cual === 'sellos' && <Sellos fr={fr} g={g} />}
         {cual === 'mes' && <Mes fr={fr} g={g} />}
         {cual === 'puntos' && <Puntos fr={fr} g={g} />}
+        {cual === 'comercios' && <Comercios fr={fr} g={g} />}
+        {cual === 'ranking' && <Ranking fr={fr} g={g} />}
       </div>
     </AbsoluteFill>
   );
@@ -265,6 +269,59 @@ const arco2 = (g: Geo, r: number, x1: number, x2: number) => {
     return `${g.cx + r * Math.sin(a)} ${g.cy - r * Math.cos(a)}`;
   };
   return `M${P(x1)} A${r} ${r} 0 0 1 ${P(x2)}`;
+};
+
+// los 8 comercios de Tarija, sobre dos arcos concéntricos con la cúpula
+const LOGOS = ['fripaps-logo', 'bloom-logo', 'coco-logo', 'cancheritos-logo', 'galera-logo', 'viviana-logo', 'sabor-logo', 'luzdevida-app'];
+const Comercios = ({ fr, g }: { fr: number; g: Geo }) => {
+  const fila = (r: number, desde: number) =>
+    [0, 1, 2, 3].map((i) => {
+      const a = ((i - 1.5) * 210) / r;
+      return { x: g.cx + r * Math.sin(a), y: g.cy - r * Math.cos(a), a, src: LOGOS[desde + i], k: desde + i };
+    });
+  const todos = [...fila(g.R - 150, 0), ...fila(g.R - 345, 4)];
+  return (
+    <>
+      {todos.map((l) => {
+        const q = interpolate(fr, [l.k * 1.3, l.k * 1.3 + 6], [0, 1], { ...clamp, easing: Easing.bezier(0.34, 1.56, 0.64, 1) });
+        return (
+          <div key={l.src} style={{ position: 'absolute', left: l.x - 76, top: l.y - 76, width: 152, height: 152, borderRadius: 36, overflow: 'hidden', background: '#fff', boxShadow: '0 0 0 4px rgba(98,240,182,0.85), 0 10px 30px rgba(0,0,0,0.45)', transform: `rotate(${(l.a * 180) / Math.PI}deg) scale(${q})`, opacity: Math.min(1, q * 2) }}>
+            <Img src={staticFile(`yasi/locales/${l.src}.jpg`)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        );
+      })}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: g.top + 480, textAlign: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 36 }}>8 comercios de Tarija</div>
+    </>
+  );
+};
+
+// el ranking del grupo (datos de ejemplo): el podio sube desde la cúpula
+const Ranking = ({ fr, g }: { fr: number; g: Geo }) => {
+  const base = g.top + 470;
+  const puestos = [
+    { x: 290, h: 160, n: 2, ini: 'A', nombre: 'Ana', pasos: '38,3k pasos', en: 2 },
+    { x: 540, h: 230, n: 1, ini: 'J', nombre: 'Joaco', pasos: '64,8k pasos', en: 0 },
+    { x: 790, h: 120, n: 3, ini: 'Tú', nombre: 'Tú', pasos: '32,9k pasos', en: 4 },
+  ];
+  return (
+    <>
+      {puestos.map((p) => {
+        const q = interpolate(fr, [p.en, p.en + 9], [0, 1], { ...clamp, easing: salida });
+        const h = p.h * q;
+        const x = g.cx - 540 + p.x;
+        return (
+          <div key={p.n}>
+            <div style={{ position: 'absolute', left: x - 110, top: base - h, width: 220, height: h + 400, borderRadius: '34px 34px 0 0', background: p.n === 1 ? 'linear-gradient(180deg, rgba(98,240,182,0.55), rgba(98,240,182,0.08))' : 'linear-gradient(180deg, rgba(185,168,224,0.32), rgba(185,168,224,0.05))', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.18)', display: 'flex', justifyContent: 'center', paddingTop: 16, color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 64 }}>{p.n}</div>
+            <div style={{ position: 'absolute', left: x - 54, top: base - h - 196, width: 108, height: 108, borderRadius: '50%', background: p.ini === 'Tú' ? '#2a0f6e' : '#62f0b6', boxShadow: p.n === 1 ? '0 0 0 5px #e9fff5, 0 0 30px rgba(98,240,182,0.6)' : '0 0 0 4px rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: p.ini === 'Tú' ? '#fff' : '#1b0b44', fontFamily: 'Jakarta', fontWeight: 800, fontSize: p.ini === 'Tú' ? 38 : 50, opacity: q }}>{p.ini}</div>
+            <div style={{ position: 'absolute', left: x - 120, width: 240, top: base - h - 78, textAlign: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 30, lineHeight: 1.15, opacity: q }}>
+              {p.nombre}
+              <div style={{ color: '#b9a8e0', fontWeight: 500, fontSize: 26 }}>{p.pasos}</div>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
 };
 
 // tus Puntos
@@ -528,7 +585,10 @@ const Cierre = () => {
         <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 150, height: 150 }} />
         <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 104, filter: 'brightness(0) invert(1)' }} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y + 190, textAlign: 'center', fontFamily: 'Caslon', fontSize: 64, color: '#efe8ff', opacity: pronto, transform: `translateY(${(1 - pronto) * 12}px)` }}>Muy pronto</div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ARCO_Y + 200, display: 'flex', justifyContent: 'center', gap: 24, opacity: pronto, transform: `translateY(${(1 - pronto) * 14}px) scale(1.12)` }}>
+        <Tienda icono={<IconoApple />} nombre="App Store" />
+        <Tienda icono={<IconoPlay />} nombre="Google Play" />
+      </div>
       <AbsoluteFill style={{ backgroundColor: '#e9fff5', opacity: flash, mixBlendMode: 'screen' }} />
       <AbsoluteFill style={{ backgroundColor: '#000', opacity: negro }} />
     </AbsoluteFill>
