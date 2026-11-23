@@ -17,10 +17,10 @@ loadFont({ family: 'Serif', url: staticFile('fonts/newsreader-latin-400-normal.w
 loadFont({ family: 'Serif', url: staticFile('fonts/newsreader-latin-500-normal.woff2'), weight: '500' });
 
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
-// Música: «Dreaming Big» (Ahjay Stelino, Mixkit) a 135,5 BPM. Cada toma dura 1,5 tiempos (≈ 19,9 cuadros) y los cortes se
-// redondean a cuadros enteros sin acumular desfase, para que caigan en el pulso del tema.
-const TIEMPO = (30 * 60) / 135.5; // cuadros por tiempo
-const T = 1.5 * TIEMPO; // una unidad de montaje
+// Música: «Glassworks: IV. Rubric» (Philip Glass, interpretada por Signal; usada con permiso) a 94,65 BPM.
+// Cada toma dura 1 tiempo (≈ 19 cuadros); los cortes se redondean a cuadros enteros sin acumular desfase.
+const TIEMPO = (30 * 60) / 94.646; // cuadros por tiempo
+const T = TIEMPO; // una unidad de montaje = 1 tiempo
 
 // Palabra: posición relativa (x, y), tamaño, y cuadro en que aparece dentro de la toma.
 type Palabra = { t: string; x: number; y: number; size?: number; en?: number; verde?: boolean; efecto?: 'juntar' | 'crecer' };
@@ -86,11 +86,11 @@ const TOMAS: Toma[] = [
   { medio: vid('app-visita', 40), leyenda: 'Visita-confirmada', dur: 1 },
 ];
 
-const INTRO = Math.round(6 * TIEMPO); // ≈ 80 cuadros
+const INTRO = Math.round(4 * TIEMPO); // 4 tiempos ≈ 76 cuadros
 const UNIDADES = TOMAS.reduce((s, x) => s + (x.dur ?? 1), 0);
 const MONTAJE = Math.round(INTRO + UNIDADES * T) - INTRO;
-// la tarjeta dura 12,5 tiempos: así el cierre (logo) cae en un tiempo justo cuando sube la música
-const TARJETA = Math.round(INTRO + UNIDADES * T + 12.5 * TIEMPO) - INTRO - MONTAJE;
+// la tarjeta dura 8 tiempos: el cierre (logo) entra en el tiempo 47 y el golpe final de Rubric cae en el 53
+const TARJETA = Math.round(INTRO + UNIDADES * T + 8 * TIEMPO) - INTRO - MONTAJE;
 const bordes: number[] = [];
 TOMAS.reduce((u, x) => {
   bordes.push(Math.round(INTRO + u * T));

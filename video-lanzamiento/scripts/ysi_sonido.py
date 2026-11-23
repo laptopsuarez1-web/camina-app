@@ -1,8 +1,9 @@
 # Banda sonora de «¿Y si cada paso…?» (sin voz).
-# Base: «Dreaming Big» de Ahjay Stelino (Mixkit, licencia gratuita de Mixkit para música: uso en videos comerciales
-# permitido). Un solo tramo continuo, sin repeticiones: del 41,80 s al 76,8 s del tema; la subida del tema cae justo en
-# el cierre (logo) y la música se apaga al final. Sin capas propias encima: solo los efectos, más presentes que la música.
-# Fuente: https://assets.mixkit.co/music/31/31.mp3  ->  public/audio/fuente/dreaming-big-mixkit-31.mp3
+# Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson
+# Rouge). Usada con permiso de los titulares (Camina). Archivo: public/audio/fuente/rubric.mp3 (no se sube a GitHub).
+# Un solo tramo continuo, sin cortes: los últimos ~35 s de la obra (desde 326,78 s). El golpe final de Rubric (360,37 s)
+# cae en el segundo 33,6 del video, durante el cierre con el logo, y la última nota se apaga sola.
+# Todo el montaje va al pulso de la obra (94,65 BPM, 1 toma = 1 tiempo). Encima solo efectos, más presentes que la música.
 # Uso: python3 scripts/ysi_sonido.py  ->  public/audio/ysi-mezcla.wav
 import sys, os, io, subprocess
 sys.path.insert(0, os.path.dirname(__file__))
@@ -13,40 +14,32 @@ from sintes import *
 DUR = 35.0
 N = int(SR * DUR)
 t = np.arange(N) / SR
-BEAT = 60 / 135.5
-U = 1.5 * BEAT  # una unidad de montaje
-INTRO = 80 / 30
+BPM = 94.646
+TI = 30 * 60 / BPM  # cuadros por tiempo
+S0 = 360.374 - 53 * 60 / BPM  # ≈ 326,78 s: el video empieza en un tiempo y el golpe final cae en el tiempo 53
+
 DUR_TOMAS = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1]
 RAFAGAS = {7: (4, 5), 13: (2, 10), 19: (8, 5), 28: (5, 4)}
+INTRO = round(4 * TI) / 30
 cortes, clics = [], []
 u = 0
 for i, d in enumerate(DUR_TOMAS):
-    at = round((80 + u * U * 30)) / 30
+    at = round(TI * (4 + u)) / 30
     cortes.append(at)
     if i in RAFAGAS:
         n, c = RAFAGAS[i]
         clics += [at + k * c / 30 for k in range(1, n)]
     u += d
-CARD = round(80 + u * U * 30) / 30          # ≈ 25,9 s
-CIERRE = round(80 + u * U * 30 + 12.5 * BEAT * 30) / 30  # ≈ 31,43 s (en un tiempo del tema)
-CAPS = [INTRO, cortes[4], cortes[8], cortes[15], cortes[22], cortes[26]]  # preguntas, ¿Y si…?, Bolivia, Tarija, ciudad, app
+CARD = round(TI * (4 + u)) / 30          # ≈ 24,7 s
+CIERRE = round(TI * (4 + u + 8)) / 30    # ≈ 29,8 s
+FINAL = 53 * 60 / BPM                    # ≈ 33,6 s: golpe final de Rubric
 
-def tema(ini, dur):
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(ini), '-t', str(dur), '-i', 'public/audio/fuente/dreaming-big-mixkit-31.mp3',
-                          '-ac', '2', '-ar', str(SR), '-f', 'wav', '-'], capture_output=True).stdout
-    x, _ = sf.read(io.BytesIO(raw))
-    return x
-
-# 1) Un solo tramo continuo del tema (sin repeticiones ni empalmes): del 41,80 s al final de la parte con pulso.
-# La subida del tema (73,24 s) cae justo en el cierre (logo) y desde ahí la música se apaga suave.
-S0 = 41.80
-mus = tema(S0, DUR)
+raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', f'{S0:.4f}', '-t', str(DUR), '-i', 'public/audio/fuente/rubric.mp3',
+                      '-ac', '2', '-ar', str(SR), '-f', 'wav', '-'], capture_output=True).stdout
+mus, _ = sf.read(io.BytesIO(raw))
 mus = np.pad(mus, ((0, max(0, N - len(mus))), (0, 0)))[:N]
-mus *= curva(t, [(0, 0.0), (0.12, 1.0), (CARD - 0.1, 1.0), (CARD + 0.5, 0.6), (CIERRE - 0.4, 0.6), (CIERRE, 1.0), (33.2, 0.85), (35.0, 0.0)])[:, None]
-golpe_fin = golpe(0.5, 2.5)
-golpe_fin[:, 0] = filt(golpe_fin[:, 0], 120)
-golpe_fin[:, 1] = filt(golpe_fin[:, 1], 120)
-place(mus, golpe_fin, CIERRE)
+# entrada suave, la tarjeta un poco más baja, y vuelve con todo en el cierre
+mus *= curva(t, [(0, 0.0), (0.25, 1.0), (CARD - 0.1, 1.0), (CARD + 0.4, 0.72), (CIERRE - 0.5, 0.72), (CIERRE, 1.0), (DUR, 1.0)])[:, None]
 mus /= np.abs(mus).max()
 
 # ---------- Efectos ----------
@@ -63,12 +56,11 @@ for c in clics:
     place(sfx, clic_pelicula(0.03), c)
 for k in range(16):  # logos de la tarjeta
     place(sfx, blip(2200, 0.02, 0.02), CARD + (14 + 7 * k) / 30)
-place(sfx, campana(1174.7, 0.11, 1.4), CARD + 126 / 30)  # Re: en el tono del tema
-place(sfx, campana(1760, 0.09, 1.4), CARD + 129 / 30)    # La
+place(sfx, campana(1318.5, 0.1, 1.4), CARD + 126 / 30)
 place(sfx, brillo_logo(0.07), CIERRE)
-place(sfx, np.stack([crash(2.5, 0.18), crash(2.5, 0.16)], 1), CIERRE)
+place(sfx, brillo_logo(0.05), FINAL)
 sfx = reverb(sfx, 1.0, 0.18, 7000, seed=21)
 sfx /= np.abs(sfx).max()
 
 sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.5 + sfx * 0.55, umbral=0.35).astype(np.float32), SR)
-print('ok', len(cortes), 'tomas; tarjeta', round(CARD, 2), 's; cierre', round(CIERRE, 2), 's; capítulos', [round(c, 2) for c in CAPS])
+print('ok', len(cortes), 'tomas; tarjeta', round(CARD, 2), 's; cierre', round(CIERRE, 2), 's; golpe final', round(FINAL, 2), 's; inicio en Rubric', round(S0, 3))

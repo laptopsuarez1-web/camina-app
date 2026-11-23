@@ -11,3 +11,6 @@ public/tarija/
 public/audio/
 out/
 public/yasi/v/
+
+# audio con derechos de terceros: no se sube
+public/audio/fuente/

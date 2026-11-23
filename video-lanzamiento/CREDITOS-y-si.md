@@ -25,7 +25,10 @@ Las CC BY-SA además piden que, si alguien publica la foto modificada por separa
 | `public/yasi/f/titicaca-terrazas.jpg` | [Bolivia - Inca terraces, on the shores of Lake Titicaca.jpg](https://commons.wikimedia.org/wiki/File:Bolivia_-_Inca_terraces,_on_the_shores_of_Lake_Titicaca.jpg) | Indies1 | CC BY 4.0 |
 | `public/yasi/f/tiwanaku-puerta-del-sol.jpg` | [Zonnepoort tiwanaku.jpg](https://commons.wikimedia.org/wiki/File:Zonnepoort_tiwanaku.jpg) | Mhwater | Public domain |
 
-## Texto corto para la publicación
+## Texto para la publicación
+🎵 Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson Rouge). Usada con permiso.
+
+## Créditos de fotos (texto corto)
 Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunchos (206708213) — Ernestopradodiaz (CC0); Isla del Sol - panoramio (12) — Pavel Špindler (CC BY 3.0); Ciudad de La Paz y Nevado Illimani (Bolivia) — Valdiney Pimenta from Campinas - SP, Brazil (CC BY 2.0); Paisaje Urbano Nocturno La Paz — Angel Ramos (CC BY-SA 4.0); Interior del Mercado Central de Tarija - Bolivia — Ruditaly (CC BY 4.0); Acera sur del Parque Bol%C3%ADvar - Tarija, Bolivia — Ruditaly (CC BY 4.0); Catedral Metropolitana Bas%C3%ADlica Menor de San Lorenzo de Santa Cruz - Bolivia (53041053638) — Rômulo Gama Ferreira from Vitória-ES (CC BY 2.0); Plaza 24 de Septiembre, Santa Cruz de la Sierra — Parallelepiped09 (CC BY-SA 4.0); La casa dorada en una hermosa tarde — Pablo Vasquez (CC BY-SA 4.0); Glorieta de la Plaza de Armas Luis de Fuentes — Daniela Martínez (CC BY-SA 4.0); Mirador de la copa de vina tarija en atardecer — Carlosfiengo (CC BY-SA 4.0); Monumento a Luis de Fuentes en la plaza principal de Tarija — Carlillasa (CC BY-SA 4.0); La Plaza Luis de Fuentes — Parallelepiped09 (CC BY-SA 4.0); Danza de la Rueda Chapaca en la celebraci%C3%B3n de la Pascua Florida en Tarija — Julitatwa (CC BY-SA 4.0); Plaza de Armas Luis de Fuentes y Vargas (Plaza Principal) - Tarija - Bolivia — Sean Mulry (CC BY 2.0); Bolivia - Inca terraces, on the shores of Lake Titicaca — Indies1 (CC BY 4.0); Zonnepoort tiwanaku — Mhwater (Public domain) — vía Wikimedia Commons.
 
 ## Otros materiales
@@ -33,4 +36,4 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 - Tomas de Tarija del video «Tarija Bolivia 4K» (YouTube, con permiso del autor): plaza Luis de Fuentes, fuente, parque y monumento de la Loma, vista aérea.
 - Fotos de Tarija enviadas por Camina (iglesia de San Roque, puente, viñedos).
 - Grabaciones y capturas de la app con datos de ejemplo; logos de los 8 comercios de Camina.
-- Música: «Dreaming Big» de Ahjay Stelino (Mixkit, licencia gratuita de Mixkit para música: uso en videos comerciales permitido, sin atribución obligatoria), un solo tramo continuo (41,8 s a 76,8 s del tema) con efectos propios (`scripts/ysi_sonido.py`). Fuente: https://mixkit.co/free-stock-music/ — archivo https://assets.mixkit.co/music/31/31.mp3
+- Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson Rouge; Orange Mountain Music). Usada con permiso (Camina). Tramo continuo final de la obra (326,8 s al final), con efectos propios encima (`scripts/ysi_sonido.py`).
