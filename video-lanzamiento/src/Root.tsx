@@ -6,7 +6,7 @@ import { DUR_HORIZONTE, Horizonte } from './Horizonte';
 // Videos de Camina, vertical 1080 × 1920 a 30 fps (Reels, TikTok, Facebook).
 // Lanzamiento: 35 s; `voz`: false = versión A (música y efectos), true = versión B (con locución).
 // YSiCadaPaso: pieza de marca «¿Y si cada paso…?», sin voz, 35 s.
-// HorizonteCamina: teaser «Hay más por caminar», sin voz, 23,5 s.
+// HorizonteCamina: teaser «Hay más por caminar», sin voz, ≈ 20 s.
 export const RemotionRoot = () => {
   return (
     <>
