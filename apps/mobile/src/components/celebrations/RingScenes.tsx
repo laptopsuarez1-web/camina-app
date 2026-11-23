@@ -3,20 +3,23 @@ import { useEffect, useState, type ReactNode } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { Share, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Check, Flame, Plus } from '@/components/icons';
+import { CrownMark } from '@/components/CrownMark';
 import { useAuthStore } from '@/store/useAuthStore';
 import { buzz } from '@/lib/haptics';
 import { type CinePerson, type Timeline, Avatar, display, LinkButton, MainButton, Stage, useCount, useTimeline } from '@/components/challenge/ChallengeCinematics';
-import { CaminaRing, Enter, useRingTheme, useTween } from '@/components/celebrations/Ring';
+import { Enter, SoloRing, useRingTheme, useTween } from '@/components/celebrations/Ring';
 import type {
   GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, GroupWeekCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic,
 } from '@/components/celebrations/MomentScenes';
 
 // Festejos sobre el fondo de la app, con el verde de Camina como firma.
-// Ranking y metas de grupo: el anillo de Camina (podio de anillos, tu anillo, la meta que se cierra).
-// Grupos y rachas: piezas simples (fila de caras, días de la semana). Una sola vibración por festejo, en el logro.
+// Ranking y semana del grupo: el podio de la app (oro, plata y bronce) y abajo el puesto en grande.
+// Fuera del podio y meta del grupo: un anillo de una sola línea. Grupos y rachas: piezas simples.
+// Una sola vibración por festejo, en el logro.
 
 const first = (name: string) => name.trim().split(/\s+/)[0] || name;
 const n = (v: number) => v.toLocaleString('es-BO');
@@ -26,12 +29,12 @@ function Eyebrow({ children }: { children: string }) {
   const t = useRingTheme();
   return <Text numberOfLines={2} style={{ maxWidth: 320, lineHeight: 18, fontSize: 12, letterSpacing: 2, fontWeight: '700', color: t.mint, textTransform: 'uppercase', textAlign: 'center' }}>{children}</Text>;
 }
-// Título con la letra del logo (festejos de logro).
+// Título con la letra del logo (grupos y rachas).
 function Title({ children, size = 28 }: { children: ReactNode; size?: number }) {
   const t = useRingTheme();
   return <Text style={{ ...display(size), lineHeight: size * 1.2, color: t.text, textAlign: 'center', maxWidth: 340 }}>{children}</Text>;
 }
-// Título sobrio (ranking fuera del podio y meta del grupo).
+// Título sobrio (ranking y metas).
 function PlainTitle({ children }: { children: string }) {
   const t = useRingTheme();
   return <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: t.text, textAlign: 'center' }}>{children}</Text>;
@@ -56,6 +59,7 @@ function Hero({ tl, at, children, label, size = 96 }: { tl: Timeline; at: number
     </Animated.View>
   );
 }
+// El puesto en grande: «2.º de todo Camina».
 function Rank({ rank, label }: { rank: number; label: string }) {
   const t = useRingTheme();
   return (
@@ -63,26 +67,6 @@ function Rank({ rank, label }: { rank: number; label: string }) {
       <Text allowFontScaling={false} style={{ fontSize: 64, fontWeight: '800', letterSpacing: -2.5, color: t.text, fontVariant: ['tabular-nums'] }}>{rank}.º</Text>
       <Text style={{ fontSize: 16, fontWeight: '600', color: t.muted }}>{label}</Text>
     </View>
-  );
-}
-
-// Tres datos en una fila, separados por líneas finas (sin cajas).
-function StatRow({ tl, delay, items }: { tl: Timeline; delay: number; items: { value: string; label: string }[] }) {
-  const t = useRingTheme();
-  return (
-    <Enter tl={tl} delay={delay} dy={12} scale={1} style={{ alignSelf: 'stretch', marginTop: 22 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderTopWidth: 1, borderBottomWidth: 1, borderColor: t.line }}>
-        {items.map((it, i) => (
-          <View key={it.label} style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-            {i > 0 ? <View style={{ width: 1, height: 30, backgroundColor: t.line }} /> : null}
-            <View accessible accessibilityLabel={`${it.label}: ${it.value}`} style={{ flex: 1, alignItems: 'center' }}>
-              <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 19, fontWeight: '900', color: t.text, fontVariant: ['tabular-nums'] }}>{it.value}</Text>
-              <Text style={{ fontSize: 12.5, color: t.muted, marginTop: 2 }}>{it.label}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Enter>
   );
 }
 
@@ -128,62 +112,64 @@ function useBuzzAt(tl: Timeline, at: number, kind: () => void = buzz.success) {
   }, []);
 }
 
-// ---------- podio de anillos ----------
-// Los tres primeros como anillos: el del 1.º, grande y cerrado; el 2.º y el 3.º, más chicos, llenos según cuánto les
-// faltó para alcanzar al primero. Se dibujan del 3.º al 1.º, y el del 1.º cierra con la luz.
-type PodiumEntry = { rank: number; person: CinePerson; steps: number; me: boolean };
-const POD_AT = 200;
-const POD_FIRST = { delay: POD_AT + 260, duration: 1100 };
-const POD_CLOSE = POD_FIRST.delay + POD_FIRST.duration;
+// ---------- podio (el de la app: oro, plata y bronce) ----------
+// Los escalones suben del 1.º al 3.º; encima de cada uno, la cara de quien quedó ahí, y la corona sobre el 1.º.
+type PodiumPerson = CinePerson & { steps: number };
+const STEP_H = [124, 88, 60];
+const MEDAL: [string, string][] = [['#FFE7A3', '#E2B33C'], ['#EEF1F6', '#AEB6C4'], ['#F3C9A4', '#C9824E']];
+const MEDAL_INK = ['#5a3d00', '#3a4150', '#5a2d0c'];
+const STEP_AT: Record<number, number> = { 1: 120, 2: 240, 3: 360 };
+const PODIUM_DONE = 360 + 480; // cuando termina de subir el último escalón
 
-function PodiumSlot({ tl, e, top, size, delay, duration }: { tl: Timeline; e: PodiumEntry; top: number; size: number; delay: number; duration: number }) {
+function PodiumStep({ tl, rank, person, me }: { tl: Timeline; rank: number; person?: PodiumPerson; me: boolean }) {
   const t = useRingTheme();
+  const delay = STEP_AT[rank];
+  const grow = useTween(tl, delay, 480);
+  const g = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - grow.value) * STEP_H[rank - 1] }] }));
+  const winner = rank === 1;
+  const size = me ? 54 : 44;
   return (
-    <View style={{ alignItems: 'center', width: size + 8, marginTop: e.rank === 1 ? 0 : 44 }}>
-      <CaminaRing tl={tl} delay={delay} size={size} progress={e.steps / top} duration={duration} dim={!e.me && e.rank !== 1} onClose={e.rank === 1 ? { at: delay + duration } : undefined}>
-        <Enter tl={tl} delay={delay + 120} scale={0.92}>
-          <Avatar p={e.person} size={size * 0.5} ring={e.me ? t.mint : undefined} />
-        </Enter>
-      </CaminaRing>
-      <Enter tl={tl} delay={delay + duration * 0.5} style={{ alignItems: 'center', marginTop: 4 }}>
-        <Text style={{ fontSize: 12, fontWeight: '700', color: e.rank === 1 ? t.mint : t.faint, fontVariant: ['tabular-nums'] }}>{e.rank}.º</Text>
-        <Text numberOfLines={1} style={{ fontSize: 14.5, fontWeight: '700', color: e.me ? t.mint : t.text, marginTop: 1, maxWidth: size }}>{e.me ? 'Tú' : first(e.person.name)}</Text>
-        <Text style={{ fontSize: 12.5, color: t.muted, fontVariant: ['tabular-nums'] }}>{n(e.steps)}</Text>
-      </Enter>
+    <View style={{ width: 100, alignItems: 'center' }}>
+      <View style={{ height: 100, justifyContent: 'flex-end', alignItems: 'center' }}>
+        {person ? (
+          <Enter tl={tl} delay={delay + 200} dy={-24} scale={0.9} duration={460} style={{ alignItems: 'center' }}>
+            {winner ? <Enter tl={tl} delay={delay + 420} dy={-16} duration={420} style={{ position: 'absolute', top: me ? -36 : -30 }}><CrownMark size={me ? 40 : 34} /></Enter> : null}
+            <Avatar p={person} size={size} ring={MEDAL[rank - 1][1]} />
+            <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: '800', color: me ? t.mint : t.text, marginTop: 3, maxWidth: 96 }}>{me ? 'Tú' : first(person.name)}</Text>
+            <Text numberOfLines={1} style={{ fontSize: 11, color: t.muted, fontVariant: ['tabular-nums'] }}>{n(person.steps)}</Text>
+          </Enter>
+        ) : (
+          // Sin dato de esa persona: un lugar vacío, para que el podio no se vea cortado.
+          <Enter tl={tl} delay={delay + 200} style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: t.faint }} />
+          </Enter>
+        )}
+      </View>
+      <View style={{ width: '100%', height: STEP_H[rank - 1], overflow: 'hidden', borderTopLeftRadius: 14, borderTopRightRadius: 14, marginTop: 6 }}>
+        <Animated.View style={[{ flex: 1 }, g]}>
+          {person ? (
+            <LinearGradient colors={MEDAL[rank - 1]} style={{ flex: 1, alignItems: 'center', paddingTop: 8, opacity: me ? 1 : 0.6 }}>
+              <Text style={{ ...display(24), color: MEDAL_INK[rank - 1] }}>{rank}</Text>
+            </LinearGradient>
+          ) : (
+            <View style={{ flex: 1, backgroundColor: t.seat, alignItems: 'center', paddingTop: 8, opacity: 0.8 }}>
+              <Text style={{ ...display(24), color: t.muted }}>{rank}</Text>
+            </View>
+          )}
+        </Animated.View>
+      </View>
     </View>
   );
 }
 
-function RingPodium({ tl, entries }: { tl: Timeline; entries: PodiumEntry[] }) {
-  const top = Math.max(1, entries.find((x) => x.rank === 1)?.steps ?? entries[0]?.steps ?? 1);
-  const by = (r: number) => entries.find((x) => x.rank === r);
-  const e1 = by(1);
-  const e2 = by(2);
-  const e3 = by(3);
+function Podium({ tl, people, meId }: { tl: Timeline; people: PodiumPerson[]; meId: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 2 }}>
-      {e2 ? <PodiumSlot tl={tl} e={e2} top={top} size={104} delay={POD_AT + 120} duration={950} /> : <View style={{ width: 112 }} />}
-      {e1 ? <PodiumSlot tl={tl} e={e1} top={top} size={150} delay={POD_FIRST.delay} duration={POD_FIRST.duration} /> : null}
-      {e3 ? <PodiumSlot tl={tl} e={e3} top={top} size={104} delay={POD_AT} duration={950} /> : <View style={{ width: 112 }} />}
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 8 }}>
+      {[2, 1, 3].map((r) => {
+        const person = people[r - 1];
+        return <PodiumStep key={r} tl={tl} rank={r} person={person} me={!!person && person.id === meId} />;
+      })}
     </View>
-  );
-}
-
-// Lo de abajo del podio: título, frase, los tres datos y los botones.
-function PodiumText({ tl, title, sub, stats, onShare, onDone }: { tl: Timeline; title: string; sub: string; stats: { value: string; label: string }[]; onShare: () => void; onDone: () => void }) {
-  const t = useRingTheme();
-  return (
-    <>
-      <Enter tl={tl} delay={POD_CLOSE - 220} style={{ alignItems: 'center', marginTop: 26 }}>
-        <Title size={32}>{title}</Title>
-        <Sub>{sub}</Sub>
-      </Enter>
-      <StatRow tl={tl} delay={POD_CLOSE - 100} items={stats} />
-      <Buttons tl={tl} delay={POD_CLOSE}>
-        <MainButton label="Compartir" onPress={onShare} />
-        <LinkButton label="Genial" onPress={onDone} color={t.mint} />
-      </Buttons>
-    </>
   );
 }
 
@@ -192,8 +178,8 @@ function PodiumText({ tl, title, sub, stats, onShare, onDone }: { tl: Timeline; 
 // =====================================================================
 
 function tierOf(position: number) {
-  if (position === 1) return { title: '¡Ganaste el ranking!', sub: 'Nadie en Camina caminó más que tú esta semana.' };
-  if (position <= 3) return { title: '¡Subiste al podio!', sub: `Fuiste ${position === 2 ? 'la segunda' : 'la tercera'} persona que más caminó en todo Camina.` };
+  if (position === 1) return { title: 'Ganaste el ranking', sub: 'Nadie en Camina caminó más que tú esta semana.' };
+  if (position <= 3) return { title: 'Subiste al podio', sub: `Fuiste ${position === 2 ? 'la segunda' : 'la tercera'} persona que más caminó en todo Camina.` };
   if (position <= 10) return { title: 'Estás en el Top 10', sub: 'Quedaste entre las 10 personas que más caminaron esta semana.' };
   return { title: 'Estás en el Top 100', sub: 'Quedaste entre las 100 personas que más caminaron esta semana.' };
 }
@@ -201,47 +187,40 @@ function tierOf(position: number) {
 export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; onDone: () => void }) {
   const t = useRingTheme();
   const tier = tierOf(c.position);
-  const podium = (c.podium ?? []).slice(0, 3).map((q, i) => ({ rank: i + 1, person: q.id === c.me.id ? c.me : q, steps: q.steps, me: q.id === c.me.id }));
+  const podium = (c.podium ?? []).slice(0, 3).map((q) => (q.id === c.me.id ? { ...c.me, steps: q.steps } : q));
   const showPodium = c.position <= 3 && podium.length >= 2;
   const limit = c.position <= 10 ? 10 : 100;
-  const RING_AT = 200;
-  const RING_MS = 1200;
-  const close = showPodium ? POD_CLOSE : RING_AT + RING_MS;
-  const tl = useTimeline(close + 800);
-  useBuzzAt(tl, close);
+  const RING_AT = 160;
+  const RING_MS = 1000;
+  const land = showPodium ? PODIUM_DONE : RING_AT + RING_MS;
+  const tl = useTimeline(land + 800);
+  useBuzzAt(tl, showPodium ? STEP_AT[c.position] + 480 : land);
   const share = () => {
     Share.share({ message: `Quedé ${c.position}.º en el ranking semanal global de Camina con ${n(c.steps)} pasos. ¿Me alcanzas?` }).catch(() => {});
   };
-  const announce = `${tier.title} Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`;
-
-  if (showPodium) {
-    return (
-      <Stage tl={tl} night announce={announce}>
-        <Enter tl={tl} delay={40}><Eyebrow>{`Ranking semanal · ${c.weekLabel}`}</Eyebrow></Enter>
-        <View style={{ marginTop: 24 }}><RingPodium tl={tl} entries={podium} /></View>
-        <PodiumText tl={tl} title={tier.title} sub={tier.sub} onShare={share} onDone={onDone}
-          stats={[{ value: `${c.position}.º`, label: 'Tu puesto' }, { value: n(c.steps), label: 'Tus pasos' }, { value: n(Math.round(c.steps / 7)), label: 'Por día' }]} />
-      </Stage>
-    );
-  }
-
-  // Fuera del podio: tu anillo, lleno según qué tan arriba quedaste; abajo, el podio y tu puesto.
-  const rows: Row[] = [...podium, { rank: c.position, person: c.me, steps: c.steps, me: true }];
+  const rows: Row[] = [...podium.map((q, i) => ({ rank: i + 1, person: q, steps: q.steps, me: q.id === c.me.id })), { rank: c.position, person: c.me, steps: c.steps, me: true }];
+  // Lo de abajo entra apenas termina el podio (o mientras se dibuja el anillo): sin esperas.
+  const textAt = showPodium ? PODIUM_DONE - 200 : RING_AT + 300;
   return (
-    <Stage tl={tl} night announce={announce}>
+    <Stage tl={tl} night announce={`${tier.title}. Puesto ${c.position} del ranking semanal global, ${c.weekLabel}, con ${c.steps} pasos.`}>
       <Enter tl={tl} delay={40}><Eyebrow>{`Ranking semanal · ${c.weekLabel}`}</Eyebrow></Enter>
-      <View style={{ marginTop: 24 }}>
-        <CaminaRing tl={tl} delay={RING_AT} size={184} progress={Math.max(0.04, 1 - (c.position - 1) / limit)} duration={RING_MS}>
-          <Enter tl={tl} delay={RING_AT + 120} scale={0.92}><Avatar p={c.me} size={98} ring={t.mint} /></Enter>
-        </CaminaRing>
+      <View style={{ marginTop: showPodium ? 30 : 24 }}>
+        {showPodium ? (
+          <Podium tl={tl} people={podium} meId={c.me.id} />
+        ) : (
+          // Fuera del podio: tu anillo, lleno según qué tan arriba quedaste.
+          <SoloRing tl={tl} delay={RING_AT} size={176} progress={Math.max(0.04, 1 - (c.position - 1) / limit)} duration={RING_MS}>
+            <Enter tl={tl} delay={RING_AT + 80} scale={0.92}><Avatar p={c.me} size={118} ring={t.mint} /></Enter>
+          </SoloRing>
+        )}
       </View>
-      <Enter tl={tl} delay={RING_AT + 300} style={{ marginTop: 14 }}><Rank rank={c.position} label="de todo Camina" /></Enter>
-      <Enter tl={tl} delay={RING_AT + 380} style={{ alignItems: 'center', marginTop: 2 }}>
+      <Enter tl={tl} delay={textAt} style={{ marginTop: 16 }}><Rank rank={c.position} label="de todo Camina" /></Enter>
+      <Enter tl={tl} delay={textAt + 80} style={{ alignItems: 'center', marginTop: 2 }}>
         <PlainTitle>{tier.title}</PlainTitle>
         <Sub>{tier.sub}</Sub>
       </Enter>
-      {rows.length > 1 ? <View style={{ alignSelf: 'stretch', marginTop: 20 }}><List tl={tl} delay={RING_AT + 480} rows={rows} /></View> : null}
-      <Buttons tl={tl} delay={RING_AT + 640}>
+      {!showPodium && podium.length ? <View style={{ alignSelf: 'stretch', marginTop: 20 }}><List tl={tl} delay={textAt + 180} rows={rows} /></View> : null}
+      <Buttons tl={tl} delay={textAt + (showPodium ? 160 : 340)}>
         <MainButton label="Compartir" onPress={share} />
         <LinkButton label="Ver el ranking" onPress={() => { onDone(); c.onRanking?.(); }} color={t.mint} />
         <LinkButton label="Ir a inicio" onPress={() => { onDone(); router.replace('/(tabs)'); }} color={t.muted} />
@@ -255,11 +234,12 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
 // =====================================================================
 
 export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: () => void }) {
+  const t = useRingTheme();
   const won = c.myRank === 1;
   const onPodium = c.myRank <= 3;
-  const tl = useTimeline(POD_CLOSE + 800);
-  useBuzzAt(tl, POD_CLOSE, won ? buzz.success : buzz.light);
-  const title = won ? '¡Ganaste la semana!' : onPodium ? '¡Quedaste en el podio!' : 'Terminó la semana';
+  const tl = useTimeline(PODIUM_DONE + 800);
+  useBuzzAt(tl, onPodium ? STEP_AT[c.myRank] + 480 : PODIUM_DONE, won ? buzz.success : buzz.light);
+  const title = won ? 'Ganaste la semana' : onPodium ? 'Quedaste en el podio' : 'Terminó la semana';
   const sub = won
     ? `Fuiste quien más caminó en ${c.name}.`
     : `Quedaste ${c.myRank}.º de ${c.members} en ${c.name}.${c.podium[0] ? ` Ganó ${first(c.podium[0].name)}.` : ''}`;
@@ -270,25 +250,36 @@ export function GroupWeekScene({ c, onDone }: { c: GroupWeekCinematic; onDone: (
       : `Quedé ${c.myRank}.º en ${c.name} en Camina con ${n(c.mySteps)} pasos esta semana. ¿Te animas?`;
     Share.share({ message: text }).catch(() => {});
   };
-  const entries = c.podium.slice(0, 3).map((q, i) => ({ rank: i + 1, person: q, steps: q.steps, me: q.id === c.meId }));
+  const textAt = PODIUM_DONE - 200;
   return (
-    <Stage tl={tl} night announce={`${title} ${sub} Entre todos caminaron ${c.total} pasos.`}>
+    <Stage tl={tl} night announce={`${title}. ${sub} Entre todos caminaron ${c.total} pasos.`}>
       <Enter tl={tl} delay={40}><Eyebrow>{`${c.name} · semana del ${c.weekLabel}`}</Eyebrow></Enter>
-      <View style={{ marginTop: 24 }}><RingPodium tl={tl} entries={entries} /></View>
-      <PodiumText tl={tl} title={title} sub={sub} onShare={share} onDone={onDone}
-        stats={[{ value: `${c.myRank}.º`, label: 'Tu puesto' }, { value: n(c.mySteps), label: 'Tus pasos' }, { value: n(c.total), label: 'Del grupo' }]} />
+      <View style={{ marginTop: 30 }}><Podium tl={tl} people={c.podium.slice(0, 3)} meId={c.meId} /></View>
+      <Enter tl={tl} delay={textAt} style={{ marginTop: 16 }}><Rank rank={c.myRank} label={`de ${c.members}`} /></Enter>
+      <Enter tl={tl} delay={textAt + 80} style={{ alignItems: 'center', marginTop: 2 }}>
+        <PlainTitle>{title}</PlainTitle>
+        <Sub>{sub}</Sub>
+      </Enter>
+      <Enter tl={tl} delay={textAt + 140} style={{ marginTop: 14 }}>
+        <Text style={{ fontSize: 13.5, color: t.muted, fontVariant: ['tabular-nums'] }}>Entre todos: <Text style={{ color: t.text, fontWeight: '700' }}>{n(c.total)} pasos</Text></Text>
+      </Enter>
+      <Buttons tl={tl} delay={textAt + 200}>
+        <MainButton label="Compartir" onPress={share} />
+        <LinkButton label={c.onOpen ? 'Ver el grupo' : 'Listo'} onPress={() => { onDone(); c.onOpen?.(); }} color={t.mint} />
+        {c.onOpen ? <LinkButton label="Seguir" onPress={onDone} color={t.muted} /> : null}
+      </Buttons>
     </Stage>
   );
 }
 
 // =====================================================================
-// Meta del grupo cumplida: el anillo se completa mientras suben los pasos, y cierra con la luz
+// Meta del grupo cumplida: el anillo se completa mientras suben los pasos
 // =====================================================================
 
 export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: () => void }) {
   const t = useRingTheme();
-  const AT = 200;
-  const DRAW = 1300;
+  const AT = 160;
+  const DRAW = 1100;
   const close = AT + DRAW;
   const tl = useTimeline(close + 800);
   const steps = useCount(tl, Math.round(c.total * 0.4), c.total, AT, DRAW);
@@ -301,24 +292,24 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     <Stage tl={tl} night announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Enter tl={tl} delay={40}><Eyebrow>{`Meta del grupo · ${c.name}`}</Eyebrow></Enter>
       <View style={{ marginTop: 24 }}>
-        <CaminaRing tl={tl} delay={AT} size={236} progress={1} duration={DRAW} onClose={{ at: close }}>
+        <SoloRing tl={tl} delay={AT} size={220} progress={1} duration={DRAW} width={12}>
           <Enter tl={tl} delay={AT} scale={0.94}>
             <View accessible accessibilityLabel={`${steps} de ${c.target} pasos`} style={{ alignItems: 'center' }}>
               <Text allowFontScaling={false} style={{ fontSize: 34, fontWeight: '800', letterSpacing: -1.2, color: t.text, fontVariant: ['tabular-nums'] }}>{n(steps)}</Text>
               <Text style={{ fontSize: 13, color: t.muted, marginTop: 1 }}>de {n(c.target)} pasos</Text>
             </View>
           </Enter>
-        </CaminaRing>
+        </SoloRing>
       </View>
-      <Enter tl={tl} delay={close - 200} style={{ alignItems: 'center', marginTop: 18 }}>
+      <Enter tl={tl} delay={close - 300} style={{ alignItems: 'center', marginTop: 20 }}>
         <PlainTitle>Lo lograron juntos</PlainTitle>
         <Sub>El grupo cumplió la meta de la semana.</Sub>
       </Enter>
       <View style={{ alignSelf: 'stretch', marginTop: 20 }}>
-        <List tl={tl} delay={close - 100} rows={top.map((q, i) => ({ rank: i + 1, person: q, steps: q.steps, me: q.id === meId }))} />
-        {rest > 0 ? <Enter tl={tl} delay={close + 60}><Text style={{ fontSize: 12.5, color: t.faint, textAlign: 'center', marginTop: 8 }}>y {rest} {rest === 1 ? 'persona más' : 'personas más'}</Text></Enter> : null}
+        <List tl={tl} delay={close - 200} rows={top.map((q, i) => ({ rank: i + 1, person: q, steps: q.steps, me: q.id === meId }))} />
+        {rest > 0 ? <Enter tl={tl} delay={close}><Text style={{ fontSize: 12.5, color: t.faint, textAlign: 'center', marginTop: 8 }}>y {rest} {rest === 1 ? 'persona más' : 'personas más'}</Text></Enter> : null}
       </View>
-      <Buttons tl={tl} delay={close + 60}>
+      <Buttons tl={tl} delay={close - 40}>
         {c.onShare ? <MainButton label="Compartir con el grupo" onPress={() => { c.onShare?.(); onDone(); }} /> : <MainButton label="Listo" onPress={onDone} />}
         {c.onShare ? <LinkButton label="Seguir" onPress={onDone} color={t.mint} /> : null}
       </Buttons>
