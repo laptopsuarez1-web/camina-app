@@ -189,48 +189,33 @@ export const Carrusel2 = ({ n }: { n: number }) => {
   }
 };
 
-// ---------- portada: tiene que explotar ----------
-const HuellaGrande = ({ x, y, rot, izq, alto, op }: { x: number; y: number; rot: number; izq: boolean; alto: number; op: number }) => (
-  <div style={{ position: 'absolute', left: x, top: y, width: alto * 0.48, height: alto, background: MENTA, opacity: op, transform: `rotate(${rot}deg)`, WebkitMaskImage: `url(${staticFile(izq ? 'marca/pie-L.png' : 'marca/pie-R.png')})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center' }} />
-);
-const Sticker = ({ x, y, rot, fondo, color, children }: { x: number; y: number; rot: number; fondo: string; color: string; children: ReactNode }) => (
-  <div style={{ position: 'absolute', left: x, top: y, display: 'flex', alignItems: 'center', gap: 12, padding: '16px 28px 16px 18px', borderRadius: 60, background: fondo, color, fontFamily: 'Jakarta', fontWeight: 800, fontSize: 34, transform: `rotate(${rot}deg)`, boxShadow: '0 18px 40px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>{children}</div>
-);
-const Portada = () => (
-  <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
-    {/* resplandor */}
-    <AbsoluteFill style={{ background: 'radial-gradient(55% 40% at 50% 72%, rgba(98,240,182,0.42), rgba(98,240,182,0.08) 55%, transparent 75%)' }} />
-    <AbsoluteFill style={{ background: 'radial-gradient(60% 35% at 50% 10%, rgba(91,43,214,0.35), transparent 70%)' }} />
-    {/* huellas gigantes cruzando el fondo */}
-    <HuellaGrande x={-40} y={980} rot={-58} izq alto={300} op={0.1} />
-    <HuellaGrande x={150} y={760} rot={-52} izq={false} alto={300} op={0.12} />
-    <HuellaGrande x={720} y={520} rot={-48} izq alto={300} op={0.12} />
-    <HuellaGrande x={900} y={300} rot={-44} izq={false} alto={300} op={0.1} />
-    <Marca tema="negro" />
-    <div style={{ position: 'absolute', right: 70, top: 92, padding: '12px 26px', borderRadius: 40, background: MENTA, color: MORADO, fontFamily: 'Jakarta', fontWeight: 800, fontSize: 28 }}>Desliza →</div>
-    {/* titular */}
-    <div style={{ position: 'absolute', left: 0, right: 0, top: 200, textAlign: 'center', fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 120, lineHeight: 0.95, textTransform: 'uppercase', color: '#fff', letterSpacing: '-0.01em' }}>Tus pasos</div>
-    <div style={{ position: 'absolute', left: 0, right: 0, top: 300, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 236, lineHeight: 0.95, textTransform: 'uppercase', color: MENTA, letterSpacing: '-0.02em', textShadow: '0 0 60px rgba(98,240,182,0.45)' }}>Valen</div>
-    {/* el teléfono, grande, con halo */}
-    <div style={{ position: 'absolute', left: 540 - 230, top: 610, width: 460, height: 460, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(98,240,182,0.5), transparent)', filter: 'blur(20px)' }} />
-    <Telefono src={A('rachas-dark')} x={540 - 190} y={590} alto={820} rot={-3} />
-    {/* stickers */}
-    <Sticker x={60} y={680} rot={-8} fondo={MENTA} color={MORADO}>
-      <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 46, height: 46, filter: 'brightness(0.25) saturate(2) hue-rotate(200deg)' }} />
-      +7 Puntos hoy
-    </Sticker>
-    <Sticker x={700} y={760} rot={7} fondo="#ffffff" color={NEGRO}>18 días de racha</Sticker>
-    <Sticker x={40} y={980} rot={5} fondo="#5b2bd6" color="#ffffff">Ruta del mes</Sticker>
-    <Sticker x={730} y={1060} rot={-6} fondo={MENTA} color={MORADO}>1.° del grupo</Sticker>
-    {/* sello */}
-    <div style={{ position: 'absolute', right: 56, top: 470, width: 190, height: 190, borderRadius: '50%', background: '#5b2bd6', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'rotate(12deg)', boxShadow: '0 0 0 6px #0b0b0d, 0 0 0 9px rgba(255,255,255,0.5)', fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', textTransform: 'uppercase', lineHeight: 0.95, textAlign: 'center' }}>
-      <span style={{ fontSize: 30 }}>Muy</span>
-      <span style={{ fontSize: 30 }}>pronto</span>
-      <span style={{ fontFamily: 'Jakarta', fontWeight: 700, fontSize: 18, letterSpacing: '0.1em', marginTop: 8, opacity: 0.85 }}>TARIJA</span>
-    </div>
-    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 160, background: `linear-gradient(180deg, transparent, ${NEGRO})` }} />
-  </AbsoluteFill>
-);
+// ---------- portada: sobria y llamativa (una idea, un teléfono) ----------
+const Portada = () => {
+  const alto = 1180;
+  const ancho = alto * (780 / 1688);
+  return (
+    <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ background: 'radial-gradient(45% 32% at 50% 82%, rgba(98,240,182,0.38), rgba(98,240,182,0.06) 60%, transparent 80%)' }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 96, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+        <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 62, height: 62 }} />
+        <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 40 }} />
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 236, textAlign: 'center', fontFamily: 'Mona', fontWeight: 850, fontStretch: '125%', fontSize: 132, lineHeight: 0.92, letterSpacing: '-0.015em', textTransform: 'uppercase', color: '#fff' }}>
+        Tus pasos
+        <br />
+        <span style={{ color: MENTA }}>valen.</span>
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 510, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 36, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
+      {/* el teléfono asoma desde abajo: solo el inicio con el anillo */}
+      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top: 640, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: '0 -20px 120px rgba(98,240,182,0.25), inset 0 0 0 2px rgba(255,255,255,0.16)' }}>
+        <div style={{ width: ancho, height: alto, borderRadius: 62, overflow: 'hidden' }}>
+          <Img src={staticFile(A('inicio-dark'))} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 330, background: `linear-gradient(180deg, rgba(11,11,13,0), ${NEGRO} 85%)` }} />
+    </AbsoluteFill>
+  );
+};
 
 // ---------- base de cada lámina ----------
 const Lamina = ({ n, tema, children, sinEncabezado }: { n: number; tema: Tema; children: ReactNode; sinEncabezado?: boolean }) => (
