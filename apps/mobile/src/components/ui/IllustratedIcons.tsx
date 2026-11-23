@@ -82,14 +82,14 @@ export const PARTS: Record<IllKind, IllPart[]> = {
   canjes: [
     { origin: '50% 100%', node: ({ g }) => (
       <>
-        <Rect x={5} y={16} width={38} height={10} rx={3.500} fill={g} />
-        <Path d="M24 16c-3-8.500-13-9.500-13-4 0 3.200 5.500 4 13 4zm0 0c3-8.500 13-9.500 13-4 0 3.200-5.500 4-13 4z" fill="none" stroke={g} strokeWidth={3.400} strokeLinejoin="round" />
+        <Rect x={6} y={13.500} width={36} height={9.500} rx={3.500} fill={g} />
+        <Path d="M24 13.500c-3-8.500-13-9.500-13-4 0 3.200 5.500 4 13 4zm0 0c3-8.500 13-9.500 13-4 0 3.200-5.500 4-13 4z" fill="none" stroke={g} strokeWidth={3.400} strokeLinejoin="round" />
       </>
     ) },
     { origin: '50% 100%', node: ({ f, g }) => (
       <>
-        <Path d="M8 27.500h32V39a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z" fill={f} />
-        <Rect x={21} y={27.500} width={6} height={15.500} fill={g} />
+        <Path d="M9 24.500h30V39a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4z" fill={f} />
+        <Rect x={21} y={24.500} width={6} height={18.500} fill={g} />
       </>
     ) },
   ],
