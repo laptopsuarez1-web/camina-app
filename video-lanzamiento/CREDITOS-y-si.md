@@ -36,4 +36,4 @@ Fotos: Banderas de Bolivia — Christian from Valencia, Spain (CC BY 2.0); Chunc
 - Tomas de Tarija del video «Tarija Bolivia 4K» (YouTube, con permiso del autor): plaza Luis de Fuentes, fuente, parque y monumento de la Loma, vista aérea.
 - Fotos de Tarija enviadas por Camina (iglesia de San Roque, puente, viñedos).
 - Grabaciones y capturas de la app con datos de ejemplo; logos de los 8 comercios de Camina.
-- Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson Rouge; Orange Mountain Music). Usada con permiso (Camina). Tramo continuo final de la obra (326,8 s al final), con efectos propios encima (`scripts/ysi_sonido.py`).
+- Música: «Glassworks: IV. Rubric» — Philip Glass. Interpretada por Signal, dirigida por Brad Lubman (en vivo en Le Poisson Rouge; Orange Mountain Music). Usada con permiso (Camina). Desde el mismo punto que el video de referencia (227,5 s) y, con un único empalme, hasta el final de la obra; con efectos propios encima (`scripts/ysi_sonido.py`).
