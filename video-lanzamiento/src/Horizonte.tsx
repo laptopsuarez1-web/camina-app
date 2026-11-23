@@ -111,17 +111,17 @@ export const Horizonte = () => {
 };
 
 // ---------- El círculo de cada toma: su tamaño y su lugar cambian en cada corte, y dentro de la toma se mueve ----------
-// (como en la referencia: cada toma es otro objeto redondo; gira despacio y la cámara se acerca)
+// (como en la referencia: cada toma es otro objeto redondo; dentro de la toma apenas se mueve)
 type Geo = { R: number; top: number; cx: number; rot: number; cy: number };
 const RADIOS = [1500, 1150, 1900, 1300, 2200, 1250, 1700, 1400, 2000, 1200];
 const ALTOS = [0, 22, -14, 12, -6, 26, -10, 16];
 const geo = (k: number, f: number, dur: number): Geo => {
   const q = Math.min(1, f / Math.max(1, dur));
   const dir = k % 2 === 0 ? 1 : -1;
-  const R = RADIOS[k % RADIOS.length] * (1 + 0.05 * q); // la cámara se acerca
-  const top = ARCO_Y + ALTOS[k % ALTOS.length] - 10 * q;
-  const cx = 540 + dir * 14 * (q - 0.5);
-  return { R, top, cx, rot: dir * 2.4 * q, cy: top + R };
+  const R = RADIOS[k % RADIOS.length] * (1 + 0.008 * q); // apenas se acerca
+  const top = ARCO_Y + ALTOS[k % ALTOS.length] - 2 * q;
+  const cx = 540 + dir * 2 * (q - 0.5);
+  return { R, top, cx, rot: dir * 0.35 * q, cy: top + R }; // movimiento muy leve
 };
 const geoEn = (cuadro: number): Geo => {
   const k = tomaEn(cuadro);
