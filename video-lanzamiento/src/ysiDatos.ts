@@ -21,7 +21,7 @@ export type Toma = {
 const vid = (src: string, desde = 0): Medio => ({ tipo: 'video', src: `yasi/v/${src}.mp4`, desde });
 const foto = (src: string, origen = 'center'): Medio => ({ tipo: 'foto', src: `yasi/f/${src}`, origen });
 const app = (src: string): Medio => ({ tipo: 'app', src: src.includes('/') ? src : `yasi/app/${src}.jpg` });
-const P = (t: string, x: number, y: number, size = 118, en = 0, verde = false): Palabra => ({ t, x, y, size: Math.round(size * 1.18), en, verde });
+const P = (t: string, x: number, y: number, size = 118, en = 0, verde = false): Palabra => ({ t, x, y, size: size >= 200 ? size : Math.round(size * 0.82), en, verde })  // palabras chicas y elegantes; las clave, grandes;
 
 export const TOMAS: Toma[] = [
   // ¿Cuántos pasos das por día?
@@ -48,7 +48,7 @@ export const TOMAS: Toma[] = [
   { medio: foto('chunchos-san-roque.jpg', '58% center'), palabras: [P('te lo', 0.66, 0.28, 140)], leyenda: 'Chunchos-de-San-Roque', dur: 1 },
   { medio: foto('san-roque-iglesia.jpg', 'center 30%'), palabras: [{ ...P('devolviera?', 0.5, 0.8, 170, 0, true), efecto: 'juntar' }], dur: 1 },
   {
-    rafaga: [foto('t-glorieta.jpg'), foto('t-monumento-luis-de-fuentes.jpg'), foto('puente-aereo.jpg'), foto('vinedos.jpg'), foto('t-casa-dorada.jpg', 'center 40%'), foto('t-mirador-copa.jpg'), foto('t-rueda-chapaca.jpg'), foto('t-plaza-luis-de-fuentes.jpg')],
+    rafaga: [foto('t-glorieta.jpg'), foto('t-monumento-luis-de-fuentes.jpg'), foto('puente-aereo.jpg'), foto('vinedos.jpg'), foto('t-casa-dorada.jpg', 'center 40%'), foto('empanada-blanqueada.jpg'), foto('t-rueda-chapaca.jpg'), foto('t-plaza-luis-de-fuentes.jpg')],
     cada: 5,
     dur: 2,
     leyenda: 'Tarija',
