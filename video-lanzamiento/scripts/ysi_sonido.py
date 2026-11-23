@@ -4,7 +4,8 @@
 # Igual que en el video de referencia: empieza en la parte calma (227,49 s de la obra) y la sección fuerte (230,02 s) entra
 # justo cuando termina la apertura; un único empalme en el 20,29 s del video (en un corte de imagen, donde los dos tramos
 # coinciden 94 % en armonía) lleva al final de la obra: el golpe final (360,37 s) cae en el 33,6 s, con el logo.
-# Encima: máquina de escribir en cada leyenda (letra por letra) y en cada palabra, más presente que la música.
+# Entrada fuerte desde el primer cuadro, dos respiros en el medio, y encima solo efectos discretos (clic de proyector en
+# cada cambio de toma, huellas, logos y brillo del logo).
 # Uso: npx esbuild scripts/ysi_linea.ts --bundle --platform=node --outfile=/tmp/ysi_linea.js && node /tmp/ysi_linea.js > public/audio/ysi-linea.json
 #      python3 scripts/ysi_sonido.py  ->  public/audio/ysi-mezcla.wav
 import sys, os, io, json, subprocess, math
@@ -46,60 +47,30 @@ ea = np.ones(na); ea[-nx:] = np.cos(np.linspace(0, np.pi / 2, nx))
 eb = np.ones(len(b)); eb[:nx] = np.sin(np.linspace(0, np.pi / 2, nx))
 place(mus, a * ea[:, None], 0)
 place(mus, b * eb[:, None], EMPALME - xf / 2)
-mus *= curva(t, [(0, 0.0), (0.3, 1.0), (CARD - 0.1, 1.0), (CARD + 0.4, 0.75), (CIERRE - 0.5, 0.75), (CIERRE, 1.0), (DUR, 1.0)])[:, None]
+RESPIROS = [(10.3, 11.9), (15.9, 17.0)]  # paisajes de Bolivia y las tomas de la plaza y la Loma (sin palabras)
+pts = [(0, 0.0), (0.02, 1.7), (2.45, 1.7), (2.6, 1.0)]  # la parte calma del inicio sube para que la entrada sea fuerte
+for r0, r1 in RESPIROS:
+    pts += [(r0 - 0.5, 1.0), (r0 + 0.3, 0.6), (r1 - 0.3, 0.6), (r1 + 0.4, 1.0)]
+pts += [(CARD - 0.1, 1.0), (CARD + 0.4, 0.75), (CIERRE - 0.5, 0.75), (CIERRE, 1.0), (DUR, 1.0)]
+mus *= curva(t, pts)[:, None]
 mus /= np.abs(mus).max()
 
-# ---------- Efectos ----------
-r = np.random.default_rng(5)
-def tecla(g=0.5, fuerte=False):
-    """Golpe de máquina de escribir: clic metálico + cuerpo de madera, con pequeñas variaciones."""
-    n = int(0.09 * SR)
-    tt = np.arange(n) / SR
-    clic = filt(filt(r.normal(0, 1, n), 2500, 'high'), 9000) * np.exp(-tt * 380)
-    cuerpo = filt(filt(r.normal(0, 1, n), 500, 'high'), 2200) * np.exp(-tt * 70) * 0.7
-    golpe_ = np.sin(2 * np.pi * (150 + r.uniform(-15, 15)) * tt) * np.exp(-tt * 60) * (0.6 if fuerte else 0.3)
-    x = (clic + cuerpo + golpe_) * g * r.uniform(0.85, 1.1)
-    p = r.uniform(0.35, 0.65)
-    return np.stack([x * (1 - p) * 2, x * p * 2], 1) * 0.5
-
-def campanilla(g=0.12):
-    n = int(0.8 * SR)
-    tt = np.arange(n) / SR
-    x = (np.sin(2 * np.pi * 2637 * tt) + 0.4 * np.sin(2 * np.pi * 5274 * tt)) * np.exp(-tt * 9)
-    return estereo(x * g)
-
+# ---------- Efectos (discretos: la música manda) ----------
 sfx = np.zeros((N, 2))
 for i, at in enumerate([0.0, 0.3, 0.6, 0.9]):  # huellas de la intro
-    place(sfx, paso(0.5, i % 2 == 0), at)
-place(sfx, brillo_logo(0.04), 40 / 30)
-for i in range(6):  # CAMINA se arma: teclas
-    place(sfx, tecla(0.5), (44 + 4 + i * 16 / 5) / 30)
-
-for tm in L['tomas']:
-    d0 = tm['desde']
-    place(sfx, clic_pelicula(0.03), F(d0))
-    for p in tm['palabras']:  # cada palabra cae como una tecla fuerte
-        place(sfx, tecla(0.75, True), F(d0 + p['en']))
-    if tm['leyenda']:  # la leyenda se escribe letra por letra (cuadros 2 a 10 de la toma)
-        largo = len(tm['leyenda'])
-        prev = 0
-        for fr in range(2, 11):
-            nvis = math.floor((fr - 2) / 8 * largo) if fr < 10 else largo
-            if nvis > prev:
-                place(sfx, tecla(0.42), F(d0 + fr))
-                prev = nvis
+    place(sfx, paso(0.35, i % 2 == 0), at)
+place(sfx, brillo_logo(0.035), 40 / 30)
+for tm in L['tomas']:  # clic de proyector en cada cambio de toma y en las ráfagas
+    place(sfx, clic_pelicula(0.06), F(tm['desde']))
     if tm['rafaga']:
         for k in range(1, tm['rafaga']['n']):
-            place(sfx, clic_pelicula(0.03), F(d0 + k * tm['rafaga']['cada']))
-
+            place(sfx, clic_pelicula(0.045), F(tm['desde'] + k * tm['rafaga']['cada']))
 for k in range(16):  # logos de la tarjeta
-    place(sfx, tecla(0.3), CARD + (14 + 7 * k) / 30)
-place(sfx, campanilla(0.12), CARD + 126 / 30)
+    place(sfx, blip(2200, 0.02, 0.02), CARD + (14 + 7 * k) / 30)
+place(sfx, campana(1318.5, 0.08, 1.4), CARD + 126 / 30)
 place(sfx, brillo_logo(0.06), CIERRE)
-for i in range(6):  # en el cierre, CAMINA aparece: teclas
-    place(sfx, tecla(0.45), CIERRE + (22 * 0.55 + i * 2) / 30)
-sfx = reverb(sfx, 0.6, 0.1, 8000, seed=21)
+sfx = reverb(sfx, 0.8, 0.12, 8000, seed=21)
 sfx /= np.abs(sfx).max()
 
-sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.36 + sfx * 0.72, umbral=0.35).astype(np.float32), SR)
+sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.62 + sfx * 0.32, umbral=0.35).astype(np.float32), SR)
 print('ok; tarjeta', round(CARD, 2), 's; cierre', round(CIERRE, 2), 's; empalme', round(EMPALME, 2), 's; golpe final', round(FINAL, 2), 's')
