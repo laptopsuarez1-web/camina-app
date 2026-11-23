@@ -75,8 +75,8 @@ export const PARTS: Record<IllKind, IllPart[]> = {
         <Rect x={29.500} y={4} width={4.500} height={11} rx={2.250} fill={g} />
       </>
     ) },
-    { origin: '50% 50%', foot: { x: 14.500, y: 23, w: 8, h: 16, side: 0 } },
-    { origin: '50% 50%', foot: { x: 25.500, y: 25, w: 8, h: 16, side: 1 } },
+    { origin: '50% 50%', foot: { x: 12.500, y: 21.500, w: 9.500, h: 19, side: 0 } },
+    { origin: '50% 50%', foot: { x: 25.500, y: 22.500, w: 9.500, h: 19, side: 1 } },
   ],
   // Canjes: un regalo. La tapa con el moño (segundo color) se levanta al tocarlo; la caja lleva la cinta.
   canjes: [
@@ -159,17 +159,18 @@ export const PARTS: Record<IllKind, IllPart[]> = {
 
 const FOOT_L = require('@/../assets/pie-izq-mint.png');
 const FOOT_R = require('@/../assets/pie-der-mint.png');
+const FOOT_HEART = require('@/../assets/pie-der-corazon.png');
 
 // Huella de Camina (la del logo) tintada, posicionada en la grilla de 48.
-export function Foot({ part, size, tint }: { part: NonNullable<IllPart['foot']>; size: number; tint: string }) {
+export function Foot({ part, size, tint, heart }: { part: NonNullable<IllPart['foot']>; size: number; tint: string; heart?: string }) {
   const k = size / 48;
+  const box = { position: 'absolute' as const, left: part.x * k, top: part.y * k, width: part.w * k, height: part.h * k };
   return (
-    <Image
-      source={part.side === 0 ? FOOT_L : FOOT_R}
-      accessible={false}
-      resizeMode="contain"
-      style={{ position: 'absolute', left: part.x * k, top: part.y * k, width: part.w * k, height: part.h * k, tintColor: tint, opacity: 0.95 }}
-    />
+    <>
+      <Image source={part.side === 0 ? FOOT_L : FOOT_R} accessible={false} resizeMode="contain" style={{ ...box, tintColor: tint, opacity: 0.95 }} />
+      {/* El corazón del talón (huella derecha), relleno para que se note sobre cualquier color. */}
+      {heart && part.side === 1 ? <Image source={FOOT_HEART} accessible={false} resizeMode="contain" style={{ ...box, tintColor: heart }} /> : null}
+    </>
   );
 }
 
@@ -183,7 +184,7 @@ export function IllArt({ kind, size = 48, muted }: { kind: IllKind; size?: numbe
         {muted ? null : gradientDefs(uid, kind)}
         {PARTS[kind].map((p, i) => (p.node ? <G key={i}>{p.node(c)}</G> : null))}
       </Svg>
-      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} /> : null))}
+      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} heart={muted ? undefined : '#FFFFFF'} /> : null))}
     </View>
   );
 }
