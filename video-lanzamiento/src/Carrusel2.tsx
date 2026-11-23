@@ -39,12 +39,12 @@ export const Carrusel2 = ({ n }: { n: number }) => {
         <Lamina n={2} tema="blanco">
           <Etiqueta tema="blanco">Cómo funciona</Etiqueta>
           <Titular tema="blanco" top={250} tam={92}>
-            Caminas. Sumas. <Ac tema="blanco">Canjeas.</Ac>
+            Caminas. Sumas. <Ac tema="blanco">Canjeas</Ac>
           </Titular>
           {[
-            ['01', 'Caminas', 'La app cuenta tus pasos sola, todos los días.'],
-            ['02', 'Sumas Puntos', 'Cada día que caminas, ganas Puntos.'],
-            ['03', 'Canjeas', 'Usas tus Puntos en comercios de tu ciudad.'],
+            ['01', 'Caminas', 'La app cuenta tus pasos sola, todos los días'],
+            ['02', 'Sumas Puntos', 'Cada día que caminas, ganas Puntos'],
+            ['03', 'Canjeas', 'Usas tus Puntos en comercios de tu ciudad'],
           ].map(([num, t, d], i) => (
             <div key={num} style={{ position: 'absolute', left: 80, right: 80, top: 570 + i * 196, height: 172, borderRadius: 40, background: NEGRO, display: 'flex', alignItems: 'center', gap: 34, padding: '0 44px' }}>
               <div style={{ fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 84, color: 'transparent', WebkitTextStroke: `3px ${MENTA}`, width: 150 } as CSSProperties}>{num}</div>
@@ -76,7 +76,7 @@ export const Carrusel2 = ({ n }: { n: number }) => {
             Cada mes, una <Ac tema="negro">ruta nueva</Ac>
           </Titular>
           <Texto tema="negro" top={480} ancho={900}>
-            Te tocan 3 locales de tu ciudad. Complétala y gana Día doble, insignia y boleto del sorteo.
+            Te tocan 3 locales de tu ciudad. Complétala y gana Día doble, insignia y boleto del sorteo
           </Texto>
           <Telefono src={A('eventos-ruta-v2-dark')} x={110} y={680} alto={560} rot={-5} />
           <Telefono src={A('ruta-mapa-nov-dark')} x={540} y={650} alto={600} rot={4} />
@@ -115,7 +115,7 @@ export const Carrusel2 = ({ n }: { n: number }) => {
             Reta a tu <Ac tema="negro">grupo</Ac>
           </Titular>
           <Texto tema="negro" top={480} ancho={900}>
-            Elijan la regla, la meta y los Puntos en juego.
+            Elijan la regla, la meta y los Puntos en juego
           </Texto>
           <Telefono src={A('grupos-v2-dark')} x={110} y={640} alto={580} rot={-5} />
           <div style={{ position: 'absolute', left: 560, top: 700, width: 440, padding: '34px 36px', borderRadius: 40, background: MENTA, color: MORADO, transform: 'rotate(3deg)', boxShadow: '0 30px 70px rgba(0,0,0,0.45)' }}>
@@ -132,7 +132,7 @@ export const Carrusel2 = ({ n }: { n: number }) => {
             Canjea en tu <Ac tema="morado">ciudad</Ac>
           </Titular>
           <Texto tema="morado" top={480} ancho={460}>
-            Usa tus Puntos en comercios de Tarija.
+            Usa tus Puntos en comercios de Tarija
           </Texto>
           <Logos x={80} y={650} />
           <Telefono src={A('mapa-locales-dark')} x={590} y={540} alto={640} rot={4} />
@@ -166,7 +166,7 @@ export const Carrusel2 = ({ n }: { n: number }) => {
             Hecho en <Ac tema="foto">Tarija</Ac>
           </Titular>
           <Texto tema="foto" top={960} ancho={860}>
-            Nació caminando estas calles.
+            Nació caminando estas calles
           </Texto>
         </Lamina>
       );
@@ -205,7 +205,7 @@ const Portada = () => {
         <br />
         paso
         <br />
-        <span style={{ color: MENTA }}>cuenta.</span>
+        <span style={{ color: MENTA }}>cuenta</span>
       </div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 680, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
       {/* el teléfono asoma desde abajo: solo el inicio con el anillo */}
