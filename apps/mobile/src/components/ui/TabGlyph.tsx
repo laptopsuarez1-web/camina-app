@@ -6,7 +6,7 @@ import { Foot, gradientDefs, PARTS, type Fills, type IllKind } from '@/component
 import { partProgress, sample } from '@/lib/motion';
 
 // Íconos de la barra de abajo, armados por partes para que cada uno haga su gesto al tocarlo:
-// la casa se levanta, las barras crecen, los grupos saltan, el calendario pasa de página, la bolsa se balancea.
+// la casa se levanta, las barras crecen, los grupos saltan, el calendario pasa de página, el regalo levanta la tapa.
 // Mismo dibujo en todos los teléfonos. Los dibujos están en IllustratedIcons.
 export type TabKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes';
 
@@ -17,17 +17,16 @@ const hop: PartAnim['at'] = [0, 0.35, 0.65, 1];
 const squash: PartAnim = { delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], scaleY: [1, 0.92, 1.04, 1] };
 const bar = (delay: number): PartAnim => ({ delay, dur: 520, at: [0, 0.3, 0.7, 1], scaleY: [1, 0.55, 1.08, 1] });
 const jump = (delay: number): PartAnim => ({ delay, dur: 520, at: hop, y: [0, -6, 1.5, 0] });
-const swing: PartAnim = { delay: 0, dur: 700, at: [0, 0.22, 0.5, 0.72, 1], rotate: [0, -15, 11, -5, 0] };
 const step = (delay: number): PartAnim => ({ delay, dur: 480, at: [0, 0.6, 1], y: [8, -1.5, 0], opacity: [0, 1, 1] });
 
 // Gesto de cada parte, en el mismo orden que PARTS (IllustratedIcons): la casa se levanta, las barras crecen, los grupos saltan,
-// el calendario sacude las argollas y las huellas aparecen paso a paso, la bolsa se balancea.
+// el calendario sacude las argollas y las huellas aparecen paso a paso, el regalo levanta la tapa.
 const ANIM: Partial<Record<TabKind, (PartAnim | undefined)[]>> = {
   home: [{ delay: 0, dur: 560, at: [0, 0.28, 0.55, 1], y: [0, -4.5, 1, 0] }, squash, squash],
   activity: [bar(0), bar(70), bar(140)],
   groups: [undefined, jump(0), jump(80), jump(140)],
   events: [undefined, { delay: 0, dur: 520, at: [0, 0.25, 0.6, 1], rotate: [0, -14, 10, 0] }, step(0), step(160)],
-  canjes: [swing, swing, swing, swing],
+  canjes: [{ delay: 0, dur: 560, at: [0, 0.3, 0.65, 1], y: [0, -6, 1, 0] }, squash],
 };
 const KIND: Record<TabKind, IllKind> = { home: 'home', activity: 'activity', groups: 'groups', events: 'events', canjes: 'canjes' };
 
@@ -87,7 +86,7 @@ export function TabGlyph({ kind, color, focused, tick = 0, size = 28 }: { kind: 
               {part.node(c)}
             </Svg>
           ) : part.foot ? (
-            <Foot part={part.foot} size={size} tint={focused ? '#FFF6D2' : c.g} />
+            <Foot part={part.foot} size={size} tint={focused ? '#7A55E6' : c.g} />
           ) : null}
         </Layer>
       ))}

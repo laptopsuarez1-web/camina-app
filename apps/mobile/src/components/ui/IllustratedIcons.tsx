@@ -3,13 +3,13 @@ import { Image, View } from 'react-native';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Circle, Stop } from 'react-native-svg';
 
 // Íconos ilustrados con degradé, en la línea del trofeo (dibujo en una grilla de 48). Los usan la barra de abajo (TabGlyph, por partes
-// para que cada uno haga su gesto) y las fichas de Inicio (IconBubble). Calendario y bolsa llevan las huellas de Camina, como el trofeo.
+// para que cada uno haga su gesto) y las fichas de Inicio (IconBubble). El calendario lleva las huellas de Camina, como el trofeo.
 export type IllKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes' | 'target' | 'friend' | 'gift' | 'bell' | 'flame' | 'store';
 
 export type Fills = { f: string; g: string };
 export type IllPart = { origin: string; node?: (c: Fills) => ReactNode; foot?: { x: number; y: number; w: number; h: number; side: 0 | 1 } };
 
-const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'coral', canjes: 'gold', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
+const TONE: Record<IllKind, keyof typeof GRAD> = { home: 'mint', activity: 'mint', groups: 'purple', events: 'mint', canjes: 'mint', target: 'coral', friend: 'aqua', gift: 'pink', bell: 'gold', flame: 'mint', store: 'gold' };
 const SECOND: Record<keyof typeof GRAD, keyof typeof GRAD> = { mint: 'aqua', aqua: 'mint', purple: 'pink', coral: 'gold', gold: 'coral', pink: 'purple', leaf: 'mint' };
 const GRAD = {
   mint: ['#5CEBC0', '#1F9C7C'], gold: ['#FFE08A', '#E8A12A'], purple: ['#C4AEFF', '#7050E0'],
@@ -17,8 +17,8 @@ const GRAD = {
 } as const;
 
 // Segundo color de cada ícono; Actividad va toda en un solo verde y Grupos en morado con la gente de los costados en verde.
-// La llama de la racha es verde, del color de Camina, con el centro en verde claro.
-const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf' };
+// La llama de la racha es verde, del color de Camina, con el centro en verde claro. Inicio, Eventos y Canjes: verde con detalles en morado.
+const SECOND_OF: Partial<Record<IllKind, keyof typeof GRAD>> = { activity: 'mint', groups: 'mint', flame: 'leaf', home: 'purple', events: 'purple', canjes: 'purple' };
 
 export function gradientDefs(uid: string, kind: IllKind): ReactNode {
   const t = TONE[kind];
@@ -75,14 +75,23 @@ export const PARTS: Record<IllKind, IllPart[]> = {
         <Rect x={29.500} y={4} width={4.500} height={11} rx={2.250} fill={g} />
       </>
     ) },
-    { origin: '50% 50%', foot: { x: 14.500, y: 23, w: 8, h: 16, side: 0 } },
-    { origin: '50% 50%', foot: { x: 25.500, y: 25, w: 8, h: 16, side: 1 } },
+    { origin: '50% 50%', foot: { x: 12.500, y: 21.500, w: 9.500, h: 19, side: 0 } },
+    { origin: '50% 50%', foot: { x: 25.500, y: 22.500, w: 9.500, h: 19, side: 1 } },
   ],
+  // Canjes: un regalo. La tapa con el moño (segundo color) se levanta al tocarlo; la caja lleva la cinta.
   canjes: [
-    { origin: '50% 0%', node: ({ g }) => <Path d="M16 17v-3a8 8 0 0 1 16 0v3" fill="none" stroke={g} strokeWidth={4} strokeLinecap="round" /> },
-    { origin: '50% 0%', node: ({ f }) => <Path d="M8 17h32l2.500 21a5 5 0 0 1-5 5.500h-27a5 5 0 0 1-5-5.500z" fill={f} /> },
-    { origin: '50% 0%', foot: { x: 14, y: 22, w: 8, h: 16, side: 0 } },
-    { origin: '50% 0%', foot: { x: 25, y: 24, w: 8, h: 16, side: 1 } },
+    { origin: '50% 100%', node: ({ g }) => (
+      <>
+        <Rect x={6} y={13.500} width={36} height={9.500} rx={3.500} fill={g} />
+        <Path d="M24 13.500c-3-8.500-13-9.500-13-4 0 3.200 5.500 4 13 4zm0 0c3-8.500 13-9.500 13-4 0 3.200-5.500 4-13 4z" fill="none" stroke={g} strokeWidth={3.400} strokeLinejoin="round" />
+      </>
+    ) },
+    { origin: '50% 100%', node: ({ f, g }) => (
+      <>
+        <Path d="M9 24.500h30V39a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4z" fill={f} />
+        <Rect x={21} y={24.500} width={6} height={18.500} fill={g} />
+      </>
+    ) },
   ],
   target: [
     { origin: '50% 50%', node: ({ f, g }) => (
@@ -174,7 +183,7 @@ export function IllArt({ kind, size = 48, muted }: { kind: IllKind; size?: numbe
         {muted ? null : gradientDefs(uid, kind)}
         {PARTS[kind].map((p, i) => (p.node ? <G key={i}>{p.node(c)}</G> : null))}
       </Svg>
-      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#FFF6D2'} /> : null))}
+      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} /> : null))}
     </View>
   );
 }

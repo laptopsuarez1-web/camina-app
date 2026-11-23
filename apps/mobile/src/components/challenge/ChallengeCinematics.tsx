@@ -7,10 +7,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { NightBackdrop } from '@/components/celebrations/Ring';
 import { useColorScheme } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
-import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { Press } from '@/components/ui/Press';
 import { AvatarImage } from '@/components/ui/AvatarImage';
 import { Coin } from '@/components/ui/Coin';
@@ -234,8 +234,9 @@ export const display = (size: number) =>
   brandFontsReady() ? { fontFamily: WORDMARK_FAMILY, fontWeight: 'normal' as const, fontSize: size } : { fontWeight: '900' as const, fontSize: size };
 
 // Fondo de la escena: tapa la pantalla, se funde al entrar y un toque salta al final.
-export function Stage({ tl, children, announce, align = 'center', confetti }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top'; confetti?: { at: number; palette?: string[] } }) {
+export function Stage({ tl, children, announce, align = 'center', confetti, night }: { tl: Timeline; children: ReactNode; announce: string; align?: 'center' | 'top'; confetti?: { at: number; palette?: string[] }; night?: boolean }) {
   const insets = useSafeAreaInsets();
+  const pal = usePalette();
   const fade = useSharedValue(0);
   useEffect(() => {
     fade.value = withTiming(1, { duration: tl.reduced ? 250 : 350 });
@@ -246,8 +247,8 @@ export function Stage({ tl, children, announce, align = 'center', confetti }: { 
   return (
     <Animated.View accessibilityViewIsModal style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, a]}>
       <View style={{ flex: 1 }}>
-        {/* El mismo fondo de la app (degradé y olas). */}
-        <AmbientBackground />
+        {/* Fondo liso (o la noche morada de los festejos con el anillo), sin olas, para que el festejo respire. */}
+        {night ? <NightBackdrop /> : <LinearGradient colors={pal.bg} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />}
         <Press
           accessible={false}
           feedback="none"

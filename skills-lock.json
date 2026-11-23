@@ -1,6 +1,27 @@
 {
   "version": 2,
   "skills": {
+    "ad-creative": {
+      "source": "coreyhaines31/marketingskills",
+      "commit": "7eb2a2103e0d2d8e41e0b6de07d969bc14b7f1a8",
+      "sourceType": "github",
+      "skillPath": "skills/ad-creative/SKILL.md",
+      "computedHash": "8a0153fed4baba514d835a965c6c930026fe685bc2d9b780cef6fc77aa9860fd"
+    },
+    "canvas-design": {
+      "source": "anthropics/skills",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
+      "sourceType": "github",
+      "skillPath": "skills/canvas-design/SKILL.md",
+      "computedHash": "1866477474e694f562261008bb6a817e53f027b6347b062fbd1e2ee2eb83f20d"
+    },
+    "ffmpeg": {
+      "source": "digitalsamba/claude-code-video-toolkit",
+      "commit": "a89a32078bf1bad0107a43c228de38ced2baee89",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ffmpeg/SKILL.md",
+      "computedHash": "ff8e85c81bac9a0bc655b94893f06e60e34c42f3faa98ee60e2cdd51a0215013"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
@@ -15,6 +36,41 @@
       "skillPath": ".agents/skills/impeccable/SKILL.md",
       "computedHash": "08bd5bf141cb507f46bd8347890cd985865606f15adf88295ed3a73bc9ad5d96"
     },
+    "launch": {
+      "source": "coreyhaines31/marketingskills",
+      "commit": "7eb2a2103e0d2d8e41e0b6de07d969bc14b7f1a8",
+      "sourceType": "github",
+      "skillPath": "skills/launch/SKILL.md",
+      "computedHash": "fc875c4c34f25a1a3be3ccfd9d1011cb103691172b9feb6d39578f2f4b8e594d"
+    },
+    "motion-design": {
+      "source": "LottieFiles/motion-design-skill",
+      "commit": "d77a9fc8cb371cab1ba5420df5bfd232cd14c9bb",
+      "sourceType": "github",
+      "skillPath": "skills/motion-design/SKILL.md",
+      "computedHash": "be5bc38a720ec04b0c78ebf33b30e2bc8fde2d0cb3c5d4f37d383059d341802f"
+    },
+    "remotion-best-practices": {
+      "source": "remotion-dev/skills",
+      "commit": "6f55706d1069e512430582ad86e4e57dc07afe1b",
+      "sourceType": "github",
+      "skillPath": "skills/remotion-best-practices/SKILL.md",
+      "computedHash": "3a00c916c1a0ee0ccb64b27b08049508d712d65c04ee1bd84d96709854c488e4"
+    },
+    "remotion-render": {
+      "source": "remotion-dev/skills",
+      "commit": "6f55706d1069e512430582ad86e4e57dc07afe1b",
+      "sourceType": "github",
+      "skillPath": "skills/remotion-render/SKILL.md",
+      "computedHash": "c2c5b613675efce3196a12b6323686ba493212f12de317cc2876ffe2e1eb8061"
+    },
+    "social": {
+      "source": "coreyhaines31/marketingskills",
+      "commit": "7eb2a2103e0d2d8e41e0b6de07d969bc14b7f1a8",
+      "sourceType": "github",
+      "skillPath": "skills/social/SKILL.md",
+      "computedHash": "4351bf0c438ff4c0fb25365f483eada49645c507f6333cfc41ef500e097b7a59"
+    },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "commit": "0fa6f35939138cdfaa97cb375e711396bb1e43a7",
@@ -28,6 +84,20 @@
       "sourceType": "github",
       "skillPath": "skills/react-best-practices/SKILL.md",
       "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+    },
+    "video": {
+      "source": "coreyhaines31/marketingskills",
+      "commit": "7eb2a2103e0d2d8e41e0b6de07d969bc14b7f1a8",
+      "sourceType": "github",
+      "skillPath": "skills/video/SKILL.md",
+      "computedHash": "387c9295e5cd24676f2e917de8b1e92efb70ef41ea0118ec4c816c40eca61045"
+    },
+    "video-design": {
+      "source": "digitalsamba/claude-code-video-toolkit",
+      "commit": "a89a32078bf1bad0107a43c228de38ced2baee89",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/video-design/SKILL.md",
+      "computedHash": "666b4fee1e52853ad477038d3b8dcf5832cccc38618e7ca872532f59f8679f2d"
     }
   }
 }
