@@ -1,10 +1,11 @@
-# Banda sonora de «¿Y si cada paso…?» (sin voz). Original, generada por código: uso comercial libre.
-# Estilo cinematográfico minimalista: ostinato de piano en corcheas (90 BPM), cuerdas que se suman de a poco,
-# graves que crecen en cada capítulo, sin batería electrónica. Progresión Am – F – C – G; resuelve en Do al cierre.
-#   0–2,7 intro (huellas y logo) · 2,7–8 preguntas · 8–12,7 Bolivia · 12,7–18 Tarija · 18–20,7 barrio
-#   20,7–26 la app · 26–31,3 tarjeta de comercios (respiro) · 31,3–35 cierre
+# Banda sonora de «¿Y si cada paso…?» (sin voz).
+# Base: «Dreaming Big» de Ahjay Stelino (Mixkit, licencia gratuita de Mixkit para música: uso en videos comerciales
+# permitido, se puede editar). Se usa solo la parte con pulso (32 tiempos, del 59,07 s al 73,24 s del tema), repetida en
+# el mismo punto del compás para que no se note la costura, y el final suave del tema para el cierre. Encima, capas propias
+# en Re mayor (graves y cuerdas en Re y La) que crecen por capítulo, y los efectos sincronizados con el montaje.
+# Fuente: https://assets.mixkit.co/music/31/31.mp3  ->  public/audio/fuente/dreaming-big-mixkit-31.mp3
 # Uso: python3 scripts/ysi_sonido.py  ->  public/audio/ysi-mezcla.wav
-import sys, os
+import sys, os, io, subprocess
 sys.path.insert(0, os.path.dirname(__file__))
 import numpy as np
 import soundfile as sf
@@ -13,142 +14,96 @@ from sintes import *
 DUR = 35.0
 N = int(SR * DUR)
 t = np.arange(N) / SR
-B = 2 / 3
-BAR = 4 * B
-INTRO, BOL, TAR, BAR_, APP, CARD, CIERRE = 80 / 30, 8.0, 12.667, 18.0, 20.667, 26.0, 31.333
-
-# cortes y ráfagas (igual que src/YSi.tsx)
+BEAT = 60 / 135.5
+U = 1.5 * BEAT  # una unidad de montaje
+INTRO = 80 / 30
 DUR_TOMAS = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1]
-RAFAGAS = {7: (4, 5), 13: (2, 10), 19: (8, 5), 28: (5, 4)}  # índice de toma: (imágenes, cuadros por imagen)
-cortes, rafaga_clics = [], []
-at = INTRO
+RAFAGAS = {7: (4, 5), 13: (2, 10), 19: (8, 5), 28: (5, 4)}
+cortes, clics = [], []
+u = 0
 for i, d in enumerate(DUR_TOMAS):
+    at = round((80 + u * U * 30)) / 30
     cortes.append(at)
     if i in RAFAGAS:
         n, c = RAFAGAS[i]
-        rafaga_clics += [at + k * c / 30 for k in range(1, n)]
-    at += d * B
+        clics += [at + k * c / 30 for k in range(1, n)]
+    u += d
+CARD = round(80 + u * U * 30) / 30          # ≈ 25,9 s
+CIERRE = round(80 + (u + 8) * U * 30) / 30  # ≈ 31,23 s
+CAPS = [INTRO, cortes[4], cortes[8], cortes[15], cortes[22], cortes[26]]  # preguntas, ¿Y si…?, Bolivia, Tarija, ciudad, app
 
-AM, F_, C_, G_ = [45, 57, 60, 64, 69], [41, 53, 57, 60, 65], [36, 48, 55, 60, 64], [43, 55, 59, 62, 67]
-PROG = [AM, F_, C_, G_]
-CFIN = [36, 48, 55, 60, 64, 67, 72, 76]
-def acorde(tt):
-    return CFIN if tt >= CIERRE else PROG[int(tt / BAR) % 4]
+def tema(ini, dur):
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(ini), '-t', str(dur), '-i', 'public/audio/fuente/dreaming-big-mixkit-31.mp3',
+                          '-ac', '2', '-ar', str(SR), '-f', 'wav', '-'], capture_output=True).stdout
+    x, _ = sf.read(io.BytesIO(raw))
+    return x
 
-mus = np.zeros((N, 2))
+# 1) Base: la parte con pulso, repetida cada 32 tiempos con fundidos cortos en la costura
+A0, LA = 59.07, 32 * BEAT
+base = np.zeros((N, 2))
+xf = int(0.03 * SR)
+pos = 0.0
+while pos < CIERRE + 0.5:
+    seg = tema(A0, LA + 0.05)
+    e = np.ones(len(seg))
+    e[:xf] = np.linspace(0, 1, xf)
+    e[-xf:] = np.linspace(1, 0, xf)
+    place(base, seg * e[:, None], pos)
+    pos += LA
+# tarjeta: la base baja y se apaga en filtro (respiro), y vuelve a abrirse antes del cierre
+g = curva(t, [(0, 1), (CARD - 0.1, 1), (CARD + 0.4, 0.42), (CIERRE - 0.6, 0.5), (CIERRE, 0)])
+corte = curva(t, [(0, 18000), (CARD - 0.1, 18000), (CARD + 0.4, 1400), (CIERRE - 1.2, 1400), (CIERRE - 0.2, 9000)])
+base = filt_var(base, corte) * g[:, None]
+# cierre: el final suave del propio tema
+fin = tema(96.18, DUR - CIERRE + 0.2)
+fin *= np.clip((DUR - CIERRE - np.arange(len(fin)) / SR) / 1.4, 0, 1)[:, None] ** 1.3
+place(base, fin * 1.1, CIERRE)
+base /= np.abs(base).max()
 
-# 1) Ostinato de piano en corcheas (desde 0,7 s), y una segunda voz en semicorcheas desde Tarija
-OST = [1, 3, 2, 4, 2, 3, 1, 4]
-pno = np.zeros(N)
-tb = 0.66
-k = 0
-while tb < CIERRE - 1e-6:
-    ch = acorde(tb)
-    m = ch[OST[k % 8] % len(ch)] + 12
-    vel = 0.75 if k % 2 else 0.9
-    if CARD <= tb:
-        vel *= 0.8
-    place(pno, piano(m, 1.4, vel), tb)
-    tb += B / 2
-    k += 1
-g_pno = curva(t, [(0, 0.6), (2.67, 0.8), (8, 0.9), (26, 1.0), (31.3, 0.9)])
-pno *= g_pno
-alta = np.zeros(N)
-tb = TAR
-k = 0
-while tb < CARD - 1e-6:
-    ch = acorde(tb)
-    place(alta, piano(ch[(k * 2) % len(ch)] + 24, 0.6, 0.55), tb)
-    tb += B / 4
-    k += 1
-mus += reverb(estereo(pno * 0.16) + np.stack([alta, np.roll(alta, 300)], 1) * 0.08, 2.4, 0.32, 5500, seed=3)
-
-# 2) Cuerdas: graves desde el inicio, medias desde las preguntas, agudas desde Bolivia
-def capa(transp, notas, g_curva, seed):
-    x = np.zeros((N, 2))
-    for b in range(int(DUR / BAR) + 1):
-        a0 = b * BAR
-        if a0 >= CIERRE:
-            break
-        a1 = min(a0 + BAR, CIERRE)
-        ch = acorde(a0)
-        for j in notas:
-            place(x, cuerdas(ch[j] + transp, a1 - a0 + 0.7, seed=seed + b * 11 + j), a0)
-    return x * curva(t, g_curva)[:, None]
-mus += capa(-12, [0], [(0, 0.0), (1.2, 0.5), (8, 0.7), (12.67, 0.9), (26, 0.9), (26.2, 0.35), (31.3, 0.4)], 1) * 0.3
-mus += capa(0, [1, 2], [(0, 0), (2.67, 0.25), (8, 0.45), (12.67, 0.6), (25.9, 0.75), (26.2, 0.3), (31.3, 0.35)], 2) * 0.45
-mus += capa(12, [2, 3, 4], [(0, 0), (7.5, 0.0), (8.5, 0.3), (12.67, 0.45), (20.67, 0.5), (25.9, 0.65), (26.2, 0.3), (31.3, 0.35)], 3) * 0.3
-
-# 3) Graves: nota sostenida en cada compás (que crece por capítulo) y golpes suaves de timbal al cambiar de capítulo
-bajo = np.zeros(N)
-for b in range(int(DUR / BAR) + 1):
-    a0 = b * BAR
-    if a0 < INTRO or a0 >= CARD:
-        continue
-    m = acorde(a0)[0] - 12
-    n = int(BAR * SR)
-    tt = np.arange(n) / SR
-    place(bajo, np.sin(2 * np.pi * nota(m) * tt) * env(n, 0.05, 0.4, 0.7, 0.5), a0)
-mus += estereo(filt(bajo, 300) * curva(t, [(0, 0), (2.67, 0.25), (8, 0.4), (12.67, 0.5), (26, 0.5), (26.1, 0)]) * 0.28)
-
+# 2) Capas propias en Re mayor (Re y La: consonantes con todo el tema)
+capas = np.zeros((N, 2))
+D2, A2, D3, A3, D4, A4 = 38, 45, 50, 57, 62, 69
+graves = curva(t, [(0, 0), (CAPS[2], 0.0), (CAPS[2] + 0.5, 0.35), (CAPS[3], 0.45), (CAPS[5], 0.5), (CARD, 0.5), (CARD + 0.4, 0.15), (CIERRE, 0.0)])
+n = int(DUR * SR)
+tt = np.arange(n) / SR
+dron = np.sin(2 * np.pi * nota(D2) * tt) + 0.5 * np.sin(2 * np.pi * nota(A2) * tt)
+capas += estereo(filt(dron, 250) * graves * 0.35)
+cu = sum(cuerdas(m, DUR, seed=40 + i) for i, m in enumerate([D3, A3, D4, A4]))
+cu_g = curva(t, [(0, 0), (CAPS[2], 0), (CAPS[2] + 1.5, 0.25), (CAPS[3], 0.4), (CAPS[3] + 3, 0.5), (CARD, 0.55), (CARD + 0.5, 0.3), (CIERRE, 0.4), (DUR, 0)])
+capas += cu * cu_g[:, None] * 0.35
 def timbal(g=0.4):
     n = int(1.6 * SR)
     tt = np.arange(n) / SR
     x = np.sin(2 * np.pi * np.cumsum(70 + 25 * np.exp(-tt * 8)) / SR) * np.exp(-tt * 3)
-    x += filt(rng.normal(0, 1, n), 400) * np.exp(-tt * 18) * 0.3
     return estereo(x * g)
-for at in [INTRO, BOL, TAR, BAR_, APP]:
-    place(mus, timbal(0.35), at)
-# pulso grave suave en negras desde Tarija (como un latido), se corta en la tarjeta
-tb = TAR
-while tb < CARD - 1e-6:
-    place(mus, estereo(filt(bombo(0.22), 180)), tb)
-    tb += B
-# redoble de timbal hacia la tarjeta y hacia el cierre
-for fin, dur in [(CARD, 1.33), (CIERRE, 0.9)]:
-    at = fin - dur
-    while at < fin - 1e-6:
-        place(mus, timbal(0.08 + 0.18 * (at - (fin - dur)) / dur), at)
-        at += B / 4
-place(mus, subida(1.0, 0.06, 300, 6000), CIERRE - 1.0)
+for at in CAPS[1:]:
+    place(capas, timbal(0.3), at)
+place(capas, subida(1.0, 0.06, 300, 6000), CIERRE - 1.0)
+place(capas, golpe(0.7, 3.0), CIERRE)
+place(capas, np.stack([crash(3.0, 0.25), crash(3.0, 0.22)], 1), CIERRE)
 
-# 4) Cierre: acorde grande de cuerdas y piano, golpe grave
-n = int((DUR - CIERRE) * SR)
-fin = sum(cuerdas(m, DUR - CIERRE, seed=90 + i) for i, m in enumerate(CFIN)) * env(n, 0.04, 0.8, 0.7, 1.8)[:, None] / 2.2
-place(mus, filt(fin, 4000), CIERRE)
-for at, m in [(CIERRE, 72), (CIERRE, 84), (CIERRE + 0.66, 79), (CIERRE + 1.33, 76), (CIERRE + 2.0, 72)]:
-    place(mus, estereo(piano(m, 3.0, 0.9) * 0.2), at)
-place(mus, golpe(0.8, 3.0), CIERRE)
-place(mus, np.stack([crash(3.5, 0.35), crash(3.5, 0.3)], 1), CIERRE)
-
-mus = mus + 0.45 * filt(mus, 2500, 'high')  # más brillo (cuerdas y piano más presentes)
-mus = reverb(mus, 1.6, 0.14, 7000, seed=11)
-mus *= (np.clip((DUR - t) / 1.4, 0, 1) ** 1.5)[:, None]
+mus = base * 0.9 + capas
 mus = filt(mus, 28, 'high')
 mus /= np.abs(mus).max()
 
 # ---------- Efectos ----------
 sfx = np.zeros((N, 2))
-# intro: CAMINA se arma (un tic por letra y chispazos), la barra se estira y llena la pantalla
-for i in range(6):
-    place(sfx, blip(1500 + 180 * i, 0.04, 0.03), (2 + 4 + i * 26 / 5) / 30)
-    place(sfx, clic_pelicula(0.035), (2 + i * 26 / 5 + 2) / 30)
-place(sfx, subida(12 / 30, 0.08, 400, 5000), 50 / 30)
-place(sfx, whoosh(0.6, 0.18, 300, 6000), 62 / 30)
-# cierre: CAMINA se arma de nuevo
-for i in range(6):
-    place(sfx, blip(1500 + 180 * i, 0.035, 0.03), CIERRE + (4 + i * 22 / 5) / 30)
-for c in cortes:  # clic de proyector en cada corte
+for i, at in enumerate([0.0, 0.3, 0.6, 0.9]):  # huellas de la intro
+    place(sfx, paso(0.35, i % 2 == 0), at)
+place(sfx, brillo_logo(0.045), 40 / 30)
+for i in range(6):  # CAMINA se arma
+    place(sfx, blip(1500 + 180 * i, 0.03, 0.03), (44 + 4 + i * 16 / 5) / 30)
+for c in cortes:
     place(sfx, clic_pelicula(0.05), c)
-for c in rafaga_clics:  # ráfagas: clics más suaves
+for c in clics:
     place(sfx, clic_pelicula(0.03), c)
-for k in range(16):  # logos que pasan en la tarjeta
+for k in range(16):  # logos de la tarjeta
     place(sfx, blip(2200, 0.02, 0.02), CARD + (14 + 7 * k) / 30)
-place(sfx, campana(1318.5, 0.11, 1.4), CARD + 126 / 30)
-place(sfx, campana(1975.5, 0.09, 1.4), CARD + 129 / 30)
-place(sfx, brillo_logo(0.05), CIERRE + 26 / 30)
+place(sfx, campana(1174.7, 0.11, 1.4), CARD + 126 / 30)  # Re: en el tono del tema
+place(sfx, campana(1760, 0.09, 1.4), CARD + 129 / 30)    # La
+place(sfx, brillo_logo(0.06), CIERRE)
 sfx = reverb(sfx, 1.0, 0.18, 7000, seed=21)
 sfx /= np.abs(sfx).max()
 
-sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.88 + sfx * 0.3).astype(np.float32), SR)
-print('ok', len(cortes), 'tomas; última en', round(cortes[-1], 2), 's')
+sf.write('public/audio/ysi-mezcla.wav', master(mus * 0.9 + sfx * 0.28).astype(np.float32), SR)
+print('ok', len(cortes), 'tomas; tarjeta', round(CARD, 2), 's; cierre', round(CIERRE, 2), 's; capítulos', [round(c, 2) for c in CAPS])

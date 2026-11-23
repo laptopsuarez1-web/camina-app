@@ -17,7 +17,10 @@ loadFont({ family: 'Serif', url: staticFile('fonts/newsreader-latin-400-normal.w
 loadFont({ family: 'Serif', url: staticFile('fonts/newsreader-latin-500-normal.woff2'), weight: '500' });
 
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
-const T = 20; // un tiempo
+// Música: «Dreaming Big» (Ahjay Stelino, Mixkit) a 135,5 BPM. Cada toma dura 1,5 tiempos (≈ 19,9 cuadros) y los cortes se
+// redondean a cuadros enteros sin acumular desfase, para que caigan en el pulso del tema.
+const TIEMPO = (30 * 60) / 135.5; // cuadros por tiempo
+const T = 1.5 * TIEMPO; // una unidad de montaje
 
 // Palabra: posición relativa (x, y), tamaño, y cuadro en que aparece dentro de la toma.
 type Palabra = { t: string; x: number; y: number; size?: number; en?: number; verde?: boolean; efecto?: 'juntar' | 'crecer' };
@@ -78,33 +81,39 @@ const TOMAS: Toma[] = [
   { inicio: true, palabras: [P('Cada', 0.5, 0.1, 160)], leyenda: '1.000-pasos = 1-Punto', dur: 1 },
   { medio: vid('app-ficha-mapa', 66), palabras: [P('paso', 0.72, 0.16, 150)], leyenda: 'Locales-en-el-mapa', dur: 2 },
   { rafaga: [app('ranking-nuevo-dark'), app('grupo-v4-dark'), app('ficha-galera-dark'), app('insignias-dark'), app('perfil-insignias-dark')], cada: 4, dur: 1 },
-  { medio: vid('app-ruta-participar', 45), palabras: [{ ...P('cuenta', 0.5, 0.55, 230, 0, true), efecto: 'crecer' }], leyenda: 'Ruta-del-mes · Tarija', dur: 2 },
+  { medio: vid('app-ruta-participar', 45), palabras: [{ ...P('cuenta', 0.5, 0.66, 230, 0, true), efecto: 'crecer' }], leyenda: 'Ruta-del-mes · Tarija', dur: 2 },
   { medio: vid('app-actividad'), leyenda: 'Tu-actividad', dur: 1 },
   { medio: vid('app-visita', 40), leyenda: 'Visita-confirmada', dur: 1 },
 ];
 
-const INTRO = 4 * T; // 0–80
-const MONTAJE = TOMAS.reduce((s, x) => s + (x.dur ?? 1) * T, 0);
-const TARJETA = 8 * T;
+const INTRO = Math.round(6 * TIEMPO); // ≈ 80 cuadros
+const UNIDADES = TOMAS.reduce((s, x) => s + (x.dur ?? 1), 0);
+const MONTAJE = Math.round(INTRO + UNIDADES * T) - INTRO;
+const TARJETA = Math.round(INTRO + (UNIDADES + 8) * T) - INTRO - MONTAJE;
+const bordes: number[] = [];
+TOMAS.reduce((u, x) => {
+  bordes.push(Math.round(INTRO + u * T));
+  return u + (x.dur ?? 1);
+}, 0);
+bordes.push(INTRO + MONTAJE);
 const CIERRE = 1050 - INTRO - MONTAJE - TARJETA;
 export const DUR_YSI = 1050;
 export const TIEMPOS_YSI = { INTRO, MONTAJE, TARJETA, CIERRE };
 
 export const YSi = () => {
-  let desde = INTRO;
   return (
     <AbsoluteFill style={{ backgroundColor: C.morado }}>
       <Sequence name="Logo con huellas" durationInFrames={INTRO}>
         <Intro />
       </Sequence>
       {TOMAS.map((x, i) => {
-        const d = (x.dur ?? 1) * T;
+        const desde = bordes[i];
+        const d = bordes[i + 1] - desde;
         const el = (
           <Sequence key={i} name={`${i + 1} ${x.palabras?.map((p) => p.t).join(' ') ?? x.leyenda ?? 'ráfaga'}`} from={desde} durationInFrames={d}>
             <TomaVista toma={x} />
           </Sequence>
         );
-        desde += d;
         return el;
       })}
       <Sequence name="Tarjeta: cada paso que damos" from={INTRO + MONTAJE} durationInFrames={TARJETA}>
