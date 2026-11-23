@@ -251,17 +251,6 @@ export const AppleIcon = make(AppleLogo_);
 
 type Tone = 'aqua' | 'purple' | 'orange' | 'red' | 'mint' | 'gold';
 
-// Ficha de vidrio teñido: el ícono va relleno en el color de la categoría, sobre un vidrio con borde del mismo tono.
-const GLYPH: Record<Tone, [string, string]> = {
-  // [modo claro, modo oscuro]
-  // Todos llegan a 3:1 (ícono) sobre el vidrio del fondo, también con el vidrio al máximo.
-  aqua: ['#1A876D', '#5BD9B5'],
-  mint: ['#1A876D', '#5BD9B5'],
-  purple: ['#7A3FC4', '#C9ADF5'],
-  orange: ['#BE5F1C', '#FFA866'],
-  red: ['#D23B40', '#FF8388'],
-  gold: ['#A57009', '#F5C645'],
-};
 
 // Gesto de cada ícono al tocar la fila o tarjeta donde está: la llama respira, el trofeo y el regalo se sacuden, la campana suena,
 // la meta pega un golpe; el resto hace un saltito. (Se busca por identidad: los íconos de arriba son constantes del módulo.)
@@ -281,12 +270,16 @@ export function IconBubble({
   const tick = usePressTick();
   const motion = MOTIONS.get(Icon) ?? 'pop';
   const dark = useColorScheme().colorScheme === 'dark';
-  const [lightColor, darkColor] = GLYPH[tone];
-  const color = dark ? darkColor : lightColor;
-  const radius = size * 0.32;
-  // Ficha limpia: fondo apenas teñido y el ícono de línea en el color de la categoría.
+  void tone; // todas las fichas van en el verde de Camina (se deja la prop por compatibilidad)
+  const color = dark ? '#62F0B6' : '#1A876D';
+  const radius = size * 0.3;
+  // Ficha al estilo iOS: cuadrado redondeado con un verde apenas teñido, un borde de un pelo y el ícono de línea en verde.
   return (
-    <View style={{ width: size, height: size, borderRadius: radius, alignItems: 'center', justifyContent: 'center', backgroundColor: `${color}${dark ? '24' : '1A'}` }}>
+    <View style={{
+      width: size, height: size, borderRadius: radius, alignItems: 'center', justifyContent: 'center',
+      backgroundColor: dark ? 'rgba(98,240,182,0.12)' : 'rgba(79,195,168,0.13)',
+      borderWidth: 1, borderColor: dark ? 'rgba(98,240,182,0.16)' : 'rgba(26,135,109,0.10)',
+    }}>
       <ReactiveIcon motion={motion} tick={tick} idle={false}>
         <Icon size={size * 0.5} color={color} />
       </ReactiveIcon>

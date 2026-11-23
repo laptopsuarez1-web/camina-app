@@ -6,7 +6,7 @@ import { Press } from '@/components/ui/Press';
 import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { TabGlyph, type TabKind } from '@/components/ui/TabGlyph';
 import { Bell, Calendar, Flame, Gift, IconBubble, MapPin, Search, Share2, Target, Trophy, Users } from '@/components/icons';
-import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene } from '@/components/celebrations/MomentScenes';
+import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene } from '@/components/celebrations/RingScenes';
 
 // Solo en desarrollo: muestra cada festejo con datos de ejemplo para revisarlo (y grabarlo) sin tener que provocarlo de verdad.
 // /dev-festejos?e=ranking-podio | ranking-top10 | grupo-semana | grupo-meta | grupo-unirse | grupo-crear | iconos
