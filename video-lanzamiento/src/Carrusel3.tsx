@@ -3,13 +3,13 @@ import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { IconoApple, IconoPlay } from './Lanzamiento';
 import './marca';
 
-// CAMINA · Carrusel de Instagram, versión 3 (10 láminas de 1080 × 1350).
-// Más sobrio: cada lámina con un solo color liso (negro, blanco, morado o menta), un titular grande y un solo teléfono
-// que asoma desde abajo, como en la portada. No nombra ni muestra comercios: solo «comercios de tu ciudad», y las
-// pantallas elegidas no muestran ningún local (capturas con datos de ejemplo, sin personas reales).
-// Exportar: npx remotion still Carrusel3-1 out/carrusel-3/01.png (… hasta Carrusel3-10).
+// CAMINA · Carrusel de Instagram, versión 3 (11 láminas de 1080 × 1350).
+// Sobrio: cada lámina con un solo color liso (negro, blanco, morado o menta), un titular compacto y uno o dos teléfonos
+// enteros (capturas con datos de ejemplo, sin personas reales). Muestra el mapa, fichas y la ruta, pero el texto no
+// nombra ningún comercio: solo «los comercios que se suman a Camina».
+// Exportar: npx remotion still Carrusel3-1 out/carrusel-3/01.png (… hasta Carrusel3-11).
 
-export const LAMINAS3 = 10;
+export const LAMINAS3 = 11;
 const MENTA = '#62f0b6';
 const MORADO = '#200a52';
 const NEGRO = '#0b0b0d';
@@ -51,84 +51,76 @@ export const Carrusel3 = ({ n }: { n: number }) => {
     case 3:
       return (
         <Lamina n={3} tema="morado">
-          <Titulo tema="morado" etiqueta="Tus pasos" top={250}>
+          <Titulo tema="morado" etiqueta="Tus pasos" top={236} tam={86}>
             Se cuentan <Ac tema="morado">solos</Ac>
           </Titulo>
-          <Texto tema="morado" top={460}>Meta diaria, rachas y tu actividad de la semana</Texto>
-          <Asoma src={A('actividad-dark')} tema="morado" />
+          <Texto tema="morado" top={410}>Meta diaria, rachas y tu actividad de la semana</Texto>
+          <Uno src={A('actividad-dark')} />
         </Lamina>
       );
     case 4:
       return (
         <Lamina n={4} tema="menta">
-          <Titulo tema="menta" etiqueta="Puntos" top={250}>
+          <Titulo tema="menta" etiqueta="Puntos" top={236} tam={86}>
             Cada día suma <Ac tema="menta">Puntos</Ac>
           </Titulo>
-          <Texto tema="menta" top={460}>Caminas, cumples tu meta y tus Puntos crecen</Texto>
-          <Asoma src="app/puntos-248.jpg" tema="menta" />
+          <Texto tema="menta" top={410}>Caminas, cumples tu meta y tus Puntos crecen</Texto>
+          <Uno src="app/puntos-248.jpg" />
         </Lamina>
       );
     case 5:
       return (
         <Lamina n={5} tema="negro">
-          <Titulo tema="negro" etiqueta="Evento del mes" top={250}>
+          <Titulo tema="negro" etiqueta="Evento del mes" top={236} tam={86}>
             Cada mes, una <Ac tema="negro">ruta nueva</Ac>
           </Titulo>
-          <Texto tema="negro" top={460}>Te tocan 3 lugares de tu ciudad. Complétala y gana Día doble, insignia y boleto del sorteo</Texto>
-          <Asoma src={A('eventos-ruta-v2-dark')} tema="negro" top={680} />
+          <Texto tema="negro" top={410}>Complétala y gana Día doble, insignia y boleto del sorteo</Texto>
+          <Dos a={A('eventos-ruta-v2-dark')} b={A('ruta-mapa-nov-dark')} />
         </Lamina>
       );
     case 6:
       return (
         <Lamina n={6} tema="blanco">
-          <Titulo tema="blanco" etiqueta="Grupos y ranking" top={250}>
+          <Titulo tema="blanco" etiqueta="Grupos y ranking" top={236} tam={86}>
             Camina con tus <Ac tema="blanco">amigos</Ac>
           </Titulo>
-          <Texto tema="blanco" top={460}>Metas de grupo, podio y ranking semanal</Texto>
-          <Asoma src={A('grupo-v4-dark')} tema="blanco" />
+          <Texto tema="blanco" top={410}>Metas de grupo, podio y ranking semanal</Texto>
+          <Dos a={A('ranking-nuevo-dark')} b={A('grupo-v4-dark')} />
         </Lamina>
       );
     case 7:
       return (
         <Lamina n={7} tema="morado">
-          <Titulo tema="morado" etiqueta="Chat y desafíos" top={250}>
+          <Titulo tema="morado" etiqueta="Chat y desafíos" top={236} tam={86}>
             Organícense y <Ac tema="morado">rétense</Ac>
           </Titulo>
-          <div style={{ position: 'absolute', left: 80, right: 80, top: 520, display: 'flex', flexDirection: 'column', gap: 22 }}>
-            <Burbuja quien="Camila">¿Quién se anota a la caminata del sábado por la plaza?</Burbuja>
-            <Burbuja quien="Lucía" yo>Yo voy, salgo a las 7</Burbuja>
-            <Burbuja quien="Joaquín">Cuenten conmigo. Ayer hice 13 mil, ya me van a alcanzar</Burbuja>
-          </div>
-          <div style={{ position: 'absolute', left: 80, right: 80, top: 1120, display: 'flex', alignItems: 'center', gap: 20, padding: '26px 32px', borderRadius: 34, background: MENTA, color: MORADO }}>
-            <span style={{ fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 40, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>+5 Puntos</span>
-            <span style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 28, lineHeight: 1.25 }}>por cada amigo que invitas y se suma</span>
-          </div>
+          <Texto tema="morado" top={410}>Chat del grupo, desafíos y +5 Puntos por cada amigo que invitas</Texto>
+          <Dos a={A('grupo-chat-dark')} b={A('grupos-v2-dark')} />
         </Lamina>
       );
     case 8:
       return (
         <Lamina n={8} tema="negro">
-          <Titulo tema="negro" etiqueta="Canjes" top={250}>
-            Tus Puntos valen en tu <Ac tema="negro">ciudad</Ac>
+          <Titulo tema="negro" etiqueta="Canjes" top={236} tam={86}>
+            Canjea en tu <Ac tema="negro">ciudad</Ac>
           </Titulo>
-          <Texto tema="negro" top={560}>Canjéalos en los comercios que se suman a Camina. Y cada canje suma un sello en tu tarjeta de fidelidad</Texto>
-          <div style={{ position: 'absolute', left: 80, right: 80, top: 800, padding: '40px 44px', borderRadius: 44, background: '#17121f', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', fontFamily: 'Jakarta', fontWeight: 800, fontSize: 38 }}>
-              Tarjeta de fidelidad
-              <span style={{ padding: '8px 22px', borderRadius: 30, background: 'rgba(160,130,255,0.22)', color: '#c9b8ff', fontSize: 30 }}>4 de 5</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 34 }}>
-              {[0, 1, 2, 3].map((i) => (
-                <Img key={i} src={staticFile('marca/sello-oro.png')} style={{ width: 142, height: 142 }} />
-              ))}
-              <div style={{ width: 134, height: 134, margin: 4, borderRadius: '50%', border: '5px dashed rgba(185,168,224,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b9a8e0', fontFamily: 'Jakarta', fontWeight: 700, fontSize: 46 }}>5</div>
-            </div>
-          </div>
+          <Texto tema="negro" top={410}>Usa tus Puntos en los comercios que se suman a Camina</Texto>
+          <Dos a={A('mapa-locales-dark')} b={A('ficha-galera-dark')} />
         </Lamina>
       );
     case 9:
       return (
-        <Lamina n={9} tema="morado" sinNumero>
+        <Lamina n={9} tema="menta">
+          <Titulo tema="menta" etiqueta="Insignias y niveles" top={236} tam={86}>
+            Hazte fan de tus <Ac tema="menta">lugares</Ac>
+          </Titulo>
+          <Texto tema="menta" top={410}>Visitante, Habitual, Fan y Leyenda del mes. Y cada canje suma un sello</Texto>
+          <Dos a={A('ficha-bloom-nivel-dark')} b={A('perfil-insignias-dark')} />
+        </Lamina>
+      );
+    case 10:
+      return (
+        <Lamina n={10} tema="morado" sinNumero>
           <Img src={staticFile('yasi/f/t-plaza-luis-de-fuentes.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.05) 30%, rgba(11,11,13,0.92) 80%)' }} />
           <Titulo tema="negro" etiqueta="Tarija, Bolivia" top={860} tam={112}>
@@ -139,7 +131,7 @@ export const Carrusel3 = ({ n }: { n: number }) => {
       );
     default:
       return (
-        <Lamina n={10} tema="negro" sinNumero sinMarca>
+        <Lamina n={11} tema="negro" sinNumero sinMarca>
           <AbsoluteFill style={{ background: 'radial-gradient(55% 35% at 50% 40%, rgba(98,240,182,0.16), transparent 70%)' }} />
           <div style={{ position: 'absolute', left: 0, right: 0, top: 250, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
             <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 170, height: 170 }} />
@@ -180,28 +172,23 @@ const Texto = ({ tema, top, children }: { tema: Tema; top: number; children: Rea
   <div style={{ position: 'absolute', left: 80, right: 120, top, fontFamily: 'Jakarta', fontWeight: 500, fontSize: 38, lineHeight: 1.3, color: tinta(tema), opacity: 0.85 }}>{children}</div>
 );
 
-// un solo teléfono que asoma desde abajo, centrado, y se funde con el fondo
-const Asoma = ({ src, tema, top = 640 }: { src: string; tema: Tema; top?: number }) => {
-  const alto = 1180;
+// teléfono entero con una captura de la app
+const Telefono = ({ src, x, y, alto, rot = 0 }: { src: string; x: number; y: number; alto: number; rot?: number }) => {
   const ancho = alto * (780 / 1688);
-  const brillo = tema === 'menta' ? 'rgba(32,10,82,0.35)' : tema === 'blanco' ? 'rgba(32,10,82,0.25)' : 'rgba(98,240,182,0.28)';
   return (
-    <>
-      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: `0 -20px 110px ${brillo}, inset 0 0 0 2px rgba(255,255,255,0.16)` }}>
-        <div style={{ width: ancho, height: alto, borderRadius: 62, overflow: 'hidden' }}>
-          <Img src={staticFile(src)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
+    <div style={{ position: 'absolute', left: x, top: y, width: ancho + 28, height: alto + 28, borderRadius: 62, background: '#0d0a18', padding: 14, boxShadow: '0 40px 90px rgba(8,2,24,0.45), inset 0 0 0 2px rgba(255,255,255,0.16)', transform: `rotate(${rot}deg)` }}>
+      <div style={{ width: ancho, height: alto, borderRadius: 50, overflow: 'hidden' }}>
+        <Img src={staticFile(src)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 260, background: `linear-gradient(180deg, transparent, ${FONDO[tema]} 88%)` }} />
-    </>
+    </div>
   );
 };
-
-const Burbuja = ({ quien, yo, children }: { quien: string; yo?: boolean; children: ReactNode }) => (
-  <div style={{ alignSelf: yo ? 'flex-end' : 'flex-start', maxWidth: 720, padding: '24px 30px', borderRadius: yo ? '34px 34px 8px 34px' : '34px 34px 34px 8px', background: yo ? MENTA : '#ffffff', color: yo ? MORADO : NEGRO }}>
-    <div style={{ fontFamily: 'Jakarta', fontWeight: 700, fontSize: 24, opacity: 0.55, marginBottom: 6 }}>{quien}</div>
-    <div style={{ fontFamily: 'Jakarta', fontWeight: 600, fontSize: 36, lineHeight: 1.25 }}>{children}</div>
-  </div>
+const Uno = ({ src }: { src: string }) => <Telefono src={src} x={540 - (770 * (780 / 1688) + 28) / 2} y={540} alto={770} />;
+const Dos = ({ a, b }: { a: string; b: string }) => (
+  <>
+    <Telefono src={a} x={146} y={572} alto={730} rot={-4} />
+    <Telefono src={b} x={570} y={552} alto={730} rot={4} />
+  </>
 );
 
 const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
@@ -216,12 +203,10 @@ const Tienda = ({ icono, nombre }: { icono: ReactNode; nombre: string }) => (
 
 // ---------- portada (la misma de la versión «Paso a paso») ----------
 const Portada = () => {
-  const alto = 1180;
-  const ancho = alto * (780 / 1688);
-  const estilo: CSSProperties = { position: 'absolute', left: 0, right: 0, top: 200, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 168, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' };
+  const estilo: CSSProperties = { position: 'absolute', left: 0, right: 0, top: 170, textAlign: 'center', fontFamily: 'Mona', fontWeight: 900, fontStretch: '125%', fontSize: 128, lineHeight: 0.9, letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#fff' };
   return (
     <AbsoluteFill style={{ background: NEGRO, overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: 'radial-gradient(45% 30% at 50% 88%, rgba(98,240,182,0.4), rgba(98,240,182,0.06) 60%, transparent 80%)' }} />
+      <AbsoluteFill style={{ background: 'radial-gradient(45% 32% at 50% 72%, rgba(98,240,182,0.34), rgba(98,240,182,0.05) 60%, transparent 80%)' }} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: 96, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
         <Img src={staticFile('marca/logo-solo-transparente.png')} style={{ width: 62, height: 62 }} />
         <Img src={staticFile('marca/nombre-camina-transparente.png')} style={{ height: 40 }} />
@@ -233,13 +218,8 @@ const Portada = () => {
         <br />
         <span style={{ color: MENTA }}>cuenta</span>
       </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 680, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
-      <div style={{ position: 'absolute', left: 540 - (ancho + 32) / 2, top: 780, width: ancho + 32, height: alto + 32, borderRadius: 78, background: '#0d0a18', padding: 16, boxShadow: '0 -20px 120px rgba(98,240,182,0.25), inset 0 0 0 2px rgba(255,255,255,0.16)' }}>
-        <div style={{ width: ancho, height: alto, borderRadius: 62, overflow: 'hidden' }}>
-          <Img src={staticFile(A('inicio-dark'))} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      </div>
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 330, background: `linear-gradient(180deg, rgba(11,11,13,0), ${NEGRO} 85%)` }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 530, textAlign: 'center', fontFamily: 'Jakarta', fontWeight: 500, fontSize: 34, color: 'rgba(255,255,255,0.72)' }}>La app que convierte tus pasos en Puntos</div>
+      <Telefono src={A('inicio-dark')} x={540 - (700 * (780 / 1688) + 28) / 2} y={610} alto={700} />
     </AbsoluteFill>
   );
 };
