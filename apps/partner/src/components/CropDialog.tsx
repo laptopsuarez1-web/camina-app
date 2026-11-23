@@ -10,6 +10,7 @@ export function CropDialog({
   round,
   max,
   title,
+  guide,
   onCancel,
   onDone,
 }: {
@@ -18,6 +19,7 @@ export function CropDialog({
   round?: boolean;
   max: number; // lado mayor final en px
   title: string;
+  guide?: number; // proporción de la franja que se ve en la lista de la app (se marca sobre la foto)
   onCancel: () => void;
   onDone: (cropped: File) => void;
 }) {
@@ -26,19 +28,26 @@ export function CropDialog({
   const [zoom, setZoom] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 }); // desplazamiento del centro de la foto respecto al marco (px de pantalla)
   const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
-  const [vw, setVw] = useState(360);
+  const [vw, setVw] = useState(300);
 
+  const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setVw(Math.min(360, window.innerWidth - 64));
+    // Ancho real disponible dentro de la ventana, para que el marco nunca se salga.
+    const w = box.current ? box.current.clientWidth - 40 : undefined;
+    setVw(Math.min(380, w ?? window.innerWidth - 72));
   }, []);
 
   useEffect(() => {
+    let viva = true;
     const url = URL.createObjectURL(file);
     const i = new window.Image();
-    i.onload = () => setImg(i);
-    i.onerror = () => setFailed(true);
+    i.onload = () => viva && setImg(i);
+    i.onerror = () => viva && setFailed(true);
     i.src = url;
-    return () => URL.revokeObjectURL(url);
+    return () => {
+      viva = false;
+      URL.revokeObjectURL(url);
+    };
   }, [file]);
 
   const fw = round || aspect <= 1 ? Math.min(vw, 300) : vw;
@@ -77,7 +86,7 @@ export function CropDialog({
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="bg-white rounded-2xl p-5 w-full max-w-[420px] shadow-xl">
+      <div ref={box} className="bg-white rounded-2xl p-5 w-full max-w-[420px] shadow-xl">
         <h3 className="text-[16px] font-bold">{title}</h3>
         <p className="text-[12.5px] text-muted mt-0.5 mb-3">Arrastra la foto para moverla y usa la barra para acercar.</p>
         {failed ? (
@@ -107,7 +116,16 @@ export function CropDialog({
                 style={{ position: 'absolute', width: dw, height: dh, left: (fw - dw) / 2 + x, top: (fh - dh) / 2 + y, maxWidth: 'none' }}
               />
             )}
+            {guide && guide > aspect && (
+              <div
+                className="absolute left-0 right-0 pointer-events-none border-y-2 border-dashed border-white/90"
+                style={{ top: (fh - fw / guide) / 2, height: fw / guide, boxShadow: '0 0 0 9999px rgba(0,0,0,.45)' }}
+              />
+            )}
           </div>
+        )}
+        {guide && guide > aspect && !failed && (
+          <p className="text-[11.5px] text-muted mt-2 text-center">Lo que queda entre las líneas es lo que se ve en la lista de la app. La ficha muestra la foto completa.</p>
         )}
         <input
           type="range"

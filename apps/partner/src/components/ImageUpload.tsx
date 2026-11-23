@@ -5,6 +5,9 @@ import { ImagePlus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { CropDialog } from '@/components/CropDialog';
 
+// Proporción real de la app: la portada se ve 16:9 en la tarjeta de la lista y casi igual en la ficha del local.
+const COVER_ASPECT = 16 / 9;
+
 export function ImageUpload({
   bucket,
   path,
@@ -18,7 +21,7 @@ export function ImageUpload({
   value: string | null;
   onUploaded: (url: string) => void;
   label: string;
-  shape?: 'square' | 'circle' | 'wide';
+  shape?: 'square' | 'circle' | 'wide' | 'cover';
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -29,7 +32,7 @@ export function ImageUpload({
     setUploading(true);
     setError(null);
     // Las fotos del celular pesan varios MB y en la app se ven chicas: se achican antes de subir para que carguen rápido.
-    const file = await shrink(original, shape === 'circle' ? 600 : shape === 'wide' ? 1600 : 1200);
+    const file = await shrink(original, shape === 'circle' ? 600 : shape === 'wide' || shape === 'cover' ? 1600 : 1200);
     // Algunos celulares (Samsung) entregan la foto sin tipo o como HEIC: el servidor solo acepta JPG, PNG y WebP.
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const ok = ['image/jpeg', 'image/png', 'image/webp'];
@@ -54,7 +57,7 @@ export function ImageUpload({
   }
 
   const dims =
-    shape === 'circle' ? 'w-20 h-20 rounded-full' : shape === 'wide' ? 'w-full h-28 rounded-xl' : 'w-28 h-28 rounded-xl';
+    shape === 'circle' ? 'w-20 h-20 rounded-full' : shape === 'wide' ? 'w-full h-28 rounded-xl' : shape === 'cover' ? 'w-full aspect-video rounded-xl' : 'w-28 h-28 rounded-xl';
 
   return (
     <div>
@@ -94,9 +97,9 @@ export function ImageUpload({
       {toCrop && (
         <CropDialog
           file={toCrop}
-          aspect={shape === 'wide' ? 16 / 9 : 1}
+          aspect={shape === 'wide' ? 16 / 9 : shape === 'cover' ? COVER_ASPECT : 1}
           round={shape === 'circle'}
-          max={shape === 'circle' ? 600 : shape === 'wide' ? 1600 : 1200}
+          max={shape === 'circle' ? 600 : shape === 'wide' || shape === 'cover' ? 1600 : 1200}
           title={`Acomoda: ${label}`}
           onCancel={() => setToCrop(null)}
           onDone={(f) => {
