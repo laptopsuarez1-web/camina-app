@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import Animated, {
-  Easing, cancelAnimation, type EasingFunction, type EasingFunctionFactory, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming,
+  Easing, cancelAnimation, type EasingFunction, type EasingFunctionFactory, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, G, RadialGradient, Stop } from 'react-native-svg';
 import { useColorScheme } from 'nativewind';
@@ -88,28 +88,94 @@ export function NightBackdrop({ glowTop = 0.3 }: { glowTop?: number }) {
   );
 }
 
-// Anillo de una sola línea (sin anillo interior ni brillo): el trazo verde sobre su pista, con el punto blanco en la punta.
-export function SoloRing({ tl, delay, size, progress, duration = 1100, width = 10, children }: { tl: Timeline; delay: number; size: number; progress: number; duration?: number; width?: number; children?: ReactNode }) {
+// ---------- el anillo ----------
+type RingProps = {
+  tl: Timeline;
+  delay: number;
+  size: number;
+  progress: number; // 0 a 1: hasta dónde se dibuja
+  duration?: number;
+  width?: number; // grosor del anillo ancho
+  dim?: boolean; // anillo secundario (podio): más apagado
+  onClose?: { at: number }; // si llega a 1, destello de cierre a los `at` ms
+  children?: ReactNode;
+};
+
+export function CaminaRing({ tl, delay, size, progress, duration = 1200, width, dim, onClose, children }: RingProps) {
   const th = useRingTheme();
-  const r = (size - width) / 2;
-  const c = 2 * Math.PI * r;
-  const to = Math.max(0.002, Math.min(1, progress));
+  const gO = th.glowOuter;
+  const gI = th.glowInner;
+  const w = width ?? Math.max(6, size * 0.052);
+  const rOut = (size - w * 2.6) / 2;
+  const wIn = Math.max(2.5, w * 0.4);
+  const rIn = rOut - w * 1.35;
+  const cOut = 2 * Math.PI * rOut;
+  const cIn = 2 * Math.PI * rIn;
   const k = useTween(tl, delay, duration, EASE_DRAW);
-  const line = useAnimatedProps(() => ({ strokeDashoffset: c * (1 - to * k.value) }));
+  const kIn = useTween(tl, delay + 100, duration, EASE_DRAW);
+  const to = Math.max(0.002, Math.min(1, progress));
+  const outer = useAnimatedProps(() => ({ strokeDashoffset: cOut * (1 - to * k.value) }));
+  const glow = useAnimatedProps(() => ({ strokeDashoffset: cOut * (1 - to * k.value), strokeOpacity: (dim ? gO * 0.4 : gO) * k.value }));
+  const inner = useAnimatedProps(() => ({ strokeDashoffset: cIn * (1 - to * kIn.value) }));
+  const innerGlow = useAnimatedProps(() => ({ strokeDashoffset: cIn * (1 - to * kIn.value), strokeOpacity: (dim ? gI * 0.4 : gI) * kIn.value }));
+  // Punto blanco en la punta del anillo fino.
   const head = useAnimatedProps(() => {
-    const a = -Math.PI / 2 + 2 * Math.PI * to * k.value;
-    return { cx: size / 2 + r * Math.cos(a), cy: size / 2 + r * Math.sin(a), opacity: k.value > 0.02 && to * k.value < 0.995 ? 1 : 0 };
+    const a = -Math.PI / 2 + 2 * Math.PI * to * kIn.value;
+    return { cx: size / 2 + rIn * Math.cos(a), cy: size / 2 + rIn * Math.sin(a), opacity: kIn.value > 0.02 && to * kIn.value < 0.995 ? 1 : 0 };
   });
+  const headHalo = useAnimatedProps(() => {
+    const a = -Math.PI / 2 + 2 * Math.PI * to * kIn.value;
+    return { cx: size / 2 + rIn * Math.cos(a), cy: size / 2 + rIn * Math.sin(a), opacity: kIn.value > 0.02 && to * kIn.value < 0.995 ? 0.35 : 0 };
+  });
+  const o = dim ? 0.6 : 1;
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      {onClose && to >= 1 ? <CloseFlash tl={tl} at={onClose.at} size={size} /> : null}
       <Svg width={size} height={size} style={{ position: 'absolute' }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={th.track} strokeWidth={width} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={rOut} stroke={th.track} strokeWidth={w} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={rIn} stroke={th.trackIn} strokeWidth={wIn} fill="none" />
         <G transform={`rotate(-90 ${size / 2} ${size / 2})`}>
-          <AnimatedCircle cx={size / 2} cy={size / 2} r={r} stroke={th.arc} strokeWidth={width} fill="none" strokeLinecap="round" strokeDasharray={`${c} ${c}`} animatedProps={line} />
+          <AnimatedCircle cx={size / 2} cy={size / 2} r={rOut} stroke={th.outer} strokeWidth={w * 2} fill="none" strokeLinecap="round" strokeDasharray={`${cOut} ${cOut}`} animatedProps={glow} />
+          <AnimatedCircle cx={size / 2} cy={size / 2} r={rOut} stroke={th.outer} strokeOpacity={o} strokeWidth={w} fill="none" strokeLinecap="round" strokeDasharray={`${cOut} ${cOut}`} animatedProps={outer} />
+          <AnimatedCircle cx={size / 2} cy={size / 2} r={rIn} stroke={th.inner} strokeWidth={wIn * 3} fill="none" strokeLinecap="round" strokeDasharray={`${cIn} ${cIn}`} animatedProps={innerGlow} />
+          <AnimatedCircle cx={size / 2} cy={size / 2} r={rIn} stroke={th.inner} strokeOpacity={o} strokeWidth={wIn} fill="none" strokeLinecap="round" strokeDasharray={`${cIn} ${cIn}`} animatedProps={inner} />
         </G>
-        <AnimatedCircle r={width * 0.3} fill="#FFFFFF" animatedProps={head} />
+        <AnimatedCircle r={wIn * 1.7} fill="#FFFFFF" animatedProps={headHalo} />
+        <AnimatedCircle r={wIn * 0.95} fill="#FFFFFF" animatedProps={head} />
       </Svg>
       {children}
     </View>
+  );
+}
+
+// Cierre del anillo: una onda fina que se abre y se apaga, y una luz que sube y baja una vez.
+function CloseFlash({ tl, at, size }: { tl: Timeline; at: number; size: number }) {
+  const r = useSharedValue(0);
+  const g = useSharedValue(0);
+  useEffect(() => {
+    if (tl.reduced) return;
+    r.value = withDelay(at, withTiming(1, { duration: 1000, easing: EASE_OUT }));
+    g.value = withDelay(at, withSequence(withTiming(1, { duration: 240, easing: EASE_OUT }), withTiming(0.35, { duration: 1100, easing: Easing.inOut(Easing.sin) })));
+    tl.onSkip(() => { cancelAnimation(r); cancelAnimation(g); r.value = 1; g.value = 0.35; });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const wave = useAnimatedStyle(() => ({ opacity: r.value > 0 && r.value < 1 ? 0.55 * (1 - r.value) : 0, transform: [{ scale: 0.96 + 0.3 * r.value }] }));
+  const light = useAnimatedStyle(() => ({ opacity: g.value }));
+  return (
+    <>
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size * 1.5, height: size * 1.5 }, light]}>
+        <Svg width="100%" height="100%" viewBox="0 0 100 100">
+          <Defs>
+            <RadialGradient id="cierre" cx="50" cy="50" r="50" gradientUnits="userSpaceOnUse">
+              <Stop offset="0.45" stopColor="#62F0B6" stopOpacity="0" />
+              <Stop offset="0.62" stopColor="#62F0B6" stopOpacity="0.28" />
+              <Stop offset="1" stopColor="#62F0B6" stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Circle cx="50" cy="50" r="50" fill="url(#cierre)" />
+        </Svg>
+      </Animated.View>
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: '#62F0B6' }, wave]} />
+    </>
   );
 }

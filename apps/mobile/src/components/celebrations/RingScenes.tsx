@@ -11,7 +11,8 @@ import { CrownMark } from '@/components/CrownMark';
 import { useAuthStore } from '@/store/useAuthStore';
 import { buzz } from '@/lib/haptics';
 import { type CinePerson, type Timeline, Avatar, display, LinkButton, MainButton, Stage, useCount, useTimeline } from '@/components/challenge/ChallengeCinematics';
-import { Enter, SoloRing, useRingTheme, useTween } from '@/components/celebrations/Ring';
+import { CaminaRing, Enter, useRingTheme, useTween } from '@/components/celebrations/Ring';
+import { AvatarImage } from '@/components/ui/AvatarImage';
 import type {
   GroupCreatedCinematic, GroupGoalCinematic, GroupJoinedCinematic, GroupWeekCinematic, RankingResultCinematic, StreakCinematic, StreakWeekCinematic,
 } from '@/components/celebrations/MomentScenes';
@@ -70,6 +71,25 @@ function Rank({ rank, label }: { rank: number; label: string }) {
   );
 }
 
+// Avatar del anillo y de las listas: la foto o, sin foto, la inicial sobre un gris oscuro (claro en modo claro).
+function RingAvatar({ p, size, ring }: { p: CinePerson; size: number; ring?: string }) {
+  const t = useRingTheme();
+  const border = ring ? { borderWidth: Math.max(2, size * 0.04), borderColor: ring } : {};
+  const bg: [string, string] = t.dark ? ['#3b3b44', '#1d1d23'] : ['#ECECF0', '#DCDCE3'];
+  return (
+    <AvatarImage
+      uri={p.photoUrl}
+      style={{ width: size, height: size, borderRadius: size / 2, ...border }}
+      fallback={
+        <LinearGradient colors={bg} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }}
+          style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', ...border }}>
+          <Text style={{ color: t.dark ? '#FFFFFF' : '#0B0B0D', fontWeight: '700', fontSize: size * 0.38 }}>{p.name[0]?.toUpperCase() ?? '?'}</Text>
+        </LinearGradient>
+      }
+    />
+  );
+}
+
 // Cara con borde del color del fondo (para que se recorte sobre otra cara).
 function Face({ p, size, me }: { p: CinePerson; size: number; me?: boolean }) {
   const t = useRingTheme();
@@ -90,7 +110,7 @@ function List({ tl, delay, rows }: { tl: Timeline; delay: number; rows: Row[] })
           <View accessible accessibilityLabel={`${r.rank}.º ${r.me ? 'Tú' : r.person.name}: ${r.steps} pasos`}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, paddingHorizontal: 16, borderTopWidth: i ? 1 : 0, borderColor: t.line, backgroundColor: r.me ? t.rowMe : 'transparent' }}>
             <Text style={{ width: 28, fontSize: 13.5, fontWeight: '700', color: t.faint, fontVariant: ['tabular-nums'] }}>{r.rank}.º</Text>
-            <Avatar p={r.person} size={30} />
+            <RingAvatar p={r.person} size={30} />
             <Text numberOfLines={1} style={{ flex: 1, fontSize: 15, fontWeight: r.me ? '800' : '600', color: r.me ? t.mint : t.text }}>{r.me ? 'Tú' : first(r.person.name)}</Text>
             <Text style={{ fontSize: 14, fontWeight: '600', color: t.muted, fontVariant: ['tabular-nums'] }}>{n(r.steps)}</Text>
           </View>
@@ -209,9 +229,9 @@ export function RankingResultScene({ c, onDone }: { c: RankingResultCinematic; o
           <Podium tl={tl} people={podium} meId={c.me.id} />
         ) : (
           // Fuera del podio: tu anillo, lleno según qué tan arriba quedaste.
-          <SoloRing tl={tl} delay={RING_AT} size={176} progress={Math.max(0.04, 1 - (c.position - 1) / limit)} duration={RING_MS}>
-            <Enter tl={tl} delay={RING_AT + 80} scale={0.92}><Avatar p={c.me} size={118} ring={t.mint} /></Enter>
-          </SoloRing>
+          <CaminaRing tl={tl} delay={RING_AT} size={184} progress={Math.max(0.04, 1 - (c.position - 1) / limit)} duration={RING_MS}>
+            <Enter tl={tl} delay={RING_AT + 120} scale={0.92}><RingAvatar p={c.me} size={98} ring={t.mint} /></Enter>
+          </CaminaRing>
         )}
       </View>
       <Enter tl={tl} delay={textAt} style={{ marginTop: 16 }}><Rank rank={c.position} label="de todo Camina" /></Enter>
@@ -292,14 +312,14 @@ export function GroupGoalScene({ c, onDone }: { c: GroupGoalCinematic; onDone: (
     <Stage tl={tl} night announce={`${c.name} cumplió la meta de la semana: ${c.total} pasos.`}>
       <Enter tl={tl} delay={40}><Eyebrow>{`Meta del grupo · ${c.name}`}</Eyebrow></Enter>
       <View style={{ marginTop: 24 }}>
-        <SoloRing tl={tl} delay={AT} size={220} progress={1} duration={DRAW} width={12}>
+        <CaminaRing tl={tl} delay={AT} size={236} progress={1} duration={DRAW} onClose={{ at: close }}>
           <Enter tl={tl} delay={AT} scale={0.94}>
             <View accessible accessibilityLabel={`${steps} de ${c.target} pasos`} style={{ alignItems: 'center' }}>
               <Text allowFontScaling={false} style={{ fontSize: 34, fontWeight: '800', letterSpacing: -1.2, color: t.text, fontVariant: ['tabular-nums'] }}>{n(steps)}</Text>
               <Text style={{ fontSize: 13, color: t.muted, marginTop: 1 }}>de {n(c.target)} pasos</Text>
             </View>
           </Enter>
-        </SoloRing>
+        </CaminaRing>
       </View>
       <Enter tl={tl} delay={close - 300} style={{ alignItems: 'center', marginTop: 20 }}>
         <PlainTitle>Lo lograron juntos</PlainTitle>
