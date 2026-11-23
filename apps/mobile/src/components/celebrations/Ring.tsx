@@ -1,9 +1,9 @@
 import { useEffect, type ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import Animated, {
-  Easing, cancelAnimation, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming, type SharedValue,
+  Easing, cancelAnimation, type EasingFunction, type EasingFunctionFactory, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming, type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, Defs, G, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, G, LinearGradient as SvgGradient, Path, RadialGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'nativewind';
 import type { Timeline } from '@/components/challenge/ChallengeCinematics';
@@ -18,20 +18,17 @@ export type RingTheme = {
   mint: string; outer: string; inner: string; track: string; trackIn: string; glowOuter: number; glowInner: number; light: number;
   edge: string; seat: string; avatar: [string, string]; avatarInk: string; rowMe: string;
 };
-const DARK: RingTheme = {
-  dark: true, bg: ['#101013', '#070708', '#000000'], text: '#FFFFFF', muted: 'rgba(255,255,255,0.6)', faint: 'rgba(255,255,255,0.36)',
-  line: 'rgba(255,255,255,0.08)', card: 'rgba(255,255,255,0.04)', mint: '#62F0B6', outer: '#86ECC6', inner: '#2FF0A0',
-  track: 'rgba(255,255,255,0.07)', trackIn: 'rgba(255,255,255,0.055)', glowOuter: 0.13, glowInner: 0.3, light: 0.16,
-  edge: '#060607', seat: '#0d0d10', avatar: ['#3b3b44', '#1d1d23'], avatarInk: '#FFFFFF', rowMe: 'rgba(98,240,182,0.08)',
+const VIOLET: RingTheme = {
+  dark: true, bg: ['#2a0f6b', '#170640', '#0a0222'], text: '#FFFFFF', muted: 'rgba(236,230,255,0.66)', faint: 'rgba(236,230,255,0.4)',
+  line: 'rgba(255,255,255,0.09)', card: 'rgba(255,255,255,0.05)', mint: '#62F0B6', outer: '#86ECC6', inner: '#2FF0A0',
+  track: 'rgba(255,255,255,0.08)', trackIn: 'rgba(255,255,255,0.06)', glowOuter: 0.16, glowInner: 0.3, light: 0.2,
+  edge: '#1b0848', seat: '#22105a', avatar: ['#6a3be0', '#3a1890'], avatarInk: '#FFFFFF', rowMe: 'rgba(98,240,182,0.1)',
 };
-const LIGHT: RingTheme = {
-  dark: false, bg: ['#FFFFFF', '#F8F8F6', '#EFEFEC'], text: '#0B0B0D', muted: 'rgba(11,11,13,0.56)', faint: 'rgba(11,11,13,0.34)',
-  line: 'rgba(11,11,13,0.08)', card: 'rgba(11,11,13,0.025)', mint: '#12976A', outer: '#9DEFD0', inner: '#17C487',
-  track: 'rgba(11,11,13,0.06)', trackIn: 'rgba(11,11,13,0.05)', glowOuter: 0.2, glowInner: 0.22, light: 0.14,
-  edge: '#FAFAF9', seat: '#FFFFFF', avatar: ['#ECECF0', '#DCDCE3'], avatarInk: '#0B0B0D', rowMe: 'rgba(23,196,135,0.09)',
-};
+const DARK = VIOLET;
+// Los festejos son un momento de marca: violeta y verde en los dos modos del teléfono.
 export function useRingTheme(): RingTheme {
-  return useColorScheme().colorScheme === 'dark' ? DARK : LIGHT;
+  useColorScheme();
+  return VIOLET;
 }
 // Compatibilidad: valores fijos del tema oscuro.
 export const NIGHT = DARK;
@@ -41,9 +38,10 @@ export const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 export const EASE_DRAW = Easing.bezier(0.65, 0, 0.35, 1);
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 // Valor de 0 a 1 con la curva que se pida, atado a la línea de tiempo (saltar lo deja en 1; reducir movimiento nace en 1).
-export function useTween(tl: Timeline, delay: number, duration: number, easing = EASE_OUT) {
+export function useTween(tl: Timeline, delay: number, duration: number, easing: EasingFunction | EasingFunctionFactory = EASE_OUT) {
   const sv = useSharedValue(tl.reduced ? 1 : 0);
   useEffect(() => {
     tl.register(sv);
@@ -196,3 +194,118 @@ export const ringRadius = (size: number, width?: number) => {
 };
 
 export type { SharedValue };
+
+// =====================================================================
+// Media luna: un solo arco (la mitad de arriba de un círculo) que se dibuja de izquierda a derecha mientras las huellas de
+// Camina caminan sobre él. Es la firma de los festejos: se reconoce CAMINA sin leer el nombre.
+// =====================================================================
+
+const FOOT_L = require('@/../assets/pie-izq-mint.png');
+const FOOT_R = require('@/../assets/pie-der-mint.png');
+
+// Curva del trazo: arranca rápido y frena al llegar (nada de esperas al principio).
+export const EASE_ARC = Easing.out(Easing.cubic);
+// En qué fracción del tiempo el trazo llega a la fracción `t` del arco (inversa de la curva de arriba).
+export const arcTime = (t: number) => 1 - Math.cbrt(1 - Math.min(1, Math.max(0, t)));
+
+export type DomeGeo = { width: number; r: number; cx: number; cy: number; height: number };
+export const domeGeo = (width: number, pad = 34): DomeGeo => {
+  const r = width / 2 - pad;
+  return { width, r, cx: width / 2, cy: r + pad, height: r + pad + 8 };
+};
+// Punto del arco: t = 0 a la izquierda, 0,5 arriba, 1 a la derecha. `inset` lo corre hacia adentro.
+export const domePoint = (g: DomeGeo, t: number, inset = 0) => {
+  const a = Math.PI * t;
+  const r = g.r - inset;
+  return { x: g.cx - r * Math.cos(a), y: g.cy - r * Math.sin(a), deg: (a * 180) / Math.PI };
+};
+
+function Foot({ tl, at, g, t, left }: { tl: Timeline; at: number; g: DomeGeo; t: number; left: boolean }) {
+  const k = useTween(tl, at, 320);
+  const p = domePoint(g, t, 24 + (left ? 5 : -5));
+  const a = useAnimatedStyle(() => ({ opacity: 0.9 * k.value, transform: [{ rotate: `${p.deg}deg` }, { scale: 0.7 + 0.3 * k.value }] }));
+  const W = 11;
+  const H = 21;
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: p.x - W / 2, top: p.y - H / 2, width: W, height: H }, a]}>
+      <Animated.Image source={left ? FOOT_L : FOOT_R} style={{ width: W, height: H, opacity: 0.85 }} resizeMode="contain" />
+    </Animated.View>
+  );
+}
+
+type DomeProps = {
+  tl: Timeline; delay: number; width: number; progress?: number; duration?: number;
+  steps?: number; // cuántas huellas caminan sobre el arco
+  stroke?: number;
+  glowAt?: number; // si el arco se completa, luz de cierre a los `glowAt` ms
+  children?: ReactNode;
+};
+
+export function Dome({ tl, delay, width, progress = 1, duration = 720, steps = 0, stroke = 9, glowAt, children }: DomeProps) {
+  const th = useRingTheme();
+  const g = domeGeo(width);
+  const len = Math.PI * g.r;
+  const to = Math.max(0.002, Math.min(1, progress));
+  const k = useTween(tl, delay, duration, EASE_ARC);
+  const d = `M${g.cx - g.r} ${g.cy} A${g.r} ${g.r} 0 0 1 ${g.cx + g.r} ${g.cy}`;
+  const line = useAnimatedProps(() => ({ strokeDashoffset: len * (1 - to * k.value) }));
+  const glow = useAnimatedProps(() => ({ strokeDashoffset: len * (1 - to * k.value), strokeOpacity: 0.22 * k.value }));
+  const head = useAnimatedProps(() => {
+    const a = Math.PI * to * k.value;
+    return { cx: g.cx - g.r * Math.cos(a), cy: g.cy - g.r * Math.sin(a), opacity: k.value > 0.01 ? 1 : 0 };
+  });
+  const halo = useAnimatedProps(() => {
+    const a = Math.PI * to * k.value;
+    return { cx: g.cx - g.r * Math.cos(a), cy: g.cy - g.r * Math.sin(a), opacity: k.value > 0.01 ? 0.3 : 0 };
+  });
+  const feet = Array.from({ length: steps }, (_, i) => (i + 0.6) / (steps + 0.2)).filter((t) => t <= to);
+  return (
+    <View style={{ width: g.width, height: g.height }}>
+      {glowAt != null && to >= 1 ? <DomeGlow tl={tl} at={glowAt} g={g} /> : null}
+      <Svg width={g.width} height={g.height} style={{ position: 'absolute' }}>
+        <Defs>
+          <SvgGradient id="arco" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={th.outer} stopOpacity="0.55" />
+            <Stop offset="0.5" stopColor={th.outer} />
+            <Stop offset="1" stopColor={th.inner} />
+          </SvgGradient>
+        </Defs>
+        <Path d={d} stroke={th.track} strokeWidth={stroke} fill="none" strokeLinecap="round" />
+        <AnimatedPath d={d} stroke={th.outer} strokeWidth={stroke * 2.6} fill="none" strokeLinecap="round" strokeDasharray={`${len} ${len}`} animatedProps={glow} />
+        <AnimatedPath d={d} stroke="url(#arco)" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={`${len} ${len}`} animatedProps={line} />
+        <AnimatedCircle r={stroke * 1.15} fill="#FFFFFF" animatedProps={halo} />
+        <AnimatedCircle r={stroke * 0.5} fill="#FFFFFF" animatedProps={head} />
+      </Svg>
+      {feet.map((t, i) => (
+        <Foot key={i} tl={tl} at={delay + duration * arcTime(t / to) * 0.98} g={g} t={t} left={i % 2 === 0} />
+      ))}
+      {children}
+    </View>
+  );
+}
+
+// Luz de cierre de la media luna: un resplandor verde que sube desde el arco y se asienta.
+function DomeGlow({ tl, at, g }: { tl: Timeline; at: number; g: DomeGeo }) {
+  const v = useSharedValue(0);
+  useEffect(() => {
+    if (tl.reduced) { v.value = 0.5; return; }
+    v.value = withDelay(at, withSequence(withTiming(1, { duration: 240, easing: EASE_OUT }), withTiming(0.5, { duration: 900, easing: Easing.inOut(Easing.sin) })));
+    tl.onSkip(() => { cancelAnimation(v); v.value = 0.5; });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const a = useAnimatedStyle(() => ({ opacity: v.value, transform: [{ scale: 0.92 + 0.08 * v.value }] }));
+  return (
+    <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: -g.width * 0.15, top: -g.r * 0.3, width: g.width * 1.3, height: g.height * 1.3 }, a]}>
+      <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <Defs>
+          <RadialGradient id="domo" cx="50" cy="62" r="50" gradientUnits="userSpaceOnUse">
+            <Stop offset="0" stopColor="#62F0B6" stopOpacity="0.26" />
+            <Stop offset="0.7" stopColor="#62F0B6" stopOpacity="0.05" />
+            <Stop offset="1" stopColor="#62F0B6" stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Circle cx="50" cy="62" r="50" fill="url(#domo)" />
+      </Svg>
+    </Animated.View>
+  );
+}

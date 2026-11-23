@@ -1,22 +1,18 @@
 import { useEffect, useRef, type ComponentType } from 'react';
 import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
-import type { IconProps as PhosphorProps } from 'phosphor-react-native';
-import { House } from 'phosphor-react-native/src/icons/House';
-import { ChartBar } from 'phosphor-react-native/src/icons/ChartBar';
-import { UsersThree } from 'phosphor-react-native/src/icons/UsersThree';
-import { CalendarBlank } from 'phosphor-react-native/src/icons/CalendarBlank';
-import { ShoppingBag } from 'phosphor-react-native/src/icons/ShoppingBag';
+import { Calendar, ChartBar, Home, ShoppingBag, Users, type IconProps } from '@/components/icons';
 
-// Íconos de la barra de abajo: de línea fina y un solo color (el que manda la barra); la pestaña activa va rellena.
+// Íconos de la barra de abajo: los símbolos nativos (SF Symbols en iPhone, Material en Android) en el color que manda la barra;
+// la pestaña activa va rellena.
 // Al tocar, el ícono se achica apenas y vuelve: un gesto corto y sobrio.
 export type TabKind = 'home' | 'activity' | 'groups' | 'events' | 'canjes';
 
-const ICON: Record<TabKind, ComponentType<PhosphorProps>> = {
-  home: House,
+const ICON: Record<TabKind, ComponentType<IconProps>> = {
+  home: Home,
   activity: ChartBar,
-  groups: UsersThree,
-  events: CalendarBlank,
+  groups: Users,
+  events: Calendar,
   canjes: ShoppingBag,
 };
 
