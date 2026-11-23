@@ -86,7 +86,7 @@ export function TabGlyph({ kind, color, focused, tick = 0, size = 28 }: { kind: 
               {part.node(c)}
             </Svg>
           ) : part.foot ? (
-            <Foot part={part.foot} size={size} tint={focused ? '#7A55E6' : c.g} heart={focused ? '#FFFFFF' : undefined} />
+            <Foot part={part.foot} size={size} tint={focused ? '#7A55E6' : c.g} />
           ) : null}
         </Layer>
       ))}

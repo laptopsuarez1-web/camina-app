@@ -159,18 +159,17 @@ export const PARTS: Record<IllKind, IllPart[]> = {
 
 const FOOT_L = require('@/../assets/pie-izq-mint.png');
 const FOOT_R = require('@/../assets/pie-der-mint.png');
-const FOOT_HEART = require('@/../assets/pie-der-corazon.png');
 
 // Huella de Camina (la del logo) tintada, posicionada en la grilla de 48.
-export function Foot({ part, size, tint, heart }: { part: NonNullable<IllPart['foot']>; size: number; tint: string; heart?: string }) {
+export function Foot({ part, size, tint }: { part: NonNullable<IllPart['foot']>; size: number; tint: string }) {
   const k = size / 48;
-  const box = { position: 'absolute' as const, left: part.x * k, top: part.y * k, width: part.w * k, height: part.h * k };
   return (
-    <>
-      <Image source={part.side === 0 ? FOOT_L : FOOT_R} accessible={false} resizeMode="contain" style={{ ...box, tintColor: tint, opacity: 0.95 }} />
-      {/* El corazón del talón (huella derecha), relleno para que se note sobre cualquier color. */}
-      {heart && part.side === 1 ? <Image source={FOOT_HEART} accessible={false} resizeMode="contain" style={{ ...box, tintColor: heart }} /> : null}
-    </>
+    <Image
+      source={part.side === 0 ? FOOT_L : FOOT_R}
+      accessible={false}
+      resizeMode="contain"
+      style={{ position: 'absolute', left: part.x * k, top: part.y * k, width: part.w * k, height: part.h * k, tintColor: tint, opacity: 0.95 }}
+    />
   );
 }
 
@@ -184,7 +183,7 @@ export function IllArt({ kind, size = 48, muted }: { kind: IllKind; size?: numbe
         {muted ? null : gradientDefs(uid, kind)}
         {PARTS[kind].map((p, i) => (p.node ? <G key={i}>{p.node(c)}</G> : null))}
       </Svg>
-      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} heart={muted ? undefined : '#FFFFFF'} /> : null))}
+      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} /> : null))}
     </View>
   );
 }
