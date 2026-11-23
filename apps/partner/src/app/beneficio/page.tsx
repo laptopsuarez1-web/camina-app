@@ -439,8 +439,9 @@ function BeneficioForm({
       cost_points: Number(costo) || 0,
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
       daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
-      weekly_quota: online ? null : Number(cuposSemana) > 0 ? Number(cuposSemana) : null,
-      monthly_quota: online ? null : Number(cuposMes) > 0 ? Number(cuposMes) : null,
+      // Solo se mandan si hay algo que guardar o borrar: así el panel sigue guardando aunque la base todavía no tenga estas columnas (0129).
+      ...(Number(cuposSemana) > 0 || benefit?.weekly_quota != null ? { weekly_quota: online || !(Number(cuposSemana) > 0) ? null : Number(cuposSemana) } : {}),
+      ...(Number(cuposMes) > 0 || benefit?.monthly_quota != null ? { monthly_quota: online || !(Number(cuposMes) > 0) ? null : Number(cuposMes) } : {}),
       active,
       ...(fansReady ? { fans_only: fansOnly } : {}),
       new_customers_only: soloNuevos,
