@@ -183,7 +183,7 @@ export function IllArt({ kind, size = 48, muted }: { kind: IllKind; size?: numbe
         {muted ? null : gradientDefs(uid, kind)}
         {PARTS[kind].map((p, i) => (p.node ? <G key={i}>{p.node(c)}</G> : null))}
       </Svg>
-      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#F2FFF9'} /> : null))}
+      {PARTS[kind].map((p, i) => (p.foot ? <Foot key={i} part={p.foot} size={size} tint={muted ? muted.g : '#7A55E6'} /> : null))}
     </View>
   );
 }
