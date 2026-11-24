@@ -93,7 +93,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="actividad" options={{ title: 'Actividad', tabBarIcon: ActivityIcon }} />
       <Tabs.Screen name="grupos" options={{ title: 'Comunidad', tabBarIcon: GroupsIcon }} />
       <Tabs.Screen name="eventos" options={{ title: 'Eventos', tabBarIcon: EventsIcon }} />
-      <Tabs.Screen name="canjes" options={{ title: 'Canjes', tabBarIcon: CanjesIcon }} />
+      <Tabs.Screen name="canjes" options={{ title: 'Premios', tabBarIcon: CanjesIcon }} />
       {/* perfil se abre desde el avatar en el header, no es un tab de abajo. Y
           grupos/[groupId] es la pantalla de detalle de un grupo, no un tab propio.
           Sin declararlos aquí, Expo Router los agrega solo al tab bar (bug real

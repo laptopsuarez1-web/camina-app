@@ -153,7 +153,7 @@ export const ETAPAS = [
     d: 'Elegís el premio, vas al local y escribís su código. Listo al instante.',
     dato: 'Puedes volver al mismo local cada 14 días',
     img: CAP.canjes,
-    alt: 'Pantalla Canjes de Camina con los comercios y sus premios',
+    alt: 'Pantalla Premios de Camina con los comercios y sus premios',
   },
 ] as const;
 

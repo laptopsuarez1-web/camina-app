@@ -813,7 +813,7 @@ export default function CanjesScreen() {
 
         <View className="px-5 pt-5">
           <View className="flex-row items-center justify-between" style={{ gap: 12 }}>
-            <View style={{ flexShrink: 1 }}><ScreenTitle>Canjes</ScreenTitle></View>
+            <View style={{ flexShrink: 1 }}><ScreenTitle>Premios</ScreenTitle></View>
             {/* Quien acaba de canjear busca su código aquí: atajo a Mis canjes (que también está en Perfil). */}
             <Press
               accessibilityRole="button"

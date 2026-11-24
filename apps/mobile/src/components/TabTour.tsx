@@ -13,7 +13,7 @@ const TABS = 5;
 const STEPS = [
   { tab: 0, title: 'Inicio', text: 'Aquí ves tus pasos de hoy y los Puntos que vas ganando.' },
   { tab: 2, title: 'Comunidad', text: 'Tus grupos, amigos y el ranking de la semana.' },
-  { tab: 4, title: 'Canjes', text: 'Cambia tus Puntos por premios en locales de tu ciudad.' },
+  { tab: 4, title: 'Premios', text: 'Cambia tus Puntos por premios en locales de tu ciudad.' },
 ] as const;
 
 export function TabTour() {
