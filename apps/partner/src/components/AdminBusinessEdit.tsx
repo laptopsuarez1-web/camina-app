@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 import { supabase, type Business } from '@/lib/supabase';
 import { opcionesCategoria } from '@/lib/categories';
 import { resolverLinkMapa, parseUbicacion } from '@/lib/maps';
+import { HorarioEditor } from '@/components/HorarioEditor';
+import { emptyWeek, summarizeWeek, weekFromText, type WeekHours } from '@/lib/hours';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
 
@@ -31,7 +33,6 @@ const TEXTOS: { key: keyof Campos; label: string; long?: boolean }[] = [
   { key: 'tiktok', label: 'TikTok' },
   { key: 'website', label: 'Sitio web' },
   { key: 'google_review_url', label: 'Link de Google Maps / reseñas' },
-  { key: 'hours_text', label: 'Horario (texto)' },
 ];
 
 // Edición completa de un comercio por el equipo de Camina. El servidor deja pasar el UPDATE solo a admins (RLS is_admin()).
@@ -45,6 +46,7 @@ export function AdminBusinessEditModal({ business: inicial, onClose, onSaved, on
     website: business.website ?? '', google_review_url: business.google_review_url ?? '', hours_text: business.hours_text ?? '',
     lat: business.lat != null ? String(business.lat) : '', lng: business.lng != null ? String(business.lng) : '',
   });
+  const [semana, setSemana] = useState<WeekHours>(inicial.opening_hours ?? weekFromText(inicial.hours_text) ?? emptyWeek());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapaLink, setMapaLink] = useState('');
@@ -87,7 +89,7 @@ export function AdminBusinessEditModal({ business: inicial, onClose, onSaved, on
       .update({
         name: f.name.trim(), category: f.category, description: vacio(f.description), address: vacio(f.address), city: vacio(f.city),
         phone: vacio(f.phone), instagram: vacio(f.instagram), facebook: vacio(f.facebook), tiktok: vacio(f.tiktok),
-        website: vacio(f.website), google_review_url: vacio(f.google_review_url), hours_text: vacio(f.hours_text), lat, lng,
+        website: vacio(f.website), google_review_url: vacio(f.google_review_url), hours_text: summarizeWeek(semana) || null, opening_hours: semana, lat, lng,
       })
       .eq('id', business.id)
       .select('*')
@@ -122,6 +124,10 @@ export function AdminBusinessEditModal({ business: inicial, onClose, onSaved, on
               )}
             </label>
           ))}
+          <div>
+            <span className="block text-[12px] font-semibold text-text mb-1">Horario de atención</span>
+            <HorarioEditor semana={semana} setSemana={setSemana} />
+          </div>
           <div className="rounded-[12px] border border-line p-3">
             <span className="block text-[12px] font-semibold text-text mb-1">Ubicación desde Google Maps</span>
             <p className="text-muted text-[11.5px] mb-2 leading-4">En Google Maps abre el local, toca Compartir, copia el link y pégalo aquí. Sirve el link corto del celular, el largo de la computadora, coordenadas (-21.53, -64.73), grados o el código de Google. Se llena solo la latitud y la longitud.</p>
@@ -163,7 +169,7 @@ export function AdminBusinessEditModal({ business: inicial, onClose, onSaved, on
             </div>
             <GalleryUpload businessId={business.id} photos={business.photos ?? []} onChange={(photos) => guardarFoto({ photos })} />
           </div>
-          <p className="text-muted text-[11.5px]">Los premios y el horario por día los edita el comercio desde su panel.</p>
+          <p className="text-muted text-[11.5px]">Los premios los edita el comercio desde su panel.</p>
         </div>
         {error && <p className="text-warn text-[12.5px] mt-3">{error}</p>}
         <div className="flex gap-2 mt-4">
