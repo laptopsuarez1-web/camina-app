@@ -13,3 +13,8 @@ android {
     versionName "1.0.0"
   }
 }
+
+dependencies {
+  // Tarea periódica que anota el contador de pasos aunque Camina esté cerrada.
+  implementation "androidx.work:work-runtime-ktx:2.9.1"
+}
