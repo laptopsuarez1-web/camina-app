@@ -50,7 +50,7 @@ const ETAPAS_LOCAL = [
     d: 'Le dices el código de 4 números de tu local, lo escribe en la app y el canje queda confirmado.',
     dato: 'Lo ves al instante en tu panel',
     img: CAP.canjes,
-    alt: 'Pantalla Canjes de Camina con los comercios y sus premios',
+    alt: 'Pantalla Premios de Camina con los comercios y sus premios',
   },
   {
     n: '04',

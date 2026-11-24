@@ -39,7 +39,7 @@ export function NotificationPrefs() {
   return (
     <View className="px-3.5 pb-1 border-t border-line-light dark:border-line-dark">
       <Text accessibilityRole="header" className="text-[12px] font-bold text-muted-light dark:text-muted-dark mt-3">Notificaciones de servicio</Text>
-      <PrefRow title="Canjes y Puntos por vencer" text="Códigos de canje activos y Puntos que están por vencerse." value={profile?.push_servicio ?? true} onChange={setServicio} last />
+      <PrefRow title="Premios y Puntos por vencer" text="Códigos de canje activos y Puntos que están por vencerse." value={profile?.push_servicio ?? true} onChange={setServicio} last />
       <Text accessibilityRole="header" className="text-[12px] font-bold text-muted-light dark:text-muted-dark mt-2">Cómo funciona</Text>
       <PrefRow title="Aliento del día" text="A las 18:30 te contamos cuánto te falta para tu meta o cuántos Puntos más puedes sumar." value={prefs.aliento} onChange={(v) => prefs.set('aliento', v)} />
       <PrefRow title="Racha" text="Avisos de la tarde y la noche para que no cortes tu racha." value={prefs.racha} onChange={(v) => prefs.set('racha', v)} last />
