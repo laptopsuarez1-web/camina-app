@@ -13,7 +13,7 @@ import { BienvenidaGuia } from '@/components/BienvenidaGuia';
 import '@/components/biz/biz.css';
 import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
-import { puedeAgregarLocal } from '@/lib/locales';
+import { adminVe, puedeAgregarLocal } from '@/lib/locales';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
 import type { BusinessPlan } from '@/lib/supabase';
 
@@ -47,7 +47,13 @@ const NAV_MAS: NavItem[] = [
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { session, business, locales, isAdmin, role, loading, refreshBusiness, cambiarLocal } = useBusinessAuth();
+  const { session, business, locales, isAdmin, viendoComo, role, loading, refreshBusiness, cambiarLocal } = useBusinessAuth();
+  // Admin mirando otro comercio: lista de todos para cambiar de cuenta sin volver a Admin.
+  const [todos, setTodos] = useState<{ id: string; name: string | null }[]>([]);
+  useEffect(() => {
+    if (!isAdmin || !viendoComo) return;
+    supabase.from('businesses').select('id, name').order('name').then(({ data }) => setTodos((data ?? []) as { id: string; name: string | null }[]));
+  }, [isAdmin, viendoComo]);
   const [resending, setResending] = useState(false);
   const [beneficiosActivos, setBeneficiosActivos] = useState<number | null>(null);
   const pathname = usePathname();
@@ -145,7 +151,38 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </span>
       </Link>
 
-      {role === 'owner' && (locales.length > 1 || puedeAgregarLocal(locales)) && (
+      {viendoComo && (
+        <div className="biz-label px-3 pb-2 flex flex-col gap-1.5">
+          <span className="text-[11.5px] font-bold text-warn">Modo admin: estás en el panel de este comercio</span>
+          <select
+            aria-label="Cambiar de comercio"
+            value={business.id}
+            onChange={(e) => {
+              adminVe(e.target.value);
+              window.location.href = '/inicio';
+            }}
+            className="w-full rounded-lg border border-line bg-card text-text text-[12.5px] font-semibold px-2 py-1.5"
+          >
+            {todos.length === 0 && <option value={business.id}>{business.name}</option>}
+            {todos.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => {
+              adminVe(null);
+              window.location.href = '/admin';
+            }}
+            className="text-left text-[12px] font-semibold text-[#1F7A66] underline"
+          >
+            ← Volver a Admin
+          </button>
+        </div>
+      )}
+      {role === 'owner' && !viendoComo && (locales.length > 1 || puedeAgregarLocal(locales)) && (
         <div className="biz-label px-3 pb-2 flex flex-col gap-1.5">
           {locales.length > 1 && (
             <select
