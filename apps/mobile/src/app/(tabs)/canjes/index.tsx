@@ -191,10 +191,18 @@ export default function CanjesScreen() {
   }
   function closeProfile() {
     setGalleryOpen(false);
+    setViewerList(null);
     setDetailBenefitId(null);
     setProfileBusinessId(null);
   }
   const [galleryIndex, setGalleryIndex] = useState(0);
+  // Lista que se muestra en el visor: por defecto portada + fotos del local; también sirve para los afiches de los premios y el catálogo.
+  const [viewerList, setViewerList] = useState<string[] | null>(null);
+  const openViewer = (list: string[] | null, i: number) => {
+    setViewerList(list);
+    setGalleryIndex(Math.max(0, i));
+    setGalleryOpen(true);
+  };
   const [activeRedemption, setActiveRedemption] = useState<Redemption | null>(null);
   const [activeBenefit, setActiveBenefit] = useState<BenefitWithBusiness | null>(null);
   const { data: caminaCard } = useCaminaCard();
@@ -1002,15 +1010,27 @@ export default function CanjesScreen() {
                   {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. Misma proporción 16:9 que el recorte del panel,
                       así se ve completa y igual que en la vista del comercio. */}
                   {g.business.cover_url ? (
-                    <CachedImage
-                      source={{ uri: g.business.cover_url }}
-                      cachePolicy="memory-disk"
-                      // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
-                      transition={180}
-                      accessibilityIgnoresInvertColors
-                      contentFit="cover"
-                      style={{ aspectRatio: 16 / 9, width: 'auto', marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
-                    />
+                    // Tocar la foto la abre completa y grande; tocar lo demás de la tarjeta abre la ficha.
+                    <Press
+                      accessibilityRole={Platform.OS === 'web' ? undefined : 'imagebutton'}
+                      accessibilityLabel={`Ver las fotos de ${g.business.name}`}
+                      feedback="none"
+                      onPress={() => {
+                        setProfileBusinessId(g.business.id);
+                        openViewer(null, 0);
+                      }}
+                      style={{ marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
+                    >
+                      <CachedImage
+                        source={{ uri: g.business.cover_url }}
+                        cachePolicy="memory-disk"
+                        // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
+                        transition={180}
+                        accessibilityIgnoresInvertColors
+                        contentFit="cover"
+                        style={{ aspectRatio: 16 / 9, width: 'auto' }}
+                      />
+                    </Press>
                   ) : null}
                   <View className="flex-row items-start" style={{ gap: 14 }}>
                     {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, featured)}
@@ -1328,10 +1348,7 @@ export default function CanjesScreen() {
               <View style={{ height: 232, backgroundColor: colors.purple }}>
                 {profileGroup.business.cover_url ? (
                   <Press
-                    onPress={() => {
-                      setGalleryIndex(0);
-                      setGalleryOpen(true);
-                    }}
+                    onPress={() => openViewer(null, 0)}
                     style={{ width: '100%', height: '100%' }}
                     accessibilityLabel="Ver las fotos del local"
                   >
@@ -1394,10 +1411,7 @@ export default function CanjesScreen() {
                           key={uri}
                           accessibilityRole="button"
                           accessibilityLabel={`Ver la foto ${i + 1} en grande`}
-                          onPress={() => {
-                            setGalleryIndex(galleryPhotos.indexOf(uri) >= 0 ? galleryPhotos.indexOf(uri) : 0);
-                            setGalleryOpen(true);
-                          }}
+                          onPress={() => openViewer(null, galleryPhotos.indexOf(uri))}
                           className="rounded-2xl overflow-hidden border border-line-light dark:border-line-dark"
                           style={{ width: 132, height: 176, backgroundColor: '#241748' }}
                         >
@@ -1510,7 +1524,7 @@ export default function CanjesScreen() {
                   </View>
                 ) : null}
 
-                <CatalogSection businessId={profileGroup.business.id} />
+                <CatalogSection businessId={profileGroup.business.id} onOpenImages={(list, i) => openViewer(list, i)} />
 
                 {profileGroup.benefits.length === 0 ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-7">
@@ -1579,7 +1593,17 @@ export default function CanjesScreen() {
                                 style={{ gap: 14 }}
                               >
                                 {b.image_url ? (
-                                  <CachedImage source={{ uri: b.image_url }} style={{ width: 84, height: 84, borderRadius: 18 }} />
+                                  <Press
+                                    accessibilityRole={Platform.OS === 'web' ? undefined : 'imagebutton'}
+                                    accessibilityLabel={`Ver la foto de ${b.name} en grande`}
+                                    feedback="none"
+                                    onPress={() => {
+                                      const fotos = profileGroup.benefits.map((x) => x.image_url).filter(Boolean) as string[];
+                                      openViewer(fotos, fotos.indexOf(b.image_url as string));
+                                    }}
+                                  >
+                                    <CachedImage source={{ uri: b.image_url }} style={{ width: 84, height: 84, borderRadius: 18 }} />
+                                  </Press>
                                 ) : (
                                   <View className="bg-purple-light-light dark:bg-purple-light-dark items-center justify-center" style={{ width: 84, height: 84, borderRadius: 18 }}>
                                     <Gift size={28} color={colors.purple} />
@@ -1710,8 +1734,8 @@ export default function CanjesScreen() {
             </ScrollView>
           {/* Fotos del local: una capa dentro de la ficha, NO otro panel (Modal). En iPhone, un panel abierto encima
               de otro y cerrado junto con él dejaba la pantalla sin responder y el mapa, al abrirlo después, no se movía. */}
-          {galleryOpen && galleryPhotos.length > 0 ? (
-            <PhotoViewer photos={galleryPhotos} index={galleryIndex} onIndex={setGalleryIndex} onClose={() => setGalleryOpen(false)} />
+          {galleryOpen && (viewerList ?? galleryPhotos).length > 0 ? (
+            <PhotoViewer photos={viewerList ?? galleryPhotos} index={galleryIndex} onIndex={setGalleryIndex} onClose={() => { setGalleryOpen(false); setViewerList(null); }} />
           ) : null}
           {detailBenefit && profileGroup ? (
             <BenefitDetailOverlay benefit={detailBenefit} business={profileGroup.business} onClose={() => setDetailBenefitId(null)} />

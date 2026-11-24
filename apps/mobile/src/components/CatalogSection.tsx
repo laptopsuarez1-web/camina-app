@@ -3,6 +3,7 @@ import { View, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { Press } from '@/components/ui/Press';
 import { Text } from '@/components/ui/Text';
 import { typo } from '@/theme/type';
 
@@ -39,7 +40,7 @@ function price(n: number) {
   return `Bs ${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')}`;
 }
 
-export function CatalogSection({ businessId }: { businessId: string }) {
+export function CatalogSection({ businessId, onOpenImages }: { businessId: string; onOpenImages?: (list: string[], index: number) => void }) {
   const { data } = useCatalog(businessId);
   const sections = useMemo(() => {
     const map = new Map<string, CatalogItem[]>();
@@ -60,7 +61,17 @@ export function CatalogSection({ businessId }: { businessId: string }) {
             {list.map((it) => (
               <View key={it.id} className="bg-card-light dark:bg-card-dark rounded-2xl overflow-hidden border border-line-light dark:border-line-dark" style={{ width: 150 }}>
                 {it.image_url ? (
-                  <Image source={{ uri: it.image_url }} style={{ width: 150, height: 110 }} contentFit="cover" accessibilityLabel={it.name} />
+                  <Press
+                    accessibilityRole="button"
+                    accessibilityLabel={`Ver ${it.name} en grande`}
+                    feedback="none"
+                    onPress={() => {
+                      const fotos = (data ?? []).map((x) => x.image_url).filter(Boolean) as string[];
+                      onOpenImages?.(fotos, fotos.indexOf(it.image_url as string));
+                    }}
+                  >
+                    <Image source={{ uri: it.image_url }} style={{ width: 150, height: 110 }} contentFit="cover" accessibilityLabel={it.name} />
+                  </Press>
                 ) : null}
                 <View className="p-2.5">
                   <Text className="text-text-light dark:text-text-dark font-bold text-[13.5px]" numberOfLines={2}>{it.name}</Text>
