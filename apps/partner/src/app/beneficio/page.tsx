@@ -265,6 +265,19 @@ function BeneficioForm({
   // Topes opcionales por semana y por mes (vacío = sin tope).
   const [cuposSemana, setCuposSemana] = useState(benefit?.weekly_quota != null ? String(benefit.weekly_quota) : '');
   const [cuposMes, setCuposMes] = useState(benefit?.monthly_quota != null ? String(benefit.monthly_quota) : '');
+  // Se elige UN solo tipo de tope; los otros quedan apagados y vacíos.
+  type TipoCupo = 'ilimitado' | 'dia' | 'semana' | 'mes';
+  const [tipoCupo, setTipoCupo] = useState<TipoCupo>(
+    benefit?.monthly_quota != null ? 'mes' : benefit?.weekly_quota != null ? 'semana' : benefit?.daily_quota != null ? 'dia' : benefit != null && !isFree ? 'ilimitado' : 'dia',
+  );
+  function elegirTipoCupo(t: TipoCupo) {
+    setTipoCupo(t);
+    setIlimitado(t === 'ilimitado');
+    if (t !== 'dia') setCupones('');
+    else if (!cupones) setCupones('3');
+    if (t !== 'semana') setCuposSemana('');
+    if (t !== 'mes') setCuposMes('');
+  }
   const [imageUrl, setImageUrl] = useState<string | null>(benefit?.image_url ?? null);
   const [descripcion, setDescripcion] = useState(benefit?.description ?? '');
   // Con tu compra: la persona compra algo y se lleva el premio. El local
@@ -371,7 +384,7 @@ function BeneficioForm({
       // Con plan de pago basta UNO de los topes (día, semana o mes) o «ilimitados»; el plan gratis pide mínimo 3 por día.
       const algunTope = ilimitado || Number(cupones) >= 1 || Number(cuposSemana) >= 1 || Number(cuposMes) >= 1;
       if (!online && !(isFree ? Number(cupones) >= 3 : algunTope)) {
-        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Pon un tope por día, por semana o por mes, o activa «Cupones ilimitados».');
+        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Escribe cuántos cupones das, o elige «Sin tope».');
       }
     }
     if (paso === 3) {
@@ -722,14 +735,9 @@ function BeneficioForm({
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
             </Field>
-            {!online && (
-              <Field label={`Cupones por día${isFree ? ' (mín. 3)' : ' (opcional)'}`}>
-                <input
-                  value={ilimitado && !isFree ? '∞' : cupones}
-                  onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))}
-                  disabled={!isFree && ilimitado}
-                  className={`${INPUT} disabled:opacity-50`}
-                />
+            {!online && isFree && (
+              <Field label="Cupones por día (mín. 3)">
+                <input value={cupones} onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))} className={INPUT} />
               </Field>
             )}
           </div>
@@ -754,16 +762,42 @@ function BeneficioForm({
           </div>
           )}
           {!isFree && !online && (
-            <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
-          )}
-          {!online && (
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <Field label="Tope por semana (opcional)">
-                <input value={cuposSemana} onChange={(e) => setCuposSemana(e.target.value.replace(/\D/g, ''))} placeholder="Sin tope" className={INPUT} />
-              </Field>
-              <Field label="Tope por mes (opcional)">
-                <input value={cuposMes} onChange={(e) => setCuposMes(e.target.value.replace(/\D/g, ''))} placeholder="Sin tope" className={INPUT} />
-              </Field>
+            <div className="mt-4">
+              <span className="block text-[12.5px] font-semibold mb-1.5">¿Cuántos cupones das?</span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {([['ilimitado', 'Sin tope'], ['dia', 'Por día'], ['semana', 'Por semana'], ['mes', 'Por mes']] as [TipoCupo, string][]).map(([t, txt]) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => elegirTipoCupo(t)}
+                    aria-pressed={tipoCupo === t}
+                    className="py-2 rounded-[10px] border text-[12px] font-semibold"
+                    style={tipoCupo === t ? { background: '#2E9E7C', borderColor: '#2E9E7C', color: '#fff' } : { background: 'var(--c-card)', borderColor: 'var(--c-line)', color: 'var(--c-muted)', opacity: 0.6, textDecoration: 'line-through' }}
+                  >
+                    {txt}
+                  </button>
+                ))}
+              </div>
+              {tipoCupo === 'ilimitado' ? (
+                <p className="text-[11.5px] text-muted mt-1.5 leading-4">Sin límite de cupones. Si prefieres poner un tope, elige día, semana o mes.</p>
+              ) : (
+                <div className="mt-2.5 flex items-center gap-2">
+                  <input
+                    value={tipoCupo === 'dia' ? cupones : tipoCupo === 'semana' ? cuposSemana : cuposMes}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '');
+                      if (tipoCupo === 'dia') setCupones(v);
+                      else if (tipoCupo === 'semana') setCuposSemana(v);
+                      else setCuposMes(v);
+                    }}
+                    placeholder="3"
+                    inputMode="numeric"
+                    aria-label={`Cupones ${tipoCupo === 'dia' ? 'por día' : tipoCupo === 'semana' ? 'por semana' : 'por mes'}`}
+                    className="w-24 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                  />
+                  <span className="text-[13.5px] text-muted">cupones {tipoCupo === 'dia' ? 'por día' : tipoCupo === 'semana' ? 'por semana' : 'por mes'}</span>
+                </div>
+              )}
             </div>
           )}
         </Paso>
