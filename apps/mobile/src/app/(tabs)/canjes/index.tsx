@@ -1010,15 +1010,19 @@ export default function CanjesScreen() {
                   {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. Misma proporción 16:9 que el recorte del panel,
                       así se ve completa y igual que en la vista del comercio. */}
                   {g.business.cover_url ? (
-                    <CachedImage
-                      source={{ uri: g.business.cover_url }}
-                      cachePolicy="memory-disk"
-                      // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
-                      transition={180}
-                      accessibilityIgnoresInvertColors
-                      contentFit="cover"
-                      style={{ aspectRatio: 16 / 9, width: 'auto', marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
-                    />
+                    // La caja ocupa todo el ancho de la tarjeta (se salta el relleno) y la foto la llena sin franjas.
+                    <View style={{ aspectRatio: 16 / 9, marginTop: -16, marginHorizontal: -16, marginBottom: 14, overflow: 'hidden' }}>
+                      <CachedImage
+                        source={{ uri: g.business.cover_url }}
+                        cachePolicy="memory-disk"
+                        // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
+                        transition={180}
+                        accessibilityIgnoresInvertColors
+                        contentFit="cover"
+                        // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }}
+                      />
+                    </View>
                   ) : null}
                   <View className="flex-row items-start" style={{ gap: 14 }}>
                     {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, featured)}
@@ -1596,8 +1600,8 @@ export default function CanjesScreen() {
                                   ) : null}
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
-                                    {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[12px] font-extrabold text-warn-deep dark:text-warn-soft">¡Últimos cupones! <Text className="font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text></Text>
+                                    {!unlimited && !outOfStock && available ? (
+                                      <View style={{ flexShrink: 1 }}>{remaining === 1 ? <Text className="text-[12px] font-extrabold text-warn-deep dark:text-warn-soft">¡Último cupón!</Text> : null}<Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text></View>
                                     ) : null}
                                   </View>
                                 </View>
@@ -1671,7 +1675,8 @@ export default function CanjesScreen() {
                       {/* El toque lo toma esta capa y no pointerEvents="none" en el mapa: en iPhone el mapa de Google se recicla
                           (la próxima pantalla con mapa reusa la misma vista) y react-native-maps no le devuelve los toques al
                           reciclarla, así que el mapa completo quedaba sin poder moverse después de pasar por una ficha. */}
-                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+                      <View // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }} />
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
                     {profileGroup.business.address ? (
