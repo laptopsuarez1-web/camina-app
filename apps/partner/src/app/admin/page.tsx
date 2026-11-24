@@ -7,6 +7,8 @@ import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { FichaPreviewModal } from '@/components/FichaPreview';
 import { AdminBusinessEditModal } from '@/components/AdminBusinessEdit';
+import { AdminNuevoLocal } from '@/components/AdminNuevoLocal';
+import { MAX_LOCALES } from '@/lib/locales';
 import { OptimizarFotos } from '@/components/OptimizarFotos';
 import { faltantesParaPublicar, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
@@ -40,6 +42,7 @@ export default function AdminPage() {
   const [activeBenefits, setActiveBenefits] = useState<Record<string, number>>({});
   const [previewing, setPreviewing] = useState<Business | null>(null);
   const [editing, setEditing] = useState<Business | null>(null);
+  const [agregarA, setAgregarA] = useState<Business | null>(null);
   const [pausingId, setPausingId] = useState<string | null>(null);
   const [pauseReason, setPauseReason] = useState('');
 
@@ -244,6 +247,17 @@ export default function AdminPage() {
                 </button>
               ) : undefined
             }
+          />
+        )}
+        {agregarA && (
+          <AdminNuevoLocal
+            base={agregarA}
+            onClose={() => setAgregarA(null)}
+            onCreated={(nuevo) => {
+              setBusinesses((prev) => [nuevo, ...prev]);
+              setAgregarA(null);
+              setEditing(nuevo);
+            }}
           />
         )}
         {editing && (
@@ -613,6 +627,14 @@ export default function AdminPage() {
                           >
                             Editar
                           </button>
+                          {b.owner_user_id && businesses.filter((x) => x.owner_user_id === b.owner_user_id).length < MAX_LOCALES && (
+                            <button
+                              onClick={() => setAgregarA(b)}
+                              className="bg-white border border-line text-text rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                            >
+                              + Local
+                            </button>
+                          )}
                           {b.paused_at ? (
                             <button
                               onClick={() => setPaused(b, false)}

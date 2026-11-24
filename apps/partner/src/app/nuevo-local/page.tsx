@@ -12,7 +12,7 @@ import { avisarPorCorreo } from '@/lib/email';
 
 const input = 'w-full border border-line rounded-xl px-3 py-2.5 text-[14px] bg-card';
 
-// Agregar otro local con la misma cuenta (plan Paso Adelante, hasta 5). El local nuevo empieza en Primer Paso y pasa por
+// Agregar otro local con la misma cuenta (planes Paso Firme y Paso Adelante, hasta 5). El local nuevo empieza en Primer Paso y pasa por
 // aprobación como cualquier local; se completa después desde «Mi local».
 export default function NuevoLocalPage() {
   const { business, locales, session } = useBusinessAuth();
@@ -64,7 +64,7 @@ export default function NuevoLocalPage() {
           <p className="text-[13.5px] text-muted">
             {locales.length >= MAX_LOCALES
               ? `Ya tienes ${MAX_LOCALES} locales, que es el máximo.`
-              : 'Agregar más locales está incluido en el plan Paso Adelante.'}{' '}
+              : 'Agregar más locales está incluido en los planes Paso Firme y Paso Adelante.'}{' '}
             <Link href="/plan" className="underline font-semibold">
               Ver mi plan
             </Link>
