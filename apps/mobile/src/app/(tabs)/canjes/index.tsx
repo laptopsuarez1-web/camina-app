@@ -1019,7 +1019,8 @@ export default function CanjesScreen() {
                         setProfileBusinessId(g.business.id);
                         openViewer(null, 0);
                       }}
-                      style={{ marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
+                      // La caja ocupa todo el ancho de la tarjeta (se salta el relleno) y la foto la llena sin franjas.
+                      style={{ aspectRatio: 16 / 9, marginTop: -16, marginHorizontal: -16, marginBottom: 14, overflow: 'hidden' }}
                     >
                       <CachedImage
                         source={{ uri: g.business.cover_url }}
@@ -1028,7 +1029,8 @@ export default function CanjesScreen() {
                         transition={180}
                         accessibilityIgnoresInvertColors
                         contentFit="cover"
-                        style={{ aspectRatio: 16 / 9, width: 'auto' }}
+                        // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }}
                       />
                     </Press>
                   ) : null}
@@ -1704,7 +1706,8 @@ export default function CanjesScreen() {
                       {/* El toque lo toma esta capa y no pointerEvents="none" en el mapa: en iPhone el mapa de Google se recicla
                           (la próxima pantalla con mapa reusa la misma vista) y react-native-maps no le devuelve los toques al
                           reciclarla, así que el mapa completo quedaba sin poder moverse después de pasar por una ficha. */}
-                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+                      <View // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }} />
                     </Press>
                     <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
                     {profileGroup.business.address ? (
