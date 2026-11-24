@@ -41,7 +41,21 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'red' }, { status: 502 });
     }
     const destino = res.headers.get('location');
-    if (!destino) break;
+    if (!destino) {
+      // Sin redirección: algunos links largos traen el punto solo dentro de la página.
+      try {
+        const html = (await res.text()).slice(0, 400_000);
+        const m = html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || html.match(/center=(-?\d+\.\d+)%2C(-?\d+\.\d+)/);
+        if (m) {
+          const lat = parseFloat(m[1]);
+          const lng = parseFloat(m[2]);
+          if (isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return NextResponse.json({ lat, lng });
+        }
+      } catch {
+        // se responde sin-coordenadas
+      }
+      break;
+    }
     actual = new URL(destino, actual);
   }
   return NextResponse.json({ error: 'sin-coordenadas' }, { status: 422 });

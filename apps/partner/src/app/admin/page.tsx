@@ -249,6 +249,7 @@ export default function AdminPage() {
           <AdminBusinessEditModal
             business={editing}
             onClose={() => setEditing(null)}
+            onChanged={(updated) => setBusinesses((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))}
             onSaved={(updated) => {
               setBusinesses((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
               setEditing(null);
