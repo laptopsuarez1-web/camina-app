@@ -100,7 +100,7 @@ export function CropDialog({
         onDone(new File([blob], name, { type: blob.type }));
       },
       png && dw >= fw - 0.5 && dh >= fh - 0.5 ? 'image/png' : 'image/jpeg',
-      0.88
+      0.82
     );
   }
 

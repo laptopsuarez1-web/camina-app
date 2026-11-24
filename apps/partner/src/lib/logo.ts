@@ -21,7 +21,7 @@ export function fileToSmallDataUrl(file: File): Promise<string> {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -39,7 +39,7 @@ export async function uploadLogoFromDataUrl(businessId: string, dataUrl: string)
     const path = `${businessId}/logo.jpg`;
     const { error } = await supabase.storage
       .from('business-logos')
-      .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      .upload(path, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '31536000' });
     if (error) return;
     const { data } = supabase.storage.from('business-logos').getPublicUrl(path);
     await supabase.from('businesses').update({ logo_url: `${data.publicUrl}?t=${Date.now()}` }).eq('id', businessId);
@@ -69,7 +69,7 @@ export function fileToPhotoBlob(file: File, max = 1600): Promise<Blob> {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('blob'))), 'image/jpeg', 0.85);
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('blob'))), 'image/jpeg', 0.8);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
