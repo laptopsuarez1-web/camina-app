@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { X } from '@/components/icons';
@@ -90,8 +90,30 @@ export function PhotoViewer({ photos, index, onIndex, onClose }: { photos: strin
   const [zoomed, setZoomed] = useState(false);
   const ref = useRef<FlatList<string>>(null);
   const alto = height - 130;
+  // Deslizar hacia abajo para salir: la foto sigue al dedo y el fondo se desvanece. Solo funciona sin zoom, y no estorba
+  // al deslizar de lado entre fotos (un movimiento horizontal cancela este gesto).
+  const dy = useSharedValue(0);
+  const cerrar = Gesture.Pan()
+    .enabled(!zoomed)
+    .activeOffsetY(14)
+    .failOffsetX([-12, 12])
+    .onUpdate((e) => {
+      dy.value = Math.max(0, e.translationY);
+    })
+    .onEnd((e) => {
+      if (dy.value > 110 || e.velocityY > 900) {
+        dy.value = withTiming(height, { duration: 180 }, () => runOnJS(onClose)());
+      } else {
+        dy.value = withSpring(0, { damping: 20, stiffness: 220 });
+      }
+    });
+  const fondo = useAnimatedStyle(() => ({ opacity: Math.max(0, 1 - dy.value / 420) }));
+  const contenido = useAnimatedStyle(() => ({ transform: [{ translateY: dy.value }, { scale: Math.max(0.85, 1 - dy.value / 2400) }] }));
   return (
-    <GestureHandlerRootView style={[StyleSheet.absoluteFill, { backgroundColor: '#0B0B10', zIndex: 10, elevation: 10 }]}>
+    <GestureHandlerRootView style={[StyleSheet.absoluteFill, { zIndex: 10, elevation: 10 }]}>
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: '#0B0B10' }, fondo]} />
+      <GestureDetector gesture={cerrar}>
+        <Animated.View style={[{ flex: 1 }, contenido]}>
       <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
         <Press onPress={onClose} className="rounded-full items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.16)' }} accessibilityLabel="Cerrar las fotos">
           <X size={18} color="#fff" />
@@ -117,6 +139,8 @@ export function PhotoViewer({ photos, index, onIndex, onClose }: { photos: strin
       <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12.5, textAlign: 'center', paddingBottom: 34 }}>
         Pellizca o toca dos veces para acercar{photos.length > 1 ? ' · desliza para ver más' : ''}
       </Text>
+        </Animated.View>
+      </GestureDetector>
     </GestureHandlerRootView>
   );
 }
