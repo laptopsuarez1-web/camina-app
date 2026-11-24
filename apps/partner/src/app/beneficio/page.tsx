@@ -368,8 +368,10 @@ function BeneficioForm({
     if (paso === 2) {
       if (!nombre.trim()) return setPasoError('Ponle un nombre a tu premio.');
       if (!(Number(costo) > 0)) return setPasoError('Escribe cuántos Puntos cuesta.');
-      if (!online && !(isFree ? Number(cupones) >= 3 : ilimitado || Number(cupones) >= 1)) {
-        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Escribe cuántos cupones das por día, o activa «Cupones ilimitados».');
+      // Con plan de pago basta UNO de los topes (día, semana o mes) o «ilimitados»; el plan gratis pide mínimo 3 por día.
+      const algunTope = ilimitado || Number(cupones) >= 1 || Number(cuposSemana) >= 1 || Number(cuposMes) >= 1;
+      if (!online && !(isFree ? Number(cupones) >= 3 : algunTope)) {
+        return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Pon un tope por día, por semana o por mes, o activa «Cupones ilimitados».');
       }
     }
     if (paso === 3) {
@@ -441,7 +443,7 @@ function BeneficioForm({
         : {}),
       cost_points: Number(costo) || 0,
       // Online: los cupos son totales (online_quota o los cupones cargados); el tope por día no aplica (en Primer Paso la regla pide mínimo 3).
-      daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) || 0,
+      daily_quota: online ? (isFree ? 3 : null) : !isFree && ilimitado ? null : Number(cupones) >= 1 ? Number(cupones) : isFree ? 3 : null,
       // Solo se mandan si hay algo que guardar o borrar: así el panel sigue guardando aunque la base todavía no tenga estas columnas (0129).
       ...(Number(cuposSemana) > 0 || benefit?.weekly_quota != null ? { weekly_quota: online || !(Number(cuposSemana) > 0) ? null : Number(cuposSemana) } : {}),
       ...(Number(cuposMes) > 0 || benefit?.monthly_quota != null ? { monthly_quota: online || !(Number(cuposMes) > 0) ? null : Number(cuposMes) } : {}),
@@ -698,7 +700,7 @@ function BeneficioForm({
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
             </Field>
             {!online && (
-              <Field label={`Cupones por día${isFree && !ilimitado ? ' (mín. 3)' : ''}`}>
+              <Field label={`Cupones por día${isFree ? ' (mín. 3)' : ' (opcional)'}`}>
                 <input
                   value={ilimitado && !isFree ? '∞' : cupones}
                   onChange={(e) => setCupones(e.target.value.replace(/\D/g, ''))}
@@ -709,7 +711,7 @@ function BeneficioForm({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-[12.5px] text-muted">¿Cuánto vale en Bs?</span>
+            <span className="text-[12.5px] text-muted">{modo === 'descuento' ? 'Recomendación (opcional): ¿cuánto vale el descuento en Bs?' : 'Recomendación (opcional): ¿cuánto vale en Bs?'}</span>
             <input
               value={valorBs}
               onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
@@ -723,7 +725,7 @@ function BeneficioForm({
                 Usar {puntosSugeridos} Puntos
               </button>
             ) : (
-              <span className="text-[11.5px] text-muted">y te sugerimos los Puntos (2 Puntos = Bs 1)</span>
+              <span className="text-[11.5px] text-muted">y te sugerimos los Puntos (2 Puntos = Bs 1). Tú decides cuántos Puntos cuesta.</span>
             )}
           </div>
           {!isFree && !online && (
