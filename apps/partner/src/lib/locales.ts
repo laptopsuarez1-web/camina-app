@@ -1,6 +1,6 @@
 import type { Business } from '@/lib/supabase';
 
-// Una cuenta con plan Paso Adelante puede tener hasta 5 locales con el mismo correo.
+// Una cuenta con plan Paso Firme o Paso Adelante puede tener hasta 5 locales con el mismo correo.
 export const MAX_LOCALES = 5;
 
 const CLAVE = 'camina_local_actual';
@@ -21,7 +21,7 @@ export function guardarLocal(userId: string, businessId: string) {
   }
 }
 
-// Puede agregar otro local si alguno de los suyos tiene Paso Adelante y no llegó al tope.
+// Puede agregar otro local si alguno de los suyos tiene Paso Firme o Paso Adelante y no llegó al tope.
 export function puedeAgregarLocal(locales: Business[]): boolean {
-  return locales.length < MAX_LOCALES && locales.some((l) => l.plan === 'paso_adelante');
+  return locales.length < MAX_LOCALES && locales.some((l) => l.plan === 'paso_firme' || l.plan === 'paso_adelante');
 }
