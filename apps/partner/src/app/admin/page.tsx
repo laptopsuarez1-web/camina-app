@@ -7,6 +7,7 @@ import { AdminShell } from '@/components/AdminShell';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { FichaPreviewModal } from '@/components/FichaPreview';
 import { AdminBusinessEditModal } from '@/components/AdminBusinessEdit';
+import { OptimizarFotos } from '@/components/OptimizarFotos';
 import { faltantesParaPublicar, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
 
@@ -261,6 +262,8 @@ export default function AdminPage() {
           Aprueba un comercio nuevo antes de que aparezca en la app. Los cambios de plan hacia un plan mejor se
           aplican al toque; bajar de plan queda agendado para cuando termine el período mensual pagado.
         </p>
+
+        <OptimizarFotos />
 
         <div className="bg-card border border-line rounded-2xl px-4 py-3 mb-5 flex items-center justify-between">
           <div>
