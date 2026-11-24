@@ -1606,7 +1606,7 @@ export default function CanjesScreen() {
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
                                     {!unlimited && !outOfStock && available && remaining <= 3 ? (
-                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text>
+                                      <Text className="text-[12px] font-extrabold text-warn-deep dark:text-warn-soft">¡Últimos cupones! <Text className="font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text></Text>
                                     ) : null}
                                   </View>
                                 </View>
