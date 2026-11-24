@@ -45,9 +45,11 @@ export default function ActualizarClavePage() {
 
     const userId = updated.user?.id;
     const { data: adminCheck } = await supabase.rpc('is_admin');
-    const { data: ownBusiness } = userId
-      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
+    // limit(1): una cuenta puede tener varios locales y maybeSingle fallaría con más de uno.
+    const { data: propios } = userId
+      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).limit(1)
       : { data: null };
+    const ownBusiness = propios?.[0] ?? null;
     setLoading(false);
     setDone(true);
     const target = !ownBusiness && adminCheck ? '/admin' : '/inicio';

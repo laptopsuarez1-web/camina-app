@@ -6,6 +6,7 @@ import { supabase, type Business } from '@/lib/supabase';
 import { consumePendingBusiness, pendingFromMetadata } from '@/lib/pending-business';
 import { uploadLogoFromDataUrl } from '@/lib/logo';
 import { avisarPorCorreo } from '@/lib/email';
+import { guardarLocal, localGuardado } from '@/lib/locales';
 
 // Evita crear el comercio dos veces si dos llamadas llegan juntas (sesión inicial + cambio de sesión).
 const creando = new Map<string, Promise<Business | null>>();
@@ -58,21 +59,26 @@ export function useBusinessAuth() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [role, setRole] = useState<'owner' | 'cashier'>('owner');
+  const [locales, setLocales] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshBusiness = useCallback(async (userId: string, email: string | undefined) => {
     const { data: adminCheck } = await supabase.rpc('is_admin');
     setIsAdmin(!!adminCheck);
 
-    const { data } = await supabase
+    // Una cuenta puede tener varios locales (plan Paso Adelante): se abre el último que usó, o el más antiguo.
+    const { data: propios } = await supabase
       .from('businesses')
       .select('*')
       .eq('owner_user_id', userId)
-      .maybeSingle();
+      .order('created_at', { ascending: true });
 
-    if (data) {
+    if (propios && propios.length > 0) {
+      const lista = propios as Business[];
+      const guardado = localGuardado(userId);
       setRole('owner');
-      setBusiness(data as Business);
+      setLocales(lista);
+      setBusiness(lista.find((l) => l.id === guardado) ?? lista[0]);
       return;
     }
 
@@ -88,6 +94,7 @@ export function useBusinessAuth() {
       const nuevo = await tarea;
       if (nuevo) {
         setRole('owner');
+        setLocales([nuevo]);
         setBusiness(nuevo);
         return;
       }
@@ -131,5 +138,11 @@ export function useBusinessAuth() {
     };
   }, [refreshBusiness]);
 
-  return { session, business, isAdmin, role, loading, refreshBusiness };
+  // Cambiar de local: se guarda cuál y se recarga el panel para que todas las pantallas muestren el nuevo.
+  const cambiarLocal = useCallback((userId: string, businessId: string) => {
+    guardarLocal(userId, businessId);
+    window.location.href = '/inicio';
+  }, []);
+
+  return { session, business, locales, isAdmin, role, loading, refreshBusiness, cambiarLocal };
 }
