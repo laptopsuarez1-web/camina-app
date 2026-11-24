@@ -55,9 +55,11 @@ export default function LoginPage() {
   // sin tener comercio ni datos de alta guardados va a /registro a cargar el suyo.
   async function irAlPanel(userId: string | undefined) {
     const { data: adminCheck } = await supabase.rpc('is_admin');
-    const { data: ownBusiness } = userId
-      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).maybeSingle()
+    // limit(1): una cuenta puede tener varios locales y maybeSingle fallaría con más de uno.
+    const { data: propios } = userId
+      ? await supabase.from('businesses').select('id').eq('owner_user_id', userId).limit(1)
       : { data: null };
+    const ownBusiness = propios?.[0] ?? null;
     // Quien es partner (embajador) y no tiene comercio va a su panel de partners.
     const { data: partnerRow } = userId && !ownBusiness && !adminCheck
       ? await supabase.from('partners').select('id').eq('user_id', userId).maybeSingle()

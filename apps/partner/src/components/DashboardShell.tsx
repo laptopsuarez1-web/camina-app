@@ -13,6 +13,7 @@ import { BienvenidaGuia } from '@/components/BienvenidaGuia';
 import '@/components/biz/biz.css';
 import { faltantesParaPublicar, faltantesObligatorios, listaEnCastellano, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
+import { puedeAgregarLocal } from '@/lib/locales';
 import { PLAN_NOMBRE, fechaCorta, vencimientoPlan } from '@/lib/plans';
 import type { BusinessPlan } from '@/lib/supabase';
 
@@ -46,7 +47,7 @@ const NAV_MAS: NavItem[] = [
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { session, business, isAdmin, role, loading, refreshBusiness } = useBusinessAuth();
+  const { session, business, locales, isAdmin, role, loading, refreshBusiness, cambiarLocal } = useBusinessAuth();
   const [resending, setResending] = useState(false);
   const [beneficiosActivos, setBeneficiosActivos] = useState<number | null>(null);
   const pathname = usePathname();
@@ -143,6 +144,30 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <span>{role === 'cashier' ? 'Cajero' : business.approved ? 'Publicado en Camina' : 'En revisión'}</span>
         </span>
       </Link>
+
+      {role === 'owner' && (locales.length > 1 || puedeAgregarLocal(locales)) && (
+        <div className="biz-label px-3 pb-2 flex flex-col gap-1.5">
+          {locales.length > 1 && (
+            <select
+              aria-label="Cambiar de local"
+              value={business.id}
+              onChange={(e) => session && cambiarLocal(session.user.id, e.target.value)}
+              className="w-full rounded-lg border border-line bg-card text-text text-[12.5px] font-semibold px-2 py-1.5"
+            >
+              {locales.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {puedeAgregarLocal(locales) && (
+            <Link href="/nuevo-local" className="text-[12px] font-semibold text-[#1F7A66] underline">
+              + Agregar otro local
+            </Link>
+          )}
+        </div>
+      )}
 
       <nav className="biz-nav" aria-label="Panel">
         {navPrincipal.map((item) => (
