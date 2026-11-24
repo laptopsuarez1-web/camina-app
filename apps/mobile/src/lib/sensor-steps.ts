@@ -36,6 +36,26 @@ export async function requestSensorPermission(): Promise<boolean> {
   return !!perm?.granted;
 }
 
+// Programa la lectura periódica nativa (versiones de la app sin ella: no hace nada).
+let scheduled = false;
+function scheduleBackgroundReadings(): void {
+  if (scheduled) return;
+  try {
+    if (typeof StepCounter?.scheduleBackground === 'function') scheduled = StepCounter.scheduleBackground();
+  } catch {
+    // sin segundo plano: se sigue con las lecturas al abrir
+  }
+}
+
+function drainBackgroundReadings(): { at: number; count: number; bootMs: number }[] {
+  try {
+    if (typeof StepCounter?.drainReadings !== 'function') return [];
+    return StepCounter.drainReadings().filter((r) => Number.isFinite(r.at) && Number.isFinite(r.count) && r.count >= 0);
+  } catch {
+    return [];
+  }
+}
+
 // Las lecturas van de a una: si dos se cruzaran, las dos partirían del mismo dato guardado y se perderían pasos.
 let queue: Promise<unknown> = Promise.resolve();
 
@@ -43,6 +63,7 @@ let queue: Promise<unknown> = Promise.resolve();
 export function readSensorDaySteps(day: Date): Promise<number | null> {
   const run = async (): Promise<number | null> => {
     if ((await sensorStatus()) !== 'active') return null;
+    scheduleBackgroundReadings();
     const reading = await StepCounter!.readAsync(READ_TIMEOUT_MS).catch(() => null);
     let state: SensorState = EMPTY_SENSOR_STATE;
     try {
@@ -51,10 +72,20 @@ export function readSensorDaySteps(day: Date): Promise<number | null> {
     } catch {
       // dato guardado roto: se empieza de nuevo
     }
+    // Lecturas anotadas con la app cerrada (si el teléfono las entrega): se aplican en orden con su propia hora,
+    // con los mismos topes de siempre. Así el día se reparte con la medianoche real y no a ojo.
+    let changed = false;
+    for (const r of drainBackgroundReadings()) {
+      if (state.at != null && r.at <= state.at) continue;
+      state = applyReading(state, { count: r.count, bootMs: r.bootMs }, r.at, FNS);
+      changed = true;
+    }
     if (reading) {
       state = applyReading(state, reading, Date.now(), FNS);
-      await AsyncStorage.setItem(KEY, JSON.stringify(state)).catch(() => {});
+      changed = true;
     }
+    // Las lecturas ya se borraron del teléfono: se guardan siempre, aunque la lectura de ahora haya fallado.
+    if (changed) await AsyncStorage.setItem(KEY, JSON.stringify(state)).catch(() => {});
     return state.days[boliviaDay(day)] ?? 0;
   };
   const p = queue.then(run, run);

@@ -88,3 +88,18 @@ test('trampa: la misma lectura repetida no suma', () => {
   s = applyReading(s, { count: 1500, bootMs: BOOT }, t('2026-11-14T15:00:00Z'), fns);
   assert.deepEqual(s.days, { '2026-11-14': 500 });
 });
+
+test('lecturas anotadas con la app cerrada: la medianoche queda exacta y no se regalan pasos de más', () => {
+  // Medianoche en La Paz = 04:00 UTC. Lecturas cada 15 min, ~100 pasos por rato.
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 50_000, bootMs: BOOT }, t('2026-11-14T03:00:00Z'), fns);
+  s = applyReading(s, { count: 50_300, bootMs: BOOT }, t('2026-11-14T03:45:00Z'), fns); // ayer
+  s = applyReading(s, { count: 50_400, bootMs: BOOT }, t('2026-11-14T04:00:00Z'), fns); // justo medianoche: ayer
+  s = applyReading(s, { count: 50_700, bootMs: BOOT }, t('2026-11-14T04:30:00Z'), fns); // hoy
+  assert.deepEqual(s.days, { '2026-11-13': 400, '2026-11-14': 300 });
+});
+
+test('lectura tardía muy lejana: el tope por tiempo limita lo que se suma', () => {
+  let s = applyReading(EMPTY_SENSOR_STATE, { count: 50_000, bootMs: BOOT }, t('2026-11-14T13:00:00Z'), fns);
+  s = applyReading(s, { count: 90_000, bootMs: BOOT }, t('2026-11-14T13:15:00Z'), fns); // 40.000 pasos en 15 min: imposible
+  assert.ok((s.days['2026-11-14'] ?? 0) <= 15 * 250 + 300);
+});

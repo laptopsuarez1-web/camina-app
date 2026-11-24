@@ -4,6 +4,8 @@ import { requireOptionalNativeModule } from 'expo';
 // módulo no existe y vale null: quien lo usa tiene que tolerarlo (las actualizaciones por OTA llegan a versiones viejas).
 type StepCounterNative = {
   isAvailable(): boolean;
+  scheduleBackground(): boolean;
+  drainReadings(): { at: number; count: number; bootMs: number }[];
   readAsync(timeoutMs: number): Promise<{ count: number; bootMs: number } | null>;
 };
 

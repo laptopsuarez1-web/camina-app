@@ -11,6 +11,10 @@ import android.os.SystemClock
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 // Contador de pasos del propio teléfono (Sensor.TYPE_STEP_COUNTER): pasos desde que se prendió el celular.
@@ -25,6 +29,20 @@ class StepCounterModule : Module() {
 
     Function("isAvailable") {
       manager()?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
+    }
+
+    // Programa la lectura periódica en segundo plano (cada ~15 min). Si ya está programada no hace nada.
+    Function("scheduleBackground") {
+      val ctx = appContext.reactContext ?: return@Function false
+      val req = PeriodicWorkRequestBuilder<StepReadingWorker>(15, TimeUnit.MINUTES).build()
+      WorkManager.getInstance(ctx).enqueueUniquePeriodicWork("camina-step-readings", ExistingPeriodicWorkPolicy.KEEP, req)
+      true
+    }
+
+    // Lecturas anotadas con Camina cerrada: [{ at, count, bootMs }], de la más vieja a la más nueva. Las borra al leerlas.
+    Function("drainReadings") {
+      val ctx = appContext.reactContext ?: return@Function emptyList<Map<String, Double>>()
+      StepReadingStore.drain(ctx)
     }
 
     // Devuelve { count, bootMs } o null si el teléfono no responde a tiempo (por ejemplo, sin permiso de actividad física).
