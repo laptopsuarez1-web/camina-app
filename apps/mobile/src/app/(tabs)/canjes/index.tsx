@@ -1402,27 +1402,6 @@ export default function CanjesScreen() {
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
-                {(profileGroup.business.photos ?? []).length > 0 ? (
-                  <View style={{ marginTop: 16 }}>
-                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mb-2">Nuestra carta y fotos</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ gap: 10, paddingRight: 20 }} style={{ marginHorizontal: -20, paddingLeft: 20 }}>
-                      {(profileGroup.business.photos ?? []).map((uri, i) => (
-                        <Press
-                          key={uri}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Ver la foto ${i + 1} en grande`}
-                          onPress={() => openViewer(null, galleryPhotos.indexOf(uri))}
-                          className="rounded-2xl overflow-hidden border border-line-light dark:border-line-dark"
-                          style={{ width: 132, height: 176, backgroundColor: '#241748' }}
-                        >
-                          <CachedImage source={{ uri }} cachePolicy="memory-disk" style={{ width: '100%', height: '100%' }} contentFit="contain" />
-                        </Press>
-                      ))}
-                    </ScrollView>
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Toca una foto para verla completa y acercarla.</Text>
-                  </View>
-                ) : null}
-
                 <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <LegendCard businessId={profileGroup.business.id} />
 
