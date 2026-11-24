@@ -61,9 +61,9 @@ export function GalleryUpload({
       <span className="block text-[12.5px] font-semibold mb-1.5">{label}</span>
       <div className="flex flex-wrap gap-2.5">
         {photos.map((url) => (
-          <div key={url} className="relative w-24 h-24 rounded-xl overflow-hidden border border-line">
+          <div key={url} className="relative w-24 h-24 rounded-xl overflow-hidden border border-line bg-[#241748]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt="" className="w-full h-full object-cover" />
+            <img src={url} alt="" className="w-full h-full object-contain" />
             <button
               type="button"
               onClick={() => remove(url)}
@@ -98,7 +98,7 @@ export function GalleryUpload({
         }}
       />
       <p className="text-[11.5px] text-muted mt-1.5 leading-4">
-        {hint ?? `Hasta ${MAX_FOTOS} fotos: el local, el ambiente, tus productos. Los clientes las ven tocando la portada en la app.`}
+        {hint ?? `Hasta ${MAX_FOTOS} fotos: el local, el ambiente, tus productos. Se ven completas, sin recortar. Los clientes las ven tocando la portada en la app y las pueden agrandar.`}
       </p>
       {error && <p className="text-warn text-[11.5px] mt-1">{error}</p>}
     </div>

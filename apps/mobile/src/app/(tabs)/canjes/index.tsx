@@ -23,6 +23,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
 import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useBenefitsRemainingPeriod, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
+import { PhotoViewer } from '@/components/PhotoViewer';
 import { askForReviewOnce } from '@/lib/review';
 import { rewardReview } from '@/hooks/useBadges';
 import { LevelCard } from '@/components/badges/LevelCard';
@@ -1384,6 +1385,30 @@ export default function CanjesScreen() {
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
+                {(profileGroup.business.photos ?? []).length > 0 ? (
+                  <View style={{ marginTop: 16 }}>
+                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mb-2">Nuestra carta y fotos</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ gap: 10, paddingRight: 20 }} style={{ marginHorizontal: -20, paddingLeft: 20 }}>
+                      {(profileGroup.business.photos ?? []).map((uri, i) => (
+                        <Press
+                          key={uri}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Ver la foto ${i + 1} en grande`}
+                          onPress={() => {
+                            setGalleryIndex(galleryPhotos.indexOf(uri) >= 0 ? galleryPhotos.indexOf(uri) : 0);
+                            setGalleryOpen(true);
+                          }}
+                          className="rounded-2xl overflow-hidden border border-line-light dark:border-line-dark"
+                          style={{ width: 132, height: 176, backgroundColor: '#241748' }}
+                        >
+                          <CachedImage source={{ uri }} cachePolicy="memory-disk" style={{ width: '100%', height: '100%' }} contentFit="contain" />
+                        </Press>
+                      ))}
+                    </ScrollView>
+                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Toca una foto para verla completa y acercarla.</Text>
+                  </View>
+                ) : null}
+
                 <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <LegendCard businessId={profileGroup.business.id} />
 
@@ -1686,50 +1711,7 @@ export default function CanjesScreen() {
           {/* Fotos del local: una capa dentro de la ficha, NO otro panel (Modal). En iPhone, un panel abierto encima
               de otro y cerrado junto con él dejaba la pantalla sin responder y el mapa, al abrirlo después, no se movía. */}
           {galleryOpen && galleryPhotos.length > 0 ? (
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, elevation: 10, backgroundColor: '#0B0B10' }}>
-              <View className="flex-row items-center justify-between px-5" style={{ paddingTop: 58, paddingBottom: 12 }}>
-                <Press
-                  onPress={() => setGalleryOpen(false)}
-                  className="rounded-full items-center justify-center"
-                  style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.16)' }}
-                  accessibilityLabel="Cerrar las fotos"
-                >
-                  <X size={18} color="#fff" />
-                </Press>
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-                  {Math.min(galleryIndex + 1, galleryPhotos.length)} de {galleryPhotos.length}
-                </Text>
-                <View style={{ width: 40 }} />
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 12 }}>
-                {galleryPhotos[galleryIndex] ? (
-                  <CachedImage
-                    source={{ uri: galleryPhotos[galleryIndex] }}
-                    style={{ width: '100%', height: '88%', borderRadius: 20 }}
-                    contentFit="contain"
-                  />
-                ) : null}
-              </View>
-              {galleryPhotos.length > 1 && (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 36 }}>
-                  {galleryPhotos.map((uri, i) => (
-                    <Press key={uri} onPress={() => setGalleryIndex(i)} accessibilityLabel={`Foto ${i + 1}`}>
-                      <CachedImage
-                        source={{ uri }}
-                        style={{
-                          width: 74,
-                          height: 74,
-                          borderRadius: 14,
-                          opacity: i === galleryIndex ? 1 : 0.55,
-                          borderWidth: i === galleryIndex ? 2 : 0,
-                          borderColor: '#fff',
-                        }}
-                      />
-                    </Press>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
+            <PhotoViewer photos={galleryPhotos} index={galleryIndex} onIndex={setGalleryIndex} onClose={() => setGalleryOpen(false)} />
           ) : null}
           {detailBenefit && profileGroup ? (
             <BenefitDetailOverlay benefit={detailBenefit} business={profileGroup.business} onClose={() => setDetailBenefitId(null)} />
