@@ -36,7 +36,7 @@ export function GalleryUpload({
       try {
         const blob = await fileToPhotoBlob(file);
         const path = `${businessId}/${prefix}-${Date.now()}-${nuevas.length}.jpg`;
-        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true, cacheControl: '31536000' });
         if (upErr) throw upErr;
         nuevas.push(`${supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}`);
       } catch {

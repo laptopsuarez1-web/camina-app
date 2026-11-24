@@ -183,7 +183,7 @@ export function CargarLocal({ partner, lead }: { partner: Partner; lead: Partner
   async function subir(foto: Foto, uid: string, leadId: string, nombre: string): Promise<string | null> {
     if (!foto.blob) return foto.url;
     const path = `${uid}/${leadId}/${nombre}.jpg`;
-    const { error: err } = await supabase.storage.from('partner-leads').upload(path, foto.blob, { upsert: true, contentType: 'image/jpeg' });
+    const { error: err } = await supabase.storage.from('partner-leads').upload(path, foto.blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '31536000' });
     if (err) throw err;
     return `${supabase.storage.from('partner-leads').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
   }
