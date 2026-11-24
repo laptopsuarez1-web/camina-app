@@ -1010,27 +1010,15 @@ export default function CanjesScreen() {
                   {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. Misma proporción 16:9 que el recorte del panel,
                       así se ve completa y igual que en la vista del comercio. */}
                   {g.business.cover_url ? (
-                    // Tocar la foto la abre completa y grande; tocar lo demás de la tarjeta abre la ficha.
-                    <Press
-                      accessibilityRole={Platform.OS === 'web' ? undefined : 'imagebutton'}
-                      accessibilityLabel={`Ver las fotos de ${g.business.name}`}
-                      feedback="none"
-                      onPress={() => {
-                        setProfileBusinessId(g.business.id);
-                        openViewer(null, 0);
-                      }}
-                      style={{ marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
-                    >
-                      <CachedImage
-                        source={{ uri: g.business.cover_url }}
-                        cachePolicy="memory-disk"
-                        // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
-                        transition={180}
-                        accessibilityIgnoresInvertColors
-                        contentFit="cover"
-                        style={{ aspectRatio: 16 / 9, width: 'auto' }}
-                      />
-                    </Press>
+                    <CachedImage
+                      source={{ uri: g.business.cover_url }}
+                      cachePolicy="memory-disk"
+                      // Fundido corto: la foto no "aparece de golpe" sobre el fondo de la tarjeta.
+                      transition={180}
+                      accessibilityIgnoresInvertColors
+                      contentFit="cover"
+                      style={{ aspectRatio: 16 / 9, width: 'auto', marginTop: -16, marginHorizontal: -16, marginBottom: 14 }}
+                    />
                   ) : null}
                   <View className="flex-row items-start" style={{ gap: 14 }}>
                     {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, featured)}
