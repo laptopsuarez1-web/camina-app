@@ -9,6 +9,7 @@ import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withSpring
 import { GOLD } from '@/components/ruta/RutaPin';
 import { Coin } from '@/components/ui/Coin';
 import { Text } from '@/components/ui/Text';
+import { PhotoViewer } from '@/components/PhotoViewer';
 import { Press } from '@/components/ui/Press';
 import { Camera, ChevronDown, ChevronUp, Clock, FacebookIcon, Globe, Instagram, MapPin, Share2, TiktokIcon, X } from '@/components/icons';
 import { DAYS, closesAt, isOpenNow, rangesText, todayIndex, type OpeningHours } from '@/components/BusinessHours';
@@ -113,6 +114,8 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, onAlbum
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   // Qué fila está abierta, por local: al abrir otro local empieza todo cerrado.
+  // Fotos del local a pantalla completa (se tocan la portada o las miniaturas).
+  const [viewer, setViewer] = useState<{ list: string[]; index: number } | null>(null);
   const [openRow, setOpenRow] = useState<{ id?: string; row: 'hours' | 'nets' | null }>({ row: null });
   const hoursOpen = openRow.id === stop?.business_id && openRow.row === 'hours';
   const netsOpen = openRow.id === stop?.business_id && openRow.row === 'nets';
@@ -188,7 +191,12 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, onAlbum
           <GestureDetector gesture={pan}>
             <View>
               <View style={{ height: cover ? 170 : 92, backgroundColor: '#2F1E5C' }}>
-                {cover ? <Image source={{ uri: cover }} cachePolicy="memory-disk" contentFit="cover" style={{ width: '100%', height: '100%' }} /> : null}
+                {cover ? (
+                  <Press accessibilityRole="imagebutton" accessibilityLabel="Ver las fotos del local" feedback="none" style={{ width: '100%', height: '100%' }}
+                    onPress={() => { const list = [cover, ...(f?.photos ?? []).filter((u) => u && u !== cover)]; setViewer({ list, index: 0 }); }}>
+                    <Image source={{ uri: cover }} cachePolicy="memory-disk" contentFit="cover" style={{ width: '100%', height: '100%' }} />
+                  </Press>
+                ) : null}
                 <LinearGradient pointerEvents="none" colors={['rgba(29,23,41,0.35)', 'rgba(29,23,41,0)', 'rgba(29,23,41,0.65)', SHEET]} locations={[0, 0.3, 0.75, 1]} style={{ position: 'absolute', inset: 0 }} />
                 <View style={{ position: 'absolute', alignSelf: 'center', top: 8, width: 44, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.7)' }} />
                 <Press accessibilityRole="button" accessibilityLabel="Cerrar la ficha" onPress={close} hitSlop={10}
@@ -231,8 +239,11 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, onAlbum
             {/* Fotos del local (las que subió en su perfil), para saber qué vas a encontrar. */}
             {(f?.photos ?? []).filter((u) => u && u !== cover).length ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12, marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
-                {(f?.photos ?? []).filter((u) => u && u !== cover).slice(0, 8).map((u) => (
-                  <Image key={u} source={{ uri: u }} cachePolicy="memory-disk" contentFit="cover" transition={150} style={{ width: 104, height: 104, borderRadius: 14, backgroundColor: '#2F1E5C' }} />
+                {(f?.photos ?? []).filter((u) => u && u !== cover).slice(0, 8).map((u, i) => (
+                  <Press key={u} accessibilityRole="imagebutton" accessibilityLabel={`Ver la foto ${i + 1} en grande`} feedback="none"
+                    onPress={() => { const list = [...(cover ? [cover] : []), ...(f?.photos ?? []).filter((x) => x && x !== cover)]; setViewer({ list, index: Math.max(0, list.indexOf(u)) }); }}>
+                    <Image source={{ uri: u }} cachePolicy="memory-disk" contentFit="cover" transition={150} style={{ width: 104, height: 104, borderRadius: 14, backgroundColor: '#2F1E5C' }} />
+                  </Press>
                 ))}
               </ScrollView>
             ) : null}
@@ -356,6 +367,7 @@ export function RutaStopSheet({ stop, onClose, onMark, onShare, onPhoto, onAlbum
             <Text style={{ color: '#8E82AE', fontSize: 12, textAlign: 'center', marginTop: 10 }}>En la Ruta compras lo que quieras: no se usan Puntos ni descuentos.</Text>
           </ScrollView>
         </Animated.View>
+      {viewer ? <PhotoViewer photos={viewer.list} index={viewer.index} onIndex={(i) => setViewer((v) => (v ? { ...v, index: i } : v))} onClose={() => setViewer(null)} /> : null}
       </GestureHandlerRootView>
     </Modal>
   );
