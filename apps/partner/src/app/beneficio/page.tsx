@@ -298,7 +298,7 @@ function BeneficioForm({
   const [validTo, setValidTo] = useState(benefit?.valid_to?.slice(0, 5) ?? '');
   const [diasMask, setDiasMask] = useState(benefit?.valid_days_mask ?? 127);
   const [dineInOnly, setDineInOnly] = useState(benefit?.dine_in_only ?? false);
-  // Premio con reserva (migración 0078): solo informa a la persona que debe coordinar por WhatsApp antes de ir.
+  // Premio con reserva (migración 0078): solo informa que se puede reservar por WhatsApp (opcional); no pide ningún código.
   const [requiresBooking, setRequiresBooking] = useState(benefit?.requires_booking ?? false);
   const [bookingNote, setBookingNote] = useState(benefit?.booking_note ?? '');
   // Premio online: sin horario ni días, cupos totales y código de 7 días que la persona manda por el canal elegido.
@@ -783,13 +783,13 @@ function BeneficioForm({
             <Opcion on={dineInOnly} onToggle={() => setDineInOnly((v) => !v)} title="Solo para consumir en el local" hint="No vale para llevar." first />
           )}
           {!online && (
-            <Opcion on={requiresBooking} onToggle={() => setRequiresBooking((v) => !v)} title="Con reserva" hint="Te escriben por WhatsApp antes de ir.">
+            <Opcion on={requiresBooking} onToggle={() => setRequiresBooking((v) => !v)} title="Reserva (opcional)" hint="Pueden escribirte por WhatsApp antes de ir. Si no reservan, canjean al llegar.">
               <input
                 type="text"
                 value={bookingNote}
                 maxLength={120}
                 onChange={(e) => setBookingNote(e.target.value)}
-                placeholder="Aclaración para la reserva"
+                placeholder="Aclaración (opcional)"
                 aria-label="Nota de la reserva"
                 className={INPUT}
               />
@@ -882,7 +882,7 @@ function BeneficioForm({
                 <li><b>Cuándo vale:</b> {resumenCuando}</li>
                 <li><b>Cupones:</b> {resumenCupos}</li>
                 {dineInOnly && !online && <li><b>Solo</b> para consumir en el local</li>}
-                {requiresBooking && !online && <li><b>Con reserva</b> por WhatsApp</li>}
+                {requiresBooking && !online && <li><b>Reserva opcional</b> por WhatsApp</li>}
                 {soloNuevos && <li><b>Solo</b> para clientes nuevos</li>}
                 {fansOnly && fansReady && <li><b>Solo</b> para tus Fans</li>}
                 {online && <li><b>Online</b> por {CANALES_ONLINE.find((c) => c.id === onlineChannel)?.label ?? 'redes'}</li>}

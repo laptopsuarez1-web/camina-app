@@ -14,6 +14,7 @@ const TRADUCCIONES: [RegExp, string][] = [
   [/failed to fetch|network|fetch failed|load failed/i, 'No hay conexión con Camina. Revisa tu internet e intenta de nuevo.'],
   [/jwt|session.*(expired|missing)|not authenticated|auth session missing/i, 'Tu sesión se cerró. Vuelve a iniciar sesión.'],
   [/row-level security|permission denied|not authorized/i, 'No tienes permiso para hacer esto. Si crees que es un error, escríbenos por WhatsApp.'],
+  [/weekly_quota|monthly_quota|schema cache/i, 'El tope por semana o por mes todavía no está activado en Camina. Déjalo vacío por ahora y guarda; lo activamos en breve.'],
   [/duplicate key|unique constraint/i, 'Eso ya está cargado.'],
   [/payload too large|file.*too large|exceeded the maximum/i, 'La imagen es muy pesada. Prueba con una más chica (menos de 5 MB).'],
   [/mime type|invalid.*image/i, 'Ese archivo no es una imagen válida. Usa PNG o JPG.'],

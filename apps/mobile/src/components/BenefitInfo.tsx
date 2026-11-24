@@ -162,7 +162,7 @@ export function conditionsOf(b: BenefitFacts): string[] {
   else {
     out.push(b.dine_in_only ? 'Válido solo para consumo en el local' : 'Válido en el local, para llevar o consumir');
     out.push(validityText(b));
-    if (b.requires_booking) out.push(b.booking_note ? `Requiere reserva por WhatsApp: ${b.booking_note}` : 'Requiere reserva: coordina por WhatsApp antes de ir');
+    if (b.requires_booking) out.push(b.booking_note ? `Reserva opcional por WhatsApp: ${b.booking_note}` : 'Reserva opcional: puedes escribir por WhatsApp antes de ir, o canjear al llegar');
   }
   if (b.discount_detail) out.push(b.discount_detail);
   else if (b.discount_percent) out.push(`${b.discount_percent}% de descuento`);
@@ -249,7 +249,7 @@ export function NewCustomerChip({ b }: { b: BenefitFacts }) {
 }
 
 export function BookingChip({ b }: { b: BenefitFacts }) {
-  return b.requires_booking && !b.online ? <Chip icon={Calendar} tone="orange" label="Con reserva" /> : null;
+  return b.requires_booking && !b.online ? <Chip icon={Calendar} tone="orange" label="Reserva opcional" /> : null;
 }
 
 export function ChannelChip({ b }: { b: BenefitFacts }) {
