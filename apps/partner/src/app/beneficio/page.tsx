@@ -695,6 +695,29 @@ function BeneficioForm({
           </div>
         </Paso>
         <Paso title="Cuánto cuesta" hint="En Puntos de Camina. Como guía: 2 Puntos equivalen a Bs 1 (algo de Bs 10 son unos 20 Puntos).">
+          {modo === 'descuento' && (
+            <div className="mb-3">
+              <span className="block text-[12.5px] font-semibold mb-1.5">Tu descuento</span>
+              {descuentoModo === 'porcentaje' ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={descuentoPorcentaje}
+                    onChange={(e) => setDescuentoPorcentaje(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                    placeholder="20"
+                    aria-label="Porcentaje de tu descuento"
+                    inputMode="numeric"
+                    className="w-20 bg-white border border-line rounded-[10px] px-3 py-2.5 text-[13.5px]"
+                  />
+                  <span className="text-[13.5px] text-muted">% de descuento sobre lo que cuesta en tu local</span>
+                </div>
+              ) : descuentoModo === '2x1' ? (
+                <p className="text-[13.5px] text-muted">2x1: se lleva 2 y paga 1.</p>
+              ) : (
+                <input value={descuento} onChange={(e) => setDescuento(e.target.value)} placeholder="Ej.: Bs 20 menos" aria-label="Detalle del descuento" className={INPUT} />
+              )}
+              <p className="text-[11.5px] text-muted mt-1 leading-4">Esto es lo que gana la persona. Los Puntos de abajo son lo que le cuesta canjearlo.</p>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Puntos">
               <input value={costo} onChange={(e) => setCosto(e.target.value.replace(/\D/g, ''))} className={INPUT} />
@@ -710,8 +733,9 @@ function BeneficioForm({
               </Field>
             )}
           </div>
+          {modo !== 'descuento' && (
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-[12.5px] text-muted">{modo === 'descuento' ? 'Recomendación (opcional): ¿cuánto vale el descuento en Bs?' : 'Recomendación (opcional): ¿cuánto vale en Bs?'}</span>
+            <span className="text-[12.5px] text-muted">Recomendación (opcional): ¿cuánto vale en Bs?</span>
             <input
               value={valorBs}
               onChange={(e) => setValorBs(e.target.value.replace(/[^\d.]/g, ''))}
@@ -728,6 +752,7 @@ function BeneficioForm({
               <span className="text-[11.5px] text-muted">y te sugerimos los Puntos (2 Puntos = Bs 1). Tú decides cuántos Puntos cuesta.</span>
             )}
           </div>
+          )}
           {!isFree && !online && (
             <Opcion on={ilimitado} onToggle={() => setIlimitado((v) => !v)} title="Cupones ilimitados" hint="Sin tope por día." />
           )}
