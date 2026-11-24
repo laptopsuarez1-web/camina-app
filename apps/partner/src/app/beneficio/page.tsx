@@ -687,7 +687,7 @@ function BeneficioForm({
             value={imageUrl}
             onUploaded={setImageUrl}
             label="Foto del premio (opcional)"
-            shape="wide"
+            shape="square"
           />
           <div className="mt-4">
             <Field label="Nombre">
