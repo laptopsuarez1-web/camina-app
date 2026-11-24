@@ -106,10 +106,10 @@ function Reloj() {
   );
 }
 
-const ASI = 'Así se ve su local en la app. Aparece en el mapa y en la lista de Canjes, con su logo, su portada y su premio. La persona llega, escribe el código de su local y usted le entrega el premio. Después la app le invita a dejarle una reseña en Google Maps y a subir una historia a Instagram.';
+const ASI = 'Así se ve su local en la app. Aparece en el mapa y en la lista de Premios, con su logo, su portada y su premio. La persona llega, escribe el código de su local y usted le entrega el premio. Después la app le invita a dejarle una reseña en Google Maps y a subir una historia a Instagram.';
 
 const VISTAS: { img: string; titulo: string; texto: string }[] = [
-  { img: 'canjes-dark', titulo: '1. Aparece en Canjes', texto: 'Su local sale en la lista y en el mapa de la app, con su portada, su logo y el premio. Así lo encuentran las personas cerca.' },
+  { img: 'canjes-dark', titulo: '1. Aparece en Premios', texto: 'Su local sale en la lista y en el mapa de la app, con su portada, su logo y el premio. Así lo encuentran las personas cerca.' },
   { img: 'mapa-dark', titulo: '2. En el mapa, con sus premios', texto: 'Su logo aparece como pin en el mapa. La persona lo toca y ve sus premios con el botón Ver local y premios.' },
   { img: 'canje-calificar-v3-dark', titulo: '3. Después del canje', texto: 'Cuando canjea, la app invita a dejar una reseña en Google Maps. Eso le trae más visibilidad al local.' },
   { img: 'canje-historia-v3-dark', titulo: '4. Historia en Instagram', texto: 'La persona puede subir una historia etiquetando a @caminaapp. Eso muestra el local a más gente.' },
@@ -138,7 +138,7 @@ function AsiSeVe() {
       <button type="button" onClick={() => setVer(true)} className="flex items-center justify-center gap-2 w-full bg-mint text-mint-dark rounded-2xl py-4 font-bold text-[15px] mb-2">
         <Eye size={18} /> Ver un local de ejemplo como en la app
       </button>
-      <p className="text-muted text-[12.5px] mb-4 text-center">Se abre a pantalla completa: desliza con el dedo para pasar del mapa a Canjes, la ficha del local y su premio. Para mostrar el local del dueño con sus fotos, usa “Mostrar al dueño” en Cargar un local.</p>
+      <p className="text-muted text-[12.5px] mb-4 text-center">Se abre a pantalla completa: desliza con el dedo para pasar del mapa a Premios, la ficha del local y su premio. Para mostrar el local del dueño con sus fotos, usa “Mostrar al dueño” en Cargar un local.</p>
       {ver && <PresentarLocal vista={EJEMPLO} onClose={() => setVer(false)} />}
       <p className="text-[12px] font-semibold uppercase tracking-wider text-muted mb-1.5">Capturas reales de la app</p>
       <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-1 px-1">
@@ -169,7 +169,7 @@ function AsiSeVe() {
 
 // Los beneficios que importan al dueño, dichos simple. Sin prometer ventas.
 const GANA: { t: string; d: string }[] = [
-  { t: 'Gente nueva que llega caminando', d: 'La app muestra su local en el mapa y en la lista de Canjes a personas que caminan cerca. Muchos todavía no son sus clientes.' },
+  { t: 'Gente nueva que llega caminando', d: 'La app muestra su local en el mapa y en la lista de Premios a personas que caminan cerca. Muchos todavía no son sus clientes.' },
   { t: 'Paga solo cuando alguien canjea', d: 'Empezar es gratis y sin contrato. Lo único que pone es el premio, y solo cuando una persona viene a buscarlo.' },
   { t: 'Él controla todo', d: 'Elige el premio, los días, la hora y cuántos da por día. Lo puede poner en su hora floja, cuando el local está vacío.' },
   { t: 'Su local se ve lindo en la app', d: 'Con logo, portada, fotos del premio, horario, WhatsApp, Instagram y el botón Cómo llegar.' },

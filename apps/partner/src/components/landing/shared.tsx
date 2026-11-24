@@ -1250,7 +1250,7 @@ export function AsiTeVen() {
         id="gal-local"
         nota="Pantallas reales de la app; los datos de las personas son de ejemplo."
         pant={[
-          ['Te encuentran', 'Tu local y tus descuentos en la lista de canjes.', CAP.canjes],
+          ['Te encuentran', 'Tu local y tus descuentos en la lista de Premios.', CAP.canjes],
           ['Tu ficha', 'Fotos, horarios, dirección, redes, tus descuentos y cómo llegar.', CAP.fichaLocal],
           ['Te invitan a calificarte', 'Con tu código de 4 números confirmas el canje y la app invita a calificar tu local.', CAP.resenaHistoria],
           ['Su historia', 'Suben lo que canjearon a Instagram con el nombre de tu local.', CAP.canjeHistoria],

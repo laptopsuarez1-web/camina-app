@@ -246,7 +246,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   <Link href="/beneficio" className="font-semibold underline">
                     premio
                   </Link>
-                  , tu local va a aparecer también en Canjes y en el mapa.
+                  , tu local va a aparecer también en Premios y en el mapa.
                 </p>
               )}
             </>

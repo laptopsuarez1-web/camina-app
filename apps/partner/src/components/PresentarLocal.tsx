@@ -153,12 +153,12 @@ function BarraInferior() {
     { t: 'Actividad', I: BarChart3 },
     { t: 'Comunidad', I: Users },
     { t: 'Eventos', I: CalendarDays },
-    { t: 'Canjes', I: ShoppingBag },
+    { t: 'Premios', I: ShoppingBag },
   ];
   return (
     <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 rounded-[26px] bg-[#2c2150]/95 border border-[#3a2c63] backdrop-blur flex items-center justify-between px-1 py-1">
       {items.map(({ t, I }) => (
-        <span key={t} className={`flex-1 flex flex-col items-center gap-0.5 text-[9.5px] font-semibold rounded-[20px] py-1.5 ${t === 'Canjes' ? 'bg-[#3d3070] text-[#62f0b6]' : 'text-[#c9bfe6]'}`}>
+        <span key={t} className={`flex-1 flex flex-col items-center gap-0.5 text-[9.5px] font-semibold rounded-[20px] py-1.5 ${t === 'Premios' ? 'bg-[#3d3070] text-[#62f0b6]' : 'text-[#c9bfe6]'}`}>
           <I size={17} strokeWidth={2.2} />
           {t}
         </span>
@@ -191,7 +191,7 @@ function SlideCanjes({ v }: { v: VistaLocal }) {
         <div className="px-3 pt-3">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-extrabold text-[24px] leading-tight">Canjes</p>
+              <p className="font-extrabold text-[24px] leading-tight">Premios</p>
               <p className="text-[#a99bcf] text-[12px] mb-2.5">142 Puntos disponibles</p>
             </div>
             <span className="border border-[#3a2c63] rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-[#f1ecfb] mt-1 flex items-center gap-1.5"><Ticket size={14} className="text-[#62f0b6]" /> Mis canjes</span>
@@ -310,7 +310,7 @@ function SlidePremio({ v }: { v: VistaLocal }) {
 
 const SLIDES = [
   { titulo: 'Así te encuentran en el mapa', C: SlideMapa },
-  { titulo: 'Así apareces en Canjes', C: SlideCanjes },
+  { titulo: 'Así apareces en Premios', C: SlideCanjes },
   { titulo: 'Así se ve tu local', C: SlideFicha },
   { titulo: 'Así se ve tu premio', C: SlidePremio },
 ];
