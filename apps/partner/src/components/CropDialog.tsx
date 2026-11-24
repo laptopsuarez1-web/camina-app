@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// Ventana para acomodar la foto antes de subirla: se arrastra para moverla y se usa la barra (o la rueda) para acercar.
-// Devuelve la foto ya recortada al marco; si no se confirma, no se sube nada.
+// Ventana para acomodar la foto antes de subirla: se arrastra para moverla y la barra (o la rueda) acerca o aleja.
+// Se puede alejar hasta ver la foto ENTERA (afiches, flyers verticales): lo que sobra se rellena con la misma foto difuminada.
+// Devuelve la foto ya acomodada al marco; si no se confirma, no se sube nada.
 export function CropDialog({
   file,
   aspect,
@@ -25,7 +26,7 @@ export function CropDialog({
 }) {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [failed, setFailed] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [zoomSel, setZoom] = useState<number | null>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 }); // desplazamiento del centro de la foto respecto al marco (px de pantalla)
   const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
   const [vw, setVw] = useState(300);
@@ -53,6 +54,11 @@ export function CropDialog({
   const fw = round || aspect <= 1 ? Math.min(vw, 300) : vw;
   const fh = fw / aspect;
   const base = img ? Math.max(fw / img.naturalWidth, fh / img.naturalHeight) : 1;
+  // Zoom mínimo = la foto entera dentro del marco.
+  const entera = img ? Math.min(fw / img.naturalWidth, fh / img.naturalHeight) / base : 1;
+  // Si la foto es muy distinta al marco (un afiche vertical), arranca entera para que no se corte nada.
+  const muyDistinta = img ? img.naturalWidth / img.naturalHeight < aspect * 0.8 || img.naturalWidth / img.naturalHeight > aspect * 1.25 : false;
+  const zoom = Math.min(5, Math.max(entera, zoomSel ?? (muyDistinta ? entera : 1)));
   const s = base * zoom;
   const dw = img ? img.naturalWidth * s : 0;
   const dh = img ? img.naturalHeight * s : 0;
@@ -63,23 +69,37 @@ export function CropDialog({
 
   function confirm() {
     if (!img) return;
-    const cw = Math.min(img.naturalWidth, fw / s);
-    const ch = Math.min(img.naturalHeight, fh / s);
-    const sx = Math.min(img.naturalWidth - cw, Math.max(0, img.naturalWidth / 2 - x / s - cw / 2));
-    const sy = Math.min(img.naturalHeight - ch, Math.max(0, img.naturalHeight / 2 - y / s - ch / 2));
-    const k = Math.min(1, max / Math.max(cw, ch));
+    // Píxeles de la foto final por cada píxel de pantalla del marco (sin agrandar la foto más de lo que es).
+    const o = Math.min(max / Math.max(fw, fh), 1 / s);
     const canvas = document.createElement('canvas');
-    canvas.width = Math.round(cw * k);
-    canvas.height = Math.round(ch * k);
+    canvas.width = Math.max(1, Math.round(fw * o));
+    canvas.height = Math.max(1, Math.round(fh * o));
+    const ctx = canvas.getContext('2d')!;
+    const dx = ((fw - dw) / 2 + x) * o;
+    const dy = ((fh - dh) / 2 + y) * o;
     const png = file.type === 'image/png';
-    canvas.getContext('2d')!.drawImage(img, sx, sy, cw, ch, 0, 0, canvas.width, canvas.height);
+    if (dw < fw - 0.5 || dh < fh - 0.5) {
+      // Relleno: la misma foto, grande y difuminada (se achica a muy poco y se estira: queda borrosa en cualquier navegador).
+      const chica = document.createElement('canvas');
+      chica.width = 24;
+      chica.height = Math.max(1, Math.round((24 * fh) / fw));
+      const c2 = chica.getContext('2d')!;
+      const k = Math.max(chica.width / img.naturalWidth, chica.height / img.naturalHeight);
+      c2.drawImage(img, (chica.width - img.naturalWidth * k) / 2, (chica.height - img.naturalHeight * k) / 2, img.naturalWidth * k, img.naturalHeight * k);
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(chica, 0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, dx, dy, dw * o, dh * o);
     canvas.toBlob(
       (blob) => {
         if (!blob) return onDone(file);
-        const name = file.name.replace(/\.[^.]+$/, '') + (png ? '.png' : '.jpg');
+        const name = file.name.replace(/\.[^.]+$/, '') + (png && dw >= fw - 0.5 && dh >= fh - 0.5 ? '.png' : '.jpg');
         onDone(new File([blob], name, { type: blob.type }));
       },
-      png ? 'image/png' : 'image/jpeg',
+      png && dw >= fw - 0.5 && dh >= fh - 0.5 ? 'image/png' : 'image/jpeg',
       0.88
     );
   }
@@ -88,7 +108,7 @@ export function CropDialog({
     <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
       <div ref={box} className="bg-white rounded-2xl p-5 w-full max-w-[420px] shadow-xl">
         <h3 className="text-[16px] font-bold">{title}</h3>
-        <p className="text-[12.5px] text-muted mt-0.5 mb-3">Arrastra la foto para moverla y usa la barra para acercar.</p>
+        <p className="text-[12.5px] text-muted mt-0.5 mb-3">Arrastra la foto para moverla. Con la barra la acercas o la alejas hasta verla entera.</p>
         {failed ? (
           <p className="text-warn text-[13px] py-6 text-center">No pudimos abrir esa foto. Elige otra.</p>
         ) : (
@@ -105,8 +125,17 @@ export function CropDialog({
             }}
             onPointerUp={() => (drag.current = null)}
             onPointerCancel={() => (drag.current = null)}
-            onWheel={(e) => setZoom((z) => Math.min(5, Math.max(1, z - e.deltaY / 400)))}
+            onWheel={(e) => setZoom(Math.min(5, Math.max(entera, zoom - e.deltaY / 400)))}
           >
+            {img && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={img.src}
+                alt=""
+                draggable={false}
+                style={{ position: 'absolute', width: fw, height: fh, left: 0, top: 0, maxWidth: 'none', objectFit: 'cover', filter: 'blur(14px) brightness(0.75)', transform: 'scale(1.15)' }}
+              />
+            )}
             {img && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -129,7 +158,7 @@ export function CropDialog({
         )}
         <input
           type="range"
-          min={1}
+          min={entera}
           max={5}
           step={0.01}
           value={zoom}
@@ -137,6 +166,11 @@ export function CropDialog({
           aria-label="Acercar"
           className="w-full mt-4 accent-[#1F7A66]"
         />
+        {img && entera < 0.98 && (
+          <button type="button" onClick={() => { setZoom(zoom <= entera + 0.01 ? 1 : entera); setPos({ x: 0, y: 0 }); }} className="mt-2 text-[12.5px] font-semibold text-[#1F7A66] underline">
+            {zoom <= entera + 0.01 ? 'Llenar el marco' : 'Ver la foto entera'}
+          </button>
+        )}
         <div className="flex gap-2 mt-4">
           <button type="button" onClick={onCancel} className="flex-1 rounded-xl border border-line py-2.5 text-[14px] font-semibold">
             Cancelar
