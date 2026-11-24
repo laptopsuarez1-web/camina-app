@@ -88,7 +88,7 @@ export function benefitConditions(b: { valid_from: string | null; valid_to: stri
   if (activeDays.length > 0 && activeDays.length < 7) lines.push(`Válido: ${activeDays.join(' ')}`);
   if (b.valid_from && b.valid_to) lines.push(`Horario: ${b.valid_from.slice(0, 5)} a ${b.valid_to.slice(0, 5)}`);
   if (b.dine_in_only) lines.push('Solo consumiendo en el local');
-  if (b.requires_booking && !b.online) lines.push(b.booking_note ? `Requiere reserva por WhatsApp: ${b.booking_note}` : 'Requiere reserva: coordina por WhatsApp antes de ir');
+  if (b.requires_booking && !b.online) lines.push(b.booking_note ? `Reserva opcional por WhatsApp: ${b.booking_note}` : 'Reserva opcional: puedes escribir por WhatsApp antes de ir, o canjear al llegar');
   return lines;
 }
 

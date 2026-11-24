@@ -90,7 +90,7 @@ export function BenefitDetailOverlay({ benefit: b, business, onClose }: { benefi
             <View>
               <Text className="text-[13px] text-muted-light dark:text-muted-dark mb-2">
                 {b.requires_booking && !b.online
-                  ? 'Este premio requiere reserva. Escribe al local por WhatsApp para coordinar antes de ir.'
+                  ? 'Puedes reservar por WhatsApp si quieres. Al llegar lo canjeas normal, o el local te da su código por WhatsApp.'
                   : '¿Necesita reserva o coordinar horario? Eso lo define el local: escríbele por WhatsApp.'}
               </Text>
               <Press
