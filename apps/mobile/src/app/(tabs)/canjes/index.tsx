@@ -1010,18 +1010,8 @@ export default function CanjesScreen() {
                   {/* La foto del local manda: si el comercio subió portada, la tarjeta abre con ella. Misma proporción 16:9 que el recorte del panel,
                       así se ve completa y igual que en la vista del comercio. */}
                   {g.business.cover_url ? (
-                    // Tocar la foto la abre completa y grande; tocar lo demás de la tarjeta abre la ficha.
-                    <Press
-                      accessibilityRole={Platform.OS === 'web' ? undefined : 'imagebutton'}
-                      accessibilityLabel={`Ver las fotos de ${g.business.name}`}
-                      feedback="none"
-                      onPress={() => {
-                        setProfileBusinessId(g.business.id);
-                        openViewer(null, 0);
-                      }}
-                      // La caja ocupa todo el ancho de la tarjeta (se salta el relleno) y la foto la llena sin franjas.
-                      style={{ aspectRatio: 16 / 9, marginTop: -16, marginHorizontal: -16, marginBottom: 14, overflow: 'hidden' }}
-                    >
+                    // La caja ocupa todo el ancho de la tarjeta (se salta el relleno) y la foto la llena sin franjas.
+                    <View style={{ aspectRatio: 16 / 9, marginTop: -16, marginHorizontal: -16, marginBottom: 14, overflow: 'hidden' }}>
                       <CachedImage
                         source={{ uri: g.business.cover_url }}
                         cachePolicy="memory-disk"
@@ -1032,7 +1022,7 @@ export default function CanjesScreen() {
                         // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
                         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }}
                       />
-                    </Press>
+                    </View>
                   ) : null}
                   <View className="flex-row items-start" style={{ gap: 14 }}>
                     {businessIcon(g.business.name, 62, g.business.logo_url, g.business.category, featured)}
@@ -1402,27 +1392,6 @@ export default function CanjesScreen() {
 
                 {profileGroup.business.description ? (
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
-                ) : null}
-
-                {(profileGroup.business.photos ?? []).length > 0 ? (
-                  <View style={{ marginTop: 16 }}>
-                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mb-2">Nuestra carta y fotos</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ gap: 10, paddingRight: 20 }} style={{ marginHorizontal: -20, paddingLeft: 20 }}>
-                      {(profileGroup.business.photos ?? []).map((uri, i) => (
-                        <Press
-                          key={uri}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Ver la foto ${i + 1} en grande`}
-                          onPress={() => openViewer(null, galleryPhotos.indexOf(uri))}
-                          className="rounded-2xl overflow-hidden border border-line-light dark:border-line-dark"
-                          style={{ width: 132, height: 176, backgroundColor: '#241748' }}
-                        >
-                          <CachedImage source={{ uri }} cachePolicy="memory-disk" style={{ width: '100%', height: '100%' }} contentFit="contain" />
-                        </Press>
-                      ))}
-                    </ScrollView>
-                    <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-1.5">Toca una foto para verla completa y acercarla.</Text>
-                  </View>
                 ) : null}
 
                 <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
