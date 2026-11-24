@@ -6,7 +6,7 @@ import { supabase, type Business } from '@/lib/supabase';
 import { consumePendingBusiness, pendingFromMetadata } from '@/lib/pending-business';
 import { uploadLogoFromDataUrl } from '@/lib/logo';
 import { avisarPorCorreo } from '@/lib/email';
-import { guardarLocal, localGuardado } from '@/lib/locales';
+import { adminVe, adminVeGuardado, guardarLocal, localGuardado } from '@/lib/locales';
 
 // Evita crear el comercio dos veces si dos llamadas llegan juntas (sesión inicial + cambio de sesión).
 const creando = new Map<string, Promise<Business | null>>();
@@ -60,11 +60,30 @@ export function useBusinessAuth() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [role, setRole] = useState<'owner' | 'cashier'>('owner');
   const [locales, setLocales] = useState<Business[]>([]);
+  // Admin mirando el panel de otro comercio (no es su dueño).
+  const [viendoComo, setViendoComo] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const refreshBusiness = useCallback(async (userId: string, email: string | undefined) => {
     const { data: adminCheck } = await supabase.rpc('is_admin');
     setIsAdmin(!!adminCheck);
+
+    // Un admin puede entrar al panel de cualquier comercio desde Admin y verlo/editarlo como su dueño.
+    if (adminCheck) {
+      const id = adminVeGuardado();
+      if (id) {
+        const { data: ajeno } = await supabase.from('businesses').select('*').eq('id', id).maybeSingle();
+        if (ajeno) {
+          setRole('owner');
+          setViendoComo(true);
+          setLocales([]);
+          setBusiness(ajeno as Business);
+          return;
+        }
+        adminVe(null);
+      }
+    }
+    setViendoComo(false);
 
     // Una cuenta puede tener varios locales (plan Paso Adelante): se abre el último que usó, o el más antiguo.
     const { data: propios } = await supabase
@@ -144,5 +163,5 @@ export function useBusinessAuth() {
     window.location.href = '/inicio';
   }, []);
 
-  return { session, business, locales, isAdmin, role, loading, refreshBusiness, cambiarLocal };
+  return { session, business, locales, isAdmin, viendoComo, role, loading, refreshBusiness, cambiarLocal };
 }

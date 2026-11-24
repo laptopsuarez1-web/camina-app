@@ -8,7 +8,7 @@ import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { FichaPreviewModal } from '@/components/FichaPreview';
 import { AdminBusinessEditModal } from '@/components/AdminBusinessEdit';
 import { AdminNuevoLocal } from '@/components/AdminNuevoLocal';
-import { MAX_LOCALES } from '@/lib/locales';
+import { MAX_LOCALES, adminVe } from '@/lib/locales';
 import { OptimizarFotos } from '@/components/OptimizarFotos';
 import { faltantesParaPublicar, sugerenciaBeneficio } from '@/lib/readiness';
 import { avisarPorCorreo } from '@/lib/email';
@@ -626,6 +626,15 @@ export default function AdminPage() {
                             className="bg-white border border-line text-text rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
                           >
                             Editar
+                          </button>
+                          <button
+                            onClick={() => {
+                              adminVe(b.id);
+                              window.location.href = '/inicio';
+                            }}
+                            className="bg-white border border-line text-text rounded-[8px] px-2.5 py-1.5 text-[11.5px] font-bold"
+                          >
+                            Abrir panel
                           </button>
                           {b.owner_user_id && businesses.filter((x) => x.owner_user_id === b.owner_user_id).length < MAX_LOCALES && (
                             <button

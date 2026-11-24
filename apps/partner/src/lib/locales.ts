@@ -25,3 +25,23 @@ export function guardarLocal(userId: string, businessId: string) {
 export function puedeAgregarLocal(locales: Business[]): boolean {
   return locales.length < MAX_LOCALES && locales.some((l) => l.plan === 'paso_firme' || l.plan === 'paso_adelante');
 }
+
+// Admin: el comercio que está mirando como si fuera su dueño (se guarda en este navegador).
+const CLAVE_ADMIN = 'camina_admin_ve';
+
+export function adminVeGuardado(): string | null {
+  try {
+    return localStorage.getItem(CLAVE_ADMIN);
+  } catch {
+    return null;
+  }
+}
+
+export function adminVe(businessId: string | null) {
+  try {
+    if (businessId) localStorage.setItem(CLAVE_ADMIN, businessId);
+    else localStorage.removeItem(CLAVE_ADMIN);
+  } catch {
+    // sin almacenamiento
+  }
+}
