@@ -66,6 +66,8 @@ export interface Business {
   opening_hours?: Record<string, { from: string; to: string; from2?: string; to2?: string } | null> | null;
   lat: number | null;
   lng: number | null;
+  // Nombre de la sucursal principal cuando el comercio tiene más sucursales (0133). Sin nombre: "Principal".
+  branch_label?: string | null;
   logo_url: string | null;
   cover_url: string | null;
   website: string | null;
@@ -283,6 +285,27 @@ type Table<Row, Insert, Update = Partial<Insert>> = {
   Relationships: [];
 };
 
+// Sucursales de un comercio (0133): además de la ubicación principal del comercio.
+export interface BusinessBranchRow {
+  id: string;
+  business_id: string;
+  name: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  opening_hours: Record<string, { from: string; to: string; from2?: string; to2?: string } | null> | null;
+  created_at: string;
+}
+
+// Premio elegido solo para algunas sucursales (sin filas = vale en todas). branch_id null = la sucursal principal.
+export interface BenefitBranchRow {
+  id: string;
+  benefit_id: string;
+  branch_id: string | null;
+  daily_quota: number | null;
+  created_at: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -304,6 +327,8 @@ export type Database = {
       user_blocks: Table<{ blocker_id: string; blocked_id: string; created_at: string }, { blocker_id: string; blocked_id: string }>;
       cities: Table<CityRow, Partial<CityRow>>;
       zones: Table<ZoneRow, Partial<ZoneRow>>;
+      business_branches: Table<BusinessBranchRow, Partial<BusinessBranchRow>>;
+      benefit_branches: Table<BenefitBranchRow, Partial<BenefitBranchRow>>;
     };
     Views: {
       public_profiles: {
@@ -347,6 +372,10 @@ export type Database = {
       benefits_remaining_today: {
         Args: Record<string, never>;
         Returns: { benefit_id: string; redeemed_today: number }[];
+      };
+      benefits_branch_remaining_today: {
+        Args: Record<string, never>;
+        Returns: { benefit_id: string; branch_id: string | null; daily_quota: number; redeemed_today: number }[];
       };
       benefits_remaining_period: {
         Args: Record<string, never>;

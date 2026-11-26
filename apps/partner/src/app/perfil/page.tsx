@@ -514,6 +514,9 @@ export default function PerfilPage() {
                   : 'Toca el mapa en el lugar de tu local. Sin ubicación tu local no aparece en el mapa de la app.'}
               </p>
               {ubicacionMsg && <p className="text-[12px] text-[#a1382f] mt-1">{ubicacionMsg}</p>}
+              <p className="text-[12px] text-muted mt-2">
+                ¿Tienes más de un local? <Link href="/sucursales" className="text-purple font-semibold">Agrega tus sucursales</Link>: salen en la misma ficha.
+              </p>
             </Field>
           )}
             </div>

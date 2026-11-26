@@ -16,6 +16,8 @@ import { boliviaDay } from '@/lib/bolivia';
 import { colors } from '@/theme/tokens';
 import { typo } from '@/theme/type';
 import type { BenefitWithBusiness } from '@/hooks/useBenefits';
+import { useBranches } from '@/hooks/useBranches';
+import { atPlace, nearestPlace, placesOf } from '@/lib/branches';
 import { StoryRewardButton, type StoryState } from '@/components/story/StoryShare';
 import { Coin } from '@/components/ui/Coin';
 import { RedemptionDetailSheet, type RedemptionDetail } from '@/components/home/RedemptionDetailSheet';
@@ -93,6 +95,8 @@ const ROW_CONTENT = { paddingHorizontal: 20, gap: 12, paddingTop: 4, paddingBott
 export function NearbyRow({
   benefits, pos, loading,
 }: { benefits: BenefitWithBusiness[]; pos: { latitude: number; longitude: number } | null; loading: boolean }) {
+  // Comercios con sucursales: se muestra la sucursal más cercana (dirección y distancia).
+  const { data: branchesByBiz } = useBranches();
   const places = useMemo(() => {
     const map = new Map<string, { business: Business; count: number; minCost: number }>();
     for (const b of benefits) {
@@ -101,7 +105,9 @@ export function NearbyRow({
         cur.count += 1;
         cur.minCost = Math.min(cur.minCost, b.cost_points);
       } else {
-        map.set(b.business.id, { business: b.business, count: 1, minCost: b.cost_points });
+        const brs = branchesByBiz?.get(b.business.id);
+        const business = brs?.length ? atPlace(b.business, nearestPlace(placesOf(b.business, brs), pos)) : b.business;
+        map.set(b.business.id, { business, count: 1, minCost: b.cost_points });
       }
     }
     // Por cercanía; los destacados entre los primeros según qué tan cerca estén (ver rank-locales).
@@ -109,7 +115,7 @@ export function NearbyRow({
       [...map.values()].map((p) => ({ ...p, distance: distanceTo(pos, p.business) })),
       (p) => p.distance, (p) => isFeatured(p.business), (p) => p.business.name,
     ).slice(0, 10);
-  }, [benefits, pos]);
+  }, [benefits, pos, branchesByBiz]);
 
   if (places.length === 0) {
     // Mientras cargan los locales se reserva el lugar de la tarjeta (mismo alto): así Retos no salta cuando llegan.

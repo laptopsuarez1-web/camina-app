@@ -8,6 +8,7 @@ import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TimeSelect } from '@/components/TimeSelect';
 import { mensajeError } from '@/lib/errors';
+import { SucursalesPremio, useSucursalesPremio, reglasValidas, reglasParaGuardar, resumenSucursales, PRINCIPAL } from '@/components/SucursalesPremio';
 
 // bit 0 = lunes ... bit 6 = domingo (mismo orden que valid_days_mask en
 // supabase/migrations/0001_init.sql). 127 = todos los días.
@@ -73,6 +74,7 @@ export default function BeneficioPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [donde, setDonde] = useState<Record<string, string>>({});
 
   async function loadBenefits() {
     if (!business) return;
@@ -84,6 +86,22 @@ export default function BeneficioPage() {
       .order('created_at', { ascending: false });
     setBenefits((data as Benefit[]) ?? []);
     setLoading(false);
+    // Premios que valen solo en algunas sucursales (0133): "Solo en Centro, Av. Las Américas". Si falla, no se muestra.
+    const ids = ((data as Benefit[]) ?? []).map((b) => b.id);
+    if (ids.length === 0) return;
+    const [br, rs] = await Promise.all([
+      supabase.from('business_branches').select('id, name').eq('business_id', business.id),
+      supabase.from('benefit_branches').select('benefit_id, branch_id, daily_quota').in('benefit_id', ids),
+    ]);
+    if (br.error || rs.error || !br.data?.length) return setDonde({});
+    const nombres = new Map<string, string>((br.data as { id: string; name: string }[]).map((b) => [b.id, b.name]));
+    nombres.set(PRINCIPAL, business.branch_label?.trim() || 'Principal');
+    const m: Record<string, string[]> = {};
+    for (const r of (rs.data ?? []) as { benefit_id: string; branch_id: string | null; daily_quota: number | null }[]) {
+      const n = nombres.get(r.branch_id ?? PRINCIPAL);
+      if (n) (m[r.benefit_id] ??= []).push(r.daily_quota != null ? `${n} (${r.daily_quota} por día)` : n);
+    }
+    setDonde(Object.fromEntries(Object.entries(m).map(([k, v]) => [k, v.join(', ')])));
   }
 
   useEffect(() => {
@@ -189,6 +207,7 @@ export default function BeneficioPage() {
                   ? `Online por ${CANALES_ONLINE.find((c) => c.id === b.online_channel)?.label ?? 'redes'} · ${b.online_channel === 'web' ? 'con tus cupones' : b.online_quota == null ? 'cupos ilimitados' : `${b.online_quota} cupos en total`}`
                   : b.daily_quota == null ? 'Cupones ilimitados' : `${b.daily_quota} cupones por día`}{b.weekly_quota != null ? ` · ${b.weekly_quota} por semana` : ''}{b.monthly_quota != null ? ` · ${b.monthly_quota} por mes` : ''}
               </p>
+              {!b.online && donde[b.id] && <p className="text-xs text-muted mt-0.5">Solo en {donde[b.id]}</p>}
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => setEditingId(b.id)}
@@ -352,6 +371,9 @@ function BeneficioForm({
   // El upload de foto necesita una carpeta — para un premio nuevo todavía
   // no hay id, así que usamos la del comercio hasta el primer guardado.
   const [benefitId, setBenefitId] = useState<string | null>(benefit?.id ?? null);
+  // Sucursales (solo si el comercio tiene): en todas, o elegir en cuáles y cuántos por día en cada una.
+  const { lugares, reglas, setReglas } = useSucursalesPremio(business, benefit?.id ?? null);
+  const conSucursales = !online && !!lugares && lugares.length > 1;
 
   function toggleDia(bit: number) {
     setDiasMask((prev) => (prev & (1 << bit) ? prev & ~(1 << bit) : prev | (1 << bit)));
@@ -386,6 +408,8 @@ function BeneficioForm({
       if (!online && !(isFree ? Number(cupones) >= 3 : algunTope)) {
         return setPasoError(isFree ? 'Con el plan gratis son mínimo 3 cupones por día.' : 'Escribe cuántos cupones das, o elige «Sin tope».');
       }
+      const errSucursales = conSucursales ? reglasValidas(lugares, reglas) : null;
+      if (errSucursales) return setPasoError(errSucursales);
     }
     if (paso === 3) {
       if (!canalOk) return setPasoError('Elige por dónde te escriben para cobrar. Si no ves el tuyo, cárgalo primero en Mi local.');
@@ -506,6 +530,12 @@ function BeneficioForm({
         await cargarConteoCodigos(savedId);
         setCodigosTexto('');
       }
+    }
+
+    // Sucursales donde vale (después de guardar el premio, que ya tiene id). Online: vale en todas.
+    if (!error && savedId && lugares && lugares.length > 1) {
+      const res = await supabase.rpc('set_benefit_branches', { p_benefit_id: savedId, p_rules: online ? [] : reglasParaGuardar(lugares, reglas) });
+      if (res.error) error = res.error;
     }
 
     setSaving(false);
@@ -801,6 +831,11 @@ function BeneficioForm({
             </div>
           )}
         </Paso>
+        {conSucursales && lugares && (
+          <Paso title="Sucursales" hint="Por defecto vale igual en todas. Si quieres, elige en cuáles y cuántos por día en cada una.">
+            <SucursalesPremio businessName={business.name} lugares={lugares} reglas={reglas} setReglas={setReglas} />
+          </Paso>
+        )}
           </>
         )}
 
@@ -940,6 +975,7 @@ function BeneficioForm({
                 <li><b>Qué da:</b> {ofertaTexto}</li>
                 <li><b>Cuándo vale:</b> {resumenCuando}</li>
                 <li><b>Cupones:</b> {resumenCupos}</li>
+                {conSucursales && <li><b>Sucursales:</b> {resumenSucursales(lugares, reglas)}</li>}
                 {dineInOnly && !online && <li><b>Solo</b> para consumir en el local</li>}
                 {requiresBooking && !online && <li><b>Reserva opcional</b> por WhatsApp</li>}
                 {soloNuevos && <li><b>Solo</b> para clientes nuevos</li>}

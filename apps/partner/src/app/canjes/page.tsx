@@ -16,6 +16,8 @@ export default function CanjesPage() {
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   // Código de 4 números del local: se lo dice al cliente en la caja y el cliente lo escribe en la app.
   const [localCode, setLocalCode] = useState<string | null>(null);
+  // Sucursales (0133): cada una con su código. Sin sucursales (o sin la tabla) la lista queda vacía.
+  const [branchCodes, setBranchCodes] = useState<{ id: string; name: string; code: string }[]>([]);
   const [changing, setChanging] = useState(false);
   const [codeError, setCodeError] = useState<string | null>(null);
   // El bloque de 6 dígitos solo sirve si el local tiene premios online activos.
@@ -49,6 +51,14 @@ export default function CanjesPage() {
       .eq('business_id', business.id)
       .maybeSingle()
       .then(({ data }) => setLocalCode(data?.code ?? null));
+    Promise.all([
+      supabase.from('business_branches').select('id, name').eq('business_id', business.id).order('created_at'),
+      supabase.from('business_branch_codes').select('branch_id, code').eq('business_id', business.id),
+    ]).then(([br, cod]) => {
+      if (br.error || cod.error) return setBranchCodes([]);
+      const codes = new Map(((cod.data ?? []) as { branch_id: string; code: string }[]).map((c) => [c.branch_id, c.code]));
+      setBranchCodes(((br.data ?? []) as { id: string; name: string }[]).flatMap((b) => (codes.has(b.id) ? [{ id: b.id, name: b.name, code: codes.get(b.id)! }] : [])));
+    });
   }, [business]);
 
   useEffect(() => {
@@ -196,7 +206,7 @@ export default function CanjesPage() {
       </div>}
 
       <div className="bg-card border border-line rounded-2xl p-5 mb-5 max-w-[480px]">
-        <p className="font-semibold text-sm mb-1">Código de tu local</p>
+        <p className="font-semibold text-sm mb-1">{branchCodes.length > 0 ? `Código de ${business?.branch_label?.trim() || 'tu local principal'}` : 'Código de tu local'}</p>
         <p className="text-muted text-xs mb-3.5">
           {esCajero ? 'Dile este código al cliente en la caja. Lo escribe en la app, estando en el local, y el canje queda confirmado al instante.' : 'Dile este código al cliente en la caja. Lo escribe en la app, estando en tu local, y el canje queda confirmado al instante: no hace falta que abras el panel. Si se filtró, cámbialo cuando quieras.'}
         </p>
@@ -213,6 +223,20 @@ export default function CanjesPage() {
           </button>}
         </div>
         {codeError && <p className="text-warn text-[12.5px] mt-2.5">{codeError}</p>}
+        {branchCodes.length > 0 && (
+          <div className="mt-4 pt-3.5 border-t border-line">
+            <p className="font-semibold text-sm mb-1">Códigos de tus sucursales</p>
+            <p className="text-muted text-xs mb-2.5">Cada sucursal tiene el suyo: el cliente escribe el de la sucursal donde está.{!esCajero && ' Se cambian en Sucursales.'}</p>
+            <div className="flex flex-col gap-1.5">
+              {branchCodes.map((b) => (
+                <div key={b.id} className="flex items-center justify-between gap-3 bg-bg rounded-[10px] px-3.5 py-2">
+                  <span className="text-[13px] font-semibold truncate">{b.name}</span>
+                  <span aria-label={`Código ${b.code.split('').join(' ')}`} className="text-[20px] font-extrabold tracking-[6px] tabular-nums">{b.code}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="biz-filtros">
