@@ -35,7 +35,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { BusinessHours } from '@/components/BusinessHours';
+import { BusinessHours, HoursCoverChip, HoursSheet } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
@@ -544,6 +544,11 @@ export default function CanjesScreen() {
     const sola = sinPremios.find((b) => b.id === profileBusinessId);
     return sola ? { business: sola, benefits: [] as BenefitWithBusiness[] } : null;
   }, [benefits, sinPremios, profileBusinessId]);
+  const [hoursOpen, setHoursOpen] = useState(false);
+  const profileDistance =
+    profileGroup && hasGps && mapRegion && profileGroup.business.lat != null && profileGroup.business.lng != null
+      ? distanceMeters(mapRegion, profileGroup.business.lat, profileGroup.business.lng)
+      : null;
   const profileOpenRef = useRef(false);
   useEffect(() => {
     profileOpenRef.current = !!profileGroup;
@@ -1353,7 +1358,7 @@ export default function CanjesScreen() {
                   <View
                     pointerEvents="none"
                     className="absolute flex-row items-center rounded-full"
-                    style={{ right: 16, bottom: 46, gap: 5, backgroundColor: 'rgba(18,10,30,0.62)', paddingHorizontal: 11, paddingVertical: 6 }}
+                    style={{ right: 16, top: 58, gap: 5, backgroundColor: 'rgba(18,10,30,0.62)', paddingHorizontal: 11, paddingVertical: 6 }}
                   >
                     <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>{galleryPhotos.length} fotos</Text>
                   </View>
@@ -1367,10 +1372,21 @@ export default function CanjesScreen() {
                 >
                   <X size={18} color={colors.light.text} />
                 </Press>
+                {profileGroup.business.opening_hours ? (
+                  <>
+                    <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} />
+                    {hoursOpen ? <HoursSheet openingHours={profileGroup.business.opening_hours} visible onClose={() => setHoursOpen(false)} /> : null}
+                  </>
+                ) : null}
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
                 {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
+                {profileDistance != null && profileDistance < MAX_SHOWN_DISTANCE_M ? (
+                  <Text className="absolute text-[14px] text-muted-light dark:text-muted-dark" style={{ right: 20, top: 46 }}>
+                    Estás a <Text className="font-extrabold text-text-light dark:text-text-dark">{formatDistance(profileDistance)}</Text>
+                  </Text>
+                ) : null}
                 <View className="flex-row items-center justify-between mt-3">
                   <View className="flex-1 flex-row items-center" style={{ gap: 8 }}>
                     <Text className="text-[24px] font-extrabold text-text-light dark:text-text-dark shrink" style={{ letterSpacing: -0.5 }}>
@@ -1415,7 +1431,9 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{profileGroup.business.address}</Text>
                     </Press>
                   ) : null}
-                  <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
+                  {!profileGroup.business.opening_hours ? (
+                    <BusinessHours openingHours={null} hoursText={profileGroup.business.hours_text} />
+                  ) : null}
                   {profileGroup.business.instagram ? (
                     <Press
                       accessibilityRole="link"

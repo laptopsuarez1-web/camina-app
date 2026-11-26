@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Modal, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
@@ -112,5 +113,68 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
         </Glass>
       )}
     </View>
+  );
+}
+
+// Texto del chip sobre la portada: "ABIERTO · 10:00 – 23:00" (el tramo en curso) o "CERRADO · Hoy 08:00 – 23:00".
+export function hoursChipInfo(week: NonNullable<OpeningHours>) {
+  const h = week[String(todayIndex())] ?? null;
+  if (!h) return { open: false, text: 'CERRADO HOY' };
+  if (isOpenNow(h)) {
+    const now = new Date().toTimeString().slice(0, 5);
+    const r = ranges(h).find(([a, b]) => inRange(now, a, b)) ?? ranges(h)[0];
+    return { open: true, text: `ABIERTO · ${r[0]} – ${r[1]}` };
+  }
+  return { open: false, text: `CERRADO · HOY ${rangesText(h)}` };
+}
+
+// Chip de horario sobre la foto de portada (estilo Pasito). Al tocarlo se abre la hoja con los 7 días.
+// Va a 46 px del borde: más abajo lo tapa la ficha (que sube 36 px sobre la portada) y no se puede tocar.
+export function HoursCoverChip({ openingHours, onPress }: { openingHours: NonNullable<OpeningHours>; onPress: () => void }) {
+  const { open, text } = hoursChipInfo(openingHours);
+  const fg = open ? '#12281F' : '#FFFFFF';
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={`${text}. Ver todos los horarios`}
+      onPress={onPress}
+      className="absolute flex-row items-center rounded-full"
+      style={{ right: 16, bottom: 46, gap: 6, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: open ? '#62F0B6' : 'rgba(18,10,30,0.78)' }}
+    >
+      <Text allowFontScaling={false} style={{ color: fg, fontWeight: '800', fontSize: 12.5, letterSpacing: 0.3 }}>{text}</Text>
+      <ChevronDown size={14} color={fg} />
+    </Press>
+  );
+}
+
+// Hoja inferior "Horarios": los 7 días en lista limpia y el de hoy resaltado.
+export function HoursSheet({ openingHours, visible, onClose }: { openingHours: NonNullable<OpeningHours>; visible: boolean; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  const today = todayIndex();
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
+        <Press accessible={false} feedback="none" onPress={() => {}} style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 20 }}>
+          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
+          <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
+            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
+            {DAYS.map((name, i) => {
+              const h = openingHours[String(i)] ?? null;
+              const isToday = i === today;
+              return (
+                <View
+                  key={name}
+                  className="flex-row items-center justify-between"
+                  style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
+                >
+                  <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
+                  <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </Press>
+      </Press>
+    </Modal>
   );
 }
