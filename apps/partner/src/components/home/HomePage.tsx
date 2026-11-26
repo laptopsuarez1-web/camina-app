@@ -170,7 +170,7 @@ function Premios() {
 
 
         <p className="hm-note hm-prem-note">
-          Volvés a canjear en el mismo local cada 14 días. Y cada 5 canjes, tu Tarjeta de fidelidad te da un premio gratis.
+          Volvés a canjear en el mismo local cada 14 días. Y cada 10 canjes, tu Tarjeta de fidelidad te da un premio gratis.
         </p>
 
       </div>

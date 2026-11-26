@@ -166,7 +166,7 @@ export default function PuntosScreen() {
           <Text className="font-bold text-[15px] text-text-light dark:text-text-dark">Tarjetas de fidelidad</Text>
           <Text className="text-[12px] text-muted-light dark:text-muted-dark">
             {!caminaCard
-              ? 'Junta 5 canjes y elige un premio gratis'
+              ? 'Junta 10 canjes y elige un premio gratis'
               : caminaCard.stamps >= caminaCard.goal
                 ? caminaCard.chosen_benefit_id ? 'Tu premio te espera en el local' : '¡Completa! Elige tu premio'
                 : `${caminaCard.stamps} de ${caminaCard.goal} canjes`}
