@@ -217,6 +217,17 @@ export default function CanjesScreen() {
   const [shownId, setShownId] = useState<string | null>(null);
   const confirmed = !!activeId && confirmedId === activeId;
   const answered = !!activeId && answeredId === activeId;
+  // Al cerrar un canje confirmado se refrescan las insignias: si subiste de nivel en el local, aparece el festejo
+  // (después del canje, para no taparlo).
+  const lastConfirmedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (activeId && confirmedId === activeId) { lastConfirmedRef.current = activeId; return; }
+    if (!activeId && lastConfirmedRef.current) {
+      lastConfirmedRef.current = null;
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+      queryClient.invalidateQueries({ queryKey: ['level'] });
+    }
+  }, [activeId, confirmedId, queryClient]);
   // El final del canje va de a una pantalla: confirmado, compra extra, reseña y historia.
   type Paso = 'ok' | 'resena' | 'historia';
   const [pasoDe, setPasoDe] = useState<{ id: string | null; paso: Paso }>({ id: null, paso: 'ok' });

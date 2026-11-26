@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Modal, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Spinner } from '@/components/ui/Spinner';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,10 +27,17 @@ const QUE: Record<LevelEvent['source'], string> = {
 export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null; own: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const { data: history, isLoading } = useLevelHistory(badge?.business_id, own && !!badge);
+  // La barra se llena sola al abrir: de 0 a tus puntos de nivel.
+  const reduced = useReducedMotion();
+  const fill = useSharedValue(0);
+  const target = badge ? Math.max(4, Math.min(100, Math.round((badge.points / LEVELS[LEVELS.length - 1].from) * 100))) : 0;
+  useEffect(() => {
+    fill.value = reduced ? target : 0;
+    if (!reduced) fill.value = withDelay(350, withTiming(target, { duration: 1100, easing: Easing.out(Easing.cubic) }));
+  }, [target, reduced, fill]);
+  const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value}%` }));
   if (!badge) return null;
   const next = nextLevel(badge.points);
-  const top = LEVELS[LEVELS.length - 1].from;
-  const pct = Math.min(100, Math.round((badge.points / top) * 100));
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       {/* El fondo oscuro es una capa aparte detrás de la hoja (no la envuelve): si la hoja va dentro de un botón,
@@ -49,7 +58,9 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
             {/* Camino de niveles: Visitante → Habitual → Fan. */}
             <View style={{ marginTop: 20 }}>
               <View style={{ height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                <LinearGradient colors={['#8B4FD1', '#62F0B6', '#FFD166']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${Math.max(4, pct)}%`, height: '100%', borderRadius: 5 }} />
+                <Animated.View style={[{ height: '100%', borderRadius: 5, overflow: 'hidden' }, fillStyle]}>
+                  <LinearGradient colors={['#8B4FD1', '#62F0B6', '#FFD166']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flex: 1 }} />
+                </Animated.View>
               </View>
               <View className="flex-row justify-between" style={{ marginTop: 8 }}>
                 {LEVELS.map((l) => {
