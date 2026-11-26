@@ -1,4 +1,4 @@
-// Sucursales de un comercio (0133). Un comercio es una sola ficha; cada sucursal es un lugar más en el mapa.
+// Sucursales de un comercio (0134). Un comercio es una sola ficha; cada sucursal es un lugar más en el mapa.
 // La ubicación del comercio (businesses.lat/lng/address) es la sucursal principal (id MAIN_PLACE).
 // Sin imports de React Native: se prueba con node (tests/branches.test.mts).
 

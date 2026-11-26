@@ -1,4 +1,4 @@
--- 0133: sucursales de un comercio (pedido de Marcos, 2026-11-26).
+-- 0134: sucursales de un comercio (pedido de Marcos, 2026-11-26).
 --
 -- Un comercio sigue siendo UNA sola ficha (plan, tarjeta, nivel, favoritos y premios son del comercio).
 -- La ubicación que ya tiene el comercio (businesses.lat/lng/address) es la sucursal principal y no cambia;

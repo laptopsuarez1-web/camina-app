@@ -16,7 +16,7 @@ export default function CanjesPage() {
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   // Código de 4 números del local: se lo dice al cliente en la caja y el cliente lo escribe en la app.
   const [localCode, setLocalCode] = useState<string | null>(null);
-  // Sucursales (0133): cada una con su código. Sin sucursales (o sin la tabla) la lista queda vacía.
+  // Sucursales (0134): cada una con su código. Sin sucursales (o sin la tabla) la lista queda vacía.
   const [branchCodes, setBranchCodes] = useState<{ id: string; name: string; code: string }[]>([]);
   const [changing, setChanging] = useState(false);
   const [codeError, setCodeError] = useState<string | null>(null);
