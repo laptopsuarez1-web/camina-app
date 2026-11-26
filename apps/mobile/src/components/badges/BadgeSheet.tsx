@@ -1,4 +1,4 @@
-import { Modal, ScrollView, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { Spinner } from '@/components/ui/Spinner';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,8 +31,11 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
   const pct = Math.min(100, Math.round((badge.points / top) * 100));
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
-        <Press accessible={false} feedback="none" onPress={() => {}} style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, maxHeight: '86%', paddingBottom: insets.bottom + 16 }}>
+      {/* El fondo oscuro es una capa aparte detrás de la hoja (no la envuelve): si la hoja va dentro de un botón,
+          el botón a veces se queda con el toque y la lista no se deja deslizar. */}
+      <View className="flex-1 justify-end">
+        <Press accessible={false} feedback="none" onPress={onClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(18,10,30,0.55)' }]} />
+        <View style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, maxHeight: '86%', paddingBottom: insets.bottom + 16 }}>
           <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
           <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 16 }}>
             <View className="items-center">
@@ -100,8 +103,8 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Listo</Text>
             </Press>
           </ScrollView>
-        </Press>
-      </Press>
+        </View>
+      </View>
     </Modal>
   );
 }
