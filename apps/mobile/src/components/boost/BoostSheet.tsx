@@ -32,7 +32,7 @@ export function BoostSheet({ place, onClose, onShowOnMap }: { place: BoostPlace;
   const [note, setNote] = useState<string | null>(null);
   const live = isBoostLive(place);
   const mine = open && open.place_id === place.id ? open : null;
-  const earned = mine ? Math.max(place.my_points, (mine.place_points ?? 0)) : place.my_points;
+  const earned = mine ? Math.max(place.my_points, mine.place_points ?? 0, mine.points) : place.my_points;
   const full = earned >= place.max_points;
   const perK = place.steps_per_point.toLocaleString('es-BO');
 
@@ -82,7 +82,6 @@ export function BoostSheet({ place, onClose, onShowOnMap }: { place: BoostPlace;
   }
 
   const busy = start.isPending || sync.isPending;
-  const sessionPts = mine?.points ?? 0;
   const pct = Math.min(1, earned / place.max_points);
 
   return (
@@ -137,10 +136,10 @@ export function BoostSheet({ place, onClose, onShowOnMap }: { place: BoostPlace;
                   </View>
                 ) : null}
                 <View style={{ flex: 1, padding: 12, borderRadius: 18, backgroundColor: colors.mintDark }}>
-                  <Text style={{ color: colors.dark.muted, fontSize: 12 }}>{mine ? 'Puntos extra hoy' : 'Puntos extra ganados'}</Text>
+                  <Text style={{ color: colors.dark.muted, fontSize: 12 }}>{mine ? 'Puntos extra' : 'Puntos extra ganados'}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
                     <Image source={COIN} style={{ width: 22, height: 22, borderRadius: 11 }} accessible={false} />
-                    <Text style={{ color: colors.mint, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] }}>+{mine ? sessionPts : earned}</Text>
+                    <Text style={{ color: colors.mint, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] }}>+{earned}</Text>
                     <Text style={{ color: colors.dark.muted, fontSize: 13 }}>de {place.max_points}</Text>
                   </View>
                 </View>
