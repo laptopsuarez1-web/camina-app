@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Modal, Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
+import { SwipeSheet } from '@/components/ui/SwipeSheet';
 
 // Un día puede tener dos tramos (horario partido): from/to y from2/to2.
 type DayHours = { from: string; to: string; from2?: string; to2?: string } | null;
@@ -171,32 +171,26 @@ export function HoursCoverChip({ openingHours, onPress, style }: { openingHours:
 
 // Hoja inferior "Horarios": los 7 días en lista limpia y el de hoy resaltado.
 export function HoursSheet({ openingHours, visible, onClose }: { openingHours: NonNullable<OpeningHours>; visible: boolean; onClose: () => void }) {
-  const insets = useSafeAreaInsets();
   const today = todayIndex();
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
-        <Press accessible={false} feedback="none" onPress={() => {}} style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 20 }}>
-          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
-          <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
-            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
-            {DAYS.map((name, i) => {
-              const h = openingHours[String(i)] ?? null;
-              const isToday = i === today;
-              return (
-                <View
-                  key={name}
-                  className="flex-row items-center justify-between"
-                  style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
-                >
-                  <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
-                  <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </Press>
-      </Press>
-    </Modal>
+    <SwipeSheet visible={visible} onClose={onClose}>
+      <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 8 }}>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
+        {DAYS.map((name, i) => {
+          const h = openingHours[String(i)] ?? null;
+          const isToday = i === today;
+          return (
+            <View
+              key={name}
+              className="flex-row items-center justify-between"
+              style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
+            >
+              <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
+              <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </SwipeSheet>
   );
 }
