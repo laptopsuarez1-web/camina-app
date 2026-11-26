@@ -66,7 +66,7 @@ export interface Business {
   opening_hours?: Record<string, { from: string; to: string; from2?: string; to2?: string } | null> | null;
   lat: number | null;
   lng: number | null;
-  // Nombre de la sucursal principal cuando el comercio tiene más sucursales (0133). Sin nombre: "Principal".
+  // Nombre de la sucursal principal cuando el comercio tiene más sucursales (0134). Sin nombre: "Principal".
   branch_label?: string | null;
   logo_url: string | null;
   cover_url: string | null;
@@ -285,7 +285,7 @@ type Table<Row, Insert, Update = Partial<Insert>> = {
   Relationships: [];
 };
 
-// Sucursales de un comercio (0133): además de la ubicación principal del comercio.
+// Sucursales de un comercio (0134): además de la ubicación principal del comercio.
 export interface BusinessBranchRow {
   id: string;
   business_id: string;

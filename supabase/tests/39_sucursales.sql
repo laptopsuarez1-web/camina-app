@@ -1,4 +1,4 @@
--- Sucursales (0133): cada sucursal con su ubicación y su código; premios en todas o en algunas, con cupos por sucursal.
+-- Sucursales (0134): cada sucursal con su ubicación y su código; premios en todas o en algunas, con cupos por sucursal.
 begin;
 
 do $$

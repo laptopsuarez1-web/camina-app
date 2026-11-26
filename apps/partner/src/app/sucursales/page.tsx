@@ -17,7 +17,7 @@ const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.M
   loading: () => <div className="h-[260px] rounded-[10px] border border-line bg-white" />,
 });
 
-// Sucursales del comercio (0133). En la app sale una sola ficha; cada persona ve la sucursal más cercana
+// Sucursales del comercio (0134). En la app sale una sola ficha; cada persona ve la sucursal más cercana
 // y puede elegir otra. Cada sucursal tiene su propio código de 4 números para los canjes.
 const MAX_SUCURSALES = 20;
 

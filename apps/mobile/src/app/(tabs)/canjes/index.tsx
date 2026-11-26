@@ -98,7 +98,7 @@ export default function CanjesScreen() {
     const conPremios = new Set((rawBenefits ?? []).map((b) => b.business.id));
     return (approvedBusinesses ?? []).filter((b) => !conPremios.has(b.id)) as BusinessT[];
   }, [rawBenefits, approvedBusinesses]);
-  // Sucursales (0133): un comercio es una sola ficha; cada sucursal es un lugar más (pin propio en el mapa).
+  // Sucursales (0134): un comercio es una sola ficha; cada sucursal es un lugar más (pin propio en el mapa).
   const { data: branchesByBiz } = useBranches();
   const { data: branchRules } = useBenefitBranchRules();
   const { data: remainingToday } = useBenefitsRemainingToday();
@@ -1835,7 +1835,7 @@ export default function CanjesScreen() {
                                 return r.status === 'pending' && new Date(r.code_expires_at.replace(/(\.\d{3})\d+/, '$1')).getTime() > Date.now();
                               })
                             : undefined;
-                          // Premios por sucursal (0133): si el comercio lo eligió solo para algunas sucursales, vale solo ahí,
+                          // Premios por sucursal (0134): si el comercio lo eligió solo para algunas sucursales, vale solo ahí,
                           // y cada sucursal puede tener sus cupos de hoy. Los online no dependen de la sucursal.
                           const atBranch = b.online ? ({ kind: 'all' } as const) : availabilityAt(branchRules?.rules.get(b.id), profilePlaceId, profilePlaces, branchRules?.usedToday.get(b.id));
                           const notHere = atBranch.kind === 'elsewhere';

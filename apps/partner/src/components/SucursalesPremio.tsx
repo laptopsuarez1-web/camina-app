@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, type Business } from '@/lib/supabase';
 
-// En qué sucursales vale un premio (0133). Sin reglas = vale en todas (como siempre).
+// En qué sucursales vale un premio (0134). Sin reglas = vale en todas (como siempre).
 // Solo aparece si el comercio tiene sucursales cargadas; si la base todavía no las tiene, no se muestra nada.
 
 export const PRINCIPAL = 'main';

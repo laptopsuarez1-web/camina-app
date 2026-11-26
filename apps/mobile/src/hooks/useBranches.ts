@@ -6,7 +6,7 @@ import { MAIN_PLACE, type BenefitBranchRule, type Branch } from '@/lib/branches'
 const EMPTY_BRANCHES: ReadonlyMap<string, Branch[]> = new Map();
 const EMPTY_RULES: BranchRules = { rules: new Map(), usedToday: new Map() };
 
-// Sucursales de los comercios (0133), agrupadas por comercio. Son pocas filas: se bajan todas las que la base deja ver
+// Sucursales de los comercios (0134), agrupadas por comercio. Son pocas filas: se bajan todas las que la base deja ver
 // (solo de comercios aprobados). Si algo falla (por ejemplo, la base todavía no tiene la tabla) se sigue sin sucursales:
 // la app se ve igual que antes y nunca se rompe por esto.
 export function useBranches() {
