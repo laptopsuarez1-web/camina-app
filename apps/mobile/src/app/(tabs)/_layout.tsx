@@ -14,6 +14,7 @@ import { TabsWarmup } from '@/components/TabsWarmup';
 import { LevelUpWatcher } from '@/components/badges/LevelUpWatcher';
 import { TabTour } from '@/components/TabTour';
 import { healOldPhotos } from '@/lib/avatar';
+import { BoostActivePill } from '@/components/boost/BoostActivePill';
 
 // Un error dentro de las pestañas muestra la pantalla de error sin perder la barra de sesión.
 export { ErrorScreen as ErrorBoundary } from '@/components/ErrorScreen';
@@ -118,6 +119,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="amigos/index" options={{ href: null }} />
       <Tabs.Screen name="amigos/[userId]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
+    {session ? <BoostActivePill /> : null}
     <CelebrationHost />
     <TabsWarmup />
     <LevelUpWatcher />
