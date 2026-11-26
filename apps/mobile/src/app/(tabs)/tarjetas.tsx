@@ -72,7 +72,7 @@ export default function TarjetasScreen() {
           <Text accessibilityRole="header" className="text-white text-[17px] font-bold">Tarjetas de fidelidad</Text>
         </View>
         <Text className="text-auth-muted text-[13px] mt-3 leading-[18px]">
-          Cada canje que confirma un comercio suma un sello, en cualquier comercio. Con 5 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.
+          Cada canje que confirma un comercio suma un sello, en cualquier comercio. Con 10 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.
         </Text>
       </DarkHeader>
 
@@ -108,7 +108,7 @@ export default function TarjetasScreen() {
           <EmptyState
             mascot="sentado"
             title="Tu primera tarjeta arranca con tu primer canje"
-            text="Cada canje suma un sello. Con 5 sellos te llevas un premio gratis."
+            text="Cada canje suma un sello. Con 10 sellos te llevas un premio gratis."
             actionLabel="Ver premios"
             onAction={() => router.push('/(tabs)/canjes')}
           />

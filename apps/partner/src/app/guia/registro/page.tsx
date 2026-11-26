@@ -188,7 +188,7 @@ export default function GuiaRegistroPage() {
       <Hoja n={8} etiqueta="HERRAMIENTAS" titulo="Más herramientas" bajada="Algunas son de los planes de pago: en el menú se ven con un candado.">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4mm' }}>
           <Tarjeta titulo="Tarjeta de fidelidad" plan="Paso Firme y Paso Adelante" img="p-tarjeta.jpg">
-            Cada canje en cualquier comercio suma un sello. Con 5 sellos, la persona elige un premio gratis entre los locales que participan: tú eliges cuál ofreces.
+            Cada canje en cualquier comercio suma un sello. Con 10 sellos, la persona elige un premio gratis entre los locales que participan: tú eliges cuál ofreces.
           </Tarjeta>
           <Tarjeta titulo="Estadísticas" plan="Paso Firme y Paso Adelante" img="p-estadisticas.jpg">
             Cómo te va en los últimos 30 días: canjes por día, el premio más canjeado y las horas con más visitas.

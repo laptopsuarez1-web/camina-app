@@ -136,7 +136,7 @@ export interface PointsLedgerEntry {
 }
 
 // Tarjeta de fidelidad de una persona en un local (RPC my_loyalty_cards).
-// Tarjeta general de Camina (reemplaza a la tarjeta por local): 5 canjes confirmados en cualquier comercio = 1 premio a elegir.
+// Tarjeta general de Camina (reemplaza a la tarjeta por local): 10 canjes confirmados en cualquier comercio = 1 premio a elegir.
 export interface CaminaPrizeOption {
   benefit_id: string;
   benefit_name: string;

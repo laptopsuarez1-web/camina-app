@@ -1,4 +1,4 @@
--- Tarjeta de fidelidad GENERAL (0080): 5 canjes confirmados en cualquier comercio = un premio gratis a elegir, 30 días para canjearlo.
+-- Tarjeta de fidelidad GENERAL (0080, 10 canjes desde 0132): 10 canjes confirmados en cualquier comercio = un premio gratis a elegir, 30 días para canjearlo.
 begin;
 
 do $$
@@ -9,8 +9,8 @@ begin
   u := tt.mk_user(6000, 'Marcos Tapia'); u2 := tt.mk_user(); stranger := tt.mk_user();
   perform tt.give(u, 1000, 60);
 
-  -- Cinco comercios, cada uno con su dueño y su premio.
-  for i in 1..5 loop
+  -- Diez comercios, cada uno con su dueño y su premio.
+  for i in 1..10 loop
     o := tt.mk_user(); b := tt.mk_benefit(20, 99);
     select business_id into bz from benefits where id = b;
     update businesses set owner_user_id = o where id = bz;
@@ -18,7 +18,7 @@ begin
     owners := owners || o; bens := bens || b; bizs := bizs || bz;
   end loop;
 
-  perform tt.t_eq('la tarjeta es de 5 sellos', loyalty_goal(), 5);
+  perform tt.t_eq('la tarjeta es de 10 sellos', loyalty_goal(), 10);
   perform tt.t_eq('la tarjeta completa vence a los 30 días', loyalty_card_days(), 30);
 
   perform tt.t_as(u);
@@ -28,7 +28,7 @@ begin
   perform tt.t_raises('sin tarjeta completa no se elige premio', format('select choose_camina_prize(%L)', bens[1]), 'Todavía no tienes una tarjeta completa');
 
   -- ===== Sellos: uno por canje confirmado, en cualquier comercio =====
-  for i in 1..4 loop
+  for i in 1..9 loop
     perform tt.t_as(u); red := redeem_benefit(bens[i]);
     perform tt.t_as(owners[i]); perform confirm_redemption_code(bizs[i], red.code);
     perform tt.t_as(u);
@@ -37,17 +37,17 @@ begin
     end if;
   end loop;
   c := my_camina_card();
-  perform tt.t_eq('4 canjes en 4 comercios distintos: 4 sellos', (c->>'stamps')::int, 4);
-  perform tt.t_eq('el historial guarda dónde canjeó', jsonb_array_length(c->'history'), 4);
-  perform tt.t_true('con 4 sellos todavía no hay vencimiento', c->>'completed_at' is null);
+  perform tt.t_eq('9 canjes en 9 comercios distintos: 9 sellos', (c->>'stamps')::int, 9);
+  perform tt.t_eq('el historial guarda dónde canjeó', jsonb_array_length(c->'history'), 9);
+  perform tt.t_true('con 9 sellos todavía no hay vencimiento', c->>'completed_at' is null);
 
-  -- El quinto sello completa la tarjeta (en el mismo comercio donde canjeó el primero: pasaron 14 días).
+  -- El décimo sello completa la tarjeta (en el mismo comercio donde canjeó el primero: pasaron 14 días).
   update redemptions set created_at = created_at - interval '15 days' where user_id = u and business_id = bizs[1];
   perform tt.t_as(u); red := redeem_benefit(bens[1]);
   perform tt.t_as(owners[1]); perform confirm_redemption_code(bizs[1], red.code);
   perform tt.t_as(u);
   c := my_camina_card();
-  perform tt.t_eq('5 canjes: tarjeta completa', (c->>'stamps')::int, 5);
+  perform tt.t_eq('10 canjes: tarjeta completa', (c->>'stamps')::int, 10);
   perform tt.t_true('la tarjeta tiene fecha de completada', c->>'completed_at' is not null);
   perform tt.t_true('vence 30 días después de completarse',
     (c->>'expires_at')::timestamptz between (c->>'completed_at')::timestamptz + interval '29 days 23 hours' and (c->>'completed_at')::timestamptz + interval '30 days 1 hour');
@@ -100,14 +100,14 @@ begin
 
   -- ===== Segunda tarjeta: vence sin canjear =====
   perform tt.t_as(u);
-  for i in 1..5 loop
+  for i in 1..10 loop
     update redemptions set created_at = created_at - interval '15 days' where user_id = u;
     perform tt.t_as(u); red := redeem_benefit(bens[i]);
     perform tt.t_as(owners[i]); perform confirm_redemption_code(bizs[i], red.code);
   end loop;
   perform tt.t_as(u);
   c := my_camina_card();
-  perform tt.t_eq('otros 5 canjes: segunda tarjeta completa', (c->>'stamps')::int, 5);
+  perform tt.t_eq('otros 10 canjes: segunda tarjeta completa', (c->>'stamps')::int, 10);
   c := choose_camina_prize(bens[3]);
   perform tt.t_as(owners[3]);
   ov := business_loyalty_overview(bizs[3]);

@@ -64,22 +64,28 @@ function StampCoin({ index, size, fresh, last }: { index: number; size: number; 
   );
 }
 
+// Los sellos van en filas de 5 (la tarjeta de 10 queda en dos filas: 5 arriba y 5 abajo).
 export function CaminaStamps({ card, size = 46, animate = false }: { card: CaminaCard; size?: number; animate?: boolean }) {
   const t = useThemeColors();
+  const rows = Array.from({ length: Math.ceil(card.goal / 5) }, (_, r) => Array.from({ length: Math.min(5, card.goal - r * 5) }, (_, k) => r * 5 + k));
   return (
-    <View className="flex-row items-center justify-between">
-      {Array.from({ length: card.goal }, (_, i) =>
-        i < card.stamps ? (
-          <StampCoin key={i} index={i} size={size} fresh={animate} last={i === card.stamps - 1} />
-        ) : (
-          <View
-            key={i}
-            style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: t.line, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Text style={{ fontSize: 13, fontWeight: '700', color: t.muted }}>{i + 1}</Text>
-          </View>
-        )
-      )}
+    <View style={{ gap: 10 }}>
+      {rows.map((row, r) => (
+        <View key={r} className="flex-row items-center justify-between">
+          {row.map((i) =>
+            i < card.stamps ? (
+              <StampCoin key={i} index={i} size={size} fresh={animate} last={i === card.stamps - 1} />
+            ) : (
+              <View
+                key={i}
+                style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: t.line, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: '700', color: t.muted }}>{i + 1}</Text>
+              </View>
+            )
+          )}
+        </View>
+      ))}
     </View>
   );
 }

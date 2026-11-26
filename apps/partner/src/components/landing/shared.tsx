@@ -751,7 +751,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
   const local = LOCALES.find((l) => l.id === 'fripaps')!;
   const texto =
     para === 'gente'
-      ? 'Una sola tarjeta para todos los comercios. Cada canje confirmado suma un sello, en el comercio que quieras. Con 5 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.'
+      ? 'Una sola tarjeta para todos los comercios. Cada canje confirmado suma un sello, en el comercio que quieras. Con 10 sellos eliges un premio gratis entre los comercios que participan y tienes 30 días para canjearlo en el local.'
       : 'Eliges el premio que regalas a quienes completan su tarjeta de fidelidad de Camina. Tu premio aparece entre las opciones que ven los clientes de todos los locales: más visibilidad y más gente que llega a tu local. Está incluida en los planes de Bs 99 y Bs 299, no en el gratis.';
   const pasos =
     para === 'gente'
@@ -762,7 +762,7 @@ export function Fidelidad({ para }: { para: 'gente' | 'comercios' }) {
         ]
       : [
           ['Eliges tu premio de fidelidad', 'Desde tu panel, con los planes de Bs 99 o Bs 299.'],
-          ['Apareces para todos', 'Quien completa su tarjeta de 5 canjes, en cualquier comercio, puede elegir tu premio.'],
+          ['Apareces para todos', 'Quien completa su tarjeta de 10 canjes, en cualquier comercio, puede elegir tu premio.'],
           ['Llegan a tu local', 'Tienen 30 días para canjearlo contigo, con tu código del local.'],
         ];
   return (
@@ -967,7 +967,7 @@ export function ComoFunciona() {
         id="gal-funciona"
         pant={[
           ['Ranking semanal', 'Tu puesto en todo Camina y entre amigos. Se reinicia cada lunes.', CAP.rankingNuevo],
-          ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: con 5 canjes eliges un premio gratis entre los comercios que participan.', CAP.puntosNuevo],
+          ['Tus Puntos', 'Tu saldo, tus movimientos y tu tarjeta: con 10 canjes eliges un premio gratis entre los comercios que participan.', CAP.puntosNuevo],
           ['Tu racha', 'Cada día seguido con 5.000 pasos o más suma a tu racha.', CAP.rachas],
           ['Desafíos Camina', 'Metas extra que suman Puntos.', CAP.retos],
           ['Eventos y desafíos', 'Caminatas y premios de comercios de tu ciudad.', CAP.desafios],
@@ -996,7 +996,7 @@ export function CanjesGente() {
         pant={[
           ['El mapa de premios', 'Los comercios cerca tuyo y lo que ofrece cada uno.', CAP.canjes],
           ['La ficha del local', 'Sus descuentos o premios, cuántos Puntos cuestan y dónde queda.', CAP.fichaLocal],
-          ['Tu tarjeta Camina', 'Con 5 canjes en cualquier comercio, eliges un premio gratis entre los comercios que participan. Tienes 30 días para canjearlo.', CAP.puntosNuevo],
+          ['Tu tarjeta Camina', 'Con 10 canjes en cualquier comercio, eliges un premio gratis entre los comercios que participan. Tienes 30 días para canjearlo.', CAP.puntosNuevo],
         ]}
       />
       <div className="wrap">

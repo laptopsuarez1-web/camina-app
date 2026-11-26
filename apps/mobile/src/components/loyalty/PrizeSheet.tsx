@@ -118,7 +118,7 @@ function PrizeSheetBody({
                 <View style={{ gap: 8 }}>
                   <Text accessibilityRole="header" className="text-[24px] font-bold text-text-light dark:text-text-dark">Elige tu premio</Text>
                   <Text className="text-[14px] leading-[20px] text-muted-light dark:text-muted-dark">
-                    Completaste los 5 canjes. Estos comercios te regalan un premio; toca uno para ver todos los detalles.
+                    Completaste tu tarjeta. Estos comercios te regalan un premio; toca uno para ver todos los detalles.
                   </Text>
                   {days !== null ? <Countdown days={days} label={`Tienes ${days} ${plural(days, 'día', 'días')} para elegir y canjear`} /> : null}
                 </View>
