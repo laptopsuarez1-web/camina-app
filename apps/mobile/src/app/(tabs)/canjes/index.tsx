@@ -12,7 +12,7 @@ import { BenefitDetailOverlay } from '@/components/BenefitDetailOverlay';
 import { CatalogSection } from '@/components/CatalogSection';
 import Reanimated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { openLink, openWhatsapp } from '@/lib/open-link';
-import { View, ScrollView, Modal, PanResponder, Alert, Linking, Platform, RefreshControl, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Modal, PanResponder, Alert, Linking, Platform, RefreshControl, AccessibilityInfo, Image as RNImage } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { useQueryClient } from '@tanstack/react-query';
@@ -67,6 +67,10 @@ import { plural } from '@/lib/format';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Coin } from '@/components/ui/Coin';
 
+import { useMapEvents } from '@/hooks/useMapEvents';
+import { useBoostPlaces } from '@/hooks/useBoosts';
+import { EventMarker, BoostMarker, BoostZone, EventPreviewCard, EVENT_LILAC } from '@/components/canjes/MapExtras';
+import { BoostSheet } from '@/components/boost/BoostSheet';
 import { socialUrl, whatsappUrl, websiteUrl, ONLINE_CHANNEL_LABEL, onlineMessage, onlineContact, dayMonth, isBenefitAvailableNow, benefitConditions, openFullMap, openGoogleMaps, distanceMeters, MAX_SHOWN_DISTANCE_M, formatDistance, safeReviewUrl, useCountdown, businessIcon, spreadPins, glassChip, cardBorder, MapPreviewCard, BusinessMarker, CoinPrice, SORT_LABEL, OptionRow, type BusinessT, type SortBy } from '@/components/canjes/parts';
 
 // Cuánto descuenta un premio de descuento, corto para la pastilla: "-20%", "-Bs 20" o el detalle que escribió el local.
@@ -142,6 +146,13 @@ export default function CanjesScreen() {
   // Filtros extra del mapa completo: solo destacados y una categoría.
   const [onlyFeatured, setOnlyFeatured] = useState(false);
   const [mapCat, setMapCat] = useState<string | null>(null);
+  // Eventos y lugares de Pasos dobles (x2) en el mapa. Sus dos filtros muestran solo eso.
+  const { data: mapEvents } = useMapEvents();
+  const { data: boostPlaces } = useBoostPlaces();
+  const [onlyEvents, setOnlyEvents] = useState(false);
+  const [onlyBoost, setOnlyBoost] = useState(false);
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
+  const [boostSheetId, setBoostSheetId] = useState<string | null>(null);
   const favorites = useFavorites();
   const { data: redeemCounts } = useRedeemCounts();
   const favIds = favorites.ids;
@@ -158,6 +169,8 @@ export default function CanjesScreen() {
   if (!mapOpen && fullMapReady) setFullMapReady(false);
   if (!mapOpen && previewBizId) setPreviewBizId(null);
   if (!mapOpen && previewPlaceId) setPreviewPlaceId(null);
+  if (!mapOpen && previewEventId) setPreviewEventId(null);
+  if (!mapOpen && boostSheetId) setBoostSheetId(null);
   // Respaldo por si onShow no llega.
   useEffect(() => {
     if (!mapOpen) return;
@@ -419,8 +432,21 @@ export default function CanjesScreen() {
     return [...map.values()];
   }, [benefits, sinPremios]);
 
+  // Qué se ve en el mapa: con "Eventos" o "Pasos dobles" prendidos, solo eso; con un filtro de locales, solo locales.
+  const anyKindFilter = onlyEvents || onlyBoost;
+  function clearBizFilters() {
+    setOnlyOpen(false); setOnlyAfford(false); setOnlyFavs(false); setOnlyFeatured(false); setMapCat(null);
+  }
+  function clearKindFilters() {
+    setOnlyEvents(false); setOnlyBoost(false);
+  }
+  const anyBizFilter = onlyOpen || onlyAfford || onlyFavs || onlyFeatured || !!mapCat;
+  const shownEvents = useMemo(() => (anyKindFilter ? (onlyEvents ? mapEvents ?? [] : []) : anyBizFilter ? [] : mapEvents ?? []), [anyKindFilter, anyBizFilter, onlyEvents, mapEvents]);
+  const shownBoosts = useMemo(() => (anyKindFilter ? (onlyBoost ? boostPlaces ?? [] : []) : anyBizFilter ? [] : boostPlaces ?? []), [anyKindFilter, anyBizFilter, onlyBoost, boostPlaces]);
+
   // Filtros rápidos del mapa (Abierto ahora / Te alcanza / Favoritos): los pines siguen los mismos filtros que la lista.
   const mapBusinesses = useMemo(() => {
+    if (onlyEvents || onlyBoost) return [];
     if (!onlyOpen && !onlyAfford && !onlyFavs && !onlyFeatured && !mapCat) return businessesWithCoords;
     const byBiz = new Map<string, BenefitWithBusiness[]>();
     for (const b of benefits ?? []) {
@@ -437,7 +463,7 @@ export default function CanjesScreen() {
       if (mapCat && biz.category !== mapCat) return false;
       return true;
     });
-  }, [onlyOpen, onlyAfford, onlyFavs, onlyFeatured, mapCat, benefits, businessesWithCoords, balance, favIds]);
+  }, [onlyOpen, onlyAfford, onlyFavs, onlyFeatured, mapCat, onlyEvents, onlyBoost, benefits, businessesWithCoords, balance, favIds]);
 
   // Sin GPS, el mapa se centra en donde están los comercios (sirve igual para
   // Tarija que para Santa Cruz o La Paz cuando se sumen).
@@ -482,7 +508,12 @@ export default function CanjesScreen() {
       }),
     [mapBusinesses, placesByBiz, rawBizById],
   );
-  const pinItems = useMemo(() => pinEntries.map((e) => ({ id: e.key, lat: e.business.lat!, lng: e.business.lng! })), [pinEntries]);
+  // Eventos y lugares x2 entran al mismo reparto que los locales (un evento en el local no tapa su pin).
+  const pinItems = useMemo(() => [
+    ...pinEntries.map((e) => ({ id: e.key, lat: e.business.lat!, lng: e.business.lng! })),
+    ...shownEvents.map((e) => ({ id: `ev:${e.id}`, lat: e.lat, lng: e.lng })),
+    ...shownBoosts.map((p) => ({ id: `x2:${p.id}`, lat: p.lat, lng: p.lng })),
+  ], [pinEntries, shownEvents, shownBoosts]);
   const previewPins = useMemo(() => spreadPins(pinItems, mapRegion?.latitudeDelta ?? 0.045, 250), [pinItems, mapRegion]);
   const fullPins = useMemo(() => spreadPins(pinItems, fullDelta, fullMapHeight), [pinItems, fullDelta, fullMapHeight]);
 
@@ -637,6 +668,11 @@ export default function CanjesScreen() {
   const pickedPlace = placePick && placePick.biz === profileBusinessId ? profilePlaces.find((p) => p.id === placePick.place) : undefined;
   const profilePlace: Place | null = pickedPlace ?? (profileBusinessId ? (nearestByBiz.get(profileBusinessId) ?? null) : null);
   const profilePlaceId = profilePlace?.id ?? MAIN_PLACE;
+  const previewEvent = useMemo(() => (mapOpen && previewEventId ? (mapEvents ?? []).find((e) => e.id === previewEventId) ?? null : null), [mapOpen, previewEventId, mapEvents]);
+  const boostSheetPlace = useMemo(() => (mapOpen && boostSheetId ? (boostPlaces ?? []).find((p) => p.id === boostSheetId) ?? null : null), [mapOpen, boostSheetId, boostPlaces]);
+  // Hay una tarjeta abierta abajo (local o evento): se esconden la hoja de locales y el botón de centrar.
+  const mapCardOpen = !!previewGroup || !!previewEvent;
+
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
     // Con una sucursal elegida a mano, la ficha entera (dirección, horario, mapa, código) es la de esa sucursal.
@@ -878,6 +914,9 @@ export default function CanjesScreen() {
               {pinEntries.map((e) => (
                 <BusinessMarker key={e.key} business={e.business} coordinate={previewPins.get(e.key)} />
               ))}
+              {shownBoosts.map((p) => <BoostZone key={`z${p.id}`} place={p} />)}
+              {shownBoosts.map((p) => <BoostMarker key={`x2${p.id}`} place={p} coordinate={previewPins.get(`x2:${p.id}`)} />)}
+              {shownEvents.map((e) => <EventMarker key={`ev${e.id}`} event={e} coordinate={previewPins.get(`ev:${e.id}`)} />)}
             </MapView>
             )}</MapRevealBox>
           ) : (
@@ -1263,12 +1302,13 @@ export default function CanjesScreen() {
               customMapStyle={DARK_MAP_STYLE}
               showsUserLocation={hasGps}
               // El logo de Google y lo que se ve quedan arriba de la hoja de "Locales cerca tuyo".
-              mapPadding={{ top: 0, left: 0, right: 0, bottom: !previewGroup && nearbyMap.length ? (sheetOpen ? 184 : 64) + bottomInset : 0 }}
+              mapPadding={{ top: 0, left: 0, right: 0, bottom: !mapCardOpen && nearbyMap.length ? (sheetOpen ? 184 : 64) + bottomInset : 0 }}
               onLayout={(e) => setFullMapHeight(e.nativeEvent.layout.height)}
               onPress={() => {
                 // Respaldo: si igual llega el toque de un pin, no cerrar la vista previa que ese mismo toque acaba de abrir.
                 if (Date.now() - lastPinPress.current < 400) return;
                 setPreviewBizId(null);
+                setPreviewEventId(null);
               }}
               onRegionChangeComplete={(r) => {
                 fullCenter.current = r;
@@ -1285,8 +1325,35 @@ export default function CanjesScreen() {
                     // Primero una vista previa; la ficha completa se abre solo al tocarla o deslizarla hacia arriba.
                     // Con sucursales, la vista previa y la ficha muestran la sucursal del pin tocado.
                     lastPinPress.current = Date.now();
+                    setPreviewEventId(null);
                     setPreviewBizId(e.bizId);
                     setPreviewPlaceId(e.placeId);
+                  }}
+                />
+              ))}
+              {shownBoosts.map((p) => <BoostZone key={`z${p.id}`} place={p} />)}
+              {shownBoosts.map((p) => (
+                <BoostMarker
+                  key={`x2${p.id}`}
+                  place={p}
+                  coordinate={fullPins.get(`x2:${p.id}`)}
+                  onPress={() => {
+                    lastPinPress.current = Date.now();
+                    setPreviewBizId(null);
+                    setPreviewEventId(null);
+                    setBoostSheetId(p.id);
+                  }}
+                />
+              ))}
+              {shownEvents.map((e) => (
+                <EventMarker
+                  key={`ev${e.id}`}
+                  event={e}
+                  coordinate={fullPins.get(`ev:${e.id}`)}
+                  onPress={() => {
+                    lastPinPress.current = Date.now();
+                    setPreviewBizId(null);
+                    setPreviewEventId(e.id);
                   }}
                 />
               ))}
@@ -1306,6 +1373,21 @@ export default function CanjesScreen() {
                 if (previewPlaceId) setPlacePick({ biz: id, place: previewPlaceId });
                 setPreviewBizId(null);
                 runAfterClose(afterMapClose, true, () => setProfileBusinessId(id));
+                setMapOpen(false);
+              }}
+            />
+          ) : null}
+          {previewEvent ? (
+            <EventPreviewCard
+              key={previewEvent.id}
+              event={previewEvent}
+              distance={hasGps && mapRegion ? distanceMeters(mapRegion, previewEvent.lat, previewEvent.lng) : null}
+              bottomInset={bottomInset}
+              onClose={() => setPreviewEventId(null)}
+              onOpen={() => {
+                const id = previewEvent.id;
+                setPreviewEventId(null);
+                runAfterClose(afterMapClose, true, () => router.push({ pathname: '/(tabs)/eventos', params: { evento: id } }));
                 setMapOpen(false);
               }}
             />
@@ -1341,11 +1423,22 @@ export default function CanjesScreen() {
             {/* Filtros: se deslizan de costado. Te alcanza con la moneda de Camina y Favoritos con el corazón de Camina. */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginLeft: -50, marginRight: -20 }} contentContainerStyle={{ gap: 8, paddingRight: 20, paddingVertical: 4 }}>
               {([
-                { label: 'Abierto ahora', on: onlyOpen, toggle: () => setOnlyOpen((v) => !v), icon: null as React.ReactNode },
-                { label: 'Te alcanza', on: onlyAfford, toggle: () => setOnlyAfford((v) => !v), icon: <Coin size={16} /> },
-                { label: 'Favoritos', on: onlyFavs, toggle: () => setOnlyFavs((v) => !v), icon: <CaminaHeart size={15} /> },
-                { label: 'Destacados', on: onlyFeatured, toggle: () => setOnlyFeatured((v) => !v), icon: <Coin size={16} gold /> },
-                ...categories.filter((c) => c !== 'Todos').map((c) => ({ label: c, on: mapCat === c, toggle: () => setMapCat((v) => (v === c ? null : c)), icon: null as React.ReactNode })),
+                // Eventos y Pasos dobles: muestran solo eso (y apagan los filtros de locales); un filtro de locales los apaga a ellos.
+                ...((mapEvents ?? []).length ? [{ label: 'Eventos', on: onlyEvents, toggle: () => { clearBizFilters(); setOnlyEvents((v) => !v); }, icon: (
+                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: EVENT_LILAC, overflow: 'hidden', alignItems: 'center' }}>
+                    <RNImage source={require('@/../assets/baifo/festeja.webp')} resizeMode="contain" style={{ width: 14, height: 21, marginTop: 1 }} />
+                  </View>
+                ) as React.ReactNode }] : []),
+                ...((boostPlaces ?? []).length ? [{ label: 'Pasos dobles', on: onlyBoost, toggle: () => { clearBizFilters(); setOnlyBoost((v) => !v); }, icon: (
+                  <View style={{ paddingHorizontal: 5, borderRadius: 7, backgroundColor: colors.mint }}>
+                    <Text style={{ fontSize: 11, lineHeight: 16, fontWeight: '900', color: colors.mintDark }}>x2</Text>
+                  </View>
+                ) as React.ReactNode }] : []),
+                { label: 'Abierto ahora', on: onlyOpen, toggle: () => { clearKindFilters(); setOnlyOpen((v) => !v); }, icon: null as React.ReactNode },
+                { label: 'Te alcanza', on: onlyAfford, toggle: () => { clearKindFilters(); setOnlyAfford((v) => !v); }, icon: <Coin size={16} /> },
+                { label: 'Favoritos', on: onlyFavs, toggle: () => { clearKindFilters(); setOnlyFavs((v) => !v); }, icon: <CaminaHeart size={15} /> },
+                { label: 'Destacados', on: onlyFeatured, toggle: () => { clearKindFilters(); setOnlyFeatured((v) => !v); }, icon: <Coin size={16} gold /> },
+                ...categories.filter((c) => c !== 'Todos').map((c) => ({ label: c, on: mapCat === c, toggle: () => { clearKindFilters(); setMapCat((v) => (v === c ? null : c)); }, icon: null as React.ReactNode })),
               ]).map((c) => (
                 <Press
                   key={c.label}
@@ -1387,7 +1480,7 @@ export default function CanjesScreen() {
             )}
           </View>
           {/* Locales cerca tuyo: hoja abajo del mapa. Se achica tocando la barrita o deslizando hacia abajo y se esconde mientras hay un local abierto. */}
-          {previewGroup || !nearbyMap.length ? null : (
+          {mapCardOpen || !nearbyMap.length ? null : (
             // eslint-disable-next-line react-hooks/refs -- la ref solo se lee al tocar o arrastrar, no al dibujar
             <View {...sheetPan.panHandlers} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingBottom: bottomInset + 8, borderTopLeftRadius: 26, borderTopRightRadius: 26, backgroundColor: '#1d1530', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
               <Press accessibilityRole="button" accessibilityLabel={sheetOpen ? 'Achicar la lista de locales' : 'Ver locales cerca tuyo'} onPress={() => setSheetOpen((v) => !v)} feedback="none"
@@ -1432,7 +1525,7 @@ export default function CanjesScreen() {
             </View>
           )}
           {/* Tocar el logo de Google (abajo a la izquierda) abre Google Maps en la zona que se está viendo. */}
-          {!previewGroup && nearbyMap.length ? null : <Press
+          {!mapCardOpen && nearbyMap.length ? null : <Press
             accessibilityRole="link"
             accessibilityLabel="Abrir en Google Maps"
             onPress={() => {
@@ -1442,7 +1535,7 @@ export default function CanjesScreen() {
             style={{ position: 'absolute', left: 0, bottom: 0, width: 130, height: 34 + bottomInset }}
           />}
           {/* Con un local seleccionado se oculta: la hoja de vista previa ocupa ese lugar. */}
-          {previewGroup ? null : (
+          {mapCardOpen ? null : (
           <Press
             accessibilityRole="button"
             accessibilityLabel="Centrar el mapa en dónde estás"
@@ -1453,6 +1546,19 @@ export default function CanjesScreen() {
             <Locate size={22} color={colors.aquaDeep} />
           </Press>
           )}
+          {/* Ficha de un lugar de Pasos dobles: encima del mapa (no otro panel, en iPhone dos paneles juntos se traban). */}
+          {boostSheetPlace ? (
+            <BoostSheet
+              place={boostSheetPlace}
+              onClose={() => setBoostSheetId(null)}
+              onShowOnMap={() => {
+                const p = boostSheetPlace;
+                setBoostSheetId(null);
+                const d = Math.max(0.004, (p.radius_m * 4) / 111000);
+                fullMapRef.current?.animateToRegion({ latitude: p.lat, longitude: p.lng, latitudeDelta: d, longitudeDelta: d }, 500);
+              }}
+            />
+          ) : null}
         </View>
       </Modal>
 

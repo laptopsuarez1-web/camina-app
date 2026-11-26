@@ -72,6 +72,7 @@ function useMovimientos() {
         if (reason === 'referral') return 'Invitación';
         if (reason === 'redemption') return amount < 0 ? 'Canje' : 'Devolución';
         if (note?.startsWith('Reto:')) return 'Desafío Camina';
+        if (note?.startsWith('Pasos dobles:')) return 'Pasos dobles';
         if (note?.startsWith('Historia en Instagram')) return 'Historia';
         return 'Desafío de grupo';
       };
@@ -80,7 +81,7 @@ function useMovimientos() {
         day: l.ref_day ?? boliviaDay(new Date(l.earned_at)),
         reason: l.reason as string,
         title: kindOf(l.reason, l.note, l.amount),
-        subtitle: (l.note ? l.note.replace(/^Reto: /, '') : null) as string | null,
+        subtitle: (l.note ? l.note.replace(/^(Reto|Pasos dobles): /, '') : null) as string | null,
         amount: l.amount,
       }));
 

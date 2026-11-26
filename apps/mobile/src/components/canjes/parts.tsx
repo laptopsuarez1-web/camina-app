@@ -167,12 +167,13 @@ export function pinSize(featured?: boolean) {
   return { head, w: head + PIN_PAD * 2, h: head + PIN_TIP + PIN_PAD * 2 };
 }
 
-export function MapMarker({ name, logoUrl, category, featured, onLoaded }: { name: string; logoUrl?: string | null; category?: string | null; featured?: boolean; onLoaded?: () => void }) {
+// ringColor: borde de otro color (los lugares de Pasos dobles van con borde menta); badge: etiqueta arriba a la derecha ("x2").
+export function MapMarker({ name, logoUrl, category, featured, onLoaded, ringColor, badge }: { name: string; logoUrl?: string | null; category?: string | null; featured?: boolean; onLoaded?: () => void; ringColor?: string; badge?: string }) {
   const { head, w, h } = pinSize(featured);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const border = featured ? 4 : 3;
-  const ring = featured ? GOLD : '#fff';
+  const ring = ringColor ?? (featured ? GOLD : '#fff');
   const showLogo = !!logoUrl && !failed;
   const cat = categoryStyle(category);
   const CatIcon = cat.icon;
@@ -235,7 +236,12 @@ export function MapMarker({ name, logoUrl, category, featured, onLoaded }: { nam
           borderTopColor: ring,
         }}
       />
-      {featured && (
+      {badge ? (
+        <View style={{ position: 'absolute', top: 0, right: 0, paddingHorizontal: 5, borderRadius: 8, backgroundColor: ring, borderWidth: 2, borderColor: '#16101F' }}>
+          <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: '900', color: colors.mintDark }}>{badge}</Text>
+        </View>
+      ) : null}
+      {featured && !badge && (
         // Moneda dorada sola, sin círculo blanco atrás (se veía como un marco blanco alrededor).
         <View style={{ position: 'absolute', top: PIN_PAD - 5, right: PIN_PAD - 7, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}>
           <Coin size={24} gold />

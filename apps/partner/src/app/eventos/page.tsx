@@ -1,12 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase, type Promotion } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { DashboardShell, TopBar } from '@/components/DashboardShell';
 import { mensajeError } from '@/lib/errors';
 import { ImageUpload } from '@/components/ImageUpload';
 import { GalleryUpload } from '@/components/GalleryUpload';
+
+const MapPicker = dynamic(() => import('@/components/MapPicker').then((m) => m.MapPicker), {
+  ssr: false,
+  loading: () => <div className="h-[200px] rounded-[22px] border border-line bg-white" />,
+});
 
 const WHATSAPP = '59162714286';
 type Kind = 'evento' | 'desafio' | 'publicidad';
@@ -57,6 +63,8 @@ export default function EventosPage() {
   const [placeName, setPlaceName] = useState('');
   const [placeAddress, setPlaceAddress] = useState('');
   const [placeUrl, setPlaceUrl] = useState('');
+  // Punto del evento en el mapa de la app (0133). Sin marcar, el pin va donde está el local.
+  const [placePoint, setPlacePoint] = useState<{ lat: number; lng: number } | null>(null);
   const [ticketPrice, setTicketPrice] = useState('');
   const [ticketMode, setTicketMode] = useState<'whatsapp' | 'link'>('whatsapp');
   const [usePoints, setUsePoints] = useState(false);
@@ -100,7 +108,7 @@ export default function EventosPage() {
     if (!business) return;
     setSending(true);
     setMsg(null);
-    const { error } = await supabase.rpc('request_promotion_v3', {
+    const { data: created, error } = await supabase.rpc('request_promotion_v3', {
       p_business_id: business.id,
       p_kind: kind,
       p_title: title,
@@ -125,6 +133,10 @@ export default function EventosPage() {
       p_ticket_points: kind === 'evento' && usePoints ? ticketPoints : null,
       p_ticket_quota: kind === 'evento' && usePoints ? ticketQuota : null,
     });
+    if (!error && kind === 'evento' && placePoint && created) {
+      // Si esto falla, el evento igual queda creado y su pin va donde está el local.
+      await supabase.rpc('set_promotion_point', { p_id: (created as Promotion).id, p_lat: placePoint.lat, p_lng: placePoint.lng });
+    }
     setSending(false);
     if (error) {
       setMsg({ ok: false, text: mensajeError(error) });
@@ -142,6 +154,7 @@ export default function EventosPage() {
     setPrize('');
     setBgImage(null);
     setPhotos([]);
+    setPlacePoint(null);
     load();
     window.open(`https://wa.me/${WHATSAPP}?text=${text}`, '_blank', 'noopener');
   }
@@ -244,6 +257,15 @@ export default function EventosPage() {
               <input value={placeUrl} maxLength={300} onChange={(e) => setPlaceUrl(e.target.value)} placeholder="Link de Google Maps (opcional)" className={field} aria-label="Link de Google Maps" />
               <p className="text-muted text-[12px]">Si pones el link, la app muestra el botón “Cómo llegar”. En Google Maps toca Compartir y copia el link.</p>
               {badPlaceUrl && <p className="text-warn text-[12.5px]">El link tiene que empezar con https://</p>}
+              {kind === 'evento' && (
+                <>
+                  <span className="block text-[12.5px] font-semibold text-text mt-2">Punto en el mapa de Camina</span>
+                  <MapPicker value={placePoint ?? (business?.lat != null && business?.lng != null ? { lat: business.lat, lng: business.lng } : null)} onChange={setPlacePoint} />
+                  <p className="text-muted text-[12px]">
+                    {placePoint ? 'Listo: el evento sale en ese punto del mapa.' : 'Toca el mapa o arrastra el pin donde es el evento. Si no lo marcas, sale donde está tu local.'}
+                  </p>
+                </>
+              )}
             </div>
           )}
 

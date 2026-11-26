@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { PULL_SCROLL } from '@/store/useRefreshStore';
 import { PullBaifo } from '@/components/ui/PullBaifo';
@@ -36,12 +36,20 @@ export default function EventosScreen() {
   const { data: promos, isLoading: promosLoading, isError: promosError, refetch: refetchPromos } = usePromotions();
   const join = useJoinPromotion();
   const profile = useAuthStore((s) => s.profile);
-  const params = useLocalSearchParams<{ tab?: string }>();
+  const params = useLocalSearchParams<{ tab?: string; evento?: string }>();
   // Viene de Inicio con ?tab=...; si la persona toca una pestaña, manda su elección.
   const [picked, setPicked] = useState<{ from: string | undefined; tab: 'eventos' | 'desafios' } | null>(null);
   const tab = picked && picked.from === params.tab ? picked.tab : params.tab === 'desafios' ? 'desafios' : 'eventos';
   const setTab = (t: 'eventos' | 'desafios') => setPicked({ from: params.tab, tab: t });
   const [open, setOpen] = useState<PromotionItem | null>(null);
+  // Desde el mapa de Canjes: /eventos?evento=<id> abre directo la ficha de ese evento.
+  useEffect(() => {
+    if (!params.evento || !promos) return;
+    const found = promos.find((x) => x.id === params.evento);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- abre la ficha pedida por el link (no es un bucle)
+    if (found) setOpen(found);
+    router.setParams({ evento: undefined });
+  }, [params.evento, promos]);
   const { width } = useWindowDimensions();
   const cardSize = Math.min(width - 40, 380);
   const events = (promos ?? []).filter((p) => p.kind === 'evento');
