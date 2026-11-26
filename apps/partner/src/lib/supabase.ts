@@ -51,6 +51,8 @@ export interface Business {
   paused_at?: string | null;
   pause_reason?: string | null;
   is_virtual: boolean;
+  // Nombre de la sucursal principal cuando el comercio tiene más (0133).
+  branch_label?: string | null;
   promo_video_url: string | null;
   ad_eligible: boolean;
   plan_started_at: string;

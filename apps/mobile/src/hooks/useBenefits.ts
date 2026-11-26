@@ -130,9 +130,14 @@ export function useRedeemWithLocalCode() {
     },
     onSuccess: (result) => {
       if (!result.ok) return;
-      for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions', 'benefits-remaining-today', 'new-place-bonus', 'camina-card']) {
+      for (const key of ['points-balance', 'points-ledger', 'points-expiring-soon', 'redemptions', 'benefits-remaining-today', 'new-place-bonus', 'camina-card', 'benefit-branch-rules']) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
+    },
+    // Si el servidor dice que se agotaron los cupos (también los de una sucursal), se actualizan los cupos en pantalla.
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ['benefits-remaining-today'] });
+      queryClient.invalidateQueries({ queryKey: ['benefit-branch-rules'] });
     },
   });
 }

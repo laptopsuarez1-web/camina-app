@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog, Route, ShoppingBag } from 'lucide-react';
+import { Home, Gift, Receipt, Store, Stamp, CreditCard, LogOut, BarChart3, BellRing, BookOpen, LifeBuoy, PartyPopper, UsersRound, Lock, ChevronDown, UserCog, Route, ShoppingBag, Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useBusinessAuth } from '@/hooks/useBusinessAuth';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
@@ -40,6 +40,7 @@ const NAV_MAS: NavItem[] = [
   { href: '/estadisticas', label: 'Estadísticas', icon: BarChart3, planes: ['paso_firme', 'paso_adelante'] },
   { href: '/avisos', label: 'Avisos cercanos', icon: BellRing, planes: ['paso_adelante'] },
   { href: '/eventos', label: 'Desafíos y eventos', icon: PartyPopper },
+  { href: '/sucursales', label: 'Sucursales', icon: Building2 },
   { href: '/equipo', label: 'Mi equipo', icon: UsersRound },
   { href: '/plan', label: 'Plan', icon: CreditCard },
   { href: '/guia', label: 'Guía y reglas', icon: BookOpen },
@@ -129,7 +130,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       : business.account_kind === 'events_only'
         ? [NAV_MAS.find((i) => i.href === '/eventos')!, NAV_MAS.find((i) => i.href === '/tarjeta')!]
         : NAV_PRINCIPAL;
-  const navMas = NAV_MAS.filter((i) => business.account_kind !== 'events_only' || ['/equipo', '/guia', '/cuenta'].includes(i.href));
+  const navMas = NAV_MAS.filter(
+    (i) => (business.account_kind !== 'events_only' || ['/equipo', '/guia', '/cuenta'].includes(i.href)) && !(i.href === '/sucursales' && business.is_virtual),
+  );
 
   const sidebar = (
     <div className="biz-side">

@@ -20,9 +20,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown } from '@/components/icons';
+import { Search, MapPin, ChevronRight, X, Gift, Ticket, Instagram, FacebookIcon, TiktokIcon, WhatsappIcon, GlobeIcon, Locate, Navigation, MapIcon, Heart, Star, ChevronDown, Storefront } from '@/components/icons';
 import { useBenefits, useApprovedBusinesses, useBenefitsRemainingToday, useBenefitsRemainingPeriod, useOnlineRedeemed, useMyRedemptions, useRedeemBenefit, useRedeemWithLocalCode, useRegenerateCode, useCancelExpiredRedemption, type BenefitWithBusiness } from '@/hooks/useBenefits';
 import { usePointsBalance } from '@/hooks/usePoints';
+import { useBranches, useBenefitBranchRules } from '@/hooks/useBranches';
+import { placesOf, nearestPlace, atPlace, availabilityAt, MAIN_PLACE, type Place } from '@/lib/branches';
+import { BranchSheet } from '@/components/canjes/BranchSheet';
 import { PhotoViewer } from '@/components/PhotoViewer';
 import { askForReviewOnce } from '@/lib/review';
 import { rewardReview } from '@/hooks/useBadges';
@@ -88,13 +91,16 @@ export default function CanjesScreen() {
   const { muted, favorite } = useThemeColors();
   const tabSpace = useTabBarSpace();
   const profile = useAuthStore((s) => s.profile);
-  const { data: benefits, isLoading, isError, refetch } = useBenefits();
+  const { data: rawBenefits, isLoading, isError, refetch } = useBenefits();
   // Locales aprobados que todavía no cargaron ningún premio: igual salen en la lista y en el mapa.
   const { data: approvedBusinesses } = useApprovedBusinesses();
-  const sinPremios = useMemo(() => {
-    const conPremios = new Set((benefits ?? []).map((b) => b.business.id));
+  const rawSinPremios = useMemo(() => {
+    const conPremios = new Set((rawBenefits ?? []).map((b) => b.business.id));
     return (approvedBusinesses ?? []).filter((b) => !conPremios.has(b.id)) as BusinessT[];
-  }, [benefits, approvedBusinesses]);
+  }, [rawBenefits, approvedBusinesses]);
+  // Sucursales (0133): un comercio es una sola ficha; cada sucursal es un lugar más (pin propio en el mapa).
+  const { data: branchesByBiz } = useBranches();
+  const { data: branchRules } = useBenefitBranchRules();
   const { data: remainingToday } = useBenefitsRemainingToday();
   const { data: remainingPeriod } = useBenefitsRemainingPeriod();
   const { data: onlineRedeemed } = useOnlineRedeemed();
@@ -154,12 +160,15 @@ export default function CanjesScreen() {
   const [showZonePrompt, setShowZonePrompt] = useState(true);
   const [zoneInput, setZoneInput] = useState('');
   const [previewBizId, setPreviewBizId] = useState<string | null>(null);
+  // Sucursal del pin tocado (null = la más cercana).
+  const [previewPlaceId, setPreviewPlaceId] = useState<string | null>(null);
   const lastPinPress = useRef(0);
   const [mapOpen, setMapOpen] = useState(false);
   const [fullMapReady, setFullMapReady] = useState(false);
   // Cerrado el mapa completo, se vuelve a esperar a que el panel termine de abrirse la próxima vez.
   if (!mapOpen && fullMapReady) setFullMapReady(false);
   if (!mapOpen && previewBizId) setPreviewBizId(null);
+  if (!mapOpen && previewPlaceId) setPreviewPlaceId(null);
   if (!mapOpen && previewEventId) setPreviewEventId(null);
   if (!mapOpen && boostSheetId) setBoostSheetId(null);
   // Respaldo por si onShow no llega.
@@ -204,6 +213,8 @@ export default function CanjesScreen() {
   }
   function closeProfile() {
     setGalleryOpen(false);
+    setBranchesOpen(false);
+    setPlacePick(null);
     setViewerList(null);
     setDetailBenefitId(null);
     setProfileBusinessId(null);
@@ -354,6 +365,62 @@ export default function CanjesScreen() {
     })();
   }, []);
 
+  // Lugares de cada comercio (principal + sucursales), armados con la ubicación original del comercio.
+  const rawBizById = useMemo(() => {
+    const map = new Map<string, BusinessT>();
+    for (const b of rawBenefits ?? []) if (!map.has(b.business.id)) map.set(b.business.id, b.business);
+    for (const b of rawSinPremios) if (!map.has(b.id)) map.set(b.id, b);
+    return map;
+  }, [rawBenefits, rawSinPremios]);
+  const placesByBiz = useMemo(() => {
+    const map = new Map<string, Place[]>();
+    if (!branchesByBiz?.size) return map;
+    for (const [id, biz] of rawBizById) {
+      const brs = branchesByBiz.get(id);
+      if (brs?.length) map.set(id, placesOf(biz, brs));
+    }
+    return map;
+  }, [rawBizById, branchesByBiz]);
+  // Los buscadores también encuentran un comercio por el nombre o la dirección de cualquiera de sus sucursales.
+  const branchSearch = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const [id, places] of placesByBiz) map.set(id, places.map((p) => `${p.label} ${p.address ?? ''}`).join(' '));
+    return map;
+  }, [placesByBiz]);
+  // Dónde está la persona (solo con GPS real): para elegir la sucursal más cercana de cada comercio.
+  const userPos = useMemo(
+    () => (hasGps && baseRegion ? { latitude: baseRegion.latitude, longitude: baseRegion.longitude } : null),
+    [hasGps, baseRegion],
+  );
+  // Cada comercio con sucursales se muestra en la lista, la ficha y "Cómo llegar" con su sucursal más cercana.
+  // Los comercios sin sucursales quedan exactamente iguales (mismos objetos).
+  const nearestByBiz = useMemo(() => {
+    const map = new Map<string, Place>();
+    for (const [id, places] of placesByBiz) {
+      const p = nearestPlace(places, userPos);
+      if (p) map.set(id, p);
+    }
+    return map;
+  }, [placesByBiz, userPos]);
+  const benefits = useMemo(() => {
+    if (!rawBenefits || nearestByBiz.size === 0) return rawBenefits;
+    const seen = new Map<string, BusinessT>();
+    return rawBenefits.map((b) => {
+      const place = nearestByBiz.get(b.business.id);
+      if (!place) return b;
+      let biz = seen.get(b.business.id);
+      if (!biz) {
+        biz = atPlace(b.business, place);
+        seen.set(b.business.id, biz);
+      }
+      return biz === b.business ? b : { ...b, business: biz };
+    });
+  }, [rawBenefits, nearestByBiz]);
+  const sinPremios = useMemo(
+    () => (nearestByBiz.size === 0 ? rawSinPremios : rawSinPremios.map((b) => atPlace(b, nearestByBiz.get(b.id) ?? null))),
+    [rawSinPremios, nearestByBiz],
+  );
+
   const businessesWithCoords = useMemo(() => {
     const map = new Map<string, BusinessT>();
     for (const b of benefits ?? []) {
@@ -430,12 +497,23 @@ export default function CanjesScreen() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- se reinicia el estado al cambiar el dato de entrada (no es un bucle)
     if (mapRegion) setFullDelta(mapRegion.latitudeDelta);
   }, [mapRegion]);
+  // Un pin por sucursal: los comercios sin sucursales tienen un solo pin con su id (igual que siempre).
+  const pinEntries = useMemo(
+    () =>
+      mapBusinesses.flatMap((b) => {
+        const places = placesByBiz.get(b.id);
+        const raw = rawBizById.get(b.id);
+        if (!places || places.length < 2 || !raw) return [{ key: b.id, bizId: b.id, placeId: null as string | null, business: b }];
+        return places.map((p) => ({ key: `${b.id}:${p.id}`, bizId: b.id, placeId: p.id as string | null, business: atPlace(raw, p) }));
+      }),
+    [mapBusinesses, placesByBiz, rawBizById],
+  );
   // Eventos y lugares x2 entran al mismo reparto que los locales (un evento en el local no tapa su pin).
   const pinItems = useMemo(() => [
-    ...mapBusinesses.map((b) => ({ id: b.id, lat: b.lat!, lng: b.lng! })),
+    ...pinEntries.map((e) => ({ id: e.key, lat: e.business.lat!, lng: e.business.lng! })),
     ...shownEvents.map((e) => ({ id: `ev:${e.id}`, lat: e.lat, lng: e.lng })),
     ...shownBoosts.map((p) => ({ id: `x2:${p.id}`, lat: p.lat, lng: p.lng })),
-  ], [mapBusinesses, shownEvents, shownBoosts]);
+  ], [pinEntries, shownEvents, shownBoosts]);
   const previewPins = useMemo(() => spreadPins(pinItems, mapRegion?.latitudeDelta ?? 0.045, 250), [pinItems, mapRegion]);
   const fullPins = useMemo(() => spreadPins(pinItems, fullDelta, fullMapHeight), [pinItems, fullDelta, fullMapHeight]);
 
@@ -472,9 +550,9 @@ export default function CanjesScreen() {
     const q = mapSearch.trim().toLowerCase();
     if (!q) return [];
     return businessesWithCoords
-      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q))
+      .filter((b) => (b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ') + ' ' + (branchSearch.get(b.id) ?? '')).toLowerCase().includes(q))
       .slice(0, 6);
-  }, [mapSearch, businessesWithCoords]);
+  }, [mapSearch, businessesWithCoords, branchSearch]);
 
   // Lo que se está viendo en el mapa completo (para abrir Google Maps en la misma zona).
   const fullCenter = useRef<{ latitude: number; longitude: number; latitudeDelta: number } | null>(null);
@@ -537,13 +615,13 @@ export default function CanjesScreen() {
     const map = new Map<string, { business: BusinessT; benefits: BenefitWithBusiness[] }>();
     for (const b of benefits ?? []) {
       if (category !== 'Todos' && b.business.category !== category) continue;
-      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '') + ' ' + ((b.business as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q)) continue;
+      if (q && !(b.business.name + ' ' + b.name + ' ' + b.business.category + ' ' + (b.business.address ?? '') + ' ' + ((b.business as { keywords?: string[] | null }).keywords ?? []).join(' ') + ' ' + (branchSearch.get(b.business.id) ?? '')).toLowerCase().includes(q)) continue;
       if (!map.has(b.business.id)) map.set(b.business.id, { business: b.business, benefits: [] });
       map.get(b.business.id)!.benefits.push(b);
     }
     for (const b of sinPremios) {
       if (category !== 'Todos' && b.category !== category) continue;
-      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ')).toLowerCase().includes(q)) continue;
+      if (q && !(b.name + ' ' + b.category + ' ' + (b.address ?? '') + ' ' + ((b as { keywords?: string[] | null }).keywords ?? []).join(' ') + ' ' + (branchSearch.get(b.id) ?? '')).toLowerCase().includes(q)) continue;
       map.set(b.id, { business: b, benefits: [] });
     }
     let list = [...map.values()].map((g) => ({
@@ -563,13 +641,17 @@ export default function CanjesScreen() {
     if (sortBy === 'cerca') return rankLocales(list, (g) => g.distance, (g) => isFeatured(g.business), (g) => g.business.name);
     list.sort((a, b) => Number(isFeatured(b.business)) - Number(isFeatured(a.business)) || a.business.name.localeCompare(b.business.name));
     return list;
-  }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion]);
+  }, [benefits, sinPremios, category, search, onlyOpen, onlyFavs, onlyAfford, balance, sortBy, favIds, hasGps, mapRegion, branchSearch]);
   // La vista previa no depende de los filtros de la lista (categoría, búsqueda): si el pin está en el mapa, la tarjeta tiene que abrirse.
   const previewGroup = useMemo(() => {
     if (!mapOpen || !previewBizId) return null;
     const bs = (benefits ?? []).filter((b) => b.business.id === previewBizId);
-    const business = bs[0]?.business ?? sinPremios.find((b) => b.id === previewBizId);
-    if (!business) return null;
+    const nearest = bs[0]?.business ?? sinPremios.find((b) => b.id === previewBizId);
+    if (!nearest) return null;
+    // Pin de una sucursal: la vista previa muestra esa sucursal (dirección y distancia).
+    const pinPlace = previewPlaceId ? placesByBiz.get(previewBizId)?.find((p) => p.id === previewPlaceId) : undefined;
+    const raw = rawBizById.get(previewBizId);
+    const business = pinPlace && raw ? atPlace(raw, pinPlace) : nearest;
     const hasGeo = hasGps && mapRegion && business.lat != null && business.lng != null;
     return {
       business,
@@ -577,8 +659,15 @@ export default function CanjesScreen() {
       openNow: bs.some(isBenefitAvailableNow),
       distance: hasGeo ? distanceMeters(mapRegion!, business.lat!, business.lng!) : null,
     };
-  }, [mapOpen, previewBizId, benefits, sinPremios, hasGps, mapRegion]);
+  }, [mapOpen, previewBizId, previewPlaceId, placesByBiz, rawBizById, benefits, sinPremios, hasGps, mapRegion]);
 
+  // Sucursal elegida en la ficha (desde "Seleccionar sucursal" o desde el pin tocado). Sin elegir: la más cercana.
+  const [placePick, setPlacePick] = useState<{ biz: string; place: string } | null>(null);
+  const [branchesOpen, setBranchesOpen] = useState(false);
+  const profilePlaces = useMemo(() => (profileBusinessId ? (placesByBiz.get(profileBusinessId) ?? []) : []), [placesByBiz, profileBusinessId]);
+  const pickedPlace = placePick && placePick.biz === profileBusinessId ? profilePlaces.find((p) => p.id === placePick.place) : undefined;
+  const profilePlace: Place | null = pickedPlace ?? (profileBusinessId ? (nearestByBiz.get(profileBusinessId) ?? null) : null);
+  const profilePlaceId = profilePlace?.id ?? MAIN_PLACE;
   const previewEvent = useMemo(() => (mapOpen && previewEventId ? (mapEvents ?? []).find((e) => e.id === previewEventId) ?? null : null), [mapOpen, previewEventId, mapEvents]);
   const boostSheetPlace = useMemo(() => (mapOpen && boostSheetId ? (boostPlaces ?? []).find((p) => p.id === boostSheetId) ?? null : null), [mapOpen, boostSheetId, boostPlaces]);
   // Hay una tarjeta abierta abajo (local o evento): se esconden la hoja de locales y el botón de centrar.
@@ -586,11 +675,28 @@ export default function CanjesScreen() {
 
   const profileGroup = useMemo(() => {
     if (!profileBusinessId) return null;
+    // Con una sucursal elegida a mano, la ficha entera (dirección, horario, mapa, código) es la de esa sucursal.
+    const raw = pickedPlace ? rawBizById.get(profileBusinessId) : undefined;
+    const chosen = raw && pickedPlace ? atPlace(raw, pickedPlace) : null;
     const list = (benefits ?? []).filter((b) => b.business.id === profileBusinessId);
-    if (list.length) return { business: list[0].business, benefits: list };
+    if (list.length) {
+      const business = chosen ?? list[0].business;
+      return { business, benefits: chosen ? list.map((b) => ({ ...b, business })) : list };
+    }
     const sola = sinPremios.find((b) => b.id === profileBusinessId);
-    return sola ? { business: sola, benefits: [] as BenefitWithBusiness[] } : null;
-  }, [benefits, sinPremios, profileBusinessId]);
+    return sola ? { business: chosen ?? sola, benefits: [] as BenefitWithBusiness[] } : null;
+  }, [benefits, sinPremios, profileBusinessId, pickedPlace, rawBizById]);
+  // Premios por sucursal: cuántos valen en cada una (solo si el comercio eligió sucursales en algún premio).
+  const prizesAtPlace = useMemo(() => {
+    if (!profileGroup || profilePlaces.length < 2 || !branchRules?.rules.size) return null;
+    const physical = profileGroup.benefits.filter((b) => !b.online);
+    if (!physical.some((b) => branchRules.rules.has(b.id))) return null;
+    const map = new Map<string, number>();
+    for (const p of profilePlaces) {
+      map.set(p.id, physical.filter((b) => availabilityAt(branchRules.rules.get(b.id), p.id, profilePlaces).kind !== 'elsewhere').length);
+    }
+    return map;
+  }, [profileGroup, profilePlaces, branchRules]);
   const [hoursOpen, setHoursOpen] = useState(false);
   const profileDistance =
     profileGroup && hasGps && mapRegion && profileGroup.business.lat != null && profileGroup.business.lng != null
@@ -805,8 +911,8 @@ export default function CanjesScreen() {
               rotateEnabled={false}
               toolbarEnabled={false}
             >
-              {mapBusinesses.map((b) => (
-                <BusinessMarker key={b.id} business={b} coordinate={previewPins.get(b.id)} />
+              {pinEntries.map((e) => (
+                <BusinessMarker key={e.key} business={e.business} coordinate={previewPins.get(e.key)} />
               ))}
               {shownBoosts.map((p) => <BoostZone key={`z${p.id}`} place={p} />)}
               {shownBoosts.map((p) => <BoostMarker key={`x2${p.id}`} place={p} coordinate={previewPins.get(`x2:${p.id}`)} />)}
@@ -1086,7 +1192,10 @@ export default function CanjesScreen() {
                         <Text className="text-[16px] font-bold text-text-light dark:text-text-dark shrink" numberOfLines={1}>{g.business.name}</Text>
                         {featured && <GoldBadge size={18} />}
                       </View>
-                      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">{g.business.category}</Text>
+                      <Text className="text-[12.5px] text-muted-light dark:text-muted-dark mt-0.5">
+                        {g.business.category}
+                        {(placesByBiz.get(g.business.id)?.length ?? 0) > 1 ? ` · ${placesByBiz.get(g.business.id)!.length} sucursales` : ''}
+                      </Text>
                       {g.business.address ? (
                         <View className="flex-row items-center mt-1.5" style={{ gap: 5 }}>
                           <MapPin size={12} color={isDark ? colors.aqua : colors.aquaDeep} />
@@ -1206,17 +1315,19 @@ export default function CanjesScreen() {
                 setFullDelta((d) => (Math.abs(d - r.latitudeDelta) / d > 0.15 ? r.latitudeDelta : d));
               }}
             >
-              {mapBusinesses.map((b) => (
+              {pinEntries.map((e) => (
                 <BusinessMarker
-                  key={b.id}
-                  business={b}
-                  coordinate={fullPins.get(b.id)}
+                  key={e.key}
+                  business={e.business}
+                  coordinate={fullPins.get(e.key)}
                   onPress={() => {
                     // El mapa no se mueve ni cambia de zoom al tocar un local.
                     // Primero una vista previa; la ficha completa se abre solo al tocarla o deslizarla hacia arriba.
+                    // Con sucursales, la vista previa y la ficha muestran la sucursal del pin tocado.
                     lastPinPress.current = Date.now();
                     setPreviewEventId(null);
-                    setPreviewBizId(b.id);
+                    setPreviewBizId(e.bizId);
+                    setPreviewPlaceId(e.placeId);
                   }}
                 />
               ))}
@@ -1259,6 +1370,7 @@ export default function CanjesScreen() {
               onClose={() => setPreviewBizId(null)}
               onOpen={() => {
                 const id = previewGroup.business.id;
+                if (previewPlaceId) setPlacePick({ biz: id, place: previewPlaceId });
                 setPreviewBizId(null);
                 runAfterClose(afterMapClose, true, () => setProfileBusinessId(id));
                 setMapOpen(false);
@@ -1385,7 +1497,7 @@ export default function CanjesScreen() {
                     const featured = isFeatured(x.business);
                     return (
                       <Press key={x.business.id} accessibilityRole="button" accessibilityLabel={`${x.business.name}, ${x.business.category}`}
-                        onPress={() => { focusBusiness(x.business); lastPinPress.current = Date.now(); setPreviewBizId(x.business.id); }}
+                        onPress={() => { focusBusiness(x.business); lastPinPress.current = Date.now(); setPreviewBizId(x.business.id); setPreviewPlaceId(null); }}
                         style={{ width: 236, padding: 12, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: featured ? 1.5 : 1, borderColor: featured ? GOLD : 'rgba(255,255,255,0.1)' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           {businessIcon(x.business.name, 46, x.business.logo_url, x.business.category, featured)}
@@ -1497,7 +1609,15 @@ export default function CanjesScreen() {
                   <>
                     {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. */}
                     <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ position: 'absolute', right: 20, top: 0 }} />
-                    {hoursOpen ? <HoursSheet openingHours={profileGroup.business.opening_hours} visible onClose={() => setHoursOpen(false)} /> : null}
+                    {hoursOpen ? (
+                      <HoursSheet
+                        openingHours={profileGroup.business.opening_hours}
+                        visible
+                        onClose={() => setHoursOpen(false)}
+                        places={profilePlaces.map((p) => ({ id: p.id, label: p.label, address: p.address, openingHours: p.opening_hours }))}
+                        initialPlaceId={profilePlaceId}
+                      />
+                    ) : null}
                   </>
                 ) : null}
                 {profileDistance != null && profileDistance < MAX_SHOWN_DISTANCE_M ? (
@@ -1522,6 +1642,48 @@ export default function CanjesScreen() {
                   <Text className="text-[13px] font-semibold text-aqua-ink dark:text-aqua mt-1">
                     {redeemCounts![profileGroup.business.id].toLocaleString('es-BO')} {plural(redeemCounts![profileGroup.business.id], 'canje', 'canjes')} en este local
                   </Text>
+                ) : null}
+
+                {profilePlaces.length > 1 && profilePlace ? (
+                  <>
+                    <Press
+                      accessibilityRole="button"
+                      accessibilityLabel={`Sucursal ${profilePlace.label}. Ver las ${profilePlaces.length} sucursales`}
+                      onPress={() => setBranchesOpen(true)}
+                      className="flex-row items-center border rounded-2xl mt-3"
+                      style={{ gap: 10, paddingVertical: 10, paddingHorizontal: 12, ...glassChip(isDark) }}
+                    >
+                      <View className="bg-aqua-light-light dark:bg-aqua-light-dark items-center justify-center" style={{ width: 34, height: 34, borderRadius: 12 }}>
+                        <Storefront size={18} color={isDark ? colors.mint : colors.aquaDeep} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[12px] text-muted-light dark:text-muted-dark">
+                          {pickedPlace ? 'Sucursal elegida' : userPos ? 'Sucursal más cercana' : 'Sucursal'}
+                        </Text>
+                        <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark" numberOfLines={1}>{profilePlace.label}</Text>
+                      </View>
+                      <Text className="text-[13px] font-bold text-aqua-ink dark:text-mint">Ver las {profilePlaces.length}</Text>
+                      <ChevronDown size={16} color={isDark ? colors.mint : colors.aquaDeep} />
+                    </Press>
+                    {branchesOpen ? (
+                      <BranchSheet
+                        visible
+                        businessName={profileGroup.business.name}
+                        category={profileGroup.business.category}
+                        logoUrl={profileGroup.business.logo_url}
+                        featured={isFeatured(profileGroup.business)}
+                        places={profilePlaces}
+                        selectedId={profilePlaceId}
+                        pos={userPos}
+                        prizesAt={prizesAtPlace}
+                        onSelect={(placeId) => {
+                          setPlacePick({ biz: profileGroup.business.id, place: placeId });
+                          setBranchesOpen(false);
+                        }}
+                        onClose={() => setBranchesOpen(false)}
+                      />
+                    ) : null}
+                  </>
                 ) : null}
 
                 {profileGroup.business.description ? (
@@ -1673,24 +1835,32 @@ export default function CanjesScreen() {
                                 return r.status === 'pending' && new Date(r.code_expires_at.replace(/(\.\d{3})\d+/, '$1')).getTime() > Date.now();
                               })
                             : undefined;
-                          const outOfStock = !unlimited && remaining <= 0;
+                          // Premios por sucursal (0133): si el comercio lo eligió solo para algunas sucursales, vale solo ahí,
+                          // y cada sucursal puede tener sus cupos de hoy. Los online no dependen de la sucursal.
+                          const atBranch = b.online ? ({ kind: 'all' } as const) : availabilityAt(branchRules?.rules.get(b.id), profilePlaceId, profilePlaces, branchRules?.usedToday.get(b.id));
+                          const notHere = atBranch.kind === 'elsewhere';
+                          const branchLeft = atBranch.kind === 'here' ? atBranch.remainingToday : null;
+                          const branchBinds = branchLeft != null && branchLeft <= remaining;
+                          const left = branchLeft != null ? Math.min(remaining, branchLeft) : remaining;
+                          const limited = !unlimited || branchLeft != null;
+                          const outOfStock = limited && left <= 0;
                           // Premio de la tarjeta de fidelidad de Camina (el local participa) y, si la persona lo eligió con su tarjeta completa, sale gratis (0 Puntos).
                           const isLoyaltyPrize = profileGroup.business.loyalty_benefit_id === b.id;
                           const freeByCard = cardPrizeId === b.id;
                           const cost = freeByCard ? 0 : b.cost_points;
                           const canAfford = (balance ?? 0) >= cost;
-                          const canRedeem = !!myPending || (canAfford && available && !outOfStock);
+                          const canRedeem = !!myPending || (canAfford && available && !outOfStock && !notHere);
                           const redeeming = redeem.isPending && redeem.variables === b.id;
                           // Cuánto falta en días, caminando la meta diaria (1 Punto cada 1.000 pasos, hasta el tope del día).
                           const missing = Math.max(0, cost - (balance ?? 0));
                           const perDay = Math.min(Math.max(1, Math.floor(Math.max(profile?.daily_goal ?? DEFAULT_DAILY_GOAL, MIN_DAILY_GOAL) / POINTS_PER_STEP_UNIT)), DAILY_POINTS_CAP);
-                          const daysToAfford = balance !== undefined && missing > 0 && available && !outOfStock && !myPending ? Math.ceil(missing / perDay) : 0;
-                          const note = myPending ? null : !available ? 'Fuera de horario' : outOfStock ? (b.online ? 'Sin cupos' : 'Sin cupones hoy') : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : `Te faltan ${cost - (balance ?? 0)} ${plural(cost - (balance ?? 0), 'Punto', 'Puntos')}`) : null;
+                          const daysToAfford = balance !== undefined && missing > 0 && available && !outOfStock && !notHere && !myPending ? Math.ceil(missing / perDay) : 0;
+                          const note = myPending ? null : notHere ? 'No está en esta sucursal' : !available ? 'Fuera de horario' : outOfStock ? (b.online ? 'Sin cupos' : branchBinds ? 'Sin cupones hoy en esta sucursal' : 'Sin cupones hoy') : !canAfford ? (balance === undefined ? (balanceError ? 'No pudimos ver tus Puntos' : 'Cargando tus Puntos…') : `Te faltan ${cost - (balance ?? 0)} ${plural(cost - (balance ?? 0), 'Punto', 'Puntos')}`) : null;
                           return (
                             <Glass
                               key={b.id}
                               className="rounded-3xl p-3.5"
-                              style={{ opacity: available && !outOfStock ? 1 : 0.7 }}
+                              style={{ opacity: available && !outOfStock && !notHere ? 1 : 0.7 }}
                             >
                               <Press
                                 accessibilityRole="button"
@@ -1736,8 +1906,13 @@ export default function CanjesScreen() {
                                   ) : null}
                                   <View className="flex-row items-center mt-2" style={{ gap: 8 }}>
                                     <CoinPrice cost={cost} was={freeByCard ? b.cost_points : undefined} dim={!canRedeem} />
-                                    {!unlimited && !outOfStock && available ? (
-                                      <View style={{ flexShrink: 1 }}>{remaining === 1 ? <Text className="text-[12px] font-extrabold text-warn-deep dark:text-warn-soft">¡Último cupón!</Text> : null}<Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(remaining, 'Queda', 'Quedan')} {remaining} {b.online ? plural(remaining, 'cupo', 'cupos') : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === remaining ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === remaining ? 'esta semana' : 'este mes')}</Text></View>
+                                    {limited && !outOfStock && !notHere && available ? (
+                                      <View style={{ flexShrink: 1 }}>{left === 1 ? <Text className="text-[12px] font-extrabold text-warn-deep dark:text-warn-soft">¡Último cupón!</Text> : null}<Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark">{plural(left, 'Queda', 'Quedan')} {left} {b.online ? plural(left, 'cupo', 'cupos') : branchBinds ? 'hoy en esta sucursal' : (b.daily_quota != null && Math.max(0, b.daily_quota - (remainingToday?.get(b.id) ?? 0)) === left ? 'hoy' : b.weekly_quota != null && Math.max(0, b.weekly_quota - (remainingPeriod?.get(b.id)?.week ?? 0)) === left ? 'esta semana' : 'este mes')}</Text></View>
+                                    ) : null}
+                                    {notHere && atBranch.kind === 'elsewhere' && atBranch.labels.length ? (
+                                      <Text className="text-[12px] font-semibold text-muted-light dark:text-muted-dark" style={{ flexShrink: 1 }} numberOfLines={2}>
+                                        Solo en {atBranch.labels.join(', ')}
+                                      </Text>
                                     ) : null}
                                   </View>
                                 </View>
@@ -1790,7 +1965,8 @@ export default function CanjesScreen() {
                       {/* Con las fotos abiertas encima, este mapa se desmonta (ver la vista previa del mapa). */}
                       {galleryOpen ? null : (
                       <MapView
-                        key={profileGroup.business.id}
+                        // Al cambiar de sucursal se vuelve a armar el mapa (initialRegion solo vale al montarlo).
+                        key={`${profileGroup.business.id}:${profileGroup.business.lat},${profileGroup.business.lng}`}
                         provider={PROVIDER_GOOGLE}
                         style={{ flex: 1 }}
                         initialRegion={{
@@ -1814,7 +1990,10 @@ export default function CanjesScreen() {
                       <View // Se agranda un 3 %: algunas fotos subidas traen un borde oscuro de 1-3 px y así no se ve ninguna franja dentro del aro.
                         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, transform: [{ scale: 1.03 }] }} />
                     </Press>
-                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">{profileGroup.business.name}</Text>
+                    <Text className="text-[15px] font-bold text-text-light dark:text-text-dark mt-3">
+                      {profileGroup.business.name}
+                      {profilePlaces.length > 1 && profilePlace ? ` · ${profilePlace.label}` : ''}
+                    </Text>
                     {profileGroup.business.address ? (
                       <Text className="text-[13px] leading-[18px] text-muted-light dark:text-muted-dark mt-0.5">{profileGroup.business.address}</Text>
                     ) : null}
