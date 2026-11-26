@@ -35,7 +35,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { BusinessHours } from '@/components/BusinessHours';
+import { BusinessHours, HoursCoverChip, HoursSheet } from '@/components/BusinessHours';
 import { shareCoarseLocation } from '@/lib/coarse-location';
 import type { Redemption } from '@/lib/database.types';
 import { colors } from '@/theme/tokens';
@@ -217,6 +217,17 @@ export default function CanjesScreen() {
   const [shownId, setShownId] = useState<string | null>(null);
   const confirmed = !!activeId && confirmedId === activeId;
   const answered = !!activeId && answeredId === activeId;
+  // Al cerrar un canje confirmado se refrescan las insignias: si subiste de nivel en el local, aparece el festejo
+  // (después del canje, para no taparlo).
+  const lastConfirmedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (activeId && confirmedId === activeId) { lastConfirmedRef.current = activeId; return; }
+    if (!activeId && lastConfirmedRef.current) {
+      lastConfirmedRef.current = null;
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+      queryClient.invalidateQueries({ queryKey: ['level'] });
+    }
+  }, [activeId, confirmedId, queryClient]);
   // El final del canje va de a una pantalla: confirmado, compra extra, reseña y historia.
   type Paso = 'ok' | 'resena' | 'historia';
   const [pasoDe, setPasoDe] = useState<{ id: string | null; paso: Paso }>({ id: null, paso: 'ok' });
@@ -544,6 +555,11 @@ export default function CanjesScreen() {
     const sola = sinPremios.find((b) => b.id === profileBusinessId);
     return sola ? { business: sola, benefits: [] as BenefitWithBusiness[] } : null;
   }, [benefits, sinPremios, profileBusinessId]);
+  const [hoursOpen, setHoursOpen] = useState(false);
+  const profileDistance =
+    profileGroup && hasGps && mapRegion && profileGroup.business.lat != null && profileGroup.business.lng != null
+      ? distanceMeters(mapRegion, profileGroup.business.lat, profileGroup.business.lng)
+      : null;
   const profileOpenRef = useRef(false);
   useEffect(() => {
     profileOpenRef.current = !!profileGroup;
@@ -1353,7 +1369,7 @@ export default function CanjesScreen() {
                   <View
                     pointerEvents="none"
                     className="absolute flex-row items-center rounded-full"
-                    style={{ right: 16, bottom: 46, gap: 5, backgroundColor: 'rgba(18,10,30,0.62)', paddingHorizontal: 11, paddingVertical: 6 }}
+                    style={{ right: 16, top: 58, gap: 5, backgroundColor: 'rgba(18,10,30,0.62)', paddingHorizontal: 11, paddingVertical: 6 }}
                   >
                     <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>{galleryPhotos.length} fotos</Text>
                   </View>
@@ -1371,6 +1387,18 @@ export default function CanjesScreen() {
 
               <View className="px-5" style={{ marginTop: -36 }}>
                 {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
+                {profileGroup.business.opening_hours ? (
+                  <>
+                    {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. */}
+                    <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ position: 'absolute', right: 20, top: 0 }} />
+                    {hoursOpen ? <HoursSheet openingHours={profileGroup.business.opening_hours} visible onClose={() => setHoursOpen(false)} /> : null}
+                  </>
+                ) : null}
+                {profileDistance != null && profileDistance < MAX_SHOWN_DISTANCE_M ? (
+                  <Text className="absolute text-[14px] text-muted-light dark:text-muted-dark" style={{ right: 20, top: 52 }}>
+                    Estás a <Text className="font-extrabold text-text-light dark:text-text-dark">{formatDistance(profileDistance)}</Text>
+                  </Text>
+                ) : null}
                 <View className="flex-row items-center justify-between mt-3">
                   <View className="flex-1 flex-row items-center" style={{ gap: 8 }}>
                     <Text className="text-[24px] font-extrabold text-text-light dark:text-text-dark shrink" style={{ letterSpacing: -0.5 }}>
@@ -1394,7 +1422,6 @@ export default function CanjesScreen() {
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
-                <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <LegendCard businessId={profileGroup.business.id} />
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
@@ -1415,7 +1442,9 @@ export default function CanjesScreen() {
                       <Text className="text-[12.5px] font-semibold text-aqua-ink dark:text-aqua">{profileGroup.business.address}</Text>
                     </Press>
                   ) : null}
-                  <BusinessHours openingHours={profileGroup.business.opening_hours} hoursText={profileGroup.business.hours_text} />
+                  {!profileGroup.business.opening_hours ? (
+                    <BusinessHours openingHours={null} hoursText={profileGroup.business.hours_text} />
+                  ) : null}
                   {profileGroup.business.instagram ? (
                     <Press
                       accessibilityRole="link"
@@ -1495,6 +1524,7 @@ export default function CanjesScreen() {
                   </View>
                 ) : null}
 
+                <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <CatalogSection businessId={profileGroup.business.id} onOpenImages={(list, i) => openViewer(list, i)} />
 
                 {profileGroup.benefits.length === 0 ? (

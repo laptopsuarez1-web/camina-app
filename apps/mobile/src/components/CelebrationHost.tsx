@@ -13,6 +13,7 @@ import { buzz } from '@/lib/haptics';
 import { ChallengeEndedScene, ChallengeJoinedScene } from '@/components/challenge/ChallengeCinematics';
 import { BurstFx, ConfettiCannons } from '@/components/celebrations/Effects';
 import { RutaDoneScene, RutaStopDoneScene } from '@/components/ruta/RutaDoneScene';
+import { LevelUpScene } from '@/components/celebrations/LevelUpScene';
 import { EventJoinedScene, FriendMadeScene, TicketBoughtScene } from '@/components/celebrations/MomentScenes';
 import { GroupCreatedScene, GroupGoalScene, GroupJoinedScene, GroupWeekScene, RankingResultScene, StreakScene, StreakWeekScene } from '@/components/celebrations/RingScenes';
 
@@ -280,6 +281,7 @@ export function CelebrationHost() {
       {current.kind === 'group-week' && <GroupWeekScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ruta-done' && <RutaDoneScene key={current.id} c={current} onDone={dismiss} />}
       {current.kind === 'ruta-stop' && <RutaStopDoneScene key={current.id} c={current} onDone={dismiss} />}
+      {current.kind === 'level-up' && <LevelUpScene key={current.id} c={current} onDone={dismiss} />}
     </View>
   );
 }

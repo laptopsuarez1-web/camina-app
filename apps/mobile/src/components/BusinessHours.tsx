@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Modal, Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp } from '@/components/icons';
@@ -112,5 +115,88 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
         </Glass>
       )}
     </View>
+  );
+}
+
+// Estado del chip sobre la portada: abierto con el tramo en curso, o cerrado con el horario de hoy.
+export function hoursChipInfo(week: NonNullable<OpeningHours>) {
+  const h = week[String(todayIndex())] ?? null;
+  if (!h) return { open: false, label: 'Cerrado', hours: 'hoy' };
+  if (isOpenNow(h)) {
+    const now = new Date().toTimeString().slice(0, 5);
+    const r = ranges(h).find(([a, b]) => inRange(now, a, b)) ?? ranges(h)[0];
+    return { open: true, label: 'Abierto', hours: `${r[0]} – ${r[1]}` };
+  }
+  return { open: false, label: 'Cerrado', hours: `hoy ${rangesText(h)}` };
+}
+
+const LIQUID = Platform.OS === 'ios' && isLiquidGlassAvailable();
+const WEB_BLUR = Platform.OS === 'web' ? ({ backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)' } as unknown as ViewStyle) : null;
+
+// Chip de horario de vidrio sobre la portada (estilo Pasito): punto de estado + "Abierto · 08:00 – 23:00".
+// En iOS 26 usa el vidrio líquido del sistema; en iOS anterior, desenfoque; en web, backdrop-filter; en Android, velo translúcido.
+// Al tocarlo se abre la hoja con los 7 días.
+export function HoursCoverChip({ openingHours, onPress, style }: { openingHours: NonNullable<OpeningHours>; onPress: () => void; style?: StyleProp<ViewStyle> }) {
+  const { open, label, hours } = hoursChipInfo(openingHours);
+  const dot = open ? '#62F0B6' : '#FF8A8A';
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={`${label}, ${hours}. Ver todos los horarios`}
+      onPress={onPress}
+      style={[{ borderRadius: 999, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 4 }, style]}
+    >
+      <View style={[{ borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', borderBottomColor: 'rgba(255,255,255,0.08)' }, WEB_BLUR]}>
+        {LIQUID ? (
+          <GlassView glassEffectStyle="regular" colorScheme="dark" pointerEvents="none" style={StyleSheet.absoluteFill} />
+        ) : Platform.OS === 'ios' ? (
+          <BlurView intensity={40} tint="dark" pointerEvents="none" style={StyleSheet.absoluteFill} />
+        ) : null}
+        {!LIQUID && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: Platform.OS === 'android' ? 'rgba(24,14,40,0.72)' : 'rgba(24,14,40,0.38)' }]} />}
+        <View className="flex-row items-center" style={{ gap: 7, paddingLeft: 12, paddingRight: 10, paddingVertical: 8 }}>
+          <View style={{ width: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: open ? 'rgba(98,240,182,0.25)' : 'rgba(255,138,138,0.22)' }}>
+            <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: dot }} />
+          </View>
+          <Text allowFontScaling={false} style={{ color: '#fff', fontSize: 13.5 }}>
+            <Text allowFontScaling={false} style={{ color: open ? '#62F0B6' : '#FFB4B4', fontWeight: '800' }}>{label}</Text>
+            <Text allowFontScaling={false} style={{ color: 'rgba(255,255,255,0.55)' }}>{'  ·  '}</Text>
+            <Text allowFontScaling={false} style={{ color: '#fff', fontWeight: '700', fontVariant: ['tabular-nums'] }}>{hours}</Text>
+          </Text>
+          <ChevronDown size={14} color="rgba(255,255,255,0.85)" />
+        </View>
+      </View>
+    </Press>
+  );
+}
+
+// Hoja inferior "Horarios": los 7 días en lista limpia y el de hoy resaltado.
+export function HoursSheet({ openingHours, visible, onClose }: { openingHours: NonNullable<OpeningHours>; visible: boolean; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  const today = todayIndex();
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Press accessible={false} feedback="none" className="flex-1 justify-end" style={{ backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose}>
+        <Press accessible={false} feedback="none" onPress={() => {}} style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 20 }}>
+          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
+          <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
+            <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
+            {DAYS.map((name, i) => {
+              const h = openingHours[String(i)] ?? null;
+              const isToday = i === today;
+              return (
+                <View
+                  key={name}
+                  className="flex-row items-center justify-between"
+                  style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
+                >
+                  <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
+                  <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </Press>
+      </Press>
+    </Modal>
   );
 }

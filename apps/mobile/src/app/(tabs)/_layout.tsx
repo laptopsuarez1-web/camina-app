@@ -11,6 +11,7 @@ import { AmbientBackground } from '@/components/ui/AmbientBackground';
 import { GlassTabBar } from '@/components/ui/GlassTabBar';
 import { CelebrationHost } from '@/components/CelebrationHost';
 import { TabsWarmup } from '@/components/TabsWarmup';
+import { LevelUpWatcher } from '@/components/badges/LevelUpWatcher';
 import { TabTour } from '@/components/TabTour';
 import { healOldPhotos } from '@/lib/avatar';
 
@@ -119,6 +120,7 @@ export default function TabsLayout() {
     </Tabs>
     <CelebrationHost />
     <TabsWarmup />
+    <LevelUpWatcher />
     <TabTour />
     </View>
   );
