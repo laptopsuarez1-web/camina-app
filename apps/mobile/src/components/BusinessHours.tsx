@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Modal, View } from 'react-native';
+import { Modal, Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -116,33 +118,53 @@ export function BusinessHours({ openingHours, hoursText }: { openingHours: Openi
   );
 }
 
-// Texto del chip sobre la portada: "ABIERTO · 10:00 – 23:00" (el tramo en curso) o "CERRADO · Hoy 08:00 – 23:00".
+// Estado del chip sobre la portada: abierto con el tramo en curso, o cerrado con el horario de hoy.
 export function hoursChipInfo(week: NonNullable<OpeningHours>) {
   const h = week[String(todayIndex())] ?? null;
-  if (!h) return { open: false, text: 'CERRADO HOY' };
+  if (!h) return { open: false, label: 'Cerrado', hours: 'hoy' };
   if (isOpenNow(h)) {
     const now = new Date().toTimeString().slice(0, 5);
     const r = ranges(h).find(([a, b]) => inRange(now, a, b)) ?? ranges(h)[0];
-    return { open: true, text: `ABIERTO · ${r[0]} – ${r[1]}` };
+    return { open: true, label: 'Abierto', hours: `${r[0]} – ${r[1]}` };
   }
-  return { open: false, text: `CERRADO · HOY ${rangesText(h)}` };
+  return { open: false, label: 'Cerrado', hours: `hoy ${rangesText(h)}` };
 }
 
-// Chip de horario sobre la foto de portada (estilo Pasito). Al tocarlo se abre la hoja con los 7 días.
-// Va a 46 px del borde: más abajo lo tapa la ficha (que sube 36 px sobre la portada) y no se puede tocar.
-export function HoursCoverChip({ openingHours, onPress }: { openingHours: NonNullable<OpeningHours>; onPress: () => void }) {
-  const { open, text } = hoursChipInfo(openingHours);
-  const fg = open ? '#12281F' : '#FFFFFF';
+const LIQUID = Platform.OS === 'ios' && isLiquidGlassAvailable();
+const WEB_BLUR = Platform.OS === 'web' ? ({ backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)' } as unknown as ViewStyle) : null;
+
+// Chip de horario de vidrio sobre la portada (estilo Pasito): punto de estado + "Abierto · 08:00 – 23:00".
+// En iOS 26 usa el vidrio líquido del sistema; en iOS anterior, desenfoque; en web, backdrop-filter; en Android, velo translúcido.
+// Al tocarlo se abre la hoja con los 7 días.
+export function HoursCoverChip({ openingHours, onPress, style }: { openingHours: NonNullable<OpeningHours>; onPress: () => void; style?: StyleProp<ViewStyle> }) {
+  const { open, label, hours } = hoursChipInfo(openingHours);
+  const dot = open ? '#62F0B6' : '#FF8A8A';
   return (
     <Press
       accessibilityRole="button"
-      accessibilityLabel={`${text}. Ver todos los horarios`}
+      accessibilityLabel={`${label}, ${hours}. Ver todos los horarios`}
       onPress={onPress}
-      className="absolute flex-row items-center rounded-full"
-      style={{ right: 16, bottom: 46, gap: 6, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: open ? '#62F0B6' : 'rgba(18,10,30,0.78)' }}
+      style={[{ borderRadius: 999, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 4 }, style]}
     >
-      <Text allowFontScaling={false} style={{ color: fg, fontWeight: '800', fontSize: 12.5, letterSpacing: 0.3 }}>{text}</Text>
-      <ChevronDown size={14} color={fg} />
+      <View style={[{ borderRadius: 999, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', borderBottomColor: 'rgba(255,255,255,0.08)' }, WEB_BLUR]}>
+        {LIQUID ? (
+          <GlassView glassEffectStyle="regular" colorScheme="dark" pointerEvents="none" style={StyleSheet.absoluteFill} />
+        ) : Platform.OS === 'ios' ? (
+          <BlurView intensity={40} tint="dark" pointerEvents="none" style={StyleSheet.absoluteFill} />
+        ) : null}
+        {!LIQUID && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: Platform.OS === 'android' ? 'rgba(24,14,40,0.72)' : 'rgba(24,14,40,0.38)' }]} />}
+        <View className="flex-row items-center" style={{ gap: 7, paddingLeft: 12, paddingRight: 10, paddingVertical: 8 }}>
+          <View style={{ width: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: open ? 'rgba(98,240,182,0.25)' : 'rgba(255,138,138,0.22)' }}>
+            <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: dot }} />
+          </View>
+          <Text allowFontScaling={false} style={{ color: '#fff', fontSize: 13.5 }}>
+            <Text allowFontScaling={false} style={{ color: open ? '#62F0B6' : '#FFB4B4', fontWeight: '800' }}>{label}</Text>
+            <Text allowFontScaling={false} style={{ color: 'rgba(255,255,255,0.55)' }}>{'  ·  '}</Text>
+            <Text allowFontScaling={false} style={{ color: '#fff', fontWeight: '700', fontVariant: ['tabular-nums'] }}>{hours}</Text>
+          </Text>
+          <ChevronDown size={14} color="rgba(255,255,255,0.85)" />
+        </View>
+      </View>
     </Press>
   );
 }

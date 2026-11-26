@@ -1372,18 +1372,19 @@ export default function CanjesScreen() {
                 >
                   <X size={18} color={colors.light.text} />
                 </Press>
-                {profileGroup.business.opening_hours ? (
-                  <>
-                    <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} />
-                    {hoursOpen ? <HoursSheet openingHours={profileGroup.business.opening_hours} visible onClose={() => setHoursOpen(false)} /> : null}
-                  </>
-                ) : null}
               </View>
 
               <View className="px-5" style={{ marginTop: -36 }}>
                 {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
+                {profileGroup.business.opening_hours ? (
+                  <>
+                    {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. */}
+                    <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ position: 'absolute', right: 20, top: 0 }} />
+                    {hoursOpen ? <HoursSheet openingHours={profileGroup.business.opening_hours} visible onClose={() => setHoursOpen(false)} /> : null}
+                  </>
+                ) : null}
                 {profileDistance != null && profileDistance < MAX_SHOWN_DISTANCE_M ? (
-                  <Text className="absolute text-[14px] text-muted-light dark:text-muted-dark" style={{ right: 20, top: 46 }}>
+                  <Text className="absolute text-[14px] text-muted-light dark:text-muted-dark" style={{ right: 20, top: 52 }}>
                     Estás a <Text className="font-extrabold text-text-light dark:text-text-dark">{formatDistance(profileDistance)}</Text>
                   </Text>
                 ) : null}
@@ -1410,7 +1411,6 @@ export default function CanjesScreen() {
                   <Text className="text-[14px] leading-5 text-muted-light dark:text-muted-dark mt-3">{profileGroup.business.description}</Text>
                 ) : null}
 
-                <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <LegendCard businessId={profileGroup.business.id} />
 
                 <View className="flex-row flex-wrap mt-4" style={{ gap: 8 }}>
@@ -1513,6 +1513,7 @@ export default function CanjesScreen() {
                   </View>
                 ) : null}
 
+                <LevelCard businessId={profileGroup.business.id} name={profileGroup.business.name} logoUrl={profileGroup.business.logo_url} />
                 <CatalogSection businessId={profileGroup.business.id} onOpenImages={(list, i) => openViewer(list, i)} />
 
                 {profileGroup.benefits.length === 0 ? (
