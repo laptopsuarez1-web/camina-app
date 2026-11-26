@@ -166,6 +166,8 @@ export interface Promotion {
   place_name: string | null;
   place_address: string | null;
   place_url: string | null;
+  place_lat?: number | null;
+  place_lng?: number | null;
   ticket_price: string | null;
   ticket_url: string | null;
   ticket_points: number | null;
