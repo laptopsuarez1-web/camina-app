@@ -1,10 +1,10 @@
 // Hoja "Seleccionar sucursal" de la ficha de un comercio (estilo Pasito): todas sus sucursales, la más cercana primero,
 // con dirección, si está abierta y a qué distancia. Al tocar una, la ficha pasa a mostrar esa sucursal.
-// El fondo que cierra la hoja va al lado (no envolviendo) de la lista, así la lista siempre se puede deslizar.
+// Usa la misma hoja que Horarios (SwipeSheet): sin capa oscura encima, se desliza y se cierra jalando hacia abajo.
 import { useMemo } from 'react';
-import { Modal, ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useColorScheme } from 'nativewind';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SwipeSheet } from '@/components/ui/SwipeSheet';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Check, MapPin, X } from '@/components/icons';
@@ -31,7 +31,6 @@ type Props = {
 
 export function BranchSheet({ visible, businessName, category, logoUrl, featured, places, selectedId, pos, prizesAt, onSelect, onClose }: Props) {
   const isDark = useColorScheme().colorScheme === 'dark';
-  const insets = useSafeAreaInsets();
   const rows = useMemo(() => {
     const list = places.map((p) => ({ place: p, distance: pos ? metersBetween(pos, p.lat, p.lng) : null }));
     // La más cercana primero; sin ubicación, en el orden del comercio (la principal primero).
@@ -44,27 +43,15 @@ export function BranchSheet({ visible, businessName, category, logoUrl, featured
   const red = isDark ? colors.dangerSoft : colors.dangerInk;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Press accessibilityRole="button" accessibilityLabel="Cerrar sucursales" feedback="none" style={{ flex: 1, backgroundColor: 'rgba(20,16,31,0.45)' }} onPress={onClose} />
-      <View
-        style={{
-          backgroundColor: isDark ? '#1B1530' : '#F4F0FF',
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          paddingTop: 10,
-          paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 16,
-          maxHeight: '82%',
-        }}
-      >
-        <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: isDark ? '#5c4f80' : '#CDBDEB', alignSelf: 'center', marginBottom: 12 }} />
+    <SwipeSheet visible={visible} onClose={onClose} background={isDark ? '#1B1530' : '#F4F0FF'} handleColor={isDark ? '#5c4f80' : '#CDBDEB'} maxHeight="82%">
+      <View style={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 }}>
         <View className="flex-row items-center justify-between mb-3 mx-1">
           <Text accessibilityRole="header" className="font-bold text-[18px] text-text-light dark:text-text-dark">Seleccionar sucursal</Text>
           <Press accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={10} onPress={onClose}>
             <X size={20} color={isDark ? colors.mint : colors.aquaDeep} />
           </Press>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 4 }} keyboardShouldPersistTaps="handled">
+        <View style={{ gap: 12 }}>
           {rows.map(({ place, distance }) => {
             const selected = place.id === selectedId;
             const hours = place.opening_hours ? hoursChipInfo(place.opening_hours) : null;
@@ -83,7 +70,7 @@ export function BranchSheet({ visible, businessName, category, logoUrl, featured
                   padding: 12,
                   backgroundColor: isDark ? colors.dark.card : colors.light.card,
                   borderWidth: selected ? 2 : 1,
-                  borderColor: selected ? colors.aqua : isDark ? colors.dark.line : colors.light.line,
+                  borderColor: selected ? (isDark ? colors.mint : colors.aqua) : isDark ? colors.dark.line : colors.light.line,
                 }}
               >
                 <BusinessAvatar logoUrl={logoUrl} category={category} size={64} featured={featured} />
@@ -111,16 +98,19 @@ export function BranchSheet({ visible, businessName, category, logoUrl, featured
                     </Text>
                   ) : null}
                 </View>
+                {/* Elegida: tilde en chip mint (como los chips de la app); las demás, un aro vacío para que se vea que se pueden elegir. */}
                 {selected ? (
-                  <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.aquaDeep, alignItems: 'center', justifyContent: 'center' }}>
-                    <Check size={15} color="#fff" />
+                  <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' }}>
+                    <Check size={14} color={colors.mintInk} weight="bold" />
                   </View>
-                ) : null}
+                ) : (
+                  <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(41,28,71,0.18)' }} />
+                )}
               </Press>
             );
           })}
-        </ScrollView>
+        </View>
       </View>
-    </Modal>
+    </SwipeSheet>
   );
 }

@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { Clock, ChevronDown, ChevronUp, MapPin } from '@/components/icons';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { Glass } from '@/components/ui/Glass';
+import { SwipeSheet } from '@/components/ui/SwipeSheet';
 
 // Un día puede tener dos tramos (horario partido): from/to y from2/to2.
 type DayHours = { from: string; to: string; from2?: string; to2?: string } | null;
@@ -185,68 +185,63 @@ export function HoursSheet({
   places?: readonly HoursPlace[];
   initialPlaceId?: string;
 }) {
-  const insets = useSafeAreaInsets();
   const today = todayIndex();
   const tabs = places && places.length > 1 ? places : null;
   const [tabId, setTabId] = useState(initialPlaceId);
   const current = tabs ? (tabs.find((p) => p.id === tabId) ?? tabs[0]) : null;
   const week = current ? current.openingHours : openingHours;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Press accessible={false} feedback="none" style={{ flex: 1, backgroundColor: 'rgba(18,10,30,0.55)' }} onPress={onClose} />
-      <View style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 20, maxHeight: '88%' }}>
-        <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16 }}>
-          <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
-          {tabs ? (
-            <>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -22, marginTop: 4 }} contentContainerStyle={{ paddingHorizontal: 22 }}>
-                <View className="flex-row" style={{ backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 999, padding: 4, gap: 4 }}>
-                  {tabs.map((p) => {
-                    const on = p.id === current!.id;
-                    return (
-                      <Press
-                        key={p.id}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: on }}
-                        haptic="selection"
-                        onPress={() => setTabId(p.id)}
-                        style={{ borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, backgroundColor: on ? '#1F7A66' : 'transparent' }}
-                      >
-                        <Text numberOfLines={1} style={{ color: on ? '#fff' : '#C9BFE3', fontSize: 14.5, fontWeight: on ? '800' : '600' }}>{p.label}</Text>
-                      </Press>
-                    );
-                  })}
-                </View>
-              </ScrollView>
-              {current!.address ? (
-                <View className="flex-row items-center" style={{ gap: 6, marginTop: 12, marginBottom: 4 }}>
-                  <MapPin size={15} color="#9a8cb8" />
-                  <Text numberOfLines={2} style={{ color: '#C9BFE3', fontSize: 14, flexShrink: 1 }}>{current!.address}</Text>
-                </View>
-              ) : null}
-            </>
-          ) : null}
-          {week ? (
-            DAYS.map((name, i) => {
-              const h = week[String(i)] ?? null;
-              const isToday = i === today;
-              return (
-                <View
-                  key={name}
-                  className="flex-row items-center justify-between"
-                  style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
-                >
-                  <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
-                  <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
-                </View>
-              );
-            })
-          ) : (
-            <Text style={{ color: '#C9BFE3', fontSize: 15, marginTop: 14, marginBottom: 6 }}>Esta sucursal todavía no cargó su horario.</Text>
-          )}
-        </ScrollView>
+    <SwipeSheet visible={visible} onClose={onClose}>
+      <View style={{ paddingHorizontal: 22, paddingTop: 10, paddingBottom: 8 }}>
+        <Text accessibilityRole="header" style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Horarios</Text>
+        {tabs ? (
+          <>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -22, marginTop: 4 }} contentContainerStyle={{ paddingHorizontal: 22 }}>
+              <View className="flex-row" style={{ backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 999, padding: 4, gap: 4 }}>
+                {tabs.map((p) => {
+                  const on = p.id === current!.id;
+                  return (
+                    <Press
+                      key={p.id}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: on }}
+                      haptic="selection"
+                      onPress={() => setTabId(p.id)}
+                      style={{ borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, backgroundColor: on ? '#1F7A66' : 'transparent' }}
+                    >
+                      <Text numberOfLines={1} style={{ color: on ? '#fff' : '#C9BFE3', fontSize: 14.5, fontWeight: on ? '800' : '600' }}>{p.label}</Text>
+                    </Press>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            {current!.address ? (
+              <View className="flex-row items-center" style={{ gap: 6, marginTop: 12, marginBottom: 4 }}>
+                <MapPin size={15} color="#9a8cb8" />
+                <Text numberOfLines={2} style={{ color: '#C9BFE3', fontSize: 14, flexShrink: 1 }}>{current!.address}</Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+        {week ? (
+          DAYS.map((name, i) => {
+            const h = week[String(i)] ?? null;
+            const isToday = i === today;
+            return (
+              <View
+                key={name}
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 11, paddingHorizontal: isToday ? 12 : 0, marginHorizontal: isToday ? -12 : 0, borderRadius: 14, backgroundColor: isToday ? 'rgba(98,240,182,0.14)' : 'transparent' }}
+              >
+                <Text style={{ color: isToday ? '#62F0B6' : '#fff', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{name}{isToday ? ' (hoy)' : ''}</Text>
+                <Text style={{ color: isToday ? '#62F0B6' : h ? '#fff' : '#9a8cb8', fontSize: 15, fontWeight: isToday ? '800' : '500' }}>{h ? rangesText(h) : 'Cerrado'}</Text>
+              </View>
+            );
+          })
+        ) : (
+          <Text style={{ color: '#C9BFE3', fontSize: 15, marginTop: 14, marginBottom: 6 }}>Esta sucursal todavía no cargó su horario.</Text>
+        )}
       </View>
-    </Modal>
+    </SwipeSheet>
   );
 }
