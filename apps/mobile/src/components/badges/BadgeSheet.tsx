@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { Modal, ScrollView, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Spinner } from '@/components/ui/Spinner';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SwipeSheet } from '@/components/ui/SwipeSheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
@@ -25,7 +25,6 @@ const QUE: Record<LevelEvent['source'], string> = {
 // Detalle de la insignia de un local: en qué nivel vas, cuánto te falta y cómo fuiste sumando.
 // `own` = es mi insignia (se ve el detalle de puntos); en la de otra persona solo el nivel.
 export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null; own: boolean; onClose: () => void }) {
-  const insets = useSafeAreaInsets();
   const { data: history, isLoading } = useLevelHistory(badge?.business_id, own && !!badge);
   // La barra se llena sola al abrir: de 0 a tus puntos de nivel.
   const reduced = useReducedMotion();
@@ -39,14 +38,8 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
   if (!badge) return null;
   const next = nextLevel(badge.points);
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      {/* El fondo oscuro es una capa aparte detrás de la hoja (no la envuelve): si la hoja va dentro de un botón,
-          el botón a veces se queda con el toque y la lista no se deja deslizar. */}
-      <View className="flex-1 justify-end">
-        <Press accessible={false} feedback="none" onPress={onClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(18,10,30,0.55)' }]} />
-        <View style={{ backgroundColor: '#1d1729', borderTopLeftRadius: 30, borderTopRightRadius: 30, maxHeight: '86%', paddingBottom: insets.bottom + 16 }}>
-          <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: '#5c4f80', alignSelf: 'center', marginTop: 10 }} />
-          <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 16 }}>
+    <SwipeSheet visible onClose={onClose}>
+          <View style={{ padding: 20, paddingTop: 10 }}>
             <View className="items-center">
               <LocalBadge logoUrl={badge.logo_url} name={badge.name} level={badge.level} size={96} />
               <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800', marginTop: 14 }} numberOfLines={1}>{badge.name}</Text>
@@ -113,9 +106,7 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
             <Press accessibilityRole="button" onPress={onClose} className="rounded-2xl items-center" style={{ marginTop: 10, paddingVertical: 14, backgroundColor: '#1F7A66' }}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Listo</Text>
             </Press>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
+          </View>
+    </SwipeSheet>
   );
 }
