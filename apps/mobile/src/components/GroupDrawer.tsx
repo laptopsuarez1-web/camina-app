@@ -152,7 +152,7 @@ export function GroupDrawer({
             {isCreator && (
               <View className="py-3.5 border-t border-line-light dark:border-line-dark">
                 <Text className="text-[14.5px] font-semibold text-text-light dark:text-text-dark">Portada del grupo</Text>
-                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5">Opcional. Pon una foto, o elige un color.</Text>
+                <Text className="text-[12px] text-muted-light dark:text-muted-dark mt-0.5 mb-2.5">Pon una foto y elige un color: van juntos.</Text>
                 {/* Foto de portada: vista previa ancha, con cambiar y quitar. */}
                 <Press accessibilityRole="button" accessibilityLabel={bannerUrl ? 'Cambiar la foto de portada' : 'Poner una foto de portada'} disabled={busy} onPress={onPickBanner}
                   style={{ height: 86, borderRadius: 16, overflow: 'hidden', marginBottom: 10, borderWidth: bannerUrl ? 2.5 : 1.5, borderStyle: bannerUrl ? 'solid' : 'dashed', borderColor: bannerUrl ? '#fff' : 'rgba(160,140,210,0.6)', alignItems: 'center', justifyContent: 'center' }}>
@@ -172,12 +172,12 @@ export function GroupDrawer({
                 </Press>
                 {bannerUrl ? (
                   <Press accessibilityRole="button" onPress={onRemoveBanner} disabled={busy} hitSlop={6} className="self-start mb-2.5">
-                    <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">Quitar foto y usar un color</Text>
+                    <Text className="text-[12.5px] font-semibold text-muted-light dark:text-muted-dark">Quitar la foto</Text>
                   </Press>
                 ) : null}
                 <View className="flex-row flex-wrap" style={{ gap: 10 }}>
                   {GROUP_BACKGROUNDS.map((b) => {
-                    const on = !bannerUrl && (background ?? 'aqua') === b.key;
+                    const on = (background ?? 'aqua') === b.key;
                     return (
                       <Press key={b.key} accessibilityRole="button" accessibilityLabel={`Color ${b.label}`} accessibilityState={{ selected: on }} disabled={busy} onPress={() => onPickBackground(b.key)}>
                         <LinearGradient colors={b.colors} style={{ width: (panelW - 40 - 20) / 3, height: 62, borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 6, borderWidth: on ? 2.5 : 1, borderColor: on ? '#fff' : 'rgba(255,255,255,0.15)' }}>
