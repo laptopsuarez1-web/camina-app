@@ -1607,7 +1607,7 @@ export default function CanjesScreen() {
                 {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
                 {profileGroup.business.opening_hours ? (
                   <>
-                    {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. */}
+                    {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. A la derecha y corto para no tapar el logo. */}
                     <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ position: 'absolute', right: 20, top: 0 }} />
                     {hoursOpen ? (
                       <HoursSheet

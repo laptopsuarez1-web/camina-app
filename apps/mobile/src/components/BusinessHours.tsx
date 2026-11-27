@@ -127,7 +127,11 @@ export function hoursChipInfo(week: NonNullable<OpeningHours>) {
     const r = ranges(h).find(([a, b]) => inRange(now, a, b)) ?? ranges(h)[0];
     return { open: true, label: 'Abierto', hours: `${r[0]} – ${r[1]}` };
   }
-  return { open: false, label: 'Cerrado', hours: `hoy ${rangesText(h)}` };
+  // Cerrado: un solo horario, el próximo tramo de hoy (o el primero si ya pasaron todos).
+  const now = new Date().toTimeString().slice(0, 5);
+  const rs = ranges(h);
+  const next = rs.find(([a]) => a > now) ?? rs[0];
+  return { open: false, label: 'Cerrado', hours: `${next[0]} – ${next[1]}` };
 }
 
 const LIQUID = Platform.OS === 'ios' && isLiquidGlassAvailable();
