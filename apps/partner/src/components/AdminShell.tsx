@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram, Users, Gift, Handshake, BellRing, Footprints } from 'lucide-react';
+import { LogOut, ShieldCheck, Trophy, MapPinned, PartyPopper, Flag, Radar, Instagram, Users, Gift, Handshake, BellRing, Footprints, FolderOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ResponsiveFrame } from '@/components/ResponsiveFrame';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -17,6 +17,7 @@ const NAV = [
   { href: '/admin/pasos-dobles', label: 'Pasos dobles (x2)', icon: Footprints },
   { href: '/admin/ruta', label: 'Premio de la Ruta', icon: Gift },
   { href: '/admin/historias', label: 'Historias', icon: Instagram },
+  { href: '/admin/materiales', label: 'Materiales', icon: FolderOpen },
   { href: '/admin/partners', label: 'Partners', icon: Handshake },
   { href: '/admin/avisame', label: 'Lista Avísame', icon: BellRing },
   { href: '/admin/cuentas', label: 'Cuentas', icon: Users },
