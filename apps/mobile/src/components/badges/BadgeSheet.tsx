@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Spinner } from '@/components/ui/Spinner';
 import { router } from 'expo-router';
@@ -8,7 +8,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
 import { Press } from '@/components/ui/Press';
 import { LEVEL_LOOK, LocalBadge } from '@/components/badges/LocalBadge';
-import { LEVELS, levelLabel, nextLevel, useLevelHistory, type LevelEvent, type LocalBadgeT } from '@/hooks/useBadges';
+import { pickPhoto } from '@/lib/pick-photo';
+import { friendlyServerError } from '@/lib/errors';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { LEVELS, levelLabel, nextLevel, useLevelHistory, useSetBadgeImage, type LevelEvent, type LocalBadgeT } from '@/hooks/useBadges';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const fecha = (iso: string) => {
@@ -35,7 +38,20 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
     if (!reduced) fill.value = withDelay(350, withTiming(target, { duration: 1100, easing: Easing.out(Easing.cubic) }));
   }, [target, reduced, fill]);
   const fillStyle = useAnimatedStyle(() => ({ width: `${fill.value}%` }));
+  const isAdmin = useIsAdmin();
+  const setImage = useSetBadgeImage();
   if (!badge) return null;
+  async function changeImage() {
+    try {
+      const r = await pickPhoto({ aspect: 1, max: 600, title: 'Acomoda la imagen de la insignia' });
+      if (!r || !badge) return;
+      const url = await setImage.mutateAsync({ businessId: badge.business_id, uri: r.uri });
+      Alert.alert('Listo', 'La insignia ya tiene la imagen nueva.');
+      void url;
+    } catch (e) {
+      Alert.alert('No se pudo cambiar la imagen', friendlyServerError(e, 'Intenta de nuevo.'));
+    }
+  }
   const next = nextLevel(badge.points);
   return (
     <SwipeSheet visible onClose={onClose}>
@@ -103,6 +119,11 @@ export function BadgeSheet({ badge, own, onClose }: { badge: LocalBadgeT | null;
             <Press accessibilityRole="button" onPress={() => { const id = badge.business_id; onClose(); setTimeout(() => router.push({ pathname: '/(tabs)/canjes', params: { negocio: id } }), 250); }} className="rounded-2xl items-center" style={{ marginTop: 18, paddingVertical: 14, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Ver perfil del local</Text>
             </Press>
+            {isAdmin ? (
+              <Press accessibilityRole="button" onPress={changeImage} disabled={setImage.isPending} className="rounded-2xl items-center" style={{ marginTop: 10, paddingVertical: 14, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
+                {setImage.isPending ? <Spinner color="#62F0B6" /> : <Text style={{ color: '#C4B8E8', fontWeight: '800', fontSize: 14 }}>Admin · Cambiar imagen de la insignia</Text>}
+              </Press>
+            ) : null}
             <Press accessibilityRole="button" onPress={onClose} className="rounded-2xl items-center" style={{ marginTop: 10, paddingVertical: 14, backgroundColor: '#1F7A66' }}>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Listo</Text>
             </Press>

@@ -10,11 +10,12 @@ export function storyStateFor(
   r: { status: string; confirmed_at?: string | null },
   share: Pick<StoryShare, 'status'> | undefined,
   now = Date.now(),
+  admin = false,
 ): StoryState | null {
   if (share) return share.status as StoryShareStatus;
   if (r.status !== 'confirmed' || !r.confirmed_at) return null;
   const age = now - new Date(r.confirmed_at.replace(/(\.\d{3})\d+/, '$1')).getTime();
-  return age <= STORY_WINDOW_DAYS * 86_400_000 ? 'available' : null;
+  return admin || age <= STORY_WINDOW_DAYS * 86_400_000 ? 'available' : null;
 }
 
 // Usuario de Instagram: sin @ ni espacios, en minúsculas. Vacío si no es válido.
