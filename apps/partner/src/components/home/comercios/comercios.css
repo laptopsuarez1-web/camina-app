@@ -642,6 +642,35 @@
   height: 100%;
   overflow: visible;
 }
+/* Pines de comercios nuevos, iguales a los de la captura del mapa (cuadro blanco con logo y punta). */
+.cx-map-shop {
+  position: absolute;
+  width: 10.4cqw;
+  aspect-ratio: 1;
+  translate: -50% calc(-100% - 1.7cqw);
+  padding: 0.75cqw;
+  border-radius: 2.7cqw;
+  background: #fff;
+  box-shadow: 0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.cx-map-shop::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1.7cqw;
+  translate: -50% 0;
+  border: 1.2cqw solid transparent;
+  border-top: 1.8cqw solid #fff;
+  border-bottom: 0;
+}
+.cx-map-shop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2cqw;
+}
 .cx-map-pin {
   position: absolute;
   display: grid;

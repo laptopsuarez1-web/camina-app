@@ -51,6 +51,23 @@ function huellas(d: string): Huella[] {
 
 const RUTAS = CAMINOS.map((c) => huellas(c.d));
 
+// Comercios que se sumaron después de sacar la captura del mapa: se dibujan encima, en su ubicación real
+// (latitud y longitud de la base). La fórmula pasa coordenadas a % de la imagen; se ajustó con los locales que ya
+// se ven en la captura (error de unos pocos metros). Los pines se mantienen dentro del cuadro. Mush y ChaCha quedan
+// casi encima de Fripap's y Elite Team cae en el borde, sobre Viviana: "dx" y "dy" los corren un poco (en % del
+// cuadro) para que se vean todos los logos.
+const NUEVOS = [
+  { id: 'chacha', lat: -21.534813, lng: -64.732938, dx: -2.5 },
+  { id: 'mush', lat: -21.5360499, lng: -64.7318748, dx: 14 },
+  { id: 'elite', lat: -21.537755, lng: -64.719486, dx: 3, dy: 8 },
+  { id: 'kava', lat: -21.540938, lng: -64.727812 },
+  { id: 'armybox', lat: -21.541938, lng: -64.723062 },
+].map((c: { id: string; lat: number; lng: number; dx?: number; dy?: number }) => ({
+  ...c,
+  x: Math.min(91, Math.max(6, (c.dx ?? 0) + 48.64 + 4496.8 * (c.lng + 64.73) - 841.2 * (c.lat + 21.535))),
+  y: Math.min(99, (c.dy ?? 0) + 70.8 - 718.3 * (c.lng + 64.73) - 4662 * (c.lat + 21.535)),
+}));
+
 export default function MapaLocal() {
   const root = useRef<HTMLDivElement>(null);
   const pies = useRef<(SVGImageElement | null)[][]>(RUTAS.map(() => []));
@@ -117,6 +134,11 @@ export default function MapaLocal() {
           )),
         )}
       </svg>
+      {NUEVOS.map((c) => (
+        <span key={c.id} className="cx-map-shop" style={{ left: `${c.x}%`, top: `${c.y}%` }}>
+          <Image src={`/web/locales/${c.id}-app.jpg`} alt="" width={96} height={96} sizes="12vw" />
+        </span>
+      ))}
       <div className="cx-map-pin" style={{ left: `${(PIN[0] / W) * 100}%`, top: `${(PIN[1] / H) * 100}%` }}>
         <b className="cx-map-pin-label">Tu local</b>
         {llegada > 0 ? <i key={llegada} className="cx-map-ring" /> : null}
