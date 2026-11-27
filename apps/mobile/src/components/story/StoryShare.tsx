@@ -231,7 +231,7 @@ export function StoryComposer({
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
         <View accessibilityRole="radiogroup" className="flex-row self-center rounded-full p-1" style={{ backgroundColor: '#2E2247' }}>
-          {([{ v: 'icono', label: 'Logo' }, { v: 'nombre', label: 'Nombre' }] as const).map((o) => {
+          {([{ v: 'nombre', label: 'Nombre' }, { v: 'icono', label: 'Logo' }] as const).map((o) => {
             const sel = variant === o.v;
             return (
               <Press key={o.v} accessibilityRole="radio" accessibilityLabel={o.v === 'icono' ? 'Sello con el logo de Camina' : 'Sello con el nombre Camina'} accessibilityState={{ selected: sel }} onPress={() => setVariant(o.v)} className="rounded-full px-4 py-2" style={{ backgroundColor: sel ? colors.mint : 'transparent' }}>
