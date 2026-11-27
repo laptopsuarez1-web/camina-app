@@ -111,6 +111,7 @@ export default function Steps({ etapas = ETAPAS_GENTE }: { etapas?: readonly Eta
                 <span className="hm-step-n">{e.n}</span>
                 <h3>{e.t}</h3>
                 <p>{e.d}</p>
+                <p className="hm-step-dato">{e.dato}</p>
               </div>
             ))}
           </div>

@@ -10,9 +10,12 @@ import { Coin } from './ui';
 // Pocos y destacados: un premio por comercio con foto de portada.
 const DESTACADOS: [string, string][] = [
   ['bloom', 'Retirado de gel / acrílico'],
-  ['cancheritos', 'Clase'],
-  ['fripaps', 'Salchipapa'],
+  ['elite', 'Día de entrenamiento'],
+  ['fripaps', 'Panchito'],
+  ['luzdevida', 'Sesión de fisioterapia'],
   ['coco', 'Lavado de cabello'],
+  ['viviana', 'Lavado y planchado'],
+  ['cancheritos', 'Clase'],
 ];
 const PREMIOS = DESTACADOS.flatMap(([id, nombre]) => {
   const local = LOCALES.find((l) => l.id === id);

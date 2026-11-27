@@ -3769,3 +3769,30 @@ html:not(.hm-js) .hm-pagewalk {
 .hm-logoscene[data-vivo][data-logo='morado'] .hm-logoscene-marca {
   display: block;
 }
+
+/* Cómo funciona en el celular: teléfono más grande y el dato de cada paso, para que no quede espacio vacío abajo. */
+@media (max-width: 999px) {
+  .hm-steps-m-phone .hm-phone {
+    --w: min(58vw, 250px, calc((100svh - 330px) * 780 / 1688));
+  }
+  .hm-steps-m-item .hm-step-dato {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--mint-ink);
+    padding: 7px 14px 7px 11px;
+    border-radius: 999px;
+    background: var(--mint-soft);
+    justify-self: start;
+  }
+  .hm-steps-m-item .hm-step-dato::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--mint-ink);
+  }
+}

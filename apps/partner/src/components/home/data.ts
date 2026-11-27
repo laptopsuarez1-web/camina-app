@@ -61,6 +61,7 @@ export const LOCALES: Local[] = [
     categoria: 'Estética y belleza',
     direccion: 'Federico Ávila 644',
     logo: L('viviana-app'),
+    portada: L('viviana-cover'),
     premios: [{ nombre: 'Lavado y planchado', detalle: 'Gratis', puntos: 150 }],
   },
   { id: 'galera', nombre: 'Salteñería La Galera', categoria: 'Salteñas y empanadas', direccion: 'Avenida La Paz', logo: L('galera-app'), premios: [] },
@@ -71,6 +72,7 @@ export const LOCALES: Local[] = [
     categoria: 'Fisioterapia',
     direccion: 'Calle San Roque esquina Santo Domingo',
     logo: L('luzdevida-app'),
+    portada: L('luzdevida-cover'),
     premios: [
       { nombre: 'Ozonoterapia', detalle: '25% de descuento', puntos: 80 },
       { nombre: 'Masaje de descarga', detalle: '50% de descuento', puntos: 100 },
@@ -80,7 +82,7 @@ export const LOCALES: Local[] = [
   },
   // Comercios nuevos (base de Camina, 27 de noviembre de 2026). Army Box y Káva todavía no subieron logo:
   // llevan el ícono de su rubro, igual que en el mapa de la app.
-  { id: 'elite', nombre: 'Elite Team', categoria: 'Artes marciales', direccion: 'Ingavi esquina Carlos Lazcano', logo: L('elite-app'), premios: [{ nombre: 'Día de entrenamiento', detalle: 'Gratis', puntos: 75 }] },
+  { id: 'elite', nombre: 'Elite Team', categoria: 'Artes marciales', direccion: 'Ingavi esquina Carlos Lazcano', logo: L('elite-app'), portada: L('elite-cover'), premios: [{ nombre: 'Día de entrenamiento', detalle: 'Gratis', puntos: 75 }] },
   { id: 'mush', nombre: 'Mush', categoria: 'Juguería', direccion: 'Calle Suipacha esquina Virginio Lema', logo: L('mush-app'), premios: [] },
   { id: 'chacha', nombre: 'ChaCha', categoria: 'Café', direccion: 'Calle 15 de Abril', logo: L('chacha-app'), premios: [] },
   { id: 'armybox', nombre: 'Army Box Tarija', categoria: 'Gimnasio y deporte', direccion: 'Av. Jaime Paz Zamora antes de la Av. España', logo: L('armybox-app'), premios: [] },
@@ -118,9 +120,9 @@ export const CAP = {
   actividad: C('actividad-dark'),
   puntos: C('puntos-nuevo-dark'),
   // Capturas nuevas de la app oficial (noviembre 2026), con la barra de estado limpia.
-  mapa: '/web/app/mapa-comercios.jpg',
+  mapa: '/web/app/mapa-comercios-v2.jpg',
   premiosFripaps: '/web/app/premios-fripaps.jpg',
-  canjes: '/web/app/canjes.jpg',
+  canjes: '/web/app/canjes-v2.jpg',
   fichaLocal: '/web/app/ficha-fripaps.jpg',
   calificar: C('canje-calificar-v3-dark'),
   compartir: C('canje-historia-v3-dark'),
