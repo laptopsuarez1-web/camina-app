@@ -83,6 +83,26 @@ export function useSetFeaturedBadge() {
   });
 }
 
+// Solo admin: pone una imagen propia en la insignia de un local (businesses.badge_image_url; el servidor valida que sea admin).
+export function useSetBadgeImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { businessId: string; uri: string }): Promise<string> => {
+      const data = await shrinkToBase64(v.uri, null, 600);
+      if (!data) throw new Error('No pudimos leer la imagen. Elige otra.');
+      const path = `${v.businessId}/insignia-${Date.now().toString(36)}.jpg`;
+      const { error } = await supabase.storage.from('business-logos').upload(path, decode(data), { contentType: 'image/jpeg', cacheControl: '31536000' });
+      if (error) throw error;
+      const url = supabase.storage.from('business-logos').getPublicUrl(path).data.publicUrl;
+      const { data: rows, error: e2 } = await supabase.from('businesses').update({ badge_image_url: url }).eq('id', v.businessId).select('id');
+      if (e2) throw e2;
+      if (!rows?.length) throw new Error('No tienes permiso para cambiar esta insignia.');
+      return url;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['badges'] }),
+  });
+}
+
 export function useMyLevel(businessId?: string | null) {
   const userId = useAuthStore((s) => s.session?.user.id);
   return useQuery({

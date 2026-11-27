@@ -32,10 +32,11 @@ import { DARK_MAP_STYLE } from '@/constants/map-style';
 import { friendlyServerError } from '@/lib/errors';
 import { celebrate } from '@/store/useCelebrationStore';
 import {
-  participationLabel, rutaDone, showParticipation, rutaMonthName, rutaMonthShort, useJoinRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaParticipation, useRutaPrize,
+  participationLabel, rutaDone, showParticipation, rutaMonthName, rutaMonthShort, useJoinRuta, useResetRuta, useMarkRutaVisit, usePickDoubleDay, useLastRutaWinners, useRuta, useRutaParticipation, useRutaPrize,
   useRutaSwapOptions, useSwapRuta, useWalkingPath,
   type RutaStop,
 } from '@/hooks/useRuta';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const MINT = '#62F0B6';
 const BG = '#16111f';
@@ -114,6 +115,8 @@ export default function RutaScreen() {
   const photosReady = useBadgesReady();
   const { data: album } = useMyRoute(photosReady ? state?.month : null);
   const join = useJoinRuta();
+  const resetRuta = useResetRuta();
+  const isAdmin = useIsAdmin();
   const swap = useSwapRuta();
   const mark = useMarkRutaVisit();
   const pickDay = usePickDoubleDay();
@@ -631,6 +634,20 @@ export default function RutaScreen() {
                 </Press>
               ) : null}
             </View>
+          ) : null}
+
+          {isAdmin ? (
+            <Press accessibilityRole="button" haptic="light" disabled={resetRuta.isPending}
+              onPress={() => Alert.alert('Reiniciar mi Ruta', 'Se borran tus 3 locales y tus visitas de este mes. Después puedes participar de nuevo.', [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Reiniciar', style: 'destructive', onPress: async () => {
+                  try { await resetRuta.mutateAsync(undefined as never); await qc.invalidateQueries({ queryKey: ['ruta-participation'] }); await qc.invalidateQueries({ queryKey: ['badges'] }); }
+                  catch (e) { Alert.alert('No se pudo reiniciar', friendlyServerError(e, 'Intenta de nuevo.')); }
+                } },
+              ])}
+              style={{ marginTop: 12, borderRadius: 14, paddingVertical: 11, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+              {resetRuta.isPending ? <Spinner color={MINT} /> : <Text style={{ color: '#C4B8E8', fontWeight: '800', fontSize: 13 }}>Admin · Reiniciar mi Ruta</Text>}
+            </Press>
           ) : null}
 
           {state.completed_at && (

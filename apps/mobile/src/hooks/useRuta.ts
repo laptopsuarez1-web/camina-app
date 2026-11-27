@@ -66,6 +66,15 @@ export function useJoinRuta() {
   });
 }
 
+// Solo admin: reinicia mi Ruta de este mes (el servidor lo valida con la bandera de app_admins).
+export function useResetRuta() {
+  return useRutaMutation(async () => {
+    const { data, error } = await supabase.rpc('admin_route_reset');
+    if (error) throw error;
+    return data as RutaState;
+  });
+}
+
 export function useSwapRuta() {
   return useRutaMutation(async (v: { out: string; in: string }) => {
     const { data, error } = await supabase.rpc('route_swap', { p_out: v.out, p_in: v.in });

@@ -18,6 +18,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { openHealthConnectSettings } from 'react-native-health-connect';
 import { useTodaySteps } from '@/hooks/usePedometer';
 import { useIsQa } from '@/hooks/useIsQa';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { usePointsBalance, useSyncSteps, usePointsExpiringSoon } from '@/hooks/usePoints';
 import { useHomeMoments } from '@/hooks/useMoments';
 import { buzz } from '@/lib/haptics';
@@ -135,6 +136,7 @@ export default function HomeScreen() {
   const { data: benefits, isLoading: benefitsLoading } = useBenefits();
   const { data: redemptions, isLoading: redemptionsLoading } = useMyRedemptions();
   const { data: storyShares } = useMyStoryShares();
+  const isAdmin = useIsAdmin();
   const story = useStoryFlow();
   const pos = useHomePosition();
   const { data: groups } = useGroups();
@@ -747,7 +749,7 @@ export default function HomeScreen() {
               redemptions={redemptions as unknown as RedemptionRow[] | undefined}
               loading={redemptionsLoading}
               onSeeAll={() => router.push('/(tabs)/mis-canjes')}
-              storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id]) : null)}
+              storyFor={(r) => (storyShares ? storyStateFor(r, storyShares[r.id], undefined, isAdmin) : null)}
               onStory={(r) => story.start({ redemptionId: r.id, businessName: r.business?.name ?? 'el local', benefitName: r.benefit?.name ?? 'Tu canje', businessLogo: r.business?.logo_url ?? null, businessInstagram: r.business?.instagram ?? null, costPoints: r.cost_points })}
             />
           </View>
