@@ -31,6 +31,7 @@ export const LOCALES: Local[] = [
     portada: L('fripaps-cover'),
     premios: [
       { nombre: 'Salchipapa', detalle: '20% de descuento', puntos: 25 },
+      { nombre: 'Panchito', detalle: 'Gratis', puntos: 38 },
     ],
   },
   {
@@ -41,8 +42,8 @@ export const LOCALES: Local[] = [
     logo: L('coco-app'),
     portada: L('coco-cover'),
     premios: [
-      { nombre: 'Lavado de cabello', puntos: 30 },
-      { nombre: 'Corte de cabello', puntos: 25 },
+      { nombre: 'Lavado de cabello', detalle: 'Gratis', puntos: 30 },
+      { nombre: 'Corte de cabello', detalle: '20% de descuento', puntos: 25 },
     ],
   },
   {
@@ -60,11 +61,30 @@ export const LOCALES: Local[] = [
     categoria: 'Estética y belleza',
     direccion: 'Federico Ávila 644',
     logo: L('viviana-app'),
-    premios: [{ nombre: 'Lavado y planchado', puntos: 150 }],
+    premios: [{ nombre: 'Lavado y planchado', detalle: 'Gratis', puntos: 150 }],
   },
   { id: 'galera', nombre: 'Salteñería La Galera', categoria: 'Salteñas y empanadas', direccion: 'Avenida La Paz', logo: L('galera-app'), premios: [] },
   { id: 'sabor', nombre: 'Sabor y Vida', categoria: 'Restaurante', direccion: 'Calle Suipacha', logo: L('sabor-app'), premios: [] },
-  { id: 'luzdevida', nombre: 'Fisioterapia Luz de Vida', categoria: 'Fisioterapia', direccion: 'Calle San Roque', logo: L('luzdevida-app'), premios: [] },
+  {
+    id: 'luzdevida',
+    nombre: 'Fisioterapia Luz de Vida',
+    categoria: 'Fisioterapia',
+    direccion: 'Calle San Roque esquina Santo Domingo',
+    logo: L('luzdevida-app'),
+    premios: [
+      { nombre: 'Ozonoterapia', detalle: '25% de descuento', puntos: 80 },
+      { nombre: 'Masaje de descarga', detalle: '50% de descuento', puntos: 100 },
+      { nombre: 'Sesión de fisioterapia', detalle: 'Gratis', puntos: 180 },
+      { nombre: 'Plasma rico en plaquetas', detalle: '25% de descuento', puntos: 200 },
+    ],
+  },
+  // Comercios nuevos (base de Camina, 27 de noviembre de 2026). Army Box y Káva todavía no subieron logo:
+  // llevan el ícono de su rubro, igual que en el mapa de la app.
+  { id: 'elite', nombre: 'Elite Team', categoria: 'Artes marciales', direccion: 'Ingavi esquina Carlos Lazcano', logo: L('elite-app'), premios: [{ nombre: 'Día de entrenamiento', detalle: 'Gratis', puntos: 75 }] },
+  { id: 'mush', nombre: 'Mush', categoria: 'Juguería', direccion: 'Calle Suipacha esquina Virginio Lema', logo: L('mush-app'), premios: [] },
+  { id: 'chacha', nombre: 'ChaCha', categoria: 'Café', direccion: 'Calle 15 de Abril', logo: L('chacha-app'), premios: [] },
+  { id: 'armybox', nombre: 'Army Box Tarija', categoria: 'Gimnasio y deporte', direccion: 'Av. Jaime Paz Zamora antes de la Av. España', logo: L('armybox-app'), premios: [] },
+  { id: 'kava', nombre: 'Káva Eco Coffee', categoria: 'Cafetería y brunch', direccion: 'Av. Víctor Paz frente al monumento', logo: L('kava-app'), premios: [] },
 ];
 
 export const CONTACTO = {
