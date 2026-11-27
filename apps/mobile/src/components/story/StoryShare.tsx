@@ -11,7 +11,7 @@ import { Instagram, Clock, CheckCircle2, X, Star, Camera, MapPin } from '@/compo
 import { colors } from '@/theme/tokens';
 import type { StoryState } from '@/lib/story';
 import { igHandle } from '@/lib/story-rules';
-import { StorySticker } from '@/components/story/StoryStickers';
+import { StorySticker, type StickerVariant } from '@/components/story/StoryStickers';
 
 // Historias de Instagram por un canje: la persona sube una foto de lo que canjeó, etiqueta a Camina
 // y, cuando el equipo la ve, se le acreditan STORY_REWARD Puntos. La acreditación es manual (panel).
@@ -207,6 +207,8 @@ export function StoryComposer({
   onChangePhoto: () => void;
   topInset?: number;
 }) {
+  // Dos versiones del sello, las dos con el logo del local: con el ícono de Camina o con el nombre CAMINA.
+  const [variant, setVariant] = useState<StickerVariant>('nombre');
   return (
     <View className="flex-1" style={{ backgroundColor: '#120A1E', paddingTop: topInset + 8 }}>
       <View className="flex-row items-center justify-between px-4 mb-3">
@@ -223,11 +225,21 @@ export function StoryComposer({
           <Image source={photo} accessibilityLabel="Tu foto" resizeMode="cover" style={{ position: 'absolute', width: '100%', height: '100%' }} />
           {/* Degradé suave abajo para que el texto se lea sobre cualquier foto. */}
           <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.2)']} locations={[0, 0.2, 0.8, 1]} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
-          <StorySticker photo={photo} businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} />
+          <StorySticker photo={photo} businessName={businessName} businessLogo={businessLogo} benefitName={benefitName} costPoints={costPoints} variant={variant} />
         </View>
       </View>
 
       <View className="px-5 pt-4 pb-8" style={{ gap: 10 }}>
+        <View accessibilityRole="radiogroup" className="flex-row self-center rounded-full p-1" style={{ backgroundColor: '#2E2247' }}>
+          {([{ v: 'icono', label: 'Logo' }, { v: 'nombre', label: 'Nombre' }] as const).map((o) => {
+            const sel = variant === o.v;
+            return (
+              <Press key={o.v} accessibilityRole="radio" accessibilityLabel={o.v === 'icono' ? 'Sello con el logo de Camina' : 'Sello con el nombre Camina'} accessibilityState={{ selected: sel }} onPress={() => setVariant(o.v)} className="rounded-full px-4 py-2" style={{ backgroundColor: sel ? colors.mint : 'transparent' }}>
+                <Text numberOfLines={1} className="text-[13px] font-bold" style={{ color: sel ? colors.mintInk : '#C4B8E8', maxWidth: 160 }}>{o.label}</Text>
+              </Press>
+            );
+          })}
+        </View>
         <Text className="text-center text-[12.5px]" style={{ color: '#C4B8E8', lineHeight: 18 }}>
           Publícala en tu historia y etiqueta a <Text style={{ color: '#fff', fontWeight: '800' }}>{CAMINA_INSTAGRAM}</Text>{igHandle(businessInstagram) ? <> y a <Text style={{ color: '#fff', fontWeight: '800' }}>{igHandle(businessInstagram)}</Text></> : null}. Cuando la veamos, te acreditamos {STORY_REWARD} Puntos.
         </Text>
