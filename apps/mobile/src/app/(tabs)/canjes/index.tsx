@@ -1607,6 +1607,8 @@ export default function CanjesScreen() {
                 {businessIcon(profileGroup.business.name, 84, profileGroup.business.logo_url, profileGroup.business.category, isFeatured(profileGroup.business))}
                 {profileGroup.business.opening_hours ? (
                   <>
+                    {/* El chip va dentro de la ficha (no en la portada) para quedar encima y poder tocarse: la ficha sube 36 px sobre la foto. A la derecha y corto para no tapar el logo. */}
+                    <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ position: 'absolute', right: 20, top: 0 }} />
                     {hoursOpen ? (
                       <HoursSheet
                         openingHours={profileGroup.business.opening_hours}
@@ -1636,9 +1638,6 @@ export default function CanjesScreen() {
                 </View>
 
                 <Text className="text-[13px] text-muted-light dark:text-muted-dark">{profileGroup.business.category}</Text>
-                {profileGroup.business.opening_hours ? (
-                  <HoursCoverChip openingHours={profileGroup.business.opening_hours} onPress={() => setHoursOpen(true)} style={{ alignSelf: 'flex-start', marginTop: 10 }} />
-                ) : null}
                 {(redeemCounts?.[profileGroup.business.id] ?? 0) >= 100 ? (
                   <Text className="text-[13px] font-semibold text-aqua-ink dark:text-aqua mt-1">
                     {redeemCounts![profileGroup.business.id].toLocaleString('es-BO')} {plural(redeemCounts![profileGroup.business.id], 'canje', 'canjes')} en este local
