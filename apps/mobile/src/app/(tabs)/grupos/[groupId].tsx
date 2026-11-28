@@ -319,12 +319,11 @@ export default function GroupDetailScreen() {
     const prevDetail = queryClient.getQueryData<any>(['group-detail', groupId]);
     const prevList = queryClient.getQueryData<any[]>(['groups']);
     const prevKey = prevDetail?.group?.background ?? null;
-    const hadBanner = !!prevDetail?.group?.banner_url;
-    if (prevKey === key && !hadBanner) return;
-    // Tocar un color también quita la foto de portada (si no, la foto seguía tapando el color).
-    queryClient.setQueryData<any>(['group-detail', groupId], (d: any) => (d ? { ...d, group: { ...d.group, background: key, banner_url: null } } : d));
-    queryClient.setQueryData<any[]>(['groups'], (l) => (l ? l.map((g) => (g.id === groupId ? { ...g, background: key, banner_url: null } : g)) : l));
-    const { error } = await supabase.from('groups').update({ background: key, banner_url: null }).eq('id', groupId);
+    if (prevKey === key) return;
+    // El color y la foto de portada se guardan por separado: cambiar el color no quita la foto.
+    queryClient.setQueryData<any>(['group-detail', groupId], (d: any) => (d ? { ...d, group: { ...d.group, background: key } } : d));
+    queryClient.setQueryData<any[]>(['groups'], (l) => (l ? l.map((g) => (g.id === groupId ? { ...g, background: key } : g)) : l));
+    const { error } = await supabase.from('groups').update({ background: key }).eq('id', groupId);
     if (error) {
       queryClient.setQueryData(['group-detail', groupId], prevDetail);
       queryClient.setQueryData(['groups'], prevList);
@@ -546,7 +545,7 @@ export default function GroupDetailScreen() {
               {/* Copia difuminada de la misma foto que aparece de a poco de abajo hacia arriba (máscara con degradé):
                   sin cortes ni líneas entre la parte nítida y la difuminada. */}
               <BannerBlurFade uri={bannerUrl} />
-              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '14' }} />
+              <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors[1] + '38' }} />
               <LinearGradient
                 pointerEvents="none"
                 colors={['rgba(10,6,20,0.4)', 'rgba(10,6,20,0)', theme.colors[2] + '33', theme.colors[2] + '80', theme.colors[2] + 'C2']}
